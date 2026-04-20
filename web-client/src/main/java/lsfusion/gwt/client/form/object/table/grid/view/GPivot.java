@@ -266,13 +266,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, true); // convertToObjects()
 
-        if(firstUpdateView != null) // we need to read data first, to know property captions
-            initDefaultConfig(grid);
-
-        config = overrideAggregators(config, getAggregators(aggregator), systemColumns);
-        config = overrideCallbacks(config, getCallbacks());
-        config = overrideRendererOptions(config, getRendererOptions(configFunction, getPropertyCaptionsMap()));
-        config = overrideCustomOptions(config, getCustomOptions());
+        config = updateConfig(
+                firstUpdateView != null ? null : config,
+                createDefaultConfig(grid), // we need to read data first, to know property captions
+                getAggregators(aggregator),
+                getCallbacks(),
+                getConfigOptions(configFunction, getPropertyCaptionsMap()),
+                getCustomOptions(),
+                systemColumns
+        );
 
         if (!settings)
             GwtClientUtils.addClassName(getDrawElement(), "pivotTable-noSettings");
@@ -287,7 +289,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         settings = pivotOptions == null || pivotOptions.isShowSettings();
     }
 
-    private void initDefaultConfig(GGridController gridController) {
+    private WrapperObject createDefaultConfig(GGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregatorName = pivotOptions != null ? getAggregatorName(pivotOptions.getAggregation()) : null;
@@ -305,10 +307,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
 
         Object[] columns = getPivotCaptions(columnCaptionMap, pivotColumns);
-        Integer[] splitCols = getPivotSplits(pivotColumns);
+        Integer[] splitCols = getPivotSplits(columnCaptionMap, pivotColumns);
 
         Object[] rows = getPivotCaptions(columnCaptionMap, pivotRows);
-        Integer[] splitRows = getPivotSplits(pivotRows);
+        Integer[] splitRows = getPivotSplits(columnCaptionMap, pivotRows);
 
         JsArrayString measures = JavaScriptObject.createArray().cast();
         for(GPropertyDraw property : pivotMeasures) {
@@ -340,7 +342,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
+        return getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
     }
 
     private boolean isDefaultPivot(ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotList) {
@@ -365,20 +367,22 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return captions.toArray();
     }
 
-    private Integer[] getPivotSplits(ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> propertiesList) {
-        ArrayList<Integer> sizes = new ArrayList<>();
-        for (ArrayList<GPropertyDrawOrPivotColumn> propertyList : propertiesList)
-            if (!propertyList.isEmpty())
-                sizes.add(propertyList.size());
-
-        Integer[] splits = new Integer[propertiesList.size()];
+    private Integer[] getPivotSplits(Map<GPropertyDraw, String> columnCaptionMap, ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> propertiesList) {
+        ArrayList<Integer> splits = new ArrayList<>();
         int count = -1;
-        for(int i = 0; i < sizes.size(); i++) {
-            count += sizes.get(i);
-            splits[i] = count;
+        for (ArrayList<GPropertyDrawOrPivotColumn> propertyList : propertiesList) {
+            int visibleCount = 0;
+            for (GPropertyDrawOrPivotColumn property : propertyList)
+                if(property.getCaption(columnCaptionMap) != null)
+                    visibleCount++;
+
+            if(visibleCount > 0) {
+                count += visibleCount;
+                splits.add(count);
+            }
         }
 
-        return splits;
+        return splits.toArray(new Integer[0]);
     }
 
 
@@ -509,33 +513,233 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         });
     }-*/;
 
-    private native WrapperObject overrideAggregators(WrapperObject config, JavaScriptObject aggregators, JsArrayString systemColumns)/*-{
-        return Object.assign({}, config, {
-            aggregators: aggregators,
-            hiddenFromDragDrop: systemColumns
-        });
-    }-*/;
+    private WrapperObject appliedDefaultConfig;
+    private native WrapperObject updateConfig(WrapperObject config, WrapperObject defaultConfig,
+                                              JavaScriptObject aggregators, JavaScriptObject callbacks, JavaScriptObject configOptions,
+                                              JavaScriptObject customOptions, JsArrayString systemColumns)/*-{
+        var appliedDefaultConfig = config ? this.@GPivot::appliedDefaultConfig : null;
+        var state = {};
+        if (config) {
+            [
+                "cols", "splitCols", "rows", "splitRows", "vals",
+                "rowOrder", "colOrder", "exclusions", "inclusions",
+                "aggregatorName", "rendererName", "sortCols"
+            ].forEach(function(key) {
+                state[key] = config[key];
+            });
 
-    private native WrapperObject overrideCallbacks(WrapperObject config, JavaScriptObject callbacks)/*-{
-        return Object.assign({}, config, {
+            if (appliedDefaultConfig) {
+                appendAxisGroups(state, "rows", "splitRows", appliedDefaultConfig, defaultConfig);
+                appendAxisGroups(state, "cols", "splitCols", appliedDefaultConfig, defaultConfig);
+                appendInclusions(state, appliedDefaultConfig, defaultConfig);
+                appendSortCols(state, appliedDefaultConfig, defaultConfig);
+            } else {
+                state.sortCols = filterSortCols(state.sortCols);
+            }
+        }
+
+        var result = Object.assign({}, defaultConfig, state, {
+            aggregators: aggregators,
+            hiddenFromDragDrop: systemColumns,
             callbacks: callbacks
         });
+
+        if (configOptions) {
+            result = $wnd.mergeObjects(result, configOptions);
+
+            if (!Object.prototype.hasOwnProperty.call(configOptions, "rendererOptions"))
+                result.rendererOptions = configOptions;
+        }
+
+        this.@GPivot::appliedDefaultConfig = this.@GPivot::updateAppliedDefaultConfig(*)(appliedDefaultConfig, defaultConfig);
+        return $wnd.mergeObjects(result, customOptions);
+
+        function appendAxisGroups(state, axisKey, splitKey, appliedDefaultConfig, defaultConfig) {
+            var currentAxis = cloneArray(state[axisKey]);
+            var currentSplits = cloneArray(state[splitKey]);
+            var appliedDefaultAxis = cloneArray(appliedDefaultConfig[axisKey]);
+            var defaultGroups = getAxisGroups(cloneArray(defaultConfig[axisKey]), cloneArray(defaultConfig[splitKey]));
+            for (var i = 0; i < defaultGroups.length; i++) {
+                var group = defaultGroups[i];
+                var added = false;
+                for (var j = 0; j < group.length; j++) {
+                    var value = group[j];
+                    if (appliedDefaultAxis.indexOf(value) < 0 && currentAxis.indexOf(value) < 0) {
+                        currentAxis.push(value);
+                        added = true;
+                    }
+                }
+                if (added)
+                    currentSplits.push(currentAxis.length - 1);
+            }
+            state[axisKey] = currentAxis;
+            state[splitKey] = currentSplits;
+        }
+
+        function appendInclusions(state, appliedDefaultConfig, defaultConfig) {
+            appendObjectArrays(state.inclusions, appliedDefaultConfig.inclusions || {}, defaultConfig.inclusions || {});
+        }
+
+        function appendSortCols(state, appliedDefaultConfig, defaultConfig) {
+            var currentSortCols = filterSortCols(state.sortCols);
+            var originalLength = state.sortCols ? state.sortCols.length : currentSortCols.length;
+            var appliedDefaultSortCols = filterSortCols(appliedDefaultConfig.sortCols);
+            var defaultSortCols = filterSortCols(defaultConfig.sortCols);
+            var changed = currentSortCols.length !== originalLength;
+
+            for (var i = 0; i < defaultSortCols.length; i++) {
+                var sortCol = defaultSortCols[i];
+                if (!hasSortCol(appliedDefaultSortCols, sortCol.value) && !hasSortCol(currentSortCols, sortCol.value)) {
+                    currentSortCols.push(sortCol);
+                    changed = true;
+                }
+            }
+
+            if (changed)
+                state.sortCols = currentSortCols;
+        }
+
+        function appendObjectArrays(current, appliedDefault, defaults) {
+            Object.keys(defaults).forEach(function(key) {
+                var currentValues = cloneArray(current[key]);
+                var appliedValues = cloneArray(appliedDefault[key]);
+                appendValues(currentValues, appliedValues, cloneArray(defaults[key]));
+                current[key] = currentValues;
+            });
+        }
+
+        function appendValues(currentValues, previousDefaultValues, defaultValues) {
+            for (var i = 0; i < defaultValues.length; i++)
+                if (previousDefaultValues.indexOf(defaultValues[i]) < 0 && currentValues.indexOf(defaultValues[i]) < 0)
+                    currentValues.push(defaultValues[i]);
+        }
+
+        function getAxisGroups(axis, splits) {
+            var groups = [];
+            var start = 0;
+            for (var i = 0; i < splits.length; i++) {
+                var split = splits[i];
+                if (split == null)
+                    continue;
+
+                var end = Math.min(split + 1, axis.length);
+                if (end > start) {
+                    groups.push(axis.slice(start, end));
+                    start = end;
+                }
+            }
+            if (start < axis.length)
+                groups.push(axis.slice(start));
+            return groups;
+        }
+
+        function filterSortCols(sortCols) {
+            var result = [];
+            if (sortCols) {
+                for (var i = 0; i < sortCols.length; i++) {
+                    var sortCol = sortCols[i];
+                    if (sortCol && sortCol.value != null)
+                        result.push(sortCol);
+                }
+            }
+            return result;
+        }
+
+        function hasSortCol(sortCols, value) {
+            for (var i = 0; i < sortCols.length; i++)
+                if (sortValueEquals(sortCols[i].value, value))
+                    return true;
+            return false;
+        }
+
+        function sortValueEquals(a, b) {
+            if (a === b)
+                return true;
+            if (!isArrayLike(a) || !isArrayLike(b) || a.length !== b.length)
+                return false;
+            for (var i = 0; i < a.length; i++)
+                if (a[i] !== b[i])
+                    return false;
+            return true;
+        }
+
+        function isArrayLike(value) {
+            return value && typeof value !== "string" && typeof value.length === "number";
+        }
+
+        function cloneArray(value) {
+            return value ? value.slice() : [];
+        }
     }-*/;
 
-    private native WrapperObject overrideRendererOptions(WrapperObject config, JavaScriptObject rendererOptions)/*-{
-        return Object.assign({}, config, {
-            rendererOptions: rendererOptions
-        });
-    }-*/;
+    private native WrapperObject updateAppliedDefaultConfig(WrapperObject appliedDefaultConfig, WrapperObject defaultConfig)/*-{
+        var result = appliedDefaultConfig || {};
+        result.rows = mergeArrays(result.rows, defaultConfig.rows);
+        result.cols = mergeArrays(result.cols, defaultConfig.cols);
+        result.inclusions = mergeObjectArrays(result.inclusions, defaultConfig.inclusions);
+        result.sortCols = mergeSortCols(result.sortCols, defaultConfig.sortCols);
+        return result;
 
-    private native WrapperObject overrideCustomOptions(WrapperObject config, JavaScriptObject customOptions)/*-{
-        return $wnd.mergeObjects(config, customOptions);
-    }-*/;
+        function mergeArrays(applied, defaults) {
+            var result = applied ? applied.slice() : [];
+            defaults = defaults || [];
+            for (var i = 0; i < defaults.length; i++)
+                if (result.indexOf(defaults[i]) < 0)
+                    result.push(defaults[i]);
+            return result;
+        }
 
-    private native WrapperObject overrideHideColAxisHeadersColumn(WrapperObject config, boolean hide)/*-{
-        return Object.assign({}, config, {
-            hideColAxisHeadersColumn: hide
-        });
+        function mergeObjectArrays(applied, defaults) {
+            var result = applied || {};
+            defaults = defaults || {};
+            Object.keys(defaults).forEach(function(key) {
+                result[key] = mergeArrays(result[key], defaults[key]);
+            });
+            return result;
+        }
+
+        function mergeSortCols(applied, defaults) {
+            var result = filterSortCols(applied);
+            defaults = filterSortCols(defaults);
+            for (var i = 0; i < defaults.length; i++)
+                if (!hasSortCol(result, defaults[i].value))
+                    result.push(defaults[i]);
+            return result;
+        }
+
+        function filterSortCols(sortCols) {
+            var result = [];
+            if (sortCols) {
+                for (var i = 0; i < sortCols.length; i++) {
+                    var sortCol = sortCols[i];
+                    if (sortCol && sortCol.value != null)
+                        result.push(sortCol);
+                }
+            }
+            return result;
+        }
+
+        function hasSortCol(sortCols, value) {
+            for (var i = 0; i < sortCols.length; i++)
+                if (sortValueEquals(sortCols[i].value, value))
+                    return true;
+            return false;
+        }
+
+        function sortValueEquals(a, b) {
+            if (a === b)
+                return true;
+            if (!isArrayLike(a) || !isArrayLike(b) || a.length !== b.length)
+                return false;
+            for (var i = 0; i < a.length; i++)
+                if (a[i] !== b[i])
+                    return false;
+            return true;
+        }
+
+        function isArrayLike(value) {
+            return value && typeof value !== "string" && typeof value.length === "number";
+        }
     }-*/;
 
     private native WrapperObject reduceRows(WrapperObject config, JsArrayString rows, int length)/*-{
@@ -576,11 +780,159 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return result;
     }
 
+    private boolean isVisiblePivotColumn(String caption) {
+        return caption != null && (caption.equals(COLUMN) || columnMap.get(caption) != null);
+    }
+
+    private boolean isVisibleAggrColumn(String caption) {
+        return caption != null && aggrCaptions.contains(caption);
+    }
+
+    private native WrapperObject preserveHiddenConfig(WrapperObject currentConfig, WrapperObject newConfig)/*-{
+        if (!currentConfig)
+            return newConfig;
+
+        var instance = this;
+        var result = Object.assign({}, newConfig);
+        preserveAxis("rows", "splitRows");
+        preserveAxis("cols", "splitCols");
+        result.inclusions = preserveFilters(currentConfig.inclusions, newConfig.inclusions);
+        result.exclusions = preserveFilters(currentConfig.exclusions, newConfig.exclusions);
+        result.sortCols = preserveSortCols(currentConfig.sortCols, newConfig.sortCols);
+        return result;
+
+        function preserveAxis(axisKey, splitKey) {
+            var axis = cloneArray(newConfig[axisKey]);
+            var splits = cloneArray(newConfig[splitKey]);
+            var groups = getAxisGroups(cloneArray(currentConfig[axisKey]), cloneArray(currentConfig[splitKey]));
+            for (var i = 0; i < groups.length; i++) {
+                var added = false;
+                for (var j = 0; j < groups[i].length; j++) {
+                    var value = groups[i][j];
+                    if (!isVisibleColumn(value) && axis.indexOf(value) < 0) {
+                        axis.push(value);
+                        added = true;
+                    }
+                }
+                if (added)
+                    splits.push(axis.length - 1);
+            }
+            result[axisKey] = axis;
+            result[splitKey] = splits;
+        }
+
+        function preserveFilters(currentFilters, newFilters) {
+            var result = Object.assign({}, newFilters || {});
+            var columnAttr = @lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN;
+            currentFilters = currentFilters || {};
+            Object.keys(currentFilters).forEach(function(key) {
+                if (key === columnAttr) {
+                    var values = cloneArray(result[key]);
+                    cloneArray(currentFilters[key]).forEach(function(value) {
+                        if (!isVisibleAggrColumn(value) && values.indexOf(value) < 0)
+                            values.push(value);
+                    });
+                    if (values.length > 0)
+                        result[key] = values;
+                } else if (!isVisibleColumn(key) && !Object.prototype.hasOwnProperty.call(result, key)) {
+                    result[key] = currentFilters[key];
+                }
+            });
+            return result;
+        }
+
+        function preserveSortCols(currentSortCols, newSortCols) {
+            var result = filterSortCols(newSortCols);
+            currentSortCols = filterSortCols(currentSortCols);
+            for (var i = 0; i < currentSortCols.length; i++) {
+                var sortCol = currentSortCols[i];
+                if (isHiddenSortValue(sortCol.value) && !hasSortCol(result, sortCol.value))
+                    result.push(sortCol);
+            }
+            return result;
+        }
+
+        function isHiddenSortValue(value) {
+            if (isArrayLike(value)) {
+                for (var i = 0; i < value.length; i++)
+                    if (!isVisibleAggrColumn(value[i]))
+                        return true;
+                return false;
+            }
+            return !isVisibleColumn(value);
+        }
+
+        function getAxisGroups(axis, splits) {
+            var groups = [];
+            var start = 0;
+            for (var i = 0; i < splits.length; i++) {
+                var split = splits[i];
+                if (split == null)
+                    continue;
+
+                var end = Math.min(split + 1, axis.length);
+                if (end > start) {
+                    groups.push(axis.slice(start, end));
+                    start = end;
+                }
+            }
+            if (start < axis.length)
+                groups.push(axis.slice(start));
+            return groups;
+        }
+
+        function filterSortCols(sortCols) {
+            var result = [];
+            if (sortCols) {
+                for (var i = 0; i < sortCols.length; i++) {
+                    var sortCol = sortCols[i];
+                    if (sortCol && sortCol.value != null)
+                        result.push(sortCol);
+                }
+            }
+            return result;
+        }
+
+        function hasSortCol(sortCols, value) {
+            for (var i = 0; i < sortCols.length; i++)
+                if (sortValueEquals(sortCols[i].value, value))
+                    return true;
+            return false;
+        }
+
+        function sortValueEquals(a, b) {
+            if (a === b)
+                return true;
+            if (!isArrayLike(a) || !isArrayLike(b) || a.length !== b.length)
+                return false;
+            for (var i = 0; i < a.length; i++)
+                if (a[i] !== b[i])
+                    return false;
+            return true;
+        }
+
+        function isVisibleColumn(value) {
+            return instance.@GPivot::isVisiblePivotColumn(*)(value);
+        }
+
+        function isVisibleAggrColumn(value) {
+            return instance.@GPivot::isVisibleAggrColumn(*)(value);
+        }
+
+        function isArrayLike(value) {
+            return value && typeof value !== "string" && typeof value.length === "number";
+        }
+
+        function cloneArray(value) {
+            return value ? value.slice() : [];
+        }
+    }-*/;
+
 //    private boolean isTable = true;
 
     private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, WrapperObject exclusions, String aggregatorName, String rendererName) {
         updateSortCols(this.config, config);
-        this.config = config;
+        this.config = preserveHiddenConfig(this.config, config);
 
         List<GPropertyDraw> properties = new ArrayList<>();
         List<GGroupObjectValue> columnKeys = new ArrayList<>();
@@ -600,7 +952,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
 
         //don't reset firstUpdateView if no one property is visible: in this case properties include only System.count
-        if(properties.size() > 1 && (firstUpdateView == null || !firstUpdateView)) { // we don't need to update server groups, since they should be already set
+        if(/*properties.size() > 1 && */(firstUpdateView == null || !firstUpdateView)) { // we don't need to update server groups, since they should be already set
             updateRendererState(true); // will wait until server will answer us if we need to change something
             grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
             firstUpdateView = null;
@@ -1965,7 +2317,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return aggr;
     }
 
-    public native JavaScriptObject getRendererOptions(String configFunction, JavaScriptObject params) /*-{
+    public native JavaScriptObject getConfigOptions(String configFunction, JavaScriptObject params) /*-{
         return configFunction ? $wnd[configFunction](params) : {}
     }-*/;
 
@@ -2280,8 +2632,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if(sortCols != null) {
             for (int i = 0; i < sortCols.length(); i++) {
                 SortCol sortCol = sortCols.getObject(i);
-                if (equals(sortCol.getValue(), value)) {
-                    return sortCol;
+                if(sortCol != null) {
+                    Object sortValue = sortCol.getValue();
+                    if (sortValue != null && equals(sortValue, value)) {
+                        return sortCol;
+                    }
                 }
             }
         }
@@ -2315,6 +2670,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         var sortCols = newConfig.sortCols;
         var newSortCols = [];
         for (var i = 0; i < sortCols.length; ++i) {
+            if (!sortCols[i] || sortCols[i].value == null)
+                continue;
+
             if (typeof sortCols[i].value === 'string') {
                 if (newConfig.rows.includes(sortCols[i].value)) {
                     instance.@GPivot::updateDirection(*)(currentConfig, sortCols[i]);
