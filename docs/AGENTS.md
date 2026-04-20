@@ -1059,7 +1059,8 @@ When documenting
 any language construction
 or other element,
 the assistant MUST describe
-only what is specific
+only what is primary
+and specific
 to the current section;
 general rules,
 resolving,
@@ -1072,7 +1073,26 @@ in other sections
 MUST be reused
 or referenced,
 not restated
-or duplicated.
+or duplicated;
+things that are
+already obvious
+from the syntax,
+directly follow
+from already stated rules,
+or can be determined
+from canonical
+general documentation
+MUST NOT be restated
+locally;
+the assistant MUST NOT
+explain a local rule
+mainly through contrast
+with another rule,
+operator,
+or section
+if that contrast
+adds no primary
+information.
 The assistant MUST NOT
 add tangential comments,
 background remarks,
@@ -1129,20 +1149,28 @@ if that already follows
 from the link itself
 and adds no new
 local information.
+The assistant MUST
+state
+the direct primary rule,
+not its converse,
+complement,
+obvious consequence,
+or special-case contrast.
 The assistant MUST NOT
 add clarifications
 for particular cases
-or mirrored negative statements
-if they are only
-variants of general rules
-or follow directly
-from already stated behavior,
-including obvious special cases
+or mirrored,
+contrastive,
+or otherwise derived
+statements
+that only restate
+such general
+or derived information,
+including obvious
+special cases
 such as empty variants
-of an already described form;
-this also applies
-to local restatements
-of special cases
+of an already described form
+or special cases
 that only follow
 from canonical general rules
 described elsewhere.
