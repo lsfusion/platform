@@ -75,6 +75,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty, TableContainer tableContainer) {
         super(formController, gridController, tableContainer);
         this.selectedProperty = selectedProperty;
+        initDefaultSettings(gridController);
 
         GwtClientUtils.addClassName(getDrawElement(), "pivotTable");
 
@@ -266,9 +267,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         JsArrayString systemColumns = JavaScriptObject.createArray().cast();
         JsArray<JsArrayMixed> data = getData(columnMap, aggregator, aggrCaptions, systemColumns, true); // convertToObjects()
 
-        config = updateConfig(
-                firstUpdateView != null ? null : config,
-                createDefaultConfig(grid), // we need to read data first, to know property captions
+        config = updateConfig(config,
+                createConfig(), // we need to read data first, to know property captions
                 getAggregators(aggregator),
                 getCallbacks(),
                 getConfigOptions(configFunction, getPropertyCaptionsMap()),
@@ -284,25 +284,27 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage(), clusterize); // we need to updateRendererState after it is painted
     }
 
-    public void initDefaultSettings(GGridController gridController) {
+    private void initDefaultSettings(GGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         settings = pivotOptions == null || pivotOptions.isShowSettings();
-    }
-
-    private WrapperObject createDefaultConfig(GGridController gridController) {
-        GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregatorName = pivotOptions != null ? getAggregatorName(pivotOptions.getAggregation()) : null;
+        defaultConfigOptions = createDefaultConfigOptions(rendererName, aggregatorName);
         configFunction = pivotOptions != null ? pivotOptions.getConfigFunction() : null;
+        pivotColumns = gridController.getPivotColumns();
+        pivotRows = gridController.getPivotRows();
+        pivotMeasures = gridController.getPivotMeasures();
+        defaultOrders = gridController.getDefaultOrders();
+        defaultPivot = isDefaultPivot(pivotColumns) && isDefaultPivot(pivotRows) && pivotMeasures.isEmpty();
+    }
 
+    private WrapperObject createConfig() {
         Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
         columnMap.foreachEntry((key, value) -> columnCaptionMap.putIfAbsent(value.property, key));
 
-        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotColumns = gridController.getPivotColumns();
-        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = gridController.getPivotRows();
-        ArrayList<GPropertyDraw> pivotMeasures = gridController.getPivotMeasures();
-
-        if(isDefaultPivot(pivotColumns) && isDefaultPivot(pivotRows) && pivotMeasures.isEmpty() && selectedProperty != null) {
+        ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = this.pivotRows;
+        if(defaultPivot && selectedProperty != null) {
+            pivotRows = new ArrayList<>(pivotRows);
             pivotRows.add(new ArrayList<>(Collections.singletonList(selectedProperty)));
         }
 
@@ -332,7 +334,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
 
         JsArrayMixed sortCols = JsArrayString.createArray().cast();
-        LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = gridController.getDefaultOrders();
         for(Map.Entry<GPropertyDraw, Boolean> order : defaultOrders.entrySet()) {
             String caption = columnCaptionMap.get(order.getKey());
             if(contains(measures, caption)) {
@@ -342,7 +343,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
 
-        return getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
+        return getDefaultConfig(defaultConfigOptions, columns, splitCols, rows, splitRows, inclusions, sortCols, settings);
     }
 
     private boolean isDefaultPivot(ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotList) {
@@ -444,6 +445,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private WrapperObject config;
     private String configFunction;
     private boolean settings = true;
+    private WrapperObject defaultConfigOptions;
+    private ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotColumns;
+    private ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows;
+    private ArrayList<GPropertyDraw> pivotMeasures;
+    private LinkedHashMap<GPropertyDraw, Boolean> defaultOrders;
+    private boolean defaultPivot;
 
     public boolean isSettings() {
         return settings;
@@ -1021,7 +1028,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return PivotRendererType.valueOf(name).localize();
     }
 
-    private native WrapperObject getDefaultConfig(Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, String rendererName, String aggregatorName, boolean showUI)/*-{
+    private native WrapperObject createDefaultConfigOptions(String rendererName, String aggregatorName)/*-{
         var instance = this;
         var localizeRendererNames = function(renderers) {
             var localizedRenderers = {};
@@ -1041,18 +1048,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         );
 
         return {
-            sorters: {}, // Configuration ordering column for group
             dataClass: $wnd.$.pivotUtilities.SubtotalPivotData,
-            cols: columns, // inital columns since overwrite is false
-            splitCols: splitCols,
-            rows: rows, // inital rows since overwrite is false
-            splitRows: splitRows,
             renderers: renderers,
             rendererName: rendererName,
             aggregatorName: aggregatorName,
-            inclusions: inclusions,
-            sortCols: sortCols,
-            showUI:showUI,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
             onRefresh: function (config) {
@@ -1081,6 +1080,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(III)(rgb[0], rgb[1], rgb[2]);
             }
         }
+    }-*/;
+
+    private native WrapperObject getDefaultConfig(WrapperObject defaultConfigOptions, Object[] columns, Integer[] splitCols, Object[] rows, Integer[] splitRows, JavaScriptObject inclusions, JsArrayMixed sortCols, boolean showUI)/*-{
+        return Object.assign({}, defaultConfigOptions, {
+            sorters: {}, // Configuration ordering column for group
+            cols: columns, // inital columns since overwrite is false
+            splitCols: splitCols,
+            rows: rows, // inital rows since overwrite is false
+            splitRows: splitRows,
+            inclusions: inclusions,
+            sortCols: sortCols,
+            showUI: showUI
+        });
     }-*/;
 
     protected native void render(com.google.gwt.dom.client.Element element, com.google.gwt.dom.client.Element pageSizeElement, JavaScriptObject array,

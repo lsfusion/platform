@@ -103,7 +103,6 @@ public class GGridController extends GAbstractTableController {
             switch (groupObject.listViewType) { // we don't have to do changeListViewType, since it's a first start and it should be set on server
                 case PIVOT:
                     setPivotTableView();
-                    ((GPivot)table).initDefaultSettings(this);
                     if(!groupObject.asyncInit)
                         ((GPivot)table).setDefaultChangesApplied();
                     break;
