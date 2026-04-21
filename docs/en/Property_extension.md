@@ -2,30 +2,61 @@
 title: 'Property extension'
 ---
 
-The [properties](Properties.md) [extension](Extensions.md) technique allows the developer to declare an *abstract property* in one [module](Modules.md) and define its implementation in other modules. This technique is essentially a "postponed definition" of a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md), where the operator’s title is defined when the property is declared, and as new functionality (of [classes](Classes.md) or [static objects](Static_objects.md)) is added, selection options are added to the system. Furthermore, variants of selection (if it is not mutually exclusive) can be added both to the beginning and to the end of the abstract property created.
+The [properties](Properties.md) [extension](Extensions.md) technique allows an *abstract property* to be declared in one [module](Modules.md) and its implementations to be defined in other modules. This is deferred construction of a property computed as the corresponding [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md): the base module defines the form of the future operator and the requirements for its implementations, while other modules gradually add individual implementations.
 
-For abstract properties, the expected classes of parameters must be specified. Then the platform will automatically check that the implementations added match these classes. Also, if necessary, you can check that for all descendants of the parameter classes at least one implementation is specified (or exactly one, if the conditions are [mutually exclusive](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md)).
+An abstract property defines the extension contract: the result class determines the returned value, and the parameter classes determine the allowed implementations.
 
-Extension of properties allows you to:
+Property extension allows:
 
 -   Implement the concept of property polymorphism by analogy with certain object-oriented programming languages.
--   Remove dependency between modules by adding specific "entry points" to change the way properties are calculated.
+-   Reduce dependencies between modules by adding specific "entry points" for later changes to property calculation.
+
+### Implementation choice
+
+Which implementation is considered suitable depends on the kind of abstract property:
+
+-   In the explicit conditional form, each implementation has its own selection condition.
+-   In the signature-based polymorphic form, the implementation is selected by compatibility of the current argument classes with its signature.
+-   In the value-based form, an implementation is suitable if it returns a defined value.
+
+If several implementations are suitable at the same time, the final result is determined by the mutual exclusion mode and the implementation order.
+
+### Implementation order
+
+An abstract property stores implementations in an ordered list. New implementations can be added to either end of the list.
+
+This affects behavior as follows:
+
+-   If the abstract property allows several simultaneously applicable implementations, the result is returned by the first applicable implementation in that list.
+-   In the mutually exclusive mode, there must be exactly one applicable implementation for a given set of arguments.
+
+So implementation order is part of the extension contract, not just a technical detail.
+
+### Completeness of implementations {#full}
+
+An abstract property may require the entire admissible domain of parameter values to be covered by implementations. In that case, for all descendants of the parameter classes there must be at least one applicable implementation, and in the [mutually exclusive](#exclusive) mode there must be exactly one.
+
+This makes the extension contract stronger: when more specific cases are added, the corresponding implementations must be added as well.
+
+### Implementation contract
+
+Each implementation of an abstract property has its own parameter signature and its own result class. The platform matches them against the contract of the abstract property.
+
+An implementation must not narrow the signature of the abstract property. In particular, in the explicit conditional form this usually means that all parameters must participate either in the selection condition or in the result calculation. Otherwise such an implementation will have a narrower signature and will not be able to extend the abstract property correctly.
 
 ### Polymorphic form {#poly}
 
-Just as [for a selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly), for an abstract property there is a *polymorphic form* where the selection condition and the result corresponding to it are set by a single property. Accordingly, as in a selection operator, either matching the [signature](Property_signature_ISCLASS.md) of this property or the property itself can be a condition.
+As in a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly), an abstract property also has a *polymorphic form*: one property defines both the selection condition and the corresponding result. In this form, the condition can be either matching the [signature](Property_signature_ISCLASS.md) of that property or the property itself.
 
 ### Mutual exclusion of conditions {#exclusive}
 
-As [for a selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#exclusive), you can specify that all conditions of an abstract property must be *mutually exclusive*. If this option is set, and the conditions are not in fact mutually exclusive, the platform will throw the corresponding error.
-
-It is worth noting that this check is no more than a hint to the platform (for better optimization), and also a kind of self-checking on the part of the developer. However, in many cases it allows you to make the code more transparent and readable (especially given a polymorphic form of the abstract property).
+As in a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#exclusive), you can specify that all conditions of an abstract property must be *mutually exclusive*. In this mode, for each set of arguments there must be at most one applicable implementation.
 
 ### Language
 
-The key features that implement the extension procedure are the [`ABSTRACT` operator](ABSTRACT_operator.md),for declaring an abstract action, and the [`+=` statement](+=_statement.md), for defining its implementation.
+This technique uses two language constructs: the [`ABSTRACT` operator](ABSTRACT_operator.md) for declaring an abstract property and the [`+=` statement](+=_statement.md) for adding implementations.
 
-### Example
+### Examples
 
 
 ```lsf
@@ -33,14 +64,10 @@ CLASS Invoice;
 CLASS InvoiceDetail;
 CLASS Range;
 
-// ABSTRACT MULTI EXCLUSIVE is created
 rateChargeExchange(invoice) = ABSTRACT NUMERIC[14,6] (Invoice);
              
-// ABSTRACT CASE OVERRIDE LAST is created, and if there are several suitable implementations, 
-// the first of them will be calculated
 backgroundSku 'Color' (d) = ABSTRACT CASE FULL COLOR (InvoiceDetail);
  
-// The last matching implementation will be calculated here
 overVAT = ABSTRACT VALUE OVERRIDE FIRST Range (InvoiceDetail);          
 ```
 
@@ -59,8 +86,6 @@ name(BClass b) = 'B' + innerName(b);
 name(CClass c) = 'C' + innerName(c);
 
 name[AClass](BClass b) += name(b);
-// Here name[AClass] will be found on the left, because the search goes only among abstract properties, 
-// and on the right name[CClass] will be found
 name(CClass c) += name(c); 
 name(DClass d) += 'DClass' + innerName(d) IF d IS DClass;
 ```

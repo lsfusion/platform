@@ -7,25 +7,12 @@ The `ABSTRACT` operator creates an [abstract property](Property_extension.md).
 ### Syntax
 
 ```
-ABSTRACT [type [exclusionType]] [CHECKED] returnClassName(argClassName1, ..., argClassNameN)
-```
-
-Where `exclusionType` is of two types:
-
-```
-EXCLUSIVE
-OVERRIDE [FIRST | LAST]
+ABSTRACT [type [exclusionType] [order]] [FULL] returnClassName [(argClassName1, ..., argClassNameN)]
 ```
 
 ### Description
 
-The `ABSTRACT` operator creates an abstract property, the implementations of which can be defined later (for example, in other [modules](Modules.md) dependent on the module containing the `ABSTRACT` property). Implementations are added to the property using the [`+=` statement](+=_statement.md). When calculating an abstract property, its *matching* implementation is selected and calculated. The selection of the matching implementation depends on the *selection conditions* that are defined when adding implementations, and on the `ABSTRACT` operator type.
-
--   `CASE` - a general case. The selection condition will be explicitly specified in the implementation using the [`WHEN` block](+=_statement.md).
--   `MULTI` – a [polymorphic form](Property_extension.md#poly). The selection condition is that the parameters match the implementation [signature](ISCLASS_operator.md). This type is the default type and need not to be explicitly specified.
--   `VALUE` - a polymorphic form. The selection condition will be definiteness (a none-`NULL` value) of the implementation value (essentially, the implementation itself).
-
-The [type of mutual exclusion](Property_extension.md#exclusive) of an operator determines whether several conditions for the implementation of an abstract property can simultaneously be met with a certain set of parameters. The `EXCLUSIVE` type indicates that implementation conditions cannot be met simultaneously. The `OVERRIDE` type allows several simultaneously met conditions. In this case, the implementation to be selected is determined by the keywords `FIRST` and `LAST`.
+The `ABSTRACT` operator creates an abstract property. Its implementations are added later by [`+=` statements](+=_statement.md). Depending on the selected type, the platform builds from them the behavior of a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md).
 
 The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 
@@ -33,25 +20,35 @@ The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 
 - `type`
 
-    Type of abstract property. It is specified by one of the keywords:
-    
-    - `CASE`
-    - `MULTI`
-    - `VALUE`
-    
-  The default value is `MULTI`.
+    Option. Possible values:
+
+    - `CASE` - the explicit conditional form of the abstract property. The selection condition of each implementation is defined in the corresponding [`+=` statement](+=_statement.md) using the `WHEN` block.
+    - `MULTI` - [a polymorphic form](Property_extension.md#poly) of the abstract property. An implementation is selected when the current arguments are compatible with its [signature](ISCLASS_operator.md).
+    - `VALUE` - the polymorphic value-based form. An implementation is considered matching if it returns a defined value, that is, a non-`NULL` value.
+
+    If this option is omitted, `MULTI` is used by default.
 
 - `exclusionType`
 
-    Type of mutual exclusion. One of these keywords: `EXCLUSIVE` or `OVERRIDE`. Unless explicitly specified, in a `MULTI` abstract property the default type of mutual exclusion is `EXCLUSIVE`, and in all other cases the default mutual exclusion type is `OVERRIDE`.
-    
-    - `FIRST` | `LAST`
+    Option. It specifies the [type of mutual exclusion](Property_extension.md#exclusive). Possible values:
 
-    Keywords. Determine which of the matching implementations will be selected. When the word `FIRST` is specified, implementations will be added to the top of the implementations list, so that the last added implementation will be selected. When the word `LAST` is specified, implementations will be added to the end of the implementations list, so that the implementation added first will be selected. If not specified, the default is `FIRST`. 
+    - `EXCLUSIVE` - the mutually exclusive mode for the `CASE`, `MULTI`, and `VALUE` forms. In this mode, for each set of arguments there must be at most one matching implementation.
+    - `OVERRIDE` - the mode for the `CASE`, `MULTI`, and `VALUE` forms in which several implementations may match simultaneously.
+
+    Used only with `CASE`, `MULTI`, or `VALUE`. For `MULTI`, `EXCLUSIVE` is used by default; for `CASE` and `VALUE`, `OVERRIDE` is used by default.
+
+- `order`
+
+    Option for `OVERRIDE`. Possible values:
+
+    - `FIRST` - new implementations are added to the beginning of the list, so the last added implementation will be selected. If this value is not specified after `OVERRIDE`, it is used by default.
+    - `LAST` - new implementations are added to the end of the list, so the implementation added first will be selected.
+
+    Used only with `OVERRIDE`.
 
 - `FULL`
 
-    Keyword. If specified, the platform will automatically check that at least one implementation is specified for all child objects of the argument classes (or exactly one if the conditions are mutually exclusive).
+    Keyword. If specified, the platform automatically checks the [completeness of implementations](Property_extension.md#full): for all descendants of the argument classes there must be at least one applicable implementation, or exactly one if the conditions are mutually exclusive.
 
 - `returnClassName`
 
@@ -59,7 +56,7 @@ The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 
 - `argClassName1, ..., argClassNameN`
 
-    List of class names of property arguments. Each name is defined by a class ID.
+    List of class names of property arguments. Each name is defined by a [class ID](IDs.md#classid). The list may be empty. If the list is omitted, the parameter classes are taken from the property declaration in which the `ABSTRACT` operator is used.
 
 ### Examples
 
@@ -68,15 +65,13 @@ The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 CLASS Invoice;
 CLASS InvoiceDetail;
 CLASS Range;
+CLASS Connection;
 
-// In this case, ABSTRACT MULTI EXCLUSIVE is created
 rateChargeExchange(invoice) = ABSTRACT NUMERIC[14,6] (Invoice);
+
+defaultIsMobileMode(Connection c) = ABSTRACT BOOLEAN;
              
-// In this case, ABSTRACT CASE OVERRIDE LAST is created, and if there are
-// several suitable implementations, the first of them will be calculated
 backgroundSku 'Color' (d) = ABSTRACT CASE FULL COLOR (InvoiceDetail);
  
-// The last matching implementation will be calculated here
 overVAT = ABSTRACT VALUE OVERRIDE FIRST Range (InvoiceDetail);          
 ```
-

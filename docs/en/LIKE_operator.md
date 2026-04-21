@@ -2,12 +2,12 @@
 title: 'LIKE operator'
 ---
 
-The `LIKE` operator is the creation of a [property](Properties.md) that implements the operation of [comparing a string with a pattern](Comparison_operators_=_etc.md).
+The `LIKE` operator creates a [property](Properties.md) that implements [string comparison with a pattern](Comparison_operators_=_etc.md). For full-text search, use the separate [`MATCH` operator](MATCH_operator.md).
 
 ### Syntax
 
 ```
-stringExpr LIKE patternExpr
+searchExpr LIKE compareExpr
 ```
 
 ### Description
@@ -19,15 +19,21 @@ The `LIKE` operator creates a property that returns `TRUE` if the specified stri
 
 To include the `%` or `_` characters in the pattern as regular characters, they must be escaped using the backslash `\` character. Remember, when specifying the pattern using a [string literal](Literals.md), to represent the backslash itself, it needs to be doubled: `\\`.
 
+The case sensitivity of `LIKE` is determined by the class of `searchExpr`. For case-insensitive string classes (`ISTRING`, `BPISTRING`, `TEXT`, `RICHTEXT`, `HTMLTEXT`), the operator performs a case-insensitive comparison.
+
 ### Parameters
 
-- `stringExpr`
+- `searchExpr`
 
-    [Expression](Expression.md) whose value determines the string being compared. The value of the expression must belong to one of the [string classes](Built-in_classes.md).
+    [Expression](Expression.md) whose value determines the string being compared.
 
-- `patternExpr`
+    The value of the expression must belong to one of the [string classes](Built-in_classes.md).
 
-    Expression whose value determines the pattern. The value of the expression must belong to one of the string classes.
+- `compareExpr`
+
+    Expression whose value determines the pattern.
+
+    The value of the expression must belong to one of the string classes.
 
 ### Examples
 

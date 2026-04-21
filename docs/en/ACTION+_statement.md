@@ -2,68 +2,109 @@
 title: 'ACTION+ statement'
 ---
 
-The `ACTION+` statement adds an implementation (branching condition) to an [abstract action](Action_extension.md).
+The `ACTION+` statement adds an implementation to an [abstract action](Action_extension.md).
 
 ### Syntax
 
-```
-[ACTION] actionId(param1, ..., paramN) + { implAction }
-[ACTION] actionId(param1, ..., paramN) + WHEN whenExpr THEN { implAction }
+```lsf
+[ACTION] abstractAction(param1, ..., paramN) +
+    [WHEN conditionExpr THEN]
+    { actionBody }
+    [OPTIMISTICASYNC]
 ```
 
 ### Description
 
-The `ACTION+` statement adds an implementation to an abstract action. The syntax for adding an implementation depends on the type of abstract action. If the abstract action is of type `CASE`, then the implementation should be described using `WHEN ... THEN ...` otherwise, the implementation should be described simply as an action. 
+The `ACTION+` statement does not create a new action, but adds another implementation to an already declared [abstract action](Action_extension.md).
+
+For an abstract action of type `CASE`, the `WHEN conditionExpr THEN` block is used. For abstract actions of types `MULTI` and `LIST`, the implementation is written without the `WHEN ... THEN` block.
 
 ### Parameters
 
-- `actionId`  
+- `ACTION`
 
-    [ID](IDs.md#propertyid) of the abstract action. 
+    Optional keyword. Makes it explicit that an action is being extended.
+
+- `abstractAction`
+
+    [ID](IDs.md#propertyid) of the abstract action being extended.
 
 - `param1, ..., paramN`
 
-    List of parameters that will be used to define the implementation. Each element is a [typed parameter](IDs.md#paramid). The number of these parameters must be equal to the number of parameters of the abstract action. These parameters can then be used in the implementation operator of the abstract property and in the selection condition expression of this implementation.
+    List of [typed parameters](IDs.md#paramid) of the implementation being added. It defines its signature. The list may be empty. The number of parameters and their classes must be compatible with the signature of the abstract action. These parameters can be used in `actionBody` and, for the `CASE` form, in `conditionExpr`.
 
-- `implAction`
+- `conditionExpr`
 
-    [Context-dependent action operator](Action_operators.md#contextdependent) whose value determines the implementation of the abstract action. 
+    [Expression](Expression.md) for the selection condition of this implementation. Used only for an abstract action of type `CASE`.
 
-- `whenExpr`
+- `actionBody`
 
-    An [expression](Expression.md) whose value determines the selection condition of the implementation of an abstract property (action) that has type `CASE`. 
+    Body of the added implementation: contents of the [`{...}` operator](Braces_operator.md), i.e. a sequence of [action operators](Action_operators.md) and, if necessary, `LOCAL` declarations. If the abstract action declares a result, the returned value and its parameters must be compatible with that result.
+
+- `OPTIMISTICASYNC`
+
+    Keyword that marks the implementation being added as optimistic asynchronous. Used only in forms where one implementation is selected from several.
 
 ### Examples
 
 ```lsf
 CLASS ABSTRACT Animal;
-whoAmI  ABSTRACT ( Animal);
+whoAmI ABSTRACT (Animal);
 
 CLASS Dog : Animal;
-whoAmI (Dog d) + {  MESSAGE 'I am a dog!'; }
+whoAmI(Dog d) + {
+    MESSAGE 'I am a dog!';
+}
 
 CLASS Cat : Animal;
-whoAmI (Cat c) + {  MESSAGE 'I am a сat!'; }
+whoAmI(Cat c) + {
+    MESSAGE 'I am a cat!';
+}
+```
 
-ask ()  {
-    FOR Animal a IS Animal DO
-        whoAmI(a); // a corresponding message will be shown for each object
+```lsf
+CLASS ABSTRACT Animal;
+CLASS Dog : Animal;
+
+notify(Animal a) ABSTRACT (Animal);
+notify(Dog d) {
+    MESSAGE 'Dog';
 }
 
-onStarted  ABSTRACT LIST ( );
-onStarted () + {
-    name(Sku s) <- '1';
+notify[Animal](Dog d) + {
+    notify(d);
 }
-onStarted () + {
-    name(Sku s) <- '2';
-}
-// first, the 1st action is executed, then the 2nd action
+```
 
+```lsf
 CLASS Human;
 name = DATA STRING[100] (Human);
 
-testName  ABSTRACT CASE ( Human);
+testName ABSTRACT CASE (Human);
 
-testName (Human h) + WHEN name(h) == 'John' THEN {  MESSAGE 'I am John'; }
-testName (Human h) + WHEN name(h) == 'Bob' THEN {  MESSAGE 'I am Bob'; }
+testName(Human h) + WHEN name(h) == 'John' THEN {
+    MESSAGE 'I am John';
+}
+testName(Human h) + WHEN name(h) == 'Bob' THEN {
+    MESSAGE 'I am Bob';
+}
+```
+
+```lsf
+onStarted ABSTRACT LIST ();
+
+onStarted() + {
+    MESSAGE 'Preparing data';
+}
+onStarted() + {
+    MESSAGE 'Starting handlers';
+}
+```
+
+```lsf
+edit '{logics.edit}' ABSTRACT MULTI OVERRIDE FIRST (Object) TOOLBAR;
+
+ACTION edit(Object o) + {
+    SHOW EDIT Object = o DOCKED;
+} OPTIMISTICASYNC
 ```

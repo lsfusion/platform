@@ -24,7 +24,7 @@ STICKY | NOSTICKY
 syncType
 MATERIALIZED
 TABLE tableName
-INDEXED [LIKE | MATCH]
+INDEXED [dbName] [indexType]
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
@@ -66,15 +66,29 @@ annotationSetting
 
 - `INDEXED`
 
-    Keyword. If specified, an [index](Indexes.md) by this property is created. Similar to using the [`INDEX` statement](INDEX_statement.md). 
+    Keyword. If specified, an [index](Indexes.md) by this property is created. It can be used only for a [materialized](Materializations.md) property. Similar to using the [`INDEX` statement](INDEX_statement.md).
 
-    - `LIKE`
+    - `dbName`
 
-        Keyword. If specified, creates GIN index additionally to the usual index.
+        [String literal](Literals.md#strliteral) that specifies the physical index name in the database. If omitted, the name is generated automatically.
 
-    - `MATCH`
+    - `indexType`
 
-        Keyword. If specified, creates GIN index and GIN index with to_tsvector additionally to the usual index.
+        Optional choice of a special index type. If omitted, a usual index is created.
+
+        - `LIKE`
+
+            Keyword. For string properties, keeps the usual index and additionally tries to create a specialized GIN index for `LIKE` operations.
+
+        - `MATCH`
+
+            Keyword. Creates an index for `MATCH` operations.
+
+            - for a single field of type `TSVECTOR`, only the specialized GIN index by that field is created
+            - for string properties, the usual index is kept and specialized indexes for `MATCH` and `LIKE` are additionally attempted
+            - the string `MATCH` index is built on `to_tsvector` with the current full-text search language
+
+            Specialized `LIKE` / `MATCH` indexes are created only when the current DB adapter has the corresponding trigram/full-text support enabled. The usual index is created regardless of that support.
 
 - `NONULL [DELETE] eventClause`
 

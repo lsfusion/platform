@@ -20,11 +20,14 @@ title: 'Built-in classes'
 |`ISTRING`, `ISTRING[ ]`|String data type with optional maximum length, case-insensitive||
 |`BPSTRING[]`         |String data type with maximum length, case-sensitive, padded at the end with spaces|`'text'`, `'text with\nbreak'`|
 |`BPISTRING[]`        |String data type with maximum length, case-insensitive, padded at the end with spaces||
-|`TEXT`               |String data type of arbitrary length, case-sensitive||
-|`RICHTEXT`           |String data type of arbitrary length with formatting||
+|`TEXT`               |String data type of arbitrary length, case-insensitive||
+|`RICHTEXT`           |String data type of arbitrary length with formatting, case-insensitive||
+|`HTMLTEXT`           |String data type of arbitrary length with HTML markup, case-insensitive||
 |`COLOR`              |Color                         |`#00ccff`, `#AA55CC`, `RGB(0, 255, 0)`|
 |`JSON`               |JSON                          |`{"a":["x","y","z"]}`|
 |`XML`                |XML                           |`<tag>value</tag>`|
+|`TSVECTOR`           |Full-text search vector       ||
+|`TSQUERY`            |Full-text search query        ||
 |`FILE`               |File of dynamic type (file content together with extension)||
 |`NAMEDFILE`          |File of dynamic type (file content together with name and extension)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
@@ -38,7 +41,7 @@ The builtin classes can be divided into four class *families* (assuming that eac
 |Class family                     |Description                                                                                              |
 |---------------------------------|---------------------------------------------------------------------------------------------------------|
 |Numbers                          |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC[ , ]`|
-|Strings                          |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`|
+|Strings                          |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`, `RICHTEXT`, `HTMLTEXT`|
 |Files of a specific type         |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
 |Links to files of a specific type|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
@@ -64,7 +67,9 @@ where `blankPadded`, `caseInsensitive` and `length` are in turn determined as:
 |`ISTRING[n]`  |false      |true           |n     |
 |`BPSTRING[n]` |true       |false          |n     |
 |`BPISTRING[n]`|true       |true           |n     |
-|`TEXT`        |false      |false          |infinite|
+|`TEXT`        |false      |true           |infinite|
+|`RICHTEXT`    |false      |true           |infinite|
+|`HTMLTEXT`    |false      |true           |infinite|
 
 ### Numbers
 

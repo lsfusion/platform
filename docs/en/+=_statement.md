@@ -2,36 +2,39 @@
 title: '+= statement'
 ---
 
-The `+=` statement adds an implementation (selection option) to an [abstract property](Property_extension.md).
+The `+=` statement adds an implementation to an [abstract property](Property_extension.md).
 
 ### Syntax
 
-```
-propertyId (param1, ..., paramN) += implExpr;
-propertyId (param1, ..., paramN) += WHEN whenExpr THEN implExpr;
+```lsf
+abstractProperty(param1, ..., paramN) +=
+    [WHEN conditionExpr THEN]
+    implementationExpr;
 ```
 
 ### Description
 
-The `+=` statement adds an implementation to an abstract property. The syntax for adding an implementation depends on the type of abstract property. If the abstract property is of type `CASE`, then the implementation should be described using `WHEN ... THEN ...` otherwise, the implementation should be described simply as a property. 
+The `+=` statement does not create a new property, but adds another implementation to an already declared [abstract property](Property_extension.md).
+
+For an abstract property of type `CASE`, the `WHEN conditionExpr THEN implementationExpr` form is used. For abstract properties of types `MULTI` and `VALUE`, the implementation is written without the `WHEN ... THEN` block.
 
 ### Parameters
 
-- `propertyId`
+- `abstractProperty`
 
-    [ID](IDs.md#propertyid) of the abstract property. 
+    [ID](IDs.md#propertyid) of the abstract property being extended.
 
 - `param1, ..., paramN`
 
-    List of parameters that will be used to define the implementation. Each element is a [typed parameter](IDs.md#paramid). The number of these parameters must be equal to the number of parameters of the abstract property. These parameters can then be used in expressions of the implementation of the abstract property and the selection condition of this implementation.
+    List of [typed parameters](IDs.md#paramid) of the implementation being added. It defines its signature. The list may be empty. The number of parameters and their classes must be compatible with the signature of the abstract property. These parameters can be used in `implementationExpr` and, for the `CASE` form, in `conditionExpr`.
 
-- `implExpr`
+- `implementationExpr`
 
-    [Expression](Expression.md) whose value determines the implementation of an abstract property.
+    [Expression](Expression.md) for the property implementation. Its result class must be compatible with the result class of the abstract property.
 
-- `whenExpr`
+- `conditionExpr`
 
-    An expression whose value determines the selection condition of the implementation of an abstract property (action) that has type `CASE`. 
+    [Expression](Expression.md) for the selection condition of this implementation. Used only for an abstract property of type `CASE`.
 
 ### Examples
 
@@ -50,9 +53,17 @@ name(BClass b) = 'B' + innerName(b);
 name(CClass c) = 'C' + innerName(c);
 
 name[AClass](BClass b) += name(b);
-// Here name[AClass] will be found on the left, because the search goes only among abstract properties, 
-// and on the right name[CClass] will be found
 name(CClass c) += name(c); 
 name(DClass d) += 'DClass' + innerName(d) IF d IS DClass;
 ```
 
+```lsf
+CLASS Person;
+CLASS PersonDocumentType;
+name = DATA ISTRING[64] (PersonDocumentType);
+
+caption = ABSTRACT CASE ISTRING[100] (Person, PersonDocumentType);
+
+caption(Person p, PersonDocumentType t) +=
+    WHEN p IS Person AND name(t) == 'Passport' THEN 'Passport';
+```

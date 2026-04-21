@@ -2,68 +2,77 @@
 title: 'ABSTRACT operator'
 ---
 
-The `ABSTRACT` operator - creating an [abstract action](Action_extension.md). 
+The `ABSTRACT` operator creates an [abstract action](Action_extension.md).
 
 ### Syntax
 
 ```
-ABSTRACT [type [exclusionType]] [FIRST | LAST] [CHECKED] (argClassName1, ..., argClassNameN) 
+ABSTRACT [type [exclusionType] [order]] [FULL] [(argClassName1, ..., argClassNameN)] [returnClassName [(returnArgClassName1, ..., returnArgClassNameM)]]
 ```
 
 ### Description
 
-The `ABSTRACT` operator creates an abstract action, the implementation of which can be defined later (for example, in other [modules](Modules.md) dependent on the module containing the `ABSTRACT` action). Implementations are added to the action using the [`ACTION+` statement](ACTION+_statement.md). When executing `MULTI` or `CASE` type abstract actions, their matching implementation is selected and executed. The selection of the matching implementation depends on the selection conditions that are defined when adding implementations, and on the `ABSTRACT` operator type.
+The `ABSTRACT` operator creates an abstract action. Its implementations are added later by [`ACTION+` statements](ACTION+_statement.md). Depending on the selected type, the platform builds from them the behavior of a [branch operator](Branching_CASE_IF_MULTI.md) or a [sequence operator](Sequence.md).
 
-- `CASE` - a general case. The selection condition will be explicitly specified in the implementation using the [`WHEN` block](ACTION+_statement.md).
-- `MULTI` - [a polymorphic form](Branching_CASE_IF_MULTI.md#poly). The selection condition is that the parameters match the implementation [signature](ISCLASS_operator.md). This type is the default type and need not be explicitly specified.
-
-The [type of mutual exclusion](Branching_CASE_IF_MULTI.md#exclusive) of an operator determines whether several conditions for the implementation of an abstract action can simultaneously be met with a certain set of parameters. The `EXCLUSIVE` type indicates that implementation conditions cannot be met simultaneously. The `OVERRIDE` type allows several simultaneously fulfilled conditions, while which implementation is ultimately selected is determined by the keywords `FIRST` and `LAST`.
-
-When performing a `LIST` abstract action, all implementations are executed sequentially. The implementation order is determined by the keywords `FIRST` and `LAST`.
-
-The `ABSTRACT` operator cannot be used inside the [`{...}` operator](Braces_operator.md).
+The `ABSTRACT` operator is a [context-independent action operator](Action_operators.md#contextindependent), so it can only be used in the [`ACTION` statement](ACTION_statement.md).
 
 ### Parameters
 
 - `type`
 
-    Type of abstract action. It is specified by one of these keywords:
+    Option. Possible values:
 
-    - `CASE`
-    - `MULTI`
-    - `LIST`
+    - `CASE` - the explicit conditional form of the abstract action. The selection condition of each implementation is defined in the corresponding [`ACTION+` statement](ACTION+_statement.md) using the `WHEN` block.
+    - `MULTI` - [a polymorphic form](Branching_CASE_IF_MULTI.md#poly) of the abstract action. An implementation is selected when the current arguments are compatible with its [signature](ISCLASS_operator.md).
+    - `LIST` - the sequential form of the abstract action. In this form all implementations are executed one after another.
 
-  The default value is `MULTI`.
+    If this option is omitted, `MULTI` is used by default.
 
 - `exclusionType`
 
-    Type of mutual exclusion. One of these keywords: `EXCLUSIVE` or `OVERRIDE`. Unless explicitly specified, in a `MULTI` abstract action the default type of mutual exclusion is `EXCLUSIVE`, and in a `CASE` action the default type is `OVERRIDE`. For a `LIST` abstract action the type of mutual exclusion is not specified.
+    Option. It specifies the [type of mutual exclusion](Branching_CASE_IF_MULTI.md#exclusive). Possible values:
 
-- `FIRST` | `LAST`
+    - `EXCLUSIVE` - the mutually exclusive mode for the `CASE` and `MULTI` forms. In this mode, for each set of arguments there must be at most one matching implementation.
+    - `OVERRIDE` - the mode for the `CASE` and `MULTI` forms in which several implementations may match simultaneously.
 
-    Keywords. When the word `FIRST` is specified, implementations will be added to the top of the implementations list; when `LAST` is specified, implementations will be added to the end of the implementations list. Unless specified, the default is `FIRST` (except `LIST`, where the default is `LAST`)
+    Used only with `CASE` or `MULTI`. For `CASE`, `OVERRIDE` is used by default; for `MULTI`, `EXCLUSIVE` is used by default.
 
-    For abstract actions such as `CASE` and `MULTI` with the type of mutual exclusion `OVERRIDE`, specifying `FIRST` will mean that of the matching implementations, the last one added will be executed. For actions such as `LIST`, specifying `FIRST` will mean that implementations will be executed in the reverse order of their addition. 
+- `order`
 
-- `CHECKED`
+    Option. Possible values:
 
-    Keyword. If specified, the platform will automatically check that at least one implementation is defined for all descendants of the argument classes (or exactly one, if the conditions are mutually exclusive).
+    - `FIRST` - for the `CASE` and `MULTI` forms with `OVERRIDE`, new implementations are added to the beginning of the list, so the last added matching implementation is executed. For the `LIST` form, it sets the execution order reverse to the addition order. If this value is not specified after `OVERRIDE`, it is used by default.
+    - `LAST` - for the `CASE` and `MULTI` forms with `OVERRIDE`, new implementations are added to the end of the list, so the first added matching implementation is executed. For the `LIST` form, it sets the execution order equal to the addition order and is used by default.
+
+    Used either after `OVERRIDE` for the `CASE` and `MULTI` forms or after `LIST`.
+
+- `FULL`
+
+    Keyword. If specified, the platform automatically checks the [completeness of implementations](Action_extension.md#full): for all descendants of the argument classes there must be at least one applicable implementation, or exactly one if the conditions are mutually exclusive.
 
 - `argClassName1, ..., argClassNameN`
 
-    List of class names of property arguments. Each name is defined by a [class ID](IDs.md#classid).
+    List of class names of action arguments. Each name is defined by a [class ID](IDs.md#classid). The list may be empty. If the list is omitted, the parameter classes are taken from the [`ACTION` statement](ACTION_statement.md) in which the `ABSTRACT` operator is used.
+
+- `returnClassName`
+
+    Name of the class of the value returned by the action. It is defined by a [class ID](IDs.md#classid). If this parameter is specified, the abstract action is declared as an action with a result.
+
+- `returnArgClassName1, ..., returnArgClassNameM`
+
+    List of class names of the additional parameters on which the returned value depends. It is used when the action returns not a single value, but a set of values over those parameters. Each name is defined by a [class ID](IDs.md#classid). The list may be empty.
 
 ### Examples
 
 
 ```lsf
-exportXls 'Export to Excel' ABSTRACT CASE (Order); // ABSTRACT CASE OVERRIDE LAST is created         
+exportXls 'Export to Excel' ABSTRACT CASE OVERRIDE LAST (Order);
 exportXls (Order o) + WHEN name(currency(o)) == 'USD' THEN {
     MESSAGE 'Export USD not implemented';
 }
 
-CLASS Task;
-run 'Execute' ABSTRACT (Task); // ABSTRACT MULTI EXCLUSIVE
+CLASS ABSTRACT Task;
+run 'Execute' ABSTRACT MULTI EXCLUSIVE FULL (Task);
 
 CLASS Task1 : Task;
 name = DATA STRING[100] (Task);
@@ -71,15 +80,21 @@ run (Task1 t) + {
     MESSAGE 'Run Task1 ' + name(t);
 }
 
+onStarted ABSTRACT LIST ();
+onStarted () + {
+    MESSAGE 'Preparing data';
+}
+onStarted () + {
+    MESSAGE 'Starting handlers';
+}
 
-CLASS OrderDetail;
-price = DATA NUMERIC[14,2] (OrderDetail);
+CLASS Issue;
+CLASS Language;
+localizedTitle = DATA STRING[100] (Issue, Language);
 
-CLASS InvoiceDetail;
-price = DATA NUMERIC[14,2] (InvoiceDetail);
-fill ABSTRACT LIST (OrderDetail, InvoiceDetail); // ABSTRACT LIST LAST
-
-fill (OrderDetail od, InvoiceDetail id) + {
-    price(id) <- price(od);
+getLocalizedTitle(Issue issue) ABSTRACT STRING[100] (Language);
+getLocalizedTitle (Issue issue) + {
+    FOR Language l IS Language DO
+        RETURN localizedTitle(issue, l);
 }
 ```

@@ -26,6 +26,7 @@ title: 'Операторы-свойства'
 -   [Оператор `JOIN`](JOIN_operator.md)
 -   [Оператор `JSON`](JSON_operator.md)
 -   [Оператор `LIKE`](LIKE_operator.md)
+-   [Оператор `MATCH`](MATCH_operator.md)
 -   [Оператор `MAX`](MAX_operator.md)
 -   [Оператор `MIN`](MIN_operator.md)
 -   [Оператор `MULTI`](MULTI_operator.md)

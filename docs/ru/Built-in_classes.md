@@ -20,11 +20,14 @@ title: 'Встроенные классы'
 |`ISTRING`, `ISTRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, независимый от регистра||
 |`BPSTRING[]`         |Строковый тип данных с максимальной длиной, зависимый от регистра, с пробелами в конце|`'text'`, `'text with\nbreak'`|
 |`BPISTRING[]`        |Строковый тип данных с максимальной длиной, независимый от регистра, с пробелами в конце||
-|`TEXT`               |Строковый тип данных произвольной длины, зависимый от регистра||
-|`RICHTEXT`           |Строковый тип данных произвольной длины с форматированием||
+|`TEXT`               |Строковый тип данных произвольной длины, независимый от регистра||
+|`RICHTEXT`           |Строковый тип данных произвольной длины с форматированием, независимый от регистра||
+|`HTMLTEXT`           |Строковый тип данных произвольной длины с HTML-разметкой, независимый от регистра||
 |`COLOR`              |Цвет|`#00ссff`, `#AA55CC`, `RGB(0, 255, 0)`|
 |`JSON`               |JSON|`{"a":["x","y","z"]}`|
 |`XML`                |XML|`<tag>value</tag>`|
+|`TSVECTOR`           |Вектор полнотекстового поиска||
+|`TSQUERY`            |Запрос полнотекстового поиска||
 |`FILE`               |Файл динамического типа (содержимое файла вместе с его расширением)||
 |`NAMEDFILE`          |Файл динамического типа (содержимое файла вместе с его именем и расширением)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
@@ -38,7 +41,7 @@ title: 'Встроенные классы'
 |Семейство классов                 |Описание                                    |
 |----------------------------------|--------------------------------------------|
 |Числа                             |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC [ , ]`|
-|Строки                            |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`|
+|Строки                            |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`, `RICHTEXT`, `HTMLTEXT`|
 |Файлы конкретного типа            |`RAWFILE,` `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
 |Ссылки на файлы конкретного типа  |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
@@ -64,7 +67,9 @@ result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded,
 |`ISTRING[n]`  |false      |true           |n     |
 |`BPSTRING[n]` |true       |false          |n     |
 |`BPISTRING[n]`|true       |true           |n     |
-|`TEXT`        |false      |false          |infinite|
+|`TEXT`        |false      |true           |infinite|
+|`RICHTEXT`    |false      |true           |infinite|
+|`HTMLTEXT`    |false      |true           |infinite|
 
 ### Числа
 

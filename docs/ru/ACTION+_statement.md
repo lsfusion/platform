@@ -2,68 +2,109 @@
 title: 'Инструкция ACTION+'
 ---
 
-Инструкция `ACTION+` - добавление реализации (условия ветвления) к [абстрактному действию](Action_extension.md).
+Инструкция `ACTION+` добавляет реализацию к [абстрактному действию](Action_extension.md).
 
 ### Синтаксис
 
-```
-[ACTION] actionId(param1, ..., paramN) + { implAction }
-[ACTION] actionId(param1, ..., paramN) + WHEN whenExpr THEN { implAction }
+```lsf
+[ACTION] abstractAction(param1, ..., paramN) +
+    [WHEN conditionExpr THEN]
+    { actionBody }
+    [OPTIMISTICASYNC]
 ```
 
 ### Описание
 
-Инструкция `ACTION+` добавляет реализацию к абстрактному действию. Синтаксис добавления реализации зависит от типа абстрактного действия. Если абстрактное действие имеет тип `CASE`, то реализация должна описываться в виде `WHEN ... THEN ...`, в ином случае реализация должна быть описана просто в виде действия. 
+Инструкция `ACTION+` не создает новое действие, а добавляет еще одну реализацию к уже объявленному [абстрактному действию](Action_extension.md).
+
+Для абстрактного действия типа `CASE` используется блок `WHEN conditionExpr THEN`. Для действий типов `MULTI` и `LIST` реализация записывается без блока `WHEN ... THEN`.
 
 ### Параметры
 
-- `actionId`
+- `ACTION`
 
-    [Идентификатор](IDs.md#propertyid) абстрактного действия. 
+    Необязательное ключевое слово. Явно показывает, что расширяется действие.
+
+- `abstractAction`
+
+    [Идентификатор](IDs.md#propertyid) расширяемого абстрактного действия.
 
 - `param1, ..., paramN`
 
-    Список параметров, которые будут использованы при описании реализации. Каждый элемент является [типизированным параметром](IDs.md#paramid). Количество этих параметров должно совпадать с количеством параметров абстрактного действия. Эти параметры далее могут быть использованы в операторе реализации абстрактного свойства и выражении условия выбора этой реализации.
+    Список [типизированных параметров](IDs.md#paramid) добавляемой реализации. Он задает ее сигнатуру. Список может быть пустым. Количество параметров и их классы должны быть совместимы с сигнатурой абстрактного действия. Эти параметры можно использовать в `actionBody` и, для формы `CASE`, в `conditionExpr`.
 
-- `implAction`
+- `conditionExpr`
 
-    [Контекстно-зависимый оператор-действие](Action_operators.md), значение которого определяет реализацию абстрактного действия. 
+    [Выражение](Expression.md) для условия выбора этой реализации. Используется только для абстрактного действия типа `CASE`.
 
-- `whenExpr`
+- `actionBody`
 
-    [Выражение](Expression.md), значение которого определяет условие выбора реализации для абстрактного действия типа `CASE`. 
+    Тело добавляемой реализации: содержимое [оператора `{...}`](Braces_operator.md), то есть последовательность [операторов-действий](Action_operators.md) и, при необходимости, объявлений `LOCAL`. Если абстрактное действие объявляет результат, возвращаемое значение и его параметры должны быть совместимы с этим результатом.
+
+- `OPTIMISTICASYNC`
+
+    Ключевое слово, помечающее добавляемую реализацию как оптимистично-асинхронную. Используется только в формах, где из нескольких реализаций выбирается одна.
 
 ### Примеры
 
 ```lsf
 CLASS ABSTRACT Animal;
-whoAmI  ABSTRACT ( Animal);
+whoAmI ABSTRACT (Animal);
 
 CLASS Dog : Animal;
-whoAmI (Dog d) + {  MESSAGE 'I am a dog!'; }
+whoAmI(Dog d) + {
+    MESSAGE 'I am a dog!';
+}
 
 CLASS Cat : Animal;
-whoAmI (Cat c) + {  MESSAGE 'I am a сat!'; }
+whoAmI(Cat c) + {
+    MESSAGE 'I am a cat!';
+}
+```
 
-ask ()  {
-    FOR Animal a IS Animal DO
-        whoAmI(a); // для каждого объекта будет выдано соответствующее сообщение
+```lsf
+CLASS ABSTRACT Animal;
+CLASS Dog : Animal;
+
+notify(Animal a) ABSTRACT (Animal);
+notify(Dog d) {
+    MESSAGE 'Dog';
 }
 
-onStarted  ABSTRACT LIST ( );
-onStarted () + {
-    name(Sku s) <- '1';
+notify[Animal](Dog d) + {
+    notify(d);
 }
-onStarted () + {
-    name(Sku s) <- '2';
-}
-// сначала выполниться 1е действие, потом 2е действие
+```
 
+```lsf
 CLASS Human;
 name = DATA STRING[100] (Human);
 
-testName  ABSTRACT CASE ( Human);
+testName ABSTRACT CASE (Human);
 
-testName (Human h) + WHEN name(h) == 'John' THEN {  MESSAGE 'I am John'; }
-testName (Human h) + WHEN name(h) == 'Bob' THEN {  MESSAGE 'I am Bob'; }
+testName(Human h) + WHEN name(h) == 'John' THEN {
+    MESSAGE 'I am John';
+}
+testName(Human h) + WHEN name(h) == 'Bob' THEN {
+    MESSAGE 'I am Bob';
+}
+```
+
+```lsf
+onStarted ABSTRACT LIST ();
+
+onStarted() + {
+    MESSAGE 'Подготовка данных';
+}
+onStarted() + {
+    MESSAGE 'Запуск обработчиков';
+}
+```
+
+```lsf
+edit '{logics.edit}' ABSTRACT MULTI OVERRIDE FIRST (Object) TOOLBAR;
+
+ACTION edit(Object o) + {
+    SHOW EDIT Object = o DOCKED;
+} OPTIMISTICASYNC
 ```
