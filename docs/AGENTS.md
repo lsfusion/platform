@@ -1182,6 +1182,21 @@ and do not add
 useful understanding
 for the reader.
 
+Reference style:
+
+Properties and actions
+MUST be referenced
+using the property ID form
+from `en/IDs.md#propertyid`
+and `ru/IDs.md#propertyid`,
+with the signature
+in square brackets
+(`foo[]`, `foo[TEXT]`,
+`foo[TEXT, INTEGER]`);
+parenthesis-call notation
+(`foo()`, `foo(<name>)`)
+MUST NOT be used.
+
 Examples:
 
 When adding code examples,
