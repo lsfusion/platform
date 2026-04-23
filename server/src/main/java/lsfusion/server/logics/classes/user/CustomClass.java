@@ -150,7 +150,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     @Override
     public Object getDefaultValue() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -77,7 +77,7 @@ public class ArrayClass<T> extends DataClass<T[]> implements DBType {
     }
 
     protected Class getReportJavaClass() {
-        throw new RuntimeException("not supported"); 
+        throw new RuntimeException("not supported");
     }
 
     public T[] parseString(String s) {
@@ -98,6 +98,6 @@ public class ArrayClass<T> extends DataClass<T[]> implements DBType {
     }
 
     public T[] getDefaultValue() {
-        throw new RuntimeException("not supported");
+        throw new UnsupportedOperationException();
     }
 }

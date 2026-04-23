@@ -23,4 +23,9 @@ public abstract class AJSONClass extends StringFileBasedClass {
     public String read(Object value) {
         return value instanceof PGobject ? ((PGobject) value).getValue() : value instanceof String ? (String) value : null;
     }
+
+    @Override
+    public String getDefaultValue() {
+        return "{}";
+    }
 }
