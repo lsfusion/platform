@@ -80,7 +80,7 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     public Object getDefaultValue() {
-        throw new RuntimeException("not supported");
+        throw new UnsupportedOperationException();
     }
 
     @Override

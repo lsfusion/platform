@@ -82,7 +82,7 @@ public class TSQueryClass extends DataClass<String> implements DBType {
 
     @Override
     public String getDefaultValue() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
