@@ -3,8 +3,15 @@ package lsfusion.server.physics.dev.integration.external.from.http;
 import com.sun.net.httpserver.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.exception.LockedException;
+import lsfusion.interop.base.exception.LoginException;
+import lsfusion.interop.base.exception.RemoteInternalException;
+import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
 import lsfusion.interop.connection.ConnectionInfo;
@@ -240,10 +247,11 @@ public class ExternalHttpServer extends MonitorServer {
                     if(headerName.equals("Cookie")) {
                         for (String cookies : headerValue) {
                             for (String cookie : cookies.split(";")) {
-                                String[] splittedCookie = cookie.split("=");
-                                if (splittedCookie.length == 2) {
-                                    String cookieName = splittedCookie[0];
-                                    String cookieValue = ExternalUtils.decodeCookie(splittedCookie[1], 0);
+                                cookie = cookie.trim();
+                                int eq = cookie.indexOf('=');
+                                if (eq > 0) {
+                                    String cookieName = cookie.substring(0, eq);
+                                    String cookieValue = ExternalUtils.decodeCookie(cookie.substring(eq + 1), 0);
 
                                     cookieNamesList.add(cookieName);
                                     cookieValuesList.add(cookieValue);
@@ -304,7 +312,16 @@ public class ExternalHttpServer extends MonitorServer {
             } catch (Exception e) {
                 ServerLoggers.systemLogger.error("ExternalHttpServer error: ", e);
                 try {
-                    sendErrorResponse(request, e.getMessage());
+                    int status;
+                    String message;
+                    if (e instanceof AuthenticationException || e instanceof LoginException || e instanceof LockedException) {
+                        status = HttpServletResponse.SC_UNAUTHORIZED;
+                        message = e.getMessage();
+                    } else {
+                        status = BaseUtils.nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        message = getErrorMessage(e);
+                    }
+                    sendErrorResponse(request, status, message);
                 } catch (Exception ignored) {
                 }
             } finally {
@@ -323,9 +340,15 @@ public class ExternalHttpServer extends MonitorServer {
                 if (authHeader.toLowerCase().startsWith("bearer ")) {
                     token = new AuthenticationToken(authHeader.substring(7));
                 } else if (authHeader.toLowerCase().startsWith("basic ")) {
-                    String[] credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
-                    if (credentials.length == 2)
-                        token = remoteLogics.authenticateUser(new PasswordAuthentication(credentials[0], credentials[1]));
+                    String[] credentials;
+                    try {
+                        credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
+                    } catch (IllegalArgumentException e) {
+                        throw new LoginException();
+                    }
+                    if (credentials.length != 2)
+                        throw new LoginException();
+                    token = remoteLogics.authenticateUser(new PasswordAuthentication(credentials[0], credentials[1]));
                 }
             }
 
@@ -356,15 +379,23 @@ public class ExternalHttpServer extends MonitorServer {
             return contentType;
         }
 
-        private void sendErrorResponse(HttpExchange request, String response) throws IOException {
+        private void sendErrorResponse(HttpExchange request, int status, String response) throws IOException {
             Charset bodyCharset = ExternalUtils.defaultBodyCharset;
             request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
             request.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             byte[] responseBytes = response.getBytes(bodyCharset);
-            request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
+            request.sendResponseHeaders(status, responseBytes.length);
             OutputStream os = request.getResponseBody();
             os.write(responseBytes);
             os.close();
+        }
+
+        private String getErrorMessage(Exception e) {
+            if (e instanceof RemoteMessageException)
+                return e.getMessage();
+
+            Pair<String, RemoteInternalException.ExStacks> actualStacks = RemoteInternalException.toString(e);
+            return actualStacks.first + '\n' + ExceptionUtils.getExStackTrace(actualStacks.second.javaStack, actualStacks.second.lsfStack) + '\n' + actualStacks.second.asyncStacks;
         }
 
         // copy of ExternalRequestHandler.sendResponse
@@ -403,13 +434,15 @@ public class ExternalHttpServer extends MonitorServer {
             }
 
             if (cookieNames != null) {
-                String cookie = "";
                 for (int i = 0; i < cookieNames.length; i++) {
                     String cookieName = cookieNames[i];
-                    String cookieValue = cookieValues[i];
-                    cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
+                    String rawValue = cookieValues[i];
+                    // URL-encode only the value; attributes (path, max-age, etc.) passed through as-is
+                    String[] parts = rawValue.split(";", 2);
+                    String setCookie = cookieName + "=" + ExternalUtils.encodeCookie(parts[0], COOKIE_VERSION)
+                            + (parts.length > 1 ? ";" + parts[1] : "");
+                    responseHeaders.add("Set-Cookie", setCookie);
                 }
-                responseHeaders.add("Cookie", cookie);
             }
 
             if (contentType != null && !hasContentType)
