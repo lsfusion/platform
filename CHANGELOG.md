@@ -1,3 +1,29 @@
+## 6.2 (2026-04-23)
+##### Implemented enhancements:
+ - Add alternative keywords `ACTIVATE` and `ACTIVE` for `SEEK` and `VALUE` [#1587](git@github.com:lsfusion/platform.git/issues/1587)
+ - Upgrade jasper reports version to 6.21.5 to enable support of export to excel with webp images [#1573](git@github.com:lsfusion/platform.git/issues/1573)
+ - Report file name in web [#1566](git@github.com:lsfusion/platform.git/issues/1566)
+ - Design: footerClass support [#1553](git@github.com:lsfusion/platform.git/issues/1553)
+##### Fixed bugs:
+ - Ignore stale `MEMORY_COLLECTION_THRESHOLD_EXCEEDED` events [#1612](git@github.com:lsfusion/platform.git/issues/1612)
+ - Incorrect reading of remoteAddress when using Nginx [#1611](git@github.com:lsfusion/platform.git/issues/1611)
+ - Scheduler: ScheduledClientTaskLog entries are missing when timeout is set [#1609](git@github.com:lsfusion/platform.git/issues/1609)
+ - Fix: Materialization of properties depending on newly created static objects during DB synchronization [#1586](git@github.com:lsfusion/platform.git/issues/1586)
+ - Scheduler should properly handle thread interruption [#1581](git@github.com:lsfusion/platform.git/issues/1581)
+ - EXTERNAL request to non-ascii address doesn't work [#1577](git@github.com:lsfusion/platform.git/issues/1577)
+ - ON KEYPRESS ctrl, alt, shift doesn't work [#1576](git@github.com:lsfusion/platform.git/issues/1576)
+ - IMPORT numeric fields with spaces in the end [#1572](git@github.com:lsfusion/platform.git/issues/1572)
+ - Time: interval formulas for TIME / DATETIME / ZDATETIME don't work [#1568](git@github.com:lsfusion/platform.git/issues/1568)
+ - Bug when the property created with the JSON operator is MATERIALIZED [#1564](git@github.com:lsfusion/platform.git/issues/1564)
+ - Make LOCAL property changes to NULL to be deleted [#1563](git@github.com:lsfusion/platform.git/issues/1563)
+ - Component captionFont doesn't work in grid in web [#1558](git@github.com:lsfusion/platform.git/issues/1558)
+ - Input of decimal numbers in a mobile browser(input type="number") with a separator that does not match the device's locale causes errors [#1551](git@github.com:lsfusion/platform.git/issues/1551)
+ - Don't show "add" button in input context actions if there is no NEW/NEWEDIT on dialog form [#1549](git@github.com:lsfusion/platform.git/issues/1549)
+ - EXTERNAL HTTP POST: wrong mime-type for xml (need application/xml instead of text/xml) [#1542](git@github.com:lsfusion/platform.git/issues/1542)
+ - FILTERGROUP NONULL incorrect index [#1541](git@github.com:lsfusion/platform.git/issues/1541)
+ - [web] External requests: charset utf-8 is added to content-type header from headersTo property [#1540](git@github.com:lsfusion/platform.git/issues/1540)
+ - Tree: expand and collapse by single mousedown and double click [#1539](git@github.com:lsfusion/platform.git/issues/1539)
+## ----- PREVIOUS RELEASES --------
 ## 6.1 (2025-10-29)
 ##### Implemented enhancements:
  - ASK doesn't work in Scheduler [#1538](git@github.com:lsfusion/platform.git/issues/1538)
@@ -67,7 +93,6 @@
  - Fix params in jnlp urls [#1425](git@github.com:lsfusion/platform.git/issues/1425)
  - Add Unsupported Exception for RAR5 archive unpacking [#1424](git@github.com:lsfusion/platform.git/issues/1424)
  - SQLSession gets corrupted when the connection to the SQL server fails [#1423](git@github.com:lsfusion/platform.git/issues/1423)
-## ----- PREVIOUS RELEASES --------
 ## 6.0 (2025-04-23)
 ##### Implemented enhancements:
  - Universal password [#1417](git@github.com:lsfusion/platform.git/issues/1417)
