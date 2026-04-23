@@ -108,11 +108,19 @@ Action annotation. Begins with `@@`. The following annotations are supported:
 
     - `@@noauth`
 
-        Disables authorization check for external requests for this action.
+        Bypasses both the authentication check and the `enableAPI` setting for external requests to this action.
 
     - `@@api`
 
         When the API is disabled, allows external requests for this action.
+
+    - `@@ui`
+
+        Forces the action to be treated as [interactive](Access_from_an_external_system.md#interactive) (requiring UI) when called through the external API.
+
+    - `@@noui`
+
+        Suppresses the automatic [interactive](Access_from_an_external_system.md#interactive) detection, so the action runs synchronously through the external API (unless the client explicitly requests a notification ID via the `Need-Notification-Id` header).
 
     - `@@deprecated`
     - `@@deprecated(since)`

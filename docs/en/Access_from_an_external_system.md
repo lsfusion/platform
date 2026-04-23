@@ -20,23 +20,52 @@ The platform currently supports the following network protocols:
 
 #### HTTP {#http}
 
-Communication over this protocol is supported both for an application server on port `7651`, as well as a web server (if any) on the same port, that has a web client installed.
+Communication over this protocol is supported both by the application server (port `7651`) and by the web server, if one is set up (see [Servers](#servers) for details).
 
 The URL format, depending on the method of [action definition](#actiontype), looks as follows:
 
--   `EXEC` - `http://server address:port/exec?action=<action name>`. The `action` parameter must always be specified.
+-   `EXEC` - `http://server address:port/exec?action=<action name>` or `http://server address:port/exec/<action name>`. Either the `action` parameter or the action name in the URL path must be specified.
 -   `EVAL` - `http://server address:port/eval?script=<code>`. If the `script` parameter is not specified, it is assumed that the code is passed in the first BODY parameter.
 -   `EVAL ACTION` – `http://server address:port/eval/action?script=<action code>`. If the `script` parameter is not specified, it is assumed that the code is passed in the first BODY parameter.
+
+For `EXEC`, the action name can be either the action's [compound name](IDs.md#cid) or its [`EXTID`](Action_options.md) (the compound name is tried first). In the path form, the platform looks up the action greedily: it first tries the full path as an action name (with any `/` replaced by `_` for the compound name lookup), and if no such action exists, drops the last path segment and retries, until a match is found or `404` is returned. The part of the path left after the matched action name is passed to the `System.actionPathInfo[]` property. For example, for `/exec/df/fdf/dffd` the platform tries actions `df_fdf_dffd`, then `df_fdf`, then `df`; if only `df` matches, `fdf/dffd` is written to `System.actionPathInfo[]`.
+
+##### Servers {#servers}
+
+The HTTP API is served by two kinds of servers:
+
+-   **Application server** - a lightweight HTTP server built into the application server, listening on port `7651` by default. It serves the Action API at `/exec` / `/eval` / `/eval/action`, with `Authorization: Basic` / `Authorization: Bearer` authentication and stateful sessions via the `session` parameter. [Interactive actions](#interactive) here are accepted only through the `Need-Notification-Id` header.
+-   **Web server** - a separate web application (deployed in a servlet container such as Tomcat), listening on its own port. It serves the lsFusion web client (the browser-based user interface) and, on the same port, the HTTP API: the same Action API as the application server, plus the [Form API](#form) at `/form` and the browser-redirect variant for [interactive actions](#interactive).
+
+A request is addressed as `http://<server address>:<port><endpoint>` for the corresponding server.
 
 ##### Parameters {#url}
 
 Parameters can be passed both in the request string (by appending constructs like `&p=<parameter value>` to the end of the string), as well as in the request body (BODY). It is assumed that URL parameters are substituted (in the order of their appearance in the request) for the executed action before BODY parameters.
 
+If the called action has named interface parameters (for example, `run(INTEGER no, DATE date)`), a request parameter whose name matches an action parameter name is bound to it by name. The positional substitution above then fills any remaining slots only from unused `p=` parameters (URL or `application/x-www-form-urlencoded` body) and non-urlencoded BODY parameters (multipart parts or a single body); other named URL/urlencoded parameters that did not match an interface name are ignored.
+
 When processing BODY parameters, parameters with the content type from the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties) are considered files and are passed to the action parameters as objects of the file class (`FILE`, `PDFFILE`, etc.). During this process, the corresponding file extension is taken from the table mentioned above. If a particular content type is not found in the table, but it starts with `application`, the parameter is still considered a file, and the file extension is taken from the right part of the content type (for example, it will be `abc` for the `application/abc` content type). Parameters with the `application/null` content type are considered to be equal to `NULL`.
 
-BODY parameters with types of content different from the ones mentioned above are considered strings and are automatically converted into parameter classes of the called action upon being called. Empty strings are converted into `NULL`.
+When such a BODY parameter is bound to an action interface parameter whose class is not a file class, its content is parsed as a string and automatically converted to that parameter's class; empty strings become `NULL`. This conversion applies only to the action-parameter binding described above - in the [request properties](#request) below, the same parameter is always stored as a file value.
+
+##### Request properties {#request}
 
 [Headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) of an executed request are automatically saved to the `System.headers[TEXT]` property. The name of the header is written to the only parameter of this property, and the value of the header is written to the property's value.
+
+[Cookies](https://en.wikipedia.org/wiki/HTTP_cookie) of an executed request are similarly saved to the `System.cookies[TEXT]` property. The name of the cookie is written to the only parameter of this property, and the value of the cookie is written to the property's value.
+
+Individual request parameters can also be accessed by name. For URL parameters the name is taken from the query string (`&<name>=<value>`); for an `application/x-www-form-urlencoded` body, from the key of each key-value pair; for parts of a `multipart/form-data` body, from the `name` field of each part's `Content-Disposition` header. For any other body a single name is taken from the `name` field of the request's own `Content-Disposition` header (defaulting to `body` if the header is absent); parts of a non-`form-data` `multipart/*` body inherit this name - their own `Content-Disposition` is not read - unless a part is itself `application/x-www-form-urlencoded`, in which case its keys become parameter names as described above.
+
+The split between `System.params[TEXT, INTEGER]` and `System.fileParams[TEXT, INTEGER]` is decided by content type at ingest, applied recursively to parts of a `multipart/*` body. URL parameters and any `application/x-www-form-urlencoded` body or part are read as `TEXT` from `System.params[TEXT, INTEGER]`. Any other body or part (including plain text fields of `multipart/form-data`, which have no content type of their own) is read as `NAMEDFILE` (preserving the original file name if any) from `System.fileParams[TEXT, INTEGER]`. A part with neither a content type nor any body bytes is skipped entirely. The first parameter of both properties is the parameter name, the second is the 0-based index among parameters sharing that name (multiple `p=` parameters or same-named body parts become accessible under one name with indexes `0`, `1`, and so on); the short forms `System.params[TEXT]` and `System.fileParams[TEXT]` give the first occurrence.
+
+The platform also fills the following properties with information about the current request:
+
+-   `System.method[]` - HTTP method of the request.
+-   `System.contentType[]` - content type of the request body.
+-   `System.body[]` - raw body of the request (on the web server, an `application/x-www-form-urlencoded` body may be reconstructed from the parsed parameter map if the servlet has already consumed the stream, so the exact bytes / order / encoding are not guaranteed to match the original).
+-   `System.query[]` - raw query string of the request.
+-   `System.scheme[]`, `System.webHost[]`, `System.webPort[]`, `System.contextPath[]`, `System.servletPath[]`, `System.pathInfo[]` - parts of the request URL. The convenience properties `System.origin[]` (scheme, host and port), `System.webPath[]` (origin plus context path), and `System.url[]` (scheme through path, without the query string) return the corresponding composed URLs.
 
 ##### Results {#httpresult}
 
@@ -51,6 +80,10 @@ In all of the three cases above, if the result value is `NULL`, a `null` string 
 Request results different from files are converted into strings and are passed as a `text/plain` content type. `NULL` values are returned as empty strings.
 
 The values of the `System.headersTo[TEXT]` property are automatically written to the [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) of the request result. So, the header name is read from the only parameter of this property, and the header value is read from the property value.
+
+The values of the `System.cookiesTo[TEXT]` property are similarly written to the response as [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) (one `Set-Cookie` header per cookie). The cookie name is read from the only parameter of this property, and the cookie value is read from the property value.
+
+The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is read from the `System.statusHttpTo[]` property (`200` by default).
 
 ##### Several results / parameters in BODY
 
@@ -72,7 +105,7 @@ The API described above is a REST API. Accordingly, the [change session](Change_
 
 
 :::info
-Since cookie files are implicitly used for working with HTTP sessions, it is important not to forget to save / pass cookies between stateful http calls (this, however, is typically done automatically by a browser, the HttpClient in Java, etc.)
+On the web server the container that keys sessions by the `session` parameter lives inside the HTTP session, so stateful calls must stay within the same HTTP session - usually maintained through the session cookie that browsers and HTTP client libraries send automatically. On the application server the container is global to the server process, and no cookie is required.
 :::
 
 
@@ -88,6 +121,35 @@ When executing an http request, it is often necessary to identify the user on wh
 -   Token-based authentication consists of two stages:
     -   At the first stage, you need to execute the `Authentication.getAuthToken[]` action with basic authentication. The result of this action will be an authentication token with a fixed lifetime (one day [by default](Working_parameters.md#authTokenExpiration)). An example of a request:  `http://localhost/exec?action=getAuthToken`.
     -   The token you receive can be used for authentication during its lifetime by passing it in the `Authorization: Bearer <token>` header (similarly to JWT which is used in the current implementation of the platform for generating authentication tokens).
+
+Whether a request is accepted also depends on the [`enableAPI`](Working_parameters.md) setting, which allows disabling the API entirely, restricting it to authenticated requests, or additionally allowing anonymous requests. An individual action can be annotated with [`@@noauth`](Action_options.md) to bypass both the authentication check and `enableAPI`, or with [`@@api`](Action_options.md) to allow it at `enableAPI=0` (still requiring an authenticated user).
+
+##### Interactive actions {#interactive}
+
+An external call may need to trigger an action that interacts with the user - opening a [form](Forms.md), showing a message, asking for input, and so on. Since the HTTP response itself has no UI, the platform routes such an action to a running lsFusion client of the user: the server creates a *notification*, and the client picks it up and executes the action locally.
+
+When an action is considered interactive:
+
+-   [`@@ui`](Action_options.md) - always interactive.
+-   [`@@noui`](Action_options.md) - never detected as interactive, so the action runs synchronously (unless the client explicitly requests a notification ID via the `Need-Notification-Id` header, which is always honoured).
+-   Neither annotation - interactive automatically when the request comes from a browser navigation (signalled by the `sec-fetch-mode: navigate` header) and the action body uses any interactive feature; otherwise synchronous.
+
+How the caller obtains the notification:
+
+-   **Browser redirect (default)** - HTTP `302` to `/push-notification?notification_id=<notification id>`. Following the redirect in a browser delivers the notification to the lsFusion tab already open there, through its service worker.
+-   **Notification ID (when the request has the `Need-Notification-Id` header)** - HTTP `200` with the notification ID (as `INTEGER`) in the response body. Intended for non-browser callers that need to deliver the ID to a running lsFusion client through some other channel.
+
+Interactive actions additionally require the [`enableUI`](Working_parameters.md) setting to permit the call, on top of the regular [`enableAPI`](Working_parameters.md) check.
+
+##### Errors
+
+On failure, the response uses a specific HTTP status code:
+
+-   `404` - the action specified via `?action=` or in the URL path was not found.
+-   `401` - authentication is required or has failed. On the web server, an anonymous [interactive](#interactive) request is redirected to `/login` instead.
+-   `500` - any other unhandled exception raised during request processing, including when the API is disabled by the [`enableAPI`](Working_parameters.md) setting.
+
+For `404`, `500`, and other server-side exception statuses, the response body is `text/html` with the error message; for most exceptions it also includes Java and lsFusion stack traces, except for a `RemoteMessageException` (a user-facing platform message) which returns only the message. A `401` body carries only the short error message. On the web server, the redirect to `/login` has no body - the exception is stored in the HTTP session and the original request is cached for retry after login.
 
 ## Form API {#form}
 
@@ -128,11 +190,6 @@ The library exports the following functions:
     -  `state` - a JS state object
 
 As the names of object groups and properties, not names on the form are used, but [export/import](Structured_view.md#extid) names (which, however, match the names on forms if not explicitly defined). While working with a form via Form API, actions created using operators for [object operations](Interactive_view.md#objectoperators) `NEW` and `DELETE` automatically get export/import names `NEW` and `DELETE`, respectively (that is you can call `change(setState, {game : {NEW:true}})` for adding an object, for example). Also, when Form API is used, it automatically adds a property called `logMessage` to the form to which all dialog messages are written (including those generated when [constraints](Constraints.md) were violated).
-
-
-:::info
-Authentication, stateful and form API are only supported when executing http requests on the web server. When an application server (or specifically, a built-in web server) executes an HTTP request, authentication headers, as well as parameters with the session ID, are ignored (the user is considered anonymous). Form API is completely unsupported by the built-in web server.
-:::
 
 ## Examples
 
