@@ -7,17 +7,18 @@ The `EXTERNAL` operator creates an [action](Actions.md) that implements [accessi
 ### Syntax
 
 ```
-EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1. ..., propertyIdM]
+EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1, ..., propertyIdM]
 ```
 
 `externalCall` - an external call defined by one of the following syntaxes:
 
 ```
-HTTP [requestType] connectionStrExpr httpOption1 ... httpOptionN
+HTTP [CLIENT] [requestType] connectionStrExpr httpOption1 ... httpOptionN
 TCP [CLIENT] connectionStrExpr
 UDP [CLIENT] connectionStrExpr
 SQL connectionStrExpr EXEC execStrExpr
 LSF connectionStrExpr lsfExecType execStrExpr
+DBF connectionStrExpr APPEND [CHARSET charsetLiteral]
 ```
 
 Options for `HTTP` are listed one after another in arbitrary order, separated by spaces or line feeds:
@@ -30,6 +31,8 @@ The following set of options is supported (the syntax of each option is indicate
 
 ```
 BODYURL bodyStrExpr
+BODYPARAMNAMES bodyParamNameExpr1, ..., bodyParamNameExprK
+BODYPARAMHEADERS bodyParamHeadersPropertyId1, ..., bodyParamHeadersPropertyIdK
 HEADERS headersPropertyId
 COOKIES cookiesPropertyId
 HEADERSTO headersToPropertyId
@@ -55,6 +58,7 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
     - `GET`
     - `PUT`
     - `DELETE`
+    - `PATCH`
 
   The default value is `POST`.
 
@@ -68,7 +72,7 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 
 - `CLIENT`
 
-  Keyword. Specifies that the request is executing on the client. By default, the request is executed on the server.
+  Keyword. Runs the call on the user's client. Without `CLIENT` the call runs on the application server.
 
 - `SQL`
 
@@ -78,27 +82,45 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 
     Keyword. Specifies that the operator executes an action of another lsFusion server.
 
+- `DBF`
+
+    Keyword. Specifies that the operator writes records to a `.dbf` file.
+
+- `APPEND`
+
+    Required keyword in the `DBF` call syntax.
+
+- `charsetLiteral`
+
+    [String literal](Literals.md#strliteral) with the charset used for the `.dbf` file. Defaults to `UTF-8`.
+
 - `connectionStrExpr`  
 
-    [Expression](Expression.md). `HTTP`: http request string. `SQL`: DBMS connection string. `LSF`: URL of an lsFusion server (application).
+    [Expression](Expression.md). `HTTP`: http request string. `TCP` / `UDP`: `host:port` of the target socket. `SQL`: DBMS connection string. `LSF`: URL of an lsFusion application or web server. `DBF`: path to the `.dbf` file.
 
 - `bodyStrExpr`
 
-    [Expression](Expression.md). Continuation of http request string in BODY. Relevant when BODY has > 1 parameter. If not specified, the parameters are passed in multipart format.
+    [Expression](Expression.md). BODY string with `$N` parameter substitutions. For HTTP methods with a body, all parameters remaining after URL substitution must be consumed inside this string, otherwise the call fails; without `BODYURL` the remaining parameters are packed directly into the BODY. For `GET` `BODYURL` has no effect and any remaining parameters are silently dropped.
 
-- `headersPropertyId`
-- `headersToPropertyId`
+- `bodyParamNameExpr1, ..., bodyParamNameExprK`
 
-    [Property ID](IDs.md#propertyid) containing request headers. The property must have exactly one parameter: the name of the request's header. This parameter must belong to a string class. If the property is not specified, headers are ignored/not set.
+    List of [expressions](Expression.md). Each evaluates to a BODY part name in the form `'name'` or `'name;filename'` (the part after `;` sets the multipart file name). Without `BODYPARAMNAMES` BODY parts get default auto-names `param0`, `param1`, ... (file parts without an explicit filename similarly get `file0`, `file1`, ...).
 
-- `cookiesPropertyId`
-- `cookiesToPropertyId`
+- `bodyParamHeadersPropertyId1, ..., bodyParamHeadersPropertyIdK`
 
-    [Property ID](IDs.md#propertyid) containing request cookies. The property must have exactly one parameter: the name of the cookie. This parameter must belong to a string class. If the property is not specified, cookies are ignored/not set.
+    List of [property IDs](IDs.md#propertyid). Each property has one string-class parameter (the header name) and a string-class value (the header value). Without `BODYPARAMHEADERS` no extra headers are attached to BODY parts.
+
+- `headersPropertyId`, `headersToPropertyId`
+
+    [Property IDs](IDs.md#propertyid). Each property has one string-class parameter (the header name) and a string-class value (the header value). Without `HEADERS` no custom request headers are sent; without `HEADERSTO` response headers are not captured.
+
+- `cookiesPropertyId`, `cookiesToPropertyId`
+
+    [Property IDs](IDs.md#propertyid). Each property has one string-class parameter (the cookie name) and a string-class value (the cookie value). Without `COOKIES` no custom cookies are sent; without `COOKIESTO` cookies are not captured.
 
 - `NOENCODE`
 
-    Keyword. Specifies that the query string will not be encoded in url format (it is assumed that it has already been encoded previously).
+    Keyword. Skips URL pre-encoding of the literal text of the connection string and `BODYURL` string (parameter values substituted via `$N` are still URL-encoded separately). Without `NOENCODE` the literal text is URL-encoded before sending.
 
 - `lsfExecType`
 
@@ -110,7 +132,7 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 
 - `execStrExpr`  
 
-    Expression. `SQL`: SQL query command(s). `LSF`: The name of an action or code, depending on how the action is defined.
+    [Expression](Expression.md). `SQL`: SQL command(s) — an expression ending in `.sql` is treated as a path to a classpath resource whose contents are used as the command. `LSF`: action name or code, per `lsfExecType`.
 
 - `paramExpr1, ..., paramExprN`
 
@@ -123,38 +145,50 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 ### Examples
 
 ```lsf
-testExportFile = DATA FILE ();
-
 externalHTTP()  {
+    // HTTP method + TO result
     EXTERNAL HTTP GET 'https://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg' TO exportFile;
-    open(exportFile());
-    // braces are escaped as they are used in internationalization
-    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' 
-             PARAMS JSONFILE('\{"mode"=1,"locale"="en"\}') TO exportFile; 
-    IMPORT FROM exportFile() FIELDS () TEXT caption, TEXT code DO
-        MESSAGE 'Example : ' + caption + ', code : ' + code;
 
-    // passes the second and third parameters to BODY url-encoded
+    // BODYURL: second and third parameters are consumed into a url-encoded BODY via $N
     EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=doSomething&someprm=$1' 
-             BODYURL 'otherprm=$2&andonemore=$3' PARAMS 1,2,'3'; 
+             BODYURL 'otherprm=$2&andonemore=$3' PARAMS 1, 2, '3';
+
+    // BODYPARAMNAMES with 'name;filename' + manual Content-Type via HEADERS
+    LOCAL headers = TEXT(STRING[100]);
+    headers('Content-Type') <- 'multipart/form-data; charset=UTF-8';
+    EXTERNAL HTTP POST 'https://api.example/upload'
+             BODYPARAMNAMES 'document;report.pdf'
+             HEADERS headers
+             PARAMS exportFile();
+
+    // HEADERSTO / COOKIESTO capture response headers and cookies
+    LOCAL respHeaders = TEXT(STRING[100]);
+    LOCAL respCookies = TEXT(STRING[100]);
+    EXTERNAL HTTP GET 'https://api.example/login'
+             HEADERSTO respHeaders
+             COOKIESTO respCookies
+             TO exportFile;
+}
+externalTCP()  {
+    EXTERNAL TCP 'example.com:9100' PARAMS RAWFILE('payload');
+    MESSAGE STRING(responseTcp());
 }
 externalSQL ()  {
-    // getting all barcodes of products with the name meat
+    // inline SQL command with a TABLE parameter loaded into a temporary table
     EXPORT TABLE FROM bc=barcode(Article a) WHERE name(a) LIKE '%Meat%';
-    // reading prices for read barcodes 
     EXTERNAL SQL 'jdbc:mysql://$1/test?user=root&password=' 
              EXEC 'select price AS pc, articles.barcode AS brc from $2 x JOIN articles ON x.bc=articles.barcode' 
              PARAMS 'localhost', exportFile() 
-             TO exportFile; 
+             TO exportFile;
 
-    // writing prices for all products with received barcodes
-    LOCAL price = INTEGER (INTEGER);
-    LOCAL barcode = STRING[30] (INTEGER);
-    IMPORT FROM exportFile() TO price=pc,barcode=brc;
-    FOR barcode(Article a) = barcode(INTEGER i) DO
-        price(a) <- price(i);
+    // SQL command loaded from a classpath resource (expression ending in .sql)
+    EXTERNAL SQL 'jdbc:postgresql://localhost/db?user=root' EXEC 'queries/fetch.sql';
 }
 externalLSF()  {
     EXTERNAL LSF 'http://localhost:7651' EXEC 'System.testAction[]';
-};
+}
+externalDBF()  {
+    EXPORT TABLE FROM bc=barcode(Article a), nm=name(a);
+    EXTERNAL DBF '/tmp/articles.dbf' APPEND CHARSET 'CP866' PARAMS exportFile();
+}
 ```

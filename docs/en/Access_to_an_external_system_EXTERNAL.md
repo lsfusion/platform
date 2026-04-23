@@ -2,17 +2,26 @@
 title: 'Access to an external system (EXTERNAL)'
 ---
 
-The operator for *accessing an external system* executes a specified code in the language/paradigm of the external system specified. In addition, this operator allows passing objects of [built-in classes](Built-in_classes.md) as parameters of this type of call, and also writing the *results* of calls to the properties specified (without parameters).
+The platform allows an lsFusion-based system to access external systems using various types of interactions / protocols. The interface of such an access is the execution of code in the language / paradigm of the external system with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). It is assumed that all parameter and result objects are objects of [built-in classes](Built-in_classes.md).
 
-Currently the platform supports the following types of interactions/external systems:
+## Types of interactions / protocols
 
-## HTTP - web server HTTP request {#http}
+The platform currently supports the following types of interactions / external systems:
 
-For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed.
+### HTTP - web server HTTP request {#http}
 
-### Parameters {#url}
+For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed. The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`) is chosen separately; the default is `POST`. By default the request is executed on the application server; the `CLIENT` keyword runs it from the user's client instead (useful when the target is reachable from the client but not from the server).
 
-Parameters can be passed both in the request string (to refer to the parameter, the special character `$` and the number of this parameter, starting with `1`, are used) and in its body (BODY). It is assumed that all parameters not used in the request string are passed to BODY.
+The call timeout and SSL strictness are read from the `System.timeoutHttp[]` property (in milliseconds, with a built-in default) and the `System.insecureSSL[]` property (when truthy, disables TLS certificate verification).
+
+
+:::info
+Under `CLIENT` the desktop client performs the full call locally, but the regular browser client forwards only the HTTP method, URL, BODY and `HEADERS` to the browser's `XMLHttpRequest`; `COOKIES`, `COOKIESTO`, `System.timeoutHttp[]` and `System.insecureSSL[]` are ignored there — cookies are handled by the browser's own cookie jar, and timeouts and TLS verification by the browser itself.
+:::
+
+#### Parameters {#url}
+
+Parameters can be passed both in the request string (to refer to the parameter, the special character `$` and the number of this parameter, starting with `1`, are used) and in its body (BODY). All parameters not used in the request string are passed to BODY, but only for HTTP methods that carry a body (`POST`, `PUT`, `PATCH`, `DELETE`); for `GET` any parameters left after URL substitution are silently dropped.
 
 When processing file class parameters (`FILE`, `PDFFILE`, etc.) to BODY, the [content type](https://en.wikipedia.org/wiki/Media_type) of the parameter, depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 
@@ -22,50 +31,56 @@ In each of the three cases above, if the parameter value is `NULL`, `null` is su
 
 Parameters of classes that differ from those of files are converted into strings and are passed as a `text/plain` content type. `NULL` values are passed as empty strings.
 
-If necessary, using the special `HEADERS` option you can define the [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) of the request being executed. To do this, you need to specify a property with exactly one parameter of the string class in which the header will be stored, and with the value of the string class in which the value of this header will be stored.
+Custom request [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be supplied for the call through the `HEADERS` and `COOKIES` options: each option takes a property that maps a name (read from the only parameter) to a value (read from the property value).
 
-### Results
+The literal text of the connection string and of any `BODYURL` string is URL-encoded before the request is sent (suppressible via the `NOENCODE` option); parameter values substituted via `$N` are URL-encoded independently.
+
+#### Results
 
 When processing a request response, results with a content type from the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties) are considered files, and can only be written to properties whose value class is `FILE`. During this process, the corresponding file extension is taken from the table mentioned above. If a particular content type is not found in the table, but it starts with `application`, the result is still considered a file, and the file extension is taken from the right part of the content type (for example, for the `application/abc` content type it will be `abc`). Results with the `application/null` content type are considered equal to `NULL`.
 
-Results with content types different from the ones mentioned above are considered strings and when writing are automatically converted into the classes with the value of the properties to which they are being written. Empty strings are converted to `NULL`.
+Results with content types different from the ones above are considered strings and on writing are automatically converted into the classes of the properties they are being written to. Empty strings are converted to `NULL`.
 
-If necessary, using the special `HEADERSTO` option you can write the [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) of the request response received to the specified property. This property must have exactly one parameter of the string class in which the header will be stored, and the value of the string class in which the value of this header will be stored.
+Response [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) are written to the property specified with the `HEADERSTO` option. So, the header name is written to the only parameter of this property, and the header value is written to the property value.
 
-All results are returned in UTF-8 encoding.
+Response [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) are similarly captured through the `COOKIESTO` option: the returned `name -> value` pairs combine cookies sent via `COOKIES` and cookies received in `Set-Cookie` response headers; cookie attributes (`path`, `domain`, etc.) are dropped.
 
-### Multiple results/parameters in BODY
+The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](TRY_operator.md) operator to inspect `System.statusHttp[]` instead.
+
+#### Multiple results / parameters in BODY
 
 If more than one parameter is passed to BODY, then:
 
--   If the option `BODYURL` is specified, the BODY content type on transmission is set to `application/x-www-form-urlencoded`, and the specified string, in which the parameters are encoded as if they were [passed in the request string](#url), is passed as BODY.
--   Otherwise, during transmission the response content type is set to `multipart/mixed` and the parameters are passed as components of this BODY. 
+-   If the option `BODYURL` is specified, the specified string — with parameters encoded as if they were [passed in the request string](#url) — is passed as BODY with `Content-Type: application/x-www-form-urlencoded`.
+-   Otherwise, the parameters are passed as internal parts of a BODY with `Content-Type: multipart/mixed`. The `BODYPARAMNAMES` option switches the content type to `multipart/form-data` and names the first parts as form fields; the `BODYPARAMHEADERS` option attaches extra headers to individual BODY parts.
 
-In turn, if the request response type is `multipart/*` or `application/x-www-form-urlencoded`, it will be split into parts, and each part will be considered a separate execution result. In this case, the order of these results is equal to the order of the corresponding parts in the request response.
+A `Content-Type` set manually via `HEADERS` overrides the default above: a `multipart/*` value forces multipart packing of the remaining parameters with that `Content-Type`; a non-`multipart/*` value replaces the default `Content-Type` on the BODY being sent.
+
+In turn, if the response content type is `multipart/*` or `application/x-www-form-urlencoded`, the response BODY is split into parts, and each part is considered a separate execution result. In this case, the order of these results is equal to the order of the corresponding parts in the response.
 
 
 :::info
 Note that the processing of parameters and request results is largely similar to their processing during [access from an external system](Access_from_an_external_system.md) over the HTTP protocol (here parameters are processed as results and, conversely, results are processed as parameters)
 :::
 
-## SQL - executing an SQL server command 
+### SQL - executing an SQL server command 
 
-For this type of interaction, a connection string and the SQL command(s) to be executed are specified. Parameters can be passed both in the connection string and in the SQL command. To access the parameter, the special character `$` and the parameter number are used (starting from `1`).
+For this type of interaction, a connection string and the SQL command(s) to be executed are specified. Parameters can be passed both in the connection string and in the SQL command. To access the parameter, the special character `$` and the parameter number are used (starting from `1`). If the SQL command expression ends with `.sql`, it is treated as a path to a classpath resource whose contents are used as the actual command.
 
-### Parameters {#table}
+`EXTERNAL SQL 'LOCAL'` is not supported; to run SQL against the database used by the platform itself, use `INTERNAL DB`.
+
+#### Parameters {#table}
 
 File class parameters (`FILE`, `PDFFILE`, etc.) can be used only in an SQL command (not in the connection string). Furthermore, if any of the parameters, when executed, is a file in `TABLE` format (`TABLEFILE` or `FILE` with the extension `table`), that parameter is considered to be a table and in this case:
 
 -   before executing an SQL command, the value of each such parameter is loaded onto the server into a temporary table
 -   when substituting parameters, the name of the created temporary table is substituted instead of the parameter value itself
 
-### Results
+#### Results
 
 The execution results are: for DML requests - numbers equal to the number of processed records; for SELECT requests - files in `TABLE` format (`FILE` with the extension `table`) containing the results of these requests. The order of these results is equal to the execution order of the corresponding queries in the SQL command.
 
-The predefined `LOCAL` value may be used as the connection string. In this case the connection will be made to the database server used by the platform.
-
-## LSF - calling an action of another lsFusion server 
+### LSF - calling an action of another lsFusion server 
 
 For this type of interaction, the following things need to be specified: the connection string for connecting to the lsFusion server (or its web server, if any), the action being executed, and the list of properties (without parameters) to whose values the results of the call will be written. The parameters passed must match the parameters of the action being performed by number and by class.
 
@@ -78,6 +93,23 @@ By default, this type of interaction is implemented via HTTP protocol using the 
 You can also use operators for [reading](Read_file_READ.md) and [writing](Write_file_WRITE.md) files to access external systems (if file exchange is the interface for this interaction).
 :::
 
+### TCP / UDP - sending raw bytes over a socket {#tcp}
+
+For these types of interaction, a connection string `host:port` is specified, together with a single file-class parameter whose raw bytes are sent to the socket. For `TCP`, the platform performs a single socket read (up to a 10 MB buffer) and writes the result to the `System.responseTcp[]` property; the optional `System.timeoutTcp[]` property sets the socket timeout in milliseconds. `UDP` sends the packet without waiting for a response.
+
+By default the request is executed on the application server; the `CLIENT` keyword runs it from the user's client instead.
+
+
+:::info
+Under `CLIENT`, raw socket access is available locally in the desktop client and via a Flutter bridge in the Flutter-based web/mobile client; the regular browser client has no raw socket access and fails with `UnsupportedOperationException`.
+:::
+
+### DBF - writing rows to a `.dbf` file {#dbf}
+
+For this type of interaction, the path to the `.dbf` file is specified as the connection string, and a single `TABLE`-format parameter (`TABLEFILE` or `FILE` with the extension `table`) supplies the rows to write. The call is declared with the `APPEND` keyword: if the file does not exist, a new file is created from the schema of the input table; if the file already exists, it is opened as-is and rows are written into its existing fields by name - the existing file's schema must already contain those fields, otherwise the call fails. The optional `CHARSET` option sets the file charset (`UTF-8` by default).
+
+Input column names are truncated to the DBF 10-character limit before being used for both schema creation and field lookup; two columns that collide after truncation make the call fail, and a column whose original name exceeds 10 characters additionally loses its type (a 253-character string field is used as a fallback) and its value (the literal string `"null"` is written). `NULL` values in input cells are similarly written as the literal string `"null"` — harmless for string fields, but causing the write to fail for numeric fields. The input `TABLE` should therefore already use DBF-compatible field names and non-`NULL` values.
+
 ## Language
 
 To declare an action that accesses an external system, use the [`EXTERNAL` operator](EXTERNAL_operator.md).
@@ -85,23 +117,17 @@ To declare an action that accesses an external system, use the [`EXTERNAL` opera
 ## Examples
 
 ```lsf
-testExportFile = DATA FILE ();
-
 externalHTTP()  {
+    // GET request with a single file result
     EXTERNAL HTTP GET 'https://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg' TO exportFile;
     open(exportFile());
 
-    // braces are escaped as they are used in internationalization
+    // POST with a JSON body parameter; braces are escaped because of internationalization
     EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' 
-             PARAMS JSONFILE('\{"mode"=1,"locale"="en"\}')
+             PARAMS JSONFILE('\{"mode"=1\}')
              TO exportFile; 
     IMPORT FROM exportFile() FIELDS () TEXT caption, TEXT code DO
         MESSAGE 'Example : ' + caption + ', code : ' + code;
-
-    // passes the second and third parameters to BODY url-encoded
-    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=doSomething&someprm=$1' 
-             BODYURL 'otherprm=$2&andonemore=$3' 
-             PARAMS 1,2,'3'; 
 }
 externalSQL ()  {
     // getting all barcodes of products with the name meat
@@ -121,5 +147,15 @@ externalSQL ()  {
 }
 externalLSF()  {
     EXTERNAL LSF 'http://localhost:7651' EXEC 'System.testAction[]';
-};
+}
+externalTCP()  {
+    // send raw bytes over TCP and capture the peer's response
+    EXTERNAL TCP 'example.com:9100' PARAMS RAWFILE('payload');
+    MESSAGE STRING(responseTcp());
+}
+externalDBF()  {
+    // export a table and append its rows to a .dbf file
+    EXPORT TABLE FROM bc=barcode(Article a), nm=name(a);
+    EXTERNAL DBF '/tmp/articles.dbf' APPEND PARAMS exportFile();
+}
 ```
