@@ -91,7 +91,7 @@ public class TSVectorClass extends DataClass<Array> implements DBType {
 
     @Override
     public Array getDefaultValue() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

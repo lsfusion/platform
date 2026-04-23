@@ -160,7 +160,25 @@ grammar LsfLogics;
 	public ScriptParser.State parseState;
 
 	private boolean insideRecursion = false;
-	
+
+    private String getRowParamName(List<TypedParameter> context) {
+        String base = "row";
+        String candidate = base;
+        int i = 2;
+        while (containsParamName(context, candidate)) {
+            candidate = base + i++;
+        }
+        return candidate;
+    }
+
+    private boolean containsParamName(List<TypedParameter> context, String name) {
+        for (TypedParameter p : context) {
+            if (name.equals(p.paramName))
+                return true;
+        }
+        return false;
+    }
+
 	public boolean inParseState(ScriptParser.State parseState) {
 		return this.parseState == parseState;
 	}
@@ -2574,7 +2592,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
             {
                 if(inMainParseState()) {
                     if(fieldParams == null)
-                        fieldParams = Arrays.asList(TP("INTEGER", "row"));
+                        fieldParams = Arrays.asList(TP("INTEGER", getRowParamName(newContext)));
                     self.getParamIndices(fieldParams, newContext, true, insideRecursion);
                 }
             }

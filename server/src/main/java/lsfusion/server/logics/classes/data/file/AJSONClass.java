@@ -106,7 +106,7 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
 
     @Override
     public String getDefaultValue() {
-        return null;
+        return "{}";
     }
 
     @Override
