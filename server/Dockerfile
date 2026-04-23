@@ -1,7 +1,7 @@
 FROM amazoncorretto:21-alpine-jdk
 
 # jenkins uses regex to replace jar file version in next line before build. Check jenkins branch on change
-ADD https://download.lsfusion.org/java/lsfusion-server-6.2.jar server.jar
+ADD https://download.lsfusion.org/java/lsfusion-server-6.3-SNAPSHOT.jar server.jar
 
 # java.lang.UnsatisfiedLinkError: /usr/local/openjdk-21/lib/libfontmanager.so: libfreetype.so.6: cannot open shared object file: No such file or directory
 # java.lang.NoClassDefFoundError: Could not initialize class sun.awt.X11FontManager
