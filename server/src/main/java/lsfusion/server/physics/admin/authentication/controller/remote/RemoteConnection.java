@@ -568,7 +568,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     param -> param.value));
         }
         if (action.uses(businessLogics.LM.fileParams.property)) {
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, CallHTTPAction.getParamsMap(request.params,
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.fileParams, CallHTTPAction.getParamsMap(request.params,
                     paramValue -> paramValue instanceof FileData,
                     (paramName, paramIndex) -> ListFact.toList(paramName, (Object) paramIndex),
                     param -> ExternalRequest.getNamedFile((FileData) param.value, param.fileName)));
