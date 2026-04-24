@@ -41,7 +41,7 @@ Subsequently, `$INSTALL_DIR$` refers to the folder selected during the installat
 
 Bash scripts using dnf / apt (the latest stable releases are used as minor versions):
 
-lsFusion **6** Server & Client (+ OpenJDK (**default-jdk / java-openjdk**), PostgreSQL **17**, Tomcat **9.0.104**):
+lsFusion **6** Server & Client (+ OpenJDK (**default-jdk / java-openjdk**), PostgreSQL **18**, Tomcat **9.0.104**):
 
 | OS                               | Command / Script                                                        |
 |----------------------------------|-------------------------------------------------------------------------|
@@ -166,7 +166,7 @@ These programs can be excluded during installation using the corresponding graph
 
 The following are scripts for installing specific platform components:
 
-Database Server - PostgreSQL **17**:
+Database Server - PostgreSQL **18**:
 
 | OS                            | Command / Script                                                          |
 |-------------------------------|---------------------------------------------------------------------------|
