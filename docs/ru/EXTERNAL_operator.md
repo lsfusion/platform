@@ -21,10 +21,7 @@ LSF connectionStrExpr lsfExecType execStrExpr
 DBF connectionStrExpr APPEND [CHARSET charsetLiteral]
 ```
 
-Опции для `HTTP` перечисляются друг за другом в произвольном порядке через пробел или переводы строк:
-```
-httpOption1 ... httpOptionN
-```
+Опции для `HTTP` (в произвольном порядке, через пробел или переводы строк):
 
 ```
 BODYURL bodyStrExpr
@@ -43,9 +40,9 @@ NOENCODE
 
 ### Параметры
 
-- `HTTP`
+- `HTTP`, `TCP`, `UDP`, `SQL`, `LSF`, `DBF`
 
-    Ключевое слово. Определяет, что оператор выполняет http-запрос веб-сервера.
+    Ключевые слова. Задают тип внешнего вызова; семантика каждого описана в статье [Обращение к внешней системе](Access_to_an_external_system_EXTERNAL.md).
 
 - `requestType`
 
@@ -59,29 +56,9 @@ NOENCODE
 
   Значением по умолчанию является `POST`.
 
-- `TCP`
-
-  Ключевое слово. Определяет, что оператор выполняет TCP-запрос.
-
-- `UDP`
-
-  Ключевое слово. Определяет, что оператор выполняет UDP-запрос.
-
 - `CLIENT`
 
   Ключевое слово. Выполняет вызов на клиенте пользователя. Без `CLIENT` вызов выполняется на сервере приложений.
-
-- `SQL`
-
-    Ключевое слово. Определяет, что оператор выполняет команду(ы) SQL-сервера.
-
-- `LSF`
-
-    Ключевое слово. Определяет, что оператор выполняет действие другого lsFusion-сервера.
-
-- `DBF`
-
-    Ключевое слово. Определяет, что оператор записывает строки в `.dbf`-файл.
 
 - `APPEND`
 
@@ -97,7 +74,7 @@ NOENCODE
 
 - `bodyStrExpr`
 
-    [Выражение](Expression.md). Строка BODY с подстановкой параметров через `$N`. Для HTTP-методов с телом все параметры, оставшиеся после подстановки в URL, должны быть использованы внутри этой строки, иначе вызов падает; без `BODYURL` оставшиеся параметры упаковываются в BODY напрямую. Для `GET` `BODYURL` не действует, а оставшиеся параметры молча отбрасываются.
+    [Выражение](Expression.md). Строка BODY с подстановкой параметров через `$N`. Для HTTP-методов с телом все параметры, оставшиеся после подстановки в URL, должны быть использованы внутри этой строки, иначе вызов падает. Для `GET` `BODYURL` не действует, а оставшиеся параметры молча отбрасываются.
 
 - `bodyParamNameExpr1, ..., bodyParamNameExprK`
 
@@ -177,9 +154,6 @@ externalSQL ()  {
              EXEC 'select price AS pc, articles.barcode AS brc from $2 x JOIN articles ON x.bc=articles.barcode' 
              PARAMS 'localhost',exportFile() 
              TO exportFile;
-
-    // SQL-команда, подгружаемая из ресурса classpath (выражение оканчивается на .sql)
-    EXTERNAL SQL 'jdbc:postgresql://localhost/db?user=root' EXEC 'queries/fetch.sql';
 }
 externalLSF()  {
     EXTERNAL LSF 'http://localhost:7651' EXEC 'System.testAction[]';

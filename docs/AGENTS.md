@@ -1144,11 +1144,19 @@ that merely say
 that the linked section
 or article
 contains the corresponding
-general rules
+general rules,
+examples,
+syntactic variants,
+or other material
+of the kind the link
+is already to,
 if that already follows
 from the link itself
 and adds no new
-local information.
+local information;
+a plain link
+without such a remark
+is preferred.
 The assistant MUST
 state
 the direct primary rule,

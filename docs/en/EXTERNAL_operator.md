@@ -21,13 +21,7 @@ LSF connectionStrExpr lsfExecType execStrExpr
 DBF connectionStrExpr APPEND [CHARSET charsetLiteral]
 ```
 
-Options for `HTTP` are listed one after another in arbitrary order, separated by spaces or line feeds:
-
-```
-httpOption1 ... httpOptionN
-```
-
-The following set of options is supported (the syntax of each option is indicated on a separate line):
+The HTTP options (in any order, separated by spaces or line feeds) are:
 
 ```
 BODYURL bodyStrExpr
@@ -46,9 +40,9 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 
 ### Parameters
 
-- `HTTP`
+- `HTTP`, `TCP`, `UDP`, `SQL`, `LSF`, `DBF`
 
-    Keyword. Specifies that the operator is executing a web server HTTP request.
+    Keywords. Select the type of external call; see [Access to an external system](Access_to_an_external_system_EXTERNAL.md) for the semantics of each.
 
 - `requestType`
 
@@ -62,29 +56,9 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 
   The default value is `POST`.
 
-- `TCP`
-
-  Keyword. Specifies that the operator is executing a TCP request.
-
-- `UDP`
-
-  Keyword. Specifies that the operator is executing a UDP request.
-
 - `CLIENT`
 
   Keyword. Runs the call on the user's client. Without `CLIENT` the call runs on the application server.
-
-- `SQL`
-
-    Keyword. Specifies that the operator executes an SQL server command or commands.
-
-- `LSF`
-
-    Keyword. Specifies that the operator executes an action of another lsFusion server.
-
-- `DBF`
-
-    Keyword. Specifies that the operator writes records to a `.dbf` file.
 
 - `APPEND`
 
@@ -100,7 +74,7 @@ The `EXTERNAL` operator creates an action that makes a request to an external sy
 
 - `bodyStrExpr`
 
-    [Expression](Expression.md). BODY string with `$N` parameter substitutions. For HTTP methods with a body, all parameters remaining after URL substitution must be consumed inside this string, otherwise the call fails; without `BODYURL` the remaining parameters are packed directly into the BODY. For `GET` `BODYURL` has no effect and any remaining parameters are silently dropped.
+    [Expression](Expression.md). BODY string with `$N` parameter substitutions. All parameters remaining after URL substitution must be consumed inside this string, otherwise the call fails. For `GET` `BODYURL` has no effect and any remaining parameters are silently dropped.
 
 - `bodyParamNameExpr1, ..., bodyParamNameExprK`
 
@@ -180,9 +154,6 @@ externalSQL ()  {
              EXEC 'select price AS pc, articles.barcode AS brc from $2 x JOIN articles ON x.bc=articles.barcode' 
              PARAMS 'localhost', exportFile() 
              TO exportFile;
-
-    // SQL command loaded from a classpath resource (expression ending in .sql)
-    EXTERNAL SQL 'jdbc:postgresql://localhost/db?user=root' EXEC 'queries/fetch.sql';
 }
 externalLSF()  {
     EXTERNAL LSF 'http://localhost:7651' EXEC 'System.testAction[]';

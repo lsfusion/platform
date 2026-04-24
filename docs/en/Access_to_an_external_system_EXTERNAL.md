@@ -2,7 +2,7 @@
 title: 'Access to an external system (EXTERNAL)'
 ---
 
-The platform allows an lsFusion-based system to access external systems using various types of interactions / protocols. The interface of such an access is the execution of code in the language / paradigm of the external system with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). It is assumed that all parameter and result objects are objects of [built-in classes](Built-in_classes.md).
+The platform allows an lsFusion-based system to access external systems using various types of interactions / protocols, as the external counterpart to the [internal call](Internal_call_INTERNAL.md). The interface of such an access is the execution of code in the language / paradigm of the external system with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). It is assumed that all parameter and result objects are objects of [built-in classes](Built-in_classes.md).
 
 ## Types of interactions / protocols
 
@@ -10,13 +10,13 @@ The platform currently supports the following types of interactions / external s
 
 ### HTTP - web server HTTP request {#http}
 
-For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed. The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`) is chosen separately; the default is `POST`. By default the request is executed on the application server; the `CLIENT` keyword runs it from the user's client instead (useful when the target is reachable from the client but not from the server).
+For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed. The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`) is chosen separately; the default is `POST`. By default the request is executed on the application server, but can be redirected to the user's client instead — useful when the target is reachable from the client but not from the server.
 
 The call timeout and SSL strictness are read from the `System.timeoutHttp[]` property (in milliseconds, with a built-in default) and the `System.insecureSSL[]` property (when truthy, disables TLS certificate verification).
 
 
 :::info
-Under `CLIENT` the desktop client performs the full call locally, but the regular browser client forwards only the HTTP method, URL, BODY and `HEADERS` to the browser's `XMLHttpRequest`; `COOKIES`, `COOKIESTO`, `System.timeoutHttp[]` and `System.insecureSSL[]` are ignored there — cookies are handled by the browser's own cookie jar, and timeouts and TLS verification by the browser itself.
+Under client execution the desktop client performs the full call locally, but the regular browser client delegates to the browser's `XMLHttpRequest` and supports only what that API exposes: cookies are handled by the browser's own cookie jar, and timeouts and TLS verification by the browser itself.
 :::
 
 #### Parameters {#url}
@@ -31,9 +31,9 @@ In each of the three cases above, if the parameter value is `NULL`, `null` is su
 
 Parameters of classes that differ from those of files are converted into strings and are passed as a `text/plain` content type. `NULL` values are passed as empty strings.
 
-Custom request [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be supplied for the call through the `HEADERS` and `COOKIES` options: each option takes a property that maps a name (read from the only parameter) to a value (read from the property value).
+Custom request [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be supplied with the call.
 
-The literal text of the connection string and of any `BODYURL` string is URL-encoded before the request is sent (suppressible via the `NOENCODE` option); parameter values substituted via `$N` are URL-encoded independently.
+The literal text of the connection string and of any body template is URL-encoded before the request is sent (suppressible); parameter values substituted via `$N` are URL-encoded independently.
 
 #### Results
 
@@ -41,20 +41,18 @@ When processing a request response, results with a content type from the followi
 
 Results with content types different from the ones above are considered strings and on writing are automatically converted into the classes of the properties they are being written to. Empty strings are converted to `NULL`.
 
-Response [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) are written to the property specified with the `HEADERSTO` option. So, the header name is written to the only parameter of this property, and the header value is written to the property value.
+Response [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be captured into properties. The captured cookies combine the ones sent with the request and those received in `Set-Cookie` response headers; cookie attributes (`path`, `domain`, etc.) are dropped.
 
-Response [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) are similarly captured through the `COOKIESTO` option: the returned `name -> value` pairs combine cookies sent via `COOKIES` and cookies received in `Set-Cookie` response headers; cookie attributes (`path`, `domain`, etc.) are dropped.
-
-The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](TRY_operator.md) operator to inspect `System.statusHttp[]` instead.
+The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](TRY_operator.md) operator to inspect `System.statusHttp[]` instead. Under client execution in the regular browser, a network / CORS / DNS failure surfaces as `status = 0`; in that case the exception carries a generic localized error message rather than a status + body.
 
 #### Multiple results / parameters in BODY
 
-If more than one parameter is passed to BODY, then:
+If more than one parameter is passed to BODY, they are packed into a single BODY:
 
--   If the option `BODYURL` is specified, the specified string — with parameters encoded as if they were [passed in the request string](#url) — is passed as BODY with `Content-Type: application/x-www-form-urlencoded`.
--   Otherwise, the parameters are passed as internal parts of a BODY with `Content-Type: multipart/mixed`. The `BODYPARAMNAMES` option switches the content type to `multipart/form-data` and names the first parts as form fields; the `BODYPARAMHEADERS` option attaches extra headers to individual BODY parts.
+-   If `BODYURL` is specified — the given string is sent as BODY, with its parameters encoded as if they were [passed in the request string](#url), and `Content-Type: application/x-www-form-urlencoded`.
+-   Otherwise — parameters are sent as the parts of a BODY with `Content-Type: multipart/mixed`. The `BODYPARAMNAMES` option switches the content type to `multipart/form-data` and names the first parts as form fields; the `BODYPARAMHEADERS` option attaches extra headers to individual BODY parts.
 
-A `Content-Type` set manually via `HEADERS` overrides the default above: a `multipart/*` value forces multipart packing of the remaining parameters with that `Content-Type`; a non-`multipart/*` value replaces the default `Content-Type` on the BODY being sent.
+A `Content-Type` set manually through `HEADERS` overrides the above default: a `multipart/*` value forces multipart packing of the remaining parameters under that `Content-Type`; a non-`multipart/*` value replaces the default `Content-Type` of the sent BODY.
 
 In turn, if the response content type is `multipart/*` or `application/x-www-form-urlencoded`, the response BODY is split into parts, and each part is considered a separate execution result. In this case, the order of these results is equal to the order of the corresponding parts in the response.
 
@@ -63,7 +61,7 @@ In turn, if the response content type is `multipart/*` or `application/x-www-for
 Note that the processing of parameters and request results is largely similar to their processing during [access from an external system](Access_from_an_external_system.md) over the HTTP protocol (here parameters are processed as results and, conversely, results are processed as parameters)
 :::
 
-### SQL - executing an SQL server command 
+### SQL - executing an SQL server command {#sql}
 
 For this type of interaction, a connection string and the SQL command(s) to be executed are specified. Parameters can be passed both in the connection string and in the SQL command. To access the parameter, the special character `$` and the parameter number are used (starting from `1`). If the SQL command expression ends with `.sql`, it is treated as a path to a classpath resource whose contents are used as the actual command.
 
@@ -97,11 +95,11 @@ You can also use operators for [reading](Read_file_READ.md) and [writing](Write_
 
 For these types of interaction, a connection string `host:port` is specified, together with a single file-class parameter whose raw bytes are sent to the socket. For `TCP`, the platform performs a single socket read (up to a 10 MB buffer) and writes the result to the `System.responseTcp[]` property; the optional `System.timeoutTcp[]` property sets the socket timeout in milliseconds. `UDP` sends the packet without waiting for a response.
 
-By default the request is executed on the application server; the `CLIENT` keyword runs it from the user's client instead.
+By default the request is executed on the application server, but can also be performed from the user's client.
 
 
 :::info
-Under `CLIENT`, raw socket access is available locally in the desktop client and via a Flutter bridge in the Flutter-based web/mobile client; the regular browser client has no raw socket access and fails with `UnsupportedOperationException`.
+Under client execution, raw socket access is available locally in the desktop client and via a Flutter bridge in the Flutter-based web/mobile client; the regular browser client has no raw socket access and fails with `UnsupportedOperationException`.
 :::
 
 ### DBF - writing rows to a `.dbf` file {#dbf}
