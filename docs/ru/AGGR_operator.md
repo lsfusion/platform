@@ -14,30 +14,7 @@ AGGR [eventClause] aggrClass WHERE aggrExpr [NEW [newEventClause]] [DELETE [dele
 
 Помимо свойства — результата оператора, содержащего значение агрегируемого объекта, — оператор `AGGR` для каждого параметра создаёт [первичное свойство](Data_properties_DATA.md) с одним параметром типа `aggrClass`. Имя и класс значения этого свойства совпадают с именем и классом соответствующего параметра; при создании агрегируемого объекта в него автоматически записывается значение параметра.
 
-`eventClause` задаёт базовое [событие](Events.md) проверки; `NEW` и `DELETE` — события разрешения для создания и удаления агрегируемых объектов соответственно. Если `NEW` или `DELETE` не указан, соответствующее событие разрешения наследует область видимости базового события. Если ключевое слово указано без блока описания события, используется глобальное событие `APPLY`.
-
-:::info
-Создание агрегации во многом аналогично следующим инструкциям (пример для 2 параметров):
-
-```lsf
-prm1 = DATA class1 (aggrClass);
-prm2 = DATA class2 (aggrClass);
-result = GROUP AGGR aggrClass aggrObject BY prm1(aggrObject), prm2(aggrObject);
-
-// если aggrExpr становится не null, создаем объект класса aggrClass (эквивалентно whereExpr => result(prm1, prm2) RESOLVE LEFT)
-WHEN SET(aggrExpr) AND NOT result(prm1, prm2)
-    NEW aggrObject = aggrClass {
-        prm1(aggrObject) <- prm1;
-        prm2(aggrObject) <- prm2;
-    }
-
-// если aggrExpr становится null, удаляем объект (эквивалентно aggrClass aggrObject IS aggrClass => result(prm1(aggrObject),prm2(aggrObject)) RESOLVE RIGHT)
-WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(aggrObject))) DO
-    DELETE aggrObject;
-```
-
-но является более декларативной и читабельной инструкцией, поэтому рекомендуется использовать именно ее
-:::
+`eventClause` задаёт базовое [событие](Events.md) проверки; `NEW` и `DELETE` — события разрешения для создания и удаления агрегируемых объектов соответственно.
 
 В отличие от других контекстно-зависимых операторов, оператор `AGGR` нельзя использовать в [выражениях](Expression.md) внутри других операторов (в этом смысле он больше похож на контекстно-независимые операторы), а также в [операторе `JOIN`](JOIN_operator.md) (внутри `[= ]`)
 
@@ -49,11 +26,11 @@ WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(
 
 - `aggrClass`
 
-    Класс значения агрегируемого объекта. [Составной идентификатор](IDs.md#cid).
+    Класс значения агрегируемого объекта. [Составной идентификатор](IDs.md#cid). Должен быть пользовательским [классом](Classes.md); встроенные классы не допускаются.
 
 - `aggrExpr`
 
-    [Выражение](Expression.md), значение которого определяет агрегируемое свойство.
+    [Выражение](Expression.md), не-`NULL` значения которого задают агрегацию; его типизированные параметры определяют параметры свойства-результата и автоматически создаваемых свойств для каждого параметра.
 
 - `NEW`
 
@@ -61,7 +38,7 @@ WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(
 
 - `newEventClause`
 
-    [Блок описания события](Event_description_block.md). Если `NEW` не указан — наследуется от `eventClause`. Если `NEW` указан без блока — используется глобальное `APPLY`.
+    [Блок описания события](Event_description_block.md). Если `NEW` не указан, событие разрешения наследует от `eventClause` только область видимости (`GLOBAL`/`LOCAL`); его `FORMS`, `AFTER`/`GOAFTER` и имя события не переносятся. Если `NEW` указан без блока — используется глобальное `APPLY`.
 
 - `DELETE`
 
@@ -69,7 +46,7 @@ WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(
 
 - `deleteEventClause`
 
-    [Блок описания события](Event_description_block.md). Если `DELETE` не указан — наследуется от `eventClause`. Если `DELETE` указан без блока — используется глобальное `APPLY`.
+    [Блок описания события](Event_description_block.md). Если `DELETE` не указан, событие разрешения наследует от `eventClause` только область видимости (`GLOBAL`/`LOCAL`); его `FORMS`, `AFTER`/`GOAFTER` и имя события не переносятся. Если `DELETE` указан без блока — используется глобальное `APPLY`.
 
 ### Примеры
 
@@ -91,9 +68,12 @@ CLASS ShipmentInvoice 'Поставка по инвойсу' : Shipment;
 shipment(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice);
 date(ShipmentInvoice si) += sum(date(invoice(si)),1); // дата поставки = дата инвойса + 1
 
-// базовое LOCAL-событие: создание/удаление обрабатывается в рамках сессии
-sessionAggr(Invoice invoice) = AGGR ShipmentInvoice LOCAL WHERE createShipment(invoice);
+// базовое LOCAL-событие: все три события выполняются в рамках сессии
+sessionAggr(Invoice invoice) = AGGR LOCAL ShipmentInvoice WHERE createShipment(invoice);
 
-// раздельные события: создание — глобально (по умолчанию), удаление — локально
+// явный блок события NEW: создание выполняется локально, удаление наследует базовое (глобальное) событие
+newLocalAggr(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice) NEW LOCAL;
+
+// раздельные события: создание — глобально (пустой блок NEW трактуется как APPLY), удаление — локально
 splitAggr(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice) NEW DELETE LOCAL;
 ```

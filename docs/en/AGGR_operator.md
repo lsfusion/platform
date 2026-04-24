@@ -14,30 +14,7 @@ AGGR [eventClause] aggrClass WHERE aggrExpr [NEW [newEventClause]] [DELETE [dele
 
 In addition to the property that is the result of this operator and contains the value of the aggregated object, for each parameter the `AGGR` operator also creates a [data property](Data_properties_DATA.md) with one parameter of type `aggrClass`. The value class and name of this property match the class and name of the corresponding parameter; when the aggregated object is created, the value of the parameter is automatically written to this property.
 
-`eventClause` specifies the base check event; `NEW` and `DELETE` specify resolution events for creating and deleting aggregated objects respectively. If `NEW` or `DELETE` is absent, the corresponding resolution event inherits the scope of the base event. If the keyword is specified but its event description block is omitted, the default global `APPLY` event is used.
-
-:::info
-Creating an aggregation is in many ways similar to the following statements (example for 2 parameters):
-
-```lsf
-prm1 = DATA class1 (aggrClass);
-prm2 = DATA class2 (aggrClass);
-result = GROUP AGGR aggrClass aggrObject BY prm1(aggrObject), prm2(aggrObject);
-
-// if aggrExpr becomes non-null, create an object of class aggrClass (equivalent to whereExpr => result (prm1, prm2) RESOLVE LEFT)
-WHEN SET(aggrExpr) AND NOT result(prm1, prm2)
-    NEW aggrObject = aggrClass {
-        prm1(aggrObject) <- prm1;
-        prm2(aggrObject) <- prm2;
-    }
-
-// if aggrExpr becomes null, remove an object (equivalent to aggrClass aggrObject IS aggrClass => result(prm1(aggrObject),prm2(aggrObject)) RESOLVE RIGHT)
-WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(aggrObject))) DO
-    DELETE aggrObject;
-```
-
-but it is a more declarative and readable statement, and therefore using it is recommended
-:::
+`eventClause` specifies the base check event; `NEW` and `DELETE` specify resolution events for creating and deleting aggregated objects respectively.
 
 Unlike other context-dependent operators, the `AGGR` operator cannot be used in [expressions](Expression.md) inside other operators (in this sense it is more like context-independent operators), or in the [`JOIN` operator](JOIN_operator.md) (inside `[= ]`)
 
@@ -49,11 +26,11 @@ Unlike other context-dependent operators, the `AGGR` operator cannot be used in 
 
 - `aggrClass`
 
-    The value class of the aggregated object.
+    The value class of the aggregated object. Must be a user-defined [class](Classes.md); built-in classes are not allowed.
 
 - `aggrExpr`
 
-    An [expression](Expression.md) whose value defines an aggregated property.
+    An [expression](Expression.md) whose non-`NULL` values drive the aggregation; its typed parameters determine the parameters of the result property and of the auto-created properties for each parameter.
 
 - `NEW`
 
@@ -61,7 +38,7 @@ Unlike other context-dependent operators, the `AGGR` operator cannot be used in 
 
 - `newEventClause`
 
-    [Event description block](Event_description_block.md). If `NEW` is absent — `eventClause` is used. If `NEW` is specified but `newEventClause` is omitted, the default global `APPLY` event is used.
+    [Event description block](Event_description_block.md). If `NEW` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `NEW` is specified but `newEventClause` is omitted, the default global `APPLY` event is used.
 
 - `DELETE`
 
@@ -69,7 +46,7 @@ Unlike other context-dependent operators, the `AGGR` operator cannot be used in 
 
 - `deleteEventClause`
 
-    [Event description block](Event_description_block.md). If `DELETE` is absent — `eventClause` is used. If `DELETE` is specified but `deleteEventClause` is omitted, the default global `APPLY` event is used.
+    [Event description block](Event_description_block.md). If `DELETE` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `DELETE` is specified but `deleteEventClause` is omitted, the default global `APPLY` event is used.
 
 ### Examples
 
@@ -91,9 +68,12 @@ CLASS ShipmentInvoice 'Delivery by invoice' : Shipment;
 shipment(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice);
 date(ShipmentInvoice si) += sum(date(invoice(si)),1); // delivery date = invoice date + 1
 
-// base LOCAL event: creation/deletion handled within the session
-sessionAggr(Invoice invoice) = AGGR ShipmentInvoice LOCAL WHERE createShipment(invoice);
+// LOCAL base event: all three events run within the session
+sessionAggr(Invoice invoice) = AGGR LOCAL ShipmentInvoice WHERE createShipment(invoice);
 
-// separate events: creation — global (default), deletion — local
+// explicit NEW event clause: creation runs locally, deletion inherits the base (global) event
+newLocalAggr(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice) NEW LOCAL;
+
+// separate events: creation — global (empty NEW clause defaults to APPLY), deletion — local
 splitAggr(Invoice invoice) = AGGR ShipmentInvoice WHERE createShipment(invoice) NEW DELETE LOCAL;
 ```
