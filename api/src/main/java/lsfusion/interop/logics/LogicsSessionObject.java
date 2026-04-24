@@ -204,9 +204,11 @@ public class LogicsSessionObject {
 
             Integer twoFaMaxAttempts = !json.has("twoFaMaxAttempts") ? null : json.optInt("twoFaMaxAttempts");
 
+            boolean hideAPIErrorStackTrace = json.optBoolean("hideAPIErrorStackTrace");
+
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, PWAIcon, platformVersion, apiVersion, inDevMode,
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem,
-                    twoFaMaxAttempts);
+                    twoFaMaxAttempts, hideAPIErrorStackTrace);
         }
         return serverSettings;
     }

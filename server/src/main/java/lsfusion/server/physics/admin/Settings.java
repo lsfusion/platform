@@ -3456,6 +3456,17 @@ public class Settings implements Cloneable {
         this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
     }
 
+    // hide full stack traces in external HTTP error responses
+    private boolean hideAPIErrorStackTrace = false;
+
+    public boolean isHideAPIErrorStackTrace() {
+        return hideAPIErrorStackTrace;
+    }
+
+    public void setHideAPIErrorStackTrace(boolean hideAPIErrorStackTrace) {
+        this.hideAPIErrorStackTrace = hideAPIErrorStackTrace;
+    }
+
     //show TOOLBARBOX container on the top and switch TOOLBARLEFT and TOOLBARRIGHT containers
     private boolean toolbarTopLeft;
 
