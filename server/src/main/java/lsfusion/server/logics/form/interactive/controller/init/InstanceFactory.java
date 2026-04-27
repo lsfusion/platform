@@ -61,6 +61,11 @@ public class InstanceFactory {
     }
 
     public ObjectInstance getInstance(ObjectEntity entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
         ObjectInstance objectInstance = objectInstances.get(entity);
         if (objectInstance == null) {
             objectInstance = entity.baseClass.newInstance(entity);

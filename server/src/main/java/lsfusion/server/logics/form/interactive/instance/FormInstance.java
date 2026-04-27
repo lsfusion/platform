@@ -1860,8 +1860,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // explicit SEEK with explicit updateType
     public void seekObjects(GroupObjectInstance group, ImMap<ObjectInstance, ObjectValue> objectInstances, UpdateType type, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if(group == null)
-            group = objectInstances.getKey(0).groupTo;
+        if(group == null) {
+            ObjectInstance objectInstance = objectInstances.getKey(0);
+            if(objectInstance != null)
+                group = objectInstance.groupTo;
+        }
         if (group == null) //if seek objects from another form
             return;
         if(type == null)
