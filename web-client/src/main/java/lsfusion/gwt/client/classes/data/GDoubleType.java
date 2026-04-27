@@ -4,6 +4,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.GNumericDTO;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleCellEditor;
@@ -43,6 +44,10 @@ public class GDoubleType extends GIntegralType {
         return PValue.getPValue(doubleValue);
     }
     public double getDoubleValue(PValue value) {
+        Object rawValue = PValue.getValue(value);
+        //fix case when ABSTRACT DOUBLE is implemented with NUMERIC
+        if (rawValue instanceof GNumericDTO)
+            return ((GNumericDTO) rawValue).value;
         return PValue.getDoubleValue(value);
     }
 
