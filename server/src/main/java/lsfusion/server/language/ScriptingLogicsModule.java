@@ -205,17 +205,28 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, RSTRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE, NATIVE}
     public static class GroupingType {
-        public static final GroupingType SUM = new GroupingType();
-        public static final GroupingType MAX = new GroupingType();
-        public static final GroupingType MIN = new GroupingType();
-        public static final GroupingType CONCAT = new GroupingType();
-        public static final GroupingType AGGR = new GroupingType();
-        public static final GroupingType EQUAL = new GroupingType();
-        public static final GroupingType LAST = new GroupingType();
-        public static final GroupingType NAGGR = new GroupingType();
+        private final String name;
+
+        private GroupingType(String name) {
+            this.name = name;
+        }
+
+        public static final GroupingType SUM = new GroupingType("SUM");
+        public static final GroupingType MAX = new GroupingType("MAX");
+        public static final GroupingType MIN = new GroupingType("MIN");
+        public static final GroupingType CONCAT = new GroupingType("CONCAT");
+        public static final GroupingType AGGR = new GroupingType("AGGR");
+        public static final GroupingType EQUAL = new GroupingType("EQUAL");
+        public static final GroupingType LAST = new GroupingType("LAST");
+        public static final GroupingType NAGGR = new GroupingType("NAGGR");
 
         public int getSkipWhereIndex() {
             return this == LAST ? 1 : -1;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
     public static class CustomGroupingType extends GroupingType {
@@ -226,6 +237,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final boolean valueNull;
 
         public CustomGroupingType(String aggrFunc, boolean setOrdered, DataClass dataClass, boolean valueNull) {
+            super("CUSTOM");
             this.aggrFunc = aggrFunc;
             this.setOrdered = setOrdered;
 
