@@ -230,6 +230,22 @@ Paradigm article structure convention:
   a `Language` section
   linking to the relevant
   Language articles
+- a Paradigm article
+  SHOULD also include
+  an `Examples` section
+  with concrete code samples
+  that illustrate the abstraction;
+  these samples
+  necessarily use the corresponding
+  language syntax,
+  but their role
+  is to ground the abstract description
+  in concrete code,
+  not to serve as a syntax reference —
+  comprehensive coverage
+  of all syntactic variants
+  remains the responsibility
+  of the Language article
 
 ### 3. Guide
 
