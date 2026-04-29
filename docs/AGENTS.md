@@ -647,6 +647,13 @@ Reader-facing explanation:
   `ru/IDs.md#paramid`
   and
   `en/IDs.md#paramid`
+- if a term
+  has already been linked
+  earlier in the same article,
+  the assistant SHOULD NOT
+  add another link
+  for later occurrences
+  of that same term
 
 Syntax block rules:
 - make sure
