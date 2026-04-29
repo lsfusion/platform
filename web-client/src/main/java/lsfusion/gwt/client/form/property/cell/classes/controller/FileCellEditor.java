@@ -36,6 +36,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     private final boolean named;
 
     private Uploader newVersionUploader;
+    private LoadingBox loadingBox;
     private final List<FileInfo> fileInfos = new ArrayList<>();
 
     public FileCellEditor(EditManager editManager, boolean multipleInput, boolean storeName, List<String> validExtensions, boolean named) {
@@ -73,9 +74,20 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        if(cancel && newVersionUploader != null)
-            newVersionUploader.cancelUpload();
+        // null the field BEFORE cancelUpload(): cancelUpload fires FILE_CANCELLED synchronously, and we
+        // want that nested handler invocation to take the isCurrentUploader early-return rather than
+        // re-entering cancelEditing through cancelAction. this also makes the invariant assumed by
+        // setUploadErrorHandler hold: FILE_CANCELLED reaching the body means a spontaneous cancel.
+        Uploader uploaderToCancel = newVersionUploader;
         newVersionUploader = null;
+        if(cancel && uploaderToCancel != null)
+            uploaderToCancel.cancelUpload();
+        // tie loading box to editor lifecycle: external finishEditing must not leave a stale dialog whose
+        // cancel button would later re-enter cancelEditing with a null editContext (NPE on getEditElement)
+        if(loadingBox != null) {
+            loadingBox.hideLoadingBox(false); // false: true would re-enter cancelEditing through cancelAction
+            loadingBox = null;
+        }
     }
 
     @Override
@@ -143,7 +155,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
 
     private Uploader createUploader(Element parent, Widget popupOwnerWidget) {
-        LoadingBox loadingBox = new LoadingBox(this::cancel);
+        loadingBox = new LoadingBox(this::cancel);
 
         Uploader newVersionUploader = new Uploader();
         newVersionUploader.setUploadURL(GwtClientUtils.getUploadURL(null)) // not sure that is needed
@@ -156,6 +168,12 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                         loadingBox.hideLoadingBox(true);
                         throw new RuntimeException(errorMessage);
                     }
+                    // FILE_CANCELLED on a still-current uploader means a spontaneous cancellation:
+                    // stop() nulls newVersionUploader before its cancelUpload(), so its sync FILE_CANCELLED
+                    // takes the isCurrentUploader early-return above and never reaches here.
+                    // Drive the editor to a cancelled terminal state instead of leaving it active without
+                    // a commitable result (isUploaded() is false) — same path the non-cancelled error branch uses.
+                    loadingBox.hideLoadingBox(true);
                     return false;
                 })
                 .setFileQueuedHandler(fileQueuedEvent -> {
@@ -273,7 +291,8 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                 isShowing = false;
                 hide();
             }
-            timer.cancel();
+            if(timer != null)
+                timer.cancel();
 
             if (cancel)
                 cancelAction.run();
