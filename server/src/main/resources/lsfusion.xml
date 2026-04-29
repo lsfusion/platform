@@ -168,6 +168,7 @@
                 <entry key="generateReportsOnWebServer" value="${settings.generateReportsOnWebServer:}"/>
                 <entry key="disableLRUCollectionUsageThreshold" value="${settings.disableLRUCollectionUsageThreshold:}"/>
                 <entry key="noExecuteLocalEventsOnFormShowFallback" value="${settings.noExecuteLocalEventsOnFormShowFallback:}"/>
+                <entry key="hideAPIErrorStackTrace" value="${settings.hideAPIErrorStackTrace:}"/>
             </map>
         </property>
         </bean>

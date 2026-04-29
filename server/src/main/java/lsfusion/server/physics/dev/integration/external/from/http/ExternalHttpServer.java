@@ -321,7 +321,7 @@ public class ExternalHttpServer extends MonitorServer {
                         status = BaseUtils.nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                         message = getErrorMessage(e);
                     }
-                    sendErrorResponse(request, status, message);
+                    sendErrorResponse(request, status, logicsInstance.getSettings().isHideAPIErrorStackTrace() ? "" : message);
                 } catch (Exception ignored) {
                 }
             } finally {

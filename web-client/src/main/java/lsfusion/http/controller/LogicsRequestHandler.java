@@ -15,7 +15,7 @@ public class LogicsRequestHandler {
         this.logicsProvider = logicsProvider;
     }
 
-    private final LogicsProvider logicsProvider;
+    protected final LogicsProvider logicsProvider;
 
     protected <R> R runRequest(HttpServletRequest request, LogicsRunnable<R> runnable) throws IOException {
         try {
