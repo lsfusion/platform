@@ -11,6 +11,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.session.ExternalHttpUtils;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.hc.core5.http.HttpEntity;
@@ -50,7 +51,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
 
                 //we know that there will be a re-request, so we do not write in response - we can call getWriter() only once
                 if(!(e instanceof NoSuchObjectException) || retry) {
-                    writeResponse(response, getErrorMessage(e));
+                    writeResponse(response, getErrorMessage(e, request));
                 }
 
                 if (e instanceof RemoteException)  // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
@@ -78,12 +79,15 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
     }
 
-    private String getErrorMessage(Exception e) {
+    private String getErrorMessage(Exception e, HttpServletRequest request) {
         if(e instanceof RemoteMessageException)
             return e.getMessage();
         
         Pair<String, RemoteInternalException.ExStacks> actualStacks = RemoteInternalException.toString(e);
-        return actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.javaStack, actualStacks.second.lsfStack)+'\n'+actualStacks.second.asyncStacks;
+        ServerSettings serverSettings = logicsProvider.getServerSettings(request, false);
+
+        return serverSettings != null && serverSettings.hideAPIErrorStackTrace ? "" :
+                actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.javaStack, actualStacks.second.lsfStack)+'\n'+actualStacks.second.asyncStacks;
     }
 
     @Override

@@ -304,7 +304,7 @@ public class ExternalHttpServer extends MonitorServer {
             } catch (Exception e) {
                 ServerLoggers.systemLogger.error("ExternalHttpServer error: ", e);
                 try {
-                    sendErrorResponse(request, e.getMessage());
+                    sendErrorResponse(request, logicsInstance.getSettings().isHideAPIErrorStackTrace() ? "" : e.getMessage());
                 } catch (Exception ignored) {
                 }
             } finally {
