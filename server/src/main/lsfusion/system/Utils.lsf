@@ -494,3 +494,10 @@ FORM printBlankPageLandscape;
 META defineFileLink (caption, fileType, property, class1)
     fileLink caption (class1 param1) = fileType (webServerUrl() + '/readFile?sid=' + [ REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
 END
+
+// --------------------------- Server options --------------------------- //
+serverAvailableProcessors = DATA LOCAL INTEGER(); //number of processors available to the Java virtual machine
+serverFreeMemoryMB = DATA LOCAL LONG(); //amount of free memory in the Java Virtual Machine. How much free space is currently available in the already allocated JVM heap.
+serverTotalMemoryMB = DATA LOCAL LONG(); //total amount of memory in the Java virtual machine. How much heap space has the JVM already requested from the OS (current heap size)
+serverMaxMemoryMB = DATA LOCAL LONG(); //maximum amount of memory that the Java virtual machine will attempt to use. The upper limit of the JVM heap, specifically -Xmx (or the JVM's automatic limit if -Xmx is not explicitly specified).
+readServerMemory INTERNAL 'lsfusion.server.physics.admin.runtime.ReadServerRuntimeOptions' ();
