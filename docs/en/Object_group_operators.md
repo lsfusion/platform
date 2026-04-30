@@ -6,7 +6,7 @@ Object group operators include the following operators:
 
 ### Actions
 
--   [Search (`SEEK`)](Search_SEEK.md)
+-   [Search (`ACTIVATE`)](Activation_ACTIVATE.md#search)
 -   [Object tree visibility (`EXPAND`, `COLAPSE`)](Object_tree_visibility_EXPAND_COLLAPSE.md)
 
 ### Properties

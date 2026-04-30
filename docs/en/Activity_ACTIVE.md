@@ -2,17 +2,18 @@
 title: 'Activity (ACTIVE)'
 ---
 
-The *activity* operator creates a property that determines whether one of the following form elements is active:
+The *activity* operator creates a property or an action that returns information about an active form element. The element can be one of:
 
--   Property - whether the focus is on the specified [property](Properties.md) on the form.
--   Tab - whether one of the tabs in the specified [tab panel](Form_design.md#containers) is active.
--   Form - determines whether the specified [form](Forms.md) is active for the user.
+-   Property — returns `TRUE` if the focus is on the specified [property](Properties.md) (or [action](Actions.md)) on the form; `NULL` otherwise, including when the form is not open.
+-   Tab — returns `TRUE` if the specified tab is active in its [tab panel](Form_design.md#containers); `NULL` otherwise.
+-   Form — writes `TRUE` into a local property if the specified [form](Forms.md), or a form that [extends](Form_extension.md) it, is currently active for the user; `FALSE` otherwise.
+-   Objects — returns the current value of the specified object in a form's object group (`ACTIVE formObjectId`).
+
+For tabs, properties, and objects, the operator creates a regular property; the platform automatically updates its value whenever the focus changes, a different tab is selected, or the current object changes, so it can be used in expressions (in particular, to gate computations on inactive tabs via `IF` or `SHOWIF`). Activity of a form, on the other hand, depends on the current state of the user session and is therefore exposed via an [action](Actions.md) that writes the result of the check into the [local](Data_properties_DATA.md#local) property `isActiveForm[]`.
 
 ### Language
 
-To create a property that determines whether a tab is active, use the [`ACTIVE TAB` operator](ACTIVE_TAB_operator.md).
-To create a property that determines whether a property is active, use the [`ACTIVE PROPERTY` operator](ACTIVE_PROPERTY_operator.md).
-Whether a form is active is determined by creating an action using the [`ACTIVE FORM` operator](ACTIVE_FORM_operator.md).
+All activity forms are implemented by a single [`ACTIVE` operator](ACTIVE_operator.md): `ACTIVE TAB` (tab activity), `ACTIVE PROPERTY` (property activity), `ACTIVE FORM` (form activity — creates an action), `ACTIVE formObjectId` (active object value in a group).
 
 ### Examples
 
@@ -61,5 +62,3 @@ testActive  {
     IF isActiveForm() THEN MESSAGE 'Example form is active';
 }
 ```
-
-  

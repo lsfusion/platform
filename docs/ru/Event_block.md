@@ -38,7 +38,7 @@ ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
     - `DROP`
     - `CHANGE objName` - указывает, что действие должно быть выполнено при изменении значения объекта с именем `objName.`
     - `QUERYOK`
-    - `QUERYCANCEL`
+    - `QUERYCLOSE`
     - `EXPAND componentSelector` - указывает, что действие должно быть выполнено после разворачивания контейнера `componentSelector`. 
     - `COLLAPSE componentSelector` - указывает, что действие должно быть выполнено после сворачивания контейнера `componentSelector`.
     - `TAB componentSelector` - указывает, что действие должно быть выполнено после того, как закладка `componentSelector` стала активна. 
@@ -101,11 +101,12 @@ createReceipt ()  {
         shift(r) <- currentShift();
         cashier(r) <- currentCashier();
 
-        SEEK POS.r = r;
+        ACTIVATE POS.r = r;
     }
 }
 
-// добавляем свойство через расширение формы, чтобы можно было сделать SEEK к уже созданному объекту на форме
+// расширяем форму обработчиком ON INIT, чтобы при её открытии createReceipt создавал новый чек
+// и сразу делал его текущим объектом на форме
 EXTEND FORM POS 
     EVENTS
         // при открытии формы выполняем действие по созданию нового чека, которое заполняет смену,

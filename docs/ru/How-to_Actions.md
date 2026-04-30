@@ -12,4 +12,4 @@ title: 'How-to: Действия'
 6.  [`IF`/`CASE`](How-to_IF_CASE.md). Ветвление выполнения.
 7.  [`WHILE`](How-to_WHILE.md). Операция рекурсивного цикла.
 8.  [`NEWSESSION`](How-to_NEWSESSION.md). Создание новой сессии изменений.
-9.  [`SEEK`](How-to_SEEK.md). Изменение текущего объекта в форме.
+9.  [`ACTIVATE`](How-to_ACTIVATE.md). Изменение текущего объекта в форме.

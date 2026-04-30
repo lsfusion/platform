@@ -12,7 +12,7 @@ title: 'Операторы-действия'
 
 -   [Оператор `{...}`](Braces_operator.md)
 -   [Оператор `ACTIVATE`](ACTIVATE_operator.md)
--   [Оператор `ACTIVE FORM`](ACTIVE_FORM_operator.md)
+-   [Оператор `ACTIVE`](ACTIVE_operator.md)
 -   [Оператор `APPLY`](APPLY_operator.md)
 -   [Оператор `ASK`](ASK_operator.md)
 -   [Оператор `BREAK`](BREAK_operator.md)
@@ -45,7 +45,6 @@ title: 'Операторы-действия'
 -   [Оператор `READ`](READ_operator.md)
 -   [Оператор `REQUEST`](REQUEST_operator.md)
 -   [Оператор `RETURN`](RETURN_operator.md)
--   [Оператор `SEEK`](SEEK_operator.md)
 -   [Оператор `SHOW`](SHOW_operator.md)
 -   [Оператор `TRY`](TRY_operator.md)
 -   [Оператор `WHILE`](WHILE_operator.md)

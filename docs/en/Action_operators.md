@@ -12,7 +12,7 @@ Context dependent action operators can use external context parameters. They can
 
 -   [`{...}` operator](Braces_operator.md)
 -   [`ACTIVATE` operator](ACTIVATE_operator.md)
--   [`ACTIVE FORM` operator](ACTIVE_FORM_operator.md)
+-   [`ACTIVE` operator](ACTIVE_operator.md)
 -   [`APPLY` operator](APPLY_operator.md)
 -   [`ASK` operator](ASK_operator.md)
 -   [`BREAK` operator](BREAK_operator.md)
@@ -45,7 +45,6 @@ Context dependent action operators can use external context parameters. They can
 -   [`READ` operator](READ_operator.md)
 -   [`REQUEST` operator](REQUEST_operator.md)
 -   [`RETURN` operator](RETURN_operator.md)
--   [`SEEK` operator](SEEK_operator.md)
 -   [`SHOW` operator](SHOW_operator.md)
 -   [`TRY` operator](TRY_operator.md)
 -   [`WHILE` operator](WHILE_operator.md)

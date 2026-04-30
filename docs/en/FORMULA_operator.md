@@ -16,6 +16,80 @@ The `FORMULA` operator creates a property that executes an arbitrary formula in 
 
 `FORMULA` is a [context-independent](Property_operators.md#contextindependent) property operator: it cannot appear inside [expressions](Expression.md). Use it on the right-hand side of an `=` statement or anonymously inside brackets in a [`JOIN` operator](JOIN_operator.md) usage.
 
+#### Two operating modes
+
+The FORMULA operator works in one of two modes depending on whether every property parameter appears in the formula text or not:
+
+**1. Expression mode** (default)
+
+Every parameter is referenced in the formula text. For each combination of input values the formula returns exactly one result — like a mathematical function. This is the most common usage.
+
+```lsf
+round(number, digits) = FORMULA 'round(CAST(($1) as numeric), $2)';
+```
+
+**2. Table-valued function mode**
+
+Some database functions do not return a single value — they return a *set* of rows. For example, "split a string by delimiter" can yield zero, one, or many results. In lsFusion a property must return exactly one value per unique combination of its parameters, so an extra parameter is needed to pinpoint a specific row in the result set.
+
+When at least one property parameter is **absent** from the formula text, lsFusion automatically switches to table-valued function mode. The unused parameter(s) become additional key dimensions that uniquely identify each row of the result. The `valueName` token specifies which column of the function's output holds the actual value to return.
+
+The two modes are mutually exclusive and are chosen automatically — no extra keyword is needed.
+
+##### How unused parameters identify a row
+
+There are two variants:
+
+**`row INTEGER` — ordinal access**
+
+If there is exactly one unused parameter named `row` with type `INTEGER`, lsFusion automatically assigns sequential integer numbers (1, 2, 3, …) to the rows produced by the function. To retrieve the third element pass `row = 3`; to iterate over all elements use aggregation over `row`.
+
+```lsf
+// elements of a JSON array, accessed by 1-based index
+array(JSON json, INTEGER row) = FORMULA JSON value 'jsonb_array_elements($json)';
+
+// words of a string split by delimiter, accessed by 1-based index
+array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
+```
+
+**Any other name/type — key-column access**
+
+In all other cases each unused parameter name must match a column that the function itself returns. lsFusion uses those columns as join keys: pass the desired key value(s) as the parameter(s) to retrieve the corresponding row. Multiple unused parameters form a composite key — each maps independently to the output column of the same name.
+
+The function must naturally produce columns whose names match the parameter names. For example, `jsonb_each` returns pairs `(key, value)` — so the unused parameter `key STRING` maps directly to the `key` column, and `valueName = value` names the column to read back.
+
+```lsf
+// value at a given key inside a JSON object
+map(JSON json, STRING key) = FORMULA JSON value 'jsonb_each($json)';
+
+// value at a given key as plain text
+mapText(JSON json, STRING key) = FORMULA STRING value 'jsonb_each_text($json)';
+```
+
+#### Referencing parameters in the formula text
+
+Parameters can be referenced either by **position** (`$1`, `$2`, ...) or by **name** (`$paramName`).
+
+Named references are resolved in the following order:
+1. If an explicit parameter list `(...)` is given after the formula text, its names are used.
+2. Otherwise the names are taken from the property's own parameter list.
+
+Positional and named references can be mixed freely.
+
+```lsf
+// names come from the property's own parameters
+substring(STRING string, STRING regexp) = FORMULA NULL STRING PG 'SELECT substring($string, $regexp)';
+
+// names declared explicitly in (...)
+toDateTime = FORMULA DATETIME '($date) + ($time)' (DATE date, TIME time);
+```
+
+#### NULL semantics
+
+By default, if any parameter value is NULL the formula returns NULL immediately without evaluating the expression (standard arithmetic behaviour: `NULL + 5 = NULL`).
+
+The two `NULL` keywords modify this behaviour (see Parameters section). They are independent and can be specified together.
+
 ### Parameters
 
 - `NULL`

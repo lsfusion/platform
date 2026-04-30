@@ -1,5 +1,5 @@
 ---
-title: 'How-to: SEEK'
+title: 'How-to: ACTIVATE'
 ---
 
 ## Пример 1
@@ -52,7 +52,7 @@ createBook 'Создать книгу' (Category c)  {
         NEW newBook = Book {
             category(newBook) <- c;
             DIALOG book OBJECTS b = newBook INPUT DO {
-                SEEK books.b = newBook;
+                ACTIVATE books.b = newBook;
             }
         }
     }
@@ -63,7 +63,7 @@ EXTEND FORM books
 ;
 ```
 
-После закрытия формы вызывается [оператор `SEEK`](SEEK_operator.md), который делает добавленный объект активным.
+После закрытия формы вызывается [оператор `ACTIVATE`](ACTIVATE_operator.md), который делает добавленный объект активным.
 
 ## Пример 2
 
@@ -102,7 +102,7 @@ EXTEND FORM options PROPERTIES() nameDefaultCustomer;
 DESIGN options { commons { MOVE PROPERTY(nameDefaultCustomer()); } }
 
 EXTEND FORM prices
-    EVENTS ON INIT { SEEK prices.c = defaultCustomer(); }
+    EVENTS ON INIT { ACTIVATE prices.c = defaultCustomer(); }
 ;
 ```
 
@@ -131,16 +131,16 @@ NAVIGATOR {
 
 ```lsf
 setReportLastWeek 'Последняя неделя' ()  {
-    SEEK report.dFrom = subtract(currentDate(), 7);
-    SEEK report.dTo = subtract(currentDate(), 1);
+    ACTIVATE report.dFrom = subtract(currentDate(), 7);
+    ACTIVATE report.dTo = subtract(currentDate(), 1);
 }
 setReportCurrentMonth 'Текущий месяц' ()  {
-    SEEK report.dFrom = firstDayOfMonth(currentDate());
-    SEEK report.dTo = lastDayOfMonth(currentDate());
+    ACTIVATE report.dFrom = firstDayOfMonth(currentDate());
+    ACTIVATE report.dTo = lastDayOfMonth(currentDate());
 }
 setReportLastMonth 'Последний месяц' ()  {
-    SEEK report.dFrom = firstDayOfMonth(subtract(firstDayOfMonth(currentDate()), 1));
-    SEEK report.dTo = subtract(firstDayOfMonth(currentDate()), 1);
+    ACTIVATE report.dFrom = firstDayOfMonth(subtract(firstDayOfMonth(currentDate()), 1));
+    ACTIVATE report.dTo = subtract(firstDayOfMonth(currentDate()), 1);
 }
 
 EXTEND FORM report
@@ -149,3 +149,75 @@ EXTEND FORM report
 ```
 
 Свойства по работе с датами находятся в [системном модуле](Modules.md) `Time`, который подключается в самом начале через инструкцию `REQUIRE`.
+
+## Пример 4
+
+### Условие
+
+Пользователь открывает форму отчета и сразу должен ввести дату начала; фокус нужно поставить на соответствующее поле без клика мышью.
+
+```lsf
+FORM report 'Отчет'
+    OBJECTS dFrom = DATE PANEL, dTo = DATE PANEL
+    PROPERTIES VALUE(dFrom), VALUE(dTo)
+;
+```
+
+### Решение
+
+```lsf
+EXTEND FORM report
+    EVENTS ON INIT { ACTIVATE PROPERTY report.dFrom; }
+;
+```
+
+При открытии формы срабатывает событие [`ON INIT`](Event_block.md) и [оператор `ACTIVATE`](ACTIVATE_operator.md) переводит фокус на поле `dFrom`. `ACTIVATE PROPERTY` работает с любым свойством, отображаемым на форме — как с панельным, так и с гридовым или древовидным.
+
+## Пример 5
+
+### Условие
+
+На форме CRM две закладки — `'Клиенты'` и `'Заказы'`. После создания нового заказа нужно автоматически переключиться на закладку `'Заказы'` и выделить созданный заказ.
+
+```lsf
+CLASS Customer 'Клиент';
+name 'Наименование' = DATA ISTRING[50] (Customer);
+
+CLASS Order 'Заказ';
+number 'Номер' = DATA INTEGER (Order);
+customer 'Клиент' = DATA Customer (Order);
+
+FORM crm 'CRM'
+    OBJECTS c = Customer
+    PROPERTIES(c) name
+
+    OBJECTS o = Order
+    PROPERTIES(o) number, nameCustomer = name(customer(o))
+;
+
+DESIGN crm {
+    NEW tabs FIRST {
+        tabbed = TRUE;
+        NEW customersTab { caption = 'Клиенты'; MOVE BOX(c); }
+        NEW ordersTab { caption = 'Заказы'; MOVE BOX(o); }
+    }
+}
+```
+
+### Решение
+
+```lsf
+createOrder 'Создать заказ' (Customer c)  {
+    NEW o = Order {
+        customer(o) <- c;
+        ACTIVATE TAB crm.ordersTab;
+        ACTIVATE crm.o = o;
+    }
+}
+
+EXTEND FORM crm
+    PROPERTIES(c) createOrder
+;
+```
+
+`ACTIVATE TAB` переключает активную закладку панели на `'Заказы'`, после чего `ACTIVATE crm.o = o` делает созданный заказ текущим объектом.

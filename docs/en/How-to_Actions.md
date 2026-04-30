@@ -12,4 +12,4 @@ title: 'How-to: Actions'
 6.  [`IF`/`CASE`](How-to_IF_CASE.md): Execution branching.
 7.  [`WHILE`](How-to_WHILE.md): Recursive loops.
 8.  [`NEWSESSION`](How-to_NEWSESSION.md): Creating a new change session.
-9.  [`SEEK`](How-to_SEEK.md). Changing the current object in the form.
+9.  [`ACTIVATE`](How-to_ACTIVATE.md). Changing the current object in the form.

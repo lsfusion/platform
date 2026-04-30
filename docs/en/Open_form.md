@@ -28,5 +28,5 @@ By default, all passed values of objects must be defined (not `NULL`); otherwise
 
 
 :::info
-It is worth noting that passing objects in the interactive view is basically the same as the [object seek](Search_SEEK.md) operation after the form is opened. In this case, the passed objects are the seek objects, and the [seek direction](Search_SEEK.md#direction) is determined by the default object type (`PREV` here is equivalent to `FIRST`).
+It is worth noting that passing objects in the interactive view is basically the same as the [object seek](Activation_ACTIVATE.md#search) operation after the form is opened. In this case, the passed objects are the seek objects, and the [seek direction](Activation_ACTIVATE.md#direction) is determined by the default object type (`PREV` here is equivalent to `FIRST`).
 :::

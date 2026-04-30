@@ -8,7 +8,7 @@ A form opened in *interactive* mode is a graphical component with a certain [des
 
 In the interactive view, object groups can be displayed in a table. The rows in the table are object collections, and the columns are properties. The records displayed in the table and their order are determined by the current [filters](Form_structure.md#filters) and [orders](Form_structure.md#sort).
 
-[Current values](Form_structure.md#currentObject) of objects can change either as a result of an action created using the special search operator [(`SEEK`)](Search_SEEK.md), or as a result of a change to the current row, if an object group is displayed in a table.
+[Current values](Form_structure.md#currentObject) of objects can change either as a result of an action created using the special search operator [(`ACTIVATE`)](Activation_ACTIVATE.md#search), or as a result of a change to the current row, if an object group is displayed in a table.
 
 When an object group is displayed in a table, the number of rows (object collections) displayed can either be determined automatically based on the height of the visible part of the table, or specified by the developer explicitly when creating the form.
 
@@ -76,7 +76,7 @@ If none of these options is explicitly specified, the platform will try to deter
 
 
 :::info
-It is worth noting that the selection of objects by default is pretty the same as the [object search](Search_SEEK.md) operation, where the search objects are:
+It is worth noting that the selection of objects by default is pretty the same as the [object search](Activation_ACTIVATE.md#search) operation, where the search objects are:
 
 -   for type `PREV`
     -   on opening a form: either the passed objects, or, if there are none, the last used objects for the form object class.

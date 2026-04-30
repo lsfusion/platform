@@ -150,12 +150,12 @@ createReceipt ()  {
         shift(r) <- currentShift();
         cashier(r) <- currentCashier();
 
-        SEEK POS.r = r;
+        ACTIVATE POS.r = r;
     }
 }
 
-// adding a property through the form extension so that SEEK could be applied
-// to the already created object on the form
+// extending the form with an ON INIT handler so that opening it runs createReceipt,
+// which creates a new receipt and makes it the current object on the form
 EXTEND FORM POS 
     EVENTS
         // when opening the form, executing the action to create a new receipt,

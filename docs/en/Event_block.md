@@ -38,7 +38,7 @@ The event block allows to define handlers for [form events](Form_events.md) that
     - `DROP`
     - `CHANGE objName` – specifies that the action will be executed when the object `objName` is changed.
     - `QUERYOK`
-    - `QUERYCANCEL`
+    - `QUERYCLOSE`
     - `EXPAND componentSelector` - specifies that the action will be executed after the `componentSelector` container is expanded.
     - `COLLAPSE componentSelector` - specifies that the action will be executed after the `componentSelector` container is collapsed.
     - `TAB componentSelector` - specifies that the action will be executed after the `componentSelector` tab becomes active.
@@ -102,12 +102,12 @@ createReceipt ()  {
         shift(r) <- currentShift();
         cashier(r) <- currentCashier();
 
-        SEEK POS.r = r;
+        ACTIVATE POS.r = r;
     }
 }
 
-// adding a property through the form extension so that SEEK could be applied to the already created
-// object on the form
+// extending the form with an ON INIT handler so that opening it runs createReceipt,
+// which creates a new receipt and makes it the current object on the form
 EXTEND FORM POS 
     EVENTS
         // when opening the form, executing the action to create a new receipt, 
