@@ -216,6 +216,11 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return (value ? "1" : "0");
     }
 
+    @Override
+    public String getBitCastFromObject(String value) {
+        return "CASE WHEN " + value + " IS NOT NULL THEN 1 ELSE NULL END";
+    }
+
     public int updateModel() {
         return 0;
     }

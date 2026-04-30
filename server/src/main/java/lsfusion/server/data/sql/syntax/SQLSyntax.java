@@ -89,6 +89,7 @@ public interface SQLSyntax {
     int getBitSQL();
 
     String getBitString(Boolean value);
+    String getBitCastFromObject(String value);
 
     String getTextType();
     int getTextSQL();

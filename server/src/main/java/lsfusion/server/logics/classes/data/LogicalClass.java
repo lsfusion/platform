@@ -7,6 +7,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -93,6 +94,13 @@ public class LogicalClass extends DataClass<Boolean> {
     }
     public int getSQL(SQLSyntax syntax) {
         return syntax.getBitSQL();
+    }
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        if(typeFrom instanceof ObjectType)
+            return syntax.getBitCastFromObject(value);
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     public Boolean read(Object value) {
