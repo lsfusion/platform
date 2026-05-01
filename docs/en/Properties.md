@@ -19,15 +19,14 @@ To create properties, use the [`=` statement](=_statement.md).
 ### Examples
 
 ```lsf
-// property defined by the context-independent DATA property operator
-cost 'Cost' (i) = DATA NUMERIC[12,3] (Item);
+CLASS Item;
 
-// property defined by expression
-weightedSum 'Weighted amount' (a, b) = 2*a + 3*b;
+// a property associates each Item with a value kept in the database
+price (Item i) = DATA NUMERIC[14,2] (Item);
 
-// the caption of this property will be 'diff' and the parameters will be (a, b)
-diff = a - b;
+// a property can be computed from other properties
+priceWithVAT (Item i) = price(i) * 1.20;
 
-// property defined by DATA operator with additional property options
-teamName 'Team name' = DATA BPSTRING[30](Team) IN baseGroup TABLE team; 
+// a property may take no parameters — a single value
+defaultVAT = DATA NUMERIC[6,2] ();
 ```
