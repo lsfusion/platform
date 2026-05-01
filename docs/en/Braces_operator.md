@@ -18,7 +18,7 @@ Operators can be of two types:
 
 ```
 actionOperator
-LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
+LOCAL [NESTED [MANAGESESSION | NOMANAGESESSION]] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
 ```
 
 ### Description
@@ -33,7 +33,14 @@ A sequence of [action operators](Action_operators.md) and `LOCAL` operators encl
 
 - `NESTED`
 
-    A keyword that, when specified, marks the local property as [nested](Session_management.md#nested); that is, all of its changes will be visible in new sessions, and when these sessions are closed, changes to this property will get to the current session. Note that this behavior is similar to the behavior of a regular local property (not `NESTED`) when using the [`NEWSESSION` operator](NEWSESSION_operator.md) with the specified keyword `NESTED LOCAL` (or just `NESTED` if this local property is explicitly specified in the property list)
+    A keyword that marks the local property as [nested](Session_management.md#nested). Without additional modifiers, the property is treated as nested both when crossed by [`NEWSESSION`](NEWSESSION_operator.md) and during [`APPLY`](APPLY_operator.md) / [`CANCEL`](CANCEL_operator.md). Same semantics as in the [`DATA` operator](DATA_operator.md).
+
+- `MANAGESESSION` | `NOMANAGESESSION`
+
+    Keywords that can only be used after `NESTED`.
+
+    - `MANAGESESSION` means the property is treated as nested only for `APPLY` / `CANCEL`.
+    - `NOMANAGESESSION` means the property is treated as nested only when crossed by `NEWSESSION`.
 
 - `name1, ..., nameN`
 

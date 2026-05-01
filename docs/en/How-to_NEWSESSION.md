@@ -98,7 +98,7 @@ We need to create an action that will delete the marked orders and immediately s
 
 ```lsf
 deleteSelectedOrders 'Delete marked orders' ()  {
-    NEWSESSION NESTED(selected) {
+    NEWSESSION NESTED (selected[Order]) {
         DELETE Order o WHERE selected(o);
         ASK 'You are about to delete ' + (GROUP SUM 1 IF DROPPED(o IS Order)) + ' orders. Continue?' DO {
             APPLY;
@@ -111,7 +111,7 @@ EXTEND FORM orders
 ;
 ```
 
-By default, a new session ignores changes made in the "upper" session. To make the selected property available in the new session, use the `NESTED` block of operators. Otherwise, the `selected` property will always be `NULL`. Alternatively, you can use the `NESTED LOCAL` block instead of specifying particular properties. In this case, changes made to all local properties in the upper session will be visible.
+By default, a new session ignores changes made in the "upper" session. To make the `selected[Order]` property available in the new session, list it in the `NESTED (...)` block on the corresponding `NEWSESSION` operator (`NESTED (selected[Order])`). Otherwise, the `selected[Order]` property will always be `NULL`. Alternatively, you can use `NESTED LOCAL` instead of specifying particular properties. In this case, changes made to all local properties in the upper session will be visible.
 
 ## Example 4
 
@@ -155,6 +155,6 @@ EXTEND FORM order
 
 If you use the [`NESTEDSESSION` operator](NESTEDSESSION_operator.md), then all the changes made in the "upper" change session will be available in the nested session. If the user closes the form without clicking OK, then all changes made directly in the form will be lost. If the user clicks OK, then the changes will be written to the "upper" change session rather than to the database. They will be written to the database along with the changes made in the main `orders` form.
 
-It is not allowed to use `NEWSESSION` here simply because the `orderPayments` form will not be able to see the newly created order which has not yet been added to the database (since changes made in the "upper" session are not visible in the nested one), and thus the behavior will be unpredictable.
+It is not allowed to use `NEWSESSION` here simply because the `orderPayments` form will not be able to see the newly created order which has not yet been added to the database (since changes made in the "upper" session are not visible in a new session created by `NEWSESSION`), and thus the behavior will be unpredictable.
 
 If we do not use any session management operator at all, then if the user make any changes in the `orderPayments` form and clicks the Close button, the changes will still be "saved", though the user might not expect that.

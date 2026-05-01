@@ -1228,6 +1228,30 @@ parenthesis-call notation
 (`foo()`, `foo(<name>)`)
 MUST NOT be used.
 
+When referring
+to a language construction
+that has a human-language name
+in addition to its keyword form
+(for example,
+"applying changes" for `APPLY`,
+"canceling changes" for `CANCEL`,
+"creating a new session" for `NEWSESSION`,
+"creating a nested session" for `NESTEDSESSION`),
+prose SHOULD prefer
+the human-language name,
+especially in Paradigm articles
+that describe the abstraction.
+The bare keyword form
+is appropriate
+in `Syntax` blocks,
+in code examples,
+and in `Parameters` items
+that describe a specific keyword,
+but it SHOULD NOT
+be the primary reference
+in narrative descriptions
+of the abstraction.
+
 Examples:
 
 When adding code examples,

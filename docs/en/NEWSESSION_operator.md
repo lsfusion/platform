@@ -7,35 +7,51 @@ The `NEWSESSION` operator creates an [action](Actions.md) that executes the othe
 ### Syntax
 
 ```
-NEWSESSION [NEWSQL] [nestedBlock] action 
+NEWSESSION [NEWSQL] [FORMS formId1, ..., formIdM] [NESTED [nestedPropertySelector] [CLASSES]] [SINGLE] action
 ```
 
-where `nestedBlock` has one of two possible syntaxes:
+where `nestedPropertySelector` has one of the following forms:
 
 ```
-NESTED LOCAL
-NESTED (propertyId1, ..., propertyIdN)
+LOCAL
+(propertyId1, ..., propertyIdN)
 ```
 
 ### Description
 
 The `NEWSESSION` operator creates an action which executes the other action in a new session.
 
-If the `NESTED` keyword is specified, the changes of the [local properties](Data_properties_DATA.md#local) will be visible in the new session. If the `LOCAL` keyword is specified, changes of all the local properties will be visible, otherwise, a list of the local properties whose changes need to be visible in the new session should be specified. Also, changes to these local properties in the new session will get to the current session when applying changes in this new session.
+If `NESTED LOCAL` or `NESTED (propertyId1, ..., propertyIdN)` is specified, changes of the corresponding [local properties](Data_properties_DATA.md#local) of the current session are made visible in the new session. Also, changes to these local properties in the new session will get to the current session when applying changes in this new session.
 
 ### Parameters
 
 - `NEWSQL`
 
-    If this keyword is specified, a new SQL connection will be created. In this case, the block containing the `NESTED` keyword will be ignored.
+    If this keyword is specified, a new SQL connection will be created. In this case, the entire `NESTED ... [CLASSES]` block is ignored — neither local property values nor class changes are migrated into the new session.
+
+- `formId1, ..., formIdM`
+
+    List of [form IDs](IDs.md#cid), specified after `FORMS`, that the new session is fixed to. The session will appear as the change session of those forms; this is used when the action being executed needs to behave as if invoked from those forms.
+
+- `NESTED`
+
+    Optional keyword after which you can specify which local properties of the current session are migrated into the new session. By itself, with neither `LOCAL` nor a property list, it has no effect.
 
 - `LOCAL`
 
-    If this keyword is specified, changes to all the local properties will be visible in the new session.
+    Keyword. If specified after `NESTED`, changes to all the local properties will be visible in the new session.
 
 - `propertyId1, ..., propertyIdN`
 
-    A list of local properties whose changes will be visible in the new session. Each list element must be a [property ID](IDs.md#propertyid).
+    Non-empty list of local properties, specified after `NESTED` in parentheses, whose changes will be visible in the new session. Each list element must be a [property ID](IDs.md#propertyid).
+
+- `CLASSES`
+
+    Optional keyword. If specified after `NESTED` and the optional nested-property selector, [class changes](Class_change_CHANGECLASS_DELETE.md) of existing objects (and the objects [created](New_object_NEW.md) in the current session) are also migrated into the new session, in addition to whatever local properties the selector covers.
+
+- `SINGLE`
+
+    Optional keyword. If the `NEWSESSION` is itself called inside an [apply transaction](Apply_changes_APPLY.md), this flag is propagated to the inner action: changes to stored properties used by it are flushed incrementally during the transaction instead of being batched at the end of the apply.
 
 - `action`
 
@@ -59,7 +75,7 @@ testNewSession ()  {
     NEWSESSION {
         MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return NULL
     }
-    NEWSESSION NESTED (local) {
+    NEWSESSION NESTED (local[Currency]) {
         // will return the number of objects of class Currency
         MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); 
     }
@@ -72,5 +88,40 @@ testNewSession ()  {
         }
     }
 
+}
+
+// migrate a new object together with the selected local property into the new session
+selected = DATA LOCAL BOOLEAN (Sku);
+markSelected ()  {
+    NEW s = Sku;
+    selected(s) <- TRUE;
+    NEWSESSION NESTED (selected[Sku]) CLASSES {
+        // both the newly created Sku and selected[Sku] are visible here
+        MESSAGE (GROUP SUM 1 IF selected(Sku s));
+    }
+}
+
+// fix the new session to a specific form
+showOnOrders ()  {
+    NEWSESSION FORMS orders {
+        SHOW orders;
+    }
+}
+
+// run an action in a fresh SQL connection
+backgroundJob ()  {
+    NEWSESSION NEWSQL {
+        APPLY;
+    }
+}
+
+// SINGLE — only meaningful when NEWSESSION is itself executed inside an apply transaction
+recalc ()  {
+    APPLY {
+        NEWSESSION SINGLE {
+            // changes here are flushed incrementally during the outer apply
+            id(Sku s) <- (GROUP MAX id(Sku ss)) (+) 1;
+        }
+    }
 }
 ```

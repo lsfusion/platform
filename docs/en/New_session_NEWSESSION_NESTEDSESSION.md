@@ -4,7 +4,7 @@ title: 'New session (NEWSESSION, NESTEDSESSION)'
 
 The new [session](Change_sessions.md) operator allows you to execute an action in a session different from the current one. 
 
-As with other session management operators, you can explicitly specify [nested local properties](Session_management.md#nested) for the new session operator.
+As with other session management operators, you can explicitly specify [nested local properties](Session_management.md#nested) for `NEWSESSION` (it lets you list which local properties of the current session are migrated into the new one). `NESTEDSESSION` does not need this — it copies the entire current session into the nested one anyway.
 
 ### Nested sessions {#nested}
 
@@ -17,64 +17,23 @@ To create an action that executes another action in a new session, use the [`NEW
 ### Examples
 
 ```lsf
-testNewSession ()  {
+// NEWSESSION runs an action in a fresh session — outer-session changes are not visible inside
+isolatedRun (Currency c)  {
+    name(c) <- 'pending'; // change in the outer session
     NEWSESSION {
-        NEW c = Currency {
-            name(c) <- 'USD';
-            code(c) <- 866;
-        }
-        APPLY;
+        // here name(c) returns the database value, not 'pending'
+        NEW c2 = Currency;
+        APPLY; // commits only the new Currency; name(c) stays pending in the outer session
     }
-    // here a new object of class Currency is already in the database
-
-    LOCAL local = BPSTRING[10] (Currency);
-    local(Currency c) <- 'Local';
-    NEWSESSION {
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return NULL
-    }
-    NEWSESSION NESTED (local) {
-        // will return the number of objects of class Currency
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); 
-    }
-
-    NEWSESSION {
-        NEW s = Sku {
-            id(s) <- 1234;
-            name(s) <- 'New Sku';
-            SHOW sku OBJECTS s = s;
-        }
-    }
-
-}
-```
-
-
-```lsf
-testNestedSession ()  {
-    NESTEDSESSION {
-        name(Sku s) <- 'aaa';
-        // in fact, the changes will not be applied to the database, but to the "upper" session
-        APPLY; 
-    }
-
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // returns all rows
-    CANCEL;
-    // returns NULL if there was no Sku named aaa in the database before
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); 
-
 }
 
-FORM sku
-    OBJECTS s = Sku PANEL
-    PROPERTIES(s) id, name
-;
-newNestedSession()  {
+// NESTEDSESSION inherits the outer session — applying changes inside copies them back to the outer one
+inheritedEdit (Sku s)  {
+    name(s) <- 'temp'; // change in the outer session
     NESTEDSESSION {
-        NEW s = Sku {
-            // shows the form, but any changes in it will not be applied to the database,
-            // but will be saved in the "upper session" session
-            SHOW sku OBJECTS s = s;
-        }
+        // sees name(s) == 'temp' from the outer session
+        name(s) <- 'final';
+        APPLY; // copies the change back to the outer session, not to the database
     }
 }
 ```

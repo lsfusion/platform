@@ -7,7 +7,7 @@ The `NESTEDSESSION` operator creates an [action](Actions.md) that executes the o
 ### Syntax
 
 ```
-NESTEDSESSION action 
+NESTEDSESSION [SINGLE] action
 ```
 
 ### Description
@@ -15,6 +15,10 @@ NESTEDSESSION action
 The `NESTEDSESSION` operator creates an action which executes the other action in a nested session. With that, all changes that have already been made in the current session get into the created nested session. Also, all changes that are made in the nested session will get into the current session when [the changes are applied](Apply_changes_APPLY.md) in the nested session.
 
 ### Parameters
+
+- `SINGLE`
+
+    Optional keyword. If the `NESTEDSESSION` is itself called inside an [apply transaction](Apply_changes_APPLY.md), this flag is propagated to the inner action: changes to stored properties used by it are flushed incrementally during the transaction instead of being batched at the end of the apply.
 
 - `action`
 
@@ -47,6 +51,16 @@ newNestedSession()  {
             // shows the form, but any changes in it will not be applied to the database, 
             // but will be saved in the "upper session" session
             SHOW sku OBJECTS s = s;
+        }
+    }
+}
+
+// SINGLE — only meaningful when NESTEDSESSION is itself executed inside an apply transaction
+recalcNested ()  {
+    APPLY {
+        NESTEDSESSION SINGLE {
+            // changes here are flushed incrementally during the outer apply
+            name(Sku s) <- 'recalculated';
         }
     }
 }

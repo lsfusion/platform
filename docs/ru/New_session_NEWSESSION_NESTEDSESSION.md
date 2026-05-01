@@ -4,7 +4,7 @@ title: 'Создание сессий (NEWSESSION, NESTEDSESSION)'
 
 Оператор создания новой [сессии](Change_sessions.md) позволяет выполнить действие в другой, отличной от текущей, сессии. 
 
-Как и для других операторов управления сессиями, для оператора создания сессии можно явно указать [вложенные локальные свойства](Session_management.md#nested).
+Как и для других операторов управления сессиями, для `NEWSESSION` можно явно указать [вложенные локальные свойства](Session_management.md#nested) (оператор позволяет перечислить, какие локальные свойства текущей сессии переносятся в новую). Для `NESTEDSESSION` это не нужно — он и так копирует во вложенную сессию всю текущую.
 
 ### Вложенные сессии {#nested}
 
@@ -17,63 +17,23 @@ title: 'Создание сессий (NEWSESSION, NESTEDSESSION)'
 ### Примеры
 
 ```lsf
-testNewSession ()  {
+// NEWSESSION выполняет действие в свежей сессии — изменения внешней сессии внутри не видны
+isolatedRun (Currency c)  {
+    name(c) <- 'pending'; // изменение во внешней сессии
     NEWSESSION {
-        NEW c = Currency {
-            name(c) <- 'USD';
-            code(c) <- 866;
-        }
-        APPLY;
+        // здесь name(c) возвращает значение из базы, а не 'pending'
+        NEW c2 = Currency;
+        APPLY; // в базу запишется только новый Currency; name(c) останется отложенным во внешней сессии
     }
-    // здесь новый объект класса Currency уже в базе данных
-
-    LOCAL local = BPSTRING[10] (Currency);
-    local(Currency c) <- 'Local';
-    NEWSESSION {
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // возвратит NULL
-    }
-    NEWSESSION NESTED (local) {
-        // возвратит кол-во объектов класса Currency
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); 
-    }
-
-    NEWSESSION {
-        NEW s = Sku {
-            id(s) <- 1234;
-            name(s) <- 'New Sku';
-            SHOW sku OBJECTS s = s;
-        }
-    }
-
-}
-```
-
-
-```lsf
-testNestedSession ()  {
-    NESTEDSESSION {
-        name(Sku s) <- 'aaa';
-        APPLY; // на самом деле изменения применятся не в базу данных, а в "верхнюю" сессию
-    }
-
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // возвращает все строки
-    CANCEL;
-    // возвращает NULL, если в базе не было раньше Sku с именем aaa
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); 
-
 }
 
-FORM sku
-    OBJECTS s = Sku PANEL
-    PROPERTIES(s) id, name
-;
-newNestedSession()  {
+// NESTEDSESSION наследует внешнюю сессию — применение изменений внутри копирует их обратно во внешнюю
+inheritedEdit (Sku s)  {
+    name(s) <- 'temp'; // изменение во внешней сессии
     NESTEDSESSION {
-        NEW s = Sku {
-            // показывает форму, но любые изменения в ней не будут применены в базу данных,
-            // а будут сохранены в "верхней сессии"
-            SHOW sku OBJECTS s = s;
-        }
+        // здесь видно name(s) == 'temp' из внешней сессии
+        name(s) <- 'final';
+        APPLY; // изменение копируется обратно во внешнюю сессию, в базу не пишется
     }
 }
 ```

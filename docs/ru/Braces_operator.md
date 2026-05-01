@@ -18,7 +18,7 @@ title: 'Оператор {...}'
 
 ```
 actionOperator
-LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
+LOCAL [NESTED [MANAGESESSION | NOMANAGESESSION]] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
 ```
 
 ### Описание
@@ -33,7 +33,14 @@ LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
 
 - `NESTED`
 
-    Ключевое слово, при указании которого локальное свойство будет помечено как [вложенное](Session_management.md#nested), то есть все его изменения будут видны в новых сессиях, а при закрытии этих сессий, изменения этого свойства попадут в текущую сессию. Отметим, что такое поведение аналогично поведению обычного локального свойства (не `NESTED`) при использовании [оператора `NEWSESSION`](NEWSESSION_operator.md) с указанным ключевым словом `NESTED LOCAL` (или просто `NESTED`, если это локальное свойство явно указано в списке свойств)
+    Ключевое слово, помечающее локальное свойство как [вложенное](Session_management.md#nested). Без дополнительных модификаторов свойство трактуется как вложенное и при пересечении [`NEWSESSION`](NEWSESSION_operator.md), и при выполнении [`APPLY`](APPLY_operator.md) / [`CANCEL`](CANCEL_operator.md). Семантика та же, что и в [операторе `DATA`](DATA_operator.md).
+
+- `MANAGESESSION` | `NOMANAGESESSION`
+
+    Ключевые слова, которые могут указываться только после `NESTED`.
+
+    - `MANAGESESSION` означает, что свойство трактуется как вложенное только для `APPLY` / `CANCEL`.
+    - `NOMANAGESESSION` означает, что свойство трактуется как вложенное только при пересечении `NEWSESSION`.
 
 - `name1, ..., nameN`
 
