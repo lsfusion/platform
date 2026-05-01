@@ -59,7 +59,7 @@ CLIENT [syncType] execStrExpr
 
 - `anyTokens`
 
-    Исходный код на языке Java. Используется в качестве тела метода `executeInternal` в автоматически сгенерированном классе. В нём доступна единственная переменная `context` типа `lsfusion.server.logics.action.controller.context.ExecutionContext<ClassPropertyInterface>`.
+    Исходный код на языке Java. Используется в качестве тела метода `executeInternal` в автоматически сгенерированном классе. В нём доступна единственная переменная `context` типа `lsfusion.server.logics.action.controller.context.ExecutionContext<ClassPropertyInterface>`. Тело фрагмента дополнительно оборачивается в `try { ... } catch (Exception e) { e.printStackTrace(); }`: любое исключение, выброшенное из фрагмента, перехватывается, печатается в stderr сервера приложений и не прерывает выполнение действия. Чтобы исключение распространялось обычным образом, используйте форму с `className`.
 
 - `DB`
 
