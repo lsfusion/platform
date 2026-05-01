@@ -4,7 +4,7 @@ title: 'New session (NEWSESSION, NESTEDSESSION)'
 
 The new [session](Change_sessions.md) operator allows you to execute an action in a session different from the current one. 
 
-As with other session management operators, you can explicitly specify [nested local properties](Session_management.md#nested) for `NEWSESSION` (it lets you list which local properties of the current session are migrated into the new one). `NESTEDSESSION` does not need this — it copies the entire current session into the nested one anyway.
+As with other session management operators, you can explicitly specify [nested local properties](Session_management.md#nested) when creating a new session — this lets you list which local properties of the current session are migrated into the new one. When creating a [nested session](#nested) this is not needed — it copies the entire current session into the nested one anyway.
 
 ### Nested sessions {#nested}
 
