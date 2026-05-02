@@ -2,10 +2,10 @@
 title: 'Previous value (PREV)'
 ---
 
-The *previous value* operator creates a [property](Properties.md) that returns the value of the specified property at the beginning of the session (that is, the current value in the database ignoring the session changes).
+The *previous value* operator creates a [property](Properties.md) that returns the value of the given expression at the beginning of the [change session](Change_sessions.md) (that is, the current value in the database, ignoring any changes that have been made in the session). Together with the [change operators](Change_operators_SET_CHANGED_etc.md) — which are derived from it — this operator is what makes session-local change tracking possible: it gives access to the "before" state that the current session is being compared against.
 
-:::warning
-This operator is calculated differently inside the [event](Events.md#change) handling: here it returns the value at the time of the previous occurrence of this event (or rather, at the time when all its handling were completed).
+:::info
+This operator always uses the start-of-session scope. For how that interacts with [event handling](Events.md#change), see the canonical event-mode section.
 :::
 
 ### Language
@@ -14,24 +14,15 @@ To declare a property that returns a previous value, use the [`PREV` operator](P
 
 ### Examples
 
-
 ```lsf
-f = DATA INTEGER (A);
-// outputs all changes f(a) in the session one by one
-messageFChanges  {
-    FOR CHANGED(f(A a)) DO
-        MESSAGE 'In this session f(a) changed from ' + PREV(f(a)) + ' TO ' + f(a);
-}
+CLASS Order;
+sum = DATA NUMERIC[10,2] (Order);
 
-CLASS Document;
-date = DATA DATE (Document);
-
-CLASS Article;
-price = DATA NUMERIC[14,2] (Document, Article);
-// write in the price of the document the last used price in the database
-// PREV is important to ignore the prices entered in this document
-// this is especially important if the last used price is materialized, then the platform can simply read this value from the table
-setPrice  {
-    price(Document d, Article a) <- PREV((GROUP LAST price(d, a) ORDER date(d), d));
-}
+// Most common use: read the "before" value inside an event handler reacting to a
+// change. PREV(sum(o)) returns the value at the start of the session — the database
+// value, ignoring any in-session change. Change predicates (CHANGED, SET, DROPPED,
+// ...) are derived from PREV as Boolean comparisons against the current value; PREV
+// itself gives access to the actual previous value.
+WHEN CHANGED(sum(Order o)) DO
+    MESSAGE 'Sum changed: ' + PREV(sum(o)) + ' → ' + sum(o);
 ```

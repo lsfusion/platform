@@ -40,7 +40,7 @@ The platform also allows to additionally specify that the event will occur only 
 
 ### Change operators' event mode {#change}
 
-When handling events, you can use a special mode of the [previous value](Previous_value_PREV.md) operator (it shall be called *event* mode). In this mode, the previous value operator will return the property's values not at the beginning of the session, but at the time of the previous occurrence of this event (or rather, the end of its handling). A similar mode is supported for all [change](Change_operators_SET_CHANGED_etc.md) operators.
+When handling events, [change operators](Change_operators_SET_CHANGED_etc.md) switch to a special mode (called *event* mode): they return changes accumulated since the previous occurrence of the event (or rather, since the end of its handling) instead of changes since the start of the session. The [previous value](Previous_value_PREV.md) operator does not switch modes — it always uses the session-start scope — but for a global synchronous event the apply runs in a fresh transaction, so "session start" inside the handler corresponds to the time when the previous occurrence of the event finished handling.
 
 Event mode is also supported for the [cancel changes](Cancel_changes_CANCEL.md) operator. In this case, when changes are canceled inside the global event handler, the session is not cleared, but [applying changes](Apply_changes_APPLY.md) which led to the execution of this handler is canceled. The global event must be synchronous, otherwise the platform will throw an error.
 

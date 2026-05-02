@@ -2,7 +2,9 @@
 title: 'Change operators (SET, CHANGED, ...)'
 ---
 
-*Change operators* determine whether some types of changes have occurred for a certain property in the current session. All these operators are derived from the [previous value operator (`PREV`)](Previous_value_PREV.md), however, it is recommended to use them to improve readability and performance. The following table shows the supported types of changes and their description:
+*Change operators* determine whether some types of changes have occurred for a given expression in the current session. All these operators are derived from the [previous value operator (`PREV`)](Previous_value_PREV.md), however, it is recommended to use them to improve readability and performance.
+
+In the table below, `f` stands for the expression being checked (parameters omitted) and `PREV(f)` for its value at the start of the session.
 
 |Operator     |Value                                                            |Description                   |
 |-------------|-----------------------------------------------------------------|------------------------------|
@@ -13,8 +15,10 @@ title: 'Change operators (SET, CHANGED, ...)'
 |`DROPCHANGED`|`CHANGED(f) AND NOT SET(f)`                                      |Value is either reset or changed from one non-`NULL` to another non-`NULL`|
 |`SETDROPPED` |`SET(f) OR DROPPED(f)`                                           |Value is either reset or changed from `NULL` to non-`NULL`|
 
+The first three operators (`SET`, `DROPPED`, `CHANGED`) are the basic change predicates; the remaining three are convenient combinations of those that cover cases cutting across the basic predicates.
+
 :::warning
-These operators are computed differently inside the [event](Events.md#change) handler: in this case, they return changes from the point of the previous occurrence of this event, or rather, from the point at which all its handlers are completed.
+In [event mode](Events.md#change), these operators return changes from the point of the previous occurrence of the event (or rather, from the point at which all its handlers were completed) instead of changes since the start of the session.
 :::
 
 ### Language
@@ -24,23 +28,13 @@ To declare a property using change operators, the following [syntax constructs](
 ### Examples
 
 ```lsf
-quantity = DATA NUMERIC[14,2] (OrderDetail);
-price = DATA NUMERIC[14,2] (OrderDetail);
-sum(OrderDetail d) <- quantity(d) * price(d) WHEN CHANGED(quantity(d)) OR CHANGED(price(d));
+CLASS Order;
+status = DATA STRING (Order);
 
-createdUser = DATA CustomUser (Order);
-createdUser (Order o) <- currentUser() WHEN SET(o IS Order);
-
-numerator = DATA Numerator (Order);
-number = DATA STRING[28] (Order);
-series = DATA BPSTRING[2] (Order);
-WHEN SETCHANGED(numerator(Order o)) AND
-     NOT CHANGED(number(o)) AND
-     NOT CHANGED(series(o))
-     DO {
-        number(o) <- curStringValue(numerator(o));
-        series(o) <- series(numerator(o));
-        incrementValueSession(numerator(o));
-     }
-;
+// Most common use: react to a transition inside an event handler. The chosen change
+// operator picks which transitions fire — SET only on NULL → value, DROPPED only on
+// value → NULL, CHANGED on either of those plus value → another value. Inside the
+// handler PREV(f) reads f's value before the change.
+WHEN CHANGED(status(Order o)) DO
+    MESSAGE 'Status changed: ' + PREV(status(o)) + ' → ' + status(o);
 ```

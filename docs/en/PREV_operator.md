@@ -12,7 +12,7 @@ PREV(propExpr)
 
 ### Description
 
-The `PREV` operator creates a property that returns the value of another property at the start of the current session (or at the time of the previous event in [event](Events.md#change) mode) - i.e., the value that existed before the changes that were made in the current session.
+The `PREV` operator creates a property that returns the value of the given expression at the start of the current [change session](Change_sessions.md) — i.e., the value that existed before the changes made in this session. It always uses the session-start scope (it does not switch modes based on the surrounding context); see the paradigm article and [`Events.md#change`](Events.md#change) for how this relates to event-mode behavior of [change operators](Change_operators_SET_CHANGED_etc.md). It is a [context-dependent](Property_operators.md) property operator and can appear inside [expressions](Expression.md).
 
 
 :::info
@@ -23,11 +23,12 @@ It's important to understand that `PREV` is not a built-in property with [compos
 
 - `propExpr`
 
-    [Expression](Expression.md) whose value defines the property for which the previous value must be obtained.
+    The [expression](Expression.md) whose previous value is returned.
 
 ### Examples
 
 ```lsf
+CLASS A;
 f = DATA INTEGER (A);
 // outputs all changes f(a) in the session one by one
 messageFChanges  {
