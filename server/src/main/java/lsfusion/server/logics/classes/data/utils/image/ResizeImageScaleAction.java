@@ -39,7 +39,7 @@ public class ResizeImageScaleAction extends InternalAction {
             double doubleScale = scale.doubleValue();
             if(doubleScale != 0) {
                 BufferedImage image = ImageIO.read(inputFile.getInputStream());
-                result = FileUtils.createThumbnails(inputFile, image, (double) 1 / doubleScale);
+                result = ImageUtils.createThumbnails(inputFile, image, (double) 1 / doubleScale);
             }
         }
         return result;

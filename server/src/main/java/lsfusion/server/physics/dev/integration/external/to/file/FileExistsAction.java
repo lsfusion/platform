@@ -11,6 +11,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
+import static lsfusion.base.FileUtils.checkFileExists;
+
 public class FileExistsAction extends InternalAction {
     private final ClassPropertyInterface pathInterface;
     private final ClassPropertyInterface isClientInterface;
@@ -34,7 +36,7 @@ public class FileExistsAction extends InternalAction {
                 if (isClient) {
                     exists = (boolean) context.requestUserInteraction(new FileExistsClientAction(path));
                 } else {
-                    exists = FileUtils.checkFileExists(path);
+                    exists = checkFileExists(path);
                 }
                 findProperty("fileExists[]").change(exists ? true : null, context);
             } else {
