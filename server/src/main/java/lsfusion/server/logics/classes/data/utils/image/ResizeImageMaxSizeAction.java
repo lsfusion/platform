@@ -42,7 +42,7 @@ public class ResizeImageMaxSizeAction extends InternalAction {
                 int imageHeight = image.getHeight();
                 double scale = (double) maxSize / Math.max(imageWidth, imageHeight);
                 if (scale != 0) {
-                    result = FileUtils.createThumbnails(inputFile, image, scale);
+                    result = ImageUtils.createThumbnails(inputFile, image, scale);
                 }
             } else {
                 throw new RuntimeException("Failed to read image");

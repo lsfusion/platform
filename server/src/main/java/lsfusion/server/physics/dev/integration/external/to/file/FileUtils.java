@@ -1,17 +1,13 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import lsfusion.base.file.*;
-import net.coobird.thumbnailator.Thumbnails;
+import lsfusion.server.logics.classes.data.utils.image.ImageUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.List;
 
-import static java.awt.image.BufferedImage.TYPE_BYTE_INDEXED;
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
-
-//todo: Replace all usages to lsfusion.base.FileUtils (available since 6.1)
 //deprecated since 6.3, will be removed in 8.0
 @Deprecated
 public class FileUtils {
@@ -61,18 +57,13 @@ public class FileUtils {
         return lsfusion.base.FileUtils.ping(host);
     }
 
+    @Deprecated
     public static RawFileData createThumbnails(RawFileData inputFile, BufferedImage image, double scale) throws IOException {
-        return createThumbnails(inputFile, image, scale, scale);
+        return ImageUtils.createThumbnails(inputFile, image, scale);
     }
 
+    @Deprecated
     public static RawFileData createThumbnails(RawFileData inputFile, BufferedImage image, double scaleWidth, double scaleHeight) throws IOException {
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Thumbnails.Builder<? extends InputStream> builder = Thumbnails.of(inputFile.getInputStream()).scale(scaleWidth, scaleHeight);
-            if (image.getType() == TYPE_BYTE_INDEXED) {
-                builder.imageType(TYPE_INT_ARGB);
-            }
-            builder.toOutputStream(os);
-            return new RawFileData(os);
-        }
+        return ImageUtils.createThumbnails(inputFile, image, scaleWidth, scaleHeight);
     }
 }

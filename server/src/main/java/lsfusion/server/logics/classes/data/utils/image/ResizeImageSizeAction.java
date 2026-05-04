@@ -48,7 +48,7 @@ public class ResizeImageSizeAction extends InternalAction {
                     double scaleHeight = height != null ? (double) height / imageHeight : ((double) width / imageWidth);
 
                     if (scaleWidth != 0 && scaleHeight != 0) {
-                        result = FileUtils.createThumbnails(inputFile, image, scaleWidth, scaleHeight);
+                        result = ImageUtils.createThumbnails(inputFile, image, scaleWidth, scaleHeight);
                     }
                 } else {
                     throw new RuntimeException("Failed to read image");
