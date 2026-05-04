@@ -2,9 +2,9 @@ package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
-import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.Base64;
 import org.apache.hc.core5.http.HttpEntity;
 
@@ -172,9 +172,9 @@ public class IOUtils {
         return tempFile;
     }
 
-    public static <R> R ftpAction(String path, BiFunction<FTPPath, FTPClient, R> function) {
+    public static <R> R ftpAction(String path, BiFunction<FTPPath, FTPClient, R> function, boolean ftps) {
         FTPPath ftpPath = FTPPath.parseFTPPath(path);
-        FTPClient ftpClient = new FTPClient();
+        FTPClient ftpClient = ftps ? new FTPSClient() : new FTPClient();
         ftpClient.setDataTimeout(ftpPath.dataTimeout);
         ftpClient.setConnectTimeout(ftpPath.connectTimeout);
 
@@ -188,6 +188,10 @@ public class IOUtils {
             ftpClient.connect(ftpPath.server, ftpPath.port);
             boolean login = ftpClient.login(ftpPath.username, ftpPath.password);
             if (login) {
+                if(ftps) {
+                    ((FTPSClient) ftpClient).execPBSZ(0);
+                    ((FTPSClient) ftpClient).execPROT("P");
+                }
                 if (ftpPath.passiveMode) {
                     ftpClient.enterLocalPassiveMode();
                 }

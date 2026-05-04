@@ -20,6 +20,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +58,8 @@ public abstract class ReadUtils {
                     fileNameAndExtension = copyHTTPToFile(filePath, localFile);
                     break;
                 case "ftp":
-                    fileNameAndExtension = copyFTPToFile(filePath.path, localFile);
+                case "ftps":
+                    fileNameAndExtension = copyFTPToFile(filePath, localFile);
                     break;
                 case "sftp":
                     fileNameAndExtension = copySFTPToFile(filePath.path, localFile);
@@ -180,19 +182,19 @@ public abstract class ReadUtils {
         } else return null;
     }
 
-    private static Pair<String, String> copyFTPToFile(String path, File file) {
-        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+    private static Pair<String, String> copyFTPToFile(Path path, File file) {
+        return IOUtils.ftpAction(path.path, (ftpPath, ftpClient) -> {
             try {
-                try(OutputStream outputStream = new FileOutputStream(file)) {
+                try(OutputStream outputStream = Files.newOutputStream(file.toPath())) {
                     if (!ftpClient.retrieveFile(ftpPath.remoteFile, outputStream)) {
-                        throw Throwables.propagate(new RuntimeException("Failed to copy '" + path + "'"));
+                        throw Throwables.propagate(new RuntimeException("Failed to copy '" + path.path + "'"));
                     }
                     return getFileNameAndExtension(ftpPath.remoteFile);
                 }
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
-        });
+        }, path.isFTPS());
     }
 
     private static Pair<String, String> copySFTPToFile(String path, File file) {

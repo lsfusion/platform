@@ -10,6 +10,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
+import static lsfusion.base.FileUtils.mkdir;
+
 public class MkdirAction extends InternalAction {
     private final ClassPropertyInterface directoryInterface;
     private final ClassPropertyInterface isClientInterface;
@@ -32,7 +34,7 @@ public class MkdirAction extends InternalAction {
                     throw new RuntimeException(result);
                 }
             } else {
-                FileUtils.mkdir(directory);
+                mkdir(directory);
             }
         } else {
             throw new RuntimeException("Path not specified");
