@@ -6,6 +6,7 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.file.*;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,7 +47,7 @@ public class FileUtils {
         if (srcPath.type.equals("file") && destPath.type.equals("file")) {
             copyFile(new File(srcPath.path), new File(destPath.path), move);
         } else if (move && equalFTPServers(srcPath, destPath)) {
-            renameFTP(srcPath.path, destPath.path);
+            renameFTP(srcPath, destPath);
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, null);
             if (readResult != null) {
@@ -82,17 +84,17 @@ public class FileUtils {
     }
 
     private static boolean equalFTPServers(Path srcPath, Path destPath) {
-        if (srcPath.type.equals("ftp") && destPath.type.equals("ftp")) {
+        if (srcPath.type.equals(destPath.type) && (destPath.isFTP() || destPath.isFTPS())) {
             FTPPath srcProperties = FTPPath.parseFTPPath(srcPath.path);
             FTPPath destProperties = FTPPath.parseFTPPath(destPath.path);
             return srcProperties.server.equals(destProperties.server) && srcProperties.port.equals(destProperties.port);
         } else return false;
     }
 
-    public static void renameFTP(String srcPath, String destPath) {
-        IOUtils.ftpAction(srcPath, (srcProperties, ftpClient) -> {
+    public static void renameFTP(Path srcPath, Path destPath) {
+        ftpAction(srcPath, (srcProperties, ftpClient) -> {
             try {
-                FTPPath destProperties = FTPPath.parseFTPPath(destPath);
+                FTPPath destProperties = FTPPath.parseFTPPath(destPath.path);
                 boolean done = ftpClient.rename(srcProperties.remoteFile, destProperties.remoteFile);
                 if (!done) {
                     throw new RuntimeException("Failed to rename ftp file: " + ftpClient.getReplyString());
@@ -114,7 +116,8 @@ public class FileUtils {
                 deleteFile(path.path);
                 break;
             case "ftp":
-                deleteFTPFile(path.path);
+            case "ftps":
+                deleteFTPFile(path);
                 break;
             case "sftp":
                 deleteSFTPFile(path.path);
@@ -139,12 +142,13 @@ public class FileUtils {
         }
     }
 
-    private static void deleteFTPFile(String path) {
-        IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+    private static void deleteFTPFile(Path path) {
+        ftpAction(path, (ftpPath, ftpClient) -> {
             try {
-                boolean done = ftpClient.deleteFile(ftpPath.remoteFile);
+                boolean removeDirectory = path.isFTPS() && ftpPath.remoteFile.endsWith("/");
+                boolean done = removeDirectory ? ftpClient.removeDirectory(ftpPath.remoteFile) : ftpClient.deleteFile(ftpPath.remoteFile);
                 if (!done) {
-                    throw new RuntimeException("Failed to delete '" + path + "'");
+                    throw new RuntimeException("Failed to delete '" + path.path + "'");
                 }
                 return null;
             } catch (IOException e) {
@@ -179,7 +183,8 @@ public class FileUtils {
                 result = mkdirFile(path.path, directory);
                 break;
             case "ftp":
-                result = mkdirFTP(path.path);
+            case "ftps":
+                result = mkdirFTP(path);
                 break;
             case "sftp":
                 result = mkdirSFTP(path.path);
@@ -199,8 +204,8 @@ public class FileUtils {
         return result;
     }
 
-    private static String mkdirFTP(String path) {
-        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+    private static String mkdirFTP(Path path) {
+        return ftpAction(path, (ftpPath, ftpClient) -> {
             try {
                 String result = null;
                 boolean dirExists = true;
@@ -248,7 +253,8 @@ public class FileUtils {
                 exists = new File(path.path).exists();
                 break;
             case "ftp":
-                exists = checkFileExistsFTP(path.path);
+            case "ftps":
+                exists = checkFileExistsFTP(path);
                 break;
             case "sftp":
                 exists = checkFileExistsSFTP(path.path);
@@ -259,8 +265,8 @@ public class FileUtils {
         return exists;
     }
 
-    private static boolean checkFileExistsFTP(String path) {
-        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+    private static boolean checkFileExistsFTP(Path path) {
+        return ftpAction(path, (ftpPath, ftpClient) -> {
             try {
                 boolean exists;
                 //check file existence
@@ -300,9 +306,10 @@ public class FileUtils {
                 filesList = listFilesFile(path.path, recursive);
                 break;
             case "ftp":
+            case "ftps":
                 if(recursive)
-                    throw new RuntimeException("ListFiles recursive is not supported for FTP");
-                filesList = listFilesFTP(path.path);
+                    throw new RuntimeException("ListFiles recursive is not supported for FTP/FTPS");
+                filesList = listFilesFTP(path);
                 break;
             case "sftp":
                 if(recursive)
@@ -341,8 +348,8 @@ public class FileUtils {
         return result;
     }
 
-    private static List<Object> listFilesFTP(String path) {
-        return IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
+    private static List<Object> listFilesFTP(Path path) {
+        return ftpAction(path, (ftpPath, ftpClient) -> {
             try {
                 if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
                     FTPFile[] ftpFileList = ftpClient.listFiles();
@@ -359,7 +366,7 @@ public class FileUtils {
                     }
                     return Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues, fileSizeValues);
                 } else {
-                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
+                    throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path.path));
                 }
             } catch (IOException e) {
                 throw Throwables.propagate(e);
@@ -395,6 +402,10 @@ public class FileUtils {
                     throw Throwables.propagate(e);
             }
         });
+    }
+
+    private static <R> R ftpAction(Path path, BiFunction<FTPPath, FTPClient, R> function) {
+        return IOUtils.ftpAction(path.path, function, path.isFTPS());
     }
 
     public static String ping(String host) throws IOException {

@@ -19,8 +19,8 @@ public class Path {
     }
 
     public static Path parsePath(String sourcePath, boolean read) {
-        String pattern = read ? "(file|ftp|sftp|http|https|jdbc|mdb):(?://)?(.*)" : "(file|ftp|sftp):(?://)?(.*)";
-        String[] types = read ? new String[]{"file:", "ftp:", "sftp:", "http:", "https:", "jdbc:", "mdb:"} : new String[]{"file:", "ftp:", "sftp:"};
+        String pattern = read ? "(file|ftp|ftps|sftp|http|https|jdbc|mdb):(?://)?(.*)" : "(file|ftp|ftps|sftp):(?://)?(.*)";
+        String[] types = read ? new String[]{"file:", "ftp:", "ftps:", "sftp:", "http:", "https:", "jdbc:", "mdb:"} : new String[]{"file:", "ftp:", "ftps:", "sftp:"};
 
         if (!StringUtils.startsWithAny(sourcePath, types)) {
             sourcePath = "file:" + sourcePath;
@@ -31,5 +31,13 @@ public class Path {
         } else {
             throw new RuntimeException("Unsupported path: " + sourcePath);
         }
+    }
+
+    public boolean isFTP() {
+        return type.equals("ftp");
+    }
+
+    public boolean isFTPS() {
+        return type.equals("ftps");
     }
 }

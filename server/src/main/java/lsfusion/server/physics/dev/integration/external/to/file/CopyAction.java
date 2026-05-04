@@ -10,6 +10,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
+import static lsfusion.base.FileUtils.copyFile;
+
 public class CopyAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface destinationInterface;
@@ -36,7 +38,7 @@ public class CopyAction extends InternalAction {
                         throw new RuntimeException(String.format("Failed to copy file from %s to %s", sourcePath, destinationPath));
                     }
                 } else {
-                    FileUtils.copyFile(sourcePath, destinationPath);
+                    copyFile(sourcePath, destinationPath);
                 }
 
             }

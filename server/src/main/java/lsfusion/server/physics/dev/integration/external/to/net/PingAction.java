@@ -5,11 +5,12 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.base.net.PingClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
+
+import static lsfusion.base.FileUtils.ping;
 
 public class PingAction extends InternalAction {
     private final ClassPropertyInterface hostInterface;
@@ -35,7 +36,7 @@ public class PingAction extends InternalAction {
                     result = (String) context.requestUserInteraction(new PingClientAction(host));
                 } else {
                     try {
-                        result = FileUtils.ping(host);
+                        result = ping(host);
                     } catch (Exception e) {
                         result = e.getMessage();
                     }

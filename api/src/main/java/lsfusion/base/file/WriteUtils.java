@@ -24,10 +24,11 @@ public class WriteUtils {
                 writeFile(filePath.path, fileData, client, append);
                 break;
             }
-            case "ftp": {
+            case "ftp":
+            case "ftps": {
                 if(append)
-                    throw new RuntimeException("APPEND is not supported in WRITE to FTP");
-                storeFileToFTP(filePath.path, fileData);
+                    throw new RuntimeException("APPEND is not supported in WRITE to FTP/FTPS");
+                storeFileToFTP(filePath.path, fileData, filePath.isFTPS());
                 break;
             }
             case "sftp": {
@@ -112,7 +113,7 @@ public class WriteUtils {
         return new File(parent, filePath);
     }
 
-    public static void storeFileToFTP(String path, NamedFileData file) {
+    public static void storeFileToFTP(String path, NamedFileData file, boolean ftps) {
         IOUtils.ftpAction(path, (ftpPath, ftpClient) -> {
             try {
                 String remoteFile = appendExtension(ftpPath.remoteFile, file);
@@ -125,7 +126,7 @@ public class WriteUtils {
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
-        });
+        }, ftps);
     }
 
     @Deprecated
@@ -136,7 +137,7 @@ public class WriteUtils {
     @Deprecated
     public static void storeFileToFTP(String path, RawFileData file, String extension) {
         assert extension == null;
-        storeFileToFTP(path, new NamedFileData(file));
+        storeFileToFTP(path, new NamedFileData(file), false);
     }
 
     public static void storeFileToSFTP(String path, NamedFileData file) {

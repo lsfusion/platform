@@ -10,6 +10,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
+import static lsfusion.base.FileUtils.moveFile;
+
 public class MoveAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface destinationInterface;
@@ -36,7 +38,7 @@ public class MoveAction extends InternalAction {
                         throw new RuntimeException(String.format("Failed to move file from %s to %s: %s", sourcePath, destinationPath, result));
                     }
                 } else {
-                    FileUtils.moveFile(sourcePath, destinationPath);
+                    moveFile(sourcePath, destinationPath);
                 }
 
             }

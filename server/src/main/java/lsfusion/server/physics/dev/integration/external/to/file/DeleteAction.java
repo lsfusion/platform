@@ -9,6 +9,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
+import static lsfusion.base.FileUtils.delete;
+
 public class DeleteAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface isClientInterface;
@@ -30,7 +32,7 @@ public class DeleteAction extends InternalAction {
                 if (result != null)
                     throw new RuntimeException(result);
             } else {
-                FileUtils.delete(sourcePath);
+                delete(sourcePath);
             }
         }
     }

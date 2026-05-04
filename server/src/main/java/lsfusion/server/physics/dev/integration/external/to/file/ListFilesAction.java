@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
+import static lsfusion.base.FileUtils.listFiles;
+
 public class ListFilesAction extends InternalAction {
     private final ClassPropertyInterface pathInterface;
     private final ClassPropertyInterface recursiveInterface;
@@ -50,7 +52,7 @@ public class ListFilesAction extends InternalAction {
                         filesList = (List<Object>) result;
                     }
                 } else {
-                    filesList = FileUtils.listFiles(sourcePath, recursive);
+                    filesList = listFiles(sourcePath, recursive);
                 }
 
                 context.getSession().dropChanges((DataProperty) findProperty("fileName[INTEGER]").property);
