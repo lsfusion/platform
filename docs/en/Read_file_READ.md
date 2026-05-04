@@ -4,7 +4,7 @@ title: 'Read file (READ)'
 
 The *read file* operator creates an [action](Actions.md) that reads a file from a defined source and [writes](Property_change_CHANGE.md) this file to the specified local [data](Data_properties_DATA.md) property without parameters.
 
-The source is defined as a [property](Properties.md) which values are instances of [string classes](Built-in_classes.md). The following types of data sources (URLs) are supported: FILE, HTTP, HTTPS, FTP, SFTP, JDBC, MDB.
+The source is defined as a [property](Properties.md) which values are instances of [string classes](Built-in_classes.md). The following types of data sources (URLs) are supported: FILE, HTTP, HTTPS, FTP, FTPS, SFTP, JDBC, MDB.
 
 ### Language
 
@@ -19,6 +19,8 @@ readFiles()  {
 
     //reading from FTP
     READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
+    //reading from FTPS
+    READ 'ftps://ftps.lsfusion.org/file.xlsx' TO importFile;
     //reading from SFTP
     READ 'sftp://sftp.lsfusion.org/file.xlsx' TO importFile;
     //reading from FILE

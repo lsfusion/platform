@@ -18,7 +18,9 @@ The following URL types are supported:
 
 ```
 [file://]path_to_file
-[s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftps://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+sftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
 ```
 
 It is assumed that the file extension is not specified in the URL (that is, the period `.` is also considered a part of the file name). This extension is determined automatically based on the class of the file being written:

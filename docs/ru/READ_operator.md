@@ -18,7 +18,9 @@ READ [CLIENT [DIALOG]] urlExpr [TO propertyId]
 
 ```
 [file://]path_to_file
-[s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftps://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+sftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
 ```
 
 Если значение свойства, в которое записывается файл принадлежит классу `FILE`, то в его значение вместе с файлом также записывается расширение файла из URL.
@@ -50,6 +52,8 @@ readFiles()  {
 
     //чтение из FTP
     READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
+    //чтение из FTPS
+    READ 'ftps://ftps.lsfusion.org/file.xlsx' TO importFile;
     //чтение из SFTP
     READ 'sftp://sftp.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FILE
