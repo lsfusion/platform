@@ -18,7 +18,9 @@ The following URL types are supported:
 
 ```
 [file://]path_to_file
-[s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftps://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+sftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
 ```
 
 If the value of the property to which the file is written belongs to the `FILE` class, the file extension from the URL is also written to its value along with the file.
@@ -50,6 +52,8 @@ readFiles()  {
 
     //reading from FTP
     READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
+    //reading from FTPS
+    READ 'ftps://ftps.lsfusion.org/file.xlsx' TO importFile;
     //reading from SFTP
     READ 'sftp://sftp.lsfusion.org/file.xlsx' TO importFile;
     //reading from FILE

@@ -4,7 +4,7 @@ title: 'Чтение файла (READ)'
 
 Оператор *чтения файла*, создает [действие](Actions.md), которое читает файл из заданного источника и [записывает](Property_change_CHANGE.md) этот файл в заданное локальное [первичное](Data_properties_DATA.md) свойства без параметров.
 
-Источник задается как некоторое [свойство](Properties.md), значения которого являются экземплярами [строковых классов](Built-in_classes.md). Поддерживаются следующие типы источников данных (URL): FILE, HTTP, HTTPS, FTP, SFTP, JDBC, MDB.
+Источник задается как некоторое [свойство](Properties.md), значения которого являются экземплярами [строковых классов](Built-in_classes.md). Поддерживаются следующие типы источников данных (URL): FILE, HTTP, HTTPS, FTP, FTPS, SFTP, JDBC, MDB.
 
 ### Язык
 
@@ -19,6 +19,8 @@ readFiles()  {
 
     //чтение из FTP
     READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
+    //чтение из FTPS
+    READ 'ftps://ftps.lsfusion.org/file.xlsx' TO importFile;
     //чтение из SFTP
     READ 'sftp://sftp.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FILE

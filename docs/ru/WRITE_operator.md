@@ -18,7 +18,9 @@ WRITE [CLIENT [DIALOG]] fileExpr TO urlExpr [APPEND]
 
 ```
 [file://]path_to_file
-[s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftps://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+sftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
 ```
 
 Предполагается, что в URL расширение файла не задается (то есть точка `.` также считается частью имени файла). Это расширение определяется автоматически, в зависимости от класса записываемого файла, следующим образом:
