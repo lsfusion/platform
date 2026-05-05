@@ -33,6 +33,19 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     ExternalResponse exec(AuthenticationToken token, ConnectionInfo connectionInfo, String action, ExternalRequest request) throws RemoteException;
     ExternalResponse eval(AuthenticationToken token, ConnectionInfo connectionInfo, boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException;
 
+    // MCP (Model Context Protocol) — JSON-RPC 2.0 dispatch (initialize / tools/list / tools/call).
+    // The body is the raw JSON-RPC request; the return value is the raw JSON-RPC response, or
+    // null for JSON-RPC notifications (requests without an `id`). Empty body is treated as a
+    // `tools/list` request, useful for quick discovery.
+    // The auth context (token + connectionInfo) flows through to tools that touch session state,
+    // so e.g. `lsfusion_eval` runs under the caller's identity instead of always anonymous.
+    // The `request` envelope carries the inbound HTTP request's metadata (headers, cookies,
+    // scheme, host, contextPath, sessionId, etc.) — same shape /eval already provides — so
+    // scripts running through `lsfusion_eval` can read those attributes via standard lsFusion
+    // properties (`headers[name]`, `cookies[name]`, etc.). Its `params`/`returnNames` are
+    // irrelevant — eval supplies its own from tool args.
+    String mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException;
+
     // separate methods, because used really often (and don't need authentication)
     long generateID() throws RemoteException;
     void ping() throws RemoteException;

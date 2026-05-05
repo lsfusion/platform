@@ -1,0 +1,382 @@
+package lsfusion.server.physics.admin.mcp;
+
+import lsfusion.base.BaseUtils;
+import lsfusion.base.MIMETypeUtils;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.ResultExternalResponse;
+import lsfusion.server.logics.controller.remote.RemoteLogics;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+/**
+ * MCP eval tool — runs an lsFusion script under the caller's auth context and renders the
+ * result as MCP-friendly text. The script must contain a top-level
+ * {@code run(<names>) { … }} action declaration; the {@code params} array is bound
+ * positionally to that {@code run}'s interfaces.
+ *
+ * <p>HTTP metadata flow-through: the {@code envelope} {@link ExternalRequest} captured by
+ * the web handler from the inbound {@code /mcp} request (headers, cookies, scheme, host,
+ * contextPath, sessionId, body, …) is propagated into the request the eval action runs
+ * against, so scripts that read e.g. {@code headers[<name>]} or {@code cookies[<name>]}
+ * see the same values they'd see from a regular {@code /eval} call. Only the params and
+ * returnNames slots are overridden — those come from the tool args, not from the envelope.
+ */
+public class MCPEvalTool {
+
+    private static final String UTF8 = StandardCharsets.UTF_8.name();
+
+    /**
+     * Hard cap on bytes inlined in a <em>single</em> eval result, applied to both text
+     * {@code value} (UTF-8 byte length) and binary {@code valueBase64} (raw byte length).
+     * Above this we omit the bytes and set {@code truncated:true} with
+     * {@code omittedReason:"perFileCap"}.
+     */
+    public static final int MAX_INLINE_FILE_BYTES = 10 * 1024 * 1024;
+
+    /**
+     * Hard cap on the <em>total</em> bytes inlined across all eval result slots in one call.
+     * Applied as a best-fit budget: any single payload that wouldn't fit in the remaining
+     * budget gets dropped with {@code truncated:true} + {@code omittedReason:"totalCap"},
+     * but smaller later payloads can still slot into whatever budget is left. A client that
+     * sees a {@code totalCap} truncation should re-run the dropped slot in a separate call.
+     */
+    public static final int MAX_INLINE_TOTAL_BYTES = 30 * 1024 * 1024;
+
+    /** Marker put on truncated/omitted result entries — see {@link #MAX_INLINE_FILE_BYTES}. */
+    private static final String REASON_PER_FILE = "perFileCap";
+    /** Marker put on truncated/omitted result entries — see {@link #MAX_INLINE_TOTAL_BYTES}. */
+    private static final String REASON_TOTAL = "totalCap";
+
+    public static JSONObject eval(JSONObject args, RemoteLogics remoteLogics,
+                                  AuthenticationToken token, ConnectionInfo connectionInfo,
+                                  ExternalRequest envelope) throws Exception {
+        String script = MCPArgs.getString(args, "script");
+        if (script == null || script.isEmpty()) {
+            throw new IllegalArgumentException("'script' is required (non-empty string)");
+        }
+        ExternalRequest.Param scriptParam = ExternalRequest.getUrlParam(script, UTF8, "script");
+        ExternalRequest request = buildRequest(args, envelope);
+
+        ExternalResponse response = remoteLogics.eval(token, connectionInfo, /*action=*/ false, scriptParam, request);
+        return toJson(response);
+    }
+
+    /**
+     * Build the {@link ExternalRequest} the script's run-action sees. HTTP metadata
+     * (headers / cookies / scheme / host / contextPath / sessionId / body / …) is copied
+     * verbatim from the {@code envelope} the web handler captured for the inbound /mcp
+     * call, so the script can consult those attributes the same way a /eval-driven script
+     * would. Only {@code params} (filled from the tool's positional array) and
+     * {@code returnNames} (from the tool's args) are overridden; everything else inherits
+     * the inbound HTTP shape.
+     */
+    private static ExternalRequest buildRequest(JSONObject args, ExternalRequest envelope) {
+        List<ExternalRequest.Param> paramList = new ArrayList<>();
+        Object params = args.opt("params");
+        if (params instanceof JSONArray) {
+            JSONArray arr = (JSONArray) params;
+            for (int i = 0; i < arr.length(); i++) {
+                Object value = arr.opt(i);
+                if (value == null || JSONObject.NULL.equals(value)) {
+                    // Silently skipping would shift positional order — the third entry of
+                    // [a, null, b] would land at $2 instead of $3. Reject explicitly.
+                    throw new IllegalArgumentException(
+                            "params[" + i + "] is null; positional order would shift. "
+                                    + "Pass an explicit value (or restructure the script if the slot is unused).");
+                }
+                paramList.add(toImplicitParam(value, "params[" + i + "]"));
+            }
+        } else if (params != null && !JSONObject.NULL.equals(params)) {
+            throw new IllegalArgumentException("`params` must be an array; got "
+                    + params.getClass().getSimpleName());
+        }
+
+        // Optional `returnNames`: ["name1", "name2"] — property names read after `run`
+        // finishes; their current values are appended to the result entries.
+        String[] returnNames = new String[0];
+        Object returnNamesRaw = args.opt("returnNames");
+        if (returnNamesRaw != null && !JSONObject.NULL.equals(returnNamesRaw)) {
+            if (!(returnNamesRaw instanceof JSONArray)) {
+                throw new IllegalArgumentException("`returnNames` must be an array of property name strings");
+            }
+            JSONArray returnArray = (JSONArray) returnNamesRaw;
+            returnNames = new String[returnArray.length()];
+            for (int i = 0; i < returnArray.length(); i++) {
+                Object v = returnArray.opt(i);
+                if (!(v instanceof String) || ((String) v).isEmpty()) {
+                    throw new IllegalArgumentException("returnNames[" + i + "] must be a non-empty string property name");
+                }
+                returnNames[i] = (String) v;
+            }
+        }
+
+        // Inherit HTTP metadata from the envelope (headers, cookies, host, scheme, paths,
+        // sessionId, body, …) so the script sees the same shape it would via /eval.
+        return new ExternalRequest(returnNames,
+                paramList.toArray(new ExternalRequest.Param[0]),
+                envelope.headerNames, envelope.headerValues, envelope.cookieNames, envelope.cookieValues,
+                envelope.appHost, envelope.appPort, envelope.exportName,
+                envelope.scheme, envelope.method, envelope.webHost, envelope.webPort,
+                envelope.contextPath, envelope.servletPath, envelope.pathInfo, envelope.query,
+                envelope.contentType, envelope.sessionId, envelope.body,
+                envelope.signature, envelope.returnMultiType,
+                envelope.needNotificationId, envelope.isInteractiveClient);
+    }
+
+    /**
+     * Turn one user-supplied value (string or file-object) into an implicit
+     * {@link ExternalRequest.Param} bound STRICTLY positionally — never by name. We pick
+     * {@code url=false} + empty name {@code ""} so:
+     * <ul>
+     *   <li>The Param classifies as implicit per {@link ExternalRequest.Param#isImplicitParam()}
+     *       (because {@code !url}), so the eval engine consumes it positionally to fill the
+     *       next free interface slot in the script's {@code run(...)} declaration.</li>
+     *   <li>{@code name=""} can never accidentally match a script-side interface name (those
+     *       must be valid lsFusion identifiers, never empty), so the strict
+     *       "param names live INSIDE the script" contract holds even if the user picks
+     *       awkward run-interface names like {@code run(p, x)}.</li>
+     * </ul>
+     */
+    private static ExternalRequest.Param toImplicitParam(Object value, String origin) {
+        if (value instanceof String) {
+            return new ExternalRequest.Param((String) value, /*url=*/ false, UTF8, /*name=*/ "");
+        }
+        if (value instanceof JSONObject) {
+            return buildFileParam((JSONObject) value, origin);
+        }
+        throw new IllegalArgumentException(origin + " must be a string or a file object, got "
+                + value.getClass().getSimpleName());
+    }
+
+    /**
+     * Build an implicit body {@link ExternalRequest.Param} from one file-object entry.
+     * The body param's url flag is false ⇒ implicit per
+     * {@link ExternalRequest.Param#isImplicitParam()}, so it lands positionally in the
+     * script's {@code run(...)} interfaces alongside string params from the same array.
+     *
+     * <p>Validation is fail-fast (mirrors what an MCP client expects from a strict tool):
+     * <ul>
+     *   <li>Exactly one of {@code base64} / {@code text} must be present.</li>
+     *   <li>Malformed base64 surfaces as a clear {@link IllegalArgumentException}.</li>
+     * </ul>
+     *
+     * <p>Extension is resolved as: explicit {@code extension} field → extracted from
+     * {@code fileName} (if it has a dot) → fallback {@code "file"}. {@code fileName} is
+     * normalized through {@link BaseUtils#getFileName(String)}, so any directory prefix is
+     * stripped before reaching the script.
+     */
+    private static ExternalRequest.Param buildFileParam(JSONObject fp, String origin) {
+        for (String key : fp.keySet()) {
+            if (!FILE_PARAM_KEYS.contains(key)) {
+                throw new IllegalArgumentException(origin + " has unknown field `" + key
+                        + "`; allowed: " + FILE_PARAM_KEYS);
+            }
+        }
+        String b64 = MCPArgs.getStringAt(fp, "base64", origin + ".base64");
+        String text = MCPArgs.getStringAt(fp, "text", origin + ".text");
+        if (b64 != null && text != null) {
+            throw new IllegalArgumentException(origin + " has both `base64` and `text`; pick one (mutually exclusive)");
+        }
+        byte[] bytes;
+        if (b64 != null) {
+            try {
+                bytes = Base64.getDecoder().decode(b64);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(origin + ".base64 is not valid base64: " + e.getMessage());
+            }
+        } else if (text != null) {
+            bytes = text.getBytes(StandardCharsets.UTF_8);
+        } else {
+            throw new IllegalArgumentException(origin + " needs either `base64` or `text`");
+        }
+
+        // Resolve fileName + extension: explicit `extension` wins, else extracted from
+        // `fileName` (if it has a dot), else fallback "file"; fileName is normalized to its
+        // base name only (no directory part, no extension fragment).
+        String rawFileName = nullIfEmpty(MCPArgs.getStringAt(fp, "fileName", origin + ".fileName"));
+        String explicitExt = normalizeExtension(MCPArgs.getStringAt(fp, "extension", origin + ".extension"), origin);
+        String extension = explicitExt;
+        if (extension == null && rawFileName != null) {
+            String fromName = BaseUtils.getFileExtension(rawFileName);
+            if (!fromName.isEmpty()) extension = fromName;
+        }
+        if (extension == null) extension = "file";
+        String fileName = rawFileName == null ? null : BaseUtils.getFileName(rawFileName);
+
+        // url=false ⇒ implicit; fills the next free run() interface slot in array order.
+        // Empty `name` keeps the param strictly positional — it can't accidentally match a
+        // script-side interface name (lsFusion identifiers are never empty).
+        FileData fileData = new FileData(new RawFileData(bytes), extension);
+        return new ExternalRequest.Param(fileData, /*url=*/ false, UTF8, /*name=*/ "", fileName);
+    }
+
+    private static final Set<String> FILE_PARAM_KEYS = new LinkedHashSet<>(
+            Arrays.asList("base64", "text", "fileName", "extension"));
+
+    private static String nullIfEmpty(String s) {
+        return s == null || s.isEmpty() ? null : s;
+    }
+
+    /**
+     * Normalize a user-supplied {@code extension} field — descriptor calls for "without dot",
+     * but agents commonly hand in {@code ".xlsx"} / {@code "  PDF  "} / etc. Strips
+     * surrounding whitespace and any leading dots, then rejects path separators (a slash in
+     * the extension is almost certainly a misuse: descriptor wanted just the suffix). An
+     * empty result collapses to {@code null} so the fileName-derived fallback can take
+     * over. Case is preserved on purpose — downstream {@code FileData.extension} feeds
+     * lsFusion FORMAT lookups that may be case-sensitive in user code.
+     */
+    private static String normalizeExtension(String raw, String origin) {
+        if (raw == null) return null;
+        String trimmed = raw.trim();
+        int firstNonDot = 0;
+        while (firstNonDot < trimmed.length() && trimmed.charAt(firstNonDot) == '.') firstNonDot++;
+        trimmed = trimmed.substring(firstNonDot);
+        if (trimmed.isEmpty()) return null;
+        if (trimmed.indexOf('/') >= 0 || trimmed.indexOf('\\') >= 0) {
+            throw new IllegalArgumentException(origin + ".extension must not contain path separators; got `" + raw + "`");
+        }
+        return trimmed;
+    }
+
+    private static JSONObject toJson(ExternalResponse response) {
+        JSONObject out = new JSONObject().put("status", response.getStatusHttp());
+        if (response instanceof ResultExternalResponse) {
+            ResultExternalResponse r = (ResultExternalResponse) response;
+            JSONArray results = new JSONArray();
+            // Per-call running total — best-fit budget: any single payload that doesn't fit
+            // in `inlineRemaining` gets dropped with truncated:true, but smaller later
+            // payloads can still slot into whatever's left. Keeps multi-slot scripts from
+            // pushing hundreds of MiB into one JSON-RPC response without dropping every slot
+            // after the first oversize one.
+            int[] inlineRemaining = { MAX_INLINE_TOTAL_BYTES };
+            if (r.results != null) {
+                for (ExternalRequest.Result result : r.results) {
+                    results.put(renderResult(result, inlineRemaining));
+                }
+            }
+            out.put("results", results);
+        } else {
+            out.put("results", new JSONArray());
+        }
+        return out;
+    }
+
+    private static JSONObject renderResult(ExternalRequest.Result result, int[] inlineRemaining) {
+        JSONObject item = new JSONObject();
+        if (result.name != null) item.put("name", result.name);
+        if (result.fileName != null) item.put("fileName", result.fileName);
+        Object value = result.value;
+        if (value instanceof String) {
+            inlineString(item, (String) value, inlineRemaining);
+        } else if (value instanceof FileData) {
+            FileData fd = (FileData) value;
+            // The engine surfaces a NULL slot via FileData.NULL (extension="null", empty bytes).
+            // Surface that as an explicit null instead of a fake-empty file with extension
+            // "null" — otherwise the AI client can't distinguish a real empty file from
+            // "this slot wasn't populated".
+            if (fd.isNull()) {
+                item.put("isNull", true);
+                return item;
+            }
+            byte[] bytes = fd.getRawFile().getBytes();
+            String extension = fd.getExtension();
+            // Same case-insensitivity rule as MCPFileTools: lowercase before MIME lookup,
+            // octet-stream fallback when the extension isn't in the catalog.
+            String extKey = extension == null ? null : extension.toLowerCase(Locale.ROOT);
+            String mimeType = "application/octet-stream";
+            if (extKey != null && MIMETypeUtils.isFileExtensionMIMEType(extKey)) {
+                mimeType = MIMETypeUtils.MIMETypeForFileExtension(extKey);
+            }
+            item.put("type", "file");
+            item.put("extension", extension);
+            item.put("mimeType", mimeType);
+            item.put("size", bytes != null ? bytes.length : 0);
+            if (bytes == null) return item;
+            if (MCPBinaryContent.isLikelyText(extension, bytes, 0, bytes.length)) {
+                inlineFileText(item, bytes, inlineRemaining);
+            } else {
+                inlineFileBinary(item, bytes, inlineRemaining);
+            }
+        } else if (value != null) {
+            inlineString(item, value.toString(), inlineRemaining);
+        }
+        return item;
+    }
+
+    /**
+     * Put a plain text value on {@code item}, charging UTF-8 byte length against the running
+     * inline budget. Crossing either the per-result cap or the per-call total cap drops the
+     * payload and tags the reason so callers can choose how to recover.
+     */
+    private static void inlineString(JSONObject item, String text, int[] inlineRemaining) {
+        int byteLen = MCPBinaryContent.utf8Length(text);
+        if (byteLen > MAX_INLINE_FILE_BYTES) {
+            markTruncated(item, REASON_PER_FILE, byteLen);
+            return;
+        }
+        if (byteLen > inlineRemaining[0]) {
+            markTruncated(item, REASON_TOTAL, byteLen);
+            return;
+        }
+        item.put("value", text);
+        inlineRemaining[0] -= byteLen;
+    }
+
+    /**
+     * Inline a text-classified file as {@code value} (UTF-8 string), with the same dual cap
+     * as {@link #inlineString} but charging the raw byte length we already have.
+     */
+    private static void inlineFileText(JSONObject item, byte[] bytes, int[] inlineRemaining) {
+        if (bytes.length > MAX_INLINE_FILE_BYTES) {
+            markTruncated(item, REASON_PER_FILE, bytes.length);
+            return;
+        }
+        if (bytes.length > inlineRemaining[0]) {
+            markTruncated(item, REASON_TOTAL, bytes.length);
+            return;
+        }
+        item.put("value", new String(bytes, StandardCharsets.UTF_8));
+        inlineRemaining[0] -= bytes.length;
+    }
+
+    /**
+     * Inline a binary file as {@code valueBase64}; dispatcher additionally surfaces it as an
+     * MCP {@code resource} content entry. Same dual cap.
+     */
+    private static void inlineFileBinary(JSONObject item, byte[] bytes, int[] inlineRemaining) {
+        if (bytes.length > MAX_INLINE_FILE_BYTES) {
+            markTruncated(item, REASON_PER_FILE, bytes.length);
+            return;
+        }
+        if (bytes.length > inlineRemaining[0]) {
+            markTruncated(item, REASON_TOTAL, bytes.length);
+            return;
+        }
+        item.put("valueBase64", Base64.getEncoder().encodeToString(bytes));
+        inlineRemaining[0] -= bytes.length;
+    }
+
+    private static void markTruncated(JSONObject item, String reason, int byteLen) {
+        item.put("truncated", true);
+        item.put("omittedReason", reason);
+        item.put("omittedSize", byteLen);
+        item.put("inlineLimit", MAX_INLINE_FILE_BYTES);
+        item.put("totalLimit", MAX_INLINE_TOTAL_BYTES);
+    }
+
+}

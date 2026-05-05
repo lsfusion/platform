@@ -77,6 +77,14 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
+    public String mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException {
+        logRemoteMethodStartCall("mcp");
+        String result = target.mcp(token, connectionInfo, request, body);
+        logRemoteMethodEndVoidCall("mcp");
+        return result;
+    }
+
+    @Override
     public List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         logRemoteMethodStartVoidCall("saveCustomReportPathList");
         List<String> result = target.saveAndGetCustomReportPathList(formSID, recreate);

@@ -466,6 +466,34 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             throw new AuthenticationException(getString("exceptions.user.must.be.authenticated"), redirect);
     }
 
+    /**
+     * Shared core of the API access gate — used by both action-driven flows (eval / exec via
+     * {@link #checkEnableApi}) and the action-less MCP file tools (via
+     * {@link lsfusion.server.logics.controller.remote.RemoteLogics#checkMCPAccess}). Reads
+     * {@link Settings#getEnableAPI}, rejects {@code enableAPI=0} (unless {@code apiAnnotation}
+     * is true, which lifts it to {@code 1}), then defers to {@link #checkAnonymous} for the
+     * {@code enableAPI=1} → reject-anonymous case.
+     *
+     * <p>Callers still own everything that comes <em>before</em> this gate:
+     * {@code @noauth} bypass, signed-payload bypass, postponed {@code authException}, etc.
+     *
+     * @param apiAnnotation whether the calling action carries {@code @api} (which upgrades
+     *                      {@code enableAPI=0 → 1}). Pass {@code false} for callers without
+     *                      action context.
+     * @param redirect      whether to embed a login redirect on the resulting
+     *                      {@link AuthenticationException}.
+     */
+    public static void checkAPIAccess(AuthenticationToken token, boolean apiAnnotation, boolean redirect) {
+        byte enableApi = Settings.get().getEnableAPI();
+        if(enableApi == 0) {
+            if(apiAnnotation)
+                enableApi = 1;
+            else
+                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+        }
+        checkAnonymous(redirect, token, enableApi);
+    }
+
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
         boolean isInteractive = !property.action.hasAnnotation("noui")
                 && (property.action.hasAnnotation("ui")
@@ -539,15 +567,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(authException != null)
             throw authException;
 
-        byte enableApi = Settings.get().getEnableAPI();
-        if(enableApi == 0) {
-            if(property.action.hasAnnotation("api"))
-                enableApi = 1;
-            else
-                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
-        }
-
-        checkAnonymous(redirect, token, enableApi);
+        checkAPIAccess(token, property.action.hasAnnotation("api"), redirect);
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {

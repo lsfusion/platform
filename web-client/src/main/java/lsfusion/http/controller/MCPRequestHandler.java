@@ -1,0 +1,188 @@
+package lsfusion.http.controller;
+
+import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.session.ExternalRequest;
+import org.springframework.web.HttpRequestHandler;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * HTTP face of the MCP (Model Context Protocol) endpoint, mounted at {@code /mcp}.
+ *
+ * <p>Forwards the raw JSON-RPC body to the application server via
+ * {@link lsfusion.interop.logics.remote.RemoteLogicsInterface#mcp}, which dispatches through
+ * {@code MCPDispatcher} server-side. The HTTP request's metadata (headers, cookies, scheme,
+ * host, contextPath, sessionId, body, etc.) is captured into an {@link ExternalRequest}
+ * envelope — same shape {@code /eval} builds — so scripts running through
+ * {@code lsfusion_eval} can read those attributes via standard lsFusion properties
+ * ({@code headers[name]} / {@code cookies[name]} / etc.).
+ *
+ * <p>Auth: pulls the caller's {@link AuthenticationToken} via the existing
+ * {@link LSFAuthenticationToken#getAppServerToken} flow (so anonymous, basic, and bearer
+ * tokens established by the security filter chain all carry through). Browser-based MCP
+ * clients that ride the same origin's session naturally get their cookies forwarded by the
+ * standard HTTP transport — Spring Security recognizes them and sets up the auth token; the
+ * raw cookie values also reach the script through the envelope.
+ *
+ * <p>Body size: the handler enforces {@link #MAX_BODY_BYTES}; a request whose
+ * {@code Content-Length} header exceeds the cap, or that streams past the cap, gets a 413
+ * response. This bounds memory use ahead of any per-tool DoS guards.
+ *
+ * <p>Transport: only POST is meaningful here. JSON-RPC <em>notifications</em> (frames
+ * without an {@code id}) are answered with HTTP 202 and an empty body, per spec.
+ * Bare GET (used by full SSE-style MCP clients) returns 405 — this endpoint is JSON-RPC
+ * over plain POST, not the bidirectional SSE transport. CORS preflight is handled by the
+ * project-wide {@code CORSFilter} (mapped to {@code /mcp} in {@code web.xml}).
+ */
+public class MCPRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
+
+    /**
+     * Hard cap on inbound JSON-RPC body size — generous for tools/call arguments AND for
+     * inline file inputs (xlsx/pdf templates AI hands the script for IMPORT / PRINT FROM),
+     * but bounded so a hostile client cannot drive memory before per-tool caps engage.
+     * 16 MiB raw ⇒ ~12 MiB binary after base64 decoding — fits typical document templates
+     * with room for the rest of the JSON-RPC envelope.
+     */
+    public static final int MAX_BODY_BYTES = 16 * 1024 * 1024;
+
+    public MCPRequestHandler(LogicsProvider logicsProvider) {
+        super(logicsProvider);
+    }
+
+    @Override
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String method = request.getMethod();
+        if ("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method)) {
+            response.setHeader("Allow", "POST, OPTIONS");
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Use POST with a JSON-RPC body");
+            return;
+        }
+        if (!"POST".equalsIgnoreCase(method)) {
+            response.setHeader("Allow", "POST, OPTIONS");
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            return;
+        }
+
+        // Pre-check Content-Length so a client that advertises a huge body gets a clean 413.
+        int declaredLength = request.getContentLength();
+        if (declaredLength > MAX_BODY_BYTES) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                    "MCP body exceeds " + MAX_BODY_BYTES + " bytes");
+            return;
+        }
+
+        final byte[] bodyBytes;
+        try {
+            bodyBytes = readBoundedBody(request);
+        } catch (BodyTooLargeException e) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                    "MCP body exceeds " + MAX_BODY_BYTES + " bytes");
+            return;
+        }
+        final String body = new String(bodyBytes, StandardCharsets.UTF_8);
+
+        AuthenticationToken token = LSFAuthenticationToken.getAppServerToken();
+        ConnectionInfo connectionInfo = RequestUtils.getConnectionInfo(request);
+
+        String result = runRequest(request, (sessionObject, retry) -> {
+            ExternalRequest envelope = buildEnvelope(request, bodyBytes, sessionObject);
+            return sessionObject.remoteLogics.mcp(token, connectionInfo, envelope, body);
+        });
+
+        if (result == null) {
+            // JSON-RPC notification — acknowledge with 202 and no body.
+            response.setStatus(HttpServletResponse.SC_ACCEPTED);
+            return;
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json; charset=utf-8");
+        byte[] bytes = result.getBytes(StandardCharsets.UTF_8);
+        response.setContentLength(bytes.length);
+        try (OutputStream os = response.getOutputStream()) {
+            os.write(bytes);
+        }
+    }
+
+    /**
+     * Read up to {@link #MAX_BODY_BYTES} from the request body. Throws {@link BodyTooLargeException}
+     * if the stream still has data after the cap (so the caller can send a 413 instead of
+     * silently truncating into JSON parse errors). Unlike
+     * {@link lsfusion.base.file.IOUtils#readBytesFromStream(InputStream, int)}, which truncates
+     * silently at {@code maxLength}, this method explicitly distinguishes "fit" from "overflow".
+     */
+    private static byte[] readBoundedBody(HttpServletRequest request) throws IOException {
+        InputStream is = request.getInputStream();
+        if (is == null) return new byte[0];
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int total = 0;
+        int n;
+        while ((n = is.read(buf)) > 0) {
+            total += n;
+            if (total > MAX_BODY_BYTES) {
+                throw new BodyTooLargeException();
+            }
+            out.write(buf, 0, n);
+        }
+        return out.toByteArray();
+    }
+
+    /**
+     * Capture the inbound HTTP request's metadata into an {@link ExternalRequest} envelope —
+     * same shape {@code /eval} builds via {@code ExternalUtils.processRequest} +
+     * {@code RequestUtils.getRequestInfo}. {@code returnNames} / {@code params} are
+     * placeholders here (zero-length arrays); the eval tool overrides them from its own
+     * JSON args.
+     */
+    private static ExternalRequest buildEnvelope(HttpServletRequest request, byte[] body, LogicsSessionObject sessionObject) {
+        RequestUtils.RequestInfo info = RequestUtils.getRequestInfo(request);
+
+        // Same logicsHost selection as ExternalLogicsAndSessionRequestHandler — prefer the
+        // configured app server host unless it is the loopback alias, in which case fall back
+        // to the request's server name.
+        String logicsHost = sessionObject.connection.host != null
+                && !sessionObject.connection.host.equals("localhost")
+                && !sessionObject.connection.host.equals("127.0.0.1")
+                ? sessionObject.connection.host : request.getServerName();
+
+        // getSession(false): MCP is wired through the security chain with `create-session=
+        // never`, so most calls (tools/list, file tools, anonymous tools/call) ride without
+        // an HttpSession. Calling getSession() unconditionally would conjure one for every
+        // such request and defeat that contract. When no session exists we surface "" — the
+        // ExternalRequest envelope expects a non-null sessionId field shape.
+        HttpSession session = request.getSession(false);
+        String sessionId = session != null ? session.getId() : "";
+
+        return new ExternalRequest(
+                new String[0],
+                new ExternalRequest.Param[0],
+                info.headerNames, info.headerValues, info.cookieNames, info.cookieValues,
+                logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
+                request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(),
+                nvl(request.getContextPath(), ""), nvl(request.getServletPath(), ""), info.pathInfo, info.query,
+                request.getContentType(), sessionId, body,
+                null, null,
+                false, false);
+    }
+
+    private static String nvl(String s, String fallback) {
+        return s == null ? fallback : s;
+    }
+
+    private static final class BodyTooLargeException extends IOException {
+        BodyTooLargeException() { super(); }
+    }
+}

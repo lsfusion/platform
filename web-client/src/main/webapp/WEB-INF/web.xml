@@ -74,6 +74,16 @@
         <url-pattern>/form</url-pattern>
     </servlet-mapping>
 
+    <!-- MCP (Model Context Protocol) JSON-RPC endpoint — forwards to RemoteLogicsInterface.mcp -->
+    <servlet>
+        <servlet-name>mcpHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>mcpHandler</servlet-name>
+        <url-pattern>/mcp</url-pattern>
+    </servlet-mapping>
+
     <servlet>
         <servlet-name>fileUploadHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
@@ -158,6 +168,7 @@
         <url-pattern>/exec/*</url-pattern>
         <url-pattern>/eval/*</url-pattern>
         <url-pattern>/form</url-pattern>
+        <url-pattern>/mcp</url-pattern>
         <url-pattern>/uploadFile</url-pattern>
         <url-pattern>/file/*</url-pattern>
         <url-pattern>/login</url-pattern>
@@ -211,6 +222,7 @@
         <url-pattern>/exec/*</url-pattern>
         <url-pattern>/eval/*</url-pattern>
         <url-pattern>/form</url-pattern>
+        <url-pattern>/mcp</url-pattern>
     </filter-mapping>
 
     <!-- need to cache static resources - gwt/public and webapp (see urlrewrite.xml) -->

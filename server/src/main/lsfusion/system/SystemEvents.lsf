@@ -431,6 +431,7 @@ headers = DATA TEXT(Connection, TEXT);
 userAgent (Connection c) = headers(c, 'User-Agent');
 
 cookies = DATA TEXT(Connection, TEXT);
+sessionId '{system.events.session.id.connection}' (Connection c) = cookies(c, 'JSESSIONID');
 
 params = DATA TEXT(Connection, TEXT, INTEGER);
 params(Connection c, TEXT key) = GROUP CONCAT params(c, key, INTEGER i) IF params(c, key, i), ', ' ORDER i; 

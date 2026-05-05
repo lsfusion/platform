@@ -32,9 +32,11 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.mcp.MCPDispatcher;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -200,6 +202,27 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public ExternalResponse eval(AuthenticationToken token, ConnectionInfo connectionInfo, final boolean action, final ExternalRequest.Param paramScript, final ExternalRequest request) throws RemoteException {
         return runInNewSession(token, connectionInfo, request, session -> session.eval(action, paramScript, request));
+    }
+
+    private final MCPDispatcher mcpDispatcher = new MCPDispatcher(this);
+
+    @Override
+    public String mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException {
+        return mcpDispatcher.dispatch(token, connectionInfo, request, body);
+    }
+
+    /**
+     * Baseline API gate for MCP tools that don't dispatch through an action and so can't ride
+     * {@code RemoteConnection.checkEnableApi} (no {@code @noauth} / {@code @api} annotation,
+     * no request signature). Validates the token directly — there's no session creation step
+     * to do it upstream — and then delegates to the shared
+     * {@link RemoteConnection#checkAPIAccess} core that {@code checkEnableApi} also uses, so
+     * MCP file-tools apply the same {@link Settings#getEnableAPI} / anonymous policy as /eval
+     * for callers without action-level overrides.
+     */
+    public void checkMCPAccess(AuthenticationToken token) {
+        securityManager.parseToken(token);
+        RemoteConnection.checkAPIAccess(token, false, false);
     }
 
     public void ping() throws RemoteException {
