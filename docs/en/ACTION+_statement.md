@@ -1,5 +1,6 @@
 ---
 title: 'ACTION+ statement'
+slug: ACTION_plus_statement
 ---
 
 The `ACTION+` statement adds an implementation to an [abstract action](Action_extension.md).
