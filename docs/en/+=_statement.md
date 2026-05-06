@@ -1,5 +1,6 @@
 ---
 title: '+= statement'
+slug: plus_equals_statement
 ---
 
 The `+=` statement adds an implementation (selection option) to an [abstract property](Property_extension.md).
