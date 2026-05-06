@@ -7,6 +7,7 @@ import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.remote.MCPResult;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -241,6 +242,16 @@ public class MCPDispatcher {
             }
         } catch (IllegalArgumentException e) {
             return rpcResult(jsonrpc, id, errorResult(name, e.getMessage()));
+        } catch (RemoteConnection.MessagesException e) {
+            // Eval action threw with partial MESSAGE / PRINT MESSAGE output already emitted —
+            // surface both the failure cause AND the captured messages. Without this branch
+            // the messages from before the throw would be silently dropped, since the generic
+            // catch below only carries the exception text.
+            ServerLoggers.systemLogger.warn("MCP tool " + name + " failed (with partial messages)", e.getCause());
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            JSONObject err = errorResult(name, cause.getMessage());
+            MCPEvalTool.putCappedMessages(err, e.logMessages);
+            return rpcResult(jsonrpc, id, err);
         } catch (Exception e) {
             ServerLoggers.systemLogger.warn("MCP tool " + name + " failed", e);
             return rpcResult(jsonrpc, id, errorResult(name, e.getMessage()));
@@ -435,7 +446,7 @@ public class MCPDispatcher {
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_EVAL)
-                .put("description", "Run an lsFusion `run(<names>) { … }` action under the caller's auth context. Param names are local to the script. The inbound /mcp HTTP request's metadata is exposed to the script through the same lsFusion properties /eval populates (request headers, cookies, body, URL components, etc.). Returns `{status, results:[…]}`. Without `returnNames`, `results[]` carries the action's external return — the first non-null `export*` slot, populated by `EXPORT FROM …` (with or without `TO`), `PRINT … TO`, or direct assignment to those props. `EXPORT FROM …` without an explicit format clause defaults to JSON (`extension:\"json\"`, `mimeType:\"application/json\"`); a missing slot yields `results: []`. Each entry may carry `name` for multi-result responses; file-typed entries additionally carry `fileName` / `extension` / `mimeType` / `size`; the payload field depends on the type:\n" +
+                .put("description", "Run an lsFusion `run(<names>) { … }` action under the caller's auth context. Param names are local to the script. The inbound /mcp HTTP request's metadata is exposed to the script through the same lsFusion properties /eval populates (request headers, cookies, body, URL components, etc.). Returns `{status, results:[…], messages?:[…]}`. The optional `messages` array contains the action's `MESSAGE` / `PRINT MESSAGE` output preformatted as `\"TYPE: text\"` (plain `MESSAGE 'hello'` ⇒ `\"MESSAGE: hello\"`; explicit forms keep their literal type, e.g. `MESSAGE 'x' WARN` ⇒ `\"WARN: x\"`, `PRINT MESSAGE 'fail'` ⇒ `\"ERROR: fail\"`) — captured server-side because `lsfusion_eval` runs without an interactive client to deliver `MessageClientAction` to. Omitted when the action emitted nothing. Without `returnNames`, `results[]` carries the action's external return — the first non-null `export*` slot, populated by `EXPORT FROM …` (with or without `TO`), `PRINT … TO`, or direct assignment to those props. `EXPORT FROM …` without an explicit format clause defaults to JSON (`extension:\"json\"`, `mimeType:\"application/json\"`); a missing slot yields `results: []`. Each entry may carry `name` for multi-result responses; file-typed entries additionally carry `fileName` / `extension` / `mimeType` / `size`; the payload field depends on the type:\n" +
                         "  • Small text (< " + largeTextKiB + " KiB) — inline `value` (UTF-8 string), counts against the per-call inline budget.\n" +
                         "  • Large text (≥ " + largeTextKiB + " KiB) — moved to a sibling `resource` content entry; the slot carries a `resourceUri` pointer (the bytes are already in this response's `content[*].resource.text`, not a separately fetchable URL).\n" +
                         "  • Small binary (< " + inlineBinKiB + " KiB) — inline `valueBase64` while the per-call inline budget allows. Falls back to the URL path below if the budget is exhausted.\n" +

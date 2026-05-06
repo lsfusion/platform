@@ -66,6 +66,16 @@ public class MCPEvalTool {
     /** Marker put on truncated/omitted result entries — see {@link #MAX_INLINE_TOTAL_BYTES}. */
     private static final String REASON_TOTAL = "totalCap";
 
+    /** Hard cap on a <em>single</em> entry in the {@code messages} array (UTF-8 byte length).
+     *  Anything longer gets truncated with a {@code "... [truncated]"} marker so a single
+     *  oversize MESSAGE can't blow the JSON-RPC envelope on its own. */
+    public static final int MAX_MESSAGE_BYTES = 8 * 1024;
+    /** Hard cap on the <em>total</em> bytes consumed by all messages in one call. */
+    public static final int MAX_MESSAGES_TOTAL_BYTES = 256 * 1024;
+    /** Hard cap on number of message entries — keeps a runaway loop emitting MESSAGE in a
+     *  tight FOR from producing a 10 000-entry array. */
+    public static final int MAX_MESSAGES_COUNT = 100;
+
     public static JSONObject eval(JSONObject args, RemoteLogics remoteLogics,
                                   AuthenticationToken token, ConnectionInfo connectionInfo,
                                   ExternalRequest envelope,
@@ -130,8 +140,10 @@ public class MCPEvalTool {
             }
         }
 
-        // Inherit HTTP metadata from the envelope (headers, cookies, host, scheme, paths,
-        // sessionId, body, …) so the script sees the same shape it would via /eval.
+        // Inherit HTTP metadata from the envelope so the script sees the same shape /eval
+        // provides. MESSAGE / PRINT MESSAGE output is captured server-side unconditionally
+        // (RemoteConnection always pushes a log processor on the non-interactive path) and
+        // surfaced to MCP clients via ResultExternalResponse.logMessages.
         return new ExternalRequest(returnNames,
                 paramList.toArray(new ExternalRequest.Param[0]),
                 envelope.headerNames, envelope.headerValues, envelope.cookieNames, envelope.cookieValues,
@@ -277,6 +289,9 @@ public class MCPEvalTool {
                 }
             }
             out.put("results", results);
+            // Server-collected MESSAGE / PRINT MESSAGE text (each preformatted as
+            // "TYPE: message"). Only emitted when non-empty.
+            putCappedMessages(out, r.logMessages);
         } else {
             out.put("results", new JSONArray());
         }
@@ -386,6 +401,60 @@ public class MCPEvalTool {
         }
         item.put("value", new String(bytes, StandardCharsets.UTF_8));
         inlineRemaining[0] -= bytes.length;
+    }
+
+    /**
+     * Add the action's {@code logMessages} to a JSON object under the {@code "messages"} key,
+     * applying the per-message / total / count caps so a runaway MESSAGE loop or one
+     * gigantic MESSAGE can't blow out the JSON-RPC envelope. No-op when the array is
+     * {@code null} or empty (silent script ⇒ no {@code messages} key in the response).
+     *
+     * <p>Truncation rules:
+     * <ul>
+     *   <li>An entry longer than {@link #MAX_MESSAGE_BYTES} is cut at the byte boundary plus a
+     *       {@code "... [truncated]"} suffix.</li>
+     *   <li>Once the running total reaches {@link #MAX_MESSAGES_TOTAL_BYTES} or the count
+     *       reaches {@link #MAX_MESSAGES_COUNT}, remaining entries are dropped and a final
+     *       summary entry like {@code "... N more messages omitted (per-call cap)"} is
+     *       appended.</li>
+     * </ul>
+     *
+     * <p>Package-private so {@code MCPDispatcher}'s error path can apply the same caps when
+     * it pulls messages out of {@code MessagesException}.
+     */
+    static void putCappedMessages(JSONObject out, String[] messages) {
+        if (messages == null || messages.length == 0) return;
+        JSONArray arr = new JSONArray();
+        int totalBytes = 0;
+        int included = 0;
+        int omitted = 0;
+        for (int i = 0; i < messages.length; i++) {
+            String m = messages[i] != null ? messages[i] : "";
+            if (included >= MAX_MESSAGES_COUNT) {
+                omitted = messages.length - i;
+                break;
+            }
+            String capped = m;
+            int byteLen = MCPBinaryContent.utf8Length(m);
+            if (byteLen > MAX_MESSAGE_BYTES) {
+                // Char-based substring is approximate (multi-byte UTF-8 chars expand) but
+                // the trailing "... [truncated]" marker makes the caller aware of the cut,
+                // so a slight over-cap is acceptable.
+                capped = m.substring(0, Math.min(m.length(), MAX_MESSAGE_BYTES)) + " ... [truncated]";
+                byteLen = MCPBinaryContent.utf8Length(capped);
+            }
+            if (totalBytes + byteLen > MAX_MESSAGES_TOTAL_BYTES) {
+                omitted = messages.length - i;
+                break;
+            }
+            arr.put(capped);
+            totalBytes += byteLen;
+            included++;
+        }
+        if (omitted > 0) {
+            arr.put("... " + omitted + " more messages omitted (per-call cap)");
+        }
+        out.put("messages", arr);
     }
 
     private static void markTruncated(JSONObject item, String reason, int byteLen) {

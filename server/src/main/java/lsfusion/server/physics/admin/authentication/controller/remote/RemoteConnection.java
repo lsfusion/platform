@@ -8,6 +8,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.*;
@@ -16,6 +17,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.SyncType;
+import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -543,18 +545,59 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             }
             return new RedirectExternalResponse(redirectPushNotification ? "push-notification" : "", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable), CallHTTPAction.getExplicitParams(property, request.params));
         } else {
+            AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
+            ThreadLocalContext.pushLogMessage(logProcessor);
             try {
                 try (ExecSession execSession = getExecSession()) {
                     DataSession dataSession = execSession.dataSession;
 
                     runnable.run(dataSession, getStack(), null);
 
-                    return readResult(request.returnNames, request.returnMultiType, property.action, dataSession);
+                    return readResult(request.returnNames, request.returnMultiType, property.action, dataSession, formatLogMessages(logProcessor.messages));
                 }
-            } catch (SQLException | SQLHandledException e) {
+            } catch (Exception e) {
+                // Wrap with collected partial messages so callers (currently MCP) can include
+                // MESSAGE output emitted before the throw on their error response. The cause
+                // chain stays intact, so /eval / /exec error formatting (which uses
+                // RemoteInternalException.toString → ExceptionUtils.getRootCause) is unaffected.
+                if (!logProcessor.messages.isEmpty()) {
+                    throw new MessagesException(formatLogMessages(logProcessor.messages), e);
+                }
                 throw Throwables.propagate(e);
+            } finally {
+                ThreadLocalContext.popLogMessage();
             }
         }
+    }
+
+    /**
+     * Carries the partially-collected MESSAGE / PRINT MESSAGE output of an action that failed
+     * before completing, so the caller (e.g. {@code MCPDispatcher}) can include it on the
+     * error response. Plain rethrow would discard the buffer that {@code executeExternal}
+     * accumulated up to the failure point.
+     */
+    public static class MessagesException extends RuntimeException {
+        public final String[] logMessages;
+        public MessagesException(String[] logMessages, Throwable cause) {
+            super(cause);
+            this.logMessages = logMessages;
+        }
+    }
+
+    /**
+     * Render captured messages as {@code "TYPE: text"} strings. Plain {@code MESSAGE 'text'}
+     * parses with {@code MessageClientType.DEFAULT} per {@code LsfLogics.g}, which we
+     * normalize to {@code "MESSAGE"} — UI-only DEFAULT distinction means nothing to AI
+     * clients. Explicit forms (WARN / ERROR / INFO / LOG / SUCCESS) keep their literal name.
+     */
+    private static String[] formatLogMessages(List<AbstractContext.LogMessage> messages) {
+        String[] out = new String[messages.size()];
+        for (int i = 0; i < messages.size(); i++) {
+            AbstractContext.LogMessage m = messages.get(i);
+            String prefix = (m.type == null || m.type == MessageClientType.DEFAULT) ? "MESSAGE" : m.type.name();
+            out[i] = prefix + ": " + (m.message == null ? "" : m.message);
+        }
+        return out;
     }
 
     private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request, boolean redirect) {
@@ -635,7 +678,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> action, DataSession dataSession) throws SQLException, SQLHandledException {
+    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> action, DataSession dataSession, String[] logMessages) throws SQLException, SQLHandledException {
 
         ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
@@ -670,7 +713,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 returns.add(formatReturnValue(result.second[i].getValue(), resultProp.result, charset, result.first[i]));
         }
 
-        return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
+        return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK), logMessages);
     }
 
     public static Pair<String[], ObjectValue[]> readResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm, Result<SessionDataProperty> resultProp) throws SQLException, SQLHandledException {
