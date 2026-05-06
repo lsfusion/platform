@@ -285,6 +285,10 @@ Since java code cannot be executed directly in the browser, this action will onl
 
 We need to implement an action that will listen to a specific port and call the appropriate action when a new message is received.
 
+:::info
+The canonical pattern for a long-lived server component is a bean registered in Spring and hooked into the platform lifecycle; see [custom Spring bean (`EventServer`)](Custom_Spring_bean_EventServer.md). The solution below creates a `MonitorServer` from inside an `InternalAction` without Spring registration — a working but less canonical alternative.
+:::
+
 ### Solution
 
 ```lsf
@@ -308,7 +312,6 @@ To implement the task we will use the [Apache Mina](https://mina.apache.org/) li
 #### ListenPort.java
 ```java
 import lsfusion.server.base.controller.manager.MonitorServer;
-import lsfusion.server.base.controller.thread.EventThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -383,23 +386,19 @@ public class ListenPort extends InternalAction {
         private class ListenPortHandler extends IoHandlerAdapter {
 
             @Override
-            public void sessionOpened(IoSession session) throws Exception {
-                super.sessionOpened(session);
-                ThreadLocalContext.aspectBeforeMonitor(ListenPortServer.this, EventThreadInfo.HTTP(ListenPortServer.this));
-            }
-
-            @Override
             public void messageReceived(IoSession session, Object message) throws Exception {
                 String str = message.toString();
-                try (DataSession dataSession = logicsInstance.createSession()) {
-                    LM.findAction("receivedMessage[STRING]").execute(dataSession, getStack(), new DataObject(str, StringClass.instance));
+                // monitor context is set up and torn down inside the callback:
+                // MINA may dispatch messageReceived on any IoProcessor-pool thread,
+                // so before/after must be in the same callback block.
+                try {
+                    ThreadLocalContext.aspectBeforeMonitorHTTP(ListenPortServer.this);
+                    try (DataSession dataSession = ListenPortServer.this.createSession()) {
+                        LM.findAction("receivedMessage[STRING]").execute(dataSession, getStack(), new DataObject(str, StringClass.instance));
+                    }
+                } finally {
+                    ThreadLocalContext.aspectAfterMonitorHTTP(ListenPortServer.this);
                 }
-            }
-
-            @Override
-            public void sessionClosed(IoSession session) throws Exception {
-                super.sessionClosed(session);
-                ThreadLocalContext.aspectAfterMonitor(EventThreadInfo.HTTP(ListenPortServer.this));
             }
         }
     }

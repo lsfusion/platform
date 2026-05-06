@@ -73,6 +73,16 @@ Common structure rules:
   into logically complete blocks,
   the assistant SHOULD do that
   or suggest doing that
+- Language and Paradigm
+  articles
+  are primary documentation
+  and MUST NOT
+  reference Guide
+  or How-to articles;
+  cross-references
+  go from Guide / How-to
+  to Language / Paradigm,
+  never the other way around
 
 The required order is:
 1) Language

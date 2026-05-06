@@ -18,7 +18,7 @@ title: 'Интеграция'
 
 -   [Обращение из внешней системы](Access_from_an_external_system.md)
 -   [Обращение из внутренней системы](Access_from_an_internal_system.md)
--   [Обращение к внешней системе (`EXTERNAL`)](Access_to_an_external_system_EXTERNAL.md) 
+-   [Обращение к внешней системе (`EXTERNAL`)](Access_to_an_external_system_EXTERNAL.md)
 -   [Обращение к внутренней системе (`INTERNAL`, `FORMULA`)](Access_to_an_internal_system_INTERNAL_FORMULA.md)
 
 
