@@ -30,15 +30,16 @@ import java.util.Set;
  *       contains invalid UTF-8 falls through to binary.</li>
  *   <li>{@link #slimEval} / {@link #slimFileRead} — single-pass payload slimmer. Returns a
  *       {@link SlimResult} with (a) a slim copy of the payload for {@code content[0].text} +
- *       {@code structuredContent} and (b) a list of MCP {@code resource} content entries.
- *       Large payloads appear EXACTLY ONCE on the wire — text ≥ {@link #LARGE_TEXT_THRESHOLD_BYTES}
- *       moves to {@code resource.text}, binary moves to {@code resource.blob}. Small text below
- *       that threshold stays inline as {@code value} / {@code content} and is therefore
- *       intentionally duplicated across the text and structured views; the duplication is cheap
- *       for tiny return slots and saves the client from dereferencing a resource per slot. When
- *       data moves out to a resource, the slim entry carries a {@code resourceUri} pointer so
- *       structured-only consumers can match a slot to its resource without relying on positional
- *       ordering.</li>
+ *       {@code structuredContent} and (b) a list of MCP {@code resource} content entries for
+ *       large text. Eval binary delivery (small inline {@code valueBase64} or large URL
+ *       placeholder) is owned by {@code MCPEvalTool} upstream — by the time payloads reach
+ *       {@link #slimEval}, binary slots already carry their final shape and pass through
+ *       unchanged. classpath binary reads (via {@link #slimFileRead}) still move to
+ *       {@code resource.blob}. Text ≥ {@link #LARGE_TEXT_THRESHOLD_BYTES} moves to
+ *       {@code resource.text} with a {@code resourceUri} pointer on the slim entry; smaller
+ *       text stays inline as {@code value} / {@code content}, intentionally duplicated across
+ *       the text and structured views (cheap for tiny returns, saves the client a resource
+ *       dereference per slot).</li>
  *   <li>Internal {@code blobResource} / {@code textResource} / {@code makeResourceUri} —
  *       build {@code BlobResourceContents} / {@code TextResourceContents} per MCP spec
  *       2024-11-05; URIs are constructed via {@link java.net.URI} so spaces, {@code #},
@@ -244,7 +245,26 @@ final class MCPBinaryContent {
      */
     static final int LARGE_TEXT_THRESHOLD_BYTES = 64 * 1024;
 
-    /** Result of slimming an eval payload — slim copy + the resource entries to append. */
+    /**
+     * Threshold below which an eval-result binary stays inline as {@code valueBase64} (when the
+     * per-call inline budget allows). Above this — or once the inline budget is exhausted —
+     * {@link MCPEvalTool} routes the binary through the {@code /file/temp/mcp/...} download
+     * URL path instead. MCP clients that can't reuse the connector's auth context for a
+     * secondary GET still see small binaries inline. Threshold is on raw byte length, not
+     * base64 length.
+     */
+    static final int MAX_INLINE_BINARY_BYTES = 64 * 1024;
+
+    /**
+     * Result of slimming an eval payload — text branches only:
+     * <ul>
+     *   <li>{@code payload} — slim copy for {@code content[0].text} + {@code structuredContent}
+     *       (small text stays inline, large text replaced with a {@code resourceUri} pointer);</li>
+     *   <li>{@code resources} — MCP {@code resource} content entries for large text.</li>
+     * </ul>
+     * Binary delivery is handled upstream in {@link MCPEvalTool}, before the JSON ever reaches
+     * here, so this class no longer carries a binary side-map.
+     */
     static final class SlimResult {
         final JSONObject payload;
         final JSONArray resources;
@@ -255,11 +275,16 @@ final class MCPBinaryContent {
     }
 
     /**
-     * Slim an eval payload so each result's data appears <em>exactly once</em> in the
-     * response: {@code valueBase64} → {@link #blobResource} entry, {@code value} above
-     * {@link #LARGE_TEXT_THRESHOLD_BYTES} → {@link #textResource} entry. Smaller text values
-     * stay inline in {@code value} (cheap to duplicate). Metadata (mimeType, size, fileName,
-     * extension, truncated, omittedReason) is preserved on every slim entry.
+     * Slim an eval payload — text-only:
+     * <ul>
+     *   <li>Text {@code value} ≥ {@link #LARGE_TEXT_THRESHOLD_BYTES} → moved to a
+     *       {@code resource.text} entry, slim retains a {@code resourceUri} pointer.</li>
+     *   <li>Text {@code value} below the threshold stays inline as {@code value} (cheap to
+     *       duplicate across the text and structured views).</li>
+     * </ul>
+     * Binary entries pass through unchanged — {@link MCPEvalTool} already decided inline vs URL
+     * (and populated the dispatcher's per-call side-map for the URL case) before the payload
+     * reaches us.
      */
     static SlimResult slimEval(JSONObject payload) {
         JSONObject slimPayload = shallowCopy(payload);
@@ -274,34 +299,20 @@ final class MCPBinaryContent {
                 slimResults.put(JSONObject.NULL);
                 continue;
             }
-            // Use `has(key)` to detect "this slot is binary" — checking !value.isEmpty()
-            // would drop a 0-byte binary file (e.g. an empty .pdf), and the descriptor
-            // promises "any binary → resource.blob" regardless of size.
-            boolean isBinary = r.has("valueBase64");
-            String b64 = isBinary ? r.optString("valueBase64", "") : null;
             String text = r.optString("value", null);
-            JSONObject slim = copyWithoutKeys(r, "valueBase64", "value");
-
-            if (isBinary) {
-                String mimeType = r.optString("mimeType", "application/octet-stream");
-                String fileName = pickFileName(r, i, "bin");
-                String uri = makeResourceUri("eval", "/" + i + "/" + fileName, null);
-                resources.put(blobResource(uri, mimeType, b64));
-                // Explicit pointer in the slim entry so a client looking at structuredContent
-                // can match this result to its `content[*].resource.uri` without relying on
-                // positional ordering.
-                slim.put("resourceUri", uri);
-            } else if (text != null && utf8Length(text) >= LARGE_TEXT_THRESHOLD_BYTES) {
+            if (text != null && utf8Length(text) >= LARGE_TEXT_THRESHOLD_BYTES) {
+                JSONObject slim = copyWithoutKeys(r, "value");
                 String mimeType = r.optString("mimeType", "text/plain");
                 String fileName = pickFileName(r, i, "txt");
                 String uri = makeResourceUri("eval", "/" + i + "/" + fileName, null);
                 resources.put(textResource(uri, mimeType, text));
                 slim.put("resourceUri", uri);
-            } else if (text != null) {
-                // Small text — inline in `value` for cheap AI consumption.
-                slim.put("value", text);
+                slimResults.put(slim);
+            } else {
+                // Small text inline, or non-text result (binary inline / URL placeholder /
+                // truncated / isNull) — pass through verbatim.
+                slimResults.put(shallowCopy(r));
             }
-            slimResults.put(slim);
         }
         slimPayload.put("results", slimResults);
         return new SlimResult(slimPayload, resources);

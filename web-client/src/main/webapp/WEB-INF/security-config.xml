@@ -34,6 +34,13 @@
     <!-- we need to download logo and icon -->
     <http pattern="/file/static/noauth/**" security="none"/>
 
+    <!-- MCP-issued temp downloads — capability URL: 24-char [0-9A-Z] random nonce in the path
+         (~124 bits of entropy) IS the credential. security="none" lets MCP clients without
+         auth-passthrough into the model sandbox perform a secondary GET. Files are
+         delete-after-read (5s lag via DownloadFileRequestHandler) plus a 5-min orphan TTL via
+         FileUtils.saveMCPFile. -->
+    <http pattern="/file/temp/mcp/**" security="none"/>
+
     <http pattern="/file/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
         <csrf disabled="true"/>

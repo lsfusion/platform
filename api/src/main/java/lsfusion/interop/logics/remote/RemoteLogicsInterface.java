@@ -34,9 +34,11 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     ExternalResponse eval(AuthenticationToken token, ConnectionInfo connectionInfo, boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException;
 
     // MCP (Model Context Protocol) — JSON-RPC 2.0 dispatch (initialize / tools/list / tools/call).
-    // The body is the raw JSON-RPC request; the return value is the raw JSON-RPC response, or
-    // null for JSON-RPC notifications (requests without an `id`). Empty body is treated as a
-    // `tools/list` request, useful for quick discovery.
+    // The body is the raw JSON-RPC request; the return value pairs the JSON-RPC response with a
+    // side-map of binary payloads that didn't fit inline (the web tier resolves placeholders to
+    // download URLs before writing the response). {@code MCPResult.json == null} signals a
+    // JSON-RPC notification (request without `id`); web tier replies with HTTP 202.
+    // Empty body is treated as a `tools/list` request, useful for quick discovery.
     // The auth context (token + connectionInfo) flows through to tools that touch session state,
     // so e.g. `lsfusion_eval` runs under the caller's identity instead of always anonymous.
     // The `request` envelope carries the inbound HTTP request's metadata (headers, cookies,
@@ -44,7 +46,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // scripts running through `lsfusion_eval` can read those attributes via standard lsFusion
     // properties (`headers[name]`, `cookies[name]`, etc.). Its `params`/`returnNames` are
     // irrelevant — eval supplies its own from tool args.
-    String mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException;
+    MCPResult mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException;
 
     // separate methods, because used really often (and don't need authentication)
     long generateID() throws RemoteException;

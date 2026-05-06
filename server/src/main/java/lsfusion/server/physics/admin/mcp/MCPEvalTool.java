@@ -3,6 +3,7 @@ package lsfusion.server.physics.admin.mcp;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -40,19 +42,22 @@ public class MCPEvalTool {
     private static final String UTF8 = StandardCharsets.UTF_8.name();
 
     /**
-     * Hard cap on bytes inlined in a <em>single</em> eval result, applied to both text
-     * {@code value} (UTF-8 byte length) and binary {@code valueBase64} (raw byte length).
-     * Above this we omit the bytes and set {@code truncated:true} with
-     * {@code omittedReason:"perFileCap"}.
+     * Hard cap on bytes inlined in a <em>single</em> eval text result (UTF-8 byte length of
+     * {@code value}). Above this the text is omitted and the slot is marked
+     * {@code truncated:true} with {@code omittedReason:"perFileCap"}. Binary results are
+     * <em>not</em> subject to this cap — they inline as {@code valueBase64} only when small
+     * (under {@link MCPBinaryContent#MAX_INLINE_BINARY_BYTES} AND inline budget allows),
+     * otherwise they flow through the {@code /file/temp/mcp/...} URL path regardless of size.
      */
     public static final int MAX_INLINE_FILE_BYTES = 10 * 1024 * 1024;
 
     /**
-     * Hard cap on the <em>total</em> bytes inlined across all eval result slots in one call.
-     * Applied as a best-fit budget: any single payload that wouldn't fit in the remaining
-     * budget gets dropped with {@code truncated:true} + {@code omittedReason:"totalCap"},
-     * but smaller later payloads can still slot into whatever budget is left. A client that
-     * sees a {@code totalCap} truncation should re-run the dropped slot in a separate call.
+     * Hard cap on the <em>total</em> bytes inlined across all eval result slots in one call —
+     * counts text {@code value} and small-binary {@code valueBase64} together. Applied as a
+     * best-fit budget: a text payload that doesn't fit in the remaining budget gets dropped
+     * with {@code truncated:true} + {@code omittedReason:"totalCap"}; a small-binary payload
+     * that doesn't fit instead falls through to the URL path (URL bytes don't count against
+     * this budget). A {@code totalCap} truncation always means a text result.
      */
     public static final int MAX_INLINE_TOTAL_BYTES = 30 * 1024 * 1024;
 
@@ -63,7 +68,8 @@ public class MCPEvalTool {
 
     public static JSONObject eval(JSONObject args, RemoteLogics remoteLogics,
                                   AuthenticationToken token, ConnectionInfo connectionInfo,
-                                  ExternalRequest envelope) throws Exception {
+                                  ExternalRequest envelope,
+                                  LinkedHashMap<String, NamedFileData> files, String placeholderId) throws Exception {
         String script = MCPArgs.getString(args, "script");
         if (script == null || script.isEmpty()) {
             throw new IllegalArgumentException("'script' is required (non-empty string)");
@@ -72,7 +78,7 @@ public class MCPEvalTool {
         ExternalRequest request = buildRequest(args, envelope);
 
         ExternalResponse response = remoteLogics.eval(token, connectionInfo, /*action=*/ false, scriptParam, request);
-        return toJson(response);
+        return toJson(response, files, placeholderId);
     }
 
     /**
@@ -253,20 +259,21 @@ public class MCPEvalTool {
         return trimmed;
     }
 
-    private static JSONObject toJson(ExternalResponse response) {
+    private static JSONObject toJson(ExternalResponse response,
+                                     LinkedHashMap<String, NamedFileData> files, String placeholderId) {
         JSONObject out = new JSONObject().put("status", response.getStatusHttp());
         if (response instanceof ResultExternalResponse) {
             ResultExternalResponse r = (ResultExternalResponse) response;
             JSONArray results = new JSONArray();
-            // Per-call running total — best-fit budget: any single payload that doesn't fit
-            // in `inlineRemaining` gets dropped with truncated:true, but smaller later
-            // payloads can still slot into whatever's left. Keeps multi-slot scripts from
-            // pushing hundreds of MiB into one JSON-RPC response without dropping every slot
-            // after the first oversize one.
+            // Per-call running total — best-fit budget for INLINE payloads only (text values +
+            // small binary `valueBase64`). URL-delivered binaries don't count against this,
+            // since their bytes flow to disk via FileUtils.saveMCPFile, not through the
+            // JSON-RPC envelope. Keeps multi-slot scripts from pushing hundreds of MiB of
+            // base64 into one response while leaving the URL path unbounded by JSON budget.
             int[] inlineRemaining = { MAX_INLINE_TOTAL_BYTES };
             if (r.results != null) {
-                for (ExternalRequest.Result result : r.results) {
-                    results.put(renderResult(result, inlineRemaining));
+                for (int i = 0; i < r.results.length; i++) {
+                    results.put(renderResult(r.results[i], i, inlineRemaining, files, placeholderId));
                 }
             }
             out.put("results", results);
@@ -276,7 +283,8 @@ public class MCPEvalTool {
         return out;
     }
 
-    private static JSONObject renderResult(ExternalRequest.Result result, int[] inlineRemaining) {
+    private static JSONObject renderResult(ExternalRequest.Result result, int index, int[] inlineRemaining,
+                                           LinkedHashMap<String, NamedFileData> files, String placeholderId) {
         JSONObject item = new JSONObject();
         if (result.name != null) item.put("name", result.name);
         if (result.fileName != null) item.put("fileName", result.fileName);
@@ -310,12 +318,38 @@ public class MCPEvalTool {
             if (MCPBinaryContent.isLikelyText(extension, bytes, 0, bytes.length)) {
                 inlineFileText(item, bytes, inlineRemaining);
             } else {
-                inlineFileBinary(item, bytes, inlineRemaining);
+                dispatchBinary(item, fd, result.fileName, index, inlineRemaining, files, placeholderId);
             }
         } else if (value != null) {
             inlineString(item, value.toString(), inlineRemaining);
         }
         return item;
+    }
+
+    /**
+     * Decide where a binary result goes: small ({@code <} {@link MCPBinaryContent#MAX_INLINE_BINARY_BYTES})
+     * AND fits inline budget → inline {@code valueBase64} (clients that can't reuse the MCP
+     * connector's auth context for a secondary GET still see the bytes). Otherwise — too big to
+     * inline OR inline budget exhausted — register the {@link NamedFileData} under a per-call
+     * placeholder; web tier resolves it to a {@code /file/temp/mcp/...} URL via
+     * {@link lsfusion.gwt.server.FileUtils#saveMCPFile}. URL-delivered files do NOT count against
+     * the inline budget — their bytes flow to disk, not through the JSON-RPC envelope, so the
+     * envelope budget is irrelevant. This unblocks any size of binary that previously got
+     * truncated because base64-inlining was the only path.
+     */
+    private static void dispatchBinary(JSONObject item, FileData fd, String fileName, int index,
+                                       int[] inlineRemaining,
+                                       LinkedHashMap<String, NamedFileData> files, String placeholderId) {
+        byte[] bytes = fd.getRawFile().getBytes();
+        if (bytes.length < MCPBinaryContent.MAX_INLINE_BINARY_BYTES && bytes.length <= inlineRemaining[0]) {
+            item.put("valueBase64", Base64.getEncoder().encodeToString(bytes));
+            inlineRemaining[0] -= bytes.length;
+            return;
+        }
+        String placeholder = "__MCP_FILE_" + placeholderId + "_" + index + "__";
+        String name = (fileName != null && !fileName.isEmpty()) ? fileName : "result-" + index;
+        files.put(placeholder, new NamedFileData(fd, name));
+        item.put("url", placeholder);
     }
 
     /**
@@ -351,23 +385,6 @@ public class MCPEvalTool {
             return;
         }
         item.put("value", new String(bytes, StandardCharsets.UTF_8));
-        inlineRemaining[0] -= bytes.length;
-    }
-
-    /**
-     * Inline a binary file as {@code valueBase64}; dispatcher additionally surfaces it as an
-     * MCP {@code resource} content entry. Same dual cap.
-     */
-    private static void inlineFileBinary(JSONObject item, byte[] bytes, int[] inlineRemaining) {
-        if (bytes.length > MAX_INLINE_FILE_BYTES) {
-            markTruncated(item, REASON_PER_FILE, bytes.length);
-            return;
-        }
-        if (bytes.length > inlineRemaining[0]) {
-            markTruncated(item, REASON_TOTAL, bytes.length);
-            return;
-        }
-        item.put("valueBase64", Base64.getEncoder().encodeToString(bytes));
         inlineRemaining[0] -= bytes.length;
     }
 

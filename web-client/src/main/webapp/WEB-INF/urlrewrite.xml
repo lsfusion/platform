@@ -15,15 +15,27 @@
         <set type="expires">30 days</set>
     </rule>
 
+    <!-- MCP capability URLs are single-use, `security="none"` and the URL itself is the
+         credential. Force no-store so a shared / browser cache can't serve the binary after
+         the server's delete-after-read (5s lag). The general /temp/ rule below carries a
+         negative lookahead so it never matches /file/temp/mcp/, which means we don't need
+         `last="true"` here (and `last` on a header-only <rule> isn't honoured by Tuckey 4.x
+         anyway — it's a <to>-level attribute). -->
+    <rule match-type="regex">
+        <from>.*\/temp\/mcp\/.*</from>
+        <set type="response-header" name="Cache-Control">no-store, no-cache, must-revalidate</set>
+        <set type="response-header" name="Pragma">no-cache</set>
+    </rule>
     <!-- webapp, gwt/public, static file -->
     <rule match-type="regex">
         <from>.*\/static\/.*</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>
         <set type="expires">1 day</set>
     </rule>
-    <!-- non static file, need for 'save as' dialog -->
+    <!-- non static file, need for 'save as' dialog. Exclude /temp/mcp/ via negative lookahead
+         — those MCP capability URLs are caught by the dedicated rule above with no-store. -->
     <rule match-type="regex">
-        <from>.*\/temp\/.*</from>
+        <from>.*\/temp\/(?!mcp\/).*</from>
         <set type="response-header" name="Cache-Control">public, max-age=3600</set>
         <set type="expires">1 hour</set>
     </rule>

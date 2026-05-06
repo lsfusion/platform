@@ -10,6 +10,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.EConsumer;
@@ -116,8 +117,72 @@ public class FileUtils {
                 GLoggers.invocationLogger.error("file not deleted: " + file.getName());
                 file.deleteOnExit();
             }
+            cleanupEmptyParentSubdir(file);
         } catch (Throwable t) { // this files are in temp dir anyway, so no big deal
             GLoggers.invocationLogger.error("file delete failed: " + file.getName());
+        }
+    }
+
+    /**
+     * Try to remove the per-file random-id subdirectory if it became empty. saveActionFile
+     * / saveFormFile / saveMCPFile all create one subdir per file ({@code <random>/<name>.<ext>}),
+     * so without this hint the dir hierarchy grows unbounded over the JVM lifetime.
+     *
+     * <p>Refuses to touch the {@code APP_DOWNLOAD_FOLDER_PATH} / {@code APP_UPLOAD_FOLDER_PATH}
+     * / {@code APP_CONTEXT_FOLDER_PATH} roots themselves, even if they happen to be empty.
+     * Upload files (read via {@link #readUploadFileAndDelete}) live FLAT under
+     * {@code APP_UPLOAD_FOLDER_PATH}, and on a setup where upload and download share the same
+     * servlet tempDir (the default in {@code LogicsProviderImpl}), deleting the last upload
+     * file would otherwise nuke the entire root.
+     *
+     * <p>Silent on failure — accumulating empty per-file dirs is preferable to noisy logs.
+     */
+    private static void cleanupEmptyParentSubdir(File file) {
+        try {
+            File parent = file.getParentFile();
+            if (parent == null || !parent.exists()) return;
+            if (isStorageRoot(parent)) return;
+            String[] siblings = parent.list();
+            if (siblings != null && siblings.length == 0) parent.delete();
+        } catch (Throwable ignored) {
+            // best-effort
+        }
+    }
+
+    private static boolean isStorageRoot(File dir) {
+        try {
+            String c = dir.getCanonicalPath();
+            if (matchesRoot(c, APP_DOWNLOAD_FOLDER_PATH)) return true;
+            if (matchesRoot(c, APP_UPLOAD_FOLDER_PATH)) return true;
+            if (matchesRoot(c, APP_CONTEXT_FOLDER_PATH)) return true;
+            // After the physical store-type split (saveDownloadFile writes to
+            // APP_DOWNLOAD_FOLDER_PATH/<store>/...), these per-store sub-roots also count as
+            // roots — a flat-named save (e.g. saveFormFile with displayName=null lands the
+            // file directly under <store>/) must not let cleanup wipe the store-root after
+            // the last file. writeFile would self-heal on the next save, but we'd rather not
+            // churn the directory.
+            if (APP_DOWNLOAD_FOLDER_PATH != null) {
+                if (matchesRoot(c, APP_DOWNLOAD_FOLDER_PATH + "/" + STATIC_PATH)) return true;
+                if (matchesRoot(c, APP_DOWNLOAD_FOLDER_PATH + "/" + TEMP_PATH)) return true;
+                if (matchesRoot(c, APP_DOWNLOAD_FOLDER_PATH + "/" + DEV_PATH)) return true;
+            }
+            if (APP_CONTEXT_FOLDER_PATH != null) {
+                if (matchesRoot(c, APP_CONTEXT_FOLDER_PATH + "/" + STATIC_PATH)) return true;
+                if (matchesRoot(c, APP_CONTEXT_FOLDER_PATH + "/" + TEMP_PATH)) return true;
+                if (matchesRoot(c, APP_CONTEXT_FOLDER_PATH + "/" + DEV_PATH)) return true;
+            }
+            return false;
+        } catch (IOException e) {
+            return true; // fail-closed: treat unknown dir as root, don't cleanup
+        }
+    }
+
+    private static boolean matchesRoot(String dirCanonical, String rootPath) {
+        if (rootPath == null) return false;
+        try {
+            return dirCanonical.equals(new File(rootPath).getCanonicalPath());
+        } catch (IOException e) {
+            return false;
         }
     }
 
@@ -365,15 +430,20 @@ public class FileUtils {
                 extraPath = DEV_PATH;
                 break;
         }
-        if(useDownload) { // we'll put it in the temp folder, and add static to final url
+        if(useDownload) {
             filePath = APP_DOWNLOAD_FOLDER_PATH;
             url = DOWNLOAD_HANDLER + "/";
         } else {
             filePath = APP_CONTEXT_FOLDER_PATH;
             url = "";
-
-            filePath += "/" + extraPath;
         }
+        // Put store type into the physical layout too, not just the URL. Previously useDownload
+        // wrote everything flat into APP_DOWNLOAD_FOLDER_PATH while the URL prefix differed
+        // (`file/static/` vs `file/temp/`); a request for `/file/temp/<static-content-id>/<name>`
+        // would then be treated by DownloadFileRequestHandler as a temp file (close-after-read)
+        // and silently delete a STATIC payload. With the per-store subdirectory, /file/temp/...
+        // and /file/static/... resolve to physically distinct files.
+        filePath += "/" + extraPath;
         url += extraPath + "/";
 
         assert !fileName.startsWith("/");
@@ -455,6 +525,91 @@ public class FileUtils {
             return FileUtils.saveActionFile(file.getRawFile(), file.getExtension(), nvl(displayName, "lsfReport"));
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    /** Orphan TTL for MCP-issued temp files — bytes that get a URL but never get fetched. */
+    public static int MCP_ORPHAN_TTL_MINUTES = 5;
+
+    /**
+     * Save a binary returned from an MCP tool call (currently {@code lsfusion_eval}) to the
+     * temp-download store and produce a URL the MCP client can GET. The store mode is TEMP, so
+     * {@link DownloadFileRequestHandler}'s existing delete-after-read (5s lag) cleans up after a
+     * successful fetch — we only add a longer scheduled cleanup for the orphan case (URL was
+     * issued but the client never fetched). Both deletes are idempotent and silent.
+     *
+     * <p>The URL itself is the credential here: a 24-char {@code [0-9A-Z]} nonce inside the
+     * path (~124 bits of entropy). The {@code /file/temp/mcp/**} chain is configured
+     * {@code security="none"} so MCP clients without auth-passthrough into their model sandbox
+     * can still GET it.
+     *
+     * <p>Defense in depth: both {@code displayName} and {@code extension} are sanitized here
+     * regardless of what the caller passed. {@code displayName} is reduced to a basename via
+     * {@link BaseUtils#getFileName} and falls back to {@code "file"} when empty;
+     * {@code extension} is stripped of leading dots, rejected if it contains path separators
+     * or {@code ..}, otherwise dropped. The result must round-trip through
+     * {@link DownloadFileRequestHandler}'s strict {@code mcp/<nonce>/<basename>} validator,
+     * so a future caller forgetting to sanitize must not be able to produce a self-invalid
+     * URL or interact with the temp-store path layout.
+     */
+    public static String saveMCPFile(NamedFileData namedFile) {
+        FileData fileData = namedFile.getFileData();
+        RawFileData rawFile = fileData.getRawFile();
+        String fileID = BaseUtils.randomString(24);
+        // Strip any directory part. FilenameUtils.getBaseName also strips the trailing
+        // extension, so e.g. "report.xlsx" → "report" — the script's caller may have included
+        // it accidentally, the extension below restores it. Empty after sanitize ⇒ fall back
+        // to "file" so the URL always has the `<nonce>/<basename>` shape the validator
+        // expects (a missing basename segment would be self-rejected as a 400 on download).
+        String displayName = namedFile.getName();
+        String safeName = displayName == null ? null : BaseUtils.getFileName(displayName);
+        if (safeName == null || safeName.isEmpty()) safeName = "file";
+        fileID = fileID + "/" + safeName;
+        String safeExt = sanitizeMCPExtension(fileData.getExtension());
+        String fileName = BaseUtils.addExtension(fileID, safeExt == null ? "" : safeExt);
+
+        String url = saveDownloadFile(true, DownloadStoreType.TEMP, "mcp", fileName, null, rawFile, null);
+
+        // Schedule TTL cleanup for the orphan case (URL never fetched). Idempotent — if the
+        // download handler already deleted the file after a successful read, this is a no-op.
+        // Physical layout: saveDownloadFile writes to APP_DOWNLOAD_FOLDER_PATH/<storeType>/<innerPath>/<fileName>,
+        // so for TEMP + innerPath="mcp" the on-disk file lives under APP_DOWNLOAD_FOLDER_PATH/temp/mcp/...
+        File file = createFile(APP_DOWNLOAD_FOLDER_PATH + "/" + TEMP_PATH + "/mcp", fileName);
+        closeExecutor.schedule(() -> silentDeleteIfExists(file), MCP_ORPHAN_TTL_MINUTES, TimeUnit.MINUTES);
+        return url;
+    }
+
+    /**
+     * Strip leading dots, reject path separators or {@code ..} sequences. Returns {@code null}
+     * if the result is unsafe — caller falls back to no-extension. The extension lives in the
+     * capability URL path component, so it has the same path-shape constraints as the basename.
+     */
+    private static String sanitizeMCPExtension(String extension) {
+        if (extension == null) return null;
+        String trimmed = extension.trim();
+        int i = 0;
+        while (i < trimmed.length() && trimmed.charAt(i) == '.') i++;
+        trimmed = trimmed.substring(i);
+        if (trimmed.isEmpty()) return null;
+        if (trimmed.indexOf('/') >= 0 || trimmed.indexOf('\\') >= 0) return null;
+        if (trimmed.contains("..")) return null;
+        return trimmed;
+    }
+
+    /**
+     * Delete a file if it still exists, then try to remove its (now empty) per-file random-id
+     * directory through the shared {@link #cleanupEmptyParentSubdir} helper (which refuses to
+     * touch storage roots, so this is safe even when {@code APP_UPLOAD_FOLDER_PATH} aliases
+     * the download folder). Swallows missing-file / I/O errors at every step — orphan TTL
+     * cleanup races with delete-after-read on a successful download, and either side ending in
+     * a no-op is fine.
+     */
+    private static void silentDeleteIfExists(File file) {
+        try {
+            if (file.exists()) file.delete();
+            cleanupEmptyParentSubdir(file);
+        } catch (Throwable ignored) {
+            // file's in temp dir; eventual cleanup is best-effort
         }
     }
 }

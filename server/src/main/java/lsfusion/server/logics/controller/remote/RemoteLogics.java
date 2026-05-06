@@ -10,6 +10,7 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.authentication.Authentication;
+import lsfusion.interop.logics.remote.MCPResult;
 import lsfusion.interop.logics.remote.RemoteClientInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -207,7 +208,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private final MCPDispatcher mcpDispatcher = new MCPDispatcher(this);
 
     @Override
-    public String mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException {
+    public MCPResult mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException {
         return mcpDispatcher.dispatch(token, connectionInfo, request, body);
     }
 

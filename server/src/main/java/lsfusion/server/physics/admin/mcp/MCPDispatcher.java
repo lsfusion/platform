@@ -1,7 +1,10 @@
 package lsfusion.server.physics.admin.mcp;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.logics.remote.MCPResult;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -11,6 +14,7 @@ import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 /**
@@ -65,12 +69,18 @@ public class MCPDispatcher {
      *
      * <p>An empty / blank body is treated as a {@code tools/list} request — convenient for a
      * quick {@code curl -X POST .../mcp} discovery probe. JSON-RPC <em>notifications</em>
-     * (requests without an {@code id} member) return {@code null} per spec, so no response
-     * body should be written.
+     * (requests without an {@code id} member) return {@code MCPResult} with {@code json=null}
+     * per spec; the web tier acknowledges with HTTP 202.
      *
-     * @return the JSON-RPC response as a string, or {@code null} if the input is a notification.
+     * <p>Returned {@link MCPResult} pairs the JSON-RPC envelope with a side-map of binary
+     * payloads referenced as placeholders inside the JSON. The web tier resolves those
+     * placeholders to download URLs (via {@code FileUtils.saveMCPFile}) before writing the
+     * HTTP response. The placeholder pattern carries {@code placeholderId} — a per-call
+     * random salt — so user-returned strings can't accidentally match.
      */
-    public String dispatch(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) {
+    public MCPResult dispatch(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) {
+        String placeholderId = BaseUtils.randomString(20);
+        LinkedHashMap<String, NamedFileData> files = new LinkedHashMap<>();
         JSONObject rpc;
         boolean syntheticRequest = false;
         try {
@@ -84,14 +94,19 @@ public class MCPDispatcher {
                 rpc = new JSONObject(trimmed);
             }
         } catch (Exception e) {
-            return rpcError("2.0", null, -32700, "Parse error: " + e.getMessage(), null).toString();
+            return new MCPResult(rpcError("2.0", null, -32700, "Parse error: " + e.getMessage(), null).toString(), files);
         }
         boolean isNotification = !syntheticRequest && !rpc.has("id");
-        JSONObject response = handleRpc(rpc, token, connectionInfo, request);
-        return isNotification ? null : response.toString();
+        JSONObject response = handleRpc(rpc, token, connectionInfo, request, files, placeholderId);
+        // Notifications discard the response body per JSON-RPC spec — also drop the side-map
+        // so we don't pay RMI bytes shipping FileData payloads the web tier would only throw
+        // away (web-tier short-circuits to 202 and never calls resolveFiles for null json).
+        if (isNotification) return new MCPResult(null, new LinkedHashMap<>());
+        return new MCPResult(response.toString(), files);
     }
 
-    private JSONObject handleRpc(JSONObject rpc, AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request) {
+    private JSONObject handleRpc(JSONObject rpc, AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request,
+                                 LinkedHashMap<String, NamedFileData> files, String placeholderId) {
         // Strict envelope: same contract we apply to tool args. A non-string `jsonrpc` /
         // `method`, an unsupported jsonrpc version, or a present-but-non-object `params`
         // is a malformed envelope and gets a clean -32600. Coercion (e.g. `method:123` →
@@ -134,7 +149,7 @@ public class MCPDispatcher {
             switch (method) {
                 case "initialize":  return handleInitialize(jsonrpc, id);
                 case "tools/list":  return rpcResult(jsonrpc, id, new JSONObject().put("tools", buildToolsList()));
-                case "tools/call":  return handleToolsCall(jsonrpc, id, params, token, connectionInfo, request);
+                case "tools/call":  return handleToolsCall(jsonrpc, id, params, token, connectionInfo, request, files, placeholderId);
                 default:            return rpcError(jsonrpc, id, -32601, "Method not found: " + method, null);
             }
         } catch (Exception e) {
@@ -159,7 +174,8 @@ public class MCPDispatcher {
 
     private JSONObject handleToolsCall(String jsonrpc, Object id, JSONObject params,
                                        AuthenticationToken token, ConnectionInfo connectionInfo,
-                                       ExternalRequest request) {
+                                       ExternalRequest request,
+                                       LinkedHashMap<String, NamedFileData> files, String placeholderId) {
         if (params == null) {
             return rpcError(jsonrpc, id, -32602, "Missing params for tools/call", null);
         }
@@ -198,10 +214,23 @@ public class MCPDispatcher {
                     return rpcResult(jsonrpc, id, result);
                 }
                 case TOOL_EVAL: {
-                    JSONObject payload = MCPEvalTool.eval(args, remoteLogics, token, connectionInfo, request);
+                    // MCPEvalTool decides binary inline-vs-URL itself (it sees raw bytes BEFORE
+                    // base64 inflation, so the inline-cap can be applied to the right number)
+                    // and populates the side-map directly. slimEval afterwards only handles
+                    // text large/small.
+                    //
+                    // Use a LOCAL side-map and merge into the dispatcher's `files` only after
+                    // the response is fully built — if any step in here throws, the catch
+                    // returns errorResult and the local map is GC'd. Otherwise a partially
+                    // populated dispatcher-level map would leak placeholder-less FileData
+                    // entries, which the web tier would still write to disk during
+                    // resolveFiles() despite the JSON-RPC response containing an error result.
+                    LinkedHashMap<String, NamedFileData> localFiles = new LinkedHashMap<>();
+                    JSONObject payload = MCPEvalTool.eval(args, remoteLogics, token, connectionInfo, request, localFiles, placeholderId);
                     MCPBinaryContent.SlimResult slim = MCPBinaryContent.slimEval(payload);
                     JSONObject result = structuredResult(slim.payload);
                     appendAll(result.getJSONArray("content"), slim.resources);
+                    files.putAll(localFiles);
                     return rpcResult(jsonrpc, id, result);
                 }
                 default:
@@ -385,7 +414,8 @@ public class MCPDispatcher {
     }
 
     private static JSONObject evalDescriptor() {
-        int largeKiB = MCPBinaryContent.LARGE_TEXT_THRESHOLD_BYTES / 1024;
+        int largeTextKiB = MCPBinaryContent.LARGE_TEXT_THRESHOLD_BYTES / 1024;
+        int inlineBinKiB = MCPBinaryContent.MAX_INLINE_BINARY_BYTES / 1024;
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
@@ -400,15 +430,18 @@ public class MCPDispatcher {
                         .put("returnNames", new JSONObject()
                                 .put("type", "array")
                                 .put("items", new JSONObject().put("type", "string"))
-                                .put("description", "Optional list of lsFusion property names (compound, e.g. `Module.someProp`) to read after `run` finishes; the engine looks each one up via `findPropertyByCompoundName` and surfaces its current value in the response's `results[]`. Arbitrary / non-property labels will fail. Omit to get whatever the action itself returns (e.g. files from `EXPORT … TO` / `PRINT … TO`).")))
+                                .put("description", "Optional list of lsFusion property names (compound, e.g. `Module.someProp`) to read after `run` finishes; the engine looks each one up via `findPropertyByCompoundName` and surfaces its current value in the response's `results[]`. Arbitrary / non-property labels will fail. Omit to get the action's external return automatically — that's the first non-null `export*` slot (`exportFile` / `exportString` / `exportObject` / …), populated by `EXPORT FROM …` (with or without `TO`), `PRINT … TO`, or direct assignment to those props.")))
                 .put("required", new JSONArray().put("script"))
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_EVAL)
-                .put("description", "Run an lsFusion `run(<names>) { … }` action under the caller's auth context. Param names are local to the script. The inbound /mcp HTTP request's metadata is exposed to the script through the same lsFusion properties /eval populates (request headers, cookies, body, URL components, etc.). Returns `{status, results:[…]}`. Each entry may carry `name` for multi-result responses; file-typed entries additionally carry `fileName` / `extension` / `mimeType` / `size`; the payload field depends on the type:\n" +
-                        "  • when the payload fits the caps below — its bytes (small text inline as `value`, larger text or any binary moved to a sibling `resource` content entry, with `resourceUri` on the slot identifying that embedded resource — not separately fetchable; the bytes are already in this response's `content[*].resource`);\n" +
-                        "  • when it doesn't — `truncated:true` + `omittedReason` (`perFileCap` for a slot over " + (MCPEvalTool.MAX_INLINE_FILE_BYTES / (1024 * 1024)) + " MiB, `totalCap` for a slot that doesn't fit the remaining " + (MCPEvalTool.MAX_INLINE_TOTAL_BYTES / (1024 * 1024)) + " MiB inline budget shared by the whole call) + `omittedSize` only — the bytes are NOT in the response. Re-run with a chunked / smaller-output script.\n" +
-                        "  • when the slot is null — `{isNull:true}`.")
+                .put("description", "Run an lsFusion `run(<names>) { … }` action under the caller's auth context. Param names are local to the script. The inbound /mcp HTTP request's metadata is exposed to the script through the same lsFusion properties /eval populates (request headers, cookies, body, URL components, etc.). Returns `{status, results:[…]}`. Without `returnNames`, `results[]` carries the action's external return — the first non-null `export*` slot, populated by `EXPORT FROM …` (with or without `TO`), `PRINT … TO`, or direct assignment to those props. `EXPORT FROM …` without an explicit format clause defaults to JSON (`extension:\"json\"`, `mimeType:\"application/json\"`); a missing slot yields `results: []`. Each entry may carry `name` for multi-result responses; file-typed entries additionally carry `fileName` / `extension` / `mimeType` / `size`; the payload field depends on the type:\n" +
+                        "  • Small text (< " + largeTextKiB + " KiB) — inline `value` (UTF-8 string), counts against the per-call inline budget.\n" +
+                        "  • Large text (≥ " + largeTextKiB + " KiB) — moved to a sibling `resource` content entry; the slot carries a `resourceUri` pointer (the bytes are already in this response's `content[*].resource.text`, not a separately fetchable URL).\n" +
+                        "  • Small binary (< " + inlineBinKiB + " KiB) — inline `valueBase64` while the per-call inline budget allows. Falls back to the URL path below if the budget is exhausted.\n" +
+                        "  • Large binary OR small binary with budget exhausted — `url` field with a single-use download URL (path-absolute, `…/file/temp/mcp/<24-char-nonce>/<fileName>.<ext>?dumb=0`). The URL is its own credential — the nonce has ~124 bits of entropy and the `/file/temp/mcp/**` chain is configured `security=\"none\"`, so a sandboxed MCP client can GET it without forwarding any auth header. Delete-after-read (5 s lag) plus a 5-min orphan TTL — re-run the eval if you need the bytes again. URL-delivered binaries don't count against the inline budget and aren't subject to inline-cap truncation regardless of size.\n" +
+                        "  • Truncated text — `truncated:true` + `omittedReason` (`perFileCap` for a single text value over " + (MCPEvalTool.MAX_INLINE_FILE_BYTES / (1024 * 1024)) + " MiB, `totalCap` for a text value that doesn't fit the remaining " + (MCPEvalTool.MAX_INLINE_TOTAL_BYTES / (1024 * 1024)) + " MiB inline budget shared by the whole call) + `omittedSize` only — the bytes are NOT in the response. Re-run with a chunked / smaller-output script. Truncation applies to text only; binary always has either inline or URL delivery available.\n" +
+                        "  • Null slot — `{isNull:true}`.")
                 .put("inputSchema", input);
     }
 

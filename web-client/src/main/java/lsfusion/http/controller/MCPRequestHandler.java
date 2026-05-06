@@ -1,11 +1,16 @@
 package lsfusion.http.controller;
 
+import lsfusion.base.file.NamedFileData;
+import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.logics.remote.MCPResult;
 import lsfusion.interop.session.ExternalRequest;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.ServletException;
@@ -17,6 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * HTTP face of the MCP (Model Context Protocol) endpoint, mounted at {@code /mcp}.
@@ -96,23 +105,99 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
         AuthenticationToken token = LSFAuthenticationToken.getAppServerToken();
         ConnectionInfo connectionInfo = RequestUtils.getConnectionInfo(request);
 
-        String result = runRequest(request, (sessionObject, retry) -> {
+        MCPResult result = runRequest(request, (sessionObject, retry) -> {
             ExternalRequest envelope = buildEnvelope(request, bodyBytes, sessionObject);
             return sessionObject.remoteLogics.mcp(token, connectionInfo, envelope, body);
         });
 
-        if (result == null) {
+        if (result == null || result.json == null) {
             // JSON-RPC notification — acknowledge with 202 and no body.
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
             return;
         }
 
+        String json = resolveFiles(result, request);
+
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json; charset=utf-8");
-        byte[] bytes = result.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         response.setContentLength(bytes.length);
         try (OutputStream os = response.getOutputStream()) {
             os.write(bytes);
+        }
+    }
+
+    /**
+     * Walk every binary side-map entry through {@link FileUtils#saveMCPFile} (which sanitizes
+     * the display name itself), then replace each placeholder string in {@code result.json}
+     * with the path-absolute URL the download handler will serve.
+     *
+     * <p>Replacement walks the JSON tree (not raw string-replace) so a placeholder embedded in
+     * a longer string doesn't get partially substituted, and so we touch only string-typed
+     * leaves. After walking the tree, {@code result.content[0].text} — the JSON-stringified
+     * mirror of {@code structuredContent} produced server-side — is regenerated from the
+     * now-resolved structured payload; otherwise placeholders survive in {@code content[0].text}
+     * even though {@code structuredContent.results[].url} got resolved, and clients reading
+     * {@code content} (rather than {@code structuredContent}) see broken URLs.
+     */
+    private static String resolveFiles(MCPResult result, HttpServletRequest request) {
+        if (result.files == null || result.files.isEmpty()) return result.json;
+
+        String contextPath = request.getContextPath();
+        String prefix = (contextPath == null ? "" : contextPath) + "/";
+
+        Map<String, String> placeholderToUrl = new HashMap<>(result.files.size());
+        for (Map.Entry<String, NamedFileData> e : result.files.entrySet()) {
+            String url = FileUtils.saveMCPFile(e.getValue());
+            placeholderToUrl.put(e.getKey(), prefix + url);
+        }
+
+        JSONObject root = new JSONObject(result.json);
+        replacePlaceholders(root, placeholderToUrl);
+
+        // Re-stringify structuredContent into content[0].text — the server-side mirror was
+        // produced before placeholder resolution, so without this re-sync MCP clients reading
+        // content[*] (instead of structuredContent) see __MCP_FILE_…__ literals.
+        JSONObject rpcResult = root.optJSONObject("result");
+        if (rpcResult != null) {
+            JSONObject structured = rpcResult.optJSONObject("structuredContent");
+            JSONArray content = rpcResult.optJSONArray("content");
+            if (structured != null && content != null && content.length() > 0) {
+                JSONObject first = content.optJSONObject(0);
+                if (first != null && "text".equals(first.optString("type"))) {
+                    first.put("text", structured.toString());
+                }
+            }
+        }
+        return root.toString();
+    }
+
+    private static void replacePlaceholders(Object node, Map<String, String> placeholderToUrl) {
+        if (node instanceof JSONObject) {
+            JSONObject o = (JSONObject) node;
+            // Snapshot keys before mutating: JSONObject.keySet() is a live view and put() during
+            // iteration would throw ConcurrentModificationException.
+            List<String> keys = new ArrayList<>(o.keySet());
+            for (String k : keys) {
+                Object v = o.get(k);
+                if (v instanceof String) {
+                    String url = placeholderToUrl.get(v);
+                    if (url != null) o.put(k, url);
+                } else if (v instanceof JSONObject || v instanceof JSONArray) {
+                    replacePlaceholders(v, placeholderToUrl);
+                }
+            }
+        } else if (node instanceof JSONArray) {
+            JSONArray a = (JSONArray) node;
+            for (int i = 0; i < a.length(); i++) {
+                Object v = a.get(i);
+                if (v instanceof String) {
+                    String url = placeholderToUrl.get(v);
+                    if (url != null) a.put(i, url);
+                } else if (v instanceof JSONObject || v instanceof JSONArray) {
+                    replacePlaceholders(v, placeholderToUrl);
+                }
+            }
         }
     }
 
