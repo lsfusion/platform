@@ -2,7 +2,7 @@
 title: 'Arithmetic operators'
 ---
 
-`+`, `-`, `*`, `/`, `(+)`, `(-)` operators create [properties](Properties.md) responsible for [arithmetic operations](Arithmetic_operators_+_-_etc.md).
+`+`, `-`, `*`, `/`, `(+)`, `(-)` operators create [properties](Properties.md) responsible for [arithmetic operations](Arithmetic_operators_plus_minus_etc.md).
 
 ### Syntax
 

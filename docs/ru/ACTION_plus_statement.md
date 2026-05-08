@@ -1,6 +1,5 @@
 ---
 title: 'Инструкция ACTION+'
-slug: ACTION_plus_statement
 ---
 
 Инструкция `ACTION+` - добавление реализации (условия ветвления) к [абстрактному действию](Action_extension.md).
