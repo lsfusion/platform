@@ -427,48 +427,113 @@ public class MCPDispatcher {
     private static JSONObject evalDescriptor() {
         int largeTextKiB = MCPBinaryContent.LARGE_TEXT_THRESHOLD_BYTES / 1024;
         int inlineBinKiB = MCPBinaryContent.MAX_INLINE_BINARY_BYTES / 1024;
+        int textPerFileMiB = MCPEvalTool.MAX_INLINE_FILE_BYTES / (1024 * 1024);
+        int textTotalMiB = MCPEvalTool.MAX_INLINE_TOTAL_BYTES / (1024 * 1024);
+        int msgPerEntryKiB = MCPEvalTool.MAX_MESSAGE_BYTES / 1024;
+        int msgTotalKiB = MCPEvalTool.MAX_MESSAGES_TOTAL_BYTES / 1024;
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("script", strProp("lsFusion DSL containing a top-level `run(<names>) { … }` action — that's what gets invoked. Param names are local to the script. Example: `run(customer, tpl) { PRINT XLSX FROM tpl; MESSAGE customer; }`."))
+                        .put("script", strProp("lsFusion DSL containing a top-level `run(...)` action. Example: `run(STRING x) { MESSAGE 'lookup ' + x; RETURN x; }`."))
                         .put("params", new JSONObject()
                                 .put("type", "array")
                                 .put("items", new JSONObject()
                                         .put("oneOf", new JSONArray()
                                                 .put(new JSONObject().put("type", "string"))
                                                 .put(fileEntrySchema())))
-                                .put("description", "Values bound positionally to the script's `run(...)` interfaces. Each element is a string or a file `{base64|text, fileName?, extension?}`. Mix freely. Whole call body capped at 16 MiB."))
-                        .put("returnNames", new JSONObject()
-                                .put("type", "array")
-                                .put("items", new JSONObject().put("type", "string"))
-                                .put("description", "Optional list of lsFusion property names (compound, e.g. `Module.someProp`) to read after `run` finishes; the engine looks each one up via `findPropertyByCompoundName` and surfaces its current value in the response's `results[]`. Arbitrary / non-property labels will fail. Omit to get the action's external return automatically — that's the first non-null `export*` slot (`exportFile` / `exportString` / `exportObject` / …), populated by `EXPORT FROM …` (with or without `TO`), `PRINT … TO`, or direct assignment to those props.")))
+                                .put("description", "Values bound positionally to the script's `run(...)` interfaces (`params[0]` → first, `params[1]` → second, etc.). Each element is either a plain string or a file `{base64|text, fileName?, extension?}`. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation.")))
                 .put("required", new JSONArray().put("script"))
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_EVAL)
-                .put("description", "Run an lsFusion `run(<names>) { … }` action under the caller's auth context. Param names are local to the script. The inbound /mcp HTTP request's metadata is exposed to the script through the same lsFusion properties /eval populates (request headers, cookies, body, URL components, etc.). Returns `{status, results:[…], messages?:[…]}`. The optional `messages` array contains the action's `MESSAGE` / `PRINT MESSAGE` output preformatted as `\"TYPE: text\"` (plain `MESSAGE 'hello'` ⇒ `\"MESSAGE: hello\"`; explicit forms keep their literal type, e.g. `MESSAGE 'x' WARN` ⇒ `\"WARN: x\"`, `PRINT MESSAGE 'fail'` ⇒ `\"ERROR: fail\"`) — captured server-side because `lsfusion_eval` runs without an interactive client to deliver `MessageClientAction` to. Omitted when the action emitted nothing. Without `returnNames`, `results[]` carries the action's external return — the first non-null `export*` slot, populated by `EXPORT FROM …` (with or without `TO`), `PRINT … TO`, or direct assignment to those props. `EXPORT FROM …` without an explicit format clause defaults to JSON (`extension:\"json\"`, `mimeType:\"application/json\"`); a missing slot yields `results: []`. Each entry may carry `name` for multi-result responses; file-typed entries additionally carry `fileName` / `extension` / `mimeType` / `size`; the payload field depends on the type:\n" +
-                        "  • Small text (< " + largeTextKiB + " KiB) — inline `value` (UTF-8 string), counts against the per-call inline budget.\n" +
-                        "  • Large text (≥ " + largeTextKiB + " KiB) — moved to a sibling `resource` content entry; the slot carries a `resourceUri` pointer (the bytes are already in this response's `content[*].resource.text`, not a separately fetchable URL).\n" +
-                        "  • Small binary (< " + inlineBinKiB + " KiB) — inline `valueBase64` while the per-call inline budget allows. Falls back to the URL path below if the budget is exhausted.\n" +
-                        "  • Large binary OR small binary with budget exhausted — `url` field with a single-use download URL (path-absolute, `…/file/temp/mcp/<24-char-nonce>/<fileName>.<ext>?dumb=0`). The URL is its own credential — the nonce has ~124 bits of entropy and the `/file/temp/mcp/**` chain is configured `security=\"none\"`, so a sandboxed MCP client can GET it without forwarding any auth header. Delete-after-read (5 s lag) plus a 5-min orphan TTL — re-run the eval if you need the bytes again. URL-delivered binaries don't count against the inline budget and aren't subject to inline-cap truncation regardless of size.\n" +
-                        "  • Truncated text — `truncated:true` + `omittedReason` (`perFileCap` for a single text value over " + (MCPEvalTool.MAX_INLINE_FILE_BYTES / (1024 * 1024)) + " MiB, `totalCap` for a text value that doesn't fit the remaining " + (MCPEvalTool.MAX_INLINE_TOTAL_BYTES / (1024 * 1024)) + " MiB inline budget shared by the whole call) + `omittedSize` only — the bytes are NOT in the response. Re-run with a chunked / smaller-output script. Truncation applies to text only; binary always has either inline or URL delivery available.\n" +
-                        "  • Null slot — `{isNull:true}`.")
-                .put("inputSchema", input);
+                .put("description",
+                        "Run an lsFusion `run(...)` action under the caller's auth context. The tool does NOT read arbitrary properties — to surface a property value, do `RETURN expr;` for plain values (the idiomatic path) or `EXPORT FROM Module.someProp;` when you specifically need a serialized export (XLSX/CSV/JSON/...) in the script.\n\n" +
+                        "**Output algorithm (script-controlled):**\n" +
+                        "  1. If the action declares a `RETURN` value, that result property is read first; `export*` writes are ignored even when the RETURN expression evaluates to null (the null is formatted by the RETURN value's type).\n" +
+                        "  2. Otherwise, writes to lsFusion's `export*` slots — `EXPORT FROM ... [TO ...]`, `PRINT ... TO`, or direct (`exportFile() <- x;`). When multiple slots were written, the first non-null wins in this fixed order: files → strings → numbers → date/times → links → others.\n" +
+                        "  3. Without `RETURN` and without any `export*` write, `results[]` has a single placeholder for the default file slot (`{isNull:true}`) — not an empty array.\n\n" +
+                        "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. See `outputSchema` for entry shape.\n\n" +
+                        "**HTTP envelope passthrough.** The /mcp request's metadata (headers, cookies, body, URL components) reaches the script via the same lsFusion properties `/eval` populates — `headers[name]`, `cookies[name]`, etc.\n\n" +
+                        "**`messages` capture.** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array; each entry preformatted as `\"TYPE: text\"` (plain `MESSAGE` and `DEFAULT` are normalized to `\"MESSAGE: ...\"`; non-default explicit forms keep their literal type — `WARN`, `ERROR`, `INFO`, `LOG`, `SUCCESS`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
+                        "**Error path (tool-specific deviation from MCP defaults):** when the action threw, `structuredContent` is absent and any captured `messages` is attached at the result top level (next to `content` / `isError`) instead of inside `structuredContent`."
+                )
+                .put("inputSchema", input)
+                .put("outputSchema", evalOutputSchema(largeTextKiB, inlineBinKiB, textPerFileMiB, textTotalMiB));
+    }
+
+    /**
+     * JSON-schema for {@code structuredContent} returned on the success path. Each
+     * {@code results[]} entry has all common metadata fields at the top level (name, type,
+     * fileName, extension, mimeType, size) plus exactly one payload-field group from
+     * {@code oneOf} (value / valueBase64 / url / resourceUri / truncated / isNull). Field
+     * descriptions explain when each appears, so a client validating the schema or rendering
+     * it as docs gets the same picture as the prose description above.
+     */
+    private static JSONObject evalOutputSchema(int largeTextKiB, int inlineBinKiB, int textPerFileMiB, int textTotalMiB) {
+        JSONObject resultProps = new JSONObject()
+                .put("name", strProp("Optional identifier — set only on parameterized multi-key results, formatted as comma-joined key tuple. Absent for the typical case of a single value."))
+                .put("type", new JSONObject().put("const", "file").put("description", "Present only for file-typed values (FileData). Absent for plain scalars (String / Number / Date / Boolean / etc.)."))
+                .put("fileName", strProp("Original filename without directory part. May be absent."))
+                .put("extension", strProp("File extension without the dot (e.g. `xlsx`, `pdf`, `json`)."))
+                .put("mimeType", strProp("Resolved via the lsFusion MIME catalog or `application/octet-stream` fallback."))
+                .put("size", intProp("Raw byte length of the file."))
+                .put("value", strProp("UTF-8 text representation. Set for plain scalars (lsFusion String / Text / Number / Date / Boolean / ...) and for text-classified files (.json, .csv, .txt, .lsf, etc.) under " + largeTextKiB + " KiB."))
+                .put("valueBase64", strProp("Base64-encoded raw bytes. Set for binary files under " + inlineBinKiB + " KiB that fit the per-call inline budget."))
+                .put("url", strProp("Path-absolute single-use download URL (e.g. `.../file/temp/mcp/<24-char-nonce>/<fileName>.<ext>`). Set for binary files ≥ " + inlineBinKiB + " KiB or when the inline budget is exhausted. Fetch with plain GET, no auth header — the nonce IS the credential."))
+                .put("resourceUri", strProp("URI of a sibling `resource` content entry on the same tool result. Set when text ≥ " + largeTextKiB + " KiB; the bytes are in `content[*].resource.text` of THIS response, NOT separately fetchable."))
+                .put("truncated", new JSONObject().put("const", true).put("description", "Set when text exceeded the per-call inline cap; bytes are NOT in the response."))
+                .put("omittedReason", new JSONObject()
+                        .put("enum", new JSONArray().put("perFileCap").put("totalCap"))
+                        .put("description", "`perFileCap`: a single text value > " + textPerFileMiB + " MiB. `totalCap`: text fits perFileCap but doesn't fit the remaining " + textTotalMiB + " MiB inline budget."))
+                .put("omittedSize", intProp("UTF-8 byte length of the omitted text."))
+                .put("inlineLimit", intProp("Per-text-value cap in bytes (currently " + textPerFileMiB + " MiB)."))
+                .put("totalLimit", intProp("Per-call inline total budget in bytes (currently " + textTotalMiB + " MiB)."))
+                .put("isNull", new JSONObject().put("const", true).put("description", "Set when the returned file value is NULL FileData (no content was assigned). Covers both no-write fallback on the default `export*` file slot and a declared `RETURN` of a file-typed expression that evaluated to null."));
+
+        JSONArray variants = new JSONArray()
+                .put(new JSONObject().put("title", "Inline scalar or small text").put("required", new JSONArray().put("value")))
+                .put(new JSONObject().put("title", "Large text → resource pointer").put("required", new JSONArray().put("resourceUri")))
+                .put(new JSONObject().put("title", "Inline binary").put("required", new JSONArray().put("type").put("valueBase64")))
+                .put(new JSONObject().put("title", "URL-delivered binary").put("required", new JSONArray().put("type").put("url")))
+                .put(new JSONObject().put("title", "Truncated text").put("required", new JSONArray().put("truncated").put("omittedReason").put("omittedSize")))
+                .put(new JSONObject().put("title", "Null file slot").put("required", new JSONArray().put("isNull")));
+
+        JSONObject resultItem = new JSONObject()
+                .put("type", "object")
+                .put("description", "One returned value from the `RETURN`-or-`export*` selection. Exactly one payload-field group is set per entry — see `oneOf` variants.")
+                .put("properties", resultProps)
+                .put("oneOf", variants);
+
+        return new JSONObject()
+                .put("type", "object")
+                .put("required", new JSONArray().put("status").put("results"))
+                .put("properties", new JSONObject()
+                        .put("status", intProp("HTTP-style status code the action set (default 200)."))
+                        .put("results", new JSONObject()
+                                .put("type", "array")
+                                .put("description", "Returned values. Per-entry shape in `items`; population algorithm in the tool description.")
+                                .put("items", resultItem))
+                        .put("messages", new JSONObject()
+                                .put("type", "array")
+                                .put("description", "Captured `MESSAGE` / `PRINT MESSAGE` output.")
+                                .put("items", new JSONObject().put("type", "string"))));
     }
 
     /**
      * JSON-schema fragment for one file payload — used as an alternative to a plain string
      * inside {@code params}. The {@code oneOf} clause encodes the runtime invariant
      * (exactly one of {@code base64} / {@code text}) so a strict MCP client can reject the
-     * shape before the request leaves it; {@code additionalProperties:false} keeps stray
-     * fields from being silently dropped server-side.
+     * shape before the request leaves it; {@code additionalProperties:false} matches the
+     * server-side fail-fast validation in
+     * {@link MCPEvalTool#buildFileParam(JSONObject, String)} (unknown fields throw
+     * {@link IllegalArgumentException}).
      */
     private static JSONObject fileEntrySchema() {
         return new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("base64", new JSONObject().put("type", "string").put("description", "Binary content, base64-encoded (xlsx/pdf/zip/png/…). Mutually exclusive with `text`."))
-                        .put("text", new JSONObject().put("type", "string").put("description", "Text content as UTF-8 (csv/json/xml/…). Mutually exclusive with `base64`."))
+                        .put("base64", new JSONObject().put("type", "string").put("description", "Binary content, base64-encoded (xlsx/pdf/zip/png/…)."))
+                        .put("text", new JSONObject().put("type", "string").put("description", "Text content as UTF-8 (csv/json/xml/…)."))
                         .put("fileName", new JSONObject().put("type", "string").put("description", "Original filename, e.g. \"report.xlsx\". Directory part and trailing extension are stripped before binding — script's `param.fileName` sees just the base name (\"report\"). Used to derive `extension` when omitted."))
                         .put("extension", new JSONObject().put("type", "string").put("description", "Extension without the dot (\"xlsx\"). Drives `IMPORT XLSX FROM …` etc. Resolution: explicit → from `fileName` → \"file\".")))
                 .put("oneOf", new JSONArray()

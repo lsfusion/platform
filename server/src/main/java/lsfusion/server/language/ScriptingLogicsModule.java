@@ -2978,14 +2978,35 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProperty = patchExtendParams(resultProperty, newContext, context.size(), debugPoint);
 
         ValueClass returnClass = getValueClassByParamProperty(resultProperty, newContext);
-        ValueClass[] resultClasses = resultProperty.getLP().getInterfaceClasses(ClassType.signaturePolicy);
+        if (returnClass == null) {
+            // Without a class the SessionDataProperty we'd build below has value=null and
+            // later NPEs in DataProperty.getDataClassValueWhere. Surface it as a clean
+            // semantic error instead. Two shapes lead here:
+            //  - bare-parameter result whose class was never declared (`run(x) { RETURN x; }`
+            //    with no usage that would constrain x): use the same first-usage error any
+            //    other untyped-param site emits.
+            //  - typeless expression result like `RETURN NULL;`: no parameter to point at,
+            //    so emit a generic "declare an explicit type" message.
+            if (resultProperty != null && resultProperty.getLP() == null && !resultProperty.usedParams.isEmpty()) {
+                errLog.emitParamClassNonDeclarationError(parser, newContext.get(resultProperty.usedParams.get(0)).paramName);
+            } else {
+                errLog.emitSimpleError(parser, "cannot infer RETURN value class; declare an explicit type or wrap the value in a typed expression");
+            }
+        }
         List<Integer> returnInterfaces = new ArrayList<>();
         int oldContextSize = context.size();
         int exSize = newContext.size() - oldContextSize;
         MList<ValueClass> mReturnClasses = ListFact.mList(exSize);
-        for (int i = 0; i < exSize; i++) {
-            mReturnClasses.add(resultClasses[resultClasses.length - exSize + i]);
-            returnInterfaces.add(oldContextSize + i);
+        if (exSize > 0) {
+            // resultProperty.getLP() is null for a bare-parameter result (e.g. RETURN x where x is
+            // already in context — patchExtendParams returns the param-only LPWithParams unchanged).
+            // In that case exSize is 0 and resultClasses isn't consulted; only fetch it when extra
+            // params actually need their classes pulled out.
+            ValueClass[] resultClasses = resultProperty.getLP().getInterfaceClasses(ClassType.signaturePolicy);
+            for (int i = 0; i < exSize; i++) {
+                mReturnClasses.add(resultClasses[resultClasses.length - exSize + i]);
+                returnInterfaces.add(oldContextSize + i);
+            }
         }
         ImList<ValueClass> returnInterfaceClasses = mReturnClasses.immutableList();
         Pair<ValueClass, ImList<ValueClass>> returnClasses = new Pair<>(returnClass, returnInterfaceClasses);

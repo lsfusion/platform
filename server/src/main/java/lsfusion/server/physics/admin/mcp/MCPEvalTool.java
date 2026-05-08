@@ -34,8 +34,9 @@ import java.util.Set;
  * the web handler from the inbound {@code /mcp} request (headers, cookies, scheme, host,
  * contextPath, sessionId, body, …) is propagated into the request the eval action runs
  * against, so scripts that read e.g. {@code headers[<name>]} or {@code cookies[<name>]}
- * see the same values they'd see from a regular {@code /eval} call. Only the params and
- * returnNames slots are overridden — those come from the tool args, not from the envelope.
+ * see the same values they'd see from a regular {@code /eval} call. The HTTP envelope
+ * inherits verbatim; {@code params} is replaced with the tool args (positional array);
+ * {@code returnNames} is intentionally left empty.
  */
 public class MCPEvalTool {
 
@@ -93,12 +94,14 @@ public class MCPEvalTool {
 
     /**
      * Build the {@link ExternalRequest} the script's run-action sees. HTTP metadata
-     * (headers / cookies / scheme / host / contextPath / sessionId / body / …) is copied
+     * (headers / cookies / scheme / host / contextPath / sessionId / body / …) inherits
      * verbatim from the {@code envelope} the web handler captured for the inbound /mcp
      * call, so the script can consult those attributes the same way a /eval-driven script
-     * would. Only {@code params} (filled from the tool's positional array) and
-     * {@code returnNames} (from the tool's args) are overridden; everything else inherits
-     * the inbound HTTP shape.
+     * would. {@code params} is replaced with the tool's args (positional array).
+     * {@code returnNames} is intentionally empty — letting MCP clients pick which
+     * properties to read by compound name would be implicit scope creep, so the
+     * result-read path falls through to lsFusion's standard `RETURN`-or-`export*`
+     * selection (the script controls what comes back).
      */
     private static ExternalRequest buildRequest(JSONObject args, ExternalRequest envelope) {
         List<ExternalRequest.Param> paramList = new ArrayList<>();
@@ -121,30 +124,16 @@ public class MCPEvalTool {
                     + params.getClass().getSimpleName());
         }
 
-        // Optional `returnNames`: ["name1", "name2"] — property names read after `run`
-        // finishes; their current values are appended to the result entries.
-        String[] returnNames = new String[0];
-        Object returnNamesRaw = args.opt("returnNames");
-        if (returnNamesRaw != null && !JSONObject.NULL.equals(returnNamesRaw)) {
-            if (!(returnNamesRaw instanceof JSONArray)) {
-                throw new IllegalArgumentException("`returnNames` must be an array of property name strings");
-            }
-            JSONArray returnArray = (JSONArray) returnNamesRaw;
-            returnNames = new String[returnArray.length()];
-            for (int i = 0; i < returnArray.length(); i++) {
-                Object v = returnArray.opt(i);
-                if (!(v instanceof String) || ((String) v).isEmpty()) {
-                    throw new IllegalArgumentException("returnNames[" + i + "] must be a non-empty string property name");
-                }
-                returnNames[i] = (String) v;
-            }
-        }
-
+        // No `returnNames` here on purpose — the script controls what comes back via
+        // `RETURN` (idiomatic) or, when a serialized export is needed, EXPORT / PRINT TO /
+        // direct `exportFile() <- ...`. Letting the tool read arbitrary properties by
+        // compound name would be implicit scope creep (anything visible in the schema), and
+        // a script-side `RETURN expr;` / `EXPORT FROM Module.someProp;` is more explicit.
         // Inherit HTTP metadata from the envelope so the script sees the same shape /eval
         // provides. MESSAGE / PRINT MESSAGE output is captured server-side unconditionally
         // (RemoteConnection always pushes a log processor on the non-interactive path) and
         // surfaced to MCP clients via ResultExternalResponse.logMessages.
-        return new ExternalRequest(returnNames,
+        return new ExternalRequest(/*returnNames=*/ new String[0],
                 paramList.toArray(new ExternalRequest.Param[0]),
                 envelope.headerNames, envelope.headerValues, envelope.cookieNames, envelope.cookieValues,
                 envelope.appHost, envelope.appPort, envelope.exportName,
