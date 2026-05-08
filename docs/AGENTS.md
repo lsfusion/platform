@@ -1223,6 +1223,24 @@ and do not add
 useful understanding
 for the reader.
 
+The assistant MUST NOT
+document deprecated functionality:
+syntax constructions,
+options,
+URL schemes,
+parameters,
+properties,
+or other elements
+that are marked deprecated
+in the platform or plugin sources,
+known to be broken,
+or otherwise no longer supported
+MUST be omitted
+from the documentation,
+even if they are still
+recognized by the parser
+or runtime.
+
 Reference style:
 
 Properties and actions
