@@ -1,6 +1,5 @@
 ---
 title: '+= statement'
-slug: plus_equals_statement
 ---
 
 The `+=` statement adds an implementation to an [abstract property](Property_extension.md).

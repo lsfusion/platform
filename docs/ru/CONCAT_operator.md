@@ -2,7 +2,7 @@
 title: 'Оператор CONCAT'
 ---
 
-Оператор `CONCAT` - создание [свойства](Properties.md), реализующего [объединение](String_operators_+_CONCAT_SUBSTRING.md) строк.
+Оператор `CONCAT` - создание [свойства](Properties.md), реализующего [объединение](String_operators_plus_CONCAT_SUBSTRING.md) строк.
 
 ### Синтаксис
 

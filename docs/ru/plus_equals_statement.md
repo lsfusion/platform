@@ -1,6 +1,5 @@
 ---
 title: 'Инструкция +='
-slug: plus_equals_statement
 ---
 
 Инструкция `+=` добавляет реализацию к [абстрактному свойству](Property_extension.md).

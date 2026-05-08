@@ -54,7 +54,7 @@ As in a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#exclu
 
 ### Language
 
-This technique uses two language constructs: the [`ABSTRACT` operator](ABSTRACT_operator.md) for declaring an abstract property and the [`+=` statement](+=_statement.md) for adding implementations.
+This technique uses two language constructs: the [`ABSTRACT` operator](ABSTRACT_operator.md) for declaring an abstract property and the [`+=` statement](plus_equals_statement.md) for adding implementations.
 
 ### Examples
 

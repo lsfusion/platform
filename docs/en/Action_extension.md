@@ -63,7 +63,7 @@ As in the [branch operator](Branching_CASE_IF_MULTI.md#exclusive), you can speci
 
 ### Language
 
-This technique uses two language constructs: the [`ABSTRACT` operator](ABSTRACT_action_operator.md) for declaring an abstract action and the [`ACTION+` statement](ACTION+_statement.md) for adding implementations.
+This technique uses two language constructs: the [`ABSTRACT` operator](ABSTRACT_action_operator.md) for declaring an abstract action and the [`ACTION+` statement](ACTION_plus_statement.md) for adding implementations.
 
 ### Examples
 
