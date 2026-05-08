@@ -12,7 +12,7 @@ ABSTRACT [type [exclusionType] [order]] [FULL] [(argClassName1, ..., argClassNam
 
 ### Description
 
-The `ABSTRACT` operator creates an abstract action. Its implementations are added later by [`ACTION+` statements](ACTION+_statement.md). Depending on the selected type, the platform builds from them the behavior of a [branch operator](Branching_CASE_IF_MULTI.md) or a [sequence operator](Sequence.md).
+The `ABSTRACT` operator creates an abstract action. Its implementations are added later by [`ACTION+` statements](ACTION_plus_statement.md). Depending on the selected type, the platform builds from them the behavior of a [branch operator](Branching_CASE_IF_MULTI.md) or a [sequence operator](Sequence.md).
 
 The `ABSTRACT` operator is a [context-independent action operator](Action_operators.md#contextindependent), so it can only be used in the [`ACTION` statement](ACTION_statement.md).
 
@@ -22,7 +22,7 @@ The `ABSTRACT` operator is a [context-independent action operator](Action_operat
 
     Option. Possible values:
 
-    - `CASE` - the explicit conditional form of the abstract action. The selection condition of each implementation is defined in the corresponding [`ACTION+` statement](ACTION+_statement.md) using the `WHEN` block.
+    - `CASE` - the explicit conditional form of the abstract action. The selection condition of each implementation is defined in the corresponding [`ACTION+` statement](ACTION_plus_statement.md) using the `WHEN` block.
     - `MULTI` - [a polymorphic form](Branching_CASE_IF_MULTI.md#poly) of the abstract action. An implementation is selected when the current arguments are compatible with its [signature](ISCLASS_operator.md).
     - `LIST` - the sequential form of the abstract action. In this form all implementations are executed one after another.
 

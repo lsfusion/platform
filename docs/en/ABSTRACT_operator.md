@@ -12,7 +12,7 @@ ABSTRACT [type [exclusionType] [order]] [FULL] returnClassName [(argClassName1, 
 
 ### Description
 
-The `ABSTRACT` operator creates an abstract property. Its implementations are added later by [`+=` statements](+=_statement.md). Depending on the selected type, the platform builds from them the behavior of a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md).
+The `ABSTRACT` operator creates an abstract property. Its implementations are added later by [`+=` statements](plus_equals_statement.md). Depending on the selected type, the platform builds from them the behavior of a [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md).
 
 The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 
@@ -22,7 +22,7 @@ The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 
     Option. Possible values:
 
-    - `CASE` - the explicit conditional form of the abstract property. The selection condition of each implementation is defined in the corresponding [`+=` statement](+=_statement.md) using the `WHEN` block.
+    - `CASE` - the explicit conditional form of the abstract property. The selection condition of each implementation is defined in the corresponding [`+=` statement](plus_equals_statement.md) using the `WHEN` block.
     - `MULTI` - [a polymorphic form](Property_extension.md#poly) of the abstract property. An implementation is selected when the current arguments are compatible with its [signature](ISCLASS_operator.md).
     - `VALUE` - the polymorphic value-based form. An implementation is considered matching if it returns a defined value, that is, a non-`NULL` value.
 
