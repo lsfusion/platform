@@ -1,6 +1,5 @@
 ---
 title: 'ACTION+ statement'
-slug: ACTION_plus_statement
 ---
 
 The `ACTION+` statement adds an implementation (branching condition) to an [abstract action](Action_extension.md).

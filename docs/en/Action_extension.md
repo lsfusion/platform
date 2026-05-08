@@ -23,7 +23,7 @@ It is worth noting that this check is no more than a hint to the platform (for b
 
 ### Language
 
-The key features that implement the extension technique are the [`ABSTRACT` operator](ABSTRACT_action_operator.md), for declaring an abstract action, and the [`ACTION+` statement](ACTION+_statement.md), for adding an implementation to it.
+The key features that implement the extension technique are the [`ABSTRACT` operator](ABSTRACT_action_operator.md), for declaring an abstract action, and the [`ACTION+` statement](ACTION_plus_statement.md), for adding an implementation to it.
 
 ### Examples
 
