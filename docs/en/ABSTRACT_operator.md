@@ -19,9 +19,9 @@ OVERRIDE [FIRST | LAST]
 
 ### Description
 
-The `ABSTRACT` operator creates an abstract property, the implementations of which can be defined later (for example, in other [modules](Modules.md) dependent on the module containing the `ABSTRACT` property). Implementations are added to the property using the [`+=` statement](+=_statement.md). When calculating an abstract property, its *matching* implementation is selected and calculated. The selection of the matching implementation depends on the *selection conditions* that are defined when adding implementations, and on the `ABSTRACT` operator type.
+The `ABSTRACT` operator creates an abstract property, the implementations of which can be defined later (for example, in other [modules](Modules.md) dependent on the module containing the `ABSTRACT` property). Implementations are added to the property using the [`+=` statement](plus_equals_statement.md). When calculating an abstract property, its *matching* implementation is selected and calculated. The selection of the matching implementation depends on the *selection conditions* that are defined when adding implementations, and on the `ABSTRACT` operator type.
 
--   `CASE` - a general case. The selection condition will be explicitly specified in the implementation using the [`WHEN` block](+=_statement.md).
+-   `CASE` - a general case. The selection condition will be explicitly specified in the implementation using the [`WHEN` block](plus_equals_statement.md).
 -   `MULTI` – a [polymorphic form](Property_extension.md#poly). The selection condition is that the parameters match the implementation [signature](ISCLASS_operator.md). This type is the default type and need not to be explicitly specified.
 -   `VALUE` - a polymorphic form. The selection condition will be definiteness (a none-`NULL` value) of the implementation value (essentially, the implementation itself).
 
