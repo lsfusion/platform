@@ -90,15 +90,20 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
         // URL. claude.ai / Cursor / Claude Desktop key off this response to start the OAuth
         // dance — without it, they assume no auth is required and never run the flow.
         //
-        // The full policy decision (anonymous-allowed via {@code enableAPI=2} vs. require-
-        // auth otherwise; valid JWT signature; expiry; "Authorization: Bearer anonymous"
-        // distinguished from missing header) lives server-side in
-        // {@link OAuthOperations#VALIDATE_TOKEN} so the web tier doesn't need to read
-        // server settings or the JWT secret. We pass {@code header_present} so the
-        // dispatcher can tell {@code Authorization: Bearer anonymous} (always reject) from
-        // a missing header (gated by enableAPI). The op returns an RFC 6749 §5.2 error
-        // envelope when the request shouldn't be allowed; we map that to 401 with
-        // discovery challenge.
+        // The "do we know who's calling?" decision (valid JWT signature; expiry; "Authorization:
+        // Bearer anonymous" distinguished from missing header; missing-header challenged
+        // unless enableAPI=2 explicitly allows anonymous) lives server-side in
+        // {@link OAuthOperations#VALIDATE_TOKEN} so the web tier doesn't need to read server
+        // settings or the JWT secret. The per-tool, per-user "is this caller allowed to do
+        // this thing?" decision is pushed further downstream to action-level checks inside
+        // {@link lsfusion.server.physics.admin.mcp.MCPDispatcher} (for tools that touch app
+        // state — {@code lsfusion_files_*}, {@code lsfusion_eval}); doc-search / validate /
+        // tools/list run for any caller who passed authentication. We pass
+        // {@code header_present} so the dispatcher can tell {@code Authorization: Bearer
+        // anonymous} (a malformed bearer — always reject) from a truly missing header (a
+        // fresh client about to start OAuth — challenge unless enableAPI=2). The op returns
+        // an RFC 6749 §5.2 error envelope when authentication fails; we map that to 401
+        // with discovery challenge.
         AuthenticationToken token = LSFAuthenticationToken.getAppServerToken();
         boolean headerPresent = request.getHeader("Authorization") != null
                 && !request.getHeader("Authorization").isEmpty();

@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.oauth;
 
-import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.oauth.OAuthOperations;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -428,19 +427,35 @@ public class OAuthDispatcher {
      * OAuth discovery) or let the request through. Centralizes the policy server-side so
      * the web tier doesn't need to read server settings or the JWT secret.
      *
-     * <p>Delegates the {@code enableAPI} policy (0 = disabled, 1 = auth required,
-     * 2 = anonymous allowed) to {@link RemoteConnection#checkAPIAccess} so {@code /eval}
-     * and this pre-gate share a single source of truth — adding {@code enableAPI=3} or
-     * tweaking the anonymous rule would mean changing one place. Per-tool MCP gates
-     * are no longer needed: this pre-gate runs uniformly for every {@code /mcp} request,
-     * so the {@code MCPDispatcher} can dispatch tools without re-checking.
+     * <p>This pre-gate is the <em>"do we know who's calling?"</em> step. The fine-grained
+     * "is this caller allowed to do this thing?" decision is intentionally pushed
+     * downstream to action-level {@link RemoteConnection#checkAPIAccess} calls, where the
+     * resolved user identity is in scope and per-user / role-based {@code enableAPI}
+     * overrides can apply (the global {@code Settings.enableAPI} is the default, but a
+     * deployment can flip {@code 0 → 1} for, say, a specific role without touching this
+     * pre-gate). On the MCP side {@link lsfusion.server.physics.admin.mcp.MCPDispatcher}
+     * gates {@code lsfusion_files_*} explicitly and {@code lsfusion_eval} inherits the
+     * gate through {@code RemoteLogics.eval → executeExternal → checkEnableApi}. Doc-search /
+     * validate-syntax / get-guidance / tools/list don't read app state, so no action gate.
+     *
+     * <p>What we DO enforce here, before the user is known, is the binary "should the
+     * web tier emit a 401 + WWW-Authenticate to start OAuth discovery?":
+     * <ul>
+     *   <li>{@code enableAPI=2} — anonymous explicitly allowed on the API surface. Don't
+     *       challenge anonymous; let the request through with {@code user="anonymous"}.
+     *       Action-level checks can still reject specific tools.</li>
+     *   <li>{@code enableAPI=0} or {@code 1} (default) — reject anonymous so the web tier
+     *       sends 401 + WWW-Authenticate. After OAuth completes the same call comes back
+     *       with a Bearer; the action-level gate then makes the per-user decision (where a
+     *       role-based override can flip {@code 0 → 1} for this user).</li>
+     * </ul>
      *
      * <p>The web tier passes {@code "header_present": true|false} because
      * {@link AuthenticationToken#isAnonymous()} alone can't tell {@code Authorization:
      * Bearer anonymous} (a malformed bearer that happens to match the anonymous-token
      * string) from a truly missing header — both surface as
      * {@link AuthenticationToken#ANONYMOUS}. A header-present anonymous-string token is
-     * always rejected as a bogus bearer; a missing header falls through to the enableAPI gate.
+     * always rejected as a bogus bearer regardless of {@code enableAPI}.
      *
      * <p>For non-anonymous tokens we additionally verify the JWT via
      * {@link SecurityManager#parseToken} — {@link
@@ -453,22 +468,19 @@ public class OAuthDispatcher {
 
         // Authorization header was sent but produced an anonymous-string token — that's a
         // malformed bearer (e.g. "Bearer anonymous"), never a legitimate auth attempt.
+        // Always rejected, regardless of enableAPI.
         if (headerPresent && (token == null || token.isAnonymous())) {
             throw new OAuthException("invalid_token", "Bearer is anonymous-string token");
         }
 
-        // Canonical enableAPI gate — same 0/1/2 semantics as /eval.
-        try {
-            RemoteConnection.checkAPIAccess(token, false, false);
-        } catch (AuthenticationException e) {
-            throw new OAuthException("invalid_token", "Anonymous token");
-        } catch (RuntimeException e) {
-            // enableAPI=0 surfaces as "Api is disabled..." — pass the message through so the
-            // agent can distinguish "API disabled" from "auth required".
-            throw new OAuthException("invalid_token", e.getMessage());
-        }
-
-        if (token.isAnonymous()) {
+        // Anonymous request (no Authorization header). Reject unless enableAPI=2 says
+        // "anonymous explicitly allowed" — we read the global setting as the default
+        // because we don't yet know who's calling; per-user overrides happen later at
+        // action time when user identity is in scope.
+        if (token == null || token.isAnonymous()) {
+            if (Settings.get().getEnableAPI() != 2) {
+                throw new OAuthException("invalid_token", "Authentication required");
+            }
             return new JSONObject().put("user", "anonymous");
         }
 

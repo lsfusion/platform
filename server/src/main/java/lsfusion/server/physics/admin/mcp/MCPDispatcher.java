@@ -27,17 +27,29 @@ import java.util.Set;
  * raw JSON body through {@code RemoteLogicsInterface.mcp}, so the same dispatch code runs
  * regardless of where the request enters from.
  *
- * <p>Tool surface:
+ * <p>Tool surface and per-tool {@code enableAPI} gating:
  * <ul>
  *   <li>Classpath browsing — {@code lsfusion_files_list}, {@code lsfusion_files_search},
- *       {@code lsfusion_files_read} (via {@link MCPFileTools}).</li>
+ *       {@code lsfusion_files_read} (via {@link MCPFileTools}). These read the deployed
+ *       lsFusion source / resource tree, so they are gated by
+ *       {@link RemoteConnection#checkAPIAccess} ({@code enableAPI=0} ⇒ "Api is disabled").</li>
  *   <li>Remote AI helpers — {@code lsfusion_retrieve_docs|howtos|community},
  *       {@code lsfusion_validate_syntax}, {@code lsfusion_get_guidance} (proxied via
  *       {@link MCPRemoteClient} to https://ai.lsfusion.org/mcp; mirrors the IDEA plugin's
- *       {@code McpToolset}).</li>
+ *       {@code McpToolset}). These don't read app state, so no {@code enableAPI} gate —
+ *       any authenticated caller can use them regardless of the setting.</li>
  *   <li>Script execution — {@code lsfusion_eval} (delegates to {@link MCPEvalTool}, which
- *       runs an lsFusion {@code run(...)} action under the caller's auth context).</li>
+ *       runs an lsFusion {@code run(...)} action under the caller's auth context). Gated
+ *       indirectly: {@code RemoteLogics.eval → executeExternal → checkEnableApi → checkAPIAccess},
+ *       same path {@code /eval} uses, so the {@code @api} action-annotation upgrade applies.</li>
  * </ul>
+ *
+ * <p>Authentication itself (bogus-bearer rejection, anonymous-vs-{@code enableAPI=2}
+ * decision, JWT verification) happens earlier at {@code OAuthDispatcher.validateToken}
+ * before any request reaches this dispatcher. {@code token} here is either a JWT-verified
+ * user-token or — when {@code enableAPI=2} explicitly allows anonymous on the API surface —
+ * an anonymous token; the action-level {@code checkAPIAccess} calls handle the latter case
+ * by reading the resolved {@code enableAPI} (which may be a per-user / role-based override).
  */
 public class MCPDispatcher {
 
@@ -198,10 +210,13 @@ public class MCPDispatcher {
         try {
             switch (name) {
                 case TOOL_FILES_LIST:
+                    RemoteConnection.checkMCPAccess(token);
                     return rpcResult(jsonrpc, id, structuredResult(MCPFileTools.list(args)));
                 case TOOL_FILES_SEARCH:
+                    RemoteConnection.checkMCPAccess(token);
                     return rpcResult(jsonrpc, id, structuredResult(MCPFileTools.search(args)));
                 case TOOL_FILES_READ: {
+                    RemoteConnection.checkMCPAccess(token);
                     JSONObject payload = MCPFileTools.read(args);
                     // Single-copy invariant: large text content + binary blobs leave the
                     // structured / text views and live exactly once in a resource entry. Only
