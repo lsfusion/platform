@@ -585,17 +585,21 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     /**
-     * Render captured messages as {@code "TYPE: text"} strings. Plain {@code MESSAGE 'text'}
-     * parses with {@code MessageClientType.DEFAULT} per {@code LsfLogics.g}, which we
-     * normalize to {@code "MESSAGE"} — UI-only DEFAULT distinction means nothing to AI
-     * clients. Explicit forms (WARN / ERROR / INFO / LOG / SUCCESS) keep their literal name.
+     * Render captured messages for the wire. Plain {@code MESSAGE 'text'} parses with
+     * {@code MessageClientType.DEFAULT} per {@code LsfLogics.g} — that's the common case,
+     * so we emit the raw message text without any prefix (the {@code messages} key in the
+     * envelope already says "this is a message"). Explicit non-default forms keep their
+     * literal name as a {@code "TYPE: text"} prefix so an AI client can distinguish a
+     * surfaced WARN / ERROR / INFO / LOG / SUCCESS from informational chatter.
      */
     private static String[] formatLogMessages(List<AbstractContext.LogMessage> messages) {
         String[] out = new String[messages.size()];
         for (int i = 0; i < messages.size(); i++) {
             AbstractContext.LogMessage m = messages.get(i);
-            String prefix = (m.type == null || m.type == MessageClientType.DEFAULT) ? "MESSAGE" : m.type.name();
-            out[i] = prefix + ": " + (m.message == null ? "" : m.message);
+            String text = m.message == null ? "" : m.message;
+            out[i] = (m.type == null || m.type == MessageClientType.DEFAULT)
+                    ? text
+                    : m.type.name() + ": " + text;
         }
         return out;
     }

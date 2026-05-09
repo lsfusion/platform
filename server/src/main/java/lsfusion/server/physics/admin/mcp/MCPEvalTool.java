@@ -274,12 +274,14 @@ public class MCPEvalTool {
             int[] inlineRemaining = { MAX_INLINE_TOTAL_BYTES };
             if (r.results != null) {
                 for (int i = 0; i < r.results.length; i++) {
-                    results.put(renderResult(r.results[i], i, inlineRemaining, files, placeholderId));
+                    JSONObject item = renderResult(r.results[i], i, inlineRemaining, files, placeholderId);
+                    if (item != null) results.put(item);
                 }
             }
             out.put("results", results);
-            // Server-collected MESSAGE / PRINT MESSAGE text (each preformatted as
-            // "TYPE: message"). Only emitted when non-empty.
+            // Server-collected MESSAGE / PRINT MESSAGE text. Plain MESSAGE entries are raw
+            // text; explicit non-default forms get a "TYPE: ..." prefix. Only emitted when
+            // the array is non-empty.
             putCappedMessages(out, r.logMessages);
         } else {
             out.put("results", new JSONArray());
@@ -298,12 +300,11 @@ public class MCPEvalTool {
         } else if (value instanceof FileData) {
             FileData fd = (FileData) value;
             // The engine surfaces a NULL slot via FileData.NULL (extension="null", empty bytes).
-            // Surface that as an explicit null instead of a fake-empty file with extension
-            // "null" — otherwise the AI client can't distinguish a real empty file from
-            // "this slot wasn't populated".
+            // Drop named null slots to {name: ...} — the absence of value/valueBase64/url/
+            // resourceUri already conveys "no content". The default unnamed slot vanishes from
+            // the array entirely (caller treats null return from this method as "skip").
             if (fd.isNull()) {
-                item.put("isNull", true);
-                return item;
+                return result.name != null ? item : null;
             }
             byte[] bytes = fd.getRawFile().getBytes();
             String extension = fd.getExtension();

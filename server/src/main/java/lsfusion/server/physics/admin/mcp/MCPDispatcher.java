@@ -448,10 +448,10 @@ public class MCPDispatcher {
                         "**Output algorithm (script-controlled):**\n" +
                         "  1. If the action declares a `RETURN` value, that result property is read first; `export*` writes are ignored even when the RETURN expression evaluates to null (the null is formatted by the RETURN value's type).\n" +
                         "  2. Otherwise, writes to lsFusion's `export*` slots — `EXPORT FROM ... [TO ...]`, `PRINT ... TO`, or direct (`exportFile() <- x;`). When multiple slots were written, the first non-null wins in this fixed order: files → strings → numbers → date/times → links → others.\n" +
-                        "  3. Without `RETURN` and without any `export*` write, `results[]` has a single placeholder for the default file slot (`{isNull:true}`) — not an empty array.\n\n" +
-                        "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. See `outputSchema` for entry shape.\n\n" +
+                        "  3. Without `RETURN` and without any `export*` write, `results[]` is empty.\n\n" +
+                        "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. Null file slots are dropped from `results[]` entirely (a named null collapses to `{name}`); the absence of `value` / `valueBase64` / `url` / `resourceUri` already conveys \"no content\". See `outputSchema` for entry shape.\n\n" +
                         "**HTTP envelope passthrough.** The /mcp request's metadata (headers, cookies, body, URL components) reaches the script via the same lsFusion properties `/eval` populates — `headers[name]`, `cookies[name]`, etc.\n\n" +
-                        "**`messages` capture.** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array; each entry preformatted as `\"TYPE: text\"` (plain `MESSAGE` and `DEFAULT` are normalized to `\"MESSAGE: ...\"`; non-default explicit forms keep their literal type — `WARN`, `ERROR`, `INFO`, `LOG`, `SUCCESS`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
+                        "**`messages` capture.** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array. Plain `MESSAGE` (the common case) appears as the raw text; explicit non-default forms keep a literal type prefix (`\"WARN: ...\"`, `\"ERROR: ...\"`, `\"INFO: ...\"`, `\"LOG: ...\"`, `\"SUCCESS: ...\"`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
                         "**Error path (tool-specific deviation from MCP defaults):** when the action threw, `structuredContent` is absent and any captured `messages` is attached at the result top level (next to `content` / `isError`) instead of inside `structuredContent`."
                 )
                 .put("inputSchema", input)
@@ -462,9 +462,10 @@ public class MCPDispatcher {
      * JSON-schema for {@code structuredContent} returned on the success path. Each
      * {@code results[]} entry has all common metadata fields at the top level (name, type,
      * fileName, extension, mimeType, size) plus exactly one payload-field group from
-     * {@code oneOf} (value / valueBase64 / url / resourceUri / truncated / isNull). Field
-     * descriptions explain when each appears, so a client validating the schema or rendering
-     * it as docs gets the same picture as the prose description above.
+     * {@code oneOf} (value / valueBase64 / url / resourceUri / truncated). Null file slots
+     * are dropped from the array — a named null collapses to {@code {name}}, an unnamed null
+     * vanishes entirely. Field descriptions explain when each appears, so a client validating
+     * the schema or rendering it as docs gets the same picture as the prose description above.
      */
     private static JSONObject evalOutputSchema(int largeTextKiB, int inlineBinKiB, int textPerFileMiB, int textTotalMiB) {
         JSONObject resultProps = new JSONObject()
@@ -484,16 +485,14 @@ public class MCPDispatcher {
                         .put("description", "`perFileCap`: a single text value > " + textPerFileMiB + " MiB. `totalCap`: text fits perFileCap but doesn't fit the remaining " + textTotalMiB + " MiB inline budget."))
                 .put("omittedSize", intProp("UTF-8 byte length of the omitted text."))
                 .put("inlineLimit", intProp("Per-text-value cap in bytes (currently " + textPerFileMiB + " MiB)."))
-                .put("totalLimit", intProp("Per-call inline total budget in bytes (currently " + textTotalMiB + " MiB)."))
-                .put("isNull", new JSONObject().put("const", true).put("description", "Set when the returned file value is NULL FileData (no content was assigned). Covers both no-write fallback on the default `export*` file slot and a declared `RETURN` of a file-typed expression that evaluated to null."));
+                .put("totalLimit", intProp("Per-call inline total budget in bytes (currently " + textTotalMiB + " MiB)."));
 
         JSONArray variants = new JSONArray()
                 .put(new JSONObject().put("title", "Inline scalar or small text").put("required", new JSONArray().put("value")))
                 .put(new JSONObject().put("title", "Large text → resource pointer").put("required", new JSONArray().put("resourceUri")))
                 .put(new JSONObject().put("title", "Inline binary").put("required", new JSONArray().put("type").put("valueBase64")))
                 .put(new JSONObject().put("title", "URL-delivered binary").put("required", new JSONArray().put("type").put("url")))
-                .put(new JSONObject().put("title", "Truncated text").put("required", new JSONArray().put("truncated").put("omittedReason").put("omittedSize")))
-                .put(new JSONObject().put("title", "Null file slot").put("required", new JSONArray().put("isNull")));
+                .put(new JSONObject().put("title", "Truncated text").put("required", new JSONArray().put("truncated").put("omittedReason").put("omittedSize")));
 
         JSONObject resultItem = new JSONObject()
                 .put("type", "object")
