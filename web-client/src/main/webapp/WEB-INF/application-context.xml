@@ -53,4 +53,24 @@
     <bean id="mcpHandler" class="lsfusion.http.controller.MCPRequestHandler">
         <constructor-arg ref="logicsProvider"/>
     </bean>
+
+    <!-- OAuth Authorization Server endpoints — discovery, registration, token issuance / revocation -->
+    <bean id="oauthWellKnownAuthorizationServerHandler" class="lsfusion.http.controller.oauth.WellKnownAuthorizationServerHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
+    <bean id="oauthWellKnownProtectedResourceHandler" class="lsfusion.http.controller.oauth.WellKnownProtectedResourceHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
+    <bean id="oauthRegisterHandler" class="lsfusion.http.controller.oauth.OAuthRegisterHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
+    <bean id="oauthAuthorizeHandler" class="lsfusion.http.controller.oauth.OAuthAuthorizeHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
+    <bean id="oauthTokenHandler" class="lsfusion.http.controller.oauth.OAuthTokenHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
+    <bean id="oauthRevokeHandler" class="lsfusion.http.controller.oauth.OAuthRevokeHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
 </beans>

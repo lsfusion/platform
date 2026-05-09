@@ -31,6 +31,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass colorTheme;
 
+    // OAuth Authorization Server (we issue tokens for external apps).
+    // Auth codes (10-min ephemeral) live in app-server JVM memory — see OAuthAuthCodeManager.
+    public ConcreteCustomClass oauthClient;
+    public ConcreteCustomClass oauthRefreshToken;
+
     public LP firstNameContact;
     public LP lastNameContact;
     public LP emailContact;
@@ -70,6 +75,22 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP allowOnlyGroupUsers;
 
     public LP webClientSecret;
+
+    // OAuth-server: client registry
+    public LP clientIdOAuthClient;
+    public LP clientNameOAuthClient;
+    public LP redirectURIsOAuthClient;
+    public LP trustedOAuthClient;
+    public LP createdAtOAuthClient;
+    public LP oauthClientByClientId;
+
+    // OAuth-server: long-lived refresh tokens
+    public LP tokenOAuthRefreshToken;
+    public LP clientOAuthRefreshToken;
+    public LP userOAuthRefreshToken;
+    public LP expiresAtOAuthRefreshToken;
+    public LP revokedAtOAuthRefreshToken;
+    public LP oauthRefreshTokenByToken;
 
     //OAuth2
     public LP oauth2id;
@@ -135,6 +156,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         systemUser = (ConcreteCustomClass) findClass("SystemUser");
         customUser = (ConcreteCustomClass) findClass("CustomUser");
         colorTheme = (ConcreteCustomClass) findClass("ColorTheme");
+
+        oauthClient = (ConcreteCustomClass) findClass("OAuthClient");
+        oauthRefreshToken = (ConcreteCustomClass) findClass("OAuthRefreshToken");
     }
 
     @Override
@@ -190,6 +214,21 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         allowOnlyGroupUsers = findProperty("allowOnlyGroupUsers[]");
 
         webClientSecret = findProperty("webClientSecretKey[]");
+
+        // OAuth-server lookups
+        clientIdOAuthClient = findProperty("clientId[OAuthClient]");
+        clientNameOAuthClient = findProperty("clientName[OAuthClient]");
+        redirectURIsOAuthClient = findProperty("redirectURIs[OAuthClient]");
+        trustedOAuthClient = findProperty("trusted[OAuthClient]");
+        createdAtOAuthClient = findProperty("createdAt[OAuthClient]");
+        oauthClientByClientId = findProperty("oauthClient[STRING[80]]");
+
+        tokenOAuthRefreshToken = findProperty("token[OAuthRefreshToken]");
+        clientOAuthRefreshToken = findProperty("client[OAuthRefreshToken]");
+        userOAuthRefreshToken = findProperty("user[OAuthRefreshToken]");
+        expiresAtOAuthRefreshToken = findProperty("expiresAt[OAuthRefreshToken]");
+        revokedAtOAuthRefreshToken = findProperty("revokedAt[OAuthRefreshToken]");
+        oauthRefreshTokenByToken = findProperty("oauthRefreshToken[STRING[100]]");
 
         oauth2id = findProperty("id[OAuth2]");
         oauth2ClientId = findProperty("clientId[OAuth2]");

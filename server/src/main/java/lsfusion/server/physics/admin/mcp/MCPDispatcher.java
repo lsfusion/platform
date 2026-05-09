@@ -198,13 +198,10 @@ public class MCPDispatcher {
         try {
             switch (name) {
                 case TOOL_FILES_LIST:
-                    remoteLogics.checkMCPAccess(token);
                     return rpcResult(jsonrpc, id, structuredResult(MCPFileTools.list(args)));
                 case TOOL_FILES_SEARCH:
-                    remoteLogics.checkMCPAccess(token);
                     return rpcResult(jsonrpc, id, structuredResult(MCPFileTools.search(args)));
                 case TOOL_FILES_READ: {
-                    remoteLogics.checkMCPAccess(token);
                     JSONObject payload = MCPFileTools.read(args);
                     // Single-copy invariant: large text content + binary blobs leave the
                     // structured / text views and live exactly once in a resource entry. Only

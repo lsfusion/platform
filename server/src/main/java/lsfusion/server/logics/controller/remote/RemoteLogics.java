@@ -33,11 +33,11 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.mcp.MCPDispatcher;
+import lsfusion.server.physics.admin.oauth.OAuthDispatcher;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -212,18 +212,18 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return mcpDispatcher.dispatch(token, connectionInfo, request, body);
     }
 
-    /**
-     * Baseline API gate for MCP tools that don't dispatch through an action and so can't ride
-     * {@code RemoteConnection.checkEnableApi} (no {@code @noauth} / {@code @api} annotation,
-     * no request signature). Validates the token directly — there's no session creation step
-     * to do it upstream — and then delegates to the shared
-     * {@link RemoteConnection#checkAPIAccess} core that {@code checkEnableApi} also uses, so
-     * MCP file-tools apply the same {@link Settings#getEnableAPI} / anonymous policy as /eval
-     * for callers without action-level overrides.
-     */
-    public void checkMCPAccess(AuthenticationToken token) {
-        securityManager.parseToken(token);
-        RemoteConnection.checkAPIAccess(token, false, false);
+    private OAuthDispatcher oauthDispatcher;
+    private OAuthDispatcher getOAuthDispatcher() {
+        // Lazy: businessLogics / authenticationLM are wired after construction, before first request.
+        if (oauthDispatcher == null) {
+            oauthDispatcher = new OAuthDispatcher(businessLogics, securityManager);
+        }
+        return oauthDispatcher;
+    }
+
+    @Override
+    public String oauth(AuthenticationToken token, String operation, String requestJson) throws RemoteException {
+        return getOAuthDispatcher().dispatch(token, operation, requestJson);
     }
 
     public void ping() throws RemoteException {

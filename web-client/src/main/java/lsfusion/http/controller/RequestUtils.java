@@ -84,6 +84,38 @@ public class RequestUtils {
         return new ConnectionInfo(new ComputerInfo(hostName, getHostAddress(request)), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, colorTheme != null ? colorTheme.getValue() : null));
     }
 
+    /**
+     * Read up to {@code maxBytes} from the request body, throwing
+     * {@link BodyTooLargeException} on overflow rather than silently truncating. Truncation
+     * would let oversize input slide into a downstream JSON parser as a malformed-tail
+     * error, hiding the real "too large" problem; explicit overflow lets callers send a
+     * clean 413 instead.
+     *
+     * <p>Used by every {@code /mcp} and {@code /oauth/*} POST handler that accepts a body
+     * — the caps differ (16 MiB for MCP tool args, 64 KiB for OAuth metadata), but the
+     * read-then-fail-on-overflow pattern is identical, so it lives here.
+     */
+    public static byte[] readBoundedBody(HttpServletRequest request, int maxBytes)
+            throws java.io.IOException, BodyTooLargeException {
+        java.io.InputStream is = request.getInputStream();
+        if (is == null) return new byte[0];
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int total = 0;
+        int n;
+        while ((n = is.read(buf)) > 0) {
+            total += n;
+            if (total > maxBytes) throw new BodyTooLargeException();
+            out.write(buf, 0, n);
+        }
+        return out.toByteArray();
+    }
+
+    /** Thrown by {@link #readBoundedBody} when the inbound body exceeds the cap. */
+    public static final class BodyTooLargeException extends java.io.IOException {
+        public BodyTooLargeException() { super(); }
+    }
+
     public static class RequestInfo {
         public String query;
         public String pathInfo;

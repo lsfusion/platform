@@ -3,11 +3,13 @@ package lsfusion.http.controller;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.controller.oauth.OAuthRequestHandlerBase;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.MCPResult;
+import lsfusion.interop.oauth.OAuthOperations;
 import lsfusion.interop.session.ExternalRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,9 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,11 +39,12 @@ import java.util.Map;
  * ({@code headers[name]} / {@code cookies[name]} / etc.).
  *
  * <p>Auth: pulls the caller's {@link AuthenticationToken} via the existing
- * {@link LSFAuthenticationToken#getAppServerToken} flow (so anonymous, basic, and bearer
- * tokens established by the security filter chain all carry through). Browser-based MCP
- * clients that ride the same origin's session naturally get their cookies forwarded by the
- * standard HTTP transport — Spring Security recognizes them and sets up the auth token; the
- * raw cookie values also reach the script through the envelope.
+ * {@link LSFAuthenticationToken#getAppServerToken} flow. The {@code /mcp} security chain
+ * runs http-basic + bearer-token filter + URL-auth filter (no session cookie path —
+ * {@code create-session=never}), so all valid auth comes from {@code Authorization} header
+ * or query params. Anonymous = no valid auth on the request; we treat that as the
+ * discovery-trigger condition and respond 401 + {@code WWW-Authenticate}, redirecting MCP
+ * clients into the OAuth flow at {@code /.well-known/oauth-protected-resource}.
  *
  * <p>Body size: the handler enforces {@link #MAX_BODY_BYTES}; a request whose
  * {@code Content-Length} header exceeds the cap, or that streams past the cap, gets a 413
@@ -84,6 +85,32 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
             return;
         }
 
+        // MCP authorization spec: a protected-resource request without a valid token must
+        // produce 401 + {@code WWW-Authenticate} pointing at the resource-metadata discovery
+        // URL. claude.ai / Cursor / Claude Desktop key off this response to start the OAuth
+        // dance — without it, they assume no auth is required and never run the flow.
+        //
+        // The full policy decision (anonymous-allowed via {@code enableAPI=2} vs. require-
+        // auth otherwise; valid JWT signature; expiry; "Authorization: Bearer anonymous"
+        // distinguished from missing header) lives server-side in
+        // {@link OAuthOperations#VALIDATE_TOKEN} so the web tier doesn't need to read
+        // server settings or the JWT secret. We pass {@code header_present} so the
+        // dispatcher can tell {@code Authorization: Bearer anonymous} (always reject) from
+        // a missing header (gated by enableAPI). The op returns an RFC 6749 §5.2 error
+        // envelope when the request shouldn't be allowed; we map that to 401 with
+        // discovery challenge.
+        AuthenticationToken token = LSFAuthenticationToken.getAppServerToken();
+        boolean headerPresent = request.getHeader("Authorization") != null
+                && !request.getHeader("Authorization").isEmpty();
+        JSONObject validateRequest = new JSONObject().put("header_present", headerPresent);
+        String validateResp = runRequest(request, (sessionObject, retry) ->
+                sessionObject.remoteLogics.oauth(token, OAuthOperations.VALIDATE_TOKEN,
+                        validateRequest.toString()));
+        if (new JSONObject(validateResp).has("error")) {
+            sendDiscoveryChallenge(request, response);
+            return;
+        }
+
         // Pre-check Content-Length so a client that advertises a huge body gets a clean 413.
         int declaredLength = request.getContentLength();
         if (declaredLength > MAX_BODY_BYTES) {
@@ -94,15 +121,14 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
 
         final byte[] bodyBytes;
         try {
-            bodyBytes = readBoundedBody(request);
-        } catch (BodyTooLargeException e) {
+            bodyBytes = RequestUtils.readBoundedBody(request, MAX_BODY_BYTES);
+        } catch (RequestUtils.BodyTooLargeException e) {
             response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
                     "MCP body exceeds " + MAX_BODY_BYTES + " bytes");
             return;
         }
         final String body = new String(bodyBytes, StandardCharsets.UTF_8);
 
-        AuthenticationToken token = LSFAuthenticationToken.getAppServerToken();
         ConnectionInfo connectionInfo = RequestUtils.getConnectionInfo(request);
 
         MCPResult result = runRequest(request, (sessionObject, retry) -> {
@@ -202,30 +228,6 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
     }
 
     /**
-     * Read up to {@link #MAX_BODY_BYTES} from the request body. Throws {@link BodyTooLargeException}
-     * if the stream still has data after the cap (so the caller can send a 413 instead of
-     * silently truncating into JSON parse errors). Unlike
-     * {@link lsfusion.base.file.IOUtils#readBytesFromStream(InputStream, int)}, which truncates
-     * silently at {@code maxLength}, this method explicitly distinguishes "fit" from "overflow".
-     */
-    private static byte[] readBoundedBody(HttpServletRequest request) throws IOException {
-        InputStream is = request.getInputStream();
-        if (is == null) return new byte[0];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buf = new byte[8192];
-        int total = 0;
-        int n;
-        while ((n = is.read(buf)) > 0) {
-            total += n;
-            if (total > MAX_BODY_BYTES) {
-                throw new BodyTooLargeException();
-            }
-            out.write(buf, 0, n);
-        }
-        return out.toByteArray();
-    }
-
-    /**
      * Capture the inbound HTTP request's metadata into an {@link ExternalRequest} envelope —
      * same shape {@code /eval} builds via {@code ExternalUtils.processRequest} +
      * {@code RequestUtils.getRequestInfo}. {@code returnNames} / {@code params} are
@@ -267,7 +269,15 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
         return s == null ? fallback : s;
     }
 
-    private static final class BodyTooLargeException extends IOException {
-        BodyTooLargeException() { super(); }
+    /**
+     * Emit the standard MCP discovery 401: {@code WWW-Authenticate} pointing at the
+     * resource-metadata URL plus a {@code 401 Unauthorized} status. Both "no token" and
+     * "invalid token" paths funnel through here so the response shape is identical, which
+     * is what claude.ai / Cursor / Claude Desktop expect to drive the OAuth flow.
+     */
+    private static void sendDiscoveryChallenge(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        OAuthRequestHandlerBase.setBearerChallengeHeader(request, response);
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
     }
+
 }

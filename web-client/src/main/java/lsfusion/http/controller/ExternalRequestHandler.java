@@ -6,6 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
+import lsfusion.http.controller.oauth.OAuthRequestHandlerBase;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
@@ -42,6 +43,10 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 if(((AuthenticationException) e).redirect) {
                     processFailedAuthentication(request, response, e, null);
                 } else {
+                    // Match the MCP discovery shape so OAuth-aware clients (claude.ai, Cursor,
+                    // Claude Desktop) walk the protected-resource → AS chain on 401 instead of
+                    // giving up. Browser flows take the redirect branch above.
+                    OAuthRequestHandlerBase.setBearerChallengeHeader(request, response);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     writeResponse(response, e.getMessage());
                 }

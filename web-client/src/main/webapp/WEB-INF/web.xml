@@ -84,6 +84,62 @@
         <url-pattern>/mcp</url-pattern>
     </servlet-mapping>
 
+    <!-- OAuth Authorization Server — discovery + registration + token + revoke. Each is its
+         own HttpRequestHandlerServlet looking up the bean by name in application-context.xml. -->
+    <servlet>
+        <servlet-name>oauthWellKnownAuthorizationServerHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oauthWellKnownAuthorizationServerHandler</servlet-name>
+        <url-pattern>/.well-known/oauth-authorization-server</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>oauthWellKnownProtectedResourceHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oauthWellKnownProtectedResourceHandler</servlet-name>
+        <url-pattern>/.well-known/oauth-protected-resource</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>oauthRegisterHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oauthRegisterHandler</servlet-name>
+        <url-pattern>/oauth/register</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>oauthAuthorizeHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oauthAuthorizeHandler</servlet-name>
+        <url-pattern>/oauth/authorize</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>oauthTokenHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oauthTokenHandler</servlet-name>
+        <url-pattern>/oauth/token</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>oauthRevokeHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>oauthRevokeHandler</servlet-name>
+        <url-pattern>/oauth/revoke</url-pattern>
+    </servlet-mapping>
+
     <servlet>
         <servlet-name>fileUploadHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
@@ -169,6 +225,8 @@
         <url-pattern>/eval/*</url-pattern>
         <url-pattern>/form</url-pattern>
         <url-pattern>/mcp</url-pattern>
+        <url-pattern>/oauth/*</url-pattern>
+        <url-pattern>/.well-known/*</url-pattern>
         <url-pattern>/uploadFile</url-pattern>
         <url-pattern>/file/*</url-pattern>
         <url-pattern>/login</url-pattern>
@@ -218,11 +276,15 @@
     </filter>
     <filter-mapping>
         <filter-name>CORS</filter-name>
-        <!-- should match applicationContext-security first rule -->
+        <!-- should match applicationContext-security first rule. claude.ai's web MCP
+             connector calls discovery + register + token from its frontend (origin
+             https://claude.ai), so the OAuth endpoints need CORS too. -->
         <url-pattern>/exec/*</url-pattern>
         <url-pattern>/eval/*</url-pattern>
         <url-pattern>/form</url-pattern>
         <url-pattern>/mcp</url-pattern>
+        <url-pattern>/oauth/*</url-pattern>
+        <url-pattern>/.well-known/*</url-pattern>
     </filter-mapping>
 
     <!-- need to cache static resources - gwt/public and webapp (see urlrewrite.xml) -->

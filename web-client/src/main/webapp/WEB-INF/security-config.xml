@@ -17,6 +17,14 @@
         <custom-filter after="FORM_LOGIN_FILTER" ref="urlAuthenticationFilter"/>
     </http>
 
+    <!-- OAuth Authorization Server: discovery + register/token/revoke are anonymous (the
+         OAuth flow itself runs through them; the handlers validate their own credentials).
+         /oauth/authorize is intentionally NOT here — it falls into the UI block below with
+         permitAll, so the security chain still processes session cookies and a user already
+         logged in via another tab is recognized without re-login. -->
+    <http request-matcher="regex" pattern="^/(\.well-known/oauth-(authorization-server|protected-resource)|oauth/(register|token|revoke))$" security="none"/>
+
+
     <!-- main subdomains (i.e resources), however now it's not needed since saveDownload is used (and thus 2 mechanisms listed below) -->
     <http pattern="/main/*/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
@@ -72,6 +80,10 @@
     <http entry-point-ref="entryPoint">
         <!-- /2fa is handled by TwoFactorAuthenticationFilter; no prior authentication needed -->
         <intercept-url pattern="/2fa" access="permitAll()"/>
+        <!-- OAuth /authorize: the chain runs (cookie-based auth recognized) but anonymous
+             access reaches the handler so it can validate params + manually redirect to
+             /login via LSFLoginUrlAuthenticationEntryPoint.requestCache. -->
+        <intercept-url pattern="/oauth/authorize" access="permitAll()"/>
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <oauth2-login login-page="/login"

@@ -86,6 +86,14 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
+    public String oauth(AuthenticationToken token, String operation, String requestJson) throws RemoteException {
+        logRemoteMethodStartCall("oauth");
+        String result = target.oauth(token, operation, requestJson);
+        logRemoteMethodEndVoidCall("oauth");
+        return result;
+    }
+
+    @Override
     public List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         logRemoteMethodStartVoidCall("saveCustomReportPathList");
         List<String> result = target.saveAndGetCustomReportPathList(formSID, recreate);

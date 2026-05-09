@@ -157,6 +157,68 @@ clientName 'Client name' = DATA STRING (OAuth2);
 auth (id) = GROUP AGGR OAuth2 oa BY id(oa);
 clientName(STRING str) = clientName(auth(str));
 
+// OAuth Authorization Server — we issue tokens for external apps (MCP, mobile, integrations).
+// `OAuth2` above is the *client* role (we delegate user login to Google/GitHub/...);
+// the classes below are the *server* role (external app gets a token to call our APIs as user).
+CLASS OAuthClient '{authentication.oauth.client}';
+TABLE oauthClient (OAuthClient);
+clientId '{authentication.oauth.client.id}' = DATA STRING[80] (OAuthClient) IN id;
+clientName '{authentication.oauth.client.name}' = DATA STRING[200] (OAuthClient) IN id;
+// Newline-separated allowed redirect URIs — must include the URI claude.ai/Cursor/etc. send at /authorize.
+// Confidential clients (with `clientSecret`) aren't supported yet — registration rejects
+// any `token_endpoint_auth_method` other than `none`. The schema field will be added back
+// when the confidential-client flow lands.
+redirectURIs '{authentication.oauth.client.redirect.uris}' = DATA TEXT (OAuthClient);
+// `trusted` skips the consent screen on /authorize. Default FALSE — admin opts apps in explicitly.
+trusted '{authentication.oauth.client.trusted}' = DATA BOOLEAN (OAuthClient);
+createdAt '{authentication.oauth.client.created}' = DATA DATETIME (OAuthClient);
+
+oauthClient (STRING[80] cId) = GROUP AGGR OAuthClient c BY clientId(c);
+
+// OAuthAuthCode (10-min single-use authorization codes) lives in app-server JVM memory —
+// see {@code OAuthAuthCodeManager} in {@code physics/admin/oauth}. Auth codes are too
+// short-lived to deserve a place in the persistent schema; in-memory has cleaner semantics
+// (atomic single-use via ConcurrentHashMap.remove) and avoids growing the DB with rows
+// that are obsolete in 10 minutes.
+
+CLASS OAuthRefreshToken '{authentication.oauth.refresh.token}';
+TABLE oauthRefreshToken (OAuthRefreshToken);
+token '{authentication.oauth.refresh.token.token}' = DATA STRING[100] (OAuthRefreshToken);
+client '{authentication.oauth.refresh.token.client}' = DATA OAuthClient (OAuthRefreshToken);
+user '{authentication.oauth.refresh.token.user}' = DATA CustomUser (OAuthRefreshToken);
+expiresAt '{authentication.oauth.refresh.token.expires}' = DATA DATETIME (OAuthRefreshToken);
+// null = active; non-null = revoked at this instant (admin or via /oauth/revoke).
+revokedAt '{authentication.oauth.refresh.token.revoked}' = DATA DATETIME (OAuthRefreshToken);
+
+oauthRefreshToken (STRING[100] t) = GROUP AGGR OAuthRefreshToken rt BY token(rt);
+
+active '{authentication.oauth.refresh.token.active}' (OAuthRefreshToken rt) = expiresAt(rt) > currentDateTime() AND NOT revokedAt(rt);
+
+// Join properties for the admin form — `client(rt)` and `user(rt)` are FKs so we
+// surface their human-readable IDs as derived properties.
+clientId '{authentication.oauth.client.id}' (OAuthRefreshToken rt) = clientId(client(rt));
+clientName '{authentication.oauth.client.name}' (OAuthRefreshToken rt) = clientName(client(rt));
+userLogin '{authentication.oauth.refresh.token.user.login}' (OAuthRefreshToken rt) = login(user(rt));
+
+FORM oauthClients '{authentication.oauth.clients}'
+    OBJECTS c = OAuthClient
+    PROPERTIES(c) READONLY clientId, clientName, trusted, createdAt
+    PROPERTIES(c) NEWSESSION DELETE GRID
+;
+
+FORM oauthClient '{authentication.oauth.client}'
+    OBJECTS c = OAuthClient PANEL
+    PROPERTIES(c) clientId, clientName, redirectURIs, trusted, createdAt READONLY
+
+    EDIT OAuthClient OBJECT c
+;
+
+FORM oauthRefreshTokens '{authentication.oauth.sessions}'
+    OBJECTS t = OAuthRefreshToken
+    PROPERTIES(t) READONLY clientId, clientName, userLogin, expiresAt, revokedAt, active
+    PROPERTIES(t) NEWSESSION DELETE GRID
+;
+
 use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
 twoFaRateLimitSeconds '{authentication.2fa.rate.limit}' = DATA INTEGER() LAZY;
 twoFaExpirySeconds '{authentication.2fa.expiry}' = DATA INTEGER() LAZY;

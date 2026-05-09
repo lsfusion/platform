@@ -2997,6 +2997,37 @@ public class Settings implements Cloneable {
         this.authTokenExpiration = authTokenExpiration;
     }
 
+    // OAuth Authorization Server TTLs (in minutes). Decoupled from authTokenExpiration above
+    // because OAuth-issued access JWTs typically rotate faster than a session's primary auth
+    // token: 1 hour gives short blast-radius if leaked, with refresh tokens covering long
+    // sessions. Refresh: 30 days = standard "remember me" lifespan; auth code: 10 minutes
+    // per RFC 6749 §4.1.2 SHOULD upper bound. All three are admin-tunable without rebuild.
+    private int oauthAccessTokenExpiration = 60;
+    private int oauthRefreshTokenExpiration = 60 * 24 * 30;
+    private int oauthAuthCodeExpiration = 10;
+
+    // Getter/setter names use lowercase "Oauth" (not "OAuth") to match Java Beans naming
+    // for the lowercase-initial field — apache-commons PropertyUtils-based introspection
+    // (used by WriteDefaultSettingsAction) requires this to discover the property.
+    public int getOauthAccessTokenExpiration() {
+        return oauthAccessTokenExpiration;
+    }
+    public void setOauthAccessTokenExpiration(int oauthAccessTokenExpiration) {
+        this.oauthAccessTokenExpiration = oauthAccessTokenExpiration;
+    }
+    public int getOauthRefreshTokenExpiration() {
+        return oauthRefreshTokenExpiration;
+    }
+    public void setOauthRefreshTokenExpiration(int oauthRefreshTokenExpiration) {
+        this.oauthRefreshTokenExpiration = oauthRefreshTokenExpiration;
+    }
+    public int getOauthAuthCodeExpiration() {
+        return oauthAuthCodeExpiration;
+    }
+    public void setOauthAuthCodeExpiration(int oauthAuthCodeExpiration) {
+        this.oauthAuthCodeExpiration = oauthAuthCodeExpiration;
+    }
+
     //temporary setting, enable if order changed after update
     private boolean groupIntegrationHierarchyOldOrder = false;
 

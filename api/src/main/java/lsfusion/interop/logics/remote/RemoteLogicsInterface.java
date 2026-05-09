@@ -48,6 +48,21 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // irrelevant — eval supplies its own from tool args.
     MCPResult mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException;
 
+    // OAuth Authorization Server — single dispatch method for all OAuth-server operations.
+    // {@code operation} is one of the wire-stable strings declared as constants in
+    // {@code OAuthOperations} ({@code registerClient}, {@code getClient},
+    // {@code issueAuthCode}, {@code exchangeCode}, {@code refreshToken},
+    // {@code revokeToken}, {@code validateToken}). {@code requestJson} is the
+    // JSON-encoded operation-specific request body. The return value is a JSON-encoded
+    // operation-specific response,
+    // or an RFC 6749 §5.2 error envelope ({@code {"error": ..., "error_description": ...}})
+    // on failure. {@code token} is the caller's auth context: most operations are
+    // anonymous (the OAuth protocol itself doesn't authenticate the requester at the
+    // protocol level — it operates *to produce* an authentication), but a few (e.g.
+    // {@code issueAuthCode}, which runs after a user logged in via /oauth/authorize)
+    // need the user identity from the web tier's existing security context.
+    String oauth(AuthenticationToken token, String operation, String requestJson) throws RemoteException;
+
     // separate methods, because used really often (and don't need authentication)
     long generateID() throws RemoteException;
     void ping() throws RemoteException;

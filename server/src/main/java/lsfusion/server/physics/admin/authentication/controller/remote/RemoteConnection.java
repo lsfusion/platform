@@ -469,9 +469,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     /**
-     * Shared core of the API access gate — used by both action-driven flows (eval / exec via
-     * {@link #checkEnableApi}) and the action-less MCP file tools (via
-     * {@link lsfusion.server.logics.controller.remote.RemoteLogics#checkMCPAccess}). Reads
+     * Shared core of the API access gate — used by action-driven flows (eval / exec via
+     * {@link #checkEnableApi}) and by the OAuth pre-gate for {@code /mcp} (via
+     * {@link lsfusion.server.physics.admin.oauth.OAuthDispatcher#validateToken}). Reads
      * {@link Settings#getEnableAPI}, rejects {@code enableAPI=0} (unless {@code apiAnnotation}
      * is true, which lifts it to {@code 1}), then defers to {@link #checkAnonymous} for the
      * {@code enableAPI=1} → reject-anonymous case.
