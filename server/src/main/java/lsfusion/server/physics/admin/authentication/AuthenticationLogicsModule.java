@@ -92,6 +92,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP revokedAtOAuthRefreshToken;
     public LP oauthRefreshTokenByToken;
 
+    // OAuth-server: tunable expirations (null = use Settings.java default)
+    public LP oauthAccessTokenExpiration;
+    public LP oauthRefreshTokenExpiration;
+    public LP oauthAuthCodeExpiration;
+
     //OAuth2
     public LP oauth2id;
     public LP oauth2ClientId;
@@ -229,6 +234,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         expiresAtOAuthRefreshToken = findProperty("expiresAt[OAuthRefreshToken]");
         revokedAtOAuthRefreshToken = findProperty("revokedAt[OAuthRefreshToken]");
         oauthRefreshTokenByToken = findProperty("oauthRefreshToken[STRING[100]]");
+
+        oauthAccessTokenExpiration = findProperty("oauthAccessTokenExpiration[]");
+        oauthRefreshTokenExpiration = findProperty("oauthRefreshTokenExpiration[]");
+        oauthAuthCodeExpiration = findProperty("oauthAuthCodeExpiration[]");
 
         oauth2id = findProperty("id[OAuth2]");
         oauth2ClientId = findProperty("clientId[OAuth2]");

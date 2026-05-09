@@ -300,11 +300,14 @@ public class MCPEvalTool {
         } else if (value instanceof FileData) {
             FileData fd = (FileData) value;
             // The engine surfaces a NULL slot via FileData.NULL (extension="null", empty bytes).
-            // Drop named null slots to {name: ...} — the absence of value/valueBase64/url/
-            // resourceUri already conveys "no content". The default unnamed slot vanishes from
-            // the array entirely (caller treats null return from this method as "skip").
+            // Drop null slots — named or not — from the array entirely (we return null and
+            // the caller filters). The "named null vs absent" distinction can't be acted on
+            // by an AI-agent consumer anyway: for static EXPORT FROM x=a, y=b they already
+            // know what they asked for from the script; for parameterized RETURN they have
+            // no separate ground-truth list to compare against. Either way an absent entry
+            // already means "no value", so the explicit marker would be pure noise.
             if (fd.isNull()) {
-                return result.name != null ? item : null;
+                return null;
             }
             byte[] bytes = fd.getRawFile().getBytes();
             String extension = fd.getExtension();

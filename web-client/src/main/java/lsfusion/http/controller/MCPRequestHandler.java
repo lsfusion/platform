@@ -274,10 +274,23 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
      * resource-metadata URL plus a {@code 401 Unauthorized} status. Both "no token" and
      * "invalid token" paths funnel through here so the response shape is identical, which
      * is what claude.ai / Cursor / Claude Desktop expect to drive the OAuth flow.
+     *
+     * <p>The body is a JSON-RPC 2.0 error envelope rather than a default servlet error
+     * page — claude.ai's connector parses {@code /mcp} responses as JSON unconditionally
+     * and surfaces the generic "Couldn't reach the MCP server" message when parsing fails,
+     * which the Tomcat HTML error page would trigger. With a proper JSON body the OAuth
+     * discovery handshake completes cleanly: claude.ai reads the {@code WWW-Authenticate}
+     * header (which is what actually drives OAuth) without choking on the body.
      */
     private static void sendDiscoveryChallenge(HttpServletRequest request, HttpServletResponse response) throws IOException {
         OAuthRequestHandlerBase.setBearerChallengeHeader(request, response);
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=utf-8");
+        // -32001 is a server-defined JSON-RPC code; the HTTP status + WWW-Authenticate are
+        // the canonical signal — body is informational/diagnostic only.
+        response.getWriter().write(
+                "{\"jsonrpc\":\"2.0\",\"id\":null,"
+                        + "\"error\":{\"code\":-32001,\"message\":\"Authentication required\"}}");
     }
 
 }

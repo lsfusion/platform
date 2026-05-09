@@ -200,23 +200,18 @@ clientId '{authentication.oauth.client.id}' (OAuthRefreshToken rt) = clientId(cl
 clientName '{authentication.oauth.client.name}' (OAuthRefreshToken rt) = clientName(client(rt));
 userLogin '{authentication.oauth.refresh.token.user.login}' (OAuthRefreshToken rt) = login(user(rt));
 
-FORM oauthClients '{authentication.oauth.clients}'
-    OBJECTS c = OAuthClient
-    PROPERTIES(c) READONLY clientId, clientName, trusted, createdAt
-    PROPERTIES(c) NEWSESSION DELETE GRID
-;
+// OAuth-server tunables. LAZY DATA — admin can override via the customUsers form (OAUTH-SERVER
+// tab); null falls back to Settings.java defaults (see OAuthDispatcher), so a fresh DB just
+// works without seeding.
+oauthAccessTokenExpiration '{authentication.oauth.access.token.expiration}' = DATA INTEGER () LAZY;
+oauthRefreshTokenExpiration '{authentication.oauth.refresh.token.expiration}' = DATA INTEGER () LAZY;
+oauthAuthCodeExpiration '{authentication.oauth.auth.code.expiration}' = DATA INTEGER () LAZY;
 
 FORM oauthClient '{authentication.oauth.client}'
     OBJECTS c = OAuthClient PANEL
     PROPERTIES(c) clientId, clientName, redirectURIs, trusted, createdAt READONLY
 
     EDIT OAuthClient OBJECT c
-;
-
-FORM oauthRefreshTokens '{authentication.oauth.sessions}'
-    OBJECTS t = OAuthRefreshToken
-    PROPERTIES(t) READONLY clientId, clientName, userLogin, expiresAt, revokedAt, active
-    PROPERTIES(t) NEWSESSION DELETE GRID
 ;
 
 use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
@@ -682,6 +677,16 @@ FORM customUsers '{authentication.users}'
                       clientName
     PROPERTIES() use2FA, twoFaRateLimitSeconds, twoFaExpirySeconds, twoFaMaxAttempts
     PROPERTIES () webClientSecretKey
+
+    PROPERTIES() oauthAccessTokenExpiration, oauthRefreshTokenExpiration, oauthAuthCodeExpiration
+
+    OBJECTS oc = OAuthClient
+    PROPERTIES(oc) READONLY clientId, clientName, trusted, createdAt
+    PROPERTIES(oc) NEWSESSION DELETE GRID
+
+    OBJECTS ort = OAuthRefreshToken
+    PROPERTIES(ort) READONLY clientId, clientName, userLogin, expiresAt, revokedAt, active
+    PROPERTIES(ort) NEWSESSION DELETE GRID
 ;
 
 DESIGN customUsers {
@@ -758,6 +763,19 @@ DESIGN customUsers {
             NEW WEBAUTH {
                 caption = 'WEB-AUTH';
                 MOVE PROPERTY(webClientSecretKey());
+            }
+            NEW oauthServer {
+                caption = 'OAUTH-SERVER';
+                NEW oauthServerExpiration {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(oauthAccessTokenExpiration());
+                    MOVE PROPERTY(oauthRefreshTokenExpiration());
+                    MOVE PROPERTY(oauthAuthCodeExpiration());
+                }
+                MOVE BOX(oc);
+                MOVE BOX(ort) {
+                    GRID(ort) { captionHeight = 50; }
+                }
             }
         }
     }

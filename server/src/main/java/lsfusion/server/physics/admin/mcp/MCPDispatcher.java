@@ -449,7 +449,7 @@ public class MCPDispatcher {
                         "  1. If the action declares a `RETURN` value, that result property is read first; `export*` writes are ignored even when the RETURN expression evaluates to null (the null is formatted by the RETURN value's type).\n" +
                         "  2. Otherwise, writes to lsFusion's `export*` slots — `EXPORT FROM ... [TO ...]`, `PRINT ... TO`, or direct (`exportFile() <- x;`). When multiple slots were written, the first non-null wins in this fixed order: files → strings → numbers → date/times → links → others.\n" +
                         "  3. Without `RETURN` and without any `export*` write, `results[]` is empty.\n\n" +
-                        "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. Null file slots are dropped from `results[]` entirely (a named null collapses to `{name}`); the absence of `value` / `valueBase64` / `url` / `resourceUri` already conveys \"no content\". See `outputSchema` for entry shape.\n\n" +
+                        "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. Null file slots are dropped from `results[]` entirely — an absent entry IS the null signal. See `outputSchema` for entry shape.\n\n" +
                         "**HTTP envelope passthrough.** The /mcp request's metadata (headers, cookies, body, URL components) reaches the script via the same lsFusion properties `/eval` populates — `headers[name]`, `cookies[name]`, etc.\n\n" +
                         "**`messages` capture.** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array. Plain `MESSAGE` (the common case) appears as the raw text; explicit non-default forms keep a literal type prefix (`\"WARN: ...\"`, `\"ERROR: ...\"`, `\"INFO: ...\"`, `\"LOG: ...\"`, `\"SUCCESS: ...\"`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
                         "**Error path (tool-specific deviation from MCP defaults):** when the action threw, `structuredContent` is absent and any captured `messages` is attached at the result top level (next to `content` / `isError`) instead of inside `structuredContent`."
@@ -463,9 +463,11 @@ public class MCPDispatcher {
      * {@code results[]} entry has all common metadata fields at the top level (name, type,
      * fileName, extension, mimeType, size) plus exactly one payload-field group from
      * {@code oneOf} (value / valueBase64 / url / resourceUri / truncated). Null file slots
-     * are dropped from the array — a named null collapses to {@code {name}}, an unnamed null
-     * vanishes entirely. Field descriptions explain when each appears, so a client validating
-     * the schema or rendering it as docs gets the same picture as the prose description above.
+     * are dropped from the array entirely — an absent entry IS the null signal, and an
+     * AI-agent consumer can't act on the distinction between "slot was null" and "slot
+     * wasn't there" anyway. Field descriptions explain when each appears, so a client
+     * validating the schema or rendering it as docs gets the same picture as the prose
+     * description above.
      */
     private static JSONObject evalOutputSchema(int largeTextKiB, int inlineBinKiB, int textPerFileMiB, int textTotalMiB) {
         JSONObject resultProps = new JSONObject()

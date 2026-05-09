@@ -7,6 +7,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.physics.admin.Settings;
@@ -281,8 +282,9 @@ public class OAuthDispatcher {
             }
 
             code = randomToken(OPAQUE_TOKEN_BYTES);
-            long expiresAtMs = System.currentTimeMillis()
-                    + Settings.get().getOauthAuthCodeExpiration() * 60_000L;
+            int authCodeMinutes = readExpirationMinutes(session, getAuthLM().oauthAuthCodeExpiration,
+                    Settings.get().getOauthAuthCodeExpiration());
+            long expiresAtMs = System.currentTimeMillis() + authCodeMinutes * 60_000L;
             authCodeManager.put(code, clientObj, userObj, codeChallenge, redirectURI, expiresAtMs);
         }
         return new JSONObject().put("code", code);
@@ -333,12 +335,13 @@ public class OAuthDispatcher {
             lm.tokenOAuthRefreshToken.change(refreshToken, session, rtObj);
             lm.clientOAuthRefreshToken.change(codeEntry.client, session, rtObj);
             lm.userOAuthRefreshToken.change(codeEntry.user, session, rtObj);
+            int refreshMinutes = readExpirationMinutes(session, lm.oauthRefreshTokenExpiration,
+                    Settings.get().getOauthRefreshTokenExpiration());
             lm.expiresAtOAuthRefreshToken.change(
-                    nowSeconds().plusMinutes(Settings.get().getOauthRefreshTokenExpiration()),
-                    session, rtObj);
+                    nowSeconds().plusMinutes(refreshMinutes), session, rtObj);
             apply(session);
 
-            return tokenResponse(userLogin, refreshToken);
+            return tokenResponse(session, userLogin, refreshToken);
         }
     }
 
@@ -384,12 +387,13 @@ public class OAuthDispatcher {
             lm.tokenOAuthRefreshToken.change(newRefreshToken, session, newRtObj);
             lm.clientOAuthRefreshToken.change(rtClient, session, newRtObj);
             lm.userOAuthRefreshToken.change(userObj, session, newRtObj);
+            int refreshMinutes = readExpirationMinutes(session, lm.oauthRefreshTokenExpiration,
+                    Settings.get().getOauthRefreshTokenExpiration());
             lm.expiresAtOAuthRefreshToken.change(
-                    nowSeconds().plusMinutes(Settings.get().getOauthRefreshTokenExpiration()),
-                    session, newRtObj);
+                    nowSeconds().plusMinutes(refreshMinutes), session, newRtObj);
             apply(session);
 
-            return tokenResponse(userLogin, newRefreshToken);
+            return tokenResponse(session, userLogin, newRefreshToken);
         }
     }
 
@@ -582,14 +586,28 @@ public class OAuthDispatcher {
      * {@link #refreshToken}, which differ only in whether the refresh token is freshly issued
      * or carried forward.
      */
-    private JSONObject tokenResponse(String userLogin, String refreshToken) {
-        int accessTtl = Settings.get().getOauthAccessTokenExpiration();
+    private JSONObject tokenResponse(DataSession session, String userLogin, String refreshToken)
+            throws SQLException, SQLHandledException {
+        int accessTtl = readExpirationMinutes(session, getAuthLM().oauthAccessTokenExpiration,
+                Settings.get().getOauthAccessTokenExpiration());
         AuthenticationToken accessToken = securityManager.generateToken(userLogin, accessTtl, false);
         return new JSONObject()
                 .put("access_token", accessToken.string)
                 .put("token_type", "Bearer")
                 .put("expires_in", accessTtl * 60)
                 .put("refresh_token", refreshToken);
+    }
+
+    /**
+     * Read an admin-tunable expiration (minutes) from the lsf settings form, falling back to
+     * the {@link Settings} compile-time default when the form value is null. A fresh DB has
+     * the form fields empty — we don't seed them — so this fallback is what makes the system
+     * work out of the box; admin overrides take effect on next read.
+     */
+    private int readExpirationMinutes(DataSession session, LP<?> property, int defaultMinutes)
+            throws SQLException, SQLHandledException {
+        Object v = property.read(session);
+        return v != null ? ((Number) v).intValue() : defaultMinutes;
     }
 
     /**
