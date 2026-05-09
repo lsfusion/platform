@@ -74,16 +74,12 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String method = request.getMethod();
-
-        // Methods we may have to answer for. POST = real MCP traffic; GET/HEAD = Streamable
-        // HTTP / SSE probes some clients (e.g. claude.ai's connector) try first to detect
-        // server-initiated streams. We don't 405 those upfront — auth runs first, so an
-        // unauthenticated GET produces 401 + WWW-Authenticate and the client sees the
-        // discovery challenge instead of a generic "Couldn't reach the MCP server".
-        boolean recognizedMethod = "POST".equalsIgnoreCase(method)
-                || "GET".equalsIgnoreCase(method)
-                || "HEAD".equalsIgnoreCase(method);
-        if (!recognizedMethod) {
+        if ("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method)) {
+            response.setHeader("Allow", "POST, OPTIONS");
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Use POST with a JSON-RPC body");
+            return;
+        }
+        if (!"POST".equalsIgnoreCase(method)) {
             response.setHeader("Allow", "POST, OPTIONS");
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
@@ -92,9 +88,7 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
         // MCP authorization spec: a protected-resource request without a valid token must
         // produce 401 + {@code WWW-Authenticate} pointing at the resource-metadata discovery
         // URL. claude.ai / Cursor / Claude Desktop key off this response to start the OAuth
-        // dance — without it, they assume no auth is required and never run the flow. We
-        // run this check for every recognized method (including GET/HEAD) so an SSE-probe
-        // sees the auth challenge before it ever sees the 405.
+        // dance — without it, they assume no auth is required and never run the flow.
         //
         // The full policy decision (anonymous-allowed via {@code enableAPI=2} vs. require-
         // auth otherwise; valid JWT signature; expiry; "Authorization: Bearer anonymous"
@@ -114,15 +108,6 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
                         validateRequest.toString()));
         if (new JSONObject(validateResp).has("error")) {
             sendDiscoveryChallenge(request, response);
-            return;
-        }
-
-        // Auth passed; now reject GET/HEAD as 405 (we don't implement the optional SSE
-        // server-stream side of Streamable HTTP transport — clients fall back to POST-only).
-        if (!"POST".equalsIgnoreCase(method)) {
-            response.setHeader("Allow", "POST, OPTIONS");
-            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                    "Use POST with a JSON-RPC body — server-initiated SSE stream is not supported");
             return;
         }
 
