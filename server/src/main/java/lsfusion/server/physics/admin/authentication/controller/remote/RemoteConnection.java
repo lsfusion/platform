@@ -490,7 +490,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             if(apiAnnotation)
                 enableApi = 1;
             else
-                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI > 0.");
         }
         checkAnonymous(redirect, token, enableApi);
     }
