@@ -74,6 +74,11 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
     private static final ThreadLocal<Settings> settings = new ThreadLocal<>();
+    // Stack of pre-push Settings instances pushed by `pushSettings`; popped by `popSettings`.
+    // Convention: `pushSettings`/`popSettings` are paired within a single aspect frame and no
+    // aspect transition (which would re-bind `settings`) happens between them. Under that
+    // assumption the simple stack is sufficient — no need to re-apply overlays on top of a
+    // re-bound role-Settings.
     private static final ThreadLocal<Stack<Settings>> prevSettings = new ThreadLocal<>();
     private static ConcurrentHashMap<Long, Settings> roleSettingsMap = new ConcurrentHashMap<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
@@ -342,22 +347,31 @@ public class ThreadLocalContext {
     public static class AspectState {
         public final Context context;
         public final NewThreadExecutionStack stack;
+        public final Settings settings;
 
-        public AspectState(Context context, NewThreadExecutionStack stack) {
+        public AspectState(Context context, NewThreadExecutionStack stack, Settings settings) {
             this.context = context;
             this.stack = stack;
+            this.settings = settings;
         }
     }
-    
+
     private static AspectState aspectBefore(Context context, boolean assertTop, ThreadInfo threadInfo, NewThreadExecutionStack stack, SyncType type) { // type - не null, значит новый поток с заданным типом синхронизации
         Context prevContext = ThreadLocalContext.get();
         NewThreadExecutionStack prevStack = ThreadLocalContext.getStack();
+        // Capture the previous Settings instance BEFORE swapping context/settings — restored by aspectAfter.
+        // Rebinding Settings on every aspectBefore (not only at top-of-stack) is required so that nested
+        // aspects pick up the new context's role-specific Settings: e.g. the outer aspect for
+        // RemoteLogics.eval has a system context (role=null → global Settings); the inner aspect for
+        // session.eval needs to switch to the user's role-clone so per-role enableAPI overrides apply.
+        // We rely on the convention that `pushSettings`/`popSettings` are paired within a single
+        // aspect frame — no rebind happens between a push and its pop, so the pushed clone keeps
+        // hold of the override for that scope.
+        Settings prevSettings = settings.get();
 
         ThreadLocalContext.set(context);
-        if(prevContext == null) {
-            //необходимо выполнить раньше вызова setLogInfo
-            ThreadLocalContext.setSettings();
-        }
+        // необходимо выполнить раньше вызова setLogInfo
+        ThreadLocalContext.setSettings();
         ThreadLocalContext.setLogInfo(context);
         ThreadLocalContext.stack.set(stack);
 
@@ -373,11 +387,12 @@ public class ThreadLocalContext {
 
         checkThread(prevContext, assertTop, threadInfo);
 
-        return new AspectState(prevContext, prevStack);
+        return new AspectState(prevContext, prevStack, prevSettings);
     }
     private static void aspectAfter(AspectState prevState, boolean assertTop, ThreadInfo threadInfo) {
         Context prevContext = prevState != null ? prevState.context : null;
         NewThreadExecutionStack prevStack = prevState != null ? prevState.stack : null;
+        Settings prevSettingsInstance = prevState != null ? prevState.settings : null;
 
         checkThread(prevContext, assertTop, threadInfo);
 
@@ -386,15 +401,17 @@ public class ThreadLocalContext {
             RemoteLoggerAspect.removeDateTimeCall(pid);
 
             if(threadInfo instanceof EventThreadInfo) {
-                // тут можно было бы сбросить имя потока, но пока сохраним (также как и в SQLSession)                
+                // тут можно было бы сбросить имя потока, но пока сохраним (также как и в SQLSession)
                 if (Settings.get().isEnableCloseThreadLocalSqlInNativeThreads()) // закрываем connection, чтобы не мусорить
                     ThreadLocalContext.getLogicsInstance().getDbManager().closeThreadLocalSql();
             }
-            ThreadLocalContext.dropSettings();
         }
 
 
         ThreadLocalContext.set(prevContext);
+        // Restore the previous Settings instance. At top-of-stack prevSettingsInstance is null —
+        // equivalent to dropSettings(). For nested aspects this restores the outer level's binding.
+        settings.set(prevSettingsInstance);
         ThreadLocalContext.setLogInfo(prevContext);
         ThreadLocalContext.stack.set(prevStack);
     }
