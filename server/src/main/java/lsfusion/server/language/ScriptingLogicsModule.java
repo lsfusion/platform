@@ -4987,6 +4987,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp, NamedPropertyUsage toProp) throws ScriptingErrorLog.SemanticErrorException {
+        // Desugar `NEWTHREAD a; CONNECTION conn;` to `NEWEXECUTOR { NEWTHREAD a; } CLIENT conn NOWAIT`.
+        // Grammar makes CONNECTION/SCHEDULE/TO mutually exclusive on NEWTHREAD, so when
+        // connectionProp is set, period/delay/to are guaranteed null — recursion is one level.
+        if (connectionProp != null) {
+            LAWithParams innerThread = addScriptedNewThreadAction(action, null, null, null, null);
+            return addScriptedNewExecutorAction(innerThread, null, connectionProp, false);
+        }
+
         LP<?> targetProp = toProp != null ? findLPNoParamsByPropertyUsage(toProp) : null;
 
         List<LAPWithParams> propParams = BaseUtils.toList(action);
@@ -4996,16 +5004,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (delayProp != null) {
             propParams.add(delayProp);
         }
-        if (connectionProp != null) {
-            propParams.add(connectionProp);
-        }
-        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, connectionProp != null, periodProp != null, delayProp != null, targetProp, getParamsPlainList(propParams).toArray());
+        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, periodProp != null, delayProp != null, targetProp, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, mergeAllParams(propParams));
     }
 
-    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp, Boolean sync) {
-        List<LAPWithParams> propParams = Arrays.asList(action, threadsProp);
-        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, sync, getParamsPlainList(propParams).toArray());
+    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp, LPWithParams connectionProp, Boolean sync) {
+        List<LAPWithParams> propParams = new ArrayList<>();
+        propParams.add(action);
+        if (threadsProp != null) {
+            propParams.add(threadsProp);
+        }
+        if (connectionProp != null) {
+            propParams.add(connectionProp);
+        }
+        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, threadsProp != null, connectionProp != null, sync, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, mergeAllParams(propParams));
     }
 

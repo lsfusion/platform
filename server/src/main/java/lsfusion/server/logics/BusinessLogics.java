@@ -2218,6 +2218,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getAllocatedBytesUpdateTask(scheduler));
             result.add(getCleanTempTablesTask(scheduler));
             result.add(getFlushPendingTransactionCleanersTask(scheduler));
+            result.add(getNotificationCleanupTask(scheduler));
 //            result.add(getBalanceConnectionsTask(scheduler));
             result.add(getRestartConnectionsTask(scheduler));
             result.add(getUpdateSavePointsInfoTask(scheduler));
@@ -2298,6 +2299,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getFlushPendingTransactionCleanersTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> DataSession.flushPendingTransactionCleaners(), false, Settings.get().getFlushPendingTransactionCleanersThreshold(), false, "Flush Pending Transaction Cleaners");
+    }
+
+    private Scheduler.SchedulerTask getNotificationCleanupTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> RemoteNavigator.sweepStaleNotifications(), false, Settings.get().getNotificationCleanupPeriod(), true, "Notification cleanup");
     }
 
     private Scheduler.SchedulerTask getFlushAsyncValuesCachesTask(Scheduler scheduler) {

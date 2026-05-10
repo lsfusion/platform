@@ -224,8 +224,29 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void pushNotificationConnection(DataObject connectionObject, RemoteNavigator.Notification run) {
-        pushNotificationConnection(connectionObject, navigator -> navigator.pushNotification(run));
+    /**
+     * Delivers an already-registered notification id to the client of {@code conn}
+     * if any. Silent no-op if no navigator matches or it's closed — caller relies
+     * on the per-notification timeout to drive cleanup of an undelivered entry.
+     */
+    public void deliverNotificationConnection(DataObject connectionObject, int notificationId) {
+        RemoteNavigator navigator = findNavigatorByConnection(connectionObject);
+        if (navigator != null) {
+            navigator.deliverNotification(notificationId);
+        }
+    }
+
+    private RemoteNavigator findNavigatorByConnection(DataObject connectionObject) {
+        synchronized (navigators) {
+            for (RemoteNavigator navigator : navigators) {
+                if (navigator != null
+                        && navigator.getConnection() != null
+                        && navigator.getConnection().equals(connectionObject)) {
+                    return navigator;
+                }
+            }
+        }
+        return null;
     }
 
     public boolean pushNotificationSession(String sessionId, RemoteNavigator.Notification run, boolean pend) {
@@ -242,8 +263,8 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         });
     }
 
-    public void pushNotificationConnection(DataObject connectionObject, Consumer<RemoteNavigator> run) {
-        pushNotification(navigator -> navigator.getConnection() != null && navigator.getConnection().equals(connectionObject) ? 1L : 0L, run, false);
+    public boolean pushNotificationConnection(DataObject connectionObject, Consumer<RemoteNavigator> run) {
+        return pushNotification(navigator -> navigator.getConnection() != null && navigator.getConnection().equals(connectionObject) ? 1L : 0L, run, false);
     }
 
     public boolean pushNotification(Function<RemoteNavigator, Long> check, Consumer<RemoteNavigator> run, boolean pend) {

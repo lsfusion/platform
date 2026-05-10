@@ -188,6 +188,8 @@ public class Settings implements Cloneable {
 
     private int checkCurrentDataDateTime = 1800; //period in seconds
 
+    private int notificationCleanupPeriod = 300; // retention/sweep period in seconds for NEWEXECUTOR CLIENT notifications: pending entries older than this are reaped by the system task
+
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
 
     private boolean useGreaterEquals = true;
@@ -975,6 +977,14 @@ public class Settings implements Cloneable {
 
     public void setCheckCurrentDataDateTime(int checkCurrentDataDateTime) {
         this.checkCurrentDataDateTime = checkCurrentDataDateTime;
+    }
+
+    public int getNotificationCleanupPeriod() {
+        return notificationCleanupPeriod;
+    }
+
+    public void setNotificationCleanupPeriod(int notificationCleanupPeriod) {
+        this.notificationCleanupPeriod = notificationCleanupPeriod;
     }
 
     public int getUpdatePingInfo() {

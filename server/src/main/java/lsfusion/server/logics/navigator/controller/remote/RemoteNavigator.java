@@ -496,10 +496,18 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     public void pushNotification(Notification run) {
-        if(isClosed())
+        if (isClosed())
             return;
-
         client.pushMessage(pushGlobalNotification(run));
+    }
+
+    /** Delivers an already-registered notification to this navigator's client.
+     *  Silently no-ops when the navigator is closed — caller relies on the
+     *  per-notification timeout to drive cleanup if delivery never happens. */
+    public void deliverNotification(int id) {
+        if (isClosed())
+            return;
+        client.pushMessage(id);
     }
 
     public static int pushGlobalNotification(Notification run) {
@@ -511,6 +519,20 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         if(notification != null)
             return notification.getInputActions();
         return null;
+    }
+
+    // Drops every pending notification whose deadline elapsed and fires the
+    // onExpire hook. Hook runs outside the lock — exact ordering doesn't
+    // matter, treat it as a best-effort GC.
+    public static void sweepStaleNotifications() {
+        List<Notification> stale = notificationsMap.removeStale(System.currentTimeMillis());
+        for (Notification n : stale) {
+            try {
+                n.onExpire();
+            } catch (Throwable t) {
+                logger.error("Notification onExpire error", t);
+            }
+        }
     }
 
     public boolean active = false;
@@ -762,12 +784,27 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw Throwables.propagate(e);
         }
         try {
-            try(DataSession session = createSession()) {
-                businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
-                session.applyException(businessLogics, stack);
-            }
+            // Claim ownership of the notification BEFORE side effects: the
+            // sweep system task may concurrently expire and remove the same
+            // id. If we logged "delivered" first and then found the entry
+            // already gone, the action would silently never run.
             Notification notification = notificationsMap.removeNotification(idNotification);
-            if(notification != null) {
+            if (notification == null) {
+                // Sweep already claimed it (or this is a duplicate fire) —
+                // there's nothing to run and nothing useful to log.
+                return;
+            }
+            try {
+                try(DataSession session = createSession()) {
+                    businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
+                    session.applyException(businessLogics, stack);
+                }
+            } finally {
+                // Always fire the claimed notification — even if delivery
+                // logging threw — so the source future settles, threadStack
+                // releases, and any WAIT joiner unblocks. Without this finally
+                // the SQLException catch below would swallow the error and
+                // leave done unsettled forever.
                 Integer contextAction = null;
                 if(result != null) {
                     ImList<AsyncMapInputListAction<PropertyInterface>> inputActions = notification.getInputActions();
@@ -780,8 +817,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
                 notification.run(env, stack, new PushAsyncInput(InputResult.singleValue(result, StringClass.text, contextAction)));
             }
-//                else
-//                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // can be broken when notification is sent several times
         } catch (SQLException | SQLHandledException e) {
             ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
         }
@@ -943,7 +978,20 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     public static abstract class Notification {
+        // Retention deadline; once it elapses sweepStaleNotifications drops
+        // the entry and calls onExpire. Default retention is taken from
+        // Settings — every notification is bounded by construction, no
+        // explicit setter / no leak path.
+        final long deadline;
+
         public Notification() {
+            this.deadline = System.currentTimeMillis() + Settings.get().getNotificationCleanupPeriod() * 1000L;
+        }
+
+        /** Hook fired by sweep when retention elapses without delivery.
+         *  Default is no-op (entry just disappears from the map); subclasses
+         *  override when they need to settle a completion future, log, etc. */
+        protected void onExpire() {
         }
 
         public <X extends PropertyInterface> ImList<AsyncMapInputListAction<X>> getInputActions() {
@@ -973,6 +1021,19 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         private synchronized Notification removeNotification(int key) {
             return notificationsMap.remove(key);
+        }
+
+        private synchronized List<Notification> removeStale(long nowMs) {
+            List<Notification> stale = new ArrayList<>();
+            Iterator<Map.Entry<Integer, Notification>> it = notificationsMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Notification n = it.next().getValue();
+                if (n.deadline <= nowMs) {
+                    stale.add(n);
+                    it.remove();
+                }
+            }
+            return stale;
         }
     }
 

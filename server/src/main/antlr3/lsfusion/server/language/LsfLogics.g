@@ -3030,11 +3030,13 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, ActionStatementCon
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property, syncType);
+		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property, $connExpr.property, syncType);
 	}
 }
 	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
-	        'THREADS' threadsExpr=propertyExpression[context, actions, dynamic]
+	        ( 'THREADS' threadsExpr=propertyExpression[context, actions, dynamic]
+	        | 'CLIENT' connExpr=propertyExpression[context, actions, dynamic]
+	        )
 	         (sync = syncTypeLiteral { syncType = $sync.val; })? ';'
 	;
 

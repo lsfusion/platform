@@ -1085,20 +1085,23 @@ public abstract class LogicsModule {
         return addAction(group, new LA<>(action));
     }
 
-    protected LA addNewThreadAProp(Group group, LocalizedString caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, LP<?> targetProp, Object... params) {
+    protected LA addNewThreadAProp(Group group, LocalizedString caption, boolean hasPeriod, boolean hasDelay, LP<?> targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
-        PropertyInterfaceImplement connection = withConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement period = hasPeriod ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement delay = hasDelay ? (PropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
-        return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection, targetProp)));
+        return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, targetProp)));
     }
 
-    protected LA addNewExecutorAProp(Group group, LocalizedString caption, Boolean sync, Object... params) {
+    protected LA addNewExecutorAProp(Group group, LocalizedString caption, boolean hasThreads, boolean hasConnection, Boolean sync, Object... params) {
+        // grammar guarantees exactly one of THREADS or CLIENT
+        assert hasThreads ^ hasConnection : "NEWEXECUTOR must have exactly one of THREADS or CLIENT";
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        PropertyInterfaceImplement threads = hasThreads ? (PropertyInterfaceImplement) readImplements.get(1) : null;
+        PropertyInterfaceImplement connection = hasConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         return addAction(group, new LA(new NewExecutorAction(caption, listInterfaces,
-                (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1), sync)));
+                (ActionMapImplement) readImplements.get(0), threads, connection, sync)));
     }
 
     protected LA addNewConnectionAProp(Group group, LocalizedString caption, Object... params) {

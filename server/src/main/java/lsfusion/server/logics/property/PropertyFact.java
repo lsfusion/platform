@@ -950,14 +950,14 @@ public class PropertyFact {
             return createNewSessionAction(innerInterfaces, action, caption, false, false, migrateSessionProps, scope.isNestedSession());
         return action;
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection, LP<?> targetProp) {
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, LP<?> targetProp) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, connection, targetProp);
+        NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, targetProp);
         return aggAction.getImplement(listInterfaces);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads, Boolean sync) {
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads, PropertyInterfaceImplement<L> connection, Boolean sync) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads, sync);
+        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads, connection, sync);
         return aggAction.getImplement(listInterfaces);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewConnectionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action) {
