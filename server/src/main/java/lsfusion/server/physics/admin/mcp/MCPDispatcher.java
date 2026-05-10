@@ -34,10 +34,13 @@ import java.util.Set;
  *       lsFusion source / resource tree, so they are gated by
  *       {@link RemoteConnection#checkAPIAccess} ({@code enableAPI=0} ⇒ "Api is disabled").</li>
  *   <li>Remote AI helpers — {@code lsfusion_retrieve_docs|howtos|community},
- *       {@code lsfusion_validate_syntax}, {@code lsfusion_get_guidance} (proxied via
- *       {@link MCPRemoteClient} to https://ai.lsfusion.org/mcp; mirrors the IDEA plugin's
- *       {@code McpToolset}). These don't read app state, so no {@code enableAPI} gate —
- *       any authenticated caller can use them regardless of the setting.</li>
+ *       {@code lsfusion_get_guidance} (proxied via {@link MCPRemoteClient} to
+ *       https://ai.lsfusion.org/mcp; mirrors the IDEA plugin's {@code McpToolset}).
+ *       These don't read app state, so no {@code enableAPI} gate — any authenticated
+ *       caller can use them regardless of the setting. (A standalone {@code
+ *       lsfusion_validate_syntax} tool used to live here too; dropped because
+ *       {@code lsfusion_eval} already exercises the parser end-to-end and surfaces the
+ *       same diagnostics, so the standalone version was redundant surface area.)</li>
  *   <li>Script execution — {@code lsfusion_eval} (delegates to {@link MCPEvalTool}, which
  *       runs an lsFusion {@code run(...)} action under the caller's auth context). Gated
  *       indirectly: {@code RemoteLogics.eval → executeExternal → checkEnableApi → checkAPIAccess},
@@ -62,14 +65,13 @@ public class MCPDispatcher {
     static final String TOOL_RETRIEVE_DOCS = "lsfusion_retrieve_docs";
     static final String TOOL_RETRIEVE_HOWTOS = "lsfusion_retrieve_howtos";
     static final String TOOL_RETRIEVE_COMMUNITY = "lsfusion_retrieve_community";
-    static final String TOOL_VALIDATE_SYNTAX = "lsfusion_validate_syntax";
     static final String TOOL_GET_GUIDANCE = "lsfusion_get_guidance";
 
     static final String TOOL_EVAL = "lsfusion_eval";
 
     private static final Set<String> REMOTE_TOOLS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             TOOL_RETRIEVE_DOCS, TOOL_RETRIEVE_HOWTOS, TOOL_RETRIEVE_COMMUNITY,
-            TOOL_VALIDATE_SYNTAX, TOOL_GET_GUIDANCE)));
+            TOOL_GET_GUIDANCE)));
 
     private final RemoteLogics remoteLogics;
 
@@ -341,7 +343,6 @@ public class MCPDispatcher {
                 "Task examples and how-tos for combined scenarios."));
         tools.put(retrieveDescriptor(TOOL_RETRIEVE_COMMUNITY,
                 "Tutorials, articles, and community discussions. Use only when docs/howtos didn't resolve the question."));
-        tools.put(validateSyntaxDescriptor());
         tools.put(getGuidanceDescriptor());
         tools.put(evalDescriptor());
         return tools;
@@ -409,19 +410,6 @@ public class MCPDispatcher {
         return new JSONObject()
                 .put("name", name)
                 .put("description", description)
-                .put("inputSchema", input);
-    }
-
-    private static JSONObject validateSyntaxDescriptor() {
-        JSONObject input = new JSONObject()
-                .put("type", "object")
-                .put("properties", new JSONObject()
-                        .put("text", strProp("lsFusion DSL source — top-level statements (CLASS, property/action decls, EXTEND blocks, …). No module wrapping needed.")))
-                .put("required", new JSONArray().put("text"))
-                .put("additionalProperties", false);
-        return new JSONObject()
-                .put("name", TOOL_VALIDATE_SYNTAX)
-                .put("description", "Syntax-check lsFusion statements. Prefer IDE-based checking when available.")
                 .put("inputSchema", input);
     }
 
