@@ -54,8 +54,15 @@ public class MCPFileTools {
      */
     private static final int MAX_LINE_CHARS = 16 * 1024;
 
-    /** Default file types for search — text-y formats found in lsFusion projects, glob form. */
-    static final String DEFAULT_SEARCH_PATH_GLOB = "**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}";
+    /**
+     * Default file-type filter for {@link #list} and {@link #search} — text-y formats
+     * typically authored in an lsFusion project (lsf source, java, properties, schemas,
+     * docs). Filters out classpath noise like {@code .class} files, jar metadata, and
+     * resources from third-party dependencies that an AI agent has no reason to enumerate
+     * by default. To list <em>everything</em> in the classpath (including binaries and
+     * dep-jar contents) pass {@code pathPattern: "**"} explicitly.
+     */
+    static final String DEFAULT_SOURCE_PATH_GLOB = "**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}";
 
     /**
      * One-shot snapshot of every classpath resource. The classpath is fixed at JVM startup, so
@@ -134,7 +141,11 @@ public class MCPFileTools {
     }
 
     public static JSONObject list(JSONObject args) {
-        String glob = MCPArgs.getString(args, "pathPattern");
+        String globRaw = MCPArgs.getString(args, "pathPattern");
+        // Default to the source-glob so a no-arg `lsfusion_files_list` doesn't enumerate
+        // every .class / dep-jar resource in the classpath — see DEFAULT_SOURCE_PATH_GLOB
+        // for the rationale and the escape hatch.
+        String glob = (globRaw == null || globRaw.isEmpty()) ? DEFAULT_SOURCE_PATH_GLOB : globRaw;
         int limit = clamp(MCPArgs.getInt(args, "limit", DEFAULT_LIST_LIMIT), 1, MAX_LIST_LIMIT);
         int offset = Math.max(0, MCPArgs.getInt(args, "offset", 0));
 
@@ -169,7 +180,7 @@ public class MCPFileTools {
             throw new IllegalArgumentException("'regex' is required (non-empty string)");
         }
         String pathGlobRaw = MCPArgs.getString(args, "pathPattern");
-        String pathGlob = pathGlobRaw == null ? DEFAULT_SEARCH_PATH_GLOB : pathGlobRaw;
+        String pathGlob = pathGlobRaw == null ? DEFAULT_SOURCE_PATH_GLOB : pathGlobRaw;
         int limit = clamp(MCPArgs.getInt(args, "limit", DEFAULT_SEARCH_LIMIT), 1, MAX_SEARCH_LIMIT);
         int contextChars = clamp(MCPArgs.getInt(args, "contextChars", 120), 0, 500);
         int timeoutSecs = clamp(MCPArgs.getInt(args, "timeoutSeconds", DEFAULT_SEARCH_TIMEOUT_SECS), 1, MAX_SEARCH_TIMEOUT_SECS);

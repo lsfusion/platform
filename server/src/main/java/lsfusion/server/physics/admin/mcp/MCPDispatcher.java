@@ -351,7 +351,7 @@ public class MCPDispatcher {
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex). Examples: `**/*.lsf`, `lsfusion/**/Order*.lsf`, `**/*.{md,xml}`. Empty / omitted ⇒ everything. Glob grammar reference: `*` `**` `?` `[abc]` `[!abc]` `{a,b}` `\\X`."))
+                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex). Examples: `**/*.lsf`, `lsfusion/**/Order*.lsf`, `**/*.{md,xml}`. Empty / omitted ⇒ default source-glob `" + MCPFileTools.DEFAULT_SOURCE_PATH_GLOB + "` (lsf / java / properties / xml / sql / md / json / yaml — skips .class files, jar metadata, dep-resources). Pass `**` to list everything in the classpath. Glob grammar reference: `*` `**` `?` `[abc]` `[!abc]` `{a,b}` `\\X`."))
                         .put("limit", intProp("Max paths per call. Default " + MCPFileTools.DEFAULT_LIST_LIMIT + ", max " + MCPFileTools.MAX_LIST_LIMIT + ". Paginate via `offset`."))
                         .put("offset", intProp("Paths to skip; use to fetch next page after `truncated:true`. Default 0.")))
                 .put("additionalProperties", false);
@@ -366,7 +366,7 @@ public class MCPDispatcher {
                 .put("type", "object")
                 .put("properties", new JSONObject()
                         .put("regex", strProp("`java.util.regex` content matcher (this one IS a regex). Applied per line via `find()`. Examples: `\\bcustomer\\b`, `Customer.*name`, `^WHEN\\s`. Avoid catastrophic-backtracking shapes like `(a+)+b`."))
-                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex) restricting which files to scan. Same grammar as `" + TOOL_FILES_LIST + ".pathPattern`. Default `" + MCPFileTools.DEFAULT_SEARCH_PATH_GLOB + "`."))
+                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex) restricting which files to scan. Same grammar and same default as `" + TOOL_FILES_LIST + ".pathPattern` (`" + MCPFileTools.DEFAULT_SOURCE_PATH_GLOB + "`)."))
                         .put("limit", intProp("Max hits. Default " + MCPFileTools.DEFAULT_SEARCH_LIMIT + ", max " + MCPFileTools.MAX_SEARCH_LIMIT + "; sets `truncated:true` when hit."))
                         .put("contextChars", intProp("Excerpt length per hit. Default 120, max 500."))
                         .put("timeoutSeconds", intProp("Wall-clock cap. Default " + MCPFileTools.DEFAULT_SEARCH_TIMEOUT_SECS + "s, max " + MCPFileTools.MAX_SEARCH_TIMEOUT_SECS + "s; sets `timedOut:true`."))
