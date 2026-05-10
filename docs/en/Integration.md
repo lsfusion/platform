@@ -18,8 +18,6 @@ Thus, the platform has four different types of integration:
 
 -   [Access from an external system](Access_from_an_external_system.md)
 -   [Access from an internal system](Access_from_an_internal_system.md)
-    -   [Custom Spring bean (`EventServer`)](Custom_Spring_bean_EventServer.md) — canonical pattern for project-defined Java components on the application server (schedulers, integration servers, RMI services).
-    -   [Java API for integrations](Java_integration_API.md) — catalog of classes and methods shared by `InternalAction` and `EventServer` beans.
 -   [Access to an external system (`EXTERNAL`)](Access_to_an_external_system_EXTERNAL.md) 
 -   [Access to an internal system (`INTERNAL`, `FORMULA`)](Access_to_an_internal_system_INTERNAL_FORMULA.md)
 
