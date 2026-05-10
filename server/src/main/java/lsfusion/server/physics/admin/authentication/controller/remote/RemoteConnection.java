@@ -527,25 +527,26 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         checkEnableApi(property, actionParam, script, request, isInteractive);
 
-        RemoteNavigator.Notification runnable = new RemoteNavigator.Notification() {
-            @Override
-            public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
-                try {
-                    RemoteConnection.this.executeExternal(property, request, actionPathInfo, env, stack);
-                } catch (Throwable t) {
-                    throw Throwables.propagate(t);
+        if(request.needNotificationId || isInteractive) {
+            int notificationId = RemoteNavigator.pushGlobalNotification(new RemoteNavigator.Notification() {
+                @Override
+                public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
+                    try {
+                        RemoteConnection.this.executeExternal(property, request, actionPathInfo, env, stack);
+                    } catch (Throwable t) {
+                        throw Throwables.propagate(t);
+                    }
                 }
-            }
 
-            @Override
-            protected Action<?> getAction() {
-                return property.action;
-            }
-        };
+                @Override
+                protected Action<?> getAction() {
+                    return property.action;
+                }
+            });
 
-        if(request.needNotificationId)
-            return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance, null, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
-        else if(isInteractive) {
+            if(request.needNotificationId)
+                return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(notificationId, IntegerClass.instance, null, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
+
             int mode = Settings.get().getExternalUINotificationMode();
 
             boolean pendNotification = false;
@@ -555,16 +556,16 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                 boolean foundNavigator = true;
                 if (this instanceof RemoteNavigator)
-                    ((RemoteNavigator) this).pushNotification(runnable);
+                    ((RemoteNavigator) this).deliverNotification(notificationId);
                 else
-                    foundNavigator = logicsInstance.getNavigatorsManager().pushNotificationSession(request.sessionId, runnable, pendNotification);
+                    foundNavigator = logicsInstance.getNavigatorsManager().deliverNotificationSession(request.sessionId, notificationId, pendNotification);
 
                 if (foundNavigator)
                     pendNotification = true;
                 else
                     redirectPushNotification = false;
             }
-            return new RedirectExternalResponse(redirectPushNotification ? "push-notification" : "", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable), CallHTTPAction.getExplicitParams(property, request.params));
+            return new RedirectExternalResponse(redirectPushNotification ? "push-notification" : "", pendNotification ? null : notificationId, CallHTTPAction.getExplicitParams(property, request.params));
         } else {
             AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
             ThreadLocalContext.pushLogMessage(logProcessor);
@@ -572,7 +573,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 try (ExecSession execSession = getExecSession()) {
                     DataSession dataSession = execSession.dataSession;
 
-                    runnable.run(dataSession, getStack(), null);
+                    executeExternal(property, request, actionPathInfo, dataSession, getStack());
 
                     return readResult(request.returnNames, request.returnMultiType, property.action, dataSession, formatLogMessages(logProcessor.messages));
                 }

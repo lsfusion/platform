@@ -247,8 +247,18 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         return null;
     }
 
-    public boolean pushNotificationSession(String sessionId, RemoteNavigator.Notification run, boolean pend) {
-        return pushNotification(navigator -> navigator.active && navigator.sessionId != null && navigator.sessionId.equals(sessionId) ? navigator.getContext().getUserLastActivity() : 0L, navigator -> navigator.pushNotification(run), pend);
+    /**
+     * Selects the best matching navigator by session and delivers an already
+     * registered notification id to it. If no matching navigator is found and
+     * {@code pend} is true, the deliver-by-id is queued; once a matching
+     * navigator initializes the queued lambda fires {@code deliverNotification(id)}
+     * — a no-op if the global entry has already been swept by retention.
+     */
+    public boolean deliverNotificationSession(String sessionId, int notificationId, boolean pend) {
+        return pushNotification(
+                navigator -> navigator.active && navigator.sessionId != null && navigator.sessionId.equals(sessionId) ? navigator.getContext().getUserLastActivity() : 0L,
+                navigator -> navigator.deliverNotification(notificationId),
+                pend);
     }
 
     public void shutdownConnection(DataObject connectionObject) {

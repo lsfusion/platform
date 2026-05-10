@@ -188,7 +188,7 @@ public class Settings implements Cloneable {
 
     private int checkCurrentDataDateTime = 1800; //period in seconds
 
-    private int notificationCleanupPeriod = 300; // retention/sweep period in seconds for NEWEXECUTOR CLIENT notifications: pending entries older than this are reaped by the system task
+    private int notificationCleanupPeriod = 600; // retention/sweep period in seconds for ALL globally-pushed notifications (NEWEXECUTOR CLIENT, TO target, external UI redirects, needNotificationId etc.): every Notification gets this deadline at construction, sweepStaleNotifications reaps expired entries on the same period via the system task. Aligned with the legacy 10-minute pending-delivery window in NavigatorsManager.navigatorInitialized so notifications queued via deliverNotificationSession(..., pend=true) don't go ghost before the pending lambda fires.
 
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
 
