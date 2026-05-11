@@ -30,7 +30,7 @@ public class GridViewProxy extends GridPropertyViewProxy<GridView> {
         target.setQuickSearch(quickSearch);
     }
 
-    @Deprecated //since 6.2
+    @Deprecated //since 6.2, will be removed in 8.0
     @SuppressWarnings("unused")
     public void setHeaderHeight(int headerHeight) {
         setCaptionHeight(headerHeight);

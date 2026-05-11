@@ -41,7 +41,7 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
             target.propertyHierarchicalCaption = (PropertyObjectEntity<?>) caption;
     }
 
-    @Deprecated
+    @Deprecated //since 6.2, will be removed in 8.0
     @SuppressWarnings("unused")
     public void setHeaderHeight(int headerHeight) {
         target.captionHeight = headerHeight;

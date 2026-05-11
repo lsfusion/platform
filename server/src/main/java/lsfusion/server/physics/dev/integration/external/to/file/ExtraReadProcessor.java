@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import static lsfusion.base.DateConverter.safeDateToSql;
 import static lsfusion.base.DateConverter.sqlDateToLocalDate;
 
-@Deprecated
+@Deprecated //deprecated since 6.3, will be removed in 8.0
 public class ExtraReadProcessor implements ExtraReadInterface {
 
     private static final String EQ = "=";
