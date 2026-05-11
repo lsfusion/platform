@@ -300,7 +300,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) caption, PropertyDrawExtraType.CAPTION, getVersion());
     }
 
-    @Deprecated //since 6.2
+    @Deprecated //since 6.2, will be removed in 8.0
     public void setImagePath(LocalizedString image) {
         setImage(image);
     }
