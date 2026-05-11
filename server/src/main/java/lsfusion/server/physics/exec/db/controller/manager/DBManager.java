@@ -173,6 +173,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private Boolean denyDropModules;
     private Boolean denyDropTables;
 
+    private Set<String> allowDropModules = Collections.emptySet();
+    private Set<String> allowDropTables = Collections.emptySet();
+
     private String dbNamingPolicy;
     private Integer dbMaxIdLength;
 
@@ -681,6 +684,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return nvl(denyDropTables, !SystemProperties.lightStart);
     }
 
+    public void setAllowDropModules(String allowDropModules) {
+        this.allowDropModules = parseNameList(allowDropModules);
+    }
+
+    public void setAllowDropTables(String allowDropTables) {
+        this.allowDropTables = parseNameList(allowDropTables);
+    }
+
+    private static Set<String> parseNameList(String value) {
+        if (value == null || value.trim().isEmpty())
+            return Collections.emptySet();
+        Set<String> result = new HashSet<>();
+        for (String name : value.split(","))
+            if (!name.trim().isEmpty())
+                result.add(name.trim());
+        return result;
+    }
+
     public String getDbNamingPolicy() {
         return dbNamingPolicy;
     }
@@ -975,7 +996,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
         String droppedTables = "";
         for (DBTable table : oldDBStructure.tables.keySet()) {
-            if (newDBStructure.getTable(table.getName()) == null) {
+            if (newDBStructure.getTable(table.getName()) == null && !allowDropTables.contains(table.getName())) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
                 Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), ValueExpr.COUNT, table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.EMPTY());
                 Object result = Expr.readValue(sql, expr, OperationOwner.unknown); // таблица не пустая
@@ -1637,7 +1658,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (isDenyDropTables()) {
                 String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
-                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion");
+                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false' or list specific tables in 'db.allowDropTables = <table1>,<table2>'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion");
                 }
             }
 
@@ -2352,10 +2373,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (String moduleName : dbStructure.modulesList)
             if (businessLogics.getSysModule(moduleName) == null) {
                 startLog("Module " + moduleName + " has been dropped");
-                droppedModules += moduleName + ", ";
+                if (!allowDropModules.contains(moduleName))
+                    droppedModules += moduleName + ", ";
             }
         if (isDenyDropModules() && !droppedModules.isEmpty())
-            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion\"");
+            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false' or list specific modules in 'db.allowDropModules = <module1>,<module2>'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion\"");
     }
 
     private synchronized void runMigrationScript() {
