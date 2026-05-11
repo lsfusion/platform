@@ -10,7 +10,8 @@ import java.util.concurrent.TimeUnit;
 public class ServerFutureService extends ScheduledFutureService {
     private final ScheduledExecutorService executor;
 
-    public ServerFutureService(ScheduledExecutorService executor) {
+    public ServerFutureService(ScheduledExecutorService executor, boolean awaited) {
+        super(awaited);
         this.executor = executor;
     }
 

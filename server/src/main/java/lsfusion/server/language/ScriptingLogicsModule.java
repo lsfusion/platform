@@ -4986,26 +4986,88 @@ public class ScriptingLogicsModule extends LogicsModule {
         return usedClasses;
     }
 
-    public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp, NamedPropertyUsage toProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp, NamedPropertyUsage notificationIdProp, NamedPropertyUsage toProp) throws ScriptingErrorLog.SemanticErrorException {
         // Desugar `NEWTHREAD a; CONNECTION conn;` to `NEWEXECUTOR { NEWTHREAD a; } CLIENT conn NOWAIT`.
-        // Grammar makes CONNECTION/SCHEDULE/TO mutually exclusive on NEWTHREAD, so when
-        // connectionProp is set, period/delay/to are guaranteed null — recursion is one level.
+        // Other modifiers are mutex with CONNECTION at grammar level.
         if (connectionProp != null) {
-            LAWithParams innerThread = addScriptedNewThreadAction(action, null, null, null, null);
+            LAWithParams innerThread = addScriptedNewThreadAction(action, null, null, null, null, null);
             return addScriptedNewExecutorAction(innerThread, null, connectionProp, false);
         }
 
-        LP<?> targetProp = toProp != null ? findLPNoParamsByPropertyUsage(toProp) : null;
+        // Legacy `NEWTHREAD a TO p;` for notification id (inner action without RETURN) is now
+        // spelled `NEWTHREAD a CLIENT p;`. Detect the old shape, warn, and redirect.
+        // NEWTHREAD ... TO only fires for block forms (`{ ... RETURN ...; }` / NEWSESSION { ... });
+        // direct call forms `a(args) TO p` are consumed by EXEC ... TO at grammar level, so the inner
+        // action here is never a JoinAction (which would hard-return null for getResultClasses).
+        Pair<ValueClass, ImList<ValueClass>> resultClasses = action.getLP().getResultClasses();
+        if (toProp != null && resultClasses == null) {
+            warningList.add("'NEWTHREAD a TO p;' for notification id is deprecated, use 'NEWTHREAD a CLIENT p;' instead");
+            notificationIdProp = toProp;
+            toProp = null;
+        }
 
-        List<LAPWithParams> propParams = BaseUtils.toList(action);
+        LP<?> notificationIdLP = notificationIdProp != null ? findLPNoParamsByPropertyUsage(notificationIdProp) : null;
+        NewThreadAction.ResultTarget resultTarget = toProp != null ? resolveNewThreadTo(resultClasses, toProp) : null;
+        // Wrap the inner action so its RETURN flows into resultTarget.returnLP — same path as EXEC ... TO.
+        LAWithParams effectiveAction = action;
+        if (resultTarget != null) {
+            List<LPWithParams> wrapParams = new ArrayList<>();
+            for (Integer idx : action.usedParams) {
+                wrapParams.add(new LPWithParams(idx));
+            }
+            effectiveAction = addScriptedJoinAProp(action.getLP(), resultTarget.returnLP, wrapParams);
+        }
+
+        List<LAPWithParams> propParams = BaseUtils.toList(effectiveAction);
         if (periodProp != null) {
             propParams.add(periodProp);
         }
         if (delayProp != null) {
             propParams.add(delayProp);
         }
-        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, periodProp != null, delayProp != null, targetProp, getParamsPlainList(propParams).toArray());
+        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, periodProp != null, delayProp != null, notificationIdLP, resultTarget, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, mergeAllParams(propParams));
+    }
+
+    /** Resolves NEWTHREAD ... TO p — resolves optional leading INTEGER counter by arity
+     *  (target arity vs RETURN-introduce arity), validates per-slot class compatibility, and
+     *  creates the synthetic returnLP. The inner action wrapping itself happens at the caller
+     *  so LAWithParams stays inside ScriptingLogicsModule. */
+    private NewThreadAction.ResultTarget resolveNewThreadTo(Pair<ValueClass, ImList<ValueClass>> resultClasses, NamedPropertyUsage toProp) throws ScriptingErrorLog.SemanticErrorException {
+        if (resultClasses == null) {
+            errLog.emitSimpleError(parser, "NEWTHREAD ... TO requires the inner action to declare a RETURN value");
+            return null; // emitSimpleError throws; defense for static analysis
+        }
+
+        LP<?> toLP = findLPByPropertyUsage(toProp);
+        ValueClass[] targetClasses = toLP.getInterfaceClasses(ClassType.signaturePolicy);
+        int introducesSize = resultClasses.second.size();
+        // Counter-keyed mode is decided by arity, not by target's first class alone:
+        //   target.length == introduces.size            → no counter
+        //   target.length == introduces.size + 1 && [0] is INTEGER → counter prepended
+        // The two interpretations cannot both fit (different arities), so no ambiguity.
+        boolean prependDispatchCounter;
+        int introduceOffset;
+        if (targetClasses.length == introducesSize) {
+            prependDispatchCounter = false;
+            introduceOffset = 0;
+        } else if (targetClasses.length == introducesSize + 1 && targetClasses[0] instanceof IntegerClass) {
+            prependDispatchCounter = true;
+            introduceOffset = 1;
+        } else {
+            errLog.emitSimpleError(parser, "NEWTHREAD ... TO target arity does not match the inner action's RETURN-introduced parameters (optionally with a leading INTEGER counter)");
+            return null;
+        }
+        // Per-slot class compatibility — same check as findLPParamByPropertyUsage uses for EXEC ... TO.
+        for (int i = 0; i < introducesSize; i++) {
+            ValueClass expected = resultClasses.second.get(i);
+            ValueClass actual = targetClasses[introduceOffset + i];
+            if (!expected.isCompatibleParent(actual) && !actual.isCompatibleParent(expected)) {
+                errLog.emitSimpleError(parser, "NEWTHREAD ... TO target class at slot " + (introduceOffset + i) + " is incompatible with the inner action's RETURN-introduced class");
+            }
+        }
+
+        return new NewThreadAction.ResultTarget(toLP, PropertyFact.createReturnDataProp(resultClasses), prependDispatchCounter);
     }
 
     public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp, LPWithParams connectionProp, Boolean sync) {

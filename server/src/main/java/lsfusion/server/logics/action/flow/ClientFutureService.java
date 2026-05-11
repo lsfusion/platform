@@ -9,7 +9,8 @@ public class ClientFutureService extends ScheduledFutureService {
     private final DataObject clientConnection;
     private final NavigatorsManager navigatorsManager;
 
-    public ClientFutureService(DataObject clientConnection, NavigatorsManager navigatorsManager) {
+    public ClientFutureService(DataObject clientConnection, NavigatorsManager navigatorsManager, boolean awaited) {
+        super(awaited);
         this.clientConnection = clientConnection;
         this.navigatorsManager = navigatorsManager;
     }

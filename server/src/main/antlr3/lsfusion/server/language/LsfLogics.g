@@ -3009,14 +3009,15 @@ newThreadActionDefinitionBody[List<TypedParameter> context, ActionStatementConte
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewThreadAction($aDB.action, $connExpr.property, $periodExpr.property, $delayExpr.property, $pUsage.propUsage);
+		$action = self.addScriptedNewThreadAction($aDB.action, $connExpr.property, $periodExpr.property, $delayExpr.property, $pUsage.propUsage, $toUsage.propUsage);
 	}
 }
 	:	'NEWTHREAD' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	    (
 	    	(   'CONNECTION' connExpr=propertyExpression[context, actions, dynamic]
 		    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, actions, dynamic])? ('DELAY' delayExpr=propertyExpression[context, actions, dynamic])?
-		    |   'TO' pUsage=propertyUsage
+		    |   'CLIENT' pUsage=propertyUsage ('TO' toUsage=propertyUsage)?
+		    |   'TO' toUsage=propertyUsage
     	    )
     	    ';'
         )?

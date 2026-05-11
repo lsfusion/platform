@@ -1,6 +1,7 @@
 package lsfusion.server.logics.action.flow;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.base.controller.stack.NestedThreadException;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
@@ -22,6 +23,8 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class NewExecutorAction extends AroundAspectAction {
     private final PropertyInterfaceImplement<PropertyInterface> threadsProp;
@@ -45,7 +48,33 @@ public class NewExecutorAction extends AroundAspectAction {
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {
-        return super.aspectChangeExtProps(recursiveAbstracts).replaceValues(true);
+        // Body changes are recursive (run in another thread). NEWTHREAD ... TO writes go through
+        // service.applyResults() in OUR thread after await(), so they are current-session (false)
+        // — and they're not in the body's own change set, so we merge them in.
+        ImMap<Property, Boolean> base = super.aspectChangeExtProps(recursiveAbstracts).replaceValues(true);
+        Set<Property> toTargets = new HashSet<>();
+        Set<Action<?>> visited = new HashSet<>();
+        for (Action<?> dep : getDependActions()) {
+            collectToTargets(dep, toTargets, visited);
+        }
+        if (toTargets.isEmpty()) {
+            return base;
+        }
+        return base.merge(SetFact.toExclSet(toTargets.toArray(new Property[0])).toMap(false), Action.addValue);
+    }
+
+    private static void collectToTargets(Action<?> action, Set<Property> toTargets, Set<Action<?>> visited) {
+        if (!visited.add(action)) return;
+        // Nested NEWEXECUTOR applies its own TO targets via its own await — those stay
+        // recursive at our level, not current-session.
+        if (action instanceof NewExecutorAction) return;
+        if (action instanceof NewThreadAction) {
+            NewThreadAction.ResultTarget rt = ((NewThreadAction) action).getResultTarget();
+            if (rt != null) toTargets.add(rt.toProp.property);
+        }
+        for (Action<?> dep : action.getDependActions()) {
+            collectToTargets(dep, toTargets, visited);
+        }
     }
 
     @Override
@@ -79,6 +108,7 @@ public class NewExecutorAction extends AroundAspectAction {
                 if (nestedThreadException != null) {
                     throw nestedThreadException;
                 }
+                service.applyResults(context);
             }
 
             return result;
@@ -93,12 +123,12 @@ public class NewExecutorAction extends AroundAspectAction {
             ObjectValue connectionObject = connectionProp.readClasses(context);
             if (!(connectionObject instanceof DataObject))
                 return null;
-            return new ClientFutureService((DataObject) connectionObject, context.getNavigatorsManager());
+            return new ClientFutureService((DataObject) connectionObject, context.getNavigatorsManager(), sync);
         }
         Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());
         if (nThreads == null || nThreads == 0)
             nThreads = TaskRunner.availableProcessors();
-        return new ServerFutureService(ExecutorFactory.createNewThreadService(context, nThreads, sync));
+        return new ServerFutureService(ExecutorFactory.createNewThreadService(context, nThreads, sync), sync);
     }
 
     @Override
