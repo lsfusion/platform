@@ -2,9 +2,9 @@
 title: 'Чтение файла (READ)'
 ---
 
-Оператор *чтения файла*, создает [действие](Actions.md), которое читает файл из заданного источника и [записывает](Property_change_CHANGE.md) этот файл в заданное локальное [первичное](Data_properties_DATA.md) свойства без параметров.
+Оператор *чтения файла*, создает [действие](Actions.md), которое читает файл из заданного источника и [записывает](Property_change_CHANGE.md) этот файл в заданное свойство без параметров.
 
-Источник задается как некоторое [свойство](Properties.md), значения которого являются экземплярами [строковых классов](Built-in_classes.md). Поддерживаются следующие типы источников данных (URL): FILE, HTTP, HTTPS, FTP, FTPS, SFTP, JDBC, MDB.
+Источник задается строковым [выражением](Expression.md), значение которого является URL для чтения. Поддерживаются следующие типы источников данных (URL): FILE, HTTP, HTTPS, FTP, FTPS, SFTP.
 
 ### Язык
 
@@ -17,6 +17,10 @@ readFiles()  {
 
     LOCAL importFile = FILE ();
 
+    //чтение из HTTP
+    READ 'http://www.lsfusion.org/file.xlsx' TO importFile;
+    //чтение из HTTPS
+    READ 'https://www.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FTP
     READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FTPS
@@ -26,15 +30,5 @@ readFiles()  {
     //чтение из FILE
     READ 'D://lsfusion/file.xlsx' TO importFile;
     READ 'file://D://lsfusion/file.xlsx' TO importFile;
-}
-
-connectionString = DATA STRING[100]();
-importXls 'Импортировать надбавки'()  {
-    LOCAL importFile = FILE ();
-    READ connectionString() + '@SELECT field1, field2 FROM myTable' TO importFile;
-
-    LOCAL field1 = INTEGER (INTEGER);
-    LOCAL field2 = BPSTRING[10] (INTEGER);
-    IMPORT TABLE FROM importFile() TO field1, field2;
 }
 ```
