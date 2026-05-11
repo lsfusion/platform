@@ -1093,15 +1093,16 @@ public abstract class LogicsModule {
         return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, notificationIdProp, resultTarget)));
     }
 
-    protected LA addNewExecutorAProp(Group group, LocalizedString caption, boolean hasThreads, boolean hasConnection, Boolean sync, Object... params) {
+    protected LA addNewExecutorAProp(Group group, LocalizedString caption, boolean hasThreads, boolean hasConnection, boolean hasTimeout, Boolean sync, Object... params) {
         // grammar guarantees exactly one of THREADS or CLIENT
         assert hasThreads ^ hasConnection : "NEWEXECUTOR must have exactly one of THREADS or CLIENT";
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         PropertyInterfaceImplement threads = hasThreads ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement connection = hasConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
+        PropertyInterfaceImplement timeout = hasTimeout ? (PropertyInterfaceImplement) readImplements.get(2) : null;
         return addAction(group, new LA(new NewExecutorAction(caption, listInterfaces,
-                (ActionMapImplement) readImplements.get(0), threads, connection, sync)));
+                (ActionMapImplement) readImplements.get(0), threads, connection, timeout, sync)));
     }
 
     protected LA addNewConnectionAProp(Group group, LocalizedString caption, Object... params) {

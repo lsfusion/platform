@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -87,14 +89,14 @@ public abstract class ScheduledFutureService {
         futures.add(future);
     }
 
-    public NestedThreadException await() throws InterruptedException {
-        if (!awaitReady()) {
-            return null;
+    public NestedThreadException await(long timeoutMs) throws InterruptedException, TimeoutException {
+        if (!awaitReady(timeoutMs)) {
+            throw new TimeoutException();
         }
         List<ThrowableWithStack> throwables = new ArrayList<>();
         for (Future<?> future : futures) {
             try {
-                future.get();
+                future.get(timeoutMs, TimeUnit.MILLISECONDS);
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
                 // RuntimeExceptionWithStack carries the lsf stack captured at
@@ -114,10 +116,11 @@ public abstract class ScheduledFutureService {
     }
 
     /**
-     * Optional pre-step in {@link #await()} (e.g. server-pool's
-     * executor.awaitTermination). Default: no-op, returns true.
+     * Optional pre-step in {@link #await(long)} (e.g. server-pool's
+     * executor.awaitTermination). Default: no-op, returns true. Returning {@code false} signals
+     * the timeout elapsed during the pre-step → caller treats it as a timeout.
      */
-    protected boolean awaitReady() throws InterruptedException {
+    protected boolean awaitReady(long timeoutMs) throws InterruptedException {
         return true;
     }
 

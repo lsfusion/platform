@@ -955,9 +955,9 @@ public class PropertyFact {
         NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, notificationIdProp, resultTarget);
         return aggAction.getImplement(listInterfaces);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads, PropertyInterfaceImplement<L> connection, Boolean sync) {
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads, PropertyInterfaceImplement<L> connection, PropertyInterfaceImplement<L> timeout, Boolean sync) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads, connection, sync);
+        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads, connection, timeout, sync);
         return aggAction.getImplement(listInterfaces);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewConnectionAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action) {

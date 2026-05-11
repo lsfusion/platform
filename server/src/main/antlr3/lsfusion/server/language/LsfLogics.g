@@ -3031,14 +3031,16 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, ActionStatementCon
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property, $connExpr.property, syncType);
+		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property, $connExpr.property, $timeoutExpr.property, syncType);
 	}
 }
 	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	        ( 'THREADS' threadsExpr=propertyExpression[context, actions, dynamic]
 	        | 'CLIENT' connExpr=propertyExpression[context, actions, dynamic]
 	        )
-	         (sync = syncTypeLiteral { syncType = $sync.val; })? ';'
+	         (   'WAIT' (timeoutExpr=propertyExpression[context, actions, dynamic])? { syncType = true; }
+	         |   'NOWAIT' { syncType = false; }
+	         )? ';'
 	;
 
 newConnectionActionDefinitionBody[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LAWithParams action]

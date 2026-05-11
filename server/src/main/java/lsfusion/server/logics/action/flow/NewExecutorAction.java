@@ -25,22 +25,26 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 public class NewExecutorAction extends AroundAspectAction {
     private final PropertyInterfaceImplement<PropertyInterface> threadsProp;
     private final PropertyInterfaceImplement<PropertyInterface> connectionProp;
+    private final PropertyInterfaceImplement<PropertyInterface> timeoutProp;
     Boolean sync;
 
     public <I extends PropertyInterface> NewExecutorAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                            ActionMapImplement<?, I> action,
                                                            PropertyInterfaceImplement<I> threadsProp,
                                                            PropertyInterfaceImplement<I> connectionProp,
+                                                           PropertyInterfaceImplement<I> timeoutProp,
                                                            Boolean sync) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.threadsProp = threadsProp != null ? threadsProp.map(mapInterfaces) : null;
         this.connectionProp = connectionProp != null ? connectionProp.map(mapInterfaces) : null;
+        this.timeoutProp = timeoutProp != null ? timeoutProp.map(mapInterfaces) : null;
         this.sync = sync;
 
         finalizeInit();
@@ -91,6 +95,16 @@ public class NewExecutorAction extends AroundAspectAction {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         boolean sync = this.sync == null || this.sync;
+        // Read the WAIT timeout once: null prop → unbounded; explicit value must be > 0.
+        // NOWAIT + timeout is rejected at parse time, so we never read it on the async path.
+        long timeoutMs = Long.MAX_VALUE;
+        if (timeoutProp != null) {
+            Number timeoutValue = (Number) timeoutProp.read(context, context.getKeys());
+            if (timeoutValue == null || timeoutValue.longValue() <= 0) {
+                throw new RuntimeException("NEWEXECUTOR WAIT timeout must be > 0, got " + timeoutValue);
+            }
+            timeoutMs = timeoutValue.longValue();
+        }
         ScheduledFutureService service = createService(context, sync);
         if (service == null)
             return FlowResult.FINISH;
@@ -104,7 +118,21 @@ public class NewExecutorAction extends AroundAspectAction {
             }
 
             if (sync && result.isFinish()) {
-                NestedThreadException nestedThreadException = service.await();
+                NestedThreadException nestedThreadException;
+                try {
+                    nestedThreadException = service.await(timeoutMs);
+                } catch (TimeoutException te) {
+                    // Apply partial — TO writes from threads that finished before the deadline land
+                    // in the outer session so a TRY ... CATCH around NEWEXECUTOR can read them.
+                    // interruptIfPossible runs in finally so an SQL error from applyResults can't
+                    // strand still-running in-flight tasks without an interrupt signal.
+                    try {
+                        service.applyResults(context);
+                    } finally {
+                        service.interruptIfPossible(context);
+                    }
+                    throw new RuntimeException("NEWEXECUTOR WAIT timeout exceeded (" + timeoutMs + "ms)", te);
+                }
                 if (nestedThreadException != null) {
                     throw nestedThreadException;
                 }
@@ -138,6 +166,6 @@ public class NewExecutorAction extends AroundAspectAction {
 
     @Override
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
-        return PropertyFact.createNewExecutorAction(interfaces, action, threadsProp, connectionProp, sync);
+        return PropertyFact.createNewExecutorAction(interfaces, action, threadsProp, connectionProp, timeoutProp, sync);
     }
 }

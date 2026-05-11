@@ -20,8 +20,8 @@ public class ServerFutureService extends ScheduledFutureService {
     }
 
     @Override
-    protected boolean awaitReady() throws InterruptedException {
-        return executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+    protected boolean awaitReady(long timeoutMs) throws InterruptedException {
+        return executor.awaitTermination(timeoutMs, TimeUnit.MILLISECONDS);
     }
 
     @Override

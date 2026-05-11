@@ -4991,7 +4991,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         // Grammar makes CONNECTION mutex with TO so the silent-drop combo isn't reachable here.
         if (connectionProp != null) {
             LAWithParams innerThread = addScriptedNewThreadAction(action, null, null, null, null, null);
-            return addScriptedNewExecutorAction(innerThread, null, connectionProp, false);
+            return addScriptedNewExecutorAction(innerThread, null, connectionProp, null, false);
         }
 
         // PERIOD + TO is meaningless: periodic dispatch is fire-and-forget (never settles done),
@@ -5076,16 +5076,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new NewThreadAction.ResultTarget(toLP, PropertyFact.createReturnDataProp(resultClasses), prependDispatchCounter);
     }
 
-    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp, LPWithParams connectionProp, Boolean sync) {
+    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp, LPWithParams connectionProp, LPWithParams timeoutProp, Boolean sync) {
         List<LAPWithParams> propParams = new ArrayList<>();
         propParams.add(action);
+        // Slot order in propParams must match readImplements indices in addNewExecutorAProp:
+        // [0]=action, [1]=threads|connection, [2]=timeout. Threads/connection are mutex.
         if (threadsProp != null) {
             propParams.add(threadsProp);
         }
         if (connectionProp != null) {
             propParams.add(connectionProp);
         }
-        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, threadsProp != null, connectionProp != null, sync, getParamsPlainList(propParams).toArray());
+        if (timeoutProp != null) {
+            propParams.add(timeoutProp);
+        }
+        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, threadsProp != null, connectionProp != null, timeoutProp != null, sync, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, mergeAllParams(propParams));
     }
 
