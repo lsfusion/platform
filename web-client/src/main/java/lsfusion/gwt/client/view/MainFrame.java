@@ -407,8 +407,8 @@ public class MainFrame implements EntryPoint {
                         @Override
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
-                            for (Integer idNotification : result.notificationList)
-                                formsController.executeNotificationAction(idNotification, null, null);
+                            for (ClientNotificationItem item : result.notificationList)
+                                scheduleNotification(formsController, item);
                         }
 
                         @Override
@@ -423,6 +423,32 @@ public class MainFrame implements EntryPoint {
         }, 1000);
 
         GExceptionManager.flushUnreportedThrowables(popupOwner);
+    }
+
+    /** Fires a notification respecting client-side delay/period scheduling. Timing is best-effort
+     *  (driven by the browser scheduler). Periodic uses {@code Scheduler.scheduleFixedPeriod}
+     *  (same primitive as ON SCHEDULE form events); when DELAY is non-zero, a GWT {@code Timer}
+     *  waits before arming the periodic. One-shot DELAY just uses {@code Timer}. */
+    private static void scheduleNotification(final FormsController formsController, ClientNotificationItem item) {
+        final Integer id = item.idNotification;
+        Scheduler.RepeatingCommand fire = () -> {
+            formsController.executeNotificationAction(id, null, null);
+            return true;
+        };
+        if (item.delay > 0L) {
+            new Timer() {
+                public void run() {
+                    fire.execute();
+                    if (item.period != null) {
+                        Scheduler.get().scheduleFixedPeriod(fire, item.period.intValue());
+                    }
+                }
+            }.schedule((int) item.delay);
+        } else if (item.period != null) {
+            Scheduler.get().scheduleFixedPeriod(fire, item.period.intValue());
+        } else {
+            fire.execute();
+        }
     }
 
     private void saveAndClean(WindowsController windowsController) {

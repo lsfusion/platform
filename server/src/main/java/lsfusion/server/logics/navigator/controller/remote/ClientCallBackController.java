@@ -25,8 +25,8 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         this.usageTracker = usageTracker;
     }
 
-    public synchronized void pushMessage(Integer idNotification) {
-        messages.add(new PushMessage(idNotification));
+    public synchronized void pushMessage(Integer idNotification, long delay, Long period) {
+        messages.add(new PushMessage(idNotification, delay, period));
     }
 
     public synchronized List<LifecycleMessage> pullMessages() {

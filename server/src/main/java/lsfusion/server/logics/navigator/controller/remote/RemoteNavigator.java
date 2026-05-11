@@ -498,16 +498,20 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public void pushNotification(Notification run) {
         if (isClosed())
             return;
-        client.pushMessage(pushGlobalNotification(run));
+        client.pushMessage(pushGlobalNotification(run), 0L, null);
     }
 
-    /** Delivers an already-registered notification to this navigator's client.
-     *  Silently no-ops when the navigator is closed — caller relies on the
-     *  per-notification timeout to drive cleanup if delivery never happens. */
-    public void deliverNotification(int id) {
+    /** Delivers an already-registered notification to this navigator's client with optional
+     *  client-side scheduling: the client fires the notification after {@code delay} ms
+     *  (and re-fires every {@code period} ms when non-null). Timing accuracy is best-effort —
+     *  server has no scheduler involvement, the client's own scheduler drives the cadence.
+     *  Silently no-ops when the navigator is closed — caller relies on the per-notification
+     *  retention timeout (for one-shots) or accepts the bounded leak (for periodic, which is
+     *  fire-and-forget by design) to drive cleanup if delivery never happens. */
+    public void deliverNotification(int id, long delay, Long period) {
         if (isClosed())
             return;
-        client.pushMessage(id);
+        client.pushMessage(id, delay, period);
     }
 
     public static int pushGlobalNotification(Notification run) {
@@ -784,14 +788,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw Throwables.propagate(e);
         }
         try {
-            // Claim ownership of the notification BEFORE side effects: the
-            // sweep system task may concurrently expire and remove the same
-            // id. If we logged "delivered" first and then found the entry
-            // already gone, the action would silently never run.
-            Notification notification = notificationsMap.removeNotification(idNotification);
+            // Atomic claim BEFORE side effects: one-shot removed from map, periodic kept with
+            // refreshed lease. Single synchronized call so concurrent sweep can't snatch the
+            // entry mid-claim. Null → entry already gone (swept / duplicate fire) → silent skip.
+            Notification notification = notificationsMap.claimNotification(idNotification);
             if (notification == null) {
-                // Sweep already claimed it (or this is a duplicate fire) —
-                // there's nothing to run and nothing useful to log.
                 return;
             }
             try {
@@ -978,14 +979,41 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     public static abstract class Notification {
-        // Retention deadline; once it elapses sweepStaleNotifications drops
-        // the entry and calls onExpire. Default retention is taken from
-        // Settings — every notification is bounded by construction, no
-        // explicit setter / no leak path.
-        final long deadline;
+        /** Sliding retention deadline; once it elapses sweepStaleNotifications drops the entry
+         *  and calls onExpire. For one-shot dispatches it's fixed at construction; for periodic
+         *  it's refreshed on each fire via {@link #refreshLease()} so an actively-firing schedule
+         *  isn't swept, while a stalled client (tab closed / crash / network drop) lets it expire
+         *  within {@code retention + extraRetentionMs} of the last fire — no per-navigator /
+         *  per-form ownership tracking needed. Every notification is bounded by construction. */
+        private volatile long deadline;
+        /** When true, the entry stays in the notification map after each fire so the
+         *  client-driven periodic scheduler can fire it repeatedly. */
+        final boolean periodic;
+        private final long extraRetentionMs;
 
         public Notification() {
-            this.deadline = System.currentTimeMillis() + Settings.get().getNotificationCleanupPeriod() * 1000L;
+            this(false, 0L);
+        }
+
+        /** {@code periodic} keeps the entry in the map across fires (callers should call
+         *  {@link #refreshLease()} on each fire to extend the deadline). {@code extraRetentionMs}
+         *  is added to the standard retention — callers pass the expected client-side cadence
+         *  ({@code DELAY} for one-shot; {@code PERIOD} for periodic) so the entry isn't swept
+         *  before the next expected fire. */
+        public Notification(boolean periodic, long extraRetentionMs) {
+            this.periodic = periodic;
+            this.extraRetentionMs = extraRetentionMs;
+            this.deadline = computeDeadline();
+        }
+
+        private long computeDeadline() {
+            return System.currentTimeMillis() + Settings.get().getNotificationCleanupPeriod() * 1000L + extraRetentionMs;
+        }
+
+        /** Slide the retention deadline forward — call on each periodic fire so an
+         *  actively-firing schedule isn't expired by the sweep. */
+        void refreshLease() {
+            deadline = computeDeadline();
         }
 
         /** Hook fired by sweep when retention elapses without delivery.
@@ -1019,8 +1047,17 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             return notificationsMap.get(key);
         }
 
-        private synchronized Notification removeNotification(int key) {
-            return notificationsMap.remove(key);
+        // Atomic claim for one-shot, sliding-lease refresh for periodic. Single synchronized
+        // call so a concurrent sweep can't snatch the entry between get and remove.
+        private synchronized Notification claimNotification(int key) {
+            Notification n = notificationsMap.get(key);
+            if (n == null) return null;
+            if (n.periodic) {
+                n.refreshLease();
+            } else {
+                notificationsMap.remove(key);
+            }
+            return n;
         }
 
         private synchronized List<Notification> removeStale(long nowMs) {

@@ -4988,10 +4988,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp, NamedPropertyUsage notificationIdProp, NamedPropertyUsage toProp) throws ScriptingErrorLog.SemanticErrorException {
         // Desugar `NEWTHREAD a; CONNECTION conn;` to `NEWEXECUTOR { NEWTHREAD a; } CLIENT conn NOWAIT`.
-        // Other modifiers are mutex with CONNECTION at grammar level.
+        // Grammar makes CONNECTION mutex with TO so the silent-drop combo isn't reachable here.
         if (connectionProp != null) {
             LAWithParams innerThread = addScriptedNewThreadAction(action, null, null, null, null, null);
             return addScriptedNewExecutorAction(innerThread, null, connectionProp, false);
+        }
+
+        // PERIOD + TO is meaningless: periodic dispatch is fire-and-forget (never settles done),
+        // so the enclosing NEWEXECUTOR ... WAIT never reaches applyResults. Reject early.
+        if (periodProp != null && toProp != null) {
+            errLog.emitSimpleError(parser, "NEWTHREAD ... SCHEDULE PERIOD ... TO is not supported — periodic dispatch is fire-and-forget");
         }
 
         // Legacy `NEWTHREAD a TO p;` for notification id (inner action without RETURN) is now

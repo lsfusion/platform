@@ -5,12 +5,12 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.util.List;
 
 public class ClientMessageResult implements Result {
-    public List<Integer> notificationList;
+    public List<ClientNotificationItem> notificationList;
 
     public ClientMessageResult() {
     }
 
-    public ClientMessageResult(List<Integer> notificationList) {
+    public ClientMessageResult(List<ClientNotificationItem> notificationList) {
         this.notificationList = notificationList;
     }
 }

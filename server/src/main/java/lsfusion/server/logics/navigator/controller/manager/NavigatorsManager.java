@@ -224,15 +224,13 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    /**
-     * Delivers an already-registered notification id to the client of {@code conn}
-     * if any. Silent no-op if no navigator matches or it's closed — caller relies
-     * on the per-notification timeout to drive cleanup of an undelivered entry.
-     */
-    public void deliverNotificationConnection(DataObject connectionObject, int notificationId) {
+    /** Delivers an already-registered notification id to the client of {@code conn} if any.
+     *  Silent no-op if no navigator matches or it's closed — the sliding-lease retention on the
+     *  Notification entry drives cleanup if delivery never happens. */
+    public void deliverNotificationConnection(DataObject connectionObject, int notificationId, long delay, Long period) {
         RemoteNavigator navigator = findNavigatorByConnection(connectionObject);
         if (navigator != null) {
-            navigator.deliverNotification(notificationId);
+            navigator.deliverNotification(notificationId, delay, period);
         }
     }
 

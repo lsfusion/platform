@@ -89,16 +89,33 @@ public class NewThreadAction extends AroundAspectAction {
                 throw new RuntimeException("NEWTHREAD ... TO requires an enclosing NEWEXECUTOR ... WAIT scope");
             }
         }
+        // Read SCHEDULE values once — a NULL-valued PERIOD prop is treated as "no periodic"
+        // (one-shot dispatch); NULL-valued DELAY is treated as 0. Same source of truth for the
+        // NOWAIT check and post-dispatch done settling.
+        Number delayValue = delayProp != null ? (Number) delayProp.read(context, context.getKeys()) : null;
+        long delay = delayValue != null ? delayValue.longValue() : 0L;
+        Number periodValue = periodProp != null ? (Number) periodProp.read(context, context.getKeys()) : null;
+        Long period = periodValue != null ? periodValue.longValue() : null;
+        if (delay < 0) {
+            throw new RuntimeException("NEWTHREAD ... SCHEDULE DELAY must be >= 0, got " + delay);
+        }
+        if (period != null && period <= 0) {
+            throw new RuntimeException("NEWTHREAD ... SCHEDULE PERIOD must be > 0, got " + period);
+        }
+        // PERIOD is fire-and-forget by design — require NOWAIT so we don't have to track the
+        // schedule's lifetime for a hypothetical WAIT joiner that would never see it complete.
+        if (period != null) {
+            ScheduledFutureService outer = context.getScheduledService();
+            if (outer != null && outer.isAwaited()) {
+                throw new RuntimeException("NEWTHREAD ... SCHEDULE PERIOD requires NEWEXECUTOR ... NOWAIT");
+            }
+        }
 
-        // Single completion future per dispatch, owned by aroundAspect. It is
-        // settled exactly once by whichever path terminates the work — server
-        // worker via runWithCompletion, notification consumer via runWithCompletion,
-        // sweep via Notification.onExpire, or the catch below if dispatch itself throws.
-        // CompletableFuture's whenComplete fires once on the settling thread, so
-        // unregisterThreadStack is invoked exactly once by construction — no
-        // separate dispatched-flag and no per-path whenComplete needed.
-        // Periodic dispatch is the deliberate exception: it never settles done,
-        // so threadStack stays registered for the schedule lifetime (legacy).
+        // Single completion future per dispatch, owned by aroundAspect. Settled by whichever
+        // path terminates the work — server worker / notification consumer via runWithCompletion,
+        // sweep via Notification.onExpire, or the catch below on synchronous dispatch failure.
+        // For periodic we settle done right after a successful dispatch — register/unregister
+        // cancel out and the threadStack is not held across the (open-ended) schedule.
         CompletableFuture<Void> done = new CompletableFuture<>();
         context.getSession().registerThreadStack();
         done.whenComplete((v, t) -> {
@@ -116,13 +133,14 @@ public class NewThreadAction extends AroundAspectAction {
             } else {
                 ScheduledFutureService scheduledService = context.getScheduledService();
                 if (scheduledService instanceof ClientFutureService) {
-                    if (delayProp != null || periodProp != null) {
-                        throw new RuntimeException("SCHEDULE PERIOD/DELAY inside NEWEXECUTOR CLIENT is not supported yet");
-                    }
-                    dispatchToClient(context, (ClientFutureService) scheduledService, done, counter);
+                    dispatchToClient(context, (ClientFutureService) scheduledService, done, counter, delay, period);
                 } else {
-                    dispatchToServerPool(context, (ServerFutureService) scheduledService, done, counter);
+                    dispatchToServerPool(context, (ServerFutureService) scheduledService, done, counter, delay, period);
                 }
+            }
+            if (period != null) {
+                // Periodic — schedule is armed; release threadStack now (no joiner, NOWAIT).
+                done.complete(null);
             }
             return FlowResult.FINISH;
         } catch (Throwable t) {
@@ -140,7 +158,7 @@ public class NewThreadAction extends AroundAspectAction {
         // CLIENT p TO q registers the future so an enclosing WAIT actually waits for that
         // external trigger and TO's RETURN can be captured and applied.
         final ScheduledFutureService scheduledService = context.getScheduledService();
-        dispatchAsNotification(context, done, scheduledService, counter, (id, d) -> {
+        dispatchAsNotification(context, done, scheduledService, counter, false, 0L, (id, d) -> {
             notificationIdProp.change(id, context);
             if (resultTarget != null && scheduledService != null) {
                 scheduledService.addFuture(d);
@@ -148,27 +166,49 @@ public class NewThreadAction extends AroundAspectAction {
         });
     }
 
-    private void dispatchToClient(ExecutionContext<PropertyInterface> context, ClientFutureService scheduledService, CompletableFuture<Void> done, int counter) throws SQLException, SQLHandledException {
-        dispatchAsNotification(context, done, scheduledService, counter, (id, d) -> {
-            scheduledService.getNavigatorsManager().deliverNotificationConnection(scheduledService.getClientConnection(), id);
-            scheduledService.addFuture(d);
+    private void dispatchToClient(ExecutionContext<PropertyInterface> context, ClientFutureService scheduledService, CompletableFuture<Void> done, int counter, long delay, Long period) throws SQLException, SQLHandledException {
+        boolean periodic = period != null;
+        // Lease covers expected client cadence: one-shot uses delay; periodic uses
+        // max(delay, period) — so a DELAY 10min + PERIOD 1s schedule isn't swept before the first
+        // client fire at delay (and subsequent fires every period thereafter refresh the lease).
+        // Once the client stops firing, the entry expires within retention + extraRetentionMs of
+        // the last lease refresh and the sweep evicts it.
+        long extraRetentionMs = periodic ? Math.max(delay, period) : delay;
+        dispatchAsNotification(context, done, scheduledService, counter, periodic, extraRetentionMs, (id, d) -> {
+            // Client-side scheduling — server passes delay/period along with the id; the client's
+            // own scheduler fires the notification after delay (and re-fires every period for
+            // periodic). Periodic is required to be NOWAIT (validated above), so no future
+            // tracking on the service — only one-shot notifications join the WAIT awaitable.
+            scheduledService.getNavigatorsManager().deliverNotificationConnection(scheduledService.getClientConnection(), id, delay, period);
+            if (!periodic) {
+                scheduledService.addFuture(d);
+            }
         });
     }
 
     /**
-     * Pushes a notification (retention is taken from Settings inside the
-     * Notification ctor), then runs branch-specific {@code postPush} (write
-     * id to a CLIENT property, deliver to a client). Three paths can settle
-     * {@code done}: the consumer firing the notification via
-     * {@code runNotification} → {@link #runWithCompletion}, the system
-     * Scheduler sweep firing {@code onExpire}, or the caller's outer catch
-     * on synchronous dispatch failure.
+     * Pushes a notification (retention taken from Settings inside the {@link RemoteNavigator.Notification}
+     * ctor; {@code extraRetentionMs} extends it to cover expected client cadence), then runs
+     * branch-specific {@code postPush} (write id to a CLIENT property, deliver to a client).
+     * For one-shot dispatches, {@code done} is settled by whichever path terminates the work —
+     * the consumer firing via {@code runNotification} → {@link #runWithCompletion}, the system
+     * sweep firing {@code onExpire}, or the caller's outer catch on synchronous dispatch failure.
+     * For {@code periodic} dispatches {@code done} is settled by aroundAspect right after a
+     * successful dispatch (PERIOD requires NOWAIT, no joiner waits on it); the entry stays in
+     * the global map across fires and the {@link RemoteNavigator.Notification#refreshLease()}
+     * sliding lease drives map cleanup when the client stops firing.
      */
-    private void dispatchAsNotification(final ExecutionContext<PropertyInterface> context, final CompletableFuture<Void> done, final ScheduledFutureService scheduledService, final int counter, IdHandler postPush) throws SQLException, SQLHandledException {
-        postPush.handle(RemoteNavigator.pushGlobalNotification(new RemoteNavigator.Notification() {
+    private void dispatchAsNotification(final ExecutionContext<PropertyInterface> context, final CompletableFuture<Void> done, final ScheduledFutureService scheduledService, final int counter, final boolean periodic, long extraRetentionMs, IdHandler postPush) throws SQLException, SQLHandledException {
+        postPush.handle(RemoteNavigator.pushGlobalNotification(new RemoteNavigator.Notification(periodic, extraRetentionMs) {
             @Override
             public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
-                runWithCompletion(() -> runAndCapture(context.override(env, stack, asyncResult), scheduledService, counter), done);
+                ExecutionContext<PropertyInterface> runContext = context.override(env, stack, asyncResult);
+                if (periodic) {
+                    // Periodic — fire-and-forget; PERIOD requires NOWAIT so no result capture path exists.
+                    NewThreadAction.this.run(runContext);
+                } else {
+                    runWithCompletion(() -> runAndCapture(runContext, scheduledService, counter), done);
+                }
             }
 
             @Override
@@ -192,8 +232,9 @@ public class NewThreadAction extends AroundAspectAction {
     /**
      * Runs {@code action} and signals {@code done} accordingly. Skips the body if
      * {@code done} has already been settled (by retention timeout or by the
-     * outer aroundAspect catch). Used by both client-mode notifications and
-     * server-pool one-shot runnables.
+     * outer aroundAspect catch). Used by one-shot dispatches only — periodic dispatches run
+     * the inner action bare (done is settled by aroundAspect right after a successful dispatch,
+     * so the {@code isDone()} short-circuit would silently swallow every fire).
      */
     private static void runWithCompletion(Runnable action, CompletableFuture<Void> done) {
         if (done.isDone()) {
@@ -211,20 +252,16 @@ public class NewThreadAction extends AroundAspectAction {
         }
     }
 
-    private void dispatchToServerPool(ExecutionContext<PropertyInterface> context, ServerFutureService scheduledService, CompletableFuture<Void> done, int counter) throws SQLException, SQLHandledException {
-        long delay = delayProp != null ? ((Number) delayProp.read(context, context.getKeys())).longValue() : 0L;
-        Long period = periodProp != null ? ((Number) periodProp.read(context, context.getKeys())).longValue() : null;
-
+    private void dispatchToServerPool(ExecutionContext<PropertyInterface> context, ServerFutureService scheduledService, CompletableFuture<Void> done, int counter, long delay, Long period) throws SQLException, SQLHandledException {
         ScheduledExecutorService executor = scheduledService != null
                 ? scheduledService.getExecutor()
                 : ExecutorFactory.createNewThreadService(context);
 
         if (period != null) {
-            // periodic — fire-and-forget; done is intentionally never settled
-            // so threadStack stays registered for the schedule lifetime
-            // (legacy behavior).
-            Runnable periodicRunnable = () -> run(context.override(ThreadLocalContext.getStack()));
-            executor.scheduleAtFixedRate(periodicRunnable, delay, period, TimeUnit.MILLISECONDS);
+            // Periodic — fire-and-forget; PERIOD requires NOWAIT (so no result capture path).
+            executor.scheduleAtFixedRate(
+                    () -> run(context.override(ThreadLocalContext.getStack())),
+                    delay, period, TimeUnit.MILLISECONDS);
             return;
         }
 

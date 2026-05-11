@@ -22,12 +22,28 @@ public class ClientCallBackProcessor {
 
     private void processMessage(final LifecycleMessage message) {
         if(message instanceof PushMessage) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    MainFrame.instance.executeNotificationAction(((PushMessage)message).idNotification);
-                }
-            });
+            PushMessage pm = (PushMessage) message;
+            final int id = pm.idNotification;
+            // Client-side scheduling via Swing Timer. DELAY > 0 waits, then fires; if PERIOD is set
+            // a repeating timer is armed after the first fire. Timing is best-effort.
+            if (pm.delay > 0L) {
+                Timer initial = new Timer((int) pm.delay, e -> {
+                    fireOnEdt(id);
+                    if (pm.period != null) {
+                        new Timer(pm.period.intValue(), e2 -> fireOnEdt(id)).start();
+                    }
+                });
+                initial.setRepeats(false);
+                initial.start();
+            } else if (pm.period != null) {
+                new Timer(pm.period.intValue(), e -> fireOnEdt(id)).start();
+            } else {
+                fireOnEdt(id);
+            }
         }
+    }
+
+    private static void fireOnEdt(final int id) {
+        SwingUtilities.invokeLater(() -> MainFrame.instance.executeNotificationAction(id));
     }
 }

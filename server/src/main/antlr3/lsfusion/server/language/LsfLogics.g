@@ -3015,7 +3015,7 @@ newThreadActionDefinitionBody[List<TypedParameter> context, ActionStatementConte
 	:	'NEWTHREAD' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	    (
 	    	(   'CONNECTION' connExpr=propertyExpression[context, actions, dynamic]
-		    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, actions, dynamic])? ('DELAY' delayExpr=propertyExpression[context, actions, dynamic])?
+		    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, actions, dynamic])? ('DELAY' delayExpr=propertyExpression[context, actions, dynamic])? ('TO' toUsage=propertyUsage)?
 		    |   'CLIENT' pUsage=propertyUsage ('TO' toUsage=propertyUsage)?
 		    |   'TO' toUsage=propertyUsage
     	    )
