@@ -22,4 +22,9 @@ public class RemoteConnectionProxy<T extends RemoteConnectionInterface> extends 
     public ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
         return target.eval(action, paramScript, request);
     }
+
+    @Override
+    public ExternalResponse access() throws RemoteException {
+        return target.access();
+    }
 }

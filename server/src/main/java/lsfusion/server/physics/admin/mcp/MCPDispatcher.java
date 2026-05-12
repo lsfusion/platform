@@ -27,24 +27,15 @@ import java.util.Set;
  * raw JSON body through {@code RemoteLogicsInterface.mcp}, so the same dispatch code runs
  * regardless of where the request enters from.
  *
- * <p>Tool surface and per-tool {@code enableAPI} gating:
+ * <p>Three dispatch strategies, picked per tool by {@code handleToolsCall}:
  * <ul>
- *   <li>Classpath browsing — {@code lsfusion_files_list}, {@code lsfusion_files_search},
- *       {@code lsfusion_files_read} (via {@link MCPFileTools}). These read the deployed
- *       lsFusion source / resource tree, so they are gated by
- *       {@link RemoteConnection#checkAPIAccess} ({@code enableAPI=0} ⇒ "Api is disabled").</li>
- *   <li>Remote AI helpers — {@code lsfusion_retrieve_docs|howtos|community},
- *       {@code lsfusion_get_guidance} (proxied via {@link MCPRemoteClient} to
- *       https://ai.lsfusion.org/mcp; mirrors the IDEA plugin's {@code McpToolset}).
- *       These don't read app state, so no {@code enableAPI} gate — any authenticated
- *       caller can use them regardless of the setting. (A standalone {@code
- *       lsfusion_validate_syntax} tool used to live here too; dropped because
- *       {@code lsfusion_eval} already exercises the parser end-to-end and surfaces the
- *       same diagnostics, so the standalone version was redundant surface area.)</li>
- *   <li>Script execution — {@code lsfusion_eval} (delegates to {@link MCPEvalTool}, which
- *       runs an lsFusion {@code run(...)} action under the caller's auth context). Gated
- *       indirectly: {@code RemoteLogics.eval → executeExternal → checkEnableApi → checkAPIAccess},
- *       same path {@code /eval} uses, so the {@code @api} action-annotation upgrade applies.</li>
+ *   <li>Pure protocol / no app state — {@code tools/list}, {@code initialize},
+ *       {@code lsfusion_retrieve_*}, {@code lsfusion_get_guidance}. No session, no gate.</li>
+ *   <li>Classpath read + gated — {@code lsfusion_files_*} (via {@link MCPFileTools}).
+ *       {@code RemoteLogics.access} runs the per-role {@code enableAPI} check, then the
+ *       classpath scan runs without a session.</li>
+ *   <li>Script execution — {@code lsfusion_eval} via {@link MCPEvalTool} → {@code RemoteLogics.eval}.
+ *       Reuses the API-eval pipeline incl. {@code checkEnableApi} (so {@code @api} applies).</li>
  * </ul>
  *
  * <p>Authentication itself (bogus-bearer rejection, anonymous-vs-{@code enableAPI=2}
@@ -212,20 +203,29 @@ public class MCPDispatcher {
         try {
             switch (name) {
                 case TOOL_FILES_LIST:
-                    RemoteConnection.checkMCPAccess(token);
-                    return rpcResult(jsonrpc, id, structuredResult(MCPFileTools.list(args)));
                 case TOOL_FILES_SEARCH:
-                    RemoteConnection.checkMCPAccess(token);
-                    return rpcResult(jsonrpc, id, structuredResult(MCPFileTools.search(args)));
                 case TOOL_FILES_READ: {
-                    RemoteConnection.checkMCPAccess(token);
-                    JSONObject payload = MCPFileTools.read(args);
-                    // Single-copy invariant: large text content + binary blobs leave the
-                    // structured / text views and live exactly once in a resource entry. Only
-                    // small text content stays inline in the structured payload.
-                    MCPBinaryContent.SlimResult slim = MCPBinaryContent.slimFileRead(payload);
-                    JSONObject result = structuredResult(slim.payload);
-                    appendAll(result.getJSONArray("content"), slim.resources);
+                    // Per-role enableAPI gate; releases the session before the classpath scan
+                    // (files_search can run up to 30s — no point holding a pooled session).
+                    remoteLogics.access(token, connectionInfo, request);
+                    JSONObject payload;
+                    switch (name) {
+                        case TOOL_FILES_LIST: payload = MCPFileTools.list(args); break;
+                        case TOOL_FILES_SEARCH: payload = MCPFileTools.search(args); break;
+                        case TOOL_FILES_READ: payload = MCPFileTools.read(args); break;
+                        default: throw new IllegalStateException("unexpected file tool: " + name);
+                    }
+                    JSONObject result;
+                    if (TOOL_FILES_READ.equals(name)) {
+                        // Single-copy invariant: large text content + binary blobs leave the
+                        // structured / text views and live exactly once in a resource entry. Only
+                        // small text content stays inline in the structured payload.
+                        MCPBinaryContent.SlimResult slim = MCPBinaryContent.slimFileRead(payload);
+                        result = structuredResult(slim.payload);
+                        appendAll(result.getJSONArray("content"), slim.resources);
+                    } else {
+                        result = structuredResult(payload);
+                    }
                     return rpcResult(jsonrpc, id, result);
                 }
                 case TOOL_EVAL: {

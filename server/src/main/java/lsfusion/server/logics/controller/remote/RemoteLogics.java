@@ -205,10 +205,20 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return runInNewSession(token, connectionInfo, request, session -> session.eval(action, paramScript, request));
     }
 
+    /** Per-role {@code enableAPI} gate for callers that don't run an lsf action of their own
+     *  (currently MCP {@code lsfusion_files_*}). Picks a pooled session just long enough to
+     *  hit {@code session.access()} under {@code RemoteContextAspect} — the caller's workload
+     *  runs after this returns, with the session already back in the pool. The
+     *  {@code ExternalResponse} return is null; signature mirrors {@code exec} / {@code eval}. */
+    public ExternalResponse access(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, connectionInfo, request, session -> session.access());
+    }
+
     private final MCPDispatcher mcpDispatcher = new MCPDispatcher(this);
 
     @Override
     public MCPResult mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException {
+        // Dispatcher decides per-tool whether to wrap in session/aspect: see MCPDispatcher class-doc.
         return mcpDispatcher.dispatch(token, connectionInfo, request, body);
     }
 

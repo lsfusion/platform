@@ -12,4 +12,6 @@ public interface RemoteConnectionInterface extends RemoteRequestInterface {
     // external requests (interface is similar to RemoteLogicsInterface but without token)
     ExternalResponse exec(String action, ExternalRequest request) throws RemoteException;
     ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException;
+    // per-role enableAPI gate; aspect-wrapped so session-bound Settings apply
+    ExternalResponse access() throws RemoteException;
 }

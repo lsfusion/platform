@@ -495,26 +495,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         checkAnonymous(redirect, token, enableApi);
     }
 
-    /**
-     * MCP-specific wrapper around {@link #checkAPIAccess} for tools that read app state but
-     * have no underlying lsFusion action — currently the {@code lsfusion_files_*} family
-     * (server-classpath browse / search / read).
-     *
-     * <p>Why a thin alias and not just an inline call: the file tools have no action context
-     * (no {@code @api} annotation to consult, no login redirect to embed), so the two
-     * {@code false} flags are noise at every call site and the intent — "this is the same
-     * MCP gate {@code lsfusion_eval} gets through {@code executeExternal}, just for tools
-     * that don't go through the action pipeline" — gets lost. Centralizing here also gives
-     * future MCP-side gating (per-tool overrides, audit hooks, MCP-specific anonymous
-     * policy) a single place to grow into without touching every dispatch case.
-     *
-     * <p>{@code lsfusion_eval} and {@code /eval} do <em>not</em> call this — they go through
-     * {@link #checkEnableApi} which knows about {@code @api} annotations on the action being
-     * executed. Doc-search / validate-syntax / get-guidance / tools/list / initialize don't
-     * read app state and skip the gate entirely.
-     */
-    public static void checkMCPAccess(AuthenticationToken token) {
+    /** Aspect-wrapped entry point for {@code RemoteLogics.access(...)}: the call triggers
+     *  {@code RemoteContextAspect}, which binds the caller's role-clone Settings before
+     *  {@code checkAPIAccess} reads {@code enableAPI}. Returns null — only the side effect
+     *  (throw if denied) matters; the {@code ExternalResponse} return type is just for
+     *  signature symmetry with {@code exec} / {@code eval}. */
+    public ExternalResponse access() {
         checkAPIAccess(token, false, false);
+        return null;
     }
 
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
