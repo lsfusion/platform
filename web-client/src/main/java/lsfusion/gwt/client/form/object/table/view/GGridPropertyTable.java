@@ -898,6 +898,7 @@ protected Double getUserFlex(int i) {
             assert row.getRowIndex() + shift == i;
             row.rowIndex = i;
         }
+        invalidateScrollableLimit();
     }
 
     public GridPropertyColumn getGridColumn(int column) {

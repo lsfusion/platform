@@ -1506,14 +1506,36 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     private static final String SCROLL_SHADOW_CONTAINER = "__scroll_shadow_container";
+
+    // cache (scrollHeight - clientHeight) on the element itself to avoid forcing a sync layout on every scroll tick;
+    // invalidated on resize and when "scrolled past cached limit" indicates content height grew.
+    private static native int getScrollLimitCache(Element e) /*-{
+        return e.__lsfScrollLimit !== undefined ? e.__lsfScrollLimit : -1;
+    }-*/;
+    private static native void setScrollLimitCache(Element e, int v) /*-{
+        e.__lsfScrollLimit = v;
+    }-*/;
+    private static native void clearScrollLimitCache(Element e) /*-{
+        delete e.__lsfScrollLimit;
+    }-*/;
+
     private static void setContentScrolled(Widget widget) {
         Element element = widget.getElement();
         Element container = GwtClientUtils.getParentWithNonEmptyAttribute(element, SCROLL_SHADOW_CONTAINER);
         if(container != null) { // just in case
             int scrollTop = element.getScrollTop();
-            if(container.getAttribute(SCROLL_SHADOW_CONTAINER).equals("end") ?
-                    scrollTop < element.getScrollHeight() - element.getClientHeight() - MainFrame.mobileAdjustment :
-                    scrollTop > MainFrame.mobileAdjustment)
+            boolean scrolled;
+            if (container.getAttribute(SCROLL_SHADOW_CONTAINER).equals("end")) {
+                int limit = getScrollLimitCache(element);
+                if (limit < 0 || scrollTop > limit) { // -1 = invalid; scrollTop > limit means content grew past cached value, invalidate
+                    limit = element.getScrollHeight() - element.getClientHeight();
+                    setScrollLimitCache(element, limit);
+                }
+                scrolled = scrollTop < limit - MainFrame.mobileAdjustment;
+            } else {
+                scrolled = scrollTop > MainFrame.mobileAdjustment;
+            }
+            if (scrolled)
                 GwtClientUtils.addClassName(container, "scrolled");
             else
                 GwtClientUtils.removeClassName(container, "scrolled");
@@ -1536,6 +1558,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         widget.sinkEvents(Event.ONSCROLL);
         widget.addHandler(event -> setContentScrolled(widget), ScrollEvent.getType());
         if(widget instanceof FlexPanel)
-            ((FlexPanel)widget).addOnResizeHandler(() -> setContentScrolled(widget));
+            ((FlexPanel)widget).addOnResizeHandler(() -> {
+                clearScrollLimitCache(widget.getElement());
+                setContentScrolled(widget);
+            });
     }
 }

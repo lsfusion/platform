@@ -24,6 +24,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -163,13 +164,36 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 //            if(skipScrollEvent) {
 //                skipScrollEvent = false;
 //            } else {
-                calcLeftNeighbourRightBorder(true);
-                checkSelectedRowVisible();
+                // calcLeftNeighbourRightBorder reads getAbsoluteLeft/Right/getOffsetWidth on cells (forced layout);
+                // these positions only change with horizontal scroll, not vertical — skip on pure-vertical scroll.
+                int horizontalScroll = tableContainer.getHorizontalScrollPosition();
+                if (horizontalScroll != latestBorderHorizontalScroll) {
+                    calcLeftNeighbourRightBorder(true);
+                    latestBorderHorizontalScroll = horizontalScroll;
+                }
+                scheduleCheckSelectedRowVisible();
 
                 updateScrolledStateVertical();
                 updateScrolledStateHorizontal();
 //            }
         };
+    }
+    private int latestBorderHorizontalScroll = Integer.MIN_VALUE;
+
+    // checkSelectedRowVisible forces a synchronous layout (reads offsetTop/clientHeight on row elements).
+    // For large tables/trees this dominates scroll cost — debouncing collapses bursts of scroll events
+    // into a single check ~50ms after scrolling stops. UX: selection auto-adjusts a tick later, imperceptible.
+    private Timer checkSelectedRowVisibleTimer;
+    private void scheduleCheckSelectedRowVisible() {
+        if (checkSelectedRowVisibleTimer == null) {
+            checkSelectedRowVisibleTimer = new Timer() {
+                @Override
+                public void run() { checkSelectedRowVisible(); }
+            };
+        } else {
+            checkSelectedRowVisibleTimer.cancel();
+        }
+        checkSelectedRowVisibleTimer.schedule(50);
     }
 
     @Override
@@ -202,13 +226,18 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         }
     }
     private int renderedFirstVisibleRow = -1;
+    // cached (scrollHeight - clientHeight) of tableContainer to avoid forcing a sync layout on every scroll tick;
+    // invalidated to -1 whenever content or viewport size can change (see invalidateScrollableLimit())
+    private int cachedScrollableLimit = -1;
     private void updateScrolledStateVertical() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
         if (verticalScrollPosition > MainFrame.mobileAdjustment)
             GwtClientUtils.addClassName(tableWidget, "scrolled-down");
         else
             GwtClientUtils.removeClassName(tableWidget, "scrolled-down");
-        if (verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - MainFrame.mobileAdjustment)
+        if (cachedScrollableLimit < 0)
+            cachedScrollableLimit = tableContainer.getScrollHeight() - tableContainer.getClientHeight();
+        if (verticalScrollPosition < cachedScrollableLimit - MainFrame.mobileAdjustment)
             GwtClientUtils.addClassName(tableWidget, "scrolled-up");
         else
             GwtClientUtils.removeClassName(tableWidget, "scrolled-up");
@@ -737,10 +766,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public void columnsChanged() {
         columnsChanged = true; // in fact leads to all other changes (widths, data, headers)
+        invalidateScrollableLimit();
+        latestBorderHorizontalScroll = Integer.MIN_VALUE; // cell positions may have shifted, force border recalc on next scroll
         scheduleUpdateDOM();
     }
     public void widthsChanged() {
         widthsChanged = true;
+        invalidateScrollableLimit();
+        latestBorderHorizontalScroll = Integer.MIN_VALUE; // column widths changed → cell positions shifted, force border recalc on next scroll
         scheduleUpdateDOM();
     }
     public void rowsChanged() {
@@ -756,7 +789,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             GwtClientUtils.addOrderedSets(dataColumnsChanged, updatedColumns);
         dataChanged = true;
 
+        invalidateScrollableLimit();
         scheduleUpdateDOM();
+    }
+    protected void invalidateScrollableLimit() {
+        cachedScrollableLimit = -1;
     }
     public void headersChanged() {
         headersChanged = true;
@@ -782,6 +819,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public void onResizeChanged() {
         onResizeChanged = true;
+        invalidateScrollableLimit();
+        latestBorderHorizontalScroll = Integer.MIN_VALUE; // container resized → cell flex/width may shift, force border recalc on next scroll
         if(!isResolvingState) // hack, because in preUpdateScroll there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
             scheduleUpdateDOM();
     }
@@ -1199,17 +1238,21 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
-        boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getScrollableElement()); // probably getFullWidth should be used
+        // reuse cachedScrollableLimit (scrollHeight - clientHeight) instead of calling hasVerticalScroll which
+        // forces a sync layout. hasVerticalScroll = scrollHeight > clientHeight = cachedScrollableLimit > 0.
+        if (cachedScrollableLimit < 0)
+            cachedScrollableLimit = tableContainer.getScrollHeight() - tableContainer.getClientHeight();
+        boolean hasVerticalScroll = cachedScrollableLimit > 0;
         if (this.hasVerticalScroll == null || !this.hasVerticalScroll.equals(hasVerticalScroll))
             pendingState.hasVertical = hasVerticalScroll;
 
-        int currentScrollLeft = tableContainer.getHorizontalScrollPosition();
-
-        int viewportWidth = getViewportWidth();
-
-        //scroll column to visible if needed
+        //scroll column to visible if needed — only read scrollLeft/viewportWidth when actually needed,
+        // since after DOM mutations these reads force a sync layout on the whole scroll container.
         int colToShow;
         if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
+            int currentScrollLeft = tableContainer.getHorizontalScrollPosition();
+            int viewportWidth = getViewportWidth();
+
             NodeList<TableCellElement> cells = tableWidget.getDataRows().getItem(0).getCells();
             TableCellElement td = cells.getItem(colToShow);
 
@@ -1283,36 +1326,42 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private void preAfterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
-        int rowCount = getRowCount();
-
-        int tableHeight = 0;
-        if (rowCount > 0) {
-            TableRowElement lastRowElement = getChildElement(rowCount - 1);
-            tableHeight = lastRowElement.getOffsetTop() + lastRowElement.getClientHeight();
-        }
+        // skip the whole function (avoids any forced layout reads) if neither branch will execute
+        boolean rerenderScrollAdjust = pendingState.renderedSelectedScrollTop != null;
+        int rowToShow = -1;
+        boolean scrollSelectedToVisible = selectedRowChanged && (rowToShow = getSelectedRow()) >= 0;
+        if (!rerenderScrollAdjust && !scrollSelectedToVisible)
+            return;
 
         int viewportHeight = tableContainer.getClientHeight();
         int currentScrollTop = tableContainer.getVerticalScrollPosition();
-
         int scrollTop = currentScrollTop;
 
-        int headerHeight = getHeaderHeight();
-        int footerHeight = getFooterHeight();
+        int headerHeight = scrollSelectedToVisible ? getHeaderHeight() : 0;
+        int footerHeight = scrollSelectedToVisible ? getFooterHeight() : 0;
 
         // we're trying to keep viewport the same after rerendering
-        int rerenderedSelectedRow;
-        if(pendingState.renderedSelectedScrollTop != null && (rerenderedSelectedRow = getRowByKey(renderedSelectedKey, renderedSelectedExpandingIndex)) >= 0) {
-            scrollTop = getChildElement(rerenderedSelectedRow).getOffsetTop() - pendingState.renderedSelectedScrollTop;
+        if (rerenderScrollAdjust) {
+            int rerenderedSelectedRow = getRowByKey(renderedSelectedKey, renderedSelectedExpandingIndex);
+            if (rerenderedSelectedRow >= 0) {
+                // lastRow.offsetTop on a big tree forces full table layout — compute only when this branch runs
+                int rowCount = getRowCount();
+                int tableHeight = 0;
+                if (rowCount > 0) {
+                    TableRowElement lastRowElement = getChildElement(rowCount - 1);
+                    tableHeight = lastRowElement.getOffsetTop() + lastRowElement.getClientHeight();
+                }
+                scrollTop = getChildElement(rerenderedSelectedRow).getOffsetTop() - pendingState.renderedSelectedScrollTop;
 
-            if(scrollTop < 0) // upper than top
-                scrollTop = 0;
-            if (scrollTop > tableHeight - viewportHeight) // lower than bottom (it seems it can be if renderedSelectedScrollTop is strongly negative)
-                scrollTop = tableHeight - viewportHeight;
+                if(scrollTop < 0) // upper than top
+                    scrollTop = 0;
+                if (scrollTop > tableHeight - viewportHeight) // lower than bottom (it seems it can be if renderedSelectedScrollTop is strongly negative)
+                    scrollTop = tableHeight - viewportHeight;
+            }
         }
 
         //scroll row to visible if needed
-        int rowToShow;
-        if (selectedRowChanged && (rowToShow = getSelectedRow()) >= 0) {
+        if (scrollSelectedToVisible) {
             TableRowElement rowElement = getChildElement(rowToShow);
             int rowTop = rowElement.getOffsetTop();
             int rowBottom = rowTop + rowElement.getClientHeight();
