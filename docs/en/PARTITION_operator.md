@@ -6,7 +6,7 @@ The `PARTITION` operator creates a [property](Properties.md) that implements [pa
 
 ### Syntax
 
-There are two different types of `PARTITION` operator. The first implements partition/order:
+There are three different types of `PARTITION` operator. The first implements partition/order:
 
 ```
 PARTITION 
@@ -33,6 +33,18 @@ PROPORTION [STRICT] ROUND(digits)
 LIMIT [STRICT]
 ```
 
+The third form lets you use an arbitrary SQL aggregate function:
+
+```
+PARTITION 
+CUSTOM [NULL] [returnClass] 'sqlAggrFunc' [expr1, ..., exprN]
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[TOP topExpr] [OFFSET offsetExpr]
+[BY groupExpr1, ..., groupExprM]
+```
+
+The `expr1, ..., exprN` list for `CUSTOM` may be omitted, but in that case the `ORDER` block is required.
+
 ### Description
 
 The `PARTITION` operator creates a property that divides all object collections in the system into groups, and taking into account the specified order:
@@ -48,7 +60,21 @@ The `ORDER` block defines the order in which the aggregate function will be calc
 
 - `type`
 
-    Type of aggregate function. Currently the aggregate function types `SUM` and `PREV` are supported.
+    Type of aggregate function. The built-in aggregate function types are `SUM`, `PREV`, and `LAST`. The `CUSTOM` keyword is also supported, allowing the use of an arbitrary SQL aggregate function.
+
+- `CUSTOM [NULL] [returnClass] 'sqlAggrFunc'`
+
+    Use of an arbitrary SQL aggregate function not built into the platform. The SQL function name is passed as a string literal `sqlAggrFunc` (for example, `'STRING_AGG'`, `'BOOL_OR'`). The arguments forwarded to the SQL function are specified as the comma-separated expression list `expr1, ..., exprN` after the function name (no surrounding parentheses); per the grammar, when using `CUSTOM` it is also allowed to specify only the `ORDER` block, with no expression list.
+
+    In `PARTITION` the specified function is compiled to SQL as a window aggregate of the form `sqlAggrFunc(...) OVER (...)`, so only aggregate functions that the database engine accepts as window functions are usable here. Ordered-set aggregates (the `... WITHIN GROUP ORDER BY ...` form) are not supported in this position — use the [`GROUP` operator](GROUP_operator.md) instead.
+
+    - `NULL`
+
+        Optional keyword. Declares that the SQL function may return `NULL` even when input values are not null.
+
+    - `returnClass`
+
+        Optional name of a [built-in class](Built-in_classes.md) (such as `INTEGER`, `NUMERIC`, `STRING`, etc.) that explicitly sets the result class. If omitted, the class is inferred from the operand expressions; if the operand expression list is omitted (the `CUSTOM ... ORDER ...` form), the class is inferred from the first expression of the `ORDER` block.
 
 - `propertyId`
 
@@ -102,7 +128,7 @@ The `ORDER` block defines the order in which the aggregate function will be calc
 
 - `OFFSET offsetExpr`
 
-    Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`.
+    Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`. May be used together with `TOP` or on its own.
 
 ### Examples
 
@@ -140,5 +166,11 @@ discountSum 'Discount by line' (OrderDetail d) =
                 LIMIT STRICT sum(d)
                 ORDER sum(d), d
                 BY order(d);
+
+// CUSTOM example: for each team, returns the comma-separated list of all teams in its conference
+name = DATA STRING[30] (Team);
+teamNames 'Conference teams' (Team team) =
+    PARTITION CUSTOM STRING 'STRING_AGG' name(team), ', '
+                BY conference(team);
 ;
 ```
