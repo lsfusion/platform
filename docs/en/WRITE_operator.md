@@ -72,7 +72,7 @@ The `Downloads` folder in the user folder is considered to be the current folder
     - **pdf** — the pages of the `fileExpr` document are appended to the document at the specified `urlExpr`;
     - not supported for other extensions.
 
-    If the file at the specified `urlExpr` does not yet exist, the extension restrictions do not apply: a new file with the contents of `fileExpr` is created.
+    If the file at the specified `urlExpr` does not yet exist, `WRITE` with `APPEND` works for any file type: a new file with the contents of `fileExpr` is created.
 
     By default, the file is rewritten.
 
