@@ -27,7 +27,7 @@ If `NESTED LOCAL` or `NESTED (propertyId1, ..., propertyIdN)` is specified, chan
 
 - `NEWSQL`
 
-    If this keyword is specified, a new SQL connection will be created. In this case, the entire `NESTED ... [CLASSES]` block is ignored — neither local property values nor class changes are migrated into the new session.
+    Keyword. When the operator runs outside an already-running apply transaction, the new session gets a [separate SQL connection](New_session_NEWSESSION_NESTEDSESSION.md#newsql), independent of the current session's connection, and the entire `NESTED ... [CLASSES]` block is ignored — neither local property values nor class changes are migrated into the new session. When the operator is invoked inside the current session's `APPLY` transaction, behavior follows the recursive-apply rules and a separate SQL connection is not opened in that case.
 
 - `formId1, ..., formIdM`
 

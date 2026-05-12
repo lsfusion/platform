@@ -2,7 +2,7 @@
 title: 'Оператор NEWCONNECTION'
 ---
 
-Оператор `NEWCONNECTION` - создание [действия](Actions.md), выполняющего другое действие с сохранением подключений SQL, TCP, DBF.
+Оператор `NEWCONNECTION` - создание [действия](Actions.md), которое выполняет другое действие с сохранением [внешних подключений](New_connection_NEWCONNECTION.md) (`SQL`, `TCP`, `DBF`) между вызовами [`EXTERNAL`](EXTERNAL_operator.md).
 
 ### Синтаксис
 
@@ -12,7 +12,7 @@ NEWCONNECTION action
 
 ### Описание
 
-Оператор `NEWCONNECTION` создает действие, которое сохраняет подключения SQL, TCP, DBF и позволяет выполнять `EXTERNAL SQL`, `EXTERNAL TCP`, `EXTERNAL DBF` без необходимости каждый раз создавать новое подключение. Все подключения закрываются в конце выполнения оператора NEWCONNECTION. 
+Оператор `NEWCONNECTION` создает действие, внутри которого все `EXTERNAL SQL`, `EXTERNAL TCP`, `EXTERNAL DBF` к одному и тому же подключению переиспользуют ранее открытое соединение вместо того, чтобы открывать новое на каждый вызов. Пустая строка подключения (или пустой `host` для TCP) во вложенном `EXTERNAL` ссылается на единственное уже открытое подключение этого типа; если на этот момент открыто не ровно одно подключение этого типа (ноль или больше одного), платформа выбрасывает ошибку. Все подключения, открытые внутри блока, закрываются при выходе из него вне зависимости от того, завершилось ли действие штатно или ошибкой.
 
 ### Параметры
 
@@ -23,11 +23,11 @@ NEWCONNECTION action
 ### Примеры
 
 ```lsf
-test  {
+test {
     NEWCONNECTION {
-        EXTERNAL SQL 'jdbc:postgresql://connection/string' EXEC 'first query'; //первый EXTERNAL создаёт подключение и не закрывает его
-        EXTERNAL SQL 'jdbc:postgresql://connection/string' EXEC 'second query'; //второй EXTERNAL использует уже созданное подключение
+        EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'UPDATE stock SET qty = qty + 1';  // открывает подключение и не закрывает его
+        EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'INSERT INTO audit (msg) VALUES (''sync'')'; // переиспользует уже открытое подключение
     }
-	//Все созданные подключения закрываются в конце выполнения NEWCONNECTION вне зависимости от того, были ли ошибки при выполнении
+    // все подключения закрыты здесь
 }
 ```

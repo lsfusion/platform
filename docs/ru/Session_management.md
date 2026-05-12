@@ -6,7 +6,7 @@ title: 'Управление сессиями'
 
 -   [Применение изменений (`APPLY`)](Apply_changes_APPLY.md)
 -   [Отмена изменений (`CANCEL`)](Cancel_changes_CANCEL.md)
--   [Новая сессия (`NEWSESSION`, `NESTEDSESSION`)](New_session_NEWSESSION_NESTEDSESSION.md)
+-   [Новая сессия (`NEWSESSION`, `NESTEDSESSION`, `NEWSQL`)](New_session_NEWSESSION_NESTEDSESSION.md)
 -   [Предыдущее значение (`PREV`)](Previous_value_PREV.md)
 -   [Операторы изменений (`SET`, `CHANGED`, ...)](Change_operators_SET_CHANGED_etc.md)
 

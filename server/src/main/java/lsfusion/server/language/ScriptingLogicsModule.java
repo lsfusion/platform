@@ -4990,6 +4990,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         // Desugar `NEWTHREAD a; CONNECTION conn;` to `NEWEXECUTOR { NEWTHREAD a; } CLIENT conn NOWAIT`.
         // Grammar makes CONNECTION mutex with TO so the silent-drop combo isn't reachable here.
         if (connectionProp != null) {
+            warningList.add("'NEWTHREAD a CONNECTION conn;' is deprecated, use 'NEWEXECUTOR { NEWTHREAD a; } CLIENT conn NOWAIT;' instead");
             LAWithParams innerThread = addScriptedNewThreadAction(action, null, null, null, null, null);
             return addScriptedNewExecutorAction(innerThread, null, connectionProp, null, false);
         }

@@ -563,7 +563,7 @@ requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user
     IF hasConnectedConnections(user) THEN { 
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
             NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
-            NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
+            NEWEXECUTOR { NEWSESSION NEWTHREAD userLogs(); } CLIENT conn NOWAIT;
         }
     } ELSE {
         MESSAGE '{system.events.user.not.connected}';
@@ -586,7 +586,7 @@ threadDump ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.ThreadDum
 requestThreadDump '{system.events.request.thread.dump.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileThreadDump(conn) <- NULL; apply(); } 
-        NEWSESSION NEWTHREAD threadDump(); CONNECTION conn;
+        NEWEXECUTOR { NEWSESSION NEWTHREAD threadDump(); } CLIENT conn NOWAIT;
     }
 }
 openThreadDump '{system.events.open.thread.dump.custom.user}' (CustomUser user)  { 

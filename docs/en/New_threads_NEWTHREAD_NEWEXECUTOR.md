@@ -2,56 +2,68 @@
 title: 'New threads (NEWTHREAD, NEWEXECUTOR)'
 ---
 
-The *new thread* operator allows you to execute an action in a thread other than the current one. 
+The *new thread* operator allows you to execute an action in a thread other than the current one.
 
-By default, an action is executed once in a new thread, immediately after the creation of this thread. However, if necessary, the action can be executed with a defined delay and/or performed continuously at a specified time interval. 
+By default, an action is executed once in a new thread, immediately after the creation of this thread. However, if necessary, the action can be executed with a defined delay and/or performed continuously at a specified time interval.
 
-The action can also be executed in a new thread on behalf of a specified connection (for example, some user). In this case, [user interaction](User_IS_interaction.md) operators may be used inside the action, including [form opening](Open_form.md) in [interactive](In_an_interactive_view_SHOW_DIALOG.md) view (by default, when you use these operators, the platform will throw an error).
+If needed, a thread can return a value; it is written into a designated property after the thread completes, provided the enclosing pool operator waits for completion (see below).
 
-The delay, interval and connection in this operator are defined as certain [properties](Properties.md).
+The thread-creation operator itself does not open a new [change session](Change_sessions.md) or a separate SQL connection. The environment in which the body actually runs depends on the execution service (see below).
 
-### New thread pool
+### Where threads execute
 
-Sometimes the number of simultaneously running threads must be limited to a certain value (as a rule, this is done if the executed actions are not critical and the moment in time when they are completed is not so important). To implement this functionality, the platform has an operator for creating a *new thread pool*. This allows the operator to perform an action in such a way that all new threads generated inside this action come into this thread pool, which at the same time can include no more than a specified number of threads.
+Beyond the thread itself, it is useful to specify where it runs — which pool or which user it belongs to, and whether to wait for it. The platform splits this into a separate operator — the *new execution service* operator: one operator defines the thread itself (which action, with what delay and period, where to write the return value), the other defines the service that executes it (on the application server or on a user's client connection; synchronously or asynchronously). The kind of service determines the execution location, paralleling the split used in [external-system calls](Access_to_an_external_system_EXTERNAL.md) and [internal calls](Access_to_an_internal_system_INTERNAL_FORMULA.md).
 
-The number of threads is defined as a property.
+#### Server-side execution
+
+A fixed-size server-side thread pool — thread actions run on the application server in its worker threads and share the change session with the calling code. Since change sessions are not thread-safe, the thread body is typically wrapped in a [new session](New_session_NEWSESSION_NESTEDSESSION.md); if a separate database transaction is required, a [new session on a separate SQL connection](New_session_NEWSESSION_NESTEDSESSION.md#newsql) is used. The pool size is given by an integer-typed expression. Delayed and periodic dispatches are served by the server-side pool scheduler.
+
+#### Client-side execution
+
+A client-side dispatcher tied to a user's [connection](User_IS_interaction.md) — thread actions are delivered to that connection and executed on the application server in their own fresh change session at the connection's navigator level, not bound to any opened form. The caller's session is not inherited, so wrapping the body in a new session is not needed. This mode lets the inner action use [user-interaction](User_IS_interaction.md) operators, including [opening forms](Open_form.md) in [interactive view](In_an_interactive_view_SHOW_DIALOG.md) — they target the UI of that connection; a form opened by such a thread gets its own session through the usual rules. Delayed and periodic dispatches are scheduled by the client-side timer in the browser or the desktop client.
+
+#### Synchronization
+
+Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads for which a future is registered to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md); in the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout; if some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](TRY_operator.md).
 
 ### Language
 
-To declare an action that executes another action in a new thread, use the [`NEWTHREAD` operator](NEWTHREAD_operator.md). To perform an action in a new thread pool, use the [`NEWEXECUTOR` operator](NEWEXECUTOR_operator.md).
+To declare an action that executes another action in a new thread, use the [`NEWTHREAD` operator](NEWTHREAD_operator.md). To create an execution service and group nested `NEWTHREAD`s into it, use the [`NEWEXECUTOR` operator](NEWEXECUTOR_operator.md).
 
 ### Examples
 
 ```lsf
-testNewThread ()  {
-    //Showing messages 'Message' to all
-    FOR user(Connection conn) AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
-        NEWTHREAD MESSAGE 'Message'; CONNECTION conn;
-    }
-
-    //Execution of the 'action' action with a frequency of 10 seconds and a delay of 5 seconds
-    NEWTHREAD MESSAGE 'Hello World'; SCHEDULE PERIOD 10000 DELAY 5000;
-}
-```
-
-
-```lsf
-testExecutor  {
+testNewThread () {
+    // Server-side pool with wait for completion
     NEWEXECUTOR {
         FOR id(Sku s) DO {
             NEWTHREAD {
                 NEWSESSION {
-                    name(s) <- STRING[20](id(s)); // writing the code into the name in 10 threads
+                    name(s) <- STRING[20](id(s));
                     APPLY;
                 }
             }
         }
-    } THREADS 10;
+    } THREADS 10 WAIT;
+
+    // Show a message to every other connected user
+    FOR user(Connection conn) AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
+        NEWEXECUTOR { NEWTHREAD MESSAGE 'Message'; } CLIENT conn NOWAIT;
+    }
+
+    // Periodic dispatch on the client side — runs while the connection stays alive
+    NEWEXECUTOR {
+        NEWTHREAD MESSAGE 'tick'; SCHEDULE PERIOD 10000 DELAY 5000;
+    } CLIENT currentConnection() NOWAIT;
+
+    // Collect a thread result with a wait timeout
+    LOCAL res = INTEGER ();
+    TRY {
+        NEWEXECUTOR {
+            NEWTHREAD { RETURN computeHeavy(); } TO res;
+        } THREADS 1 WAIT 5000;
+    } CATCH {
+        MESSAGE 'did not complete within timeout: ' + messageCaughtException();
+    }
 }
 ```
-
-  
-
-  
-
-  

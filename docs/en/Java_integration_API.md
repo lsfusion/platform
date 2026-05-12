@@ -172,7 +172,7 @@ Skipping the `aspectAfter...` is not an option: the ThreadLocal stays dirty, and
 
 **Handing work over to another thread.** `ExecutionContext` is bound to the thread that produced it (its `stack`, `getSession()`, active aspects) — you cannot just pass `context` into `executor.submit(...)` and keep working there. The right patterns are:
 
-- In lsFusion code — the `NEWTHREAD action` / `NEWTHREAD action CONNECTION conn` / `NEWTHREAD action SCHEDULE PERIOD ms` operators (see `NewThreadAction`). The platform builds a notification, delivers it to the right navigator or scheduler pool, and on the new thread builds a fresh `ExecutionContext` through `context.override(env, stack, asyncResult)`.
+- In lsFusion code — the `NEWTHREAD action` / `NEWEXECUTOR { NEWTHREAD action; } CLIENT conn NOWAIT` / `NEWTHREAD action SCHEDULE PERIOD ms` operators (see `NewThreadAction`). The platform builds a notification, delivers it to the right navigator or scheduler pool, and on the new thread builds a fresh `ExecutionContext` through `context.override(env, stack, asyncResult)`.
 - In Java code — `context.override(stack)` / `context.override(env, stack, ...)` to swap the stack within the same thread, and `RemoteNavigator.pushNotification(Notification)` to deliver work to a specific navigator on its own thread context.
 
 **Anti-patterns:**

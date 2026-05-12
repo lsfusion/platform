@@ -172,7 +172,7 @@ try {
 
 **Передача работы на другой поток.** `ExecutionContext` привязан к породившему его потоку (его `stack`, `getSession()`, активные aspect-ы) — нельзя просто передать `context` в `executor.submit(...)` и продолжить там работу. Корректные паттерны:
 
-- В lsFusion-коде — оператор `NEWTHREAD action` / `NEWTHREAD action CONNECTION conn` / `NEWTHREAD action SCHEDULE PERIOD ms` (см. `NewThreadAction`). Платформа сама создаёт notification, доставляет на нужный navigator или scheduler-pool, на новом потоке через `context.override(env, stack, asyncResult)` строит свежий `ExecutionContext`.
+- В lsFusion-коде — оператор `NEWTHREAD action` / `NEWEXECUTOR { NEWTHREAD action; } CLIENT conn NOWAIT` / `NEWTHREAD action SCHEDULE PERIOD ms` (см. `NewThreadAction`). Платформа сама создаёт notification, доставляет на нужный navigator или scheduler-pool, на новом потоке через `context.override(env, stack, asyncResult)` строит свежий `ExecutionContext`.
 - В Java-коде — `context.override(stack)` / `context.override(env, stack, ...)` для смены stack-а в рамках того же потока, и `RemoteNavigator.pushNotification(Notification)` для доставки работы на конкретный navigator на его собственном thread-context-е.
 
 **Антипаттерны:**

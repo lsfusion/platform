@@ -6,7 +6,7 @@ The system has the following operators for working with sessions:
 
 -   [Apply changes (`APPLY`)](Apply_changes_APPLY.md)
 -   [Cancel changes (`CANCEL`)](Cancel_changes_CANCEL.md)
--   [New session (`NEWSESSION`, `NESTEDSESSION`)](New_session_NEWSESSION_NESTEDSESSION.md)
+-   [New session (`NEWSESSION`, `NESTEDSESSION`, `NEWSQL`)](New_session_NEWSESSION_NESTEDSESSION.md)
 -   [Previous value (`PREV`)](Previous_value_PREV.md)
 -   [Change operators (`SET`, `CHANGED`, ...)](Change_operators_SET_CHANGED_etc.md)
 

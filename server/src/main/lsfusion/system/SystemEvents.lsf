@@ -501,7 +501,7 @@ serverShutdown INTERNAL  'lsfusion.server.physics.admin.systemevents.ShutdownAct
 shutdown '{system.events.shutdown}' (Connection c)  { 
     IF connectionStatus(c) = ConnectionStatus.connectedConnection OR connectionStatus(c) = ConnectionStatus.disconnectingConnection THEN {
         NEWSESSION { connectionStatus(c) <- ConnectionStatus.disconnectingConnection; APPLY; }
-        NEWSESSION { NEWTHREAD shutdown(); CONNECTION c; }
+        NEWEXECUTOR { NEWSESSION { NEWTHREAD shutdown(); } } CLIENT c NOWAIT;
         serverShutdown(c);
     }
 } CONFIRM;
@@ -520,7 +520,7 @@ onStarted() + {
 
 reconnect '{system.events.reconnect.custom.user}' (CustomUser user)  { 
     FOR user(Connection c) == user AND connectionStatus(c) = ConnectionStatus.connectedConnection DO {
-        NEWSESSION { NEWTHREAD reconnect(); CONNECTION c; }
+        NEWEXECUTOR { NEWSESSION { NEWTHREAD reconnect(); } } CLIENT c NOWAIT;
     }
 } CONFIRM;
 

@@ -108,9 +108,13 @@ For this type of interaction, the path to the `.dbf` file is specified as the co
 
 Input column names are truncated to the DBF 10-character limit before being used for both schema creation and field lookup; two columns that collide after truncation make the call fail, and a column whose original name exceeds 10 characters additionally loses its type (a 253-character string field is used as a fallback) and its value (the literal string `"null"` is written). `NULL` values in input cells are similarly written as the literal string `"null"` — harmless for string fields, but causing the write to fail for numeric fields. The input `TABLE` should therefore already use DBF-compatible field names and non-`NULL` values.
 
+## Preserving connections across calls
+
+When several calls hit the same endpoint, the open connection can be [reused](New_connection_NEWCONNECTION.md) across them instead of being opened anew each time. This saves the cost of establishing the connection and lets calls share state that the connection itself holds — SQL temporary tables and session variables, an open TCP socket and its read buffer, the current position inside a DBF file, and so on.
+
 ## Language
 
-To declare an action that accesses an external system, use the [`EXTERNAL` operator](EXTERNAL_operator.md).
+To declare an action that accesses an external system, use the [`EXTERNAL` operator](EXTERNAL_operator.md). To reuse an external connection across several calls within one block, use the [`NEWCONNECTION` operator](NEWCONNECTION_operator.md).
 
 ## Examples
 
