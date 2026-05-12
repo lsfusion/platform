@@ -18,12 +18,14 @@ The following URL types are supported:
 
 ```
 [file://]path_to_file
-ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
-ftps://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
-sftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+ftp://username:password[;charset]@host:port[/path_to_file][?param1=value1&param2=value2&...]
+ftps://username:password[;charset]@host:port[/path_to_file][?param1=value1&param2=value2&...]
+sftp://username:password[;charset]@host:port[/path_to_file]
 ```
 
-It is assumed that the file extension is not specified in the URL (that is, the period `.` is also considered a part of the file name). This extension is determined automatically based on the class of the file being written:
+For `ftp` and `ftps`, the supported query parameters are `passivemode`, `binarytransfermode`, `datatimeout`, `connecttimeout`.
+
+If the part of the URL after the last period already looks like a file extension (either a standard MIME extension, or a short — fewer than 4 characters — suffix with more letters than digits), it is used as is. Otherwise the period `.` is treated as part of the file name, and the extension is determined automatically based on the class of the file being written:
 
 | Extension                                  | Class       |
 |--------------------------------------------|-------------|
@@ -52,17 +54,27 @@ The `Downloads` folder in the user folder is considered to be the current folder
 
     Keyword. If specified, before writing the file a dialog will be shown in which the user can change the specified URL. This can be used only when writing to the disk (the URL type is file). By default, the dialog is not shown. 
 
-- `ulrExpr`
+- `urlExpr`
 
     An [expression](Expression.md) whose value equals to the URL.
 
 - `fileExpr`
 
-    An [expression](Expression.md) whose value equals to the file that will be written to an external resource. 
+    An [expression](Expression.md) whose value is the file that will be written to an external resource. JSON-typed values are also accepted: in this case the value is serialized to a `.json` file.
 
 - `APPEND`
 
-    Keyword. If specified, the file is re-read from `fileExpr` and appended to the file at `urlExpr`. For the **csv** extension, data is added to the end of the file. For **xls** and **xlsx**, all sheets from the `fileExpr` file are copied to the file at the specified location `urlExpr`. Not supported for other extensions. By default, the file is rewritten.
+    Keyword. If specified, the file is re-read from `fileExpr` and appended to the file at `urlExpr`. Supported only when writing to the file system (URL type `file`); for `ftp`, `ftps`, and `sftp`, using `APPEND` raises a runtime error. It also cannot be combined with `CLIENT DIALOG`. Behavior by file extension:
+
+    - **csv**, **txt** — data is appended to the end of the file;
+    - **xls**, **xlsx** — all sheets from the `fileExpr` file are copied into the file at the specified `urlExpr`;
+    - **docx** — the contents of the `fileExpr` document are appended to the document at the specified `urlExpr`;
+    - **pdf** — the pages of the `fileExpr` document are appended to the document at the specified `urlExpr`;
+    - not supported for other extensions.
+
+    If the file at the specified `urlExpr` does not yet exist, `WRITE` with `APPEND` works for any file type: a new file with the contents of `fileExpr` is created.
+
+    By default, the file is rewritten.
 
 ### Examples
 
