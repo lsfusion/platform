@@ -257,7 +257,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
     public boolean deliverNotificationSession(String sessionId, int notificationId, boolean pend) {
         return pushNotification(
                 navigator -> navigator.active && navigator.sessionId != null && navigator.sessionId.equals(sessionId) ? navigator.getContext().getUserLastActivity() : 0L,
-                navigator -> navigator.deliverNotification(notificationId),
+                navigator -> navigator.deliverNotification(notificationId, 0L, null),
                 pend);
     }
 

@@ -2,7 +2,6 @@ package lsfusion.server.logics.navigator.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
@@ -19,7 +18,6 @@ import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -493,12 +491,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public ClientCallBackController getClientCallBack() throws RemoteException {
         return client;
-    }
-
-    public void pushNotification(Notification run) {
-        if (isClosed())
-            return;
-        client.pushMessage(pushGlobalNotification(run), 0L, null);
     }
 
     /** Delivers an already-registered notification to this navigator's client with optional

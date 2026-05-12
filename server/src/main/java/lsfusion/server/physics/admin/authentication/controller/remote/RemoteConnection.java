@@ -556,7 +556,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                 boolean foundNavigator = true;
                 if (this instanceof RemoteNavigator)
-                    ((RemoteNavigator) this).deliverNotification(notificationId);
+                    ((RemoteNavigator) this).deliverNotification(notificationId, 0L, null);
                 else
                     foundNavigator = logicsInstance.getNavigatorsManager().deliverNotificationSession(request.sessionId, notificationId, pendNotification);
 
