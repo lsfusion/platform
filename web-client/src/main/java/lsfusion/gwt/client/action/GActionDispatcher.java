@@ -94,6 +94,8 @@ public interface GActionDispatcher {
 
     Object execute(GClientWebAction action);
 
+    GScreenShotResult execute(GScreenShotAction action);
+
     Object execute(GHttpClientAction action) throws RequestException;
     
     void execute(GOrderAction action);

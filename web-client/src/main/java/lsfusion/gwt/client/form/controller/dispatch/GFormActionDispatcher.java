@@ -10,6 +10,8 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -168,5 +170,20 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GCloseFormAction action) {
         form.getFormsController().closeForm(action.formId);
+    }
+
+    @Override
+    public GScreenShotResult execute(GScreenShotAction action) {
+        if (action.containerSID == null)
+            return super.execute(action);
+
+        GContainer container = form.getForm().mainContainer.findContainerBySID(action.containerSID);
+        if (container == null)
+            throw new RuntimeException("SCREENSHOT: container '" + action.containerSID + "' not found in current form");
+        GAbstractContainerView containerView = form.getFormLayout().getContainerView(container);
+        if (containerView == null || containerView.getView() == null)
+            throw new RuntimeException("SCREENSHOT: container '" + action.containerSID + "' has no rendered view");
+
+        return screenShotElement(action.html, containerView.getView().getElement());
     }
 }

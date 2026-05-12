@@ -266,6 +266,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, action.name));
     }
 
+    @Converter(from = ScreenShotClientAction.class)
+    public GScreenShotAction convertAction(ScreenShotClientAction action) {
+        return new GScreenShotAction(action.html, action.containerSID);
+    }
+
     //todo: isBlockingFileRead, isDialog
     @Converter(from = ReadClientAction.class)
     public GReadAction convertAction(ReadClientAction action) {

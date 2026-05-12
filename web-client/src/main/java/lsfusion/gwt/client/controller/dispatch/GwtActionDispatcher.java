@@ -49,6 +49,18 @@ import java.util.function.Function;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
+// WARNING — DO NOT return a raw byte[] from any GAction.execute() in this
+// dispatcher (or anywhere else whose result lands in a polymorphic Serializable
+// field like ContinueNavigatorAction.actionResult). GWT 2.10's
+// ServerSerializationStreamReader silently mis-handles a byte[] stuck into a
+// polymorphic Serializable: the array elements aren't consumed from the token
+// stream, the next string-field read picks up bytes as a string index, and the
+// whole /main/dispatch request fails deserialization with
+// ArrayIndexOutOfBoundsException at line 730 of getString — the client only
+// sees a generic 500. Always wrap byte payloads in a tiny holder class (see
+// GScreenShotResult / ScreenShotClientResult, or GExternalHttpResponse for the
+// precedent); class-level field deserialization reads the array correctly
+// because the expected type is byte[] rather than Serializable.
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
 
@@ -831,6 +843,235 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if (jsExecutor == null)
             jsExecutor = new JSExecutor();
         return jsExecutor.addAction(action);
+    }
+
+    @Override
+    public GScreenShotResult execute(GScreenShotAction action) {
+        if (action.containerSID != null)
+            throw new UnsupportedOperationException("SCREENSHOT of a container or form is supported only inside form context");
+        return screenShotElement(action.html, com.google.gwt.dom.client.Document.get().getBody());
+    }
+
+    protected GScreenShotResult screenShotElement(boolean html, com.google.gwt.dom.client.Element element) {
+        // SCREENSHOT HTML returns the element's children markup (innerHTML), not
+        // the element's outer tag. Matches the typical "capture the content of
+        // this container" intent rather than the wrapper itself.
+        if (html)
+            return new GScreenShotResult(stringToUtf8Bytes(element.getInnerHTML()));
+        return captureElementToPng(element);
+    }
+
+    private GScreenShotResult captureElementToPng(com.google.gwt.dom.client.Element element) {
+        return executeAsyncResult(onResult -> runHtmlToImage(element, new ScreenShotCallback() {
+            @Override
+            public void onBuffer(ArrayBuffer buffer) {
+                onResult.accept(new GScreenShotResult(arrayBufferToBytes(buffer)), null);
+            }
+            @Override
+            public void onError(String error) {
+                onResult.accept(null, new RuntimeException(error));
+            }
+        }));
+    }
+
+    private native void runHtmlToImage(com.google.gwt.dom.client.Element element, ScreenShotCallback callback) /*-{
+        // Wait for webfonts (icons) to load before serializing the DOM into the SVG
+        // foreignObject; otherwise icon glyphs render as empty boxes.
+        var ready = ($wnd.document && $wnd.document.fonts && $wnd.document.fonts.ready)
+            ? $wnd.document.fonts.ready
+            : $wnd.Promise.resolve();
+        // Build font-embed CSS from every accessible @font-face rule in the page.
+        // html-to-image's default getFontEmbedCSS only includes fonts referenced
+        // directly on elements; fonts that drive icon glyphs through ::before
+        // pseudos (bootstrap-icons) get dropped, leaving icon boxes empty.
+        function buildAllFontsCSS() {
+            var rules = [];
+            for (var i = 0; i < $wnd.document.styleSheets.length; i++) {
+                var sheet = $wnd.document.styleSheets[i];
+                var cssRules = null;
+                try { cssRules = sheet.cssRules; } catch (e) { continue; }
+                if (!cssRules) continue;
+                for (var j = 0; j < cssRules.length; j++) {
+                    var rule = cssRules[j];
+                    if (rule.type === 5) { // CSSRule.FONT_FACE_RULE
+                        rules.push({text: rule.cssText, sheetHref: sheet.href});
+                    }
+                }
+            }
+            // For each rule, replace url(relative) with absolute, then fetch and inline as data URI.
+            return $wnd.Promise.all(rules.map(function(r) {
+                return inlineRuleFontUrls(r.text, r.sheetHref);
+            })).then(function(parts) {
+                return parts.join("\n");
+            });
+        }
+        function inlineRuleFontUrls(cssText, baseHref) {
+            // Match url("..."), url('...'), url(...) — skip data: URIs.
+            var urlRe = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+            var matches = [];
+            var m;
+            while ((m = urlRe.exec(cssText)) !== null) {
+                if (m[2].indexOf("data:") !== 0) matches.push(m[2]);
+            }
+            return $wnd.Promise.all(matches.map(function(u) {
+                var abs;
+                try { abs = new $wnd.URL(u, baseHref || $wnd.location.href).href; } catch (_) { abs = u; }
+                return $wnd.fetch(abs).then(function(r){return r.ok ? r.blob() : null;}).then(function(b){
+                    if (!b) return {orig: u, data: null};
+                    return new $wnd.Promise(function(resolve) {
+                        var fr = new $wnd.FileReader();
+                        fr.onload = function() { resolve({orig: u, data: fr.result}); };
+                        fr.onerror = function() { resolve({orig: u, data: null}); };
+                        fr.readAsDataURL(b);
+                    });
+                }).then(null, function(){ return {orig: u, data: null}; });
+            })).then(function(results) {
+                var out = cssText;
+                results.forEach(function(r) {
+                    if (r.data) {
+                        // Escape special chars in original URL for regex
+                        var esc = r.orig.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        out = out.replace(new $wnd.RegExp("url\\(\\s*['\"]?" + esc + "['\"]?\\s*\\)", 'g'), 'url("' + r.data + '")');
+                    }
+                });
+                return out;
+            });
+        }
+        // Fractional width rounding inside the SVG foreignObject layout pass
+        // can make flex-wrap kick in at the boundary case where it doesn't in
+        // the native render. Two pathologies hit:
+        //   (a) inline-flex btn-group with active flex-shrink — foreignObject's
+        //       shrink redistribution overshoots and the last child wraps onto
+        //       a hidden 2nd row;
+        //   (b) plain flex-wrap row that fits comfortably in live — sub-pixel
+        //       position drift pushes one child past the wrap boundary and it
+        //       lands on a hidden 2nd row of the flex container (the parent
+        //       crops to one row, so the child visually disappears).
+        // Fix: walk the captured subtree, find every element that uses
+        // flex-wrap AND is currently a single row in the live DOM AND has
+        // less than 1 px of slack between its content-box width and its
+        // children's combined outer widths (the only cases where sub-pixel
+        // rounding can flip wrap on). For each, pin BOTH:
+        //   min-width = ceil(rect.width) + 1  // covers (b)
+        //   flex-wrap: nowrap                 // covers (a)
+        // Either alone fixes only one of the two pathologies; together they
+        // close both with no visible disruption to other layout.
+        // Inline styles are restored after capture so the live DOM is untouched.
+        var pinnedWrap = [];
+        function isSingleRow(el) {
+            var kids = el.children;
+            if (!kids || kids.length < 2) return true;
+            var firstTop = kids[0].offsetTop;
+            for (var k = 1; k < kids.length; k++) {
+                if (Math.abs(kids[k].offsetTop - firstTop) > 0.5) return false;
+            }
+            return true;
+        }
+        function sumChildrenOuter(el) {
+            var sum = 0;
+            for (var i = 0; i < el.children.length; i++) {
+                var k = el.children[i];
+                var r = k.getBoundingClientRect();
+                var cs = $wnd.getComputedStyle(k);
+                var ml = parseFloat(cs.marginLeft) || 0;
+                var mr = parseFloat(cs.marginRight) || 0;
+                sum += r.width + ml + mr;
+            }
+            return sum;
+        }
+        function pinWrapElements(root) {
+            var all = root.querySelectorAll("*");
+            var list = [root];
+            for (var i = 0; i < all.length; i++) list.push(all[i]);
+            for (var j = 0; j < list.length; j++) {
+                var n = list[j];
+                if (n.nodeType !== 1) continue;
+                var cs = $wnd.getComputedStyle(n);
+                var fw = cs.flexWrap;
+                if (fw !== "wrap" && fw !== "wrap-reverse") continue;
+                if (!n.children || n.children.length === 0) continue;
+                if (!isSingleRow(n)) continue;
+                var rect = n.getBoundingClientRect();
+                var bl = parseFloat(cs.borderLeftWidth) || 0;
+                var br = parseFloat(cs.borderRightWidth) || 0;
+                var pl = parseFloat(cs.paddingLeft) || 0;
+                var pr = parseFloat(cs.paddingRight) || 0;
+                var content = rect.width - bl - br - pl - pr;
+                var kidsSum = sumChildrenOuter(n);
+                // Slack < 1 px between content-box and children's outer widths
+                // means sub-pixel rounding in foreignObject is the only thing
+                // keeping wrap off. Pin both min-width (covers the
+                // sub-pixel-position case — children land past the wrap
+                // boundary and drop to a hidden 2nd row) AND flex-wrap:nowrap
+                // (covers the shrink-active case — flex-shrink redistribution
+                // overshoots by more than 1 px and wraps despite the +1 px
+                // slack). Either alone fixes only one of the two pathologies.
+                if (content - kidsSum >= 1.0) continue;
+                pinnedWrap.push({el: n, prevMW: n.style.minWidth, prevFW: n.style.flexWrap});
+                n.style.minWidth = (Math.ceil(rect.width) + 1) + "px";
+                n.style.flexWrap = "nowrap";
+            }
+        }
+        function restoreWrapPin() {
+            for (var i = 0; i < pinnedWrap.length; i++) {
+                var p = pinnedWrap[i];
+                if (p.prevMW) p.el.style.minWidth = p.prevMW;
+                else p.el.style.removeProperty("min-width");
+                if (p.prevFW) p.el.style.flexWrap = p.prevFW;
+                else p.el.style.removeProperty("flex-wrap");
+            }
+            pinnedWrap.length = 0;
+        }
+        pinWrapElements(element);
+
+        ready.then(function() {
+            // Cache the assembled CSS — fonts don't change at runtime, and the
+            // per-call cost is ~6 woff2 fetches + base64 (slow on first paint).
+            return $wnd.__lsfRenderFontCSS || ($wnd.__lsfRenderFontCSS = buildAllFontsCSS());
+        }).then(function(embedCSS) {
+            return $wnd.htmlToImage.toBlob(element, {cacheBust: false, pixelRatio: 1, fontEmbedCSS: embedCSS, skipFonts: false});
+        }).then(function(blob) {
+            restoreWrapPin();
+            if (blob == null) {
+                callback.@lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ScreenShotCallback::onError(Ljava/lang/String;)("html-to-image: empty blob");
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function() {
+                callback.@lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ScreenShotCallback::onBuffer(Lcom/google/gwt/typedarrays/shared/ArrayBuffer;)(reader.result);
+            };
+            reader.onerror = function() {
+                callback.@lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ScreenShotCallback::onError(Ljava/lang/String;)("html-to-image: read failure");
+            };
+            reader.readAsArrayBuffer(blob);
+        }, function(err) {
+            restoreWrapPin();
+            callback.@lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ScreenShotCallback::onError(Ljava/lang/String;)("html-to-image: " + (err && err.message ? err.message : err));
+        });
+    }-*/;
+
+    private static byte[] stringToUtf8Bytes(String s) {
+        if (s == null) return new byte[0];
+        com.google.gwt.typedarrays.shared.Uint8Array uint8 = encodeUtf8(s);
+        byte[] bytes = new byte[uint8.length()];
+        for (int i = 0; i < bytes.length; i++)
+            bytes[i] = (byte) uint8.get(i);
+        return bytes;
+    }
+
+    private static native com.google.gwt.typedarrays.shared.Uint8Array encodeUtf8(String s) /*-{
+        if ($wnd.TextEncoder)
+            return new $wnd.TextEncoder().encode(s);
+        // fallback for legacy browsers
+        var bin = unescape(encodeURIComponent(s));
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+    }-*/;
+
+    private interface ScreenShotCallback {
+        void onBuffer(ArrayBuffer buffer);
+        void onError(String error);
     }
 
     @Override

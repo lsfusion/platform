@@ -74,6 +74,8 @@ public interface ClientActionDispatcher {
 
     void execute(ClientWebAction action);
 
+    ScreenShotClientResult execute(ScreenShotClientAction action);
+
     Object execute(CopyReportResourcesClientAction action);
 
     EventBus getEventBus();

@@ -157,6 +157,17 @@ public class GContainer extends GComponent implements HasNativeSID {
         return null;
     }
 
+    public GContainer findContainerBySID(String sID) {
+        if (sID.equals(this.sID)) return this;
+        for (GComponent comp : children) {
+            if (comp instanceof GContainer) {
+                GContainer result = ((GContainer) comp).findContainerBySID(sID);
+                if (result != null) return result;
+            }
+        }
+        return null;
+    }
+
     public GComponent findComponentByID(int id) {
         if (id == this.ID) return this;
         for (GComponent comp : children) {

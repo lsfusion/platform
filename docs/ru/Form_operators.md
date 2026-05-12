@@ -7,6 +7,7 @@ title: 'Операторы формы'
 -   [Ввод значения](Value_input.md)
 -   [Операции с группами объектов](Object_group_operators.md)
 -   [Управление фокусом](Focus_operators.md)
+-   [Снимок](Capture_SCREENSHOT.md)
 
  
 

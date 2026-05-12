@@ -3580,6 +3580,7 @@ leafKeepContextActionDB[List<TypedParameter> context, ActionStatementContext act
 	|	activateADB=activateActionDefinitionBody[context, actions, dynamic] { $action = $activateADB.action; }
 	|	closeFormADB=closeFormActionDefinitionBody[context, actions, dynamic] { $action = $closeFormADB.action; }
 	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, actions, dynamic] { $action = $expandCollapseADB.action; }
+	|	screenShotADB=screenShotActionDefinitionBody[context, actions, dynamic] { $action = $screenShotADB.action; }
     |   internalADB=internalContextActionDefinitionBody[context, actions, dynamic] { $action = $internalADB.action;}
     |   externalADB=externalActionDefinitionBody[context, actions, dynamic] { $action = $externalADB.action;}
     |   showRecDepADB=showRecDepActionDefinitionBody[context, actions, dynamic] { $action = $showRecDepADB.action;}
@@ -4641,6 +4642,26 @@ expandCollapseActionDefinitionBody[List<TypedParameter> context, ActionStatement
 		)
 		'CONTAINER'
 		fc = formComponentID { component = $fc.component; }
+	;
+
+screenShotActionDefinitionBody[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LAWithParams action]
+@init {
+    boolean html = false;
+    boolean formRender = false;
+    String containerSID = null;
+    NamedPropertyUsage targetProp = null;
+}
+@after {
+	if (inMainParseState()) {
+		 $action = self.addScriptedScreenShotAProp(html, formRender, containerSID, targetProp);
+	}
+}
+	:	'SCREENSHOT'
+		('HTML' { html = true; })?
+		(	'FORM' { formRender = true; }
+		|	cSID = ID { containerSID = $cSID.text; }
+		)?
+		('TO' pUsage = propertyUsage { targetProp = $pUsage.propUsage; })?
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

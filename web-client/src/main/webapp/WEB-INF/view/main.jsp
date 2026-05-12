@@ -169,6 +169,9 @@
 
                 "static/js/external/autosize.min.js",
 
+                //html-to-image: SCREENSHOT operator (uses SVG foreignObject for accurate layout)
+                "static/js/external/html-to-image.min.js", //https://unpkg.com/html-to-image@1.11.13/dist/html-to-image.js
+
                 //MMenuLight
                 "static/js/external/mmenu-light.js", //https://cdn.jsdelivr.net/npm/mmenu-light@3.2.0/dist/mmenu-light.js
                 "static/css/external/mmenu-light.css", //https://cdn.jsdelivr.net/npm/mmenu-light@3.2.0/dist/mmenu-light.css

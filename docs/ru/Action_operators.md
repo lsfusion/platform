@@ -45,6 +45,7 @@ title: 'Операторы-действия'
 -   [Оператор `READ`](READ_operator.md)
 -   [Оператор `REQUEST`](REQUEST_operator.md)
 -   [Оператор `RETURN`](RETURN_operator.md)
+-   [Оператор `SCREENSHOT`](SCREENSHOT_operator.md)
 -   [Оператор `SHOW`](SHOW_operator.md)
 -   [Оператор `TRY`](TRY_operator.md)
 -   [Оператор `WHILE`](WHILE_operator.md)

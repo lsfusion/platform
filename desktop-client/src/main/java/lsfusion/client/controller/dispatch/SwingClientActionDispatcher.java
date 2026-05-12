@@ -637,6 +637,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
+    public ScreenShotClientResult execute(ScreenShotClientAction action) {
+        throw new UnsupportedOperationException("SCREENSHOT is not supported in desktop client");
+    }
+
+    @Override
     public EventBus getEventBus() {
         return MainFrame.instance.eventBus;
     }

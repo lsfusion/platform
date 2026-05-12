@@ -204,6 +204,11 @@ public class GwtToClientConverter extends ObjectConverter {
         return new ExternalHttpResponse(gResponse.contentType, gResponse.responseBytes, gResponse.responseHeaders, gResponse.statusCode, gResponse.statusText);
     }
 
+    @Converter(from = GScreenShotResult.class)
+    public lsfusion.interop.action.ScreenShotClientResult convertScreenShotResult(GScreenShotResult gResult) {
+        return new lsfusion.interop.action.ScreenShotClientResult(gResult.data);
+    }
+
     @Converter(from = GCustomObjectValue.class)
     public ClientCustomObjectValue convertCustomObjectValue(GCustomObjectValue gValue) {
         return new ClientCustomObjectValue(gValue.id, gValue.getIdClass());

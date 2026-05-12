@@ -60,8 +60,11 @@ import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.data.file.AbstractDynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.HTMLClass;
+import lsfusion.server.logics.classes.data.file.ImageClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.file.XMLClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
@@ -84,6 +87,7 @@ import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseContainerAction;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
+import lsfusion.server.logics.form.interactive.action.screenshot.ScreenShotAction;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
@@ -2553,6 +2557,22 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedCollapseExpandAProp(ComponentView component, boolean collapse) {
         return new LAWithParams(addAProp(null, new ExpandCollapseContainerAction(LocalizedString.NONAME, component, collapse)), new ArrayList<>());
+    }
+
+    public LAWithParams addScriptedScreenShotAProp(boolean html, boolean formRender, String containerSID, NamedPropertyUsage targetPropUsage) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> targetProp = null;
+        if (targetPropUsage != null) {
+            targetProp = findLPNoParamsByPropertyUsage(targetPropUsage);
+            Type type = targetProp.property.getType();
+            if (html) {
+                if (!(type instanceof HTMLClass || type instanceof AbstractDynamicFormatFileClass))
+                    errLog.emitSimpleError(parser, "SCREENSHOT HTML target property must be HTMLFILE or a generic FILE-based type");
+            } else {
+                if (!(type instanceof ImageClass || type instanceof AbstractDynamicFormatFileClass))
+                    errLog.emitSimpleError(parser, "SCREENSHOT target property must be IMAGEFILE or a generic FILE-based type");
+            }
+        }
+        return new LAWithParams(addAProp(null, new ScreenShotAction(LocalizedString.NONAME, html, formRender, containerSID, targetProp)), new ArrayList<>());
     }
 
     public List<LP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames,
