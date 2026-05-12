@@ -582,12 +582,13 @@ pushAction (BOOLEAN system, BOOLEAN notificate)  {
     }
 }
 
-pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) + { 
+pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) + {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND (NOT currentConnection() OR conn != currentConnection()) DO {
-        NEWSESSION { 
-            NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN); 
-                      CONNECTION conn; 
-        }
+        NEWEXECUTOR {
+            NEWSESSION {
+                NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN);
+            }
+        } CLIENT conn NOWAIT;
     }
 }
 

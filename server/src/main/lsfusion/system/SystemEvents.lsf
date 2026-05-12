@@ -772,11 +772,13 @@ userChanged(CustomUser user) {
 
 evalInAllCurrentConnections(TEXT code, TEXT param) {
     FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
-        NEWSESSION {
-            NEWTHREAD {
-                EVAL code PARAMS param;
-            } CONNECTION connection;     
-        }
+        NEWEXECUTOR {
+            NEWSESSION {
+                NEWTHREAD {
+                    EVAL code PARAMS param;
+                }
+            }
+        } CLIENT connection NOWAIT;
     }
 }
 
