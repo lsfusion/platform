@@ -8,7 +8,7 @@ import lsfusion.server.physics.admin.log.LogInfo;
 import java.util.Locale;
 
 public abstract class RemoteConnectionContext extends AbstractContext {
-    
+
     protected abstract RemoteConnection getConnectionObject();
 
     @Override

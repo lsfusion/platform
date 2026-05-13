@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.authentication.security.policy;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -27,6 +28,16 @@ public class SecurityPolicy {
 
     public boolean checkNavigatorPermission(NavigatorElement navigatorElement) {
         return checkPermission(policy -> policy.checkNavigatorPermission(navigatorElement));
+    }
+
+    /** True iff this policy lets the user open the {@code System.interpreter} form (from
+     *  {@code utils/Eval.lsf}). The form itself is the meaningful privilege — once open it
+     *  hosts every script / action / form / java-body execution wrapper. Used to derive
+     *  HTTP API access: if the user can execute arbitrary lsf via the browser, blocking
+     *  HTTP API on the same account is security theatre. */
+    public boolean canDeriveAPIAccess(BusinessLogics bl) {
+        NavigatorElement form = bl.findNavigatorElement("System.interpreter");
+        return form != null && checkNavigatorPermission(form);
     }
 
     public boolean checkPropertyViewPermission(ActionOrProperty property) {

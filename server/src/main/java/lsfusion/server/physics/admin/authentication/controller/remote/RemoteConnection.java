@@ -46,6 +46,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
@@ -87,6 +88,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected Integer transactionTimeout;
 
     protected String userRoles;
+
+    public SecurityPolicy securityPolicy;
 
     public RemoteConnection(int port, String sID, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack upStack) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         super(port, upStack, sID, SyncType.NOSYNC);
@@ -168,6 +171,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);
         transactionTimeout = (Integer) businessLogics.serviceLM.transactTimeoutUser.read(session, user);
+
+        securityPolicy = securityManager.getSecurityPolicy(session, user);
 
         logInfo = null;
     }
@@ -469,25 +474,23 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     /**
-     * Shared core of the API access gate — used by action-driven flows (eval / exec via
-     * {@link #checkEnableApi}). Reads {@link Settings#getEnableAPI}, rejects
-     * {@code enableAPI=0} (unless {@code apiAnnotation} is true, which lifts it to
-     * {@code 1}), then defers to {@link #checkAnonymous} for the {@code enableAPI=1} →
-     * reject-anonymous case.
+     * Shared core of the API access gate. Reads {@link Settings#getEnableAPI}; at
+     * {@code enableAPI=0} upgrades to {@code 1} when either {@code apiAnnotation} is true
+     * or the user can already execute arbitrary lsf via the interpreter UI
+     * ({@link SecurityPolicy#canDeriveAPIAccess}). Otherwise throws. Then defers to
+     * {@link #checkAnonymous} for the anonymous-token rejection at {@code enableAPI=1}.
      *
      * <p>Callers still own everything that comes <em>before</em> this gate:
      * {@code @noauth} bypass, signed-payload bypass, postponed {@code authException}, etc.
      *
-     * @param apiAnnotation whether the calling action carries {@code @api} (which upgrades
-     *                      {@code enableAPI=0 → 1}). Pass {@code false} for callers without
-     *                      action context.
+     * @param apiAnnotation whether the calling action carries {@code @api}.
      * @param redirect      whether to embed a login redirect on the resulting
      *                      {@link AuthenticationException}.
      */
-    public static void checkAPIAccess(AuthenticationToken token, boolean apiAnnotation, boolean redirect) {
+    public void checkAPIAccess(boolean apiAnnotation, boolean redirect) {
         byte enableApi = Settings.get().getEnableAPI();
         if(enableApi == 0) {
-            if(apiAnnotation)
+            if(apiAnnotation || (securityPolicy != null && securityPolicy.canDeriveAPIAccess(businessLogics)))
                 enableApi = 1;
             else
                 throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI > 0.");
@@ -501,7 +504,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
      *  (throw if denied) matters; the {@code ExternalResponse} return type is just for
      *  signature symmetry with {@code exec} / {@code eval}. */
     public ExternalResponse access() {
-        checkAPIAccess(token, false, false);
+        checkAPIAccess(false, false);
         return null;
     }
 
@@ -624,7 +627,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(authException != null)
             throw authException;
 
-        checkAPIAccess(token, property.action.hasAnnotation("api"), redirect);
+        checkAPIAccess(property.action.hasAnnotation("api"), redirect);
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {

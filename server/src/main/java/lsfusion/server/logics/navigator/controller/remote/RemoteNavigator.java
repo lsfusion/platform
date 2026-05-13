@@ -72,7 +72,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -114,8 +113,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private boolean isMobile;
 
     private DataObject connection;
-
-    public SecurityPolicy securityPolicy;
 
     private ClientCallBackController client;
     
@@ -163,7 +160,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
         contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session) != null;
         highlightDuplicateValue = businessLogics.systemEventsLM.highlightDuplicateValue.read(session) != null;
-        securityPolicy = securityManager.getSecurityPolicy(session, user);
     }
 
     @Override
