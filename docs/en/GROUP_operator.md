@@ -10,7 +10,7 @@ The `GROUP` operator creates a [property](Properties.md) implementing [grouping]
 GROUP 
 type [expr1, ..., exprN]
 [orderClause]
-[TOP topExpr [OFFSET offsetExpr]]
+[TOP topExpr] [OFFSET offsetExpr]
 [WHERE whereExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
@@ -45,7 +45,7 @@ For `CUSTOM` aggregates, the `WITHIN` keyword does not introduce some separate "
 
 From the result perspective, the difference is which values are treated as the aggregate input. Without `WITHIN`, the aggregate computes its result from the values of `expr1, ..., exprN`, while `ORDER` only specifies the processing order of those values. With `WITHIN`, the result is computed from the ordered set of values coming from `ORDER`: these values form the sample over which the aggregate is calculated, while `expr1, ..., exprN` become parameters of the aggregate function itself. For example, in `GROUP CUSTOM ... 'percentile_cont' 0.9 WITHIN ORDER value(i)`, the expression `0.9` specifies which percentile is requested, and the result is the 90th percentile of `value(i)` values inside the group.
 
-The `TOP` block and its optional `OFFSET` continuation restrict the subset of records already selected for aggregation inside each group: first `OFFSET` is applied, then the next `TOP` records are taken in the specified order. The `OFFSET` block is not used on its own without `TOP`. If the `ORDER` block is omitted, these records are selected in arbitrary order.
+The `TOP` and `OFFSET` blocks restrict the subset of records already selected for aggregation inside each group: first `OFFSET` skips the leading records, then the next `TOP` records are taken in the specified order. Either block may be specified independently: if `TOP` is omitted, all records after the offset participate; if `OFFSET` is omitted, the first `TOP` records are taken; if both are omitted, all records of the group participate. If the `ORDER` block is omitted, these records are selected in arbitrary order.
 
 The `WHERE` block defines the condition under which object collections will participate in the group operation. It can only be used with the aggregate functions `AGGR`, `NAGGR`, `CONCAT`, and `LAST`. For `LAST`, if `WHERE` is omitted, non-`NULL`ness of the aggregated expression itself is used as the condition.
 
@@ -98,7 +98,7 @@ For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` opera
 
 - `OFFSET offsetExpr`
 
-  Optional continuation of the `TOP` block. Only records starting from offset `m` will participate in aggregation inside each group, where `m` is the value of expression `offsetExpr`.
+  Only records starting from offset `m` will participate in aggregation inside each group, where `m` is the value of expression `offsetExpr`.
 
 - `whereExpr`
 
