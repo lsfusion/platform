@@ -6720,7 +6720,7 @@
     },
     "How-to_Reports.md": {
       "file_hash": "sha256:67a0094754c4dfc19b65d9d3c11e424436889d3fdf6100197801065c02aac568",
-      "indexed_at": "2026-05-14T20:11:39Z",
+      "indexed_at": "2026-05-14T20:17:33Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v1",
@@ -6783,6 +6783,12 @@
           "section_payload_hash": "sha256:120f341cff18f81fc0dd4ea5e6df6fd6e131948dc245aeec40fcaae86c216d48",
           "source_file": "How-to_Reports.md"
         },
+        "How-to_Reports::task-003::part-04": {
+          "file_id": "file-FS3y9fDFjjQHS22bbVEc6S",
+          "heading_path": "How-to: Reports > Example 3",
+          "section_payload_hash": "sha256:95e28b1e9d9cb54350450b48e1d73fe40b097eac92730d2622cc096cf4ac1f61",
+          "source_file": "How-to_Reports.md"
+        },
         "How-to_Reports::task-003::part-05": {
           "file_id": "file-RnqoRARcumkGYY7u9HenUN",
           "heading_path": "How-to: Reports > Example 3",
@@ -6790,7 +6796,7 @@
           "source_file": "How-to_Reports.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "How-to_Searching_for_elements.md": {
       "file_hash": "sha256:5791eba3d2daae051d6e6566c51707eb1ab1e5d20398e615e9613f00729aed75",
@@ -7622,7 +7628,7 @@
     },
     "In_a_structured_view_EXPORT_IMPORT.md": {
       "file_hash": "sha256:3276250230c7406f264e2c6248f71e87f22f71bbd5df580602fce5070f637b87",
-      "indexed_at": "2026-05-14T20:12:08Z",
+      "indexed_at": "2026-05-14T20:17:41Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v1",
@@ -7654,9 +7660,15 @@
           "heading_path": "In a structured view (EXPORT, IMPORT)",
           "section_payload_hash": "sha256:c0a82254bb2ff7e28ad5f5304c8661707b1bf97e6de1519ebefb889e6c07c7e8",
           "source_file": "In_a_structured_view_EXPORT_IMPORT.md"
+        },
+        "In_a_structured_view_EXPORT_IMPORT::language": {
+          "file_id": "file-ML3q2h11FKKK93yF789W6R",
+          "heading_path": "In a structured view (EXPORT, IMPORT) > Language",
+          "section_payload_hash": "sha256:c26c8b02bb504dcb6bb31039f070100dadc1eb8168aae4068557d9c05a45e4f4",
+          "source_file": "In_a_structured_view_EXPORT_IMPORT.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "In_an_interactive_view_SHOW_DIALOG.md": {
       "file_hash": "sha256:99cf9aeeac8735fdb0ebe33485f8b9ef996817665e8e0f1f05f4eca9c575b841",
@@ -8062,7 +8074,7 @@
     },
     "JOIN_operator.md": {
       "file_hash": "sha256:6954ec2fc2fcfe428035b68638b7c1cc8ae38d0fd509aac0a8594eb1bd5c1926",
-      "indexed_at": "2026-05-14T20:12:41Z",
+      "indexed_at": "2026-05-14T20:17:49Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v1",
@@ -8094,9 +8106,15 @@
           "heading_path": "JOIN operator > Parameters",
           "section_payload_hash": "sha256:3fbbe35e52e68cbe72c299a0e0bea2f84edc7c2adfa9e3acb28894818e967b4b",
           "source_file": "JOIN_operator.md"
+        },
+        "JOIN_operator::syntax": {
+          "file_id": "file-AQiyr8MeupL5phnjUdx3UV",
+          "heading_path": "JOIN operator > Syntax",
+          "section_payload_hash": "sha256:b58d74c92b7484aa561cbf6a281fe2486ebd603a73e314ae4dc8d97e5608d21e",
+          "source_file": "JOIN_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "JSON_operator.md": {
       "file_hash": "sha256:bc19269b6acf983c62ffdeafcbc776b514f32a1f19814f6cb7df763dda1d1bc5",
@@ -11046,7 +11064,7 @@
     },
     "Property_extension.md": {
       "file_hash": "sha256:d5b0eda19652a4f4ebe1f0126592cb79e539ae390beac7119b4e249c3b43c25d",
-      "indexed_at": "2026-05-14T20:15:23Z",
+      "indexed_at": "2026-05-14T20:17:55Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v1",
@@ -11055,6 +11073,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Property_extension::completeness-of-implementations-full": {
+          "file_id": "file-1ZPgeyVHmgenfA2yWLdc4B",
+          "heading_path": "Property extension > Completeness of implementations {#full}",
+          "section_payload_hash": "sha256:f9d992888930cced1578a3188c6b11c178642ea03825710c7a53812e83ffae78",
+          "source_file": "Property_extension.md"
+        },
         "Property_extension::examples": {
           "file_id": "file-HZ7b3RcnfbnW1JFJ3ZYifA",
           "heading_path": "Property extension > Examples",
@@ -11091,6 +11115,12 @@
           "section_payload_hash": "sha256:3d8f8904db14e828a2cff023e4f3f395056f783f632d571c9ecbccf9fcd50b5b",
           "source_file": "Property_extension.md"
         },
+        "Property_extension::polymorphic-form-poly": {
+          "file_id": "file-K3xT53gdMJNAGY1bnHMCvZ",
+          "heading_path": "Property extension > Polymorphic form {#poly}",
+          "section_payload_hash": "sha256:329c9d86f6da8385443d80e3641fb6665c6f604dc4edf82b5ec830387ba3e0bb",
+          "source_file": "Property_extension.md"
+        },
         "Property_extension::property-extension": {
           "file_id": "file-CFh8wosoJZ8pTkjMQP6uZt",
           "heading_path": "Property extension",
@@ -11098,7 +11128,7 @@
           "source_file": "Property_extension.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "Property_operators.md": {
       "file_hash": "sha256:307f2af2bed37ca90c92ff4fc941c9bc24a8f16138cf736630f201466b386033",
@@ -11830,7 +11860,7 @@
     },
     "Search_.md": {
       "file_hash": "sha256:34f56ae2b2b9327ccde170b1493fc200f6b9337d815a4e0b8e5718604dba8c80",
-      "indexed_at": "2026-05-14T20:15:55Z",
+      "indexed_at": "2026-05-14T20:18:03Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v1",
@@ -11933,6 +11963,12 @@
           "file_id": "file-93Qucq6rfgGFCkD69ZnZLm",
           "heading_path": "Search > Search steps > Selection of non-matching classes of parameters (if an abstract property is being searched for) {#notequals}",
           "section_payload_hash": "sha256:7f7b2f081bbb5ff1145fd61491d2990acfb3daae7ed8f897a6f037512b03d8c3",
+          "source_file": "Search_.md"
+        },
+        "Search_::suitable-classes-of-parameters-direct": {
+          "file_id": "file-VNCjsscgRKoupwquGt6DXF",
+          "heading_path": "Search > Search steps > Suitable classes of parameters {#direct}",
+          "section_payload_hash": "sha256:72e11a3a05ab6d0168901d1f05c313418fe19df117b8876a31168c7baa5afbb3",
           "source_file": "Search_.md"
         }
       },
@@ -12614,7 +12650,7 @@
     },
     "Tables.md": {
       "file_hash": "sha256:a8c5e221b8161424b649a23f36cc5eb9efb0ffdd5b70db9c6f921da9feb8775f",
-      "indexed_at": "2026-05-14T20:16:11Z",
+      "indexed_at": "2026-05-14T20:18:14Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v1",
@@ -12639,6 +12675,12 @@
           "file_id": "file-KcxfuPhYJ3aMridyv5ewNM",
           "heading_path": "Tables > Examples",
           "section_payload_hash": "sha256:db4bb99cdecbebb2346e6621517ea923689c076cf135cb8c04e60bfc45bae211",
+          "source_file": "Tables.md"
+        },
+        "Tables::field-naming-name": {
+          "file_id": "file-L7b37k9Y4D47BHugeA8gPg",
+          "heading_path": "Tables > Field naming {#name}",
+          "section_payload_hash": "sha256:2d7e096c6f427d0247012831ebc5d6af98797584e31a98ab73b882b521d40a98",
           "source_file": "Tables.md"
         },
         "Tables::full-tables-full": {
@@ -12678,7 +12720,7 @@
           "source_file": "Tables.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "Tokens.md": {
       "file_hash": "sha256:050f479813b84dbf19b3db2e646ba7f6d677779e3566912c8fa53f0dc4ecbcfe",
