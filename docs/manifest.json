@@ -1,0 +1,1037 @@
+{
+  "=_statement": {
+    "sourceType": "language"
+  },
+  "=gt_statement": {
+    "sourceType": "language"
+  },
+  "ABSTRACT_action_operator": {
+    "sourceType": "language"
+  },
+  "ABSTRACT_operator": {
+    "sourceType": "language"
+  },
+  "ACTION_plus_statement": {
+    "sourceType": "language"
+  },
+  "ACTION_statement": {
+    "sourceType": "language"
+  },
+  "ACTIVATE_operator": {
+    "sourceType": "language"
+  },
+  "ACTIVE_operator": {
+    "sourceType": "language"
+  },
+  "AFTER_statement": {
+    "sourceType": "language"
+  },
+  "AGGR_operator": {
+    "sourceType": "language"
+  },
+  "AND_OR_NOT_XOR_operators": {
+    "sourceType": "language"
+  },
+  "APPLY_operator": {
+    "sourceType": "language"
+  },
+  "ASK_operator": {
+    "sourceType": "language"
+  },
+  "Access_from_an_external_system": {
+    "sourceType": "paradigm"
+  },
+  "Access_from_an_internal_system": {
+    "sourceType": "paradigm"
+  },
+  "Access_to_an_external_system_EXTERNAL": {
+    "sourceType": "paradigm"
+  },
+  "Access_to_an_internal_system_INTERNAL_FORMULA": {
+    "sourceType": "paradigm"
+  },
+  "Action_extension": {
+    "sourceType": "paradigm"
+  },
+  "Action_operators": {
+    "sourceType": "language"
+  },
+  "Action_operators_paradigm": {
+    "sourceType": "paradigm"
+  },
+  "Action_options": {
+    "sourceType": "language"
+  },
+  "Actions": {
+    "sourceType": "paradigm"
+  },
+  "Activation_ACTIVATE": {
+    "sourceType": "paradigm"
+  },
+  "Activity_ACTIVE": {
+    "sourceType": "paradigm"
+  },
+  "Aggregations": {
+    "sourceType": "paradigm"
+  },
+  "Apply_changes_APPLY": {
+    "sourceType": "paradigm"
+  },
+  "Arithmetic_operators": {
+    "sourceType": "language"
+  },
+  "Arithmetic_operators_plus_minus_etc": {
+    "sourceType": "paradigm"
+  },
+  "Automatic_installation": {
+    "sourceType": "paradigm"
+  },
+  "BEFORE_statement": {
+    "sourceType": "language"
+  },
+  "BREAK_operator": {
+    "sourceType": "language"
+  },
+  "Braces_operator": {
+    "sourceType": "language"
+  },
+  "Brackets_operator": {
+    "sourceType": "language"
+  },
+  "Branching_CASE_IF_MULTI": {
+    "sourceType": "paradigm"
+  },
+  "Built-in_classes": {
+    "sourceType": "paradigm"
+  },
+  "CANCEL_operator": {
+    "sourceType": "language"
+  },
+  "CASE_action_operator": {
+    "sourceType": "language"
+  },
+  "CASE_operator": {
+    "sourceType": "language"
+  },
+  "CHANGECLASS_operator": {
+    "sourceType": "language"
+  },
+  "CHANGE_operator": {
+    "sourceType": "language"
+  },
+  "CLASS_statement": {
+    "sourceType": "language"
+  },
+  "COLLAPSE_operator": {
+    "sourceType": "language"
+  },
+  "CONCAT_operator": {
+    "sourceType": "language"
+  },
+  "CONSTRAINT_statement": {
+    "sourceType": "language"
+  },
+  "CONTINUE_operator": {
+    "sourceType": "language"
+  },
+  "Calculated_events": {
+    "sourceType": "paradigm"
+  },
+  "Call_EXEC": {
+    "sourceType": "paradigm"
+  },
+  "Cancel_changes_CANCEL": {
+    "sourceType": "paradigm"
+  },
+  "Capture_SCREENSHOT": {
+    "sourceType": "paradigm"
+  },
+  "Change_operators": {
+    "sourceType": "language"
+  },
+  "Change_operators_SET_CHANGED_etc": {
+    "sourceType": "paradigm"
+  },
+  "Change_sessions": {
+    "sourceType": "paradigm"
+  },
+  "Chat": {
+    "sourceType": "paradigm"
+  },
+  "Class_change_CHANGECLASS_DELETE": {
+    "sourceType": "paradigm"
+  },
+  "Class_extension": {
+    "sourceType": "paradigm"
+  },
+  "Class_operators": {
+    "sourceType": "paradigm"
+  },
+  "Classes": {
+    "sourceType": "paradigm"
+  },
+  "Classification_IS_AS": {
+    "sourceType": "paradigm"
+  },
+  "Coding_conventions": {
+    "sourceType": "language"
+  },
+  "Comments": {
+    "sourceType": "language"
+  },
+  "Comparison_operators": {
+    "sourceType": "language"
+  },
+  "Comparison_operators_=_etc": {
+    "sourceType": "paradigm"
+  },
+  "Composition_JOIN": {
+    "sourceType": "paradigm"
+  },
+  "Constant": {
+    "sourceType": "paradigm"
+  },
+  "Constraints": {
+    "sourceType": "paradigm"
+  },
+  "Custom_Spring_bean_EventServer": {
+    "sourceType": "paradigm"
+  },
+  "Custom_formula_FORMULA": {
+    "sourceType": "paradigm"
+  },
+  "DATA_operator": {
+    "sourceType": "language"
+  },
+  "DELETE_operator": {
+    "sourceType": "language"
+  },
+  "DESIGN_statement": {
+    "sourceType": "language"
+  },
+  "DIALOG_operator": {
+    "sourceType": "language"
+  },
+  "Data_export_EXPORT": {
+    "sourceType": "paradigm"
+  },
+  "Data_import_IMPORT": {
+    "sourceType": "paradigm"
+  },
+  "Data_properties_DATA": {
+    "sourceType": "paradigm"
+  },
+  "Development": {
+    "sourceType": "paradigm"
+  },
+  "Development_auto": {
+    "sourceType": "paradigm"
+  },
+  "Development_manual": {
+    "sourceType": "paradigm"
+  },
+  "Distribution_UNGROUP": {
+    "sourceType": "paradigm"
+  },
+  "Docker": {
+    "sourceType": "paradigm"
+  },
+  "Domain_logic": {
+    "sourceType": "paradigm"
+  },
+  "EMAIL_operator": {
+    "sourceType": "language"
+  },
+  "EVAL_operator": {
+    "sourceType": "language"
+  },
+  "EXCLUSIVE_operator": {
+    "sourceType": "language"
+  },
+  "EXEC_operator": {
+    "sourceType": "language"
+  },
+  "EXPAND_operator": {
+    "sourceType": "language"
+  },
+  "EXPORT_operator": {
+    "sourceType": "language"
+  },
+  "EXTEND_CLASS_statement": {
+    "sourceType": "language"
+  },
+  "EXTEND_FORM_statement": {
+    "sourceType": "language"
+  },
+  "EXTERNAL_operator": {
+    "sourceType": "language"
+  },
+  "Element_identification": {
+    "sourceType": "paradigm"
+  },
+  "Empty_statement": {
+    "sourceType": "language"
+  },
+  "Eval_EVAL": {
+    "sourceType": "paradigm"
+  },
+  "Event_block": {
+    "sourceType": "language"
+  },
+  "Event_description_block": {
+    "sourceType": "language"
+  },
+  "Events": {
+    "sourceType": "paradigm"
+  },
+  "Examples": {
+    "sourceType": "paradigm"
+  },
+  "Exception_handling_TRY": {
+    "sourceType": "paradigm"
+  },
+  "Execution": {
+    "sourceType": "paradigm"
+  },
+  "Execution_auto": {
+    "sourceType": "paradigm"
+  },
+  "Execution_manual": {
+    "sourceType": "paradigm"
+  },
+  "Execution_order": {
+    "sourceType": "paradigm"
+  },
+  "Exit_RETURN": {
+    "sourceType": "paradigm"
+  },
+  "Expression": {
+    "sourceType": "language"
+  },
+  "Extensions": {
+    "sourceType": "paradigm"
+  },
+  "Extremum_MAX_MIN": {
+    "sourceType": "paradigm"
+  },
+  "FORMULA_operator": {
+    "sourceType": "language"
+  },
+  "FORM_statement": {
+    "sourceType": "language"
+  },
+  "FOR_operator": {
+    "sourceType": "language"
+  },
+  "File_operators": {
+    "sourceType": "paradigm"
+  },
+  "Filter_FILTER": {
+    "sourceType": "paradigm"
+  },
+  "Filters_and_sortings_block": {
+    "sourceType": "language"
+  },
+  "Focus_operators": {
+    "sourceType": "paradigm"
+  },
+  "Form_design": {
+    "sourceType": "paradigm"
+  },
+  "Form_events": {
+    "sourceType": "paradigm"
+  },
+  "Form_extension": {
+    "sourceType": "paradigm"
+  },
+  "Form_operators": {
+    "sourceType": "paradigm"
+  },
+  "Form_structure": {
+    "sourceType": "paradigm"
+  },
+  "Form_views": {
+    "sourceType": "paradigm"
+  },
+  "Forms": {
+    "sourceType": "paradigm"
+  },
+  "GROUP_operator": {
+    "sourceType": "language"
+  },
+  "GROUP_statement": {
+    "sourceType": "language"
+  },
+  "Grouping_GROUP": {
+    "sourceType": "paradigm"
+  },
+  "Groups_of_properties_and_actions": {
+    "sourceType": "paradigm"
+  },
+  "How-to": {
+    "sourceType": "how-to"
+  },
+  "How-to_ACTIVATE": {
+    "sourceType": "how-to"
+  },
+  "How-to_Access_to_internal_systems": {
+    "sourceType": "how-to"
+  },
+  "How-to_Action_extension": {
+    "sourceType": "how-to"
+  },
+  "How-to_Actions": {
+    "sourceType": "how-to"
+  },
+  "How-to_Adding_New_Fonts": {
+    "sourceType": "how-to"
+  },
+  "How-to_Binding_properties": {
+    "sourceType": "how-to"
+  },
+  "How-to_CASE_IF_OVERRIDE": {
+    "sourceType": "how-to"
+  },
+  "How-to_CHANGE": {
+    "sourceType": "how-to"
+  },
+  "How-to_CRUD": {
+    "sourceType": "how-to"
+  },
+  "How-to_Class_extension": {
+    "sourceType": "how-to"
+  },
+  "How-to_Computations": {
+    "sourceType": "how-to"
+  },
+  "How-to_Constraints": {
+    "sourceType": "how-to"
+  },
+  "How-to_Custom_components_objects": {
+    "sourceType": "how-to"
+  },
+  "How-to_Custom_components_properties": {
+    "sourceType": "how-to"
+  },
+  "How-to_DELETE": {
+    "sourceType": "how-to"
+  },
+  "How-to_Data_entry": {
+    "sourceType": "how-to"
+  },
+  "How-to_Data_export": {
+    "sourceType": "how-to"
+  },
+  "How-to_Data_import": {
+    "sourceType": "how-to"
+  },
+  "How-to_Declarative_logic": {
+    "sourceType": "how-to"
+  },
+  "How-to_Design": {
+    "sourceType": "how-to"
+  },
+  "How-to_Documents_with_lines": {
+    "sourceType": "how-to"
+  },
+  "How-to_EXEC": {
+    "sourceType": "how-to"
+  },
+  "How-to_Events": {
+    "sourceType": "how-to"
+  },
+  "How-to_Explicit_typing": {
+    "sourceType": "how-to"
+  },
+  "How-to_Extensions": {
+    "sourceType": "how-to"
+  },
+  "How-to_FOR": {
+    "sourceType": "how-to"
+  },
+  "How-to_FORMULA": {
+    "sourceType": "how-to"
+  },
+  "How-to_Filtering_and_ordering": {
+    "sourceType": "how-to"
+  },
+  "How-to_Form_extension": {
+    "sourceType": "how-to"
+  },
+  "How-to_Frontend": {
+    "sourceType": "how-to"
+  },
+  "How-to_GROUP_CONCAT": {
+    "sourceType": "how-to"
+  },
+  "How-to_GROUP_LAST": {
+    "sourceType": "how-to"
+  },
+  "How-to_GROUP_MAX_MIN_AGGR": {
+    "sourceType": "how-to"
+  },
+  "How-to_GROUP_SUM": {
+    "sourceType": "how-to"
+  },
+  "How-to_GUI": {
+    "sourceType": "how-to"
+  },
+  "How-to_IF_CASE": {
+    "sourceType": "how-to"
+  },
+  "How-to_INTERNAL": {
+    "sourceType": "how-to"
+  },
+  "How-to_Imperative_logic": {
+    "sourceType": "how-to"
+  },
+  "How-to_Inheritance_and_aggregation": {
+    "sourceType": "how-to"
+  },
+  "How-to_Integration": {
+    "sourceType": "how-to"
+  },
+  "How-to_Interaction_via_HTTP_protocol": {
+    "sourceType": "how-to"
+  },
+  "How-to_Interactive_forms": {
+    "sourceType": "how-to"
+  },
+  "How-to_Internationalization": {
+    "sourceType": "how-to"
+  },
+  "How-to_Matrix": {
+    "sourceType": "how-to"
+  },
+  "How-to_Metaprogramming": {
+    "sourceType": "how-to"
+  },
+  "How-to_NEW": {
+    "sourceType": "how-to"
+  },
+  "How-to_NEWSESSION": {
+    "sourceType": "how-to"
+  },
+  "How-to_Namespaces": {
+    "sourceType": "how-to"
+  },
+  "How-to_Navigator": {
+    "sourceType": "how-to"
+  },
+  "How-to_Numbering": {
+    "sourceType": "how-to"
+  },
+  "How-to_Overriding_values": {
+    "sourceType": "how-to"
+  },
+  "How-to_PARTITION": {
+    "sourceType": "how-to"
+  },
+  "How-to_Physical_model": {
+    "sourceType": "how-to"
+  },
+  "How-to_Property_extension": {
+    "sourceType": "how-to"
+  },
+  "How-to_Registers": {
+    "sourceType": "how-to"
+  },
+  "How-to_Reports": {
+    "sourceType": "how-to"
+  },
+  "How-to_Searching_for_elements": {
+    "sourceType": "how-to"
+  },
+  "How-to_Table_status": {
+    "sourceType": "how-to"
+  },
+  "How-to_Trees": {
+    "sourceType": "how-to"
+  },
+  "How-to_Use_Cases": {
+    "sourceType": "how-to"
+  },
+  "How-to_Using_objects_as_templates": {
+    "sourceType": "how-to"
+  },
+  "How-to_WHILE": {
+    "sourceType": "how-to"
+  },
+  "How-to_Working_with_documents": {
+    "sourceType": "how-to"
+  },
+  "How-to_Working_with_external_formats": {
+    "sourceType": "how-to"
+  },
+  "IDE": {
+    "sourceType": "paradigm"
+  },
+  "IDs": {
+    "sourceType": "language"
+  },
+  "IF_..._THEN_action_operator": {
+    "sourceType": "language"
+  },
+  "IF_..._THEN_operator": {
+    "sourceType": "language"
+  },
+  "IF_operator": {
+    "sourceType": "language"
+  },
+  "IMPORT_operator": {
+    "sourceType": "language"
+  },
+  "INDEX_statement": {
+    "sourceType": "language"
+  },
+  "INPUT_operator": {
+    "sourceType": "language"
+  },
+  "INTERNAL_operator": {
+    "sourceType": "language"
+  },
+  "ISCLASS_operator": {
+    "sourceType": "language"
+  },
+  "IS_AS_operators": {
+    "sourceType": "language"
+  },
+  "Icons": {
+    "sourceType": "paradigm"
+  },
+  "In_a_print_view_PRINT": {
+    "sourceType": "paradigm"
+  },
+  "In_a_structured_view_EXPORT_IMPORT": {
+    "sourceType": "paradigm"
+  },
+  "In_an_interactive_view_SHOW_DIALOG": {
+    "sourceType": "paradigm"
+  },
+  "Indexes": {
+    "sourceType": "paradigm"
+  },
+  "Install": {
+    "sourceType": "paradigm"
+  },
+  "Integration": {
+    "sourceType": "paradigm"
+  },
+  "Interactive_view": {
+    "sourceType": "paradigm"
+  },
+  "Internal_call_INTERNAL": {
+    "sourceType": "paradigm"
+  },
+  "Internationalization": {
+    "sourceType": "paradigm"
+  },
+  "Interpreter": {
+    "sourceType": "paradigm"
+  },
+  "Interruption_BREAK": {
+    "sourceType": "paradigm"
+  },
+  "JOIN_operator": {
+    "sourceType": "language"
+  },
+  "JSON_operator": {
+    "sourceType": "language"
+  },
+  "Java_integration_API": {
+    "sourceType": "paradigm"
+  },
+  "Journals_and_logs": {
+    "sourceType": "paradigm"
+  },
+  "LIKE_operator": {
+    "sourceType": "language"
+  },
+  "Language": {
+    "sourceType": "language"
+  },
+  "Launch_events": {
+    "sourceType": "paradigm"
+  },
+  "Launch_parameters": {
+    "sourceType": "paradigm"
+  },
+  "Learn": {
+    "sourceType": "paradigm"
+  },
+  "Learning_materials": {
+    "sourceType": "paradigm"
+  },
+  "Literals": {
+    "sourceType": "language"
+  },
+  "Logical_model": {
+    "sourceType": "paradigm"
+  },
+  "Logical_operators_AND_OR_NOT_XOR": {
+    "sourceType": "paradigm"
+  },
+  "Loop_FOR": {
+    "sourceType": "paradigm"
+  },
+  "MATCH_operator": {
+    "sourceType": "language"
+  },
+  "MAX_operator": {
+    "sourceType": "language"
+  },
+  "MCP_server": {
+    "sourceType": "paradigm"
+  },
+  "MESSAGE_operator": {
+    "sourceType": "language"
+  },
+  "META_statement": {
+    "sourceType": "language"
+  },
+  "MIN_operator": {
+    "sourceType": "language"
+  },
+  "MULTI_action_operator": {
+    "sourceType": "language"
+  },
+  "MULTI_operator": {
+    "sourceType": "language"
+  },
+  "Management": {
+    "sourceType": "paradigm"
+  },
+  "Manual_installation": {
+    "sourceType": "paradigm"
+  },
+  "Materializations": {
+    "sourceType": "paradigm"
+  },
+  "Materials_management": {
+    "sourceType": "paradigm"
+  },
+  "Metaprogramming": {
+    "sourceType": "paradigm"
+  },
+  "Migration": {
+    "sourceType": "paradigm"
+  },
+  "Modularity": {
+    "sourceType": "paradigm"
+  },
+  "Module_header": {
+    "sourceType": "language"
+  },
+  "Modules": {
+    "sourceType": "paradigm"
+  },
+  "NAVIGATOR_statement": {
+    "sourceType": "language"
+  },
+  "NESTEDSESSION_operator": {
+    "sourceType": "language"
+  },
+  "NEWCONNECTION_operator": {
+    "sourceType": "language"
+  },
+  "NEWEXECUTOR_operator": {
+    "sourceType": "language"
+  },
+  "NEWSESSION_operator": {
+    "sourceType": "language"
+  },
+  "NEWTHREAD_operator": {
+    "sourceType": "language"
+  },
+  "NEW_operator": {
+    "sourceType": "language"
+  },
+  "Naming": {
+    "sourceType": "paradigm"
+  },
+  "Navigator": {
+    "sourceType": "paradigm"
+  },
+  "Navigator_design": {
+    "sourceType": "paradigm"
+  },
+  "New_connection_NEWCONNECTION": {
+    "sourceType": "paradigm"
+  },
+  "New_object_NEW": {
+    "sourceType": "paradigm"
+  },
+  "New_session_NEWSESSION_NESTEDSESSION": {
+    "sourceType": "paradigm"
+  },
+  "New_threads_NEWTHREAD_NEWEXECUTOR": {
+    "sourceType": "paradigm"
+  },
+  "Next_iteration_CONTINUE": {
+    "sourceType": "paradigm"
+  },
+  "ON_statement": {
+    "sourceType": "language"
+  },
+  "OVERRIDE_operator": {
+    "sourceType": "language"
+  },
+  "Object_blocks": {
+    "sourceType": "language"
+  },
+  "Object_group_operator": {
+    "sourceType": "language"
+  },
+  "Object_group_operators": {
+    "sourceType": "paradigm"
+  },
+  "Object_tree_visibility_EXPAND_COLLAPSE": {
+    "sourceType": "paradigm"
+  },
+  "Online_demo": {
+    "sourceType": "paradigm"
+  },
+  "Open_form": {
+    "sourceType": "paradigm"
+  },
+  "Operations_with_primitives": {
+    "sourceType": "paradigm"
+  },
+  "Operator_priority": {
+    "sourceType": "language"
+  },
+  "Order_ORDER": {
+    "sourceType": "paradigm"
+  },
+  "PARTITION_operator": {
+    "sourceType": "language"
+  },
+  "PREV_operator": {
+    "sourceType": "language"
+  },
+  "PRINT_operator": {
+    "sourceType": "language"
+  },
+  "Paradigm": {
+    "sourceType": "paradigm"
+  },
+  "Partitioning_sorting_PARTITION_..._ORDER": {
+    "sourceType": "paradigm"
+  },
+  "Physical_model": {
+    "sourceType": "paradigm"
+  },
+  "Pivot_block": {
+    "sourceType": "language"
+  },
+  "Previous_value_PREV": {
+    "sourceType": "paradigm"
+  },
+  "Primitive_input_INPUT": {
+    "sourceType": "paradigm"
+  },
+  "Print_view": {
+    "sourceType": "paradigm"
+  },
+  "Process_monitor": {
+    "sourceType": "paradigm"
+  },
+  "Profiler": {
+    "sourceType": "paradigm"
+  },
+  "Projects": {
+    "sourceType": "paradigm"
+  },
+  "Properties": {
+    "sourceType": "paradigm"
+  },
+  "Properties_and_actions_block": {
+    "sourceType": "language"
+  },
+  "Property_change_CHANGE": {
+    "sourceType": "paradigm"
+  },
+  "Property_extension": {
+    "sourceType": "paradigm"
+  },
+  "Property_operators": {
+    "sourceType": "language"
+  },
+  "Property_operators_paradigm": {
+    "sourceType": "paradigm"
+  },
+  "Property_options": {
+    "sourceType": "language"
+  },
+  "Property_signature_ISCLASS": {
+    "sourceType": "language"
+  },
+  "READ_operator": {
+    "sourceType": "language"
+  },
+  "RECURSION_operator": {
+    "sourceType": "language"
+  },
+  "REQUEST_operator": {
+    "sourceType": "language"
+  },
+  "RETURN_operator": {
+    "sourceType": "language"
+  },
+  "ROUND_operator": {
+    "sourceType": "language"
+  },
+  "Read_file_READ": {
+    "sourceType": "paradigm"
+  },
+  "Recursion_RECURSION": {
+    "sourceType": "paradigm"
+  },
+  "Recursive_loop_WHILE": {
+    "sourceType": "paradigm"
+  },
+  "Report_design": {
+    "sourceType": "paradigm"
+  },
+  "Rounding_operator_ROUND": {
+    "sourceType": "paradigm"
+  },
+  "SCREENSHOT_operator": {
+    "sourceType": "language"
+  },
+  "SHOW_operator": {
+    "sourceType": "language"
+  },
+  "STRUCT_operator": {
+    "sourceType": "language"
+  },
+  "Scheduler": {
+    "sourceType": "paradigm"
+  },
+  "Score_table": {
+    "sourceType": "paradigm"
+  },
+  "Search_": {
+    "sourceType": "paradigm"
+  },
+  "Security_policy": {
+    "sourceType": "paradigm"
+  },
+  "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE": {
+    "sourceType": "paradigm"
+  },
+  "Send_mail_EMAIL": {
+    "sourceType": "paradigm"
+  },
+  "Sequence": {
+    "sourceType": "paradigm"
+  },
+  "Session_management": {
+    "sourceType": "paradigm"
+  },
+  "Set_operations": {
+    "sourceType": "paradigm"
+  },
+  "Show_message_MESSAGE_ASK": {
+    "sourceType": "paradigm"
+  },
+  "Simple_constraints": {
+    "sourceType": "paradigm"
+  },
+  "Simple_event": {
+    "sourceType": "paradigm"
+  },
+  "State_change": {
+    "sourceType": "paradigm"
+  },
+  "Statements": {
+    "sourceType": "language"
+  },
+  "Static_objects": {
+    "sourceType": "paradigm"
+  },
+  "Static_view": {
+    "sourceType": "paradigm"
+  },
+  "String_operators_plus_CONCAT_SUBSTRING": {
+    "sourceType": "paradigm"
+  },
+  "Structure_operators_STRUCT": {
+    "sourceType": "paradigm"
+  },
+  "Structured_view": {
+    "sourceType": "paradigm"
+  },
+  "System_parameters": {
+    "sourceType": "paradigm"
+  },
+  "TABLE_statement": {
+    "sourceType": "language"
+  },
+  "TRY_operator": {
+    "sourceType": "language"
+  },
+  "Tables": {
+    "sourceType": "paradigm"
+  },
+  "Tokens": {
+    "sourceType": "language"
+  },
+  "Type_conversion": {
+    "sourceType": "paradigm"
+  },
+  "Type_conversion_operator": {
+    "sourceType": "language"
+  },
+  "UNGROUP_operator": {
+    "sourceType": "language"
+  },
+  "User_IS_interaction": {
+    "sourceType": "paradigm"
+  },
+  "User_classes": {
+    "sourceType": "paradigm"
+  },
+  "User_interface": {
+    "sourceType": "paradigm"
+  },
+  "Value_input": {
+    "sourceType": "paradigm"
+  },
+  "Value_request_REQUEST": {
+    "sourceType": "paradigm"
+  },
+  "View_VIEW": {
+    "sourceType": "paradigm"
+  },
+  "View_logic": {
+    "sourceType": "paradigm"
+  },
+  "WHEN_statement": {
+    "sourceType": "language"
+  },
+  "WHILE_operator": {
+    "sourceType": "language"
+  },
+  "WINDOW_statement": {
+    "sourceType": "language"
+  },
+  "WRITE_operator": {
+    "sourceType": "language"
+  },
+  "Working_parameters": {
+    "sourceType": "paradigm"
+  },
+  "Write_file_WRITE": {
+    "sourceType": "paradigm"
+  },
+  "commat_statement": {
+    "sourceType": "language"
+  },
+  "lt-_WHEN_statement": {
+    "sourceType": "language"
+  },
+  "plus_equals_statement": {
+    "sourceType": "language"
+  }
+}
