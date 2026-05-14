@@ -15,24 +15,28 @@ These parts define:
 1) the order in which documentation should be written
 2) the order in which language capabilities should be understood
 
+Paths in this file are written relative to the `platform/` repo root
+(sibling to `../docusaurus/`, `../mcp/`, etc. in the `lsfusion-aggregate/`
+workspace).
+
 Common structure rules:
 - the documentation structure / hierarchy
   for navigation
-  is defined in `docusaurus/sidebars.js`
+  is defined in `../docusaurus/sidebars.js`
 - the assistant MUST treat
-  `docusaurus/sidebars.js`
+  `../docusaurus/sidebars.js`
   as the source of truth
   for section placement
   and parent-child relationships
   in the docs,
   while treating
-  the `docusaurus` subproject
+  the sibling `../docusaurus/` project
   as a derived copy
   of the documentation
   from `platform/docs`
 - the assistant MUST NOT edit
-  files inside `docusaurus`
-  except `docusaurus/sidebars.js`;
+  files inside `../docusaurus/`
+  except `../docusaurus/sidebars.js`;
   all documentation content changes
   MUST be made in `platform/docs`
 - the assistant MUST make
@@ -56,7 +60,7 @@ Common structure rules:
   of what that section covers
 - in that case,
   the assistant SHOULD also
-  update `docusaurus/sidebars.js`
+  update `../docusaurus/sidebars.js`
   so that the new block
   or section is included
   in the documentation hierarchy
@@ -331,7 +335,7 @@ How-to article structure convention:
 
 GENERAL GUIDE
 
-There is also a general guide: `mcp/brief.md`.
+There is also a general guide: `../mcp/brief.md`.
 
 It is assumed to exist.
 It SHOULD contain important / key information
