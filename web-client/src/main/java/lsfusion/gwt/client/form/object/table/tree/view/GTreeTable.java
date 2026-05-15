@@ -51,6 +51,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
     private boolean dataUpdated;
+    // set by setKeys when the structural change can be applied incrementally (without a full rebuild);
+    // consumed by updateData. dataUpdated takes precedence (covers mixed structural+value frames).
+    private boolean treeStructuralUpdated;
+
+    // --- Stage 2' scoped property-value updates ---
+    // O(1) lookup of object record by key (placeholders aren't indexed — they have no own key/values).
+    // Maintained by fullRebuildData() (rebuilds from scratch) and applyStructuralIncrement() (delta).
+    private final NativeHashMap<GGroupObjectValue, GTreeObjectGridRecord> rowByKey = new NativeHashMap<>();
+    // keys whose merge-semantics property values were updated this frame; consumed and cleared in updateData.
+    // (replace-semantics updates set dataUpdated=true instead — they fall back to full rebuild)
+    private final NativeHashMap<GGroupObjectValue, Boolean> changedKeys = new NativeHashMap<>();
 
     private GTreeTableTree tree;
 
@@ -600,20 +611,37 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Integer> expandable, int requestIndex) {
         tree.setKeys(group, keys, parents, expandable, requestIndex);
 
-        dataUpdated = true;
+        // if the structural change is a clean placeholder replacement of a single node, it can be applied
+        // incrementally in updateData; otherwise fall back to the full rebuild.
+        // !dataUpdated && !treeStructuralUpdated — only go incremental when nothing else has flagged a change
+        // this frame yet (a second setKeys or a property update in the same frame forces a full rebuild,
+        // since the tree's incremental tracking only holds the last setKeys)
+        if (incrementalUpdate && !dataUpdated && !treeStructuralUpdated && tree.canApplyStructuralIncrement())
+            treeStructuralUpdated = true;
+        else
+            dataUpdated = true;
     }
 
     public void updateLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> propLoadings) {
         // here can be leaks because of nulls (so in theory nulls better to be removed)
         GwtSharedUtils.putUpdate(loadings, property, propLoadings, true);
 
-        dataUpdated = true;
+        // Stage 2': merge semantics → scope by changed keys
+        if (incrementalUpdate)
+            propLoadings.foreachKey(k -> changedKeys.put(k, Boolean.TRUE));
+        else
+            dataUpdated = true;
     }
 
     public void updatePropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> propValues, boolean updateKeys) {
         GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
 
-        dataUpdated = true;
+        // Stage 2': only the merge (updateKeys=true) case can be scoped by key set;
+        // replace (updateKeys=false) potentially affects all old keys too → fall back to full rebuild
+        if (incrementalUpdate && updateKeys)
+            propValues.foreachKey(k -> changedKeys.put(k, Boolean.TRUE));
+        else
+            dataUpdated = true;
     }
 
     public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> readOnlyValues) {
@@ -835,21 +863,122 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updateData() {
         if (dataUpdated) {
+            // full rebuild — also covers mixed structural+value frames (dataUpdated wins over treeStructuralUpdated)
             checkUpdateCurrentRow();
 
 //            checkSelectedRowVisible();
 
-            rows.clear();
-            tree.updateRows(rows);
-            updatePropertyReaders();
+            fullRebuildData();
 //            treeSelectionHandler.dataUpdated();
 
-            rowsChanged();
-
             dataUpdated = false;
+            treeStructuralUpdated = false;
+            changedKeys.clear(); // covered by the full rebuild
+        } else if (treeStructuralUpdated || !changedKeys.isEmpty()) {
+            // incremental path: structural delta (Stage 1) and/or scoped property update (Stage 2')
+            checkUpdateCurrentRow();
+
+            if (treeStructuralUpdated) {
+                applyStructuralIncrement();
+                treeStructuralUpdated = false;
+            }
+            if (!changedKeys.isEmpty()) {
+                applyScopedPropertyUpdate();
+                changedKeys.clear();
+            }
         }
 
         updateCurrentRow();
+    }
+
+    private void fullRebuildData() {
+        rows.clear();
+        rowByKey.clear();
+        tree.updateRows(rows);
+        for (GTreeGridRecord rec : rows)
+            if (rec instanceof GTreeObjectGridRecord)
+                rowByKey.put(rec.getKey(), (GTreeObjectGridRecord) rec);
+        updatePropertyReaders();
+
+        rowsChanged();
+    }
+
+    // Stage 2': re-read property values and refresh DOM for only the records whose keys changed this frame.
+    // Records in collapsed branches aren't in rowByKey and are skipped — the merged values stay in the maps
+    // and will be applied when those branches are expanded (applyStructuralIncrement calls updatePropertyReaders
+    // on each newly-built record, which reads from the current maps).
+    private void applyScopedPropertyUpdate() {
+        changedKeys.foreachKey(key -> {
+            GTreeObjectGridRecord record = rowByKey.get(key);
+            if (record != null) {
+                updatePropertyReaders(record);
+                tableBuilder.incUpdateRow(tableWidget.getSection(), record.getRowIndex(), null, record);
+            }
+        });
+    }
+
+    // incremental setKeys path (Stage 1): replace the placeholder rows of a single "clean" node
+    // with its real children, touching only that node's subtree in rows + DOM (no full rebuild).
+    private void applyStructuralIncrement() {
+        // a "clean" node is always a non-root object node (synchronize excludes the root)
+        GTreeObjectTableNode node = (GTreeObjectTableNode) tree.getStructuralCleanNode();
+
+        // node's subtree range in the (now final) model: range.first = node's record index + 1
+        Pair<Integer, Integer> range = tree.incGetIndexRange(node);
+        if (range == null) { // defensive — node unexpectedly not in the tree, fall back
+            fullRebuildData();
+            return;
+        }
+
+        int firstChild = range.first;
+        int r = firstChild - 1;                  // node's own record index
+        int newCount = range.second - range.first;
+
+        GTreeObjectGridRecord nodeRecord = (GTreeObjectGridRecord) rows.get(r);
+        int nodeLevel = nodeRecord.getTreeValue().level;
+
+        // old subtree range currently in rows = the placeholder rows (contiguous, level > node's level)
+        int oldEnd = firstChild;
+        while (oldEnd < rows.size() && rows.get(oldEnd).getTreeValue().level > nodeLevel)
+            oldEnd++;
+        int oldCount = oldEnd - firstChild;
+
+        // build the new subtree records and fill their property values
+        ArrayList<GTreeGridRecord> newRecords = new ArrayList<>();
+        tree.buildRows(newRecords, node, nodeRecord, firstChild);
+        assert newRecords.size() == newCount;
+        for (GTreeGridRecord newRecord : newRecords)
+            updatePropertyReaders(newRecord);
+
+        // refresh the node's own tree-column icon (placeholder was "loading" — now open / leaf / closed)
+        nodeRecord.setTreeValue(nodeRecord.getTreeValue().override(node.getColumnValueType()));
+        tableBuilder.incUpdateRow(tableWidget.getSection(), r, new int[]{0}, nodeRecord);
+
+        // replace the placeholder rows with the real ones in both rows and DOM
+        // (rowByKey: old range had only placeholders for the clean case, so no GTreeObjectGridRecord
+        // entries to remove from rowByKey — but be defensive in case of fallback cases reaching here)
+        if (oldCount > 0) {
+            for (int i = firstChild; i < oldEnd; i++) {
+                GTreeGridRecord oldRec = rows.get(i);
+                if (oldRec instanceof GTreeObjectGridRecord)
+                    rowByKey.remove(oldRec.getKey());
+            }
+            tableBuilder.incDeleteRows(tableWidget.getSection(), firstChild, oldEnd);
+            rows.removeRange(firstChild, oldEnd);
+        }
+        for (int i = 0; i < newCount; i++) {
+            GTreeGridRecord newRecord = newRecords.get(i);
+            rows.add(firstChild + i, newRecord);
+            tableBuilder.incBuildRow(tableWidget.getSection(), firstChild + i, newRecord);
+            if (newRecord instanceof GTreeObjectGridRecord) {
+                GGroupObjectValue newKey = newRecord.getKey();
+                rowByKey.put(newKey, (GTreeObjectGridRecord) newRecord);
+                // these keys were just built fresh with current values — applyScopedPropertyUpdate
+                // would otherwise re-read them and re-render the just-inserted DOM rows
+                changedKeys.remove(newKey);
+            }
+        }
+        incUpdateRowIndices(firstChild + newCount, newCount - oldCount);
     }
 
     public void updateColumns() {
@@ -877,94 +1006,99 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     protected void updatePropertyReaders() {
-        for (GTreeGridRecord record : rows) {
-            GGroupObjectValue key = record.getKey();
+        for (GTreeGridRecord record : rows)
+            updatePropertyReaders(record);
+    }
 
-            record.setRowBackground(rowBackgroundValues.get(key));
-            record.setRowForeground(rowForegroundValues.get(key));
+    // single-record variant — used by the incremental setKeys path to (re)read attributes
+    // only for newly inserted rows instead of re-iterating the whole rows list
+    protected void updatePropertyReaders(GTreeGridRecord record) {
+        GGroupObjectValue key = record.getKey();
 
-            if(record instanceof GTreeObjectGridRecord) {
-                GTreeObjectGridRecord objectRecord = (GTreeObjectGridRecord)record;
+        record.setRowBackground(rowBackgroundValues.get(key));
+        record.setRowForeground(rowForegroundValues.get(key));
 
-                for (int i = 1, size = getColumnCount(); i < size; i++) {
-                    GPropertyDraw property = getProperty(objectRecord, i);
-                    if (property != null) {
-                        PValue value = values.get(property).get(key);
-                        objectRecord.setValue(property, value);
+        if(record instanceof GTreeObjectGridRecord) {
+            GTreeObjectGridRecord objectRecord = (GTreeObjectGridRecord)record;
 
-                        NativeHashMap<GGroupObjectValue, PValue> loadingMap = loadings.get(property);
-                        boolean loading = loadingMap != null && PValue.getBooleanValue(loadingMap.get(key));
-                        objectRecord.setLoading(property, loading);
+            for (int i = 1, size = getColumnCount(); i < size; i++) {
+                GPropertyDraw property = getProperty(objectRecord, i);
+                if (property != null) {
+                    PValue value = values.get(property).get(key);
+                    objectRecord.setValue(property, value);
 
-                        PValue gridElementClass = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propGridElementClasses = cellGridElementClasses.get(property);
-                        if (propGridElementClasses != null)
-                            gridElementClass = propGridElementClasses.get(key);
-                        objectRecord.setGridElementClass(property, gridElementClass == null ? property.elementClass : PValue.getClassStringValue(gridElementClass));
+                    NativeHashMap<GGroupObjectValue, PValue> loadingMap = loadings.get(property);
+                    boolean loading = loadingMap != null && PValue.getBooleanValue(loadingMap.get(key));
+                    objectRecord.setLoading(property, loading);
 
-                        PValue valueElementClass = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propValueElementClasses = cellValueElementClasses.get(property);
-                        if (propValueElementClasses != null)
-                            valueElementClass = propValueElementClasses.get(key);
-                        objectRecord.setValueElementClass(property, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
+                    PValue gridElementClass = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propGridElementClasses = cellGridElementClasses.get(property);
+                    if (propGridElementClasses != null)
+                        gridElementClass = propGridElementClasses.get(key);
+                    objectRecord.setGridElementClass(property, gridElementClass == null ? property.elementClass : PValue.getClassStringValue(gridElementClass));
 
-                        PValue font = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propFonts = cellFontValues.get(property);
-                        if (propFonts != null)
-                            font = propFonts.get(key);
-                        objectRecord.setFont(property, font == null ? property.font : PValue.getFontValue(font));
+                    PValue valueElementClass = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propValueElementClasses = cellValueElementClasses.get(property);
+                    if (propValueElementClasses != null)
+                        valueElementClass = propValueElementClasses.get(key);
+                    objectRecord.setValueElementClass(property, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
 
-                        PValue background = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propBackgrounds = cellBackgroundValues.get(property);
-                        if (propBackgrounds != null)
-                            background = propBackgrounds.get(key);
-                        objectRecord.setBackground(property, background == null ? property.getBackground() : PValue.getColorStringValue(background));
+                    PValue font = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propFonts = cellFontValues.get(property);
+                    if (propFonts != null)
+                        font = propFonts.get(key);
+                    objectRecord.setFont(property, font == null ? property.font : PValue.getFontValue(font));
 
-                        PValue foreground = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propForegrounds = cellForegroundValues.get(property);
-                        if (propForegrounds != null)
-                            foreground = propForegrounds.get(key);
-                        objectRecord.setForeground(property, foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground));
+                    PValue background = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propBackgrounds = cellBackgroundValues.get(property);
+                    if (propBackgrounds != null)
+                        background = propBackgrounds.get(key);
+                    objectRecord.setBackground(property, background == null ? property.getBackground() : PValue.getColorStringValue(background));
 
-                        PValue placeholder = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propPlaceholders = placeholders.get(property);
-                        if (propPlaceholders != null)
-                            placeholder = propPlaceholders.get(key);
-                        objectRecord.setPlaceholder(property, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
+                    PValue foreground = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propForegrounds = cellForegroundValues.get(property);
+                    if (propForegrounds != null)
+                        foreground = propForegrounds.get(key);
+                    objectRecord.setForeground(property, foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground));
 
-                        PValue pattern = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propPatterns = patterns.get(property);
-                        if (propPatterns != null)
-                            pattern = propPatterns.get(key);
-                        objectRecord.setPattern(property, pattern == null ? property.getPattern() : PValue.getStringValue(pattern));
+                    PValue placeholder = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propPlaceholders = placeholders.get(property);
+                    if (propPlaceholders != null)
+                        placeholder = propPlaceholders.get(key);
+                    objectRecord.setPlaceholder(property, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
 
-                        PValue regexp = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propRegexps = regexps.get(property);
-                        if (propRegexps != null)
-                            regexp = propRegexps.get(key);
-                        objectRecord.setRegexp(property, regexp == null ? property.regexp : PValue.getStringValue(regexp));
+                    PValue pattern = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propPatterns = patterns.get(property);
+                    if (propPatterns != null)
+                        pattern = propPatterns.get(key);
+                    objectRecord.setPattern(property, pattern == null ? property.getPattern() : PValue.getStringValue(pattern));
 
-                        PValue regexpMessage = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propRegexpMessages = regexpMessages.get(property);
-                        if (propRegexpMessages != null)
-                            regexpMessage = propRegexps.get(key);
-                        objectRecord.setRegexpMessage(property, regexp == null ? property.regexpMessage : PValue.getStringValue(regexpMessage));
+                    PValue regexp = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propRegexps = regexps.get(property);
+                    if (propRegexps != null)
+                        regexp = propRegexps.get(key);
+                    objectRecord.setRegexp(property, regexp == null ? property.regexp : PValue.getStringValue(regexp));
 
-                        PValue valueTooltip = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propValueTooltips = valueTooltips.get(property);
-                        if (propValueTooltips != null)
-                            valueTooltip = propValueTooltips.get(key);
-                        objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
+                    PValue regexpMessage = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propRegexpMessages = regexpMessages.get(property);
+                    if (propRegexpMessages != null)
+                        regexpMessage = propRegexps.get(key);
+                    objectRecord.setRegexpMessage(property, regexp == null ? property.regexpMessage : PValue.getStringValue(regexpMessage));
 
-                        PValue propertyCustomOptionsValue = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propPropertyCustomOptions = propertyCustomOptions.get(property);
-                        if (propPropertyCustomOptions != null)
-                            propertyCustomOptionsValue = propPropertyCustomOptions.get(key);
-                        objectRecord.setPropertyCustomOptions(property, propertyCustomOptionsValue);
+                    PValue valueTooltip = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propValueTooltips = valueTooltips.get(property);
+                    if (propValueTooltips != null)
+                        valueTooltip = propValueTooltips.get(key);
+                    objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
 
-                        NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
-                        objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));
-                    }
+                    PValue propertyCustomOptionsValue = null;
+                    NativeHashMap<GGroupObjectValue, PValue> propPropertyCustomOptions = propertyCustomOptions.get(property);
+                    if (propPropertyCustomOptions != null)
+                        propertyCustomOptionsValue = propPropertyCustomOptions.get(key);
+                    objectRecord.setPropertyCustomOptions(property, propertyCustomOptionsValue);
+
+                    NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
+                    objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));
                 }
             }
         }

@@ -22,9 +22,24 @@ public class GTreeTableTree {
 
     public GTreeRootTableNode root;
 
+    // --- incremental setKeys support (Stage 1) ---
+    // populated during setKeys/synchronize, consumed by GTreeTable to decide between
+    // the incremental path and the full rebuild fallback
+    private boolean structuralFallback;          // true => incremental not possible, full rebuild required
+    private int structuralChangedNodeCount;      // how many container nodes changed structurally
+    private GTreeContainerTableNode structuralCleanNode; // the single "clean" (placeholder-replacement) node, if any
+
     public GTreeTableTree(GForm iForm) {
         form = iForm;
         root = new GTreeRootTableNode();
+    }
+
+    // incremental is possible only when exactly one node changed and it was a clean placeholder replacement
+    public boolean canApplyStructuralIncrement() {
+        return !structuralFallback && structuralChangedNodeCount == 1 && structuralCleanNode != null;
+    }
+    public GTreeContainerTableNode getStructuralCleanNode() {
+        return structuralCleanNode;
     }
 
     public int getPropertyIndex(GPropertyDraw propertyDraw) {
@@ -84,6 +99,11 @@ public class GTreeTableTree {
         }
     }
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Integer> expandable, int requestIndex) {
+        // reset incremental tracking for this setKeys
+        structuralFallback = false;
+        structuralChangedNodeCount = 0;
+        structuralCleanNode = null;
+
         NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> childTree = new NativeHashMap<>();
 
         for (int i = 0; i < keys.size(); i++) {
@@ -101,10 +121,13 @@ public class GTreeTableTree {
 
         GGroupObject upGroup = group.getUpTreeGroup();
         if(upGroup == null)
-            synchronize(root, group, childTree, expandable, requestIndex);
-        else
+            synchronize(root, group, childTree, expandable, requestIndex, false);
+        else {
+            // Stage 1: multi-group (upGroup != null) sync is not handled incrementally yet → force full rebuild
+            structuralFallback = true;
             getGroupNodes(upGroup).foreachValue(groupNode ->
-                    synchronize(groupNode, group, childTree, expandable, requestIndex));
+                    synchronize(groupNode, group, childTree, expandable, requestIndex, false));
+        }
     }
 
     public GGroupObjectValue getParentPath(GGroupObject group, GGroupObjectValue key, GGroupObjectValue parent) {
@@ -122,9 +145,12 @@ public class GTreeTableTree {
     }
 
     // we're assuming that recursive "this" groups goes first (before down groups)
-    private void synchronize(GTreeContainerTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Integer> expandables, int requestIndex) {
+    // nodeIsNew — node was just created in this setKeys (by the parent's add loop); such nodes never count
+    // toward the incremental-setKeys tracking since their whole subtree is rebuilt as part of the parent
+    private void synchronize(GTreeContainerTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Integer> expandables, int requestIndex, boolean nodeIsNew) {
         OptimizedIndexOfArrayList<GGroupObjectValue> syncChilds = tree.get(node.getKey());
 
+        boolean hadPlaceholders = false; // node had only "expanding" placeholder children that we're replacing
         if (node.pendingExpanding != null) {
             if (node.pendingExpanding) {
                 assert node.hasOnlyExpandingTreeTableNodes();
@@ -135,8 +161,10 @@ public class GTreeTableTree {
             if (node.pendingExpandingRequestIndex > requestIndex)
                 return;
 
-            if (node.pendingExpanding) // removing expanding nodes
+            if (node.pendingExpanding) { // removing expanding nodes
+                hadPlaceholders = true;
                 node.removeNodes();
+            }
 
             node.setPendingExpanding(null, -1);
         }
@@ -159,6 +187,7 @@ public class GTreeTableTree {
 
         // removing "obsolete" nodes
         // if it is an upper group, down groups are at the list beginning, otherwise at the end
+        boolean removedObsolete = false;
         for (int i = childrenSize - 1; i >= 0; i--) {
             GTreeObjectTableNode child = (GTreeObjectTableNode) children.get(i); // since expandingTableNode already removed
 
@@ -167,6 +196,7 @@ public class GTreeTableTree {
                 int index = syncChilds.indexOf(childKey);
                 if (index == -1) {
                     node.removeNode(i);
+                    removedObsolete = true;
                     getGroupNodes(syncGroup).remove(childKey);
 
                     removeChildrenFromGroupNodes(child);
@@ -179,11 +209,13 @@ public class GTreeTableTree {
         }
 
         // adding missing nodes, recursive call
+        boolean addedNew = false;
         for (int i = 0; i < thisGroups; ++i) {
             GGroupObjectValue key = thisGroupsList.get(i);
             GTreeObjectTableNode child = thisGroupChildren[i];
 
-            if (child == null) {
+            boolean childIsNew = child == null;
+            if (childIsNew) {
                 thisGroupChildren[i] = child = new GTreeObjectTableNode(syncGroup, key);
 
                 // if it is an upper group, there are down groups at the beginning
@@ -191,11 +223,12 @@ public class GTreeTableTree {
                 node.addNode(offset, child);
                 GTreeObjectTableNode result = getGroupNodes(syncGroup).put(child.getKey(), child);
                 assert result == null;
+                addedNew = true;
             }
 
             updateExpandable(syncGroup, expandables, key, child);
 
-            synchronize(child, syncGroup, tree, expandables, requestIndex);
+            synchronize(child, syncGroup, tree, expandables, requestIndex, childIsNew);
         }
 
         GTreeObjectTableNode[] allChildren = new GTreeObjectTableNode[downGroups + thisGroups];
@@ -206,6 +239,29 @@ public class GTreeTableTree {
         } else {
             System.arraycopy(thisGroupChildren, 0, allChildren, 0, thisGroups);
             System.arraycopy(downGroupChildren, childrenSize - downGroups, allChildren, thisGroups, downGroups);
+        }
+
+        // --- Stage 1 incremental-setKeys tracking ---
+        // detect a pure reorder of existing children (no add/remove) — that case must fall back
+        boolean nodeChanged = hadPlaceholders || removedObsolete || addedNew;
+        boolean reordered = false;
+        if (!nodeChanged && children.size() == allChildren.length) {
+            for (int i = 0; i < allChildren.length; i++)
+                if (children.get(i) != allChildren[i]) {
+                    reordered = true;
+                    break;
+                }
+        }
+        // newly-created nodes never count — their whole subtree is rebuilt as part of the parent's incremental update
+        if (!nodeIsNew && (nodeChanged || reordered)) {
+            structuralChangedNodeCount++;
+            // "clean" = pure placeholder replacement: the node had only expanding placeholders, no real
+            // children were removed, no reorder, not the root → its whole subtree can be rebuilt incrementally
+            boolean clean = hadPlaceholders && !removedObsolete && !reordered && !(node instanceof GTreeRootTableNode);
+            if (clean)
+                structuralCleanNode = node;
+            else
+                structuralFallback = true;
         }
 
         node.setChildren(GwtClientUtils.newArrayList(allChildren));
@@ -238,27 +294,32 @@ public class GTreeTableTree {
 
     // should correspond getIndexRange
     public void updateRows(ArrayList<GTreeGridRecord> rows) {
-        updateRows(rows, root, null);
+        buildRows(rows, root, null, 0);
     }
 
-    private void updateRows(ArrayList<GTreeGridRecord> rows, GTreeContainerTableNode node, GTreeObjectGridRecord record) {
+    // builds records for all descendants of `node` (not `node` itself), appending to `out`;
+    // each record gets absolute rowIndex = startRowIndex + out.size() (so the full-rebuild call with
+    // startRowIndex=0 into an empty list behaves exactly as before, and the incremental path can build
+    // a subtree starting at an arbitrary flat index).
+    // parentRecord is `node`'s own record (null for root) — needed for the tree column level/last map.
+    public void buildRows(ArrayList<GTreeGridRecord> out, GTreeContainerTableNode node, GTreeObjectGridRecord parentRecord, int startRowIndex) {
         for (GTreeChildTableNode child : node.getChildren()) {
-            GTreeColumnValue treeValue = createTreeColumnValue(child, node, record);
+            GTreeColumnValue treeValue = createTreeColumnValue(child, node, parentRecord);
 
             if (child instanceof GTreeObjectTableNode) {
                 GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
 
-                GTreeObjectGridRecord treeRecord = new GTreeObjectGridRecord(rows.size(), childObject, treeValue);
+                GTreeObjectGridRecord treeRecord = new GTreeObjectGridRecord(startRowIndex + out.size(), childObject, treeValue);
 
-                rows.add(treeRecord);
+                out.add(treeRecord);
 
-                updateRows(rows, childObject, treeRecord);
+                buildRows(out, childObject, treeRecord, startRowIndex);
             } else {
                 assert node.pendingExpanding;
                 assert node.hasOnlyExpandingTreeTableNodes();
                 assert node instanceof GTreeObjectTableNode;
 
-                rows.add(new GTreeExpandingGridRecord(rows.size(), node, treeValue, ((GTreeExpandingTableNode)child)));
+                out.add(new GTreeExpandingGridRecord(startRowIndex + out.size(), node, treeValue, ((GTreeExpandingTableNode)child)));
             }
         }
     }
