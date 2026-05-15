@@ -54,15 +54,17 @@ public class MCPDispatcher {
     static final String TOOL_FILES_READ = "lsfusion_files_read";
 
     static final String TOOL_RETRIEVE_DOCS = "lsfusion_retrieve_docs";
-    static final String TOOL_RETRIEVE_HOWTOS = "lsfusion_retrieve_howtos";
-    static final String TOOL_RETRIEVE_COMMUNITY = "lsfusion_retrieve_community";
     static final String TOOL_GET_GUIDANCE = "lsfusion_get_guidance";
 
     static final String TOOL_EVAL = "lsfusion_eval";
 
+    // Tools handled by proxying to the public lsFusion MCP endpoint
+    // (https://ai.lsfusion.org/mcp) via MCPRemoteClient. Sister tools
+    // lsfusion_retrieve_howtos / lsfusion_retrieve_community were removed
+    // together with the legacy Pinecone backend that fed them — only
+    // language + paradigm sourceTypes are indexed in the new OpenAI VS.
     private static final Set<String> REMOTE_TOOLS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            TOOL_RETRIEVE_DOCS, TOOL_RETRIEVE_HOWTOS, TOOL_RETRIEVE_COMMUNITY,
-            TOOL_GET_GUIDANCE)));
+            TOOL_RETRIEVE_DOCS, TOOL_GET_GUIDANCE)));
 
     private final RemoteLogics remoteLogics;
 
@@ -337,12 +339,7 @@ public class MCPDispatcher {
         tools.put(filesListDescriptor());
         tools.put(filesSearchDescriptor());
         tools.put(filesReadDescriptor());
-        tools.put(retrieveDescriptor(TOOL_RETRIEVE_DOCS,
-                "Official lsFusion docs and language reference."));
-        tools.put(retrieveDescriptor(TOOL_RETRIEVE_HOWTOS,
-                "Task examples and how-tos for combined scenarios."));
-        tools.put(retrieveDescriptor(TOOL_RETRIEVE_COMMUNITY,
-                "Tutorials, articles, and community discussions. Use only when docs/howtos didn't resolve the question."));
+        tools.put(retrieveDocsDescriptor());
         tools.put(getGuidanceDescriptor());
         tools.put(evalDescriptor());
         return tools;
@@ -400,16 +397,23 @@ public class MCPDispatcher {
                 .put("inputSchema", input);
     }
 
-    private static JSONObject retrieveDescriptor(String name, String description) {
+    private static JSONObject retrieveDocsDescriptor() {
+        JSONObject typeProp = new JSONObject()
+                .put("type", "string")
+                .put("enum", new JSONArray().put("language").put("paradigm"))
+                .put("description",
+                        "Optional sourceType filter. Omit (or pass null) to search both axes. `language` returns syntax / operator reference chunks; `paradigm` returns conceptual / abstraction chunks.");
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("query", strProp("Short topical phrase. Semantic match, not exact. Returns `{docs:[{source,text,score}]}` ranked by descending score.")))
+                        .put("query", strProp("Short topical phrase. Semantic match (not literal); rephrase rather than retry the same query if results are weak."))
+                        .put("type", typeProp))
                 .put("required", new JSONArray().put("query"))
                 .put("additionalProperties", false);
         return new JSONObject()
-                .put("name", name)
-                .put("description", description)
+                .put("name", TOOL_RETRIEVE_DOCS)
+                .put("description",
+                        "Search official lsFusion documentation (language reference + paradigm concepts) for chunks relevant to a query. Returns `{docs:[{source,text,score}]}` sorted by descending score. Use `type` to narrow by axis when known; omit to search both. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
                 .put("inputSchema", input);
     }
 
@@ -420,7 +424,7 @@ public class MCPDispatcher {
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_GET_GUIDANCE)
-                .put("description", "Brief overview and rules for working with lsFusion. Call once at the start of an lsFusion task when the guidance isn't already known; follow the rules it returns.")
+                .put("description", "Fetch the brief overview and mandatory rules for working with lsFusion. The assistant MUST call this at the start of ANY lsFusion-related task if the guidance isn't already in context, and MUST then read and strictly follow all rules it returns.")
                 .put("inputSchema", input);
     }
 
