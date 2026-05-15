@@ -125,11 +125,19 @@ public class MCPRemoteClient {
                 return readSuccessfulBody(conn);
             }
             String err = readError(conn);
-            // Only 401 should reset the cached session id and trigger a re-initialize. 400
-            // means the upstream parsed the request and rejected it (bad JSON-RPC, bad tool
-            // args, etc.); retrying with a fresh session won't fix that, and surfaces a
-            // misleading "session expired" diagnostic.
-            if (code == 401) {
+            // Reset the cached session id and trigger a re-initialize when the upstream
+            // signals the current session is gone. Two distinct shapes:
+            //   401 — auth-level rejection (bearer expired / revoked / not yet issued).
+            //   404 with a JSON-RPC "Invalid Request" (-32600) / "Session not found" body —
+            //     the MCP container was recreated (e.g. `docker compose up -d mcp`) so the
+            //     session id we cached against the previous instance no longer maps to
+            //     anything server-side. Without this branch every client stays stuck on
+            //     the dead session until its host JVM is bounced.
+            // 400 is intentionally NOT reset: it means the upstream parsed the request and
+            // rejected the *payload* (bad JSON-RPC, bad tool args). Retrying with a fresh
+            // session won't fix that and would surface a misleading "session expired"
+            // diagnostic. Other 404s (deployment URL drift, etc.) also stay non-resetting.
+            if (code == 401 || (code == 404 && isSessionDropped(err))) {
                 synchronized (LOCK) {
                     if (session != null && session.equals(sessionId)) {
                         sessionId = null;
@@ -143,6 +151,28 @@ public class MCPRemoteClient {
         } finally {
             if (conn != null) conn.disconnect();
         }
+    }
+
+    /**
+     * Decide whether a 404 body indicates a dead session (upstream container recreated,
+     * cached session id no longer recognized) as opposed to a deployment-level miss.
+     *
+     * <p>Prefers the structured JSON-RPC error code — MCP returns
+     * {@code error.code == -32600} ("Invalid Request") for this case, which is stable
+     * across upstream message rewording. Falls back to a case-insensitive substring on
+     * the raw body so a minor server-side rewording or wrapper-format change doesn't
+     * silently regress self-healing.
+     */
+    private static boolean isSessionDropped(String err) {
+        if (err == null || err.isEmpty()) return false;
+        try {
+            JSONObject root = new JSONObject(err);
+            JSONObject error = root.optJSONObject("error");
+            if (error != null && error.optInt("code") == -32600) return true;
+        } catch (Exception ignored) {
+            // body was not JSON / unexpected shape — fall through to substring fallback
+        }
+        return err.toLowerCase(java.util.Locale.ROOT).contains("session not found");
     }
 
     private static HttpURLConnection openConnection(int timeoutSeconds, String session) throws IOException {
