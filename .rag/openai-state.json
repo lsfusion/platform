@@ -3312,8 +3312,8 @@
       "stale": false
     },
     "Empty_statement.md": {
-      "file_hash": "sha256:718e11dac09b39c944f2daf85e3446886e93d45aca0b2df460eb9fff42b34155",
-      "indexed_at": "2026-05-15T07:10:27Z",
+      "file_hash": "sha256:8ed119f0c84ad2e4c4cc99456b4f6fad52550677eee86a094eb5f17464d0e81b",
+      "indexed_at": "2026-05-15T07:42:36Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3323,9 +3323,9 @@
       },
       "sections": {
         "Empty_statement::empty-statement": {
-          "file_id": "file-8QtqmFcBHkkfyX2MLV7rGK",
+          "file_id": "file-NEUosAVbitnEjdgyvpeWB3",
           "heading_path": "Empty statement",
-          "section_payload_hash": "sha256:2460944d07ef485d6020856a485a32e940126d790b7188f6f10d03dfb333f546",
+          "section_payload_hash": "sha256:db49d4c753496dfcb9c4e54d31aab0ba17ecd66664719a136fefee1209dbe6ff",
           "source_file": "Empty_statement.md"
         },
         "Empty_statement::syntax+description+example": {
@@ -12206,7 +12206,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "03a8a41b5143b6176abfde316331f7a542b05f16",
+  "last_indexed_docs_commit": "435f38d8583be1d36c1d4cb4169a5fc69e4ae3c3",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
