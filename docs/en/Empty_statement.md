@@ -2,7 +2,7 @@
 title: 'Empty statement'
 ---
 
-*Empty statement* - a special statement that consists of a single semicolon.
+*Empty statement* is a special statement that consists of a single semicolon.
 
 ### Syntax
 
