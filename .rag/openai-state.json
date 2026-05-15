@@ -12206,7 +12206,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "9bb0c9f3bdb7649f88728f25ff3d801c95df390a",
+  "last_indexed_docs_commit": "11e8080372a9552bd9872041d1f1ec49bffb4938",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
