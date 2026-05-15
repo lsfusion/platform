@@ -1,5 +1,6 @@
 package lsfusion.client.form.print.view;
 
+import lsfusion.base.LocalizeUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.client.base.log.ClientLoggers;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -8,6 +9,13 @@ import net.sf.jasperreports.swing.JRViewerPanel;
 import net.sf.jasperreports.swing.JRViewerToolbar;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,8 +25,32 @@ public class ReportViewer extends JRViewer {
     private ReportViewerPanel viewerPanel;
 
     public ReportViewer(JasperPrint print, final String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, final EditReportInvoker editInvoker) {
-        super(print);
+        super(print, Locale.getDefault(), createBundle(Locale.getDefault()));
         getToolbar().modify(printerName == null && useDefaultPrinterInPrintIfNotSpecified ? getDefaultPrinterName() : printerName, editInvoker);
+    }
+
+    private static ResourceBundle createBundle(Locale locale) {
+        final ResourceBundle client = LocalizeUtils.getBundle("ClientResourceBundle", locale);
+        final ResourceBundle jasper = ResourceBundle.getBundle("net/sf/jasperreports/view/viewer", locale);
+        return new ResourceBundle() {
+            @Override
+            protected Object handleGetObject(String key) {
+                try {
+                    return client.getObject("print." + key);
+                } catch (MissingResourceException e) {
+                    try {
+                        return jasper.getObject(key);
+                    } catch (MissingResourceException e2) {
+                        return null;
+                    }
+                }
+            }
+
+            @Override
+            public Enumeration<String> getKeys() {
+                return Collections.enumeration(new HashSet<>(Collections.list(jasper.getKeys())));
+            }
+        };
     }
 
     private String getDefaultPrinterName() {
