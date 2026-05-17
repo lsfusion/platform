@@ -976,6 +976,47 @@ is an established term
 of the platform
 or documentation.
 
+The assistant MUST NOT describe a construction
+by metaphor, analogy,
+or a label imported
+from an external type system,
+language-theory framework,
+or design-pattern catalogue;
+the construction MUST be described
+in terms of what it does
+and what it produces,
+using the platform's own
+abstraction names literally.
+Imported labels are allowed
+only if they are
+established terms
+in the platform
+or in the existing documentation.
+
+Sibling section headings
+at the same depth
+SHOULD follow one consistent form
+(usually the shortest noun phrase
+that names the topic).
+that names the topic).
+When a subset of siblings
+shares a common umbrella,
+the umbrella SHOULD be factored
+into a deeper sub-heading
+rather than left alongside
+unrelated siblings,
+provided the resulting sub-section
+has enough material
+to stand on its own;
+otherwise the sub-structure
+SHOULD be inlined.
+Canonical structural headings
+mandated for a part
+(`Syntax`, `Description`,
+`Parameters`, `Examples`,
+`Language` and similar)
+are exempt from this check.
+
 Preserving existing material:
 
 When completing or extending
@@ -1328,3 +1369,40 @@ To check or assess the available error level
 in the platform and plugin,
 the assistant MUST inspect the source code
 according to the source-review rules above.
+
+----------------------------------------------------------------
+
+MAINTAINING THESE RULES
+
+When adding or extending a rule
+in this file,
+the assistant MUST re-read
+the surrounding sections first
+and place the rule
+in the section
+that matches its scope.
+If a similar rule
+already exists,
+the assistant MUST extend
+or tighten it in place;
+overlapping or contradicting rules
+MUST be reconciled
+so this file reads
+as a single source of truth.
+This file is kept
+intentionally compact
+to fit in agent context;
+new rules SHOULD be phrased
+as briefly as possible
+without losing precision.
+
+This file describes
+general documentation
+conventions only.
+Rules specific to
+a project,
+task plan,
+or workflow
+MUST stay
+in the corresponding
+plan or workflow file.
