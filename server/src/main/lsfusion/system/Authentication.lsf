@@ -817,95 +817,7 @@ DESIGN editProfile {
 // ---------------- Relogin ------------------- //
 
 userChanged() = DATA LOCAL BOOLEAN();
-
-// change by login and password
-FORM reloginLoginUser '{authentication.relogin}'
-    OBJECTS data = (login = BPSTRING[100], password = BPSTRING[30])  PANEL
-    PROPERTIES valueLogin = VALUE(login), valuePassword = VALUE(password)
-;
-
-DESIGN reloginLoginUser {
-    BOX(data) {
-        caption = '';
-        GROUP(, data) {
-            lines = 1;
-            PROPERTY(valueLogin){
-                caption = '{authentication.login}';
-                fontSize = 36;
-            }
-            PROPERTY(valuePassword){
-                caption = '{authentication.password}';
-                echoSymbols = TRUE;
-                fontSize = 36;
-            }
-        }
-    }
-    REMOVE TOOLBARLEFT;
-    REMOVE PROPERTY(formRefresh());
-}
-
 relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.physics.admin.authentication.action.ReloginUserAction' (CustomUser);
-
-reloginLoginUser()  { 
-    DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
-        LOCAL user = CustomUser();
-        user() <- customUserLogin(login);
-        IF user() THEN {
-            IF isLocked(user()) THEN {
-                MESSAGE '{authentication.relogin.user.locked}';
-            } ELSE {
-                calculateBase64Hash('SHA-256', password);
-                IF sha256Password(user()) == calculatedHash() THEN {
-                    relogin(user());
-                    IF userChanged() THEN {
-                        MESSAGE '{authentication.relogin.user.changed}';
-                    }
-                } ELSE {
-                    MESSAGE '{authentication.relogin.user.incorrect.password}';
-                }
-            }
-        } ELSE {
-            MESSAGE '{authentication.relogin.user.not.found}';
-        }
-    }
-    APPLY;
-}
-
-// Change by password
-FORM reloginPasswordUser '{authentication.relogin}'
-    OBJECTS password = BPSTRING[30] PANEL
-    PROPERTIES valuePassword = VALUE(password)
-;
-
-DESIGN reloginPasswordUser {
-    BOX(password) {
-        caption = '';
-        PROPERTY(valuePassword){
-            caption = '{authentication.password}';
-            fontSize = 36;
-        }
-    }
-    REMOVE TOOLBARLEFT;
-    REMOVE PROPERTY(formRefresh());
-}
-
-reloginPassword(CustomUser customUser)  { 
-    DIALOG reloginPasswordUser OBJECTS password INPUT DO {
-        IF isLocked(customUser) THEN {
-            MESSAGE '{authentication.relogin.user.locked}';
-        }  ELSE {
-                calculateBase64Hash('SHA-256', password);
-                IF sha256Password(customUser)==calculatedHash() THEN {
-                    relogin(customUser);
-                    IF userChanged() THEN {
-                        MESSAGE '{authentication.relogin.user.changed}';
-                    }
-                } ELSE {
-                    MESSAGE '{authentication.relogin.user.incorrect.password}';
-                }
-        }
-    }
-}
 
 // ---------------- Change password ------------------- //
 
@@ -1077,7 +989,6 @@ NAVIGATOR {
         }
     }
     NEW FOLDER account '{navigator.account}' HEADER '{navigator.account}' IF NOT noSystemToolbarCaptions() LAST WINDOW system PARENT IMAGE 'lock.png'{
-        NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] WINDOW toolbar PARENT IMAGE 'relogin.png';
         NEW editProfile WINDOW toolbar PARENT IMAGE 'editProfile.png';
         NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] WINDOW toolbar PARENT IMAGE 'changePassword.png';
         NEW ACTION logOutAction '{navigator.account.logout}' = restart[] WINDOW toolbar PARENT IMAGE 'logout.png';
