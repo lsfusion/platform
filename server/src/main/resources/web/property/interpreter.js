@@ -15,6 +15,12 @@ function interpreter() {
             });
             element.aceEditor = aceEditor;
 
+            // disable Ace's built-in search/replace (ext-searchbox is loaded lazily via window.require which is unavailable here);
+            // removing the commands lets Ctrl+F/Ctrl+H bubble up to the browser's native search
+            ['find', 'findnext', 'findprevious', 'findAll', 'replace', 'replacemegaall'].forEach(function (cmd) {
+                aceEditor.commands.removeCommand(cmd);
+            });
+
             aceEditor.container.addEventListener('keydown', function (e) {
                 // disable propagation enter key
                 if (e.keyCode === 13 || e.which === 13)
