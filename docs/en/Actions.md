@@ -6,7 +6,7 @@ An *action* is an element of the system that takes a set of objects (*parameters
 
 The type and behavior of each action is determined by the [operator](Action_operators_paradigm.md) that creates the action.
 
-An action may additionally declare a *result* — a value of a fixed class returned to the caller by the [exit operator](Exit_RETURN.md) inside the action body.
+An action may return a *result* — an object of a fixed class, or a set of such objects over additional parameters — to the caller via the [exit operator](Exit_RETURN.md) inside the action body.
 
 ### Language
 

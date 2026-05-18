@@ -18,6 +18,18 @@ An expression can be described by the following set of recursive rules:
 
 An expression cannot include [context-independent](Property_operators.md#contextindependent) property operators.
 
+### Using actions inside expressions
+
+Inside an action body, an expression can also use a call to an [action](Actions.md) that returns a result, treating it as a property. In this case the parentheses first list the values of the action's input parameters, and then the new local parameters that become the names of the result's parameters for further use in the expression.
+
+Such a call is equivalent to the sequential execution of:
+
+- creation of a [local property](Data_properties_DATA.md#local) with the signature of the action's result;
+- call of the action with the result written into that local property;
+- substitution of that local property into the expression.
+
+Action calls in expressions are only allowed inside an action body.
+
 ### Examples
 
 ```lsf
@@ -41,5 +53,20 @@ CLASS BonusGame : Game;
 // The number of points per game. If the game is bonus, then 3, otherwise 2.
 gamePoints(Game game) = 2 (+) (1 IF game IS BonusGame); 
 // In this example, the order of execution of the operators will be as follows: IS, IF, (+)
+
+CLASS Item;
+price(Item i) = DATA INTEGER (Item);
+label(Item i) = DATA STRING[100] (Item);
+
+priceBucket (INTEGER p)  {
+    IF p > 1000 THEN RETURN 'high';
+    IF p > 100 THEN RETURN 'mid';
+    RETURN 'low';
+}
+
+// call of action priceBucket inside an expression in the body of another action
+labelItem (Item i)  {
+    label(i) <- 'Bucket: ' + priceBucket(price(i));
+}
 ```
 
