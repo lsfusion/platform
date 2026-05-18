@@ -865,8 +865,8 @@
       "stale": false
     },
     "Actions.md": {
-      "file_hash": "sha256:f6c136542a800ff8e0fe8fd589242da785dd9c2459aad8b07609dd41430aa34c",
-      "indexed_at": "2026-05-15T07:09:52Z",
+      "file_hash": "sha256:acd1a3b9ae3764c83e904b82af0ce79be1f7b8a7303433a0034847b7a6a7307e",
+      "indexed_at": "2026-05-18T13:52:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -876,9 +876,9 @@
       },
       "sections": {
         "Actions::actions": {
-          "file_id": "file-Ui9ckeNUXxe8mVYCganWXW",
+          "file_id": "file-XEatia5QkmA7Ft8mEdEAR5",
           "heading_path": "Actions",
-          "section_payload_hash": "sha256:7bffb853d66bae11f0b22b39e830ea0880590e80aa5fbc514d3a4e2b6d208fe6",
+          "section_payload_hash": "sha256:6ee1c2074d5a9ef0355b14837c8db593926520ea4e4198431e30c81518d9b4a7",
           "source_file": "Actions.md"
         },
         "Actions::language+examples": {
@@ -1743,8 +1743,8 @@
       "stale": false
     },
     "Call_EXEC.md": {
-      "file_hash": "sha256:fa2d7863825e63422c405b80950b246025a7823357f58191b877086c16929708",
-      "indexed_at": "2026-05-15T07:10:14Z",
+      "file_hash": "sha256:8704d24c124165718b279fe5720e7decfe67d6469d942d5b40b2486e56ad8c7e",
+      "indexed_at": "2026-05-18T13:52:43Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1754,15 +1754,15 @@
       },
       "sections": {
         "Call_EXEC::call-exec": {
-          "file_id": "file-GLE1X8pqUSD8Mtk2GmmATL",
+          "file_id": "file-Y6nAkKLY3YLsc5BuRkiC9Q",
           "heading_path": "Call (EXEC)",
-          "section_payload_hash": "sha256:1804f04e6855b1e7fb43535e93b40e7a8fba86ff888064199aaf8c186c7018a0",
+          "section_payload_hash": "sha256:734135844c773988e78bc9f6b70d9ac7d4dc835282acf5222db2f98155f48b4f",
           "source_file": "Call_EXEC.md"
         },
         "Call_EXEC::language+examples": {
-          "file_id": "file-9vCRLFSnbE7gE1EL4kqdYo",
+          "file_id": "file-2eQfJKTp8LzWezwBhZytEn",
           "heading_path": "Call (EXEC) > Language + Examples",
-          "section_payload_hash": "sha256:be7b17e37eb8f861602f560ed7a2991f989be2bdbcfef554f2401b8555e56bd9",
+          "section_payload_hash": "sha256:928af3c405a6d79fe82bc0b2f2aa5415e6d5b84dab9471bad302bbac4852209b",
           "source_file": "Call_EXEC.md"
         }
       },
@@ -3052,8 +3052,8 @@
       "stale": false
     },
     "EXEC_operator.md": {
-      "file_hash": "sha256:6f8beecb58013eb689344af9dcadfdbe853a610ab72ab51f3bd1fad8887e0dbd",
-      "indexed_at": "2026-05-15T07:10:27Z",
+      "file_hash": "sha256:dc335a64a7263c545c1f65d1ae94f2b111efb8ec767f4e4da6133cfc0fcfb44d",
+      "indexed_at": "2026-05-18T13:52:53Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3063,9 +3063,9 @@
       },
       "sections": {
         "EXEC_operator::examples": {
-          "file_id": "file-5G6qj2HG8z5a15gwns1tuj",
+          "file_id": "file-MXKafppPutqLneJqVxvhmQ",
           "heading_path": "EXEC operator > Examples",
-          "section_payload_hash": "sha256:ec1ab183def53f0e07d359018d55576671a0bab2306f9d2058963670e2b99811",
+          "section_payload_hash": "sha256:96dd1f15f33700b8e3ed94d06c25bc28d6935d57212e18b540b2e36a3e1ffc2d",
           "source_file": "EXEC_operator.md"
         },
         "EXEC_operator::exec-operator": {
@@ -3074,10 +3074,16 @@
           "section_payload_hash": "sha256:7699d06290e77c935542d45eb6233dce67fe57678a190b3c2491f6d13de48438",
           "source_file": "EXEC_operator.md"
         },
-        "EXEC_operator::syntax+description+parameters": {
-          "file_id": "file-Ez2yaJnQoAdjZxfvac7DCE",
-          "heading_path": "EXEC operator > Syntax + Description + Parameters",
-          "section_payload_hash": "sha256:e3d5daecf1547ccc37225895db36877c668d030f2b20ce114c32686997d4ebf9",
+        "EXEC_operator::parameters": {
+          "file_id": "file-MXSygxs1tVyXQVfGyVsbxz",
+          "heading_path": "EXEC operator > Parameters",
+          "section_payload_hash": "sha256:40ed8ec4ac4283d6d3dd2ab32504a3e2f78ca680f4599adbfd793a3649a9c47a",
+          "source_file": "EXEC_operator.md"
+        },
+        "EXEC_operator::syntax+description": {
+          "file_id": "file-MfBZZMmjoziCn5BHWGAf1J",
+          "heading_path": "EXEC operator > Syntax + Description",
+          "section_payload_hash": "sha256:d9a664821b2c2b74d1e28ec5ebd82d1f0432ced0c652d11471a052eb7679bcd0",
           "source_file": "EXEC_operator.md"
         }
       },
@@ -3706,8 +3712,8 @@
       "stale": false
     },
     "Exit_RETURN.md": {
-      "file_hash": "sha256:130742e816467f4ed780f083c1f1d6fdfb73349cea9742786a19c31ec99a8866",
-      "indexed_at": "2026-05-15T07:10:43Z",
+      "file_hash": "sha256:a22e5bbb3591eaf9360b36fd0f0ebc3ed1a1e57285128bf9dda0cff36fd61504",
+      "indexed_at": "2026-05-18T13:53:04Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3717,23 +3723,23 @@
       },
       "sections": {
         "Exit_RETURN::exit-return": {
-          "file_id": "file-LskUxn3BEW5PDMCVZcjdhe",
+          "file_id": "file-DiMQAhTBan6CXrCS6MbCri",
           "heading_path": "Exit (RETURN)",
-          "section_payload_hash": "sha256:d14484fe54fba09bc705bd01c4460617d69aedf66cd0303cef0e5121871fc669",
+          "section_payload_hash": "sha256:23eed3f3de958a72d48846a6db873bade7e4d635ba3f9ff9fce89d08844f6612",
           "source_file": "Exit_RETURN.md"
         },
         "Exit_RETURN::language+examples": {
-          "file_id": "file-7D9MmftLaVPXMyrqPXhqdU",
+          "file_id": "file-7FnhfG8vYdyNiJFzcWVVXB",
           "heading_path": "Exit (RETURN) > Language + Examples",
-          "section_payload_hash": "sha256:f748e32aad31a0d8065f83f3de1dd47d0f6f0ed795c38ca2781a040ca2a7606c",
+          "section_payload_hash": "sha256:f530aa1373d77701c79477775207c1999a7ba70a000df51561a4bf9089ca8d09",
           "source_file": "Exit_RETURN.md"
         }
       },
       "stale": false
     },
     "Expression.md": {
-      "file_hash": "sha256:ecf62fb85282139a07581a3fbcc4b9ab3ab27ed014bf88c5455c4b4a928aa414",
-      "indexed_at": "2026-05-15T07:10:43Z",
+      "file_hash": "sha256:ca23f807386df21414962daaedc6f9f03ef51792ab31e68fb5d07bf5bcb80332",
+      "indexed_at": "2026-05-18T13:53:14Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3743,15 +3749,21 @@
       },
       "sections": {
         "Expression::examples": {
-          "file_id": "file-AaiEnPdc2XSEDcP5RKnYqg",
+          "file_id": "file-JEwxhWRv32aAeKtMDbKjdW",
           "heading_path": "Expression > Examples",
-          "section_payload_hash": "sha256:c22d31f2040100cf67472b854c0ea5753f4f727e74b6b7f828e31a7029736cc1",
+          "section_payload_hash": "sha256:251ce261f9372caed29bcfc5b6606dabb132b8963399229b70f0ed5d4104c629",
           "source_file": "Expression.md"
         },
         "Expression::expression": {
           "file_id": "file-S4XSoPCR1VPXYVS9H4msVs",
           "heading_path": "Expression",
           "section_payload_hash": "sha256:6d7cfc853b293b9a054988c87991e05ca2a4f8a5090ba905457707a82bb2bb0a",
+          "source_file": "Expression.md"
+        },
+        "Expression::using-actions-inside-expressions": {
+          "file_id": "file-6mLiGWGYoyFnaRfuuNxggt",
+          "heading_path": "Expression > Using actions inside expressions",
+          "section_payload_hash": "sha256:8edf3a3b50ea21ab2a1f223307b74eda892a68b552d30e4ca8e0e6c4c7775725",
           "source_file": "Expression.md"
         }
       },
@@ -10391,8 +10403,8 @@
       "stale": false
     },
     "RETURN_operator.md": {
-      "file_hash": "sha256:25f4e7862110b04770d59a8345a30c9330d649fbed3b120e76c3e38a5271c3fb",
-      "indexed_at": "2026-05-15T07:13:55Z",
+      "file_hash": "sha256:fbbab5cc9aebc65b49aab9714447bb7b9fc0e0c1c6efa2e34c72192465438df2",
+      "indexed_at": "2026-05-18T13:53:23Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10401,10 +10413,22 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "RETURN_operator::description": {
+          "file_id": "file-63MhMKXKzx81PG6jHPVPMC",
+          "heading_path": "RETURN operator > Description",
+          "section_payload_hash": "sha256:f260278f31cfbf9963525d7d993fa68dca0ff60a68de62df92bbc8baf2226efe",
+          "source_file": "RETURN_operator.md"
+        },
         "RETURN_operator::examples": {
-          "file_id": "file-NVmguVVLXBxZ9noYQZfmNX",
+          "file_id": "file-2twuvh9m3RL5tZjuos7Tmi",
           "heading_path": "RETURN operator > Examples",
-          "section_payload_hash": "sha256:4bb37633172eddf92da28f4dfa19e9a530c71cd17d00f92187fc228439d1d6d4",
+          "section_payload_hash": "sha256:7c8e2b911c8e7e9ce144cdcc8dcfaf677f04b9319a364a20dc137c6f6da74735",
+          "source_file": "RETURN_operator.md"
+        },
+        "RETURN_operator::parameters": {
+          "file_id": "file-6acxsYRin1yMPgkaQ16bex",
+          "heading_path": "RETURN operator > Parameters",
+          "section_payload_hash": "sha256:ce6fce9eef9625b90183c6f13b8514ef23e8ebb527ac72b1217e962b97fecfc9",
           "source_file": "RETURN_operator.md"
         },
         "RETURN_operator::return-operator": {
@@ -10413,10 +10437,10 @@
           "section_payload_hash": "sha256:2783761dfd54340e979b5a6ac442b612bd5f7cee53bb5f000d02a3fe0d67018d",
           "source_file": "RETURN_operator.md"
         },
-        "RETURN_operator::syntax+description+parameters": {
-          "file_id": "file-1gA82vTJo2xjr7tQj3FxpP",
-          "heading_path": "RETURN operator > Syntax + Description + Parameters",
-          "section_payload_hash": "sha256:49fb0b25b5d0f5126f6a287a0c657a7bd25194a4775b98cb5410f667dedb08b2",
+        "RETURN_operator::syntax": {
+          "file_id": "file-EiFVHfgLKobSDr7RDtua3a",
+          "heading_path": "RETURN operator > Syntax",
+          "section_payload_hash": "sha256:65e6a6cd19a9ce1c159977e913f8ce8c9161855d6f002c686b2ef5bd994255f0",
           "source_file": "RETURN_operator.md"
         }
       },
@@ -12206,7 +12230,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "1e17cd9023550d0ed5443930f41869b3c767ec15",
+  "last_indexed_docs_commit": "2e9397e7226000df61983929a9b0143341fd6b26",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
