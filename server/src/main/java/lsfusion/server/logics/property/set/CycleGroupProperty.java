@@ -21,6 +21,7 @@ import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckC
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -48,13 +49,24 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 //        constraint = PropertyFact.createPartition(innerInterfaces, PropertyFact.<I>createTrue(),
 //                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
 
-        PropertyMapImplement<?, Interface<I>> constraintImplement;
         PropertyMapImplement<?, I> one = PropertyFact.createOne();
         if(this instanceof AggregateGroupProperty) {
-            constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values(), PropertyFact.createAnd(one, groupProperty));
-        } else {
-            constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
+            // For GROUP AGGR, project the per-group-key check back to the inner aggregated object,
+            // so the form shows rows of conflicting inner objects (with their id-group properties),
+            // not just the BY-result values
+            SumGroupProperty<I> sumProp = new SumGroupProperty<>(LocalizedString.NONAME, innerInterfaces, getMapInterfaces().values(),
+                    PropertyFact.createAnd(one, groupProperty));
+            PropertyMapImplement<?, I> compared = PropertyFact.createCompare(
+                    PropertyFact.createJoin(new PropertyImplement<>(sumProp, sumProp.getMapInterfaces())),
+                    one, Compare.GREATER);
+            // AND with groupProperty to:
+            //   (1) drop inner objects that share a BY-key with conflicting ones but don't
+            //       satisfy the AGGR WHERE / aggrInterface (would otherwise leak as offenders);
+            //   (2) reintroduce inner interfaces that appear in groupProperty but not in BY
+            //       (createJoin only keeps interfaces used by the BY-expressions).
+            return PropertyFact.createAnd(innerInterfaces, compared, groupProperty).property;
         }
+        PropertyMapImplement<?, Interface<I>> constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
         return PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
     }
 
