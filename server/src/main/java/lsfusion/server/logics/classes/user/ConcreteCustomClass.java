@@ -282,7 +282,9 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             String staticObjectCaption = ThreadLocalContext.localize(info.caption);
             String staticObjectImage = ScriptedStringUtils.wrapImage(info.image);
             if (oldObject != null) {
-                if (!staticObjectCaption.equals(oldObject.caption)) {
+                // staticCaption is stored as BPISTRING, which strips trailing spaces on read,
+                // so compare with rtrim to avoid spurious renames when the script caption has trailing spaces
+                if (!BaseUtils.rtrim(staticObjectCaption).equals(oldObject.caption)) {
                     dbChanges.modifiedCaptions.put(new DataObject(oldObject.ID, this), staticObjectCaption);
                 }
                 if (!BaseUtils.nullEquals(staticObjectImage, oldObject.image)) {
