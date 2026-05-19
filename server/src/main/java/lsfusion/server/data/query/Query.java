@@ -354,6 +354,28 @@ public class Query<K,V> extends IQuery<K,V> {
                 transProps.remove(pullProps.keys()), transWhere), pullKeys, pullProps);
     }
 
+    // structural all-or-nothing single-row fast path; null - not single, EMPTY - where reduced to FALSE
+    @IdentityLazy
+    @Pack
+    public SingleResult<K, V> singleResult() {
+        if(where.isFalse())
+            return SingleResult.EMPTY;
+
+        ImMap<BaseExpr, BaseExpr> exprValues = where.getOnlyExprValues();
+        if(exprValues == null || exprValues.size() != mapKeys.size())
+            return null;
+
+        ImValueMap<K, BaseExpr> mSingleKeys = mapKeys.mapItValues();
+        for(int i = 0, size = mapKeys.size(); i < size; i++) {
+            BaseExpr keyValue = exprValues.get(mapKeys.getValue(i));
+            if(keyValue == null)
+                return null;
+            mSingleKeys.mapValue(i, keyValue);
+        }
+
+        return new SingleResult<>(mSingleKeys.immutableValue(), properties, exprValues);
+    }
+
     @IdentityInstanceLazy // otherwise we'll need a lot of extra equals for check caches, however later it should be done
     @Pack
     @StackMessage("{message.core.query.compile}")
@@ -475,28 +497,25 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     private ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeSingle(QueryEnvironment env) { // оптимизация
-        if(where.isFalse())
-            return MapFact.EMPTYORDER(); // иначе типы ключей не узнаем
-
-        ImMap<BaseExpr, BaseExpr> exprValues = where.getOnlyExprValues();
-        if(exprValues==null || exprValues.size()!= mapKeys.size())
+        SingleResult<K, V> single = singleResult();
+        if(single == null)
             return null;
+        if(single.isEmpty())
+            return MapFact.EMPTYORDER();
 
-        ImValueMap<K, DataObject> mvKeyValues = mapKeys.mapItValues(); // return
-        for(int i=0,size=mapKeys.size();i<size;i++) {
-            BaseExpr keyValue = exprValues.get(mapKeys.getValue(i));
-            ObjectValue objectValue;
-            if(keyValue!=null && (objectValue = keyValue.getObjectValue(env)) instanceof DataObject)
-                mvKeyValues.mapValue(i, (DataObject) objectValue);
-            else
+        ImValueMap<K, DataObject> mvKeyValues = single.singleKeys.mapItValues(); // return
+        for(int i = 0, size = single.singleKeys.size(); i < size; i++) {
+            ObjectValue objectValue = single.singleKeys.getValue(i).getObjectValue(env);
+            if(!(objectValue instanceof DataObject))
                 return null;
+            mvKeyValues.mapValue(i, (DataObject) objectValue);
         }
-        ImValueMap<V, ObjectValue> mvPropValues = properties.mapItValues(); // return
-        for(int i=0,size=properties.size();i<size;i++) {
+        ImValueMap<V, ObjectValue> mvPropValues = single.singleProps.mapItValues(); // return
+        for(int i = 0, size = single.singleProps.size(); i < size; i++) {
             ObjectValue objectValue; BaseExpr propValue;
-            Expr propExpr = properties.getValue(i);
-            if((objectValue = propExpr.getObjectValue(env))!=null ||
-                    ((propValue = exprValues.getObject(propExpr))!=null && (objectValue = propValue.getObjectValue(env))!=null))
+            Expr propExpr = single.singleProps.getValue(i);
+            if((objectValue = propExpr.getObjectValue(env)) != null
+                    || ((propValue = single.exprValues.getObject(propExpr)) != null && (objectValue = propValue.getObjectValue(env)) != null))
                 mvPropValues.mapValue(i, objectValue);
             else
                 return null;

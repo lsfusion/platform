@@ -91,6 +91,13 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return pullValues.map(mapKeys, mapProps, mapValues);
     }
 
+    public SingleResult<K, V> singleResult() {
+        SingleResult<MK, MV> singleResult = query.singleResult();
+        if(singleResult == null)
+            return null;
+        return singleResult.map(mapKeys, mapProps, mapValues);
+    }
+
     public long getComplexity(boolean outer) {
         return query.getComplexity(outer);
     }
