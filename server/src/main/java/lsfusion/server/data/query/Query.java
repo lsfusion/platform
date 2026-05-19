@@ -373,7 +373,18 @@ public class Query<K,V> extends IQuery<K,V> {
             mSingleKeys.mapValue(i, keyValue);
         }
 
-        return new SingleResult<>(mSingleKeys.immutableValue(), properties, exprValues);
+        ImValueMap<V, Expr> mSingleProps = properties.mapItValues();
+        for(int i = 0, size = properties.size(); i < size; i++) {
+            Expr propExpr = properties.getValue(i);
+            BaseExpr propValue = exprValues.getObject(propExpr);
+            if(propValue != null)
+                propExpr = propValue;
+            else if(!propExpr.isValue())
+                return null;
+            mSingleProps.mapValue(i, propExpr);
+        }
+
+        return new SingleResult<>(mSingleKeys.immutableValue(), mSingleProps.immutableValue());
     }
 
     @IdentityInstanceLazy // otherwise we'll need a lot of extra equals for check caches, however later it should be done
@@ -524,13 +535,10 @@ public class Query<K,V> extends IQuery<K,V> {
         }
         ImValueMap<V, ObjectValue> mvPropValues = single.singleProps.mapItValues(); // return
         for(int i = 0, size = single.singleProps.size(); i < size; i++) {
-            ObjectValue objectValue; BaseExpr propValue;
-            Expr propExpr = single.singleProps.getValue(i);
-            if((objectValue = propExpr.getObjectValue(env)) != null
-                    || ((propValue = single.exprValues.getObject(propExpr)) != null && (objectValue = propValue.getObjectValue(env)) != null))
-                mvPropValues.mapValue(i, objectValue);
-            else
+            ObjectValue objectValue = single.singleProps.getValue(i).getObjectValue(env);
+            if(objectValue == null)
                 return null;
+            mvPropValues.mapValue(i, objectValue);
         }
         return MapFact.singletonOrder(mvKeyValues.immutableValue(), mvPropValues.immutableValue());
     }

@@ -171,16 +171,14 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     // null - not single (SQL compilation needed), EMPTY - where reduces to FALSE
     public static class SingleResult<K, V> {
         @SuppressWarnings("rawtypes")
-        public static final SingleResult EMPTY = new SingleResult<>(null, null, null);
+        public static final SingleResult EMPTY = new SingleResult<>(null, null);
 
-        public final ImMap<K, BaseExpr> singleKeys;        // mapKeys -> BaseExpr from packed where.getOnlyExprValues
-        public final ImMap<V, Expr> singleProps;           // packed properties
-        public final ImMap<BaseExpr, BaseExpr> exprValues; // packed where.getOnlyExprValues (property fallback)
+        public final ImMap<K, BaseExpr> singleKeys;  // mapKeys -> BaseExpr from packed where.getOnlyExprValues
+        public final ImMap<V, Expr> singleProps;     // packed properties, already substituted via where.getOnlyExprValues where possible
 
-        public SingleResult(ImMap<K, BaseExpr> singleKeys, ImMap<V, Expr> singleProps, ImMap<BaseExpr, BaseExpr> exprValues) {
+        public SingleResult(ImMap<K, BaseExpr> singleKeys, ImMap<V, Expr> singleProps) {
             this.singleKeys = singleKeys;
             this.singleProps = singleProps;
-            this.exprValues = exprValues;
         }
 
         public boolean isEmpty() {
@@ -193,8 +191,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
             MapTranslate translator = mapValues.mapKeys();
             return new SingleResult<>(
                     mapKeys.rightJoin(translator.translateDirect(singleKeys)),
-                    mapProps.rightJoin(translator.translate(singleProps)),
-                    translator.translateMap(exprValues));
+                    mapProps.rightJoin(translator.translate(singleProps)));
         }
 
         // only for check caches
@@ -203,11 +200,11 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
             if(!(o instanceof SingleResult)) return false;
             SingleResult<?, ?> other = (SingleResult<?, ?>) o;
             if(singleKeys == null) return other.singleKeys == null;
-            return Objects.equals(singleKeys, other.singleKeys) && Objects.equals(singleProps, other.singleProps) && Objects.equals(exprValues, other.exprValues);
+            return Objects.equals(singleKeys, other.singleKeys) && Objects.equals(singleProps, other.singleProps);
         }
 
         public int hashCode() {
-            return Objects.hash(singleKeys, singleProps, exprValues);
+            return Objects.hash(singleKeys, singleProps);
         }
     }
     public abstract SingleResult<K, V> singleResult();
