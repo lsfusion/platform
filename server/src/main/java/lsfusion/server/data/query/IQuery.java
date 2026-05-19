@@ -7,6 +7,7 @@ import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.AbstractInnerContext;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.compile.CompileOptions;
@@ -165,6 +166,52 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         }
     }
     public abstract PullValues<K, V> pullValues();
+
+    // executeSingle fast path: fixed key/property values without SQL
+    // null - not single (SQL compilation needed), EMPTY - where reduces to FALSE
+    public static class SingleResult<K, V> {
+        @SuppressWarnings("rawtypes")
+        public static final SingleResult EMPTY = new SingleResult<>(null, null, null);
+
+        public final ImMap<K, BaseExpr> singleKeys;        // mapKeys -> BaseExpr from packed where.getOnlyExprValues
+        public final ImMap<V, Expr> singleProps;           // packed properties
+        public final ImMap<BaseExpr, BaseExpr> exprValues; // packed where.getOnlyExprValues (property fallback)
+
+        public SingleResult(ImMap<K, BaseExpr> singleKeys, ImMap<V, Expr> singleProps, ImMap<BaseExpr, BaseExpr> exprValues) {
+            this.singleKeys = singleKeys;
+            this.singleProps = singleProps;
+            this.exprValues = exprValues;
+        }
+
+        public boolean isEmpty() {
+            return this == EMPTY;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <MK, MV> SingleResult<MK, MV> map(ImRevMap<MK, K> mapKeys, ImRevMap<MV, V> mapProps, MapValuesTranslate mapValues) {
+            if(this == EMPTY) return EMPTY;
+            MapTranslate translator = mapValues.mapKeys();
+            return new SingleResult<>(
+                    mapKeys.rightJoin(translator.translateDirect(singleKeys)),
+                    mapProps.rightJoin(translator.translate(singleProps)),
+                    translator.translateMap(exprValues));
+        }
+
+        // only for check caches
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(!(o instanceof SingleResult)) return false;
+            SingleResult<?, ?> other = (SingleResult<?, ?>) o;
+            if(singleKeys == null) return other.singleKeys == null;
+            return Objects.equals(singleKeys, other.singleKeys) && Objects.equals(singleProps, other.singleProps) && Objects.equals(exprValues, other.exprValues);
+        }
+
+        public int hashCode() {
+            return Objects.hash(singleKeys, singleProps, exprValues);
+        }
+    }
+    public abstract SingleResult<K, V> singleResult();
+
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(env);
     }
