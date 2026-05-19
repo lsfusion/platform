@@ -42,6 +42,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return target.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupId, userPreferences);
     }
 
+    public Object getTreeGroupReportData(long requestIndex, long lastReceivedRequestIndex, int groupId, FormUserPreferences userPreferences) throws RemoteException {
+        return target.getTreeGroupReportData(requestIndex, lastReceivedRequestIndex, groupId, userPreferences);
+    }
+
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh, boolean forceLocalEvents) throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
         ServerResponse result = target.getRemoteChanges(requestIndex, lastReceivedRequestIndex, refresh, forceLocalEvents);

@@ -85,6 +85,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
 
+    Object getTreeGroupReportData(long requestIndex, long lastReceivedRequestIndex, int groupId, FormUserPreferences userPreferences) throws RemoteException;
+
     int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
 
     Object calculateSum(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKeys) throws RemoteException;

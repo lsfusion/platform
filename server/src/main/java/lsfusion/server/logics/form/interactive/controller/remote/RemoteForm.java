@@ -78,7 +78,9 @@ import lsfusion.server.logics.form.stat.FormSelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
+import lsfusion.server.logics.form.stat.print.tree.TreeReportGenerator;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -135,6 +137,24 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public RemoteFormListener getRemoteFormListener() {
         return weakRemoteFormListener.get();
+    }
+
+    public Object getTreeGroupReportData(long requestIndex, long lastReceivedRequestIndex, final int groupId, final FormUserPreferences userPreferences) throws RemoteException {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("getTreeGroupReportData Action. GroupID: %s", groupId));
+            }
+
+            GroupObjectEntity groupEntity = form.entity.getGroupObject(groupId);
+            if (groupEntity == null || groupEntity.treeGroup == null)
+                throw new IllegalStateException("Group object " + groupId + " is not in a tree group");
+
+            InteractiveFormReportManager formReportManager = new InteractiveFormReportManager(form, null, userPreferences);
+            FormDataManager.ExportResult exportData = formReportManager.getExportData();
+            RawFileData file = TreeReportGenerator.generate(groupEntity.treeGroup, exportData, richDesign, form);
+            return new FileData(file, FormPrintType.XLSX.getExtension());
+        });
     }
 
     public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormUserPreferences userPreferences) throws RemoteException {

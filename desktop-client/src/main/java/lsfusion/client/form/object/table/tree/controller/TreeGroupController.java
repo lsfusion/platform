@@ -17,6 +17,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.grid.user.design.view.ExpandTreeButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.TreeGroupNode;
 import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
@@ -82,6 +83,16 @@ public class TreeGroupController extends AbstractTableController {
             addToToolbar(expandTreeCurrentButton);
             expandTreeButton = new ExpandTreeButton(this, false);
             addToToolbar(expandTreeButton);
+
+            if (!treeGroup.groups.isEmpty()) {
+                addToolbarSeparator();
+                addToToolbar(new ToolbarGridButton("excelbw.png", ClientResourceBundle.getString("form.grid.export.to.xlsx")) {
+                    @Override
+                    public void addListener() {
+                        addActionListener(e -> RmiQueue.runAction(() -> formController.runTreeGroupXlsExport(treeGroup.groups.get(0).getID())));
+                    }
+                });
+            }
         }
 
         formLayout.addBaseComponent(treeGroup, view);

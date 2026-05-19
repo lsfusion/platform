@@ -105,6 +105,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new GetRemoteActionMessageListHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));
         registry.addHandler(new GroupReportHandler(this));
+        registry.addHandler(new TreeGroupReportHandler(this));
         registry.addHandler(new InterruptHandler(this));
         registry.addHandler(new PasteExternalTableHandler(this));
         registry.addHandler(new RefreshUPHiddenPropsActionHandler(this));

@@ -1824,6 +1824,23 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
+    public void runTreeGroupXlsExport(final int groupObjectID) {
+        commitOrCancelCurrentEditing();
+        rmiQueue.syncRequest(new RmiCheckNullFormRequest<Object>("runTreeGroupXlsExport") {
+            @Override
+            protected Object doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.getTreeGroupReportData(requestIndex, lastReceivedRequestIndex, groupObjectID, getUserPreferences());
+            }
+
+            @Override
+            public void onResponse(long requestIndex, Object reportData) throws Exception {
+                if (reportData instanceof FileData) {
+                    BaseUtils.openFile(((FileData) reportData).getRawFile(), "report", ((FileData) reportData).getExtension());
+                }
+            }
+        });
+    }
+
     public void closePressed() {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("closePressed") {
