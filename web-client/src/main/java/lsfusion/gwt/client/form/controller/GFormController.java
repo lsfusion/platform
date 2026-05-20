@@ -1653,6 +1653,15 @@ public class GFormController implements EditManager {
         });
     }
 
+    public void runTreeGroupReport(int groupObjectID) {
+        syncDispatch(new TreeGroupReport(groupObjectID, getUserPreferences()), new SimpleRequestCallback<GroupReportResult>() {
+            @Override
+            public void onSuccess(GroupReportResult result) {
+                GwtClientUtils.openFile(result.filename, false, null);
+            }
+        });
+    }
+
     public void executeVoidAction() {
         syncResponseDispatch(new VoidFormAction());
     }
