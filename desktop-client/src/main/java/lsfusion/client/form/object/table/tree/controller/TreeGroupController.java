@@ -84,15 +84,13 @@ public class TreeGroupController extends AbstractTableController {
             expandTreeButton = new ExpandTreeButton(this, false);
             addToToolbar(expandTreeButton);
 
-            if (!treeGroup.groups.isEmpty()) {
-                addToolbarSeparator();
-                addToToolbar(new ToolbarGridButton("excelbw.png", ClientResourceBundle.getString("form.grid.export.to.xlsx")) {
-                    @Override
-                    public void addListener() {
-                        addActionListener(e -> RmiQueue.runAction(() -> formController.runTreeGroupXlsExport(treeGroup.groups.get(0).getID())));
-                    }
-                });
-            }
+            addToolbarSeparator();
+            addToToolbar(new ToolbarGridButton("excelbw.png", ClientResourceBundle.getString("form.grid.export.to.xlsx")) {
+                @Override
+                public void addListener() {
+                    addActionListener(e -> RmiQueue.runAction(() -> formController.runTreeGroupXlsExport(treeGroup.groups.get(0).getID())));
+                }
+            });
         }
 
         formLayout.addBaseComponent(treeGroup, view);

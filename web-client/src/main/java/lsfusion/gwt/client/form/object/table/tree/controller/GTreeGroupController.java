@@ -65,17 +65,14 @@ public class GTreeGroupController extends GAbstractTableController {
 
         addToToolbar(expandTreeButtonGroup);
 
-        if (!treeGroup.groups.isEmpty()) {
-            GToolbarButtonGroup exportButtonGroup = new GToolbarButtonGroup();
-            GToolbarButton exportToExcelButton = new GToolbarButton(StaticImage.EXCELBW, messages.formGridExport()) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> formController.runTreeGroupReport(treeGroup.groups.get(0).ID);
-                }
-            };
-            exportButtonGroup.add(exportToExcelButton);
-            addToToolbar(exportButtonGroup);
-        }
+        GToolbarButtonGroup exportButtonGroup = new GToolbarButtonGroup();
+        exportButtonGroup.add(new GToolbarButton(StaticImage.EXCELBW, messages.formGridExport()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> formController.runTreeGroupReport(treeGroup.groups.get(0).ID);
+            }
+        });
+        addToToolbar(exportButtonGroup);
     }
 
     @Override
