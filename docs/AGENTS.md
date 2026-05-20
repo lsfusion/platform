@@ -105,6 +105,22 @@ Language documentation is organized by syntax constructions.
 It MUST contain:
 - the language syntax itself
 - a description of the syntax
+- the mechanics of expression
+  for that construction —
+  how an element is
+  **defined**,
+  **named**,
+  **looked up / resolved**,
+  **bound to parameters**,
+  **declared at one site
+  vs reused
+  by reference** —
+  including the syntactic forms
+  each option takes
+  (e.g. a value-supplying argument
+  declared inline
+  vs given by reference
+  to an existing element)
 - a basic explanation
   assuming that the reader already more or less understands
   the paradigm
@@ -215,7 +231,17 @@ It MUST:
 - describe platform abstractions
 - assume that the reader knows nothing about the language
   or the language / platform abstractions
-- not contain syntax-specific language details
+- not contain syntax-specific language details,
+  including the mechanics of expression
+  — how an element is
+  defined, named,
+  looked up / resolved,
+  bound to parameters,
+  or declared at one site
+  vs reused by reference;
+  those mechanics
+  (and their syntactic forms)
+  belong to the Language article
 - describe abstractions
   as independently as possible
   from the current language
@@ -243,7 +269,25 @@ Paradigm article structure convention:
   SHOULD contain
   a `Language` section
   linking to the relevant
-  Language articles
+  Language articles;
+  every such link
+  MUST be accompanied
+  by at least
+  a brief descriptive clause
+  (a short phrase
+  or sentence)
+  stating what
+  the linked construction
+  does
+  or which aspect
+  of the abstraction
+  it covers;
+  bare link lists
+  such as
+  ``[`IS`, `AS`](IS_AS_operators.md).``
+  or
+  `[Type conversion operator](Type_conversion_operator.md).`
+  are forbidden
 - a Paradigm article
   SHOULD also include
   an `Examples` section
@@ -818,6 +862,97 @@ Syntax block rules:
   or other non-grammatical points,
   but MUST NOT replace
   missing syntax variants
+- removing `|`
+  does NOT mean
+  expanding a small choice
+  into N alternative lines
+  of the syntax block.
+  If alternative lines
+  would share
+  non-trivial common parts
+  (a multi-line tail,
+  a non-trivial common prefix,
+  or a non-trivial common suffix
+  even on a single line —
+  for instance,
+  the same placeholder list,
+  the same options,
+  or the same closing tokens),
+  the result reads
+  as a sequence
+  attached only
+  to the last alternative
+  (when the tail spans
+  multiple lines),
+  the common parts
+  end up duplicated
+  N times,
+  and the choice itself
+  gets buried —
+  all are
+  presentational defects.
+  In that case
+  factor the choice
+  back into the single line
+  as separate
+  optional keywords
+  or options,
+  and state any
+  mutual-exclusion
+  or compatibility constraint
+  in `Parameters`
+  or `Description`
+  (controlled-superset form,
+  permitted by the rule above).
+  Example —
+  for `(KW1 | KW2)?`
+  in the grammar
+  prefer
+  `CONSTRUCT [KW1] [KW2] tail ...`
+  with a one-line note
+  that `KW1`
+  and `KW2`
+  are mutually exclusive,
+  over three lines
+  `CONSTRUCT tail ...`
+  / `CONSTRUCT KW1 tail ...`
+  / `CONSTRUCT KW2 tail ...`
+  when `tail`
+  is non-trivial.
+  After any alternative-line
+  expansion,
+  re-read the block
+  and check
+  that every continuation line
+  reads
+  as attached
+  to every alternative,
+  not only the last.
+- for a repeated element
+  where the separator
+  is a keyword
+  (`IF`, `AND`, `OR`, `XOR`, …)
+  or any other non-comma token,
+  use the same elision shape
+  as for comma-separated lists:
+  `expr1 SEP ... SEP exprN`.
+  This shows
+  N ≥ 1 elements
+  with the separator
+  appearing between them,
+  consistent
+  with `expr1, ..., exprN`
+  used for commas.
+  The assistant MUST NOT
+  encode keyword-separated
+  repetition
+  with constructs like
+  `expr1 SEP expr2 [SEP expr3]...`
+  or `[SEP exprN]...` —
+  the `]...` form
+  is unclear about
+  what repeats
+  and where the ellipsis ends.
 - describe
   reader-visible syntax
   and behavior,
@@ -826,7 +961,9 @@ Syntax block rules:
   or parser nonterminals
 - keep syntax constructions
   in syntax blocks,
-  not in the description;
+  not in the description,
+  and keep one syntax construction
+  in one syntax definition;
   the description
   MUST explain
   semantics,
@@ -835,9 +972,7 @@ Syntax block rules:
   and MUST NOT
   introduce grammar
   that is absent
-  from `Syntax`
-- keep one syntax construction
-  in one syntax definition;
+  from `Syntax`;
   semantic features,
   special cases,
   and behavior differences
@@ -879,10 +1014,8 @@ Completeness of research:
   describing them as well
 - inspect the related Paradigm articles
   and abstractions as well,
-  and if something important
-  is missing there,
-  complete those articles too
-  or explicitly propose completing them
+  completing them per the
+  Coordination with Paradigm rule above
 
 ----------------------------------------------------------------
 
@@ -910,6 +1043,8 @@ then it SHOULD be described / explained in the documentation.
 At the same time,
 the description should be concise,
 but also complete.
+
+Wording, naming, and terminology:
 
 The assistant SHOULD try to describe
 all significant details of the language
@@ -975,6 +1110,55 @@ unless a more technical phrase
 is an established term
 of the platform
 or documentation.
+The assistant MUST NOT
+invent a new
+or unusual word
+when an ordinary
+everyday word
+carries the same meaning
+(for example,
+prefer "new"
+over "fresh",
+"paired with"
+over "coupled with",
+"target"
+only where it is
+already the established
+documentation term);
+if a plain word
+fits,
+use the plain word.
+When several
+paradigm articles
+describe the same
+kind of element
+(for example,
+a property
+that receives
+a computed result —
+the result destination
+of an action call,
+the destination
+written by a
+new-object operator,
+the destination
+written by a
+read / input operator),
+they MUST use
+one consistent
+term for it
+across all those
+articles,
+not a different
+synonym
+in each
+(not "target property"
+in one
+and "receiver"
+in another);
+pick a single term
+and apply it
+uniformly.
 
 The assistant MUST NOT describe a construction
 by metaphor, analogy,
@@ -998,7 +1182,6 @@ at the same depth
 SHOULD follow one consistent form
 (usually the shortest noun phrase
 that names the topic).
-that names the topic).
 When a subset of siblings
 shares a common umbrella,
 the umbrella SHOULD be factored
@@ -1016,6 +1199,39 @@ mandated for a part
 `Parameters`, `Examples`,
 `Language` and similar)
 are exempt from this check.
+
+Properties and actions
+MUST be referenced
+using the property ID form
+from `en/IDs.md#propertyid`
+and `ru/IDs.md#propertyid`,
+with the signature
+in square brackets
+(`foo[]`, `foo[TEXT]`,
+`foo[TEXT, INTEGER]`);
+parenthesis-call notation
+(`foo()`, `foo(<name>)`)
+MUST NOT be used.
+
+In Paradigm articles
+and in other prose
+describing the abstraction
+of a language construction,
+the human-language name
+of that construction
+SHOULD be used,
+not its keyword form.
+Language articles
+are exempt,
+since they describe
+the syntax of the keyword
+and naturally take
+the keyword form as the subject.
+Inside `Syntax` blocks
+and code examples
+in any article
+the keyword form
+is also appropriate.
 
 Preserving existing material:
 
@@ -1097,6 +1313,10 @@ incorrectness,
 irrelevance,
 duplication,
 or structural conflict.
+The assistant SHOULD try to preserve
+the existing style, size, and level of detail.
+
+Documentation-part placement:
 
 The assistant MUST respect
 the documentation structure:
@@ -1109,29 +1329,357 @@ Guide, or How-to content
 into a different part
 without a clear structural reason.
 
-The assistant SHOULD try to preserve
-the existing style, size, and level of detail.
+Within the Paradigm part,
+placement is decided
+by the paradigm hierarchy,
+not by the underlying
+syntax construction.
+The Paradigm tree
+has top-level branches
+for the
+*logical model*
+(classes,
+properties,
+actions,
+events,
+constraints),
+the
+*view logic*
+(forms,
+form structure,
+form views,
+form operators,
+navigator),
+the
+*physical model*
+(tables,
+indexes,
+materializations),
+the
+*development process*
+(modularity,
+extensions,
+metaprogramming,
+naming,
+migration,
+internationalization),
+the
+*execution model*
+(sessions,
+threads,
+control flow,
+scheduler),
+and the
+*management surface*
+(launch parameters,
+working parameters,
+launch events,
+security policy,
+interpreter,
+user interface,
+process monitor,
+profiler,
+journals and logs).
+A given aspect of an abstraction
+belongs to whichever branch
+it conceptually fits,
+NOT to the branch
+where its underlying
+language element
+is declared.
+In particular,
+extension aspects
+(class extension,
+property extension,
+action extension,
+form extension)
+describe how a developer
+composes a project
+across modules
+and therefore belong
+to the development branch
+through dedicated articles
+(`Class_extension.md`,
+`Property_extension.md`,
+`Action_extension.md`,
+`Form_extension.md`),
+not inside
+the logical-model
+or view-logic articles
+of the underlying
+class / property /
+action / form abstraction;
+storage details
+(table layout,
+index strategy,
+materialization)
+belong to the
+physical-model articles,
+not to the
+logical-model articles
+of the property
+or class
+they back;
+scheduling,
+threads,
+session lifecycle,
+and similar
+runtime concerns
+belong to the
+execution-model articles,
+not to the
+logical-model articles
+of the actions
+they run;
+administration,
+monitoring,
+and configuration
+concerns
+belong to the
+management-surface articles,
+not to the
+abstractions
+they observe
+or configure.
 
-Wording and scope:
+Class primacy and extension placement:
 
-When describing
-rules, restrictions,
-or requirements,
-the assistant SHOULD prefer
-declarative wording:
-- what can be done
-- what cannot be done
-- what must be done
-- what must not be done
+A base paradigm article
+MUST describe
+its abstraction
+as if extensions
+did not exist;
+extension-specific mechanisms —
+abstract declarations,
+polymorphic dispatch
+via `CASE` / `MULTI` /
+`OVERRIDE` / `EXTEND`,
+result or body inheritance
+through multiple implementations,
+and similar
+layered-composition forms —
+MUST NOT appear
+in the base article,
+neither in prose
+nor in code examples.
+The base article
+describes only
+the self-contained form
+of the abstraction
+(a class
+with its parents
+and static objects;
+a property
+declared by an expression;
+an action
+declared with a body;
+a form
+declared with
+its objects and properties).
+Extensions are layered
+on top
+and described
+in their own
+dedicated articles.
 
-Platform errors,
-warnings,
-or other reactions
-SHOULD be described
-as secondary consequences
-or clarifications,
-not as the primary way
-to formulate the rule.
+A class
+is *primary*
+only at the sites
+where it is
+explicitly set —
+class declarations
+(parent classes,
+abstract flag,
+static objects),
+new-object creation,
+class change,
+and the typed-parameter
+list at the declaration site
+of an action / property /
+form / table.
+Everywhere else
+the class
+of a value
+or parameter
+is *derived* —
+inferred
+from the surrounding
+expression,
+from the typed-parameter
+mechanism,
+or from the signature
+of an outer
+construction.
+A paradigm article
+MUST NOT restate
+the class
+of a derived value
+or parameter
+as a primary fact
+of the abstraction
+it describes,
+unless the class
+itself is needed
+to explain
+the semantics
+of that abstraction
+(for example,
+a restriction
+that the operand
+must belong
+to a particular
+built-in class).
+Such derived-class
+discussion belongs
+either to the canonical
+typed-parameter section
+(`en/IDs.md#paramid`,
+`ru/IDs.md#paramid`)
+or to the
+Language article
+of the construction
+that introduces
+the parameter,
+not to
+the paradigm article
+of the surrounding
+abstraction.
+
+The rule above
+targets only
+restatements
+of derived
+operand
+or parameter
+classes
+(typed-parameter
+mechanics).
+The *result class*
+of an operator
+or expression
+abstraction —
+the relation
+between the operand
+classes
+and the produced
+value class,
+including any
+class-derivation
+formula —
+is itself
+a paradigm-level
+fact of that
+abstraction
+and MUST be stated
+in the paradigm article.
+Even short
+result-class
+statements
+such as
+"the result class
+matches the input class",
+"the result is
+a built-in class
+of the same family",
+or the explicit
+class-formula tables
+for arithmetic
+or string operators
+are paradigm-level
+semantics
+and MUST NOT
+be cut
+under the
+class-primacy rule.
+Only the cases
+where the article
+describes a parameter
+or operand
+as having a class —
+"each parameter
+has a fixed class",
+"the argument
+is of class X" —
+without that class
+itself being
+load-bearing
+for the abstraction's
+semantics
+fall under
+the prohibition.
+
+When a sibling article
+in another branch
+of the paradigm tree
+already owns an aspect
+(for example,
+`Class_extension.md`
+as the dedicated article
+for the class-extension aspect
+of classes),
+the current article
+MUST only
+mention the existence
+of that sibling article
+and link to it,
+without restating its content
+even briefly,
+since duplication
+creates EN/RU lockstep risk
+and confuses readers
+about which article
+is authoritative.
+This mention
+MUST be made inline,
+inside an existing
+relevant paragraph
+or section,
+not as a dedicated
+empty stub section
+of the form
+`### Aspect name` /
+`See [aspect](AspectArticle.md).`,
+since such a stub
+implies that
+the current article
+has its own content
+about that aspect
+while it has none
+beyond the pointer;
+if no existing paragraph
+naturally accommodates
+the mention,
+the link
+SHOULD be dropped
+from this article
+and remain
+only in the
+canonical sibling article.
+
+Cross-references and links:
+
+The assistant MUST NOT
+add tautological
+cross-reference remarks
+that merely say
+that the linked section
+or article
+contains the corresponding
+general rules,
+examples,
+syntactic variants,
+or other material
+of the kind the link
+is already to,
+if that already follows
+from the link itself
+and adds no new
+local information;
+a plain link
+without such a remark
+is preferred.
+
+What not to restate or invent:
 
 When documenting
 any language construction
@@ -1179,6 +1727,29 @@ that are not directly needed
 to understand
 the current article
 or the current rule.
+In particular,
+internal optimisations
+performed by the platform
+(short-cutting
+identity compositions,
+caching,
+shared sub-expression reuse,
+constant folding,
+and similar runtime
+or query-builder optimisations)
+MUST NOT be documented
+in Paradigm articles
+unless the optimisation
+is itself
+an abstraction
+the developer must reason about;
+typical optimisation tells
+such as
+"no new property is created" /
+"the result is equivalent to X" /
+"computed in a single pass"
+add no abstraction-level information
+and MUST be omitted.
 The assistant MUST NOT
 invent,
 extrapolate,
@@ -1215,26 +1786,26 @@ syntax,
 semantics,
 behavior,
 or usage details.
-The assistant MUST NOT
-add tautological
-cross-reference remarks
-that merely say
-that the linked section
-or article
-contains the corresponding
-general rules,
-examples,
-syntactic variants,
-or other material
-of the kind the link
-is already to,
-if that already follows
-from the link itself
-and adds no new
-local information;
-a plain link
-without such a remark
-is preferred.
+A lead-in
+of the form
+"X works uniformly
+for any Y"
+or "X is the same
+for every Y"
+followed
+by per-Y rules
+contradicts itself
+(the per-Y rules
+show that the behavior
+is not uniform)
+and adds
+no real information;
+the assistant
+MUST drop
+the lead phrase
+and state
+the per-Y rules
+directly.
 The assistant MUST
 state
 the direct primary rule,
@@ -1260,6 +1831,7 @@ or special cases
 that only follow
 from canonical general rules
 described elsewhere.
+
 Minor technical details
 MAY be omitted,
 especially if they are hard
@@ -1267,6 +1839,29 @@ to explain clearly
 and do not add
 useful understanding
 for the reader.
+
+Declarative wording for restrictions:
+
+When describing
+rules, restrictions,
+or requirements,
+the assistant SHOULD prefer
+declarative wording:
+- what can be done
+- what cannot be done
+- what must be done
+- what must not be done
+
+Platform errors,
+warnings,
+or other reactions
+SHOULD be described
+as secondary consequences
+or clarifications,
+not as the primary way
+to formulate the rule.
+
+Deprecated functionality:
 
 The assistant MUST NOT
 document deprecated functionality:
@@ -1285,41 +1880,6 @@ from the documentation,
 even if they are still
 recognized by the parser
 or runtime.
-
-Reference style:
-
-Properties and actions
-MUST be referenced
-using the property ID form
-from `en/IDs.md#propertyid`
-and `ru/IDs.md#propertyid`,
-with the signature
-in square brackets
-(`foo[]`, `foo[TEXT]`,
-`foo[TEXT, INTEGER]`);
-parenthesis-call notation
-(`foo()`, `foo(<name>)`)
-MUST NOT be used.
-
-In Paradigm articles
-and in other prose
-describing the abstraction
-of a language construction,
-the human-language name
-of that construction
-SHOULD be used,
-not its keyword form.
-Language articles
-are exempt,
-since they describe
-the syntax of the keyword
-and naturally take
-the keyword form as the subject.
-Inside `Syntax` blocks
-and code examples
-in any article
-the keyword form
-is also appropriate.
 
 Examples:
 
