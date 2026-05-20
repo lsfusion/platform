@@ -44,7 +44,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException; // home / end
-    
+
     ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
                              int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException; // select all cells
 
@@ -91,6 +91,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     // group object shortcut actions (system toolbar)
 
     Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
+
+    Object getTreeGroupReportData(long requestIndex, long lastReceivedRequestIndex, int groupId, FormUserPreferences userPreferences) throws RemoteException;
 
     long countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
 

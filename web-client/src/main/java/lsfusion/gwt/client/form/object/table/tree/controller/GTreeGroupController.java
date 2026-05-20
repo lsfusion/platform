@@ -1,10 +1,13 @@
 package lsfusion.gwt.client.form.object.table.tree.controller;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -17,6 +20,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
@@ -31,6 +35,7 @@ import java.util.List;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
 public class GTreeGroupController extends GAbstractTableController {
+    private final ClientMessages messages = ClientMessages.Instance.get();
 
     private final GTreeGroup treeGroup;
 
@@ -59,6 +64,15 @@ public class GTreeGroupController extends GAbstractTableController {
         expandTreeButtonGroup.add(expandTreeButton);
 
         addToToolbar(expandTreeButtonGroup);
+
+        GToolbarButtonGroup exportButtonGroup = new GToolbarButtonGroup();
+        exportButtonGroup.add(new GToolbarButton(StaticImage.EXCELBW, messages.formGridExport()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> formController.runTreeGroupReport(treeGroup.groups.get(0).ID);
+            }
+        });
+        addToToolbar(exportButtonGroup);
     }
 
     @Override
