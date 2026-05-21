@@ -2491,7 +2491,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         ImMap<PropertyDrawInstance.ShowIfReaderInstance, ImSet<GroupObjectInstance>> showIfs = mShowIfs.immutable();
 
-        if(hiddenNotSureShown.size() > 0) { // optimization
+        // on refresh we must read every showIf even for hidden tabs whose container has a
+        // definitely-shown property: otherwise drawProperties stay in newShown (added by the
+        // newStaticShown branch above) without their showIf being evaluated, so the initial
+        // response sends them as shown — and the client adds their columns / shows the tab
+        // until the user clicks on it and the same showIf is finally evaluated and dropped
+        if(hiddenNotSureShown.size() > 0 && !refresh) { // optimization
             FormEntity.ComponentDownSet hiddenButDefinitelyShown = FormEntity.ComponentDownSet.create(hiddenButDefinitelyShownSet);
 
             MFilterMap<PropertyDrawInstance.ShowIfReaderInstance, ImSet<GroupObjectInstance>> mRestShowIfs = MapFact.mFilter(showIfs);
