@@ -4420,8 +4420,8 @@
       "stale": false
     },
     "GROUP_operator.md": {
-      "file_hash": "sha256:dd726ba9332b15759b55f89c3ad39aa9295689a91d96e473b0ea86965d1d2dd2",
-      "indexed_at": "2026-05-21T09:20:14Z",
+      "file_hash": "sha256:926ecb043f2e161e39bd2182e510b92703f4648c8b3283f316950b429b84a6a2",
+      "indexed_at": "2026-05-21T12:48:30Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4449,15 +4449,15 @@
           "source_file": "GROUP_operator.md"
         },
         "GROUP_operator::parameters": {
-          "file_id": "file-RW5YHLTp27p6nQ3RCFVUtx",
+          "file_id": "file-B9m7KWNCSfGKaNuDgUa2t5",
           "heading_path": "GROUP operator > Parameters",
-          "section_payload_hash": "sha256:48c772387794f8c25737de4c1e321ceb2bc40b7a8584df8abef402d44576439e",
+          "section_payload_hash": "sha256:b9d9533b8f9c0a24a4f926705c58e698ea439dd96c71058610dbab3b48ca29c9",
           "source_file": "GROUP_operator.md"
         },
         "GROUP_operator::syntax": {
-          "file_id": "file-WeSxxhrfx2emGogUawjngL",
+          "file_id": "file-TFzUcRP5qVgtXw9fuyWVsV",
           "heading_path": "GROUP operator > Syntax",
-          "section_payload_hash": "sha256:5ecbeb8bf0a8ef222ff6d6a87de669bf861e5a3cbc3659dd3fe36aa2c399e45b",
+          "section_payload_hash": "sha256:2c999cfcbc85e4e80d2558a44a774001efc2fdd8be8cb12586529c9bc5baa3c8",
           "source_file": "GROUP_operator.md"
         }
       },
@@ -12236,7 +12236,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "cbefa932fc0c99d944b038c49c64c87899626564",
+  "last_indexed_docs_commit": "0c0fc5e85b8916301058a21884ec2f99199f3b21",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
