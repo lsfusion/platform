@@ -1247,6 +1247,45 @@ in any article
 the keyword form
 is also appropriate.
 
+In Paradigm articles
+for operators
+that, in a script,
+produce a platform element
+(an action,
+a property,
+a class,
+a form,
+and so on),
+the lead-sentence subject
+SHOULD be
+the operator,
+as in
+"The *X* operator
+creates an action
+that ..." /
+"The *X* operator
+creates a property
+that ...",
+not the produced element,
+as in
+"The *X* action
+does ..." /
+"The *X* property
+does ...".
+This matches
+the established pattern
+in existing sibling articles
+(for example
+`Apply_changes_APPLY.md`,
+`Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md`,
+`Action_operators_paradigm.md`)
+and keeps
+the lead-subject choice
+consistent
+across paradigm articles
+describing operators
+of the same family.
+
 Preserving existing material:
 
 When completing or extending
