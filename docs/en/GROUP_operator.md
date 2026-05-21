@@ -15,19 +15,11 @@ type [expr1, ..., exprN]
 [BY groupExpr1, ..., groupExprM]
 ```
 
-The `type` subrule, which is used immediately after `GROUP`, has the following syntax:
-
-```
-SUM | MAX | MIN | AGGR | NAGGR | EQUAL | CONCAT | LAST | CUSTOM [NULL] [className] aggrFunc
-```
-
-The `orderClause` subrule, which is used after the list of aggregated expressions, has the following syntax:
+Where `orderClause` is defined as:
 
 ```
 [WITHIN] ORDER [DESC] orderExpr1, ..., orderExprK
 ```
-
-Here `type` specifies the aggregate function kind, while `orderClause` specifies the ordering form: either regular `ORDER ...` or `WITHIN ORDER ...` for ordered-set `CUSTOM` aggregates.
 
 ### Description
 
@@ -125,6 +117,26 @@ name = DATA STRING[100] (Tag);
 in = DATA BOOLEAN (Book, Tag);
 
 tags(Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t TOP 10 OFFSET 0;
+
+// CONCAT with an explicit WHERE block — filtering whole object collections, as an alternative to filtering the operand with IF
+selected = DATA BOOLEAN (Tag);
+selectedBookTags(Book b) = GROUP CONCAT name(Tag t), ', ' ORDER name(t), t WHERE in(b, t) AND selected(t);
+
+// max and min host goals per team
+maxHostGoals(team) = GROUP MAX hostGoals(Game game) BY hostTeam(game);
+minHostGoals(team) = GROUP MIN hostGoals(Game game) BY hostTeam(game);
+
+// host goals scored in the latest home game of each team
+latestHostGoals(team) = GROUP LAST hostGoals(Game game) ORDER date(game), game BY hostTeam(game);
+
+// host city of the team, taken as the common value across all home games
+// (with an implicit constraint that it is the same)
+city = DATA STRING[100] (Game);
+teamCity(team) = GROUP EQUAL city(Game game) BY hostTeam(game);
+
+// reverse lookup STRING[100] -> Country without a uniqueness constraint
+// (uniqueness is assumed to follow from how Country.name is filled)
+countryByName = GROUP NAGGR Country country BY name(country);
 
 value = DATA NUMERIC[14,2] (INTEGER);
 // 90th percentile of value(i)

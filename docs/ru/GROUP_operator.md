@@ -15,19 +15,11 @@ type [expr1, ..., exprN]
 [BY groupExpr1, ..., groupExprM]
 ```
 
-Подправило `type`, которое используется сразу после `GROUP`, имеет следующий синтаксис:
-
-```
-SUM | MAX | MIN | AGGR | NAGGR | EQUAL | CONCAT | LAST | CUSTOM [NULL] [className] aggrFunc
-```
-
-Подправило `orderClause`, которое используется после списка агрегируемых выражений, имеет следующий синтаксис:
+Где `orderClause` определяется как:
 
 ```
 [WITHIN] ORDER [DESC] orderExpr1, ..., orderExprK
 ```
-
-Здесь `type` задает вид агрегирующей функции, а `orderClause` задает форму упорядочивания: обычный `ORDER ...` либо `WITHIN ORDER ...` для ordered-set `CUSTOM`-агрегатов.
 
 ### Описание
 
@@ -125,6 +117,26 @@ name = DATA STRING[100] (Tag);
 in = DATA BOOLEAN (Book, Tag);
 
 tags(Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t TOP 10 OFFSET 0;
+
+// CONCAT с явным блоком WHERE — фильтрация целых наборов объектов, как альтернатива фильтрации операнда через IF
+selected = DATA BOOLEAN (Tag);
+selectedBookTags(Book b) = GROUP CONCAT name(Tag t), ', ' ORDER name(t), t WHERE in(b, t) AND selected(t);
+
+// максимум и минимум забитых голов на домашних матчах для каждой команды
+maxHostGoals(team) = GROUP MAX hostGoals(Game game) BY hostTeam(game);
+minHostGoals(team) = GROUP MIN hostGoals(Game game) BY hostTeam(game);
+
+// количество забитых на последнем домашнем матче каждой команды
+latestHostGoals(team) = GROUP LAST hostGoals(Game game) ORDER date(game), game BY hostTeam(game);
+
+// город команды, взятый как общее значение по всем её домашним играм
+// (с неявным ограничением, что значение одинаково)
+city = DATA STRING[100] (Game);
+teamCity(team) = GROUP EQUAL city(Game game) BY hostTeam(game);
+
+// обратный поиск STRING[100] -> Country без создания ограничения уникальности
+// (уникальность предполагается из самого характера заполнения Country.name)
+countryByName = GROUP NAGGR Country country BY name(country);
 
 value = DATA NUMERIC[14,2] (INTEGER);
 // 90-й процентиль значений value(i)

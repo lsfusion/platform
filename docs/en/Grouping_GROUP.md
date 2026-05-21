@@ -25,13 +25,15 @@ A uniquely determined order can be guaranteed if, for example, the IDs of all ob
 
 In addition to the standard types of aggregate functions for grouping, there are three additional types: `EQUAL`, `AGGR` and `NAGGR`.
 
--   `EQUAL` is a special case of the aggregation function `MAX` (or `MIN`), with the additional [constraint](Constraints.md) that the value of the operand of the aggregating function within each group must be the same. 
--   `AGGR` and `NAGGR` are a special case of `EQUAL`, but with an even more strict constraint: for each group there is no more than one object collection, the operand of the aggregating function is one of the objects, and the groups include all other objects. Aggregate function `NAGGR` only differs from `AGGR` in the fact that if it is used, no constraint is created (it is assumed that the constraint follows from the semantics of the properties of the operands and / or groupings themselves).
+-   `EQUAL` is a special case of the aggregation function `MAX` (or `MIN`), with the additional [constraint](Constraints.md) that the value of the operand of the aggregating function within each group must be the same. The result class is the class of the operand expression.
+-   `AGGR` and `NAGGR` are a special case of `EQUAL`, but with an even more strict constraint: for each group there is no more than one object collection, the operand of the aggregating function is one of the objects, and the groups include all other objects. Aggregate function `NAGGR` only differs from `AGGR` in the fact that if it is used, no constraint is created (it is assumed that the constraint follows from the semantics of the properties of the operands and / or groupings themselves). Since the operand is itself one of the objects of the group, the result class is the class of that object.
 
 User-defined DBMS aggregate functions and custom aggregate functions declared in the database can also be used in grouping. Functionally, there are two different scenarios here:
 
 - a regular custom aggregate computes its result from the values being aggregated inside the group; if order is specified, it defines the processing order of those values
 - an ordered-set aggregate computes its result from an ordered sample of values inside the group, while additional arguments act as parameters of the function itself rather than elements of that sample; percentile-like functions belong to this category
+
+The result class of a custom aggregate may be set explicitly. Otherwise it is inferred from the values that drive the aggregation: the aggregated operand values for a regular custom aggregate, or the ordered sample for an ordered-set aggregate.
 
 ### Language
 

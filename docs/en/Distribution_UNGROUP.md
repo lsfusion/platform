@@ -13,6 +13,8 @@ The operator can work in *non-strict* mode (used by default). Here the platform 
 
 As for other operations with sets, an *order* can (and usually must) be defined for the distribution operator.
 
+The result class of the distribution follows the class of the per-element shape expression — the limit for the limiting form, or the proportion for the proportional form — rather than the class of the distributable property itself. So when the limit / proportion has a wider or different numeric class than the distributable value, the result takes the class of the limit / proportion.
+
 The general algorithm of the distribution operator, depending on the type of distribution, is as follows:
 
 1.  Limiting - distribution is done in the specified order, not exceeding the restriction, until the overall result equals the value of the distributable property. If the operator is working in strict mode and the overall result has not reached the value of the distributable property, the total difference is added to the resulting value of the first object collection.
@@ -34,3 +36,30 @@ The algorithm of the operator’s work likewise changes accordingly.
 Since the simple form of the operator is semantically very similar to the operator [partition/sort](Partitioning_sorting_PARTITION_..._ORDER.md), to declare a property that implements a simple distribution the [`PARTITION` operator](PARTITION_operator.md) is also used.
 
 For the extended form, use the [`UNGROUP` operator](UNGROUP_operator.md).
+
+### Examples
+
+```lsf
+CLASS Invoice;
+totalCost 'Total cost' = DATA NUMERIC[10,2] (Invoice);
+
+CLASS InvoiceLine;
+invoice = DATA Invoice (InvoiceLine) NONULL DELETE;
+weight = DATA NUMERIC[14,3] (InvoiceLine);
+
+// proportional distribution: split totalCost across the lines of each invoice proportionally to weight,
+// rounding to two decimals; the rounding remainder goes to the first line in the chosen order
+lineCost 'Cost by line' (InvoiceLine l) = PARTITION UNGROUP totalCost
+                                                    PROPORTION STRICT ROUND(2) weight(l)
+                                                    ORDER l
+                                                    BY invoice(l);
+
+// limiting distribution: allocate totalCost across the lines of each invoice in priority order,
+// bounded by each line's quota, until the source value is exhausted
+quota = DATA NUMERIC[14,2] (InvoiceLine);
+priority = DATA INTEGER (InvoiceLine);
+allocated 'Allocated cost' (InvoiceLine l) = PARTITION UNGROUP totalCost
+                                                       LIMIT quota(l)
+                                                       ORDER priority(l), l
+                                                       BY invoice(l);
+```
