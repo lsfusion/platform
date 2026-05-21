@@ -168,6 +168,20 @@ Language article structure convention:
   may use
   or introduce
   parameters
+- a `Parameters` item
+  may present
+  a parameter's values
+  only as keywords;
+  it MUST NOT inline
+  a syntactic construction
+  (grammar fragment,
+  non-keyword placeholders,
+  optional or composite forms) —
+  such a form
+  belongs in `Syntax`
+  or an intermediate rule,
+  referenced from `Parameters`
+  by name only
 - `Syntax`,
   `Parameters`,
   and intermediate rules
