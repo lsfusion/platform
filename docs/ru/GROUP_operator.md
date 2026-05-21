@@ -15,7 +15,21 @@ type [expr1, ..., exprN]
 [BY groupExpr1, ..., groupExprM]
 ```
 
-Где `orderClause` определяется как:
+Где `type` определяется как:
+
+```
+SUM
+MAX
+MIN
+AGGR
+NAGGR
+EQUAL
+CONCAT
+LAST
+CUSTOM [NULL] [className] aggrFunc
+```
+
+А `orderClause` определяется как:
 
 ```
 [WITHIN] ORDER [DESC] orderExpr1, ..., orderExprK
@@ -50,7 +64,7 @@ type [expr1, ..., exprN]
 
 - `type`
 
-    Тип агрегирующей функции. Может иметь одно из следующих встроенных значений: `SUM`, `MAX`, `MIN`, `CONCAT`, `EQUAL`, `AGGR`, `NAGGR`, `LAST`, либо форму `CUSTOM [NULL] [className] aggrFunc`.
+    Тип агрегирующей функции. Может быть одним из: `SUM`, `MAX`, `MIN`, `AGGR`, `NAGGR`, `EQUAL`, `CONCAT`, `LAST`, `CUSTOM`.
 
 - `NULL`
 

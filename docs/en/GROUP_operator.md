@@ -15,7 +15,21 @@ type [expr1, ..., exprN]
 [BY groupExpr1, ..., groupExprM]
 ```
 
-Where `orderClause` is defined as:
+Where `type` is defined as:
+
+```
+SUM
+MAX
+MIN
+AGGR
+NAGGR
+EQUAL
+CONCAT
+LAST
+CUSTOM [NULL] [className] aggrFunc
+```
+
+And `orderClause` is defined as:
 
 ```
 [WITHIN] ORDER [DESC] orderExpr1, ..., orderExprK
@@ -50,7 +64,7 @@ For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` opera
 
 - `type`
 
-    Type of aggregate function. Can be one of the following built-in values: `SUM`, `MAX`, `MIN`, `CONCAT`, `EQUAL`, `AGGR`, `NAGGR`, `LAST`, or the form `CUSTOM [NULL] [className] aggrFunc`.
+    Type of aggregate function. Can be one of: `SUM`, `MAX`, `MIN`, `AGGR`, `NAGGR`, `EQUAL`, `CONCAT`, `LAST`, `CUSTOM`.
 
 - `NULL`
 
