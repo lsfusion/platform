@@ -175,6 +175,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private Boolean denyDropModules;
     private Boolean denyDropTables;
 
+    // platform modules removed in past releases that may still be present in databases
+    // upgraded from older versions; allowed to be dropped without explicit db.allowDropModules
+    //todo: remove ProcessUtils in 8.0
+    private static final Set<String> defaultAllowDropModules = new HashSet<>(Collections.singletonList("ProcessUtils")); // removed in v7
+
     private Set<String> allowDropModules = Collections.emptySet();
     private Set<String> allowDropTables = Collections.emptySet();
 
@@ -2470,7 +2475,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (String moduleName : dbStructure.modulesList)
             if (businessLogics.getSysModule(moduleName) == null) {
                 startLog("Module " + moduleName + " has been dropped");
-                if (!allowDropModules.contains(moduleName))
+                if (!allowDropModules.contains(moduleName) && !defaultAllowDropModules.contains(moduleName))
                     droppedModules += moduleName + ", ";
             }
         if (isDenyDropModules() && !droppedModules.isEmpty())
