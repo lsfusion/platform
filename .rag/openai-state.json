@@ -2842,8 +2842,8 @@
       "stale": false
     },
     "Distribution_UNGROUP.md": {
-      "file_hash": "sha256:54f5d91d16e2d9ba485b5829fab537a0d8ad077f3108f5da2860cedfcdbdf50a",
-      "indexed_at": "2026-05-15T07:10:27Z",
+      "file_hash": "sha256:f5f47e1da83e0d9b1cc0d1bf0eb267e9db12101aa9c81daf097365838368986b",
+      "indexed_at": "2026-05-21T09:19:57Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2853,9 +2853,15 @@
       },
       "sections": {
         "Distribution_UNGROUP::distribution-ungroup": {
-          "file_id": "file-2hcP2gPTHR7c4zGT9nuyAz",
+          "file_id": "file-XLcYeP8H4to9edk2tLEJy4",
           "heading_path": "Distribution (UNGROUP)",
-          "section_payload_hash": "sha256:dbadf23c0b0db6625486bde34eddfe41e869b637616232653f4e4146aa8e2ba7",
+          "section_payload_hash": "sha256:05979e1a6b9c372dd01e6e3c8c8c01a468b9747ab60eb6ee43c8620cb953aee9",
+          "source_file": "Distribution_UNGROUP.md"
+        },
+        "Distribution_UNGROUP::examples": {
+          "file_id": "file-QRHxn6MKEhaJwHruVGkATm",
+          "heading_path": "Distribution (UNGROUP) > Examples",
+          "section_payload_hash": "sha256:69cbc72a9bd39ccac29bc4b1e9a3fbf7f70678337d479e350f50f2b8eaec094a",
           "source_file": "Distribution_UNGROUP.md"
         },
         "Distribution_UNGROUP::extended-form": {
@@ -4414,8 +4420,8 @@
       "stale": false
     },
     "GROUP_operator.md": {
-      "file_hash": "sha256:2e3dff0c772a7d0a90528edef884836998e0c8adb93dd84ea6b9fa567358e59a",
-      "indexed_at": "2026-05-15T08:32:23Z",
+      "file_hash": "sha256:dd726ba9332b15759b55f89c3ad39aa9295689a91d96e473b0ea86965d1d2dd2",
+      "indexed_at": "2026-05-21T09:20:14Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4431,9 +4437,9 @@
           "source_file": "GROUP_operator.md"
         },
         "GROUP_operator::examples": {
-          "file_id": "file-2GZ7uYgvvRwMhV3NDo4gTW",
+          "file_id": "file-FY6zbe9WWCDd3VNbdDrRR7",
           "heading_path": "GROUP operator > Examples",
-          "section_payload_hash": "sha256:0f2bbe0b77b2ba9fb2907aacc25ce585cc39651e788d550bb98d6b9c5b8b0d2a",
+          "section_payload_hash": "sha256:c31e428c23df30ff2d9ce1cd1f66f4267e1fe424e20e4b46be2d1269e3d8e32d",
           "source_file": "GROUP_operator.md"
         },
         "GROUP_operator::group-operator": {
@@ -4449,9 +4455,9 @@
           "source_file": "GROUP_operator.md"
         },
         "GROUP_operator::syntax": {
-          "file_id": "file-QGrZP2W6M1f8yBpcunAG3B",
+          "file_id": "file-WeSxxhrfx2emGogUawjngL",
           "heading_path": "GROUP operator > Syntax",
-          "section_payload_hash": "sha256:50c1e9eb94f8393622a7379210cb5f1abd85970eb974726007817b86970bfab7",
+          "section_payload_hash": "sha256:5ecbeb8bf0a8ef222ff6d6a87de669bf861e5a3cbc3659dd3fe36aa2c399e45b",
           "source_file": "GROUP_operator.md"
         }
       },
@@ -4496,8 +4502,8 @@
       "stale": false
     },
     "Grouping_GROUP.md": {
-      "file_hash": "sha256:54d1ebe9545cb9a9e92b3f4a4644811bd6db3b156e9d15df958f971da1d68518",
-      "indexed_at": "2026-05-15T08:32:36Z",
+      "file_hash": "sha256:e5b07c20f125f314221a47f07dcd72eb21f8915c86ad7c1b0df832c2048b012d",
+      "indexed_at": "2026-05-21T09:20:50Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4513,9 +4519,9 @@
           "source_file": "Grouping_GROUP.md"
         },
         "Grouping_GROUP::grouping-group": {
-          "file_id": "file-7z2h5f17ZU2z6k7xFB5whL",
+          "file_id": "file-C3CnDS2gCXbtoVNUtFNp7m",
           "heading_path": "Grouping (GROUP)",
-          "section_payload_hash": "sha256:38c32d3b2ed1fe50d09477a83602fc3732ae197aef5132ee35e763e77c2a58d7",
+          "section_payload_hash": "sha256:ec4cfe9bce08c2b1b51e30151bfd2d6c0872749b43d71f8a91f3cb8801859eff",
           "source_file": "Grouping_GROUP.md"
         },
         "Grouping_GROUP::language": {
@@ -12230,7 +12236,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "2e9397e7226000df61983929a9b0143341fd6b26",
+  "last_indexed_docs_commit": "cbefa932fc0c99d944b038c49c64c87899626564",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
