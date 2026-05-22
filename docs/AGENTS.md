@@ -1058,6 +1058,35 @@ At the same time,
 the description should be concise,
 but also complete.
 
+When the documentation states
+that a value,
+class,
+result,
+or behavior
+is derived,
+computed,
+determined,
+inferred,
+or chosen,
+it MUST give
+the concrete rule for how:
+the actual inputs
+and the operation
+or choice applied to them,
+stated specifically enough
+that an outside reader
+can determine the outcome
+unambiguously.
+Asserting only
+that something
+"is derived from",
+"depends on",
+or "is based on"
+some inputs,
+without the rule
+that produces the result,
+is insufficient.
+
 Wording, naming, and terminology:
 
 The assistant SHOULD try to describe
