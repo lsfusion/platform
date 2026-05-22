@@ -1,0 +1,11 @@
+---
+slug: "/How-to_Access_to_internal_systems"
+title: 'How-to: Обращение к внутренним системам'
+---
+
+### Порядок ознакомления
+
+1.  [`FORMULA`](How-to_FORMULA.md). Вычисление SQL функций на уровне базы данных.
+2.  [`INTERNAL`](How-to_INTERNAL.md). Выполнение Java кода на уровне сервера приложений.
+
+  

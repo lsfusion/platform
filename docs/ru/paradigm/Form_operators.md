@@ -1,0 +1,15 @@
+---
+slug: "/Form_operators"
+title: 'Операторы формы'
+---
+
+Операторы формы можно разделить на несколько категорий:
+
+-   [Ввод значения](Value_input.md)
+-   [Операции с группами объектов](Object_group_operators.md)
+-   [Управление фокусом](Focus_operators.md)
+-   [Снимок](Capture_SCREENSHOT.md)
+
+ 
+
+ 

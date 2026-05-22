@@ -1,0 +1,23 @@
+---
+slug: "/Operator_priority"
+title: 'Приоритет операторов'
+---
+
+При вычислении [выражения](Expression.md) [операторы](../paradigm/Property_operators_paradigm.md) вычисляются в определенном порядке в зависимости от *приоритета операторов*. Чем выше приоритет оператора, тем раньше он будет выполнен. В таблице ниже перечислены приоритеты всех операторов в порядке убывания.
+
+|Оператор|Описание|Тип|
+|---|---|---|
+|`(expression)`<br/>[`JOIN`](JOIN_operator.md)<br/>[`CASE`](CASE_operator.md), [`MULTI`](MULTI_operator.md), [`OVERRIDE`](OVERRIDE_operator.md), [`EXCLUSIVE`](EXCLUSIVE_operator.md), [`IF ... THEN`](IF_..._THEN_operator.md)<br/>[`PARTITION`](PARTITION_operator.md)<br/>[`RECURSION`](RECURSION_operator.md)<br/>[`GROUP`](GROUP_operator.md)<br/>[`STRUCT`](STRUCT_operator.md)<br/>[`MAX`](MAX_operator.md)/[`MIN`](MIN_operator.md)<br/>[`ROUND`](ROUND_operator.md)<br/>[`CONCAT`](CONCAT_operator.md)<br/>[`INTEGER`, `DOUBLE`...](Type_conversion_operator.md)<br/>[`PREV`](PREV_operator.md), [`CHANGED`, ...](Change_operators.md)<br/>[`ISCLASS`](ISCLASS_operator.md)<br/>[`ACTIVE`](ACTIVE_operator.md)<br/>[`literal`](Literals.md)|Выражение в круглых скобках<br/>[Композиция](../paradigm/Composition_JOIN.md)<br/>[Выбор](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md)<br/>[Разбиение / упорядочивание](../paradigm/Partitioning_sorting_PARTITION_..._ORDER.md)<br/>[Рекурсия](../paradigm/Recursion_RECURSION.md)<br/>[Группировка](../paradigm/Grouping_GROUP.md)<br/>[Создание структуры](../paradigm/Structure_operators_STRUCT.md)<br/>[Максимум / минимум](../paradigm/Extremum_MAX_MIN.md)<br/>[Округление](../paradigm/Rounding_operator_ROUND.md)<br/>[Объединение строк](../paradigm/String_operators_plus_CONCAT_SUBSTRING.md)<br/>[Преобразование типа](../paradigm/Type_conversion.md)<br/>[Предыдущее значение](../paradigm/Previous_value_PREV.md), [Операторы изменений](../paradigm/Change_operators_SET_CHANGED_etc.md)<br/>[Принадлежность сигнатуре свойства](Property_signature_ISCLASS.md)<br/>[Активность](../paradigm/Activity_ACTIVE.md)<br/> [Константы](../paradigm/Constant.md)|<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/>Префиксный<br/><br/>|
+|[`[ ]`](Brackets_operator.md)<br/>[`IS`](IS_AS_operators.md)<br/>[`AS`](IS_AS_operators.md)|[Обращение к элементу структуры](../paradigm/Structure_operators_STRUCT.md)<br/>[Классификация](../paradigm/Classification_IS_AS.md)<br/>[Классификация](../paradigm/Classification_IS_AS.md)|Постфиксный<br/>Постфиксный<br/>Постфиксный|
+|[`-`](Arithmetic_operators.md)|Унарный минус|Префиксный|
+|[`*`](Arithmetic_operators.md)<br/>[`/`](Arithmetic_operators.md)|Умножение<br/>Деление|Бинарный<br/>Бинарный|
+|[`+`](Arithmetic_operators.md)<br/>[`-`](Arithmetic_operators.md)|Сложение<br/>Вычитание|Бинарный<br/>Бинарный|
+|[`(+)`](Arithmetic_operators.md)<br/>[`(-)`](Arithmetic_operators.md)|Сложение с учетом `NULL`<br/>Вычитание с учетом `NULL`|Бинарный<br/>Бинарный|
+|[`LIKE`](LIKE_operator.md)<br/>[`MATCH`](MATCH_operator.md)|[Сравнение с шаблоном](../paradigm/Comparison_operators_=_etc.md)<br/>[Полнотекстовый поиск](../paradigm/Comparison_operators_=_etc.md)|Бинарный<br/>Бинарный|
+|[`<`](Comparison_operators.md)<br/>[`<=`](Comparison_operators.md)<br/>[`>`](Comparison_operators.md)<br/>[`>=`](Comparison_operators.md)|Меньше<br/>Меньше или равно<br/>Больше<br/>Больше или равно|Бинарный<br/>Бинарный<br/>Бинарный<br/>Бинарный|
+|[`==`](Comparison_operators.md)<br/>[`!=`](Comparison_operators.md)|Равно<br/>Не равно|Бинарный<br/>Бинарный|
+|[`NOT`](AND_OR_NOT_XOR_operators.md)|[Логическое отрицание](../paradigm/Logical_operators_AND_OR_NOT_XOR.md)|Префиксный|
+|[`AND`](AND_OR_NOT_XOR_operators.md)|[Логическое И](../paradigm/Logical_operators_AND_OR_NOT_XOR.md)|Бинарный|
+|[`XOR`](AND_OR_NOT_XOR_operators.md)|[Логическое исключающее ИЛИ](../paradigm/Logical_operators_AND_OR_NOT_XOR.md)|Бинарный|
+|[`OR`](AND_OR_NOT_XOR_operators.md)|[Логическое ИЛИ](../paradigm/Logical_operators_AND_OR_NOT_XOR.md)|Бинарный|
+|[`IF`](IF_operator.md)|[Условие](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#single)|Бинарный|

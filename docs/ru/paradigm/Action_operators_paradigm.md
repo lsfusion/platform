@@ -1,0 +1,11 @@
+---
+slug: "/Action_operators_paradigm"
+title: 'Оператоpы'
+---
+
+Операторы создания действий можно разделить на несколько категорий:
+
+-   [Порядок выполнения](Execution_order.md)
+-   [Изменение состояния](State_change.md)
+-   [Управление сессиями](Session_management.md)
+-   [Взаимодействие с пользователем](User_IS_interaction.md)

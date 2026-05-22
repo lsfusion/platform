@@ -1,0 +1,17 @@
+---
+slug: "/Object_group_operators"
+title: 'Object group operators'
+---
+
+Object group operators include the following operators:
+
+### Actions
+
+-   [Search (`ACTIVATE`)](Activation_ACTIVATE.md#search)
+-   [Object tree visibility (`EXPAND`, `COLAPSE`)](Object_tree_visibility_EXPAND_COLLAPSE.md)
+
+### Properties
+
+-   [Filter (`FILTER`)](Filter_FILTER.md)
+-   [Order (`ORDER`)](Order_ORDER.md)
+-   [View (`VIEW`)](View_VIEW.md)
