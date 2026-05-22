@@ -1243,6 +1243,35 @@ mandated for a part
 `Language` and similar)
 are exempt from this check.
 
+When several parallel variants,
+cases,
+options,
+or scenarios
+of one construction
+are documented together,
+they MUST be organized
+as one consistent structure:
+one list
+with parallel items,
+or one subsection
+with parallel subparts.
+The assistant MUST NOT split
+the same set
+between inline prose,
+separate lists,
+and unrelated paragraphs.
+Each parallel item
+SHOULD present
+the same relevant
+and primary facts
+in the same order
+(for example,
+what the item is,
+the rule it follows,
+and the result it produces),
+when those facts apply
+to that item.
+
 Properties and actions
 MUST be referenced
 using the property ID form
