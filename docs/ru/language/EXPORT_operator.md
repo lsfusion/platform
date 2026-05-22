@@ -1,0 +1,188 @@
+---
+slug: "/EXPORT_operator"
+title: 'Оператор EXPORT'
+---
+
+Оператор `EXPORT` - создание [действия](../paradigm/Actions.md), экспортирующего [заданные свойства](../paradigm/Data_export_EXPORT.md) в файл, или, в общем случае, [открывающего форму](../paradigm/In_a_structured_view_EXPORT_IMPORT.md) в структурированном представлении. 
+
+## Синтаксис
+
+```
+EXPORT [exportFormat] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN 
+  [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+  [TOP topExpr] [OFFSET offsetExpr] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] 
+  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
+  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
+  [TO (propertyId | (groupId1 = propertyId1, ..., groupIdM = propertyIdM))]
+```
+
+`exportFormat` может задаваться одним из следующих вариантов:
+
+```
+JSON [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+XLS [SHEET sheetProperty] [HEADER | NOHEADER]
+XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
+DBF [CHARSET charsetStr]
+TABLE
+```
+
+ 
+## Описание
+
+Оператор `EXPORT` создает действие, которое экспортирует данные из заданных свойств или заданной формы в файл. Поддерживаются следующие форматы файлов: **XML**, **JSON**, **CSV**, **XLS**, **XLSX**, **DBF**, **TABLE**. 
+
+Если формат экспортируемого файла не задан, то он считается равным **JSON**.
+
+Если классом значения свойства, в которое экспортируются данные, является класс `FILE`, то расширение результирующего файла в зависимости от формата определяется следующим образом:
+
+|Формат    |Расширение|
+|----------|----------|
+|**JSON**  |json      |
+|**XML**   |xml       |
+|**CSV**   |csv       |
+|**XLS**   |xls       |
+|**XLSX**  |xlsx      |
+|**DBF**   |dbf       |
+|**TABLE** |table     |
+
+При экспорте формы в блоке `OBJECTS` можно объектам формы добавлять дополнительные фильтры на равенство этих объектов [переданным значениям](../paradigm/Open_form.md#params). Также эти объекты [не будут участвовать](../paradigm/Structured_view.md#objects) в построении иерархии групп объектов.
+
+## Параметры
+
+### Источник экспорта
+
+- `formName`
+
+    Имя формы, из которой необходимо экспортировать данные. [Составной идентификатор](IDs.md#cid).
+
+- `objName1 ... objNameK`
+
+    Имена объектов формы, для которых задаются фильтруемые (фиксированные) значения. [Простые идентификаторы](IDs.md#id).
+
+- `expr1 ... exprK`
+
+    [Выражения](Expression.md), значения которых определяют фильтруемые (фиксированные) значения для объектов формы.
+
+- `propertyExpr1, ..., propertyExprN`
+
+    Список [выражений](Expression.md), из значений которых экспортируются данные. Каждому свойству ставится в соответствие колонка таблицы результирующего файла.
+
+- `columnId1, ..., columnIdN`
+
+    Список идентификаторов колонок в результирующем файле, в которые будут переноситься данные из соответствующего свойства. Каждый элемент списка задается либо [простым идентификатором](IDs.md#id), либо [строковым литералом](Literals.md#strliteral). Если идентификатор не задан, он по умолчанию считается равным `expr<Номер колонки>`.
+
+- `whereExpr`
+
+    Выражение, значение которого является условием создаваемого экспорта. Если не задано, считается равным [дизьюнкции](../paradigm/Logical_operators_AND_OR_NOT_XOR.md) всех экспортируемых свойств (то есть хотя бы одно из свойств должно быть не `NULL`).
+
+- `orderExpr1, ..., orderExprL`
+
+    Список [выражений](Expression.md), по которым производится сортировка экспортируемых данных. Могут использоваться только свойства, присутствующие в списке `propertyExpr1, ..., propertyExprN`. 
+
+- `DESC`
+
+    Ключевое слово. Указывает на обратный порядок сортировки. По умолчанию используется сортировка по возрастанию.
+
+- `TOP topExpr`
+- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+
+    Экспорт только первых `n` записей, где `n` - значение выражения `topExpr` или `topPropertyExprT` для группы объектов `topGroupIdT`.
+
+- `OFFSET offsetExpr`
+- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+
+    Экспорт только записей со смещением `m`, где `m` - значение выражения `offsetExpr` или `offsetPropertyExprF` для группы объектов `offsetGroupIdF`.
+
+### Формат экспорта
+
+- `ATTR`
+
+    Ключевое слово, указывающее на экспорт значений в атрибуты родительского тега. Если не указывается, то значения экспортируются в дочерние теги. Применяется только для экспорта в **XML**.
+
+- `separator`
+
+    Разделитель в **CSV** файле. [Строковый литерал](Literals.md#strliteral). Если не указывается, то по умолчанию берётся разделитель `;`.
+
+- `HEADER | NOHEADER`
+
+    Ключевые слова, указывающие на присутствие (`HEADER`) или отсутствие (`NOHEADER`) в **CSV**, **XLS**, **XLSX** файле строки заголовка. По умолчанию используется `NOHEADER`.
+
+    При использовании опции `NOHEADER`, если имя колонки одно из предопределенных (`A`, `B`, ..., `Z`, `AA`, ...,  `AE`), то оно экспортируются в колонку с соответствующем номером, и при этом следующие колонки экспортируются в колонки следующие по порядку за этой колонкой.
+
+    Имеет другое назначение для **XML**: с опцией `HEADER` файл результата содержит первую строку `<?xml version="1.0" encoding="UTF-8"?>`. С опцией `NOHEADER` экспортируется без этой строки. По умолчанию используется `HEADER`.
+
+- `ESCAPE | NOESCAPE`
+
+    Ключевое слово, указывающее на присутствие (`ESCAPE`) или отсутствие (`NOESCAPE`) в **CSV** файле экранирования спецсимволов(`\r`, `\n`, `"` (двойные кавычки) и указанного разделителя (`separator`). `NOESCAPE` имеет смысл использовать, только в случаях, когда в данных гарантировано не будет заданного разделителя. По умолчанию используется `ESCAPE`.
+
+- `CHARSET charsetStr`
+
+    Опция, указывающая кодировку, используемую при экспорте.
+
+    - `charsetStr`
+    
+        Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `XML`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`.
+
+- `sheetProperty`
+
+  [Идентификатор свойства](IDs.md#propertyid), значение которого применяется в качестве названия листа в выгружаемом файле. У свойства не должно быть параметров. Используется для форматов экспорта `XLS`, `XLSX`.
+
+### Назначение экспорта
+
+- `propertyId`
+
+    [Идентификатор свойства](IDs.md#propertyid), в которое будет записан сформированный файл. У этого свойства не должно быть параметров и класс его значения должен быть файловым (`FILE`, `RAWFILE`, `JSONFILE` и т.д.). Если это свойство не указано, то по умолчанию используется свойство `System.exportFile`.
+
+- `groupId1, ..., groupIdM`
+
+    Имена групп объектов экспортируемой формы, для которых необходимо экспортировать данные. [Простые идентификаторы](IDs.md#id). Используется только для экспорта формы в плоские форматы.
+
+- `propertyId1 , ..., propertyIdM`
+
+    [Идентификаторы свойств](IDs.md#propertyid), в которые будут записаны сформированные файлы для заданных групп объектов. У этих свойств не должно быть параметров и классы их значений должны быть файловыми (`FILE`, `RAWFILE`, `JSONFILE` и т.д.). Используется только для экспорта формы в плоские форматы. Для [пустой группы](../paradigm/Static_view.md#empty) объектов используется имя `root`. 
+
+## Примеры
+
+```lsf
+CLASS Store;
+
+name = DATA STRING[20] (Sku);
+weight = DATA NUMERIC[10,2] (Sku);
+
+in = DATA BOOLEAN (Store, Sku);
+
+exportSkus (Store store)  {
+    // выгружаем в DBF все Sku, для которых задано in (Store, Sku) для нужного склада
+    EXPORT DBF CHARSET 'CP866' FROM id(Sku s), name(s), weight(s) WHERE in(store, s); 
+    // выгружает CSV без строки заголовков и без экранирования спецсимволов
+    EXPORT CSV NOHEADER NOESCAPE FROM id(Sku s), name(s), weight(s) WHERE in(store, s); 
+    // выгружает JSON, сортируем по свойству name[Sku] в порядке убывания
+    EXPORT FROM id(Sku s), name(s), weight(s) WHERE in(store, s) ORDER name(s) DESC; 
+    // выгружает JSON {"ff":"HI"}, так как по умолчанию получает имя value, а платформа объект {"value":"HI"} 
+    // автоматически преобразует в "HI"
+    EXPORT FROM ff='HI'; 
+    // выгружает JSON "HI", так как по умолчанию получает имя value, а платформа объект {"value":"HI"} 
+    // автоматически преобразует в "HI"
+    EXPORT FROM 'HI'; 
+}
+```
+
+```lsf
+FORM exportSku
+    OBJECTS st = Store
+
+    OBJECTS s = Sku
+    PROPERTIES(s) id, name, weight
+    FILTERS in(st, s)
+;
+
+exportSku (Store store)  {
+    // выгружаем в DBF все Sku, для которых задано in (Store, Sku) для нужного склада
+    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866';
+    EXPORT exportSku XML;
+    EXPORT exportSku OBJECTS st = store CSV ',';
+}
+```

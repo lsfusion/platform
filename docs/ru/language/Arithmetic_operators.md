@@ -1,0 +1,31 @@
+---
+slug: "/Arithmetic_operators"
+title: 'Арифметические операторы'
+---
+
+Операторы `+`, `-`, `*`, `/`, `(+)`, `(-)` - создание [свойств](../paradigm/Properties.md), реализующих [арифметические операции](../paradigm/Arithmetic_operators_plus_minus_etc.md).
+
+### Синтаксис
+
+```
+expression1 + expression2  
+expression1 - expression2  
+expression1 / expression2  
+expression1 * expression2  
+-expression1
+expression1 (+) expression2  
+expression1 (-) expression2  
+```
+
+### Параметры
+
+- `expression1, expression2`
+
+    [Выражения](Expression.md), значения которых будут являться аргументами арифметических операторов.
+
+### Примеры
+
+```lsf
+sum(a, b) = a + b;
+transform(a, b, c) = -a * (b (+) c);
+```
