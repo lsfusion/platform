@@ -1,454 +1,8 @@
 {
   "files": {
-    "INDEX_statement.md": {
-      "file_hash": "sha256:98ee53d3f6645d9a547c3018529f5294e2849732f6da53db0ca4a7d630e62cb2",
-      "indexed_at": "2026-05-15T07:12:02Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "INDEX_statement::index-statement": {
-          "file_id": "file-M6sZsQS2SqKdtFPgS5p9C2",
-          "heading_path": "INDEX statement",
-          "section_payload_hash": "sha256:65c230b3b86ee7636d37cfcb66fc29cd858fc7af8949ed3d31b2c9eed07c97e7",
-          "source_file": "INDEX_statement.md"
-        }
-      },
-      "stale": true
-    },
-    "ISCLASS_operator.md": {
-      "file_hash": "sha256:c07042a0cd4ef152d095d5be33489cf72f9cd842d0bea5aab5088503c38fe512",
-      "indexed_at": "2026-05-15T07:12:02Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "ISCLASS_operator::example": {
-          "file_id": "file-VYp8s74qSw3hmkkf8stMYH",
-          "heading_path": "ISCLASS operator > Example",
-          "section_payload_hash": "sha256:388e13b22d276895b2211ebbfcb77458397e9e3ca4a8bfa1f03bc85d64c093d0",
-          "source_file": "ISCLASS_operator.md"
-        }
-      },
-      "stale": true
-    },
-    "Icons.md": {
-      "file_hash": "sha256:1aa75dc5016076659b1ce2cf7540add841561c1a5760dde6b648861f04f68b1f",
-      "indexed_at": "2026-05-15T07:12:02Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Icons::manual-assignment-manual": {
-          "file_id": "file-VLQPUYM6dbLHDtZkMSiiSS",
-          "heading_path": "Icon assignment mechanism > Manual assignment {#manual}",
-          "section_payload_hash": "sha256:0a2662820b63673a499d2aa8b63a3eeb55ea79b3dc94636776ce774f455fc264",
-          "source_file": "Icons.md"
-        }
-      },
-      "stale": true
-    },
-    "In_a_print_view_PRINT.md": {
-      "file_hash": "sha256:682905d95390abb4db324d9a02d6d2a9c8f0f71ed3b2a94870a8ca28396e2e71",
-      "indexed_at": "2026-05-15T07:12:02Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "In_a_print_view_PRINT::interactive-print-view-interactive": {
-          "file_id": "file-UGgwFeiC7wLvYFTLRhQXMb",
-          "heading_path": "In a print view (PRINT) > Interactive print view {#interactive}",
-          "section_payload_hash": "sha256:86b131cc3469cd8c12f89caa60c49e54700eb3625f05f38010d7403847b5f7c4",
-          "source_file": "In_a_print_view_PRINT.md"
-        }
-      },
-      "stale": true
-    },
-    "In_a_structured_view_EXPORT_IMPORT.md": {
-      "file_hash": "sha256:3276250230c7406f264e2c6248f71e87f22f71bbd5df580602fce5070f637b87",
-      "indexed_at": "2026-05-15T07:12:02Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "In_a_structured_view_EXPORT_IMPORT::examples": {
-          "file_id": "file-4DfA22a8gf8Wfc8kpL2DLM",
-          "heading_path": "In a structured view (EXPORT, IMPORT) > Examples",
-          "section_payload_hash": "sha256:f97e898b975e6c95b770edc08041cf0693139a80b8d50cc9f8bd197b694e52ac",
-          "source_file": "In_a_structured_view_EXPORT_IMPORT.md"
-        }
-      },
-      "stale": true
-    },
-    "Java_integration_API.md": {
-      "file_hash": "sha256:f5b600f6a515a43c5e87e78f81a42ec8209e6678bdf3a0c405a81b1931db8a4a",
-      "indexed_at": "2026-05-15T07:12:33Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Java_integration_API::threads": {
-          "file_id": "file-FGcEdfCKAHSYFTp3EbVzo1",
-          "heading_path": "Java API for integrations > Threads",
-          "section_payload_hash": "sha256:3a72cd94f2f98a576c5b88d2464872ea1c3a224f65d100024e047c71cf8aea1c",
-          "source_file": "Java_integration_API.md"
-        }
-      },
-      "stale": true
-    },
-    "MATCH_operator.md": {
-      "file_hash": "sha256:e01ea506396157edb3e00ac3dc9ccdca0b73fb44c88635bbaf0fb1c2ba4b36d9",
-      "indexed_at": "2026-05-15T07:12:33Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "MATCH_operator::parameters": {
-          "file_id": "file-D5NyjNRS5pTG4RrnKoaemU",
-          "heading_path": "MATCH operator > Parameters",
-          "section_payload_hash": "sha256:1eb3b2bf8d3a93c596838c0bfb32c18defd49dd3ea86a2705281f9507f48f8e0",
-          "source_file": "MATCH_operator.md"
-        }
-      },
-      "stale": true
-    },
-    "Materials_management.md": {
-      "file_hash": "sha256:5ff3ddf3d7fc6923e242aff6569999d2446625d8d855d8dca017c80d2dc25eed",
-      "indexed_at": "2026-05-15T07:12:33Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Materials_management::defining-a-legal-entity": {
-          "file_id": "file-PfTkZmp1junaqqnHzosCA2",
-          "heading_path": "Materials management > Defining domain logic > Defining a legal entity",
-          "section_payload_hash": "sha256:2bbf96a604cf757280f39fc1d2aec207aecc2807e6218531f96a272645b92853",
-          "source_file": "Materials_management.md"
-        }
-      },
-      "stale": true
-    },
-    "Migration.md": {
-      "file_hash": "sha256:372e8aed58485ce81656df559c5b3f55d5134c699de647fa733cd3c817b92a06",
-      "indexed_at": "2026-05-15T07:12:33Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Migration::changing-the-name-of-a-custom-class": {
-          "file_id": "file-QjVHo6ER6nbE8iLunWLtNF",
-          "heading_path": "Migration > Changing the name of a custom class",
-          "section_payload_hash": "sha256:3b60cd3456644377bbcf5b565e8aa2eb6ed78c95a01b51f6605e04ee0bec4894",
-          "source_file": "Migration.md"
-        }
-      },
-      "stale": true
-    },
-    "Object_blocks.md": {
-      "file_hash": "sha256:9718625b3e2d9235e8f399d081a2e2251f546b10a4f5789ac6cbc7d190cc7626",
-      "indexed_at": "2026-05-15T07:12:51Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Object_blocks::examples": {
-          "file_id": "file-SHMnYCnWbtT945GN4PjFgu",
-          "heading_path": "Object blocks > Object block {#objects} > Examples",
-          "section_payload_hash": "sha256:1821d3d98dd78db2154a92ba3b85fd0530fbc5958b5660e7c4a76f37676b05e4",
-          "source_file": "Object_blocks.md"
-        }
-      },
-      "stale": true
-    },
-    "Online_demo.md": {
-      "file_hash": "sha256:ac5d8f798b707c4b6e5c7482e5cbaba018e491308a08d63dbaeb6d2c9926dbc6",
-      "indexed_at": "2026-05-15T07:12:51Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Online_demo::score-table": {
-          "file_id": "file-BNJs1x8xz8BnfVHH9hmGAZ",
-          "heading_path": "Online demo > Score table",
-          "section_payload_hash": "sha256:c55c6ce6e1bb5657f0b3e70ecee44c3c21e30e092f2f23208eb03be25e0543c4",
-          "source_file": "Online_demo.md"
-        }
-      },
-      "stale": true
-    },
-    "PREV_operator.md": {
-      "file_hash": "sha256:c3251125aaa693739ee880594a54e420bd64353da89141b237e76facb7a9ceed",
-      "indexed_at": "2026-05-15T07:13:06Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "PREV_operator::prev-operator": {
-          "file_id": "file-75thRdG3KU9vNVz6rakYqP",
-          "heading_path": "PREV operator",
-          "section_payload_hash": "sha256:5d646ab2bd8d609b51b17ab41bab4fc87bffa8535f5fabd211df9dc9f1cdf0c0",
-          "source_file": "PREV_operator.md"
-        }
-      },
-      "stale": true
-    },
-    "PRINT_operator.md": {
-      "file_hash": "sha256:20f4dceb571d8242f5b2bd867ec6b216cb42030bbf8f386037a274d24d562f2b",
-      "indexed_at": "2026-05-15T07:13:06Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "PRINT_operator::examples": {
-          "file_id": "file-2Nay8FB9JftsugLsJ2rZA7",
-          "heading_path": "PRINT operator > Examples",
-          "section_payload_hash": "sha256:575b767b7bad6332c728f31cc3e54962d0dd29cc874f5eb69e8b8ac0e5fbae84",
-          "source_file": "PRINT_operator.md"
-        }
-      },
-      "stale": true
-    },
-    "Paradigm.md": {
-      "file_hash": "sha256:0de08bccccfa87eab29ce39728f9a0ce73176f859ea94c598a9c6a939955991c",
-      "indexed_at": "2026-05-15T07:13:06Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Paradigm::logical-modellogical_model.md+physical-modelphysical_model.md+stack": {
-          "file_id": "file-1KLD33BgqBKLKsyMPs4XAn",
-          "heading_path": "Paradigm > [Logical model](Logical_model.md) + [Physical model](Physical_model.md) + Stack",
-          "section_payload_hash": "sha256:3b6bb0fe45f38d8df9b5b099d37dec00ca44293a9f2a73882acc7ab741149216",
-          "source_file": "Paradigm.md"
-        }
-      },
-      "stale": true
-    },
-    "Print_view.md": {
-      "file_hash": "sha256:f0f00bda86cc9a9fa70e83b3e16ae03a7f8af8d6593ec6a4ab5b343164784aea",
-      "indexed_at": "2026-05-15T07:13:06Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Print_view::print-view": {
-          "file_id": "file-LEHeHW4cvUaQYKkkndeHo8",
-          "heading_path": "Print view",
-          "section_payload_hash": "sha256:008fcdff837b28a44470b0103fb6170fe44d244573fd0bf3db09a76a772c8cb9",
-          "source_file": "Print_view.md"
-        }
-      },
-      "stale": true
-    },
-    "REQUEST_operator.md": {
-      "file_hash": "sha256:cd49f06af0e1be53447e28fcbbd2d1c1f6954f8273ba9577b87d01e4ba3c6b42",
-      "indexed_at": "2026-05-15T07:13:55Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "REQUEST_operator::request-operator": {
-          "file_id": "file-1ME3DTUEVhqqsFTDCX99qg",
-          "heading_path": "REQUEST operator",
-          "section_payload_hash": "sha256:52b6b71a84a43eed84247f13c08abd0724935ef7035c1554a2400a4689654010",
-          "source_file": "REQUEST_operator.md"
-        }
-      },
-      "stale": true
-    },
-    "Search_.md": {
-      "file_hash": "sha256:34f56ae2b2b9327ccde170b1493fc200f6b9337d815a4e0b8e5718604dba8c80",
-      "indexed_at": "2026-05-15T07:14:18Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Search_::number-of-parameters-matches-metacode+search-for-property-inside-action-locals+namespace-not-specified-explicitly-nonamespace": {
-          "file_id": "file-6YnMdUEHjxKHuxPZ3erfxV",
-          "heading_path": "Search > Search steps > Number of parameters matches {#metacode} + Search for property inside action {#locals} + Namespace not specified explicitly {#nonamespace}",
-          "section_payload_hash": "sha256:d6d9e1f1fe17050c27b07c30627a0b606761aba49ba7fdf5dcf84a775c92f149",
-          "source_file": "Search_.md"
-        },
-        "Search_::suitable-classes-of-parameters-direct+classes-of-parameters-intersect-indirect+selection-of-more-specific-classes-of-parameters-concrete": {
-          "file_id": "file-MNtZmtEH2JEjCZjnfWu3Ck",
-          "heading_path": "Search > Search steps > Suitable classes of parameters {#direct} + Classes of parameters intersect {#indirect} + Selection of more specific classes of parameters {#concrete}",
-          "section_payload_hash": "sha256:4894818cce8a15a9b82335058d004f647c06c79e4a8d42552f8ec2d942def797",
-          "source_file": "Search_.md"
-        }
-      },
-      "stale": true
-    },
-    "Send_mail_EMAIL.md": {
-      "file_hash": "sha256:b0bcba6a9aa355f3ee81ff3a14a1806ab5f9d9e5a4d9820423a89ed11be02327",
-      "indexed_at": "2026-05-15T07:14:26Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Send_mail_EMAIL::send-mail-email": {
-          "file_id": "file-3roTroekPc8jx5FdQsHHPe",
-          "heading_path": "Send mail (EMAIL)",
-          "section_payload_hash": "sha256:cbc443b43064c1baa851c788a4970d77bd86764b5e16d3683a0d94d5442eaea6",
-          "source_file": "Send_mail_EMAIL.md"
-        }
-      },
-      "stale": true
-    },
-    "Static_objects.md": {
-      "file_hash": "sha256:e63630c28e874719fa339362254428625d554c4f10bbea608c9f3f0512dccb2c",
-      "indexed_at": "2026-05-15T07:14:34Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Static_objects::language+examples": {
-          "file_id": "file-NXC27hEeaRQsdKLdavk2KJ",
-          "heading_path": "Static objects > Language + Examples",
-          "section_payload_hash": "sha256:0c7bc2fa63a9a997e6fdcb268cbf545d20f25ead61a00d5dd58a345d51ba069a",
-          "source_file": "Static_objects.md"
-        }
-      },
-      "stale": true
-    },
-    "Tokens.md": {
-      "file_hash": "sha256:050f479813b84dbf19b3db2e646ba7f6d677779e3566912c8fa53f0dc4ecbcfe",
-      "indexed_at": "2026-05-15T07:14:34Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Tokens::tokens": {
-          "file_id": "file-QZtR7qYNbWneczTqNvCfeQ",
-          "heading_path": "Tokens",
-          "section_payload_hash": "sha256:93fc8797e4c399c9f07cb5bde7f9be09b230c1aa9ce7db1a7d56b597309ba39d",
-          "source_file": "Tokens.md"
-        }
-      },
-      "stale": true
-    },
-    "Type_conversion.md": {
-      "file_hash": "sha256:246c0d2f9ed7d086cf838915da1a917824f1057842faffedd05dae3d51a0c4e5",
-      "indexed_at": "2026-05-15T07:14:34Z",
-      "indexed_sourceType": "paradigm",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Type_conversion::string-and-file-types": {
-          "file_id": "file-GNJpNduhmEuthFDq49Lc2b",
-          "heading_path": "Type conversion > String and file types",
-          "section_payload_hash": "sha256:51cd593f3a0c38e6c6c0bd90db2a11bfc70e8c1a6c2c4a4729eaa8c05884c032",
-          "source_file": "Type_conversion.md"
-        }
-      },
-      "stale": true
-    },
-    "WINDOW_statement.md": {
-      "file_hash": "sha256:96caa1b2381e83db52a084993bfc333f2f1132b31328bc3ed67694a5a7e6c9c5",
-      "indexed_at": "2026-05-15T07:14:41Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "WINDOW_statement::syntax": {
-          "file_id": "file-8d6sQEPb5viMXcRF16tzQv",
-          "heading_path": "WINDOW statement > Syntax",
-          "section_payload_hash": "sha256:4dceb6b07723e514a728b6d05a72bdf0736afa9f4884c24bb83c3541bb9db4d4",
-          "source_file": "WINDOW_statement.md"
-        }
-      },
-      "stale": true
-    },
     "brief/Brief.md": {
       "file_hash": "sha256:1a73228c1cc1c0b8b39da4f24c61de6237feff5b76e74c5bb07d4ee54535feeb",
-      "indexed_at": "2026-05-22T21:36:36Z",
+      "indexed_at": "2026-05-22T23:45:18Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v3",
@@ -509,6 +63,18 @@
           "file_id": "file-NZiZmCc8221RFYX8Xcrmor",
           "heading_path": "lsFusion Brief > Core elements (from simpler to more complex) > Classes",
           "section_payload_hash": "sha256:6fd8eca85c66c6f34cf7d9d1dfe1af608941d355b8887701a12fc503ee375363",
+          "source_file": "brief/Brief.md"
+        },
+        "Brief::constraints": {
+          "file_id": "file-EA16B9TpskQi8qUJoU59AT",
+          "heading_path": "lsFusion Brief > Core elements (from simpler to more complex) > Constraints",
+          "section_payload_hash": "sha256:8ecf2d9a1539be390ca80fdb9b4380174ba4717efd272176868f57c293f1e345",
+          "source_file": "brief/Brief.md"
+        },
+        "Brief::events": {
+          "file_id": "file-WMh8vwQKEf6fUrSmsmXUSD",
+          "heading_path": "lsFusion Brief > Core elements (from simpler to more complex) > Events",
+          "section_payload_hash": "sha256:ec5f4ca1fb383dd0ef1e642c162d666296532549ca9423976320d55aeef6d751",
           "source_file": "brief/Brief.md"
         },
         "Brief::extensions": {
@@ -595,6 +161,12 @@
           "section_payload_hash": "sha256:729f0637d65e9ed859ea0dd2e1bce29bfd75b4bff58cde6577242ea2d00a5013",
           "source_file": "brief/Brief.md"
         },
+        "Brief::physical-model-db-structure": {
+          "file_id": "file-FvUSbWbSWQdG6ongyPuJyj",
+          "heading_path": "lsFusion Brief > Physical model (DB structure)",
+          "section_payload_hash": "sha256:5f6ba407937a39cf793c6f242aa8f6a6b7adace703a18b5e29f6ede51cf10035",
+          "source_file": "brief/Brief.md"
+        },
         "Brief::print-view": {
           "file_id": "file-P9hPNZwUSwyYNHzR3x8tym",
           "heading_path": "lsFusion Brief > Form representations > Print view",
@@ -620,7 +192,7 @@
           "source_file": "brief/Brief.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to.md": {
       "file_hash": "sha256:d205f660baee47eaf1372fb7d1980a656dd2f12d5814ee28e0f21de3858938a2",
@@ -786,7 +358,7 @@
     },
     "how-to/How-to_Binding_properties.md": {
       "file_hash": "sha256:40053aa3cfe5d0d90a1b14bacfc1a2aade8c245f4e12c090b49a392fa766d555",
-      "indexed_at": "2026-05-22T21:39:13Z",
+      "indexed_at": "2026-05-22T23:45:29Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -813,6 +385,12 @@
           "section_payload_hash": "sha256:e61f11542ef94eb356f1ec273b3ee1df05de35e501210e7d9fed051296a7010d",
           "source_file": "how-to/How-to_Binding_properties.md"
         },
+        "How-to_Binding_properties::task-004": {
+          "file_id": "file-9WUjzzLWTiRg9ER6Rhepvs",
+          "heading_path": "How-to: Binding properties > Example 4",
+          "section_payload_hash": "sha256:8f8e5222bba5b4ff68b3232add4f13bccfc7cd9ee67c011b2b06d32acf9bfcb7",
+          "source_file": "how-to/How-to_Binding_properties.md"
+        },
         "How-to_Binding_properties::task-005": {
           "file_id": "file-MMzygrbjNVz1pc5iNj84pz",
           "heading_path": "How-to: Binding properties > Example 5",
@@ -820,7 +398,7 @@
           "source_file": "how-to/How-to_Binding_properties.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_CASE_IF_OVERRIDE.md": {
       "file_hash": "sha256:420344ea77e52f8b860e118f76f6fa505afab29fd3af2f831c6524b0605c3810",
@@ -1312,7 +890,7 @@
     },
     "how-to/How-to_Events.md": {
       "file_hash": "sha256:a1a9d8340eb508e680ed0a827f60b05bb1aada9971adb8685240159e6ce4706c",
-      "indexed_at": "2026-05-22T21:44:19Z",
+      "indexed_at": "2026-05-22T23:45:35Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1321,10 +899,22 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "How-to_Events::task-001": {
+          "file_id": "file-DVZ4FyT7nYqyK4D24u9jm9",
+          "heading_path": "How-to: Events > Example 1",
+          "section_payload_hash": "sha256:e6036691ca25200fab4bbeb1844d8d2ecd452e24d8ae8cefd78ae7abec121db2",
+          "source_file": "how-to/How-to_Events.md"
+        },
         "How-to_Events::task-002": {
           "file_id": "file-J3uM6BKr622nq2W6SqG5ik",
           "heading_path": "How-to: Events > Example 2",
           "section_payload_hash": "sha256:d6562c65ca640796f460439c070a5f991b4a226d5c7c2064fed2a75082357a88",
+          "source_file": "how-to/How-to_Events.md"
+        },
+        "How-to_Events::task-003": {
+          "file_id": "file-4hyNV6CnvV7puiTMpHGJ3N",
+          "heading_path": "How-to: Events > Example 3",
+          "section_payload_hash": "sha256:0fa459fef255ae41b42632333959dd8055d475c043da60691ccf48f8de59f88c",
           "source_file": "how-to/How-to_Events.md"
         },
         "How-to_Events::task-004": {
@@ -1334,7 +924,7 @@
           "source_file": "how-to/How-to_Events.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_Explicit_typing.md": {
       "file_hash": "sha256:5b70f148db57d49ac5c02fd6fec66b9fa6bfe327f1f3453a46c45676c7f7ca64",
@@ -1582,7 +1172,7 @@
     },
     "how-to/How-to_GROUP_LAST.md": {
       "file_hash": "sha256:e7a9476543901e6b2da891a0c2f400fd87161aaf0898c5a318974d7ff0620ab8",
-      "indexed_at": "2026-05-22T21:48:07Z",
+      "indexed_at": "2026-05-22T23:45:44Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1591,6 +1181,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "How-to_GROUP_LAST::task-001": {
+          "file_id": "file-66x5HSYtqoQXJtMfubigHS",
+          "heading_path": "How-to: GROUP LAST > Example 1",
+          "section_payload_hash": "sha256:ddeb7f0d05a4471c57534aa49f26ef638ae0a4eae3d1622747affd6ad0bfc9c3",
+          "source_file": "how-to/How-to_GROUP_LAST.md"
+        },
         "How-to_GROUP_LAST::task-002": {
           "file_id": "file-HC7q8pGqs3DrKyAKY3NDbB",
           "heading_path": "How-to: GROUP LAST > Example 2",
@@ -1616,11 +1212,11 @@
           "source_file": "how-to/How-to_GROUP_LAST.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_GROUP_MAX_MIN_AGGR.md": {
       "file_hash": "sha256:972e23317378926a0f3b59655bf83e3bddd5cc1547efb63e78da86271d940877",
-      "indexed_at": "2026-05-22T21:48:47Z",
+      "indexed_at": "2026-05-22T23:45:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1646,9 +1242,15 @@
           "heading_path": "How-to: GROUP MAX/MIN/AGGR > Example 3",
           "section_payload_hash": "sha256:fdbded2a0e7023e211d076f6bb000552c7e4d5fae3a552f87ada765e02b5ef4a",
           "source_file": "how-to/How-to_GROUP_MAX_MIN_AGGR.md"
+        },
+        "How-to_GROUP_MAX_MIN_AGGR::task-004": {
+          "file_id": "file-FQxRn8abb5NznZLBqhkTxe",
+          "heading_path": "How-to: GROUP MAX/MIN/AGGR > Example 4",
+          "section_payload_hash": "sha256:3153399ab52ecbe9cdd030e83f688055bd6fbb9d974ff55b5268146c975f5289",
+          "source_file": "how-to/How-to_GROUP_MAX_MIN_AGGR.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_GROUP_SUM.md": {
       "file_hash": "sha256:34905f760f57a77f1008ff8d856cc29f79060d8e08a79903bfcb0927bc974fc5",
@@ -2222,7 +1824,7 @@
     },
     "how-to/How-to_Registers.md": {
       "file_hash": "sha256:31fd5f7367b82050da7da3e96e7ce821234d98bc9d87ed430ea00f23eb9e323a",
-      "indexed_at": "2026-05-22T21:52:49Z",
+      "indexed_at": "2026-05-22T23:45:59Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2231,6 +1833,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "How-to_Registers::accumulation-ledger": {
+          "file_id": "file-H5orkC6KFcJpTsAqAfQgkZ",
+          "heading_path": "How-to: Registers > Accumulation ledger",
+          "section_payload_hash": "sha256:49dba14fbd966067ebd00ca6205f6ef13703f5a98c19475595040f2d6cecc38d",
+          "source_file": "how-to/How-to_Registers.md"
+        },
         "How-to_Registers::information-ledger": {
           "file_id": "file-E3arrMz7VY2J1yFopT26L6",
           "heading_path": "How-to: Registers > Information ledger",
@@ -2238,7 +1846,7 @@
           "source_file": "how-to/How-to_Registers.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_Reports.md": {
       "file_hash": "sha256:72ee18984fb3d9f54ca38adecc72e08a4b61440acceada5da6a2d089965bf066",
@@ -2656,7 +2264,7 @@
     },
     "language/ABSTRACT_operator.md": {
       "file_hash": "sha256:583f53636597c864505ae2d5681d208350c16b657c5c8eda8d47320e0a8cdfa1",
-      "indexed_at": "2026-05-22T21:55:33Z",
+      "indexed_at": "2026-05-22T23:46:07Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2682,13 +2290,19 @@
           "heading_path": "ABSTRACT operator > Parameters",
           "section_payload_hash": "sha256:5173257d8a47364ce8949c8fd1d50d01d47bfff49528d2a41887273bcf32edb0",
           "source_file": "language/ABSTRACT_operator.md"
+        },
+        "ABSTRACT_operator::syntax+description": {
+          "file_id": "file-4gZFn2yfiPEXf2jC358FzJ",
+          "heading_path": "ABSTRACT operator > Syntax + Description",
+          "section_payload_hash": "sha256:e503edc584873898de130062f506da9243801bff2299bf0997c41bb1c59e504d",
+          "source_file": "language/ABSTRACT_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/ACTION_plus_statement.md": {
       "file_hash": "sha256:34fd4ae6ba3339b740538e3c4716ac66dc77ec8a3b678c5ccb4f0d76002f65a7",
-      "indexed_at": "2026-05-22T21:56:14Z",
+      "indexed_at": "2026-05-22T23:46:15Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2701,6 +2315,12 @@
           "file_id": "file-V32Dc9Gn7eVffL91XTo97J",
           "heading_path": "ACTION+ statement",
           "section_payload_hash": "sha256:acfab480c46106984d2c973bf22fe99d54c23794f0280ccc6dd69dc10e04fa22",
+          "source_file": "language/ACTION_plus_statement.md"
+        },
+        "ACTION_plus_statement::examples": {
+          "file_id": "file-EqnTYvAtbHyquyw66LN5BG",
+          "heading_path": "ACTION+ statement > Examples",
+          "section_payload_hash": "sha256:a98b7eb6fee31692eb7e4bea2cb49a3ebbddafa5abbaae35e8345645159b0a4b",
           "source_file": "language/ACTION_plus_statement.md"
         },
         "ACTION_plus_statement::parameters": {
@@ -2716,7 +2336,7 @@
           "source_file": "language/ACTION_plus_statement.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/ACTION_statement.md": {
       "file_hash": "sha256:0858b352282b449a587d01b5afd4ca3f541fe492fb78c1d41a9b5110c14062e5",
@@ -3348,7 +2968,7 @@
     },
     "language/CASE_operator.md": {
       "file_hash": "sha256:016abe7ab83928ba8849a0808f204ab824b28576442da466ae6807bab64d937f",
-      "indexed_at": "2026-05-22T22:04:38Z",
+      "indexed_at": "2026-05-22T23:46:23Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3374,9 +2994,15 @@
           "heading_path": "CASE operator > Parameters",
           "section_payload_hash": "sha256:dee99cdb78367480f700c5355693efebe5545c33d32526e7a941dc234786ab02",
           "source_file": "language/CASE_operator.md"
+        },
+        "CASE_operator::syntax+description": {
+          "file_id": "file-3RUs44MsfDqSaKeh6obm99",
+          "heading_path": "CASE operator > Syntax + Description",
+          "section_payload_hash": "sha256:83f0f0d7f9f0da05d12a793f8e5d6fc6a574066be7ac18df1c01f33388bc13e4",
+          "source_file": "language/CASE_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/CHANGECLASS_operator.md": {
       "file_hash": "sha256:adfb09d67d88ee948f73648bd1d35ea4ea20ed5a830558818b37ac93c55546f2",
@@ -3634,7 +3260,7 @@
     },
     "language/Change_operators.md": {
       "file_hash": "sha256:5a04a23cfdda6b3ac01277679f11a89de2c131212ff9fe24ec2dd5bdb1f42889",
-      "indexed_at": "2026-05-22T22:06:20Z",
+      "indexed_at": "2026-05-22T23:46:29Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3660,9 +3286,15 @@
           "heading_path": "Change operators > Parameters",
           "section_payload_hash": "sha256:12d89640c1be75ff33d148571110d8eaa4094011330fb91f632334209f519895",
           "source_file": "language/Change_operators.md"
+        },
+        "Change_operators::syntax+description": {
+          "file_id": "file-1gvBdZwwfXXnmFabStz6ik",
+          "heading_path": "Change operators > Syntax + Description",
+          "section_payload_hash": "sha256:88433114526d93b3d091d67bf06d151f644077f2c919e20b4097f12d8f08a693",
+          "source_file": "language/Change_operators.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/Coding_conventions.md": {
       "file_hash": "sha256:1ea61b4943d5c2e8d81f9f8c1c76f6baacfb36910cda7c0787b98452f824f0ec",
@@ -3930,7 +3562,7 @@
     },
     "language/DIALOG_operator.md": {
       "file_hash": "sha256:42d90e5b27376d8f730100f97851ec29c82c0d8c1d9e7b44d5184516adf3c34a",
-      "indexed_at": "2026-05-22T22:08:20Z",
+      "indexed_at": "2026-05-22T23:46:37Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3969,6 +3601,12 @@
           "section_payload_hash": "sha256:edfadd843c631b999af4c77bbd68454931f37d3add2c0105d602e0397dfe9373",
           "source_file": "language/DIALOG_operator.md"
         },
+        "DIALOG_operator::parameters": {
+          "file_id": "file-EoXykQPyF8gZZmgSeAm5G2",
+          "heading_path": "DIALOG operator > Parameters",
+          "section_payload_hash": "sha256:509ca9fd0f60026d754200b1caa992a76c2f81c8f0bd8e9590180fdde936b283",
+          "source_file": "language/DIALOG_operator.md"
+        },
         "DIALOG_operator::syntax": {
           "file_id": "file-A1TdDNK2JwpHNQkAbU7vwA",
           "heading_path": "DIALOG operator > Syntax",
@@ -3976,11 +3614,11 @@
           "source_file": "language/DIALOG_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/EMAIL_operator.md": {
       "file_hash": "sha256:0f9bfa2e584fa739f5b8f023fd467186d465b94e48933b8b34f11486d47810ca",
-      "indexed_at": "2026-05-22T22:09:01Z",
+      "indexed_at": "2026-05-22T23:46:44Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4012,9 +3650,15 @@
           "heading_path": "EMAIL operator > Parameters",
           "section_payload_hash": "sha256:f5a38781e766a4b2ac948973111217e08f52402c5aa4310da0d3645794ba2848",
           "source_file": "language/EMAIL_operator.md"
+        },
+        "EMAIL_operator::syntax": {
+          "file_id": "file-M8eS5hvVUBXgcE9NpGsC77",
+          "heading_path": "EMAIL operator > Syntax",
+          "section_payload_hash": "sha256:79b8307e77f9f259cac545d34f4eddc8771cd08da79ace588f3c477d4e9265f4",
+          "source_file": "language/EMAIL_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/EVAL_operator.md": {
       "file_hash": "sha256:ee4b2cfd0fc3c16bc254794c407dd78f42e73477201d3eb621ffde4afaec0c44",
@@ -4366,7 +4010,7 @@
     },
     "language/Event_block.md": {
       "file_hash": "sha256:d2f4bb175252ab02939389c0d20e38f7cb1a7bdcc8c07e1355b1de40838acd05",
-      "indexed_at": "2026-05-22T22:12:42Z",
+      "indexed_at": "2026-05-22T23:46:52Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4393,6 +4037,12 @@
           "section_payload_hash": "sha256:54652c09d5cab0c452ae9901f39c202168e8572b2e156fc27ecc9b2f0062c9d1",
           "source_file": "language/Event_block.md"
         },
+        "Event_block::parameters": {
+          "file_id": "file-NLCxH7NyAQpXrbCtLUAnvZ",
+          "heading_path": "Event block > Parameters",
+          "section_payload_hash": "sha256:0ec9f112bdacdb3bdfe3e000c254c268cdb6d8182aecd0b3d7687304cb799074",
+          "source_file": "language/Event_block.md"
+        },
         "Event_block::syntax": {
           "file_id": "file-7gHRoTK6bt1Ga8FA8EqQdB",
           "heading_path": "Event block > Syntax",
@@ -4400,7 +4050,7 @@
           "source_file": "language/Event_block.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/Event_description_block.md": {
       "file_hash": "sha256:81a052f90197a098b686c865ceb10930600ace50a2fc1b04df9623f22c29df59",
@@ -4562,7 +4212,7 @@
     },
     "language/FOR_operator.md": {
       "file_hash": "sha256:2af3485f89df1e4ec75f6619cd64f39e7501410c2fc914bb90bdf46a042f8dff",
-      "indexed_at": "2026-05-22T22:14:54Z",
+      "indexed_at": "2026-05-22T23:47:01Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4594,9 +4244,15 @@
           "heading_path": "FOR operator > Parameters",
           "section_payload_hash": "sha256:a7aff990e6fac3e762490d3b5bc0728c6e4dfaa5c12d0cd39cc293d39952487a",
           "source_file": "language/FOR_operator.md"
+        },
+        "FOR_operator::syntax": {
+          "file_id": "file-Vn1G5rA99bEpUtNN17QrHi",
+          "heading_path": "FOR operator > Syntax",
+          "section_payload_hash": "sha256:798338fb860c78d7606b0e482b7f5d62b5adaf4bf790b1418b95613f690a4030",
+          "source_file": "language/FOR_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/Filters_and_sortings_block.md": {
       "file_hash": "sha256:b18db9f58ab2581329ce13ee52429a996f174cba2fe7809768ebbda48d0109d9",
@@ -5640,7 +5296,7 @@
     },
     "language/Module_header.md": {
       "file_hash": "sha256:1ac71c6f22e7ad93266c69041331a0acca1df97d966bd9c5e7f30df386ef0e67",
-      "indexed_at": "2026-05-22T22:34:01Z",
+      "indexed_at": "2026-05-22T23:47:08Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5649,6 +5305,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Module_header::examples": {
+          "file_id": "file-8GBWPB19G7t3xbefhH1zvP",
+          "heading_path": "Module header > Examples",
+          "section_payload_hash": "sha256:4c8ecc0b16a7d804fcd911a09c4c79f01977156cd5fb8d31b41a3d5a5d4f348f",
+          "source_file": "language/Module_header.md"
+        },
         "Module_header::module-header": {
           "file_id": "file-LuDgD3QALboBeDSqZUZyCE",
           "heading_path": "Module header",
@@ -5668,11 +5330,11 @@
           "source_file": "language/Module_header.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/NAVIGATOR_statement.md": {
       "file_hash": "sha256:613b6011b8371601d81510253a73c7e1fe6cc0ddc72e72ad11b96d8d7d2be441",
-      "indexed_at": "2026-05-22T22:35:30Z",
+      "indexed_at": "2026-05-22T23:47:19Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5710,9 +5372,15 @@
           "heading_path": "NAVIGATOR statement > Parameters",
           "section_payload_hash": "sha256:922bd69708bae46d6d9babc77032faea5bb79c571607d2f6d76c3b090a0f6aef",
           "source_file": "language/NAVIGATOR_statement.md"
+        },
+        "NAVIGATOR_statement::syntax": {
+          "file_id": "file-2S7XkDXZnGLWLdtYxp4sph",
+          "heading_path": "NAVIGATOR statement > Syntax",
+          "section_payload_hash": "sha256:169eab3d6fe7bbd5007e1c6dba72b8b8b3956cb1d0cdc307093570670de2a30a",
+          "source_file": "language/NAVIGATOR_statement.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/NESTEDSESSION_operator.md": {
       "file_hash": "sha256:ee9c2668eb1e4a6b04d41b03e331aa1c21263570a86989586eaca57106062438",
@@ -6152,7 +5820,7 @@
     },
     "language/PARTITION_operator.md": {
       "file_hash": "sha256:b79e0670881b120737260dc3db8727ba0775d844786803f7161d7281cbfd8eee",
-      "indexed_at": "2026-05-22T22:39:09Z",
+      "indexed_at": "2026-05-22T23:47:28Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6179,6 +5847,12 @@
           "section_payload_hash": "sha256:2b2e288660fb3770ec01e4025980a172be35fbec256135cf4fa3b432b9ca0dcc",
           "source_file": "language/PARTITION_operator.md"
         },
+        "PARTITION_operator::partition-operator": {
+          "file_id": "file-BR9dZhY3829Ebh2fVW6x5d",
+          "heading_path": "PARTITION operator",
+          "section_payload_hash": "sha256:f0cfb26b2fa736fb6c9d0cca8ce716af1cbae1f9e89ff6cae2268504b6ff2acb",
+          "source_file": "language/PARTITION_operator.md"
+        },
         "PARTITION_operator::syntax": {
           "file_id": "file-CozFaDTB1i2ih2NC6cgzgj",
           "heading_path": "PARTITION operator > Syntax",
@@ -6186,7 +5860,7 @@
           "source_file": "language/PARTITION_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/PREV_operator.md": {
       "file_hash": "sha256:d07e57f7c077789993f6d4ed6e5cfede33ba3a16f941aa4bf7b298bfcc8b38ed",
@@ -6222,7 +5896,7 @@
     },
     "language/PRINT_operator.md": {
       "file_hash": "sha256:7fcadbc610b1319be11b9a0da7c03bfc68a61ec610893f230427149a32a0dd23",
-      "indexed_at": "2026-05-22T22:39:58Z",
+      "indexed_at": "2026-05-22T23:47:34Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6235,6 +5909,12 @@
           "file_id": "file-Ut8UnxDgKLN2WTWVzmDEQv",
           "heading_path": "PRINT operator > Description",
           "section_payload_hash": "sha256:4aad2cb061cdf9b9e77fb20e428b9760a9b30a51228d83eef4e13c9d02cf0382",
+          "source_file": "language/PRINT_operator.md"
+        },
+        "PRINT_operator::examples": {
+          "file_id": "file-P1yHSemLFSQGsFay3sqgJJ",
+          "heading_path": "PRINT operator > Examples",
+          "section_payload_hash": "sha256:575b767b7bad6332c728f31cc3e54962d0dd29cc874f5eb69e8b8ac0e5fbae84",
           "source_file": "language/PRINT_operator.md"
         },
         "PRINT_operator::parameters": {
@@ -6256,7 +5936,7 @@
           "source_file": "language/PRINT_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/Pivot_block.md": {
       "file_hash": "sha256:49b9ab23cf4bc36a8ce00cbf73e10f77afcea028302d1ea882074c51defc2b5d",
@@ -6544,7 +6224,7 @@
     },
     "language/REQUEST_operator.md": {
       "file_hash": "sha256:a87db8c718c1ccd1116439ffb1128649a85bed3a32a799ac5f8841e3efe9e934",
-      "indexed_at": "2026-05-22T22:42:14Z",
+      "indexed_at": "2026-05-22T23:47:40Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6559,6 +6239,12 @@
           "section_payload_hash": "sha256:7cb04928a1bc16cee05845e28bfa1c1e05b0a7902933d8738d4f27d8196f1a63",
           "source_file": "language/REQUEST_operator.md"
         },
+        "REQUEST_operator::request-operator": {
+          "file_id": "file-GUM3Dwy7vAB3L2SdTUP771",
+          "heading_path": "REQUEST operator",
+          "section_payload_hash": "sha256:d5557c0ee1c44dfff2cd9cbfe34f4c93974475ee0f5db4ccf0445e77a41abb77",
+          "source_file": "language/REQUEST_operator.md"
+        },
         "REQUEST_operator::syntax+description+parameters": {
           "file_id": "file-A9FuXJ1ztDSVu7EZmqu9rS",
           "heading_path": "REQUEST operator > Syntax + Description + Parameters",
@@ -6566,7 +6252,7 @@
           "source_file": "language/REQUEST_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/RETURN_operator.md": {
       "file_hash": "sha256:c2b6ef0f41dfa067bc24f2c681bc1ca86560503a11af365d17dce1aca24f11bc",
@@ -7078,7 +6764,7 @@
     },
     "language/WRITE_operator.md": {
       "file_hash": "sha256:b4f46783d7bd0fde7fa2d3ca17c8d1494ccb3cee495f186d1dceed65935d82f7",
-      "indexed_at": "2026-05-22T22:46:48Z",
+      "indexed_at": "2026-05-22T23:47:46Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7105,6 +6791,12 @@
           "section_payload_hash": "sha256:0e67fd4e4868a2350f63e10d8ba09757feb426fbd53023ae1632626cdca003d8",
           "source_file": "language/WRITE_operator.md"
         },
+        "WRITE_operator::syntax": {
+          "file_id": "file-9py73pN71CNBitn7j43npa",
+          "heading_path": "WRITE operator > Syntax",
+          "section_payload_hash": "sha256:6045487de7323f726beddff8a083f641f1723cabb9853e55b885c385cba87ac4",
+          "source_file": "language/WRITE_operator.md"
+        },
         "WRITE_operator::write-operator": {
           "file_id": "file-MXQeJry2Ys32cHvSaQ33mw",
           "heading_path": "WRITE operator",
@@ -7112,7 +6804,7 @@
           "source_file": "language/WRITE_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/commat_statement.md": {
       "file_hash": "sha256:3d9a2ff0b5d59c3e57fda20d0a514ae801dd61f61bf44d85d921331437a249a3",
@@ -7228,26 +6920,6 @@
       },
       "stale": false
     },
-    "lt-_WHEN_statement.md": {
-      "file_hash": "sha256:22ee7dfb99872f4d55ed26cb28dfb2815cb89ceee54d39c945d1806c89f71819",
-      "indexed_at": "2026-05-15T07:14:47Z",
-      "indexed_sourceType": "language",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "lt-_WHEN_statement::syntax+description": {
-          "file_id": "file-TjHBNvbLjvNip6a7pTb32F",
-          "heading_path": "<- WHEN statement > Syntax + Description",
-          "section_payload_hash": "sha256:ffa98df722e60ba201c279b229cc5284cf4df53974b045bbd4039ecc9a3cd884",
-          "source_file": "lt-_WHEN_statement.md"
-        }
-      },
-      "stale": true
-    },
     "paradigm/Access_from_an_external_system.md": {
       "file_hash": "sha256:604586e0aa71fd8a920fddb3889c92ec4fa197d3bbee34c8302bf13cf19f3bfb",
       "indexed_at": "2026-05-22T22:48:46Z",
@@ -7338,7 +7010,7 @@
     },
     "paradigm/Access_to_an_external_system_EXTERNAL.md": {
       "file_hash": "sha256:6fab632a045582f0993e29096c83a74b8315e6240be4a33d39006d48ea34b9e4",
-      "indexed_at": "2026-05-22T22:49:06Z",
+      "indexed_at": "2026-05-22T23:47:54Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7395,6 +7067,12 @@
           "section_payload_hash": "sha256:a2aa6302909ad58c7ca5a51e54ef05e3a9caa5a5fbb9ad9cb553e23218a9d342",
           "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
         },
+        "Access_to_an_external_system_EXTERNAL::tcp--udp---sending-raw-bytes-over-a-socket-tcp": {
+          "file_id": "file-Dbia3gpnpfccwq1wyLk7Xx",
+          "heading_path": "Access to an external system (EXTERNAL) > Types of interactions / protocols > TCP / UDP - sending raw bytes over a socket {#tcp}",
+          "section_payload_hash": "sha256:89f1407741e7b8dce2528558a452cc788182f946a0166d4cfbc1a441e057869a",
+          "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
+        },
         "Access_to_an_external_system_EXTERNAL::types-of-interactions--protocols": {
           "file_id": "file-9Zuop4gXceUN2ji2is6sqJ",
           "heading_path": "Access to an external system (EXTERNAL) > Types of interactions / protocols",
@@ -7402,7 +7080,7 @@
           "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Access_to_an_internal_system_INTERNAL_FORMULA.md": {
       "file_hash": "sha256:38ce5cc9005be6a1e7db1777a3a5ffaa0d4eef0c44b9bc1c5da76528fdbe4950",
@@ -7438,7 +7116,7 @@
     },
     "paradigm/Action_extension.md": {
       "file_hash": "sha256:f02970420c631a2dd570ad77fa1d7e2f19e67210bac268d38f2851b26feb5b44",
-      "indexed_at": "2026-05-22T22:49:59Z",
+      "indexed_at": "2026-05-22T23:48:02Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7447,10 +7125,22 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Action_extension::action-extension": {
+          "file_id": "file-LBm74Txs5px8ZPvZ9y9Z3R",
+          "heading_path": "Action extension",
+          "section_payload_hash": "sha256:291f615f6350dff80c3efb13e16d6bea08a0a84cb4689602670c17c897a7fc3a",
+          "source_file": "paradigm/Action_extension.md"
+        },
         "Action_extension::asynchronous-implementation-marker+polymorphic-form-poly": {
           "file_id": "file-3uCxz8YVeNcgdJZ9saU3uf",
           "heading_path": "Action extension > Asynchronous implementation marker + Polymorphic form {#poly}",
           "section_payload_hash": "sha256:a253a0cc1b202ebcc9b6e72a893f2a8d00ca4a7da42bdbd958ebfb634778c2b9",
+          "source_file": "paradigm/Action_extension.md"
+        },
+        "Action_extension::completeness-of-implementations-full": {
+          "file_id": "file-MpMAnA3QoHXTCmHq1zmTU2",
+          "heading_path": "Action extension > Completeness of implementations {#full}",
+          "section_payload_hash": "sha256:d326e41fb1bec5fc51a6110c60a81f51aebe017f30547c1e2db6cd0acf165453",
           "source_file": "paradigm/Action_extension.md"
         },
         "Action_extension::examples": {
@@ -7490,7 +7180,7 @@
           "source_file": "paradigm/Action_extension.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Action_operators_paradigm.md": {
       "file_hash": "sha256:eba9796532ca203c501df10a1e0d078c3adda8fbd3d60bc4b09cda5129ab47b9",
@@ -7584,7 +7274,7 @@
     },
     "paradigm/Activity_ACTIVE.md": {
       "file_hash": "sha256:2ac15414eba300502fe31c703b62f8212525486209fc33f42a268d9610bac334",
-      "indexed_at": "2026-05-22T22:51:08Z",
+      "indexed_at": "2026-05-22T23:48:10Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7593,6 +7283,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Activity_ACTIVE::activity-active": {
+          "file_id": "file-UWPkq496xRK91XJdYdGFgB",
+          "heading_path": "Activity (ACTIVE)",
+          "section_payload_hash": "sha256:463eaecdaf34bd411988f3aec69cf8a4ec1daed7805c39a1fcd6043df6f9e870",
+          "source_file": "paradigm/Activity_ACTIVE.md"
+        },
         "Activity_ACTIVE::examples": {
           "file_id": "file-FycVXoXQEtaPdkK8ZeP1gw",
           "heading_path": "Activity (ACTIVE) > Examples",
@@ -7606,7 +7302,7 @@
           "source_file": "paradigm/Activity_ACTIVE.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Aggregations.md": {
       "file_hash": "sha256:80ca628c868a508a6636343cf1eb5d1cbd7841095fa48af7f1329a29ea31e044",
@@ -7714,7 +7410,7 @@
     },
     "paradigm/Branching_CASE_IF_MULTI.md": {
       "file_hash": "sha256:fe54d539acd0ce31ded6b0b30adb419b344b71c6697c0d364e8615cbf096d590",
-      "indexed_at": "2026-05-22T22:53:04Z",
+      "indexed_at": "2026-05-22T23:48:14Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7752,9 +7448,15 @@
           "heading_path": "Branching (CASE, IF, MULTI) > Mutual exclusion of conditions {#exclusive}",
           "section_payload_hash": "sha256:7c9908e0aa0e9dcc7a20c74aa8067a2f607e6099f671420d2b86e026e59a5dad",
           "source_file": "paradigm/Branching_CASE_IF_MULTI.md"
+        },
+        "Branching_CASE_IF_MULTI::polymorphic-form-poly": {
+          "file_id": "file-BYH36RXdhN1LVhYZ6PNXBm",
+          "heading_path": "Branching (CASE, IF, MULTI) > Polymorphic form {#poly}",
+          "section_payload_hash": "sha256:eef7ef98a683e130859f6fa307ed3b75467b0cff7f79fc3d0f6af5e979a048d9",
+          "source_file": "paradigm/Branching_CASE_IF_MULTI.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Built-in_classes.md": {
       "file_hash": "sha256:c75fd0b847a8eb3a511634fab7e9b39cb6b4ca91bfb93e657aa72c7951937aa3",
@@ -8079,7 +7781,7 @@
     },
     "paradigm/Classes.md": {
       "file_hash": "sha256:9ad868abc5203fb45421942e9f73ef1fa7a56fff9da5e565439aa5ffa4b37ab9",
-      "indexed_at": "2026-05-22T23:00:27Z",
+      "indexed_at": "2026-05-22T23:48:23Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8099,13 +7801,19 @@
           "heading_path": "Classes",
           "section_payload_hash": "sha256:8f1308b1b10cf3b92b1d8a7fd95086df8a1a36effcad8b8b8c93c97f2a0d6b8d",
           "source_file": "paradigm/Classes.md"
+        },
+        "Classes::inheritance": {
+          "file_id": "file-DiZh4YiWL9KbackeCFv447",
+          "heading_path": "Classes > Inheritance",
+          "section_payload_hash": "sha256:111ea2d95e6eebdb7a6c58d490e003cd37f73a8c0b5e9c48f6cd02f23ee1fd11",
+          "source_file": "paradigm/Classes.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Classification_IS_AS.md": {
       "file_hash": "sha256:7d324cbbccc92ef75c2ef0031643fdff1c1194483794284601ff13f49b9020af",
-      "indexed_at": "2026-05-22T23:01:15Z",
+      "indexed_at": "2026-05-22T23:48:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8114,6 +7822,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Classification_IS_AS::classification-isas": {
+          "file_id": "file-3EwXvYc5WGMPwiL27c6fYE",
+          "heading_path": "Classification (IS/AS)",
+          "section_payload_hash": "sha256:d02ffd13daa46e31f65c57c74edf5d3996f584edf64dd0d6f8d5f38bdb72f959",
+          "source_file": "paradigm/Classification_IS_AS.md"
+        },
         "Classification_IS_AS::language+examples": {
           "file_id": "file-YPve83nL2h57WR9zq8PS5S",
           "heading_path": "Classification (IS/AS) > Language + Examples",
@@ -8121,7 +7835,7 @@
           "source_file": "paradigm/Classification_IS_AS.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Comparison_operators_=_etc.md": {
       "file_hash": "sha256:d66c144443af1c4d29c49ca7b99e740dc3a19e7155f20dfafe2897f6a1414c2c",
@@ -8209,7 +7923,7 @@
     },
     "paradigm/Constraints.md": {
       "file_hash": "sha256:eeb0aa900016a5eb08001af9e151314b7e4ef11d89fc6bdd2ae6e7641a2b5274",
-      "indexed_at": "2026-05-22T23:03:50Z",
+      "indexed_at": "2026-05-22T23:48:39Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8229,13 +7943,19 @@
           "heading_path": "Constraints > Language + Examples",
           "section_payload_hash": "sha256:bf533750a74e86c343214b4b701feec581bdec05590190a70a751ac0c06139f8",
           "source_file": "paradigm/Constraints.md"
+        },
+        "Constraints::show-message-message": {
+          "file_id": "file-VUWGQBZZKxmmDUg1yqTweZ",
+          "heading_path": "Constraints > Show message {#message}",
+          "section_payload_hash": "sha256:20eff1c8b33fc3091e171d50a0ba366baf85a38d82c1857fcd8a1581d08bda17",
+          "source_file": "paradigm/Constraints.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Custom_Spring_bean_EventServer.md": {
       "file_hash": "sha256:a1336402a1ce8dccd7621038e000c2d84bb584a62d6c7380a67e07402b3d84a6",
-      "indexed_at": "2026-05-22T23:04:38Z",
+      "indexed_at": "2026-05-22T23:48:47Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8262,6 +7982,12 @@
           "section_payload_hash": "sha256:8a1e958c48ed2b6d6efca7dec5e15e755363a61d7fc24b475f5699923da54be9",
           "source_file": "paradigm/Custom_Spring_bean_EventServer.md"
         },
+        "Custom_Spring_bean_EventServer::lifecycle": {
+          "file_id": "file-3DCe5sk851g8323EZvNYVc",
+          "heading_path": "Custom Spring bean (EventServer) > Lifecycle",
+          "section_payload_hash": "sha256:ddd2c6ceecbeb31f0a669ecc52f025a1822df177351fd251911b4fb376575da3",
+          "source_file": "paradigm/Custom_Spring_bean_EventServer.md"
+        },
         "Custom_Spring_bean_EventServer::reading-writing-and-executing": {
           "file_id": "file-TpGJ6uN51RV2iZmc2gfP1w",
           "heading_path": "Custom Spring bean (EventServer) > Reading, writing and executing",
@@ -8279,13 +8005,19 @@
           "heading_path": "Custom Spring bean (EventServer) > Threads and stack",
           "section_payload_hash": "sha256:0b7358e44db62bf70fe6db5bc4b386bdf5283b8a132d5ce0566fc1875fa028c5",
           "source_file": "paradigm/Custom_Spring_bean_EventServer.md"
+        },
+        "Custom_Spring_bean_EventServer::wiring-up-in-spring": {
+          "file_id": "file-UHMjCazvGp6x8sbPWWYoua",
+          "heading_path": "Custom Spring bean (EventServer) > Wiring up in Spring",
+          "section_payload_hash": "sha256:97e87b3ce3ae6fa3142b704738f505c2537dcc14b6005e8971401b339d7af519",
+          "source_file": "paradigm/Custom_Spring_bean_EventServer.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Custom_formula_FORMULA.md": {
       "file_hash": "sha256:e1f801e53f2348ea9781a4caec081d4e81ed16308860d92a19a1c4559a02609a",
-      "indexed_at": "2026-05-22T23:05:42Z",
+      "indexed_at": "2026-05-22T23:48:56Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8306,6 +8038,12 @@
           "section_payload_hash": "sha256:60f544d23008d6a4fa6421007fcc9c6193086bbc41376c90559be22bd90cfb2d",
           "source_file": "paradigm/Custom_formula_FORMULA.md"
         },
+        "Custom_formula_FORMULA::language+examples": {
+          "file_id": "file-6hu2EcdsCs8HbYEwTvLk3b",
+          "heading_path": "Custom formula (FORMULA) > Language + Examples",
+          "section_payload_hash": "sha256:f5c3aa37ec8c38debfb8e3655b5813486e27b29eaaba3899d60d51108e6eeb19",
+          "source_file": "paradigm/Custom_formula_FORMULA.md"
+        },
         "Custom_formula_FORMULA::null-handling": {
           "file_id": "file-ExP6Y1KNYmYS3pHN3zfBvw",
           "heading_path": "Custom formula (FORMULA) > `NULL` handling",
@@ -8319,7 +8057,7 @@
           "source_file": "paradigm/Custom_formula_FORMULA.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Data_export_EXPORT.md": {
       "file_hash": "sha256:03fd55a6268a303d86c2acc9b3d02e1a8cfedcc6921538c15a8ef1db57f1e4ba",
@@ -8437,7 +8175,7 @@
     },
     "paradigm/Development.md": {
       "file_hash": "sha256:7d194e6589a1ee85f315ea8bff4c022a2baa1496e68e7e0a3fd2c76eac15135a",
-      "indexed_at": "2026-05-22T23:08:15Z",
+      "indexed_at": "2026-05-22T23:49:09Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8446,6 +8184,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Development::development": {
+          "file_id": "file-2AdmjAMZGQ5NR3JGcYMg57",
+          "heading_path": "Development",
+          "section_payload_hash": "sha256:e1e42d2d31ede7043c943cc4db108ae49a6a9aaba2a3d571096dca6a64c20ecb",
+          "source_file": "paradigm/Development.md"
+        },
         "Development::element-identificationelement_identification.md+modularitymodularity.md+metaprogrammingmetaprogramming.md+migrationmigration.md+internationalizationinternationalization.md+integrationintegration.md": {
           "file_id": "file-RipSJJqknS5Ppxwi7g3upR",
           "heading_path": "Development > [Element identification](Element_identification.md) + [Modularity](Modularity.md) + [Metaprogramming](Metaprogramming.md) + [Migration](Migration.md) + [Internationalization](Internationalization.md) + [Integration](Integration.md)",
@@ -8453,7 +8197,7 @@
           "source_file": "paradigm/Development.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Development_auto.md": {
       "file_hash": "sha256:691861b0e4408379a007ed4c24204443f8d86e3cb783c73a19dee577f9b3aee5",
@@ -8705,7 +8449,7 @@
     },
     "paradigm/Events.md": {
       "file_hash": "sha256:4f882d9a1710fde04999aa0165aca6f33a16852087875a32b635a15218ad155b",
-      "indexed_at": "2026-05-22T23:10:12Z",
+      "indexed_at": "2026-05-22T23:49:17Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8718,6 +8462,12 @@
           "file_id": "file-NG6Gx74STRQNEUMDAEeyn7",
           "heading_path": "Events > Change operators' event mode {#change}",
           "section_payload_hash": "sha256:8ba9e42f5004fdb0d43ac496feb41a22835dd2f59340d6f3e4f186f65c0d5a88",
+          "source_file": "paradigm/Events.md"
+        },
+        "Events::event-types-type": {
+          "file_id": "file-XZCpRiR3qfeyADziBGuK4F",
+          "heading_path": "Events > Event types {#type}",
+          "section_payload_hash": "sha256:155680f1b76c6f7a337639a73fb64f38cc4129d19dbf22a91ba4f48c9fd083fe",
           "source_file": "paradigm/Events.md"
         },
         "Events::events": {
@@ -8733,7 +8483,7 @@
           "source_file": "paradigm/Events.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Examples.md": {
       "file_hash": "sha256:62ac345be10523875edd2e458b4d77a799e93b616396d379d7502a9afee7218a",
@@ -9261,7 +9011,7 @@
     },
     "paradigm/Form_structure.md": {
       "file_hash": "sha256:c4c81009d211e3e5db3dab182be5c94d92615ee4c86147d003ef402136485b02",
-      "indexed_at": "2026-05-22T23:16:29Z",
+      "indexed_at": "2026-05-22T23:49:24Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9300,6 +9050,12 @@
           "section_payload_hash": "sha256:fc462ef0ae48060f4a1751da7ed784100bcb4da9754cfda1b5692bd88be0e439",
           "source_file": "paradigm/Form_structure.md"
         },
+        "Form_structure::orders-sort": {
+          "file_id": "file-LD9nMHwUwa3TVLP3TcvsYS",
+          "heading_path": "Form structure > Orders {#sort}",
+          "section_payload_hash": "sha256:7f09464db1395cf4ddd490707726c7028e3d50c01381162efb24ebd5be96cb17",
+          "source_file": "paradigm/Form_structure.md"
+        },
         "Form_structure::properties-and-actions-properties": {
           "file_id": "file-PrS1ACq5txRYsqfisBAKxR",
           "heading_path": "Form structure > Properties and actions {#properties}",
@@ -9307,7 +9063,7 @@
           "source_file": "paradigm/Form_structure.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Form_views.md": {
       "file_hash": "sha256:6c43ec4cda1096e95801b0420dd2c572fc2c9347e68ae156f465969aa25c3aab",
@@ -9483,7 +9239,7 @@
     },
     "paradigm/Icons.md": {
       "file_hash": "sha256:815705e5d176d79093aee5e423e1aa0c76db8a23620b498c83d3c3d51950c460",
-      "indexed_at": "2026-05-22T23:18:50Z",
+      "indexed_at": "2026-05-22T23:50:20Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9521,9 +9277,15 @@
           "heading_path": "Icon assignment mechanism > Manual assignment {#manual}",
           "section_payload_hash": "sha256:0a2662820b63673a499d2aa8b63a3eeb55ea79b3dc94636776ce774f455fc264",
           "source_file": "paradigm/Icons.md"
+        },
+        "Icons::settings-and-parameters": {
+          "file_id": "file-TrySgAVnh56hg26yEf3R4u",
+          "heading_path": "Icon assignment mechanism > Automatic assignment {#auto} > Settings and parameters",
+          "section_payload_hash": "sha256:a0978dbb913e2e02bd325de3d2ba241df1dc337dc0f644e041e624e125c7a7c2",
+          "source_file": "paradigm/Icons.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/In_a_print_view_PRINT.md": {
       "file_hash": "sha256:d0d50ec2c676f8593150f591242e41caad0b8f0ad3aa269e411ea46d8a1c3bff",
@@ -9992,7 +9754,7 @@
     },
     "paradigm/Java_integration_API.md": {
       "file_hash": "sha256:6908d2a6a2d6ab57ff78f4e4d16b98314dccb3c7efb3b3e329335485c8bda842",
-      "indexed_at": "2026-05-22T23:24:48Z",
+      "indexed_at": "2026-05-22T23:50:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10055,6 +9817,12 @@
           "section_payload_hash": "sha256:95ee2799a83d2c4cef557f26fbfe7c542aa650e114b92b2eb769ee369383b46a",
           "source_file": "paradigm/Java_integration_API.md"
         },
+        "Java_integration_API::root-objects": {
+          "file_id": "file-MZgVJPJofX4K3ybrDmarC6",
+          "heading_path": "Java API for integrations > Root objects",
+          "section_payload_hash": "sha256:9808cd24635ebf5dde629a6322af699b5e1f9c473fb5b9f96528f12b84300a5c",
+          "source_file": "paradigm/Java_integration_API.md"
+        },
         "Java_integration_API::threads": {
           "file_id": "file-Hf1DzTxQ1jcpxJu5WLKMoP",
           "heading_path": "Java API for integrations > Threads",
@@ -10068,7 +9836,7 @@
           "source_file": "paradigm/Java_integration_API.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Journals_and_logs.md": {
       "file_hash": "sha256:c20fbb238fb5af888e32a06dc9d4d5d6485830099321a0d162923eeb750a269e",
@@ -10420,7 +10188,7 @@
     },
     "paradigm/Materials_management.md": {
       "file_hash": "sha256:412c33a9514c78f33200fecd9e71487c32ed08569d970c9d7f721a8a05325c6d",
-      "indexed_at": "2026-05-22T23:27:57Z",
+      "indexed_at": "2026-05-22T23:50:36Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10441,10 +10209,22 @@
           "section_payload_hash": "sha256:939172698b33456ff75484cd0d8a8567ea9d927af59568c607a8f2a6b194cd71",
           "source_file": "paradigm/Materials_management.md"
         },
+        "Materials_management::defining-a-shipment": {
+          "file_id": "file-Qe98vrvSgVcxdDMjsJsUqn",
+          "heading_path": "Materials management > Defining domain logic > Defining a shipment",
+          "section_payload_hash": "sha256:0af46970371d40407fde69877935d0bceabef8d476ee0283029abbb8ecd0d4c4",
+          "source_file": "paradigm/Materials_management.md"
+        },
         "Materials_management::defining-a-stock": {
           "file_id": "file-KbnPXW2D2u39nyQ9xXN84x",
           "heading_path": "Materials management > Defining domain logic > Defining a stock",
           "section_payload_hash": "sha256:24e8e060704e919690d308dd5061300672adc0c35b4d6faec310f91092346bb7",
+          "source_file": "paradigm/Materials_management.md"
+        },
+        "Materials_management::defining-an-item": {
+          "file_id": "file-RQ2dNatJvET5P4TTS8AphD",
+          "heading_path": "Materials management > Defining domain logic > Defining an item",
+          "section_payload_hash": "sha256:3b217232f183c3e500ce6ffac6b456931a34efeacdba2d2755237adae3ffae43",
           "source_file": "paradigm/Materials_management.md"
         },
         "Materials_management::defining-current-item-balance": {
@@ -10478,7 +10258,7 @@
           "source_file": "paradigm/Materials_management.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Metaprogramming.md": {
       "file_hash": "sha256:716136651c3cc2de90778ac17ab4de5c4300b509f2a8b7f5a46fa5be442ebbd4",
@@ -11732,7 +11512,7 @@
     },
     "paradigm/Search_.md": {
       "file_hash": "sha256:8221dbc13bf42f06e37889923015080d5adc98aaa85bd0b2d6c92c859f8d48a2",
-      "indexed_at": "2026-05-22T23:35:53Z",
+      "indexed_at": "2026-05-22T23:50:52Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11771,6 +11551,12 @@
           "section_payload_hash": "sha256:74fd0c82723349c373ac6b61ffbb93d811abc46781c901479218227d66606bbe",
           "source_file": "paradigm/Search_.md"
         },
+        "Search_::not-searching-for-an-abstract-property-notabstract": {
+          "file_id": "file-XHvXRtKD6tGiL9eL9m15gJ",
+          "heading_path": "Search > Search steps > Not searching for an abstract property {#notabstract}",
+          "section_payload_hash": "sha256:ecbe91658307080293f56ba7c6105b03619cd0b301249c2b7e8d122f65b8d08e",
+          "source_file": "paradigm/Search_.md"
+        },
         "Search_::number-of-parameters-matches-metacode+search-for-property-inside-action-locals+namespace-not-specified-explicitly-nonamespace": {
           "file_id": "file-CVP8EZPHs8A1o5saMXxPAm",
           "heading_path": "Search > Search steps > Number of parameters matches {#metacode} + Search for property inside action {#locals} + Namespace not specified explicitly {#nonamespace}",
@@ -11802,7 +11588,7 @@
           "source_file": "paradigm/Search_.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Security_policy.md": {
       "file_hash": "sha256:98c75ba5845f8e5dc0c13af40975ec71c91fbe31063a2780b7b29eda4b17ca57",
@@ -12216,7 +12002,7 @@
     },
     "paradigm/Structure_operators_STRUCT.md": {
       "file_hash": "sha256:73228e539483dfa632895ec580dd3e73ba878c2950d2743deed0d17cfbd95abb",
-      "indexed_at": "2026-05-22T23:39:04Z",
+      "indexed_at": "2026-05-22T23:50:59Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12225,6 +12011,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Structure_operators_STRUCT::examples": {
+          "file_id": "file-5GYXHorEQFRwGf89Rc5MVL",
+          "heading_path": "Structure operators (STRUCT, []) > Examples",
+          "section_payload_hash": "sha256:bcba771f8559f05fa4f722fd9de9ba18ff9c975081d2f0a8377dff47ca41cac3",
+          "source_file": "paradigm/Structure_operators_STRUCT.md"
+        },
         "Structure_operators_STRUCT::language": {
           "file_id": "file-MYAru4KQPhtCSPcXHBJ9yD",
           "heading_path": "Structure operators (STRUCT, []) > Language",
@@ -12238,7 +12030,7 @@
           "source_file": "paradigm/Structure_operators_STRUCT.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Structured_view.md": {
       "file_hash": "sha256:49a5c75a180d6bdc0e2d0cc337916edd7bfc3770543ab92faa7760b3d159e369",
@@ -12700,7 +12492,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "0c0fc5e85b8916301058a21884ec2f99199f3b21",
+  "last_indexed_docs_commit": "2a1ce73c75ef2588422b453270c25e1e2a635f00",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
