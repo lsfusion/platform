@@ -61,8 +61,9 @@ public class MCPDispatcher {
     // Tools handled by proxying to the public lsFusion MCP endpoint
     // (https://ai.lsfusion.org/mcp) via MCPRemoteClient. Sister tools
     // lsfusion_retrieve_howtos / lsfusion_retrieve_community were removed
-    // together with the legacy Pinecone backend that fed them — only
-    // language + paradigm sourceTypes are indexed in the new OpenAI VS.
+    // together with the legacy Pinecone backend that fed them; the new OpenAI
+    // VS indexes all five doc folders (language, paradigm, how-to, brief, rules)
+    // under the single lsfusion_retrieve_docs tool.
     private static final Set<String> REMOTE_TOOLS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             TOOL_RETRIEVE_DOCS, TOOL_GET_GUIDANCE)));
 
@@ -400,9 +401,9 @@ public class MCPDispatcher {
     private static JSONObject retrieveDocsDescriptor() {
         JSONObject typeProp = new JSONObject()
                 .put("type", "string")
-                .put("enum", new JSONArray().put("language").put("paradigm"))
+                .put("enum", new JSONArray().put("language").put("paradigm").put("how-to").put("brief").put("rules"))
                 .put("description",
-                        "Optional sourceType filter. Omit (or pass null) to search both axes. `language` returns syntax / operator reference chunks; `paradigm` returns conceptual / abstraction chunks.");
+                        "Optional sourceType filter (the docs folder). Omit (or pass null) to search all branches and merge. `language` = syntax / operator reference; `paradigm` = concepts / abstractions; `how-to` = task recipes; `brief` = concise capability map; `rules` = code conventions.");
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
@@ -413,7 +414,7 @@ public class MCPDispatcher {
         return new JSONObject()
                 .put("name", TOOL_RETRIEVE_DOCS)
                 .put("description",
-                        "Search official lsFusion documentation (language reference + paradigm concepts) for chunks relevant to a query. Returns `{docs:[{source,text,score}]}` sorted by descending score. Use `type` to narrow by axis when known; omit to search both. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
+                        "Search official lsFusion documentation (language, paradigm, how-to, brief, rules) for chunks relevant to a query. Returns `{docs:[{source,text,score}]}` sorted by descending score. Use `type` to narrow to one branch when known; omit to search all and merge. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
                 .put("inputSchema", input);
     }
 
