@@ -10115,8 +10115,8 @@
       "stale": false
     },
     "paradigm/MCP_server.md": {
-      "file_hash": "sha256:89c58fce57f0e16e987d2a0d1d63f85c6339cf37e8a7f51d1ae69ddbe29e406f",
-      "indexed_at": "2026-05-23T15:23:45Z",
+      "file_hash": "sha256:b15f1b38a34e931cc3395dc3a0a7fdef505ae72818df7892ceb0b92b8670e34f",
+      "indexed_at": "2026-05-23T15:45:16Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
