@@ -10115,8 +10115,8 @@
       "stale": false
     },
     "paradigm/MCP_server.md": {
-      "file_hash": "sha256:a0d6c2c16cbd8f9b3b7e95748c17b53c5d74e61e927aa290bfaee48ad0e621a1",
-      "indexed_at": "2026-05-23T14:44:33Z",
+      "file_hash": "sha256:aaf98cbb89270bef2ae1ef2f6ff147ffb8018026e848f35eb53ed786ed5ff292",
+      "indexed_at": "2026-05-23T15:02:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10138,9 +10138,9 @@
           "source_file": "paradigm/MCP_server.md"
         },
         "MCP_server::authorization-discovery-on-a-non-root-deployment-well-known": {
-          "file_id": "file-4YC87HjWnuAbC8zQt9P9V8",
+          "file_id": "file-BPnAN65DLLHAbmvqrZtTvZ",
           "heading_path": "MCP server setup > Authorization discovery on a non-root deployment {#well-known}",
-          "section_payload_hash": "sha256:09af4831ea5560b0515a727f671f3decbf034413b669c2f91baabfcdd86af83a",
+          "section_payload_hash": "sha256:1c6abcceffecbc19a2636446cec6442fd4a56bdb41facb24c06afcbe11b44614",
           "source_file": "paradigm/MCP_server.md"
         },
         "MCP_server::mcp-server-setup": {
@@ -12530,7 +12530,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "a79d694bdffd29d339684d67671858b5b92e8127",
+  "last_indexed_docs_commit": "a2362b74a09a321cb2a1de05a652eab6e9a50912",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
