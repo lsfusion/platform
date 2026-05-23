@@ -91,7 +91,7 @@ https://host/lsfusion/.well-known/oauth-authorization-server
 
 The metadata document itself is correct once reached; only the strict discovery URL is outside the web application's context. The protected-resource metadata URL emitted by the platform's `WWW-Authenticate` header is already in-context, so that hop works without a rewrite.
 
-Some clients do not fall back from the RFC 8414 host-root URL to the in-context URL on `404`. This was verified for the `claude.ai` connector in 2026-05: discovery stops and the user sees a generic "couldn't reach the server" error.
+A strict OAuth client does not fall back from the RFC 8414 host-root URL to the in-context URL on a `404`: it stops discovery, and the user sees a generic "couldn't reach the server" error with no useful server-side log. The `claude.ai` connector behaves this way.
 
 Fix this at the HTTP layer in front of the application (a reverse proxy, ingress, or the servlet container) — not in application code — by rewriting the host-root authorization-server discovery URL back into the application context. For a Tomcat host-level `RewriteValve`:
 
