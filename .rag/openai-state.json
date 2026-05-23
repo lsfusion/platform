@@ -8364,8 +8364,8 @@
       "stale": false
     },
     "paradigm/Domain_logic.md": {
-      "file_hash": "sha256:0b4daa4cc062c24cd1e30f4b33543cf450e398fa27f1338dbd4f07477ef90846",
-      "indexed_at": "2026-05-22T23:09:47Z",
+      "file_hash": "sha256:a8a7dd7098a48f04a478ff454511b803a317e9b39b56fbde777fd59d76aff975",
+      "indexed_at": "2026-05-23T08:08:39Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8381,9 +8381,9 @@
           "source_file": "paradigm/Domain_logic.md"
         },
         "Domain_logic::stack": {
-          "file_id": "file-GFhoNi3vSuzfzyZsAMK5HK",
+          "file_id": "file-Mh58VgPk9s2cj4ZTtcCWWf",
           "heading_path": "Domain logic > Stack",
-          "section_payload_hash": "sha256:948ea76e8b3114515078bff26db08c95d2de0166d7f775241c78241a6d919fc5",
+          "section_payload_hash": "sha256:921dec6486db73eb4e4a27ac80bc38cea3d085c481ddf97ec858302a3e9caafb",
           "source_file": "paradigm/Domain_logic.md"
         }
       },
@@ -9066,8 +9066,8 @@
       "stale": false
     },
     "paradigm/Form_views.md": {
-      "file_hash": "sha256:6c43ec4cda1096e95801b0420dd2c572fc2c9347e68ae156f465969aa25c3aab",
-      "indexed_at": "2026-05-22T23:17:11Z",
+      "file_hash": "sha256:2a0abb2ef43e7c9ab3546f0bbf97a66f4fff5241fdb8399bd0155d3d10e3a39d",
+      "indexed_at": "2026-05-23T08:08:52Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9089,17 +9089,17 @@
           "source_file": "paradigm/Form_views.md"
         },
         "Form_views::stack": {
-          "file_id": "file-FAE15KWfxkkVjv49n2TGUX",
+          "file_id": "file-GwzmfpTzx1QLRAqVEytCd7",
           "heading_path": "Form views > Stack",
-          "section_payload_hash": "sha256:ebb8cda80082a281d02b087c2199bf093c330b2cd617a97c409b629deccabeff",
+          "section_payload_hash": "sha256:a04681cb3d067dfbd3540346451b11bfa6384b7cff81832584ae6f6022dd4e9c",
           "source_file": "paradigm/Form_views.md"
         }
       },
       "stale": false
     },
     "paradigm/Forms.md": {
-      "file_hash": "sha256:71ba22611677454ae0ab1faa9d3ddac423fc9df7b3484de3bb4fb0ca8cee12da",
-      "indexed_at": "2026-05-22T23:17:34Z",
+      "file_hash": "sha256:b710160fd3ae3bc0b015c1f45dde9eef4f6d376cab2fc65b7d6bc00cfb929b14",
+      "indexed_at": "2026-05-23T08:08:59Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9115,9 +9115,9 @@
           "source_file": "paradigm/Forms.md"
         },
         "Forms::stack": {
-          "file_id": "file-QvtydgyPdqtHZrquU9wPok",
+          "file_id": "file-VAmkV2dM2zm1RMUwtwtgRY",
           "heading_path": "Forms > Stack",
-          "section_payload_hash": "sha256:4236a6dba757874fa9f8f91b7019d341cf2c3297ec0fe2a5ad262c21b3944aa1",
+          "section_payload_hash": "sha256:0d6b855bb9e3702754298a6148e1175fcd9d03da0c73a00e0f923627a67e4363",
           "source_file": "paradigm/Forms.md"
         }
       },
@@ -9999,8 +9999,8 @@
       "stale": false
     },
     "paradigm/Logical_model.md": {
-      "file_hash": "sha256:84cebe3202d9be74b0d46d7fb185918344348be46aa8a67632e3ab1a19efb542",
-      "indexed_at": "2026-05-22T23:26:47Z",
+      "file_hash": "sha256:fb03785998b90dd155843634209ed1f810548cc18baac7c01ede75bfd2bee447",
+      "indexed_at": "2026-05-23T08:09:22Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10010,9 +10010,9 @@
       },
       "sections": {
         "Logical_model::domain-logicdomain_logic.md+view-logicview_logic.md+stack": {
-          "file_id": "file-5GFWs19z9TxiQreoChRTWX",
+          "file_id": "file-6dRXNZWWgXwPrVs2NbjUtN",
           "heading_path": "Logical model > [Domain logic](Domain_logic.md) + [View logic](View_logic.md) + Stack",
-          "section_payload_hash": "sha256:cdb20e8e389a360655d1d98f2dfd4ad514044a2db173e45a19bb805a90e2784a",
+          "section_payload_hash": "sha256:5028ff138c141d925e2e589cac4849197e6f506d2422eaad866b4001e88561ed",
           "source_file": "paradigm/Logical_model.md"
         },
         "Logical_model::logical-model": {
@@ -10507,8 +10507,8 @@
       "stale": false
     },
     "paradigm/Navigator_design.md": {
-      "file_hash": "sha256:0629c58e3c0ecf54534a88ac5c35efd5d4cc23687c143b148e3371976199ac20",
-      "indexed_at": "2026-05-22T23:29:40Z",
+      "file_hash": "sha256:294e50542878c9eef7f6cf06a2d7d8f9d69acbeb8f4aefb22340c7d361a9287d",
+      "indexed_at": "2026-05-23T08:09:29Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10518,9 +10518,9 @@
       },
       "sections": {
         "Navigator_design::default-layout": {
-          "file_id": "file-AYxAR3Y2hnf5dvaVxSyT76",
+          "file_id": "file-Jipxed5vgEbLnmAxP7SfX7",
           "heading_path": "Navigator design > Default layout",
-          "section_payload_hash": "sha256:31ea3eec5f536abc7ec336b5628cda08327d6fd68ccb4c047346756cf642e1d6",
+          "section_payload_hash": "sha256:9762ee4046fadaa614d903cb7d4b184c02a23849d1f4e34b539d2d191b0b4725",
           "source_file": "paradigm/Navigator_design.md"
         },
         "Navigator_design::language+examples": {
@@ -10536,9 +10536,9 @@
           "source_file": "paradigm/Navigator_design.md"
         },
         "Navigator_design::navigator-elements-layout-in-windows": {
-          "file_id": "file-UWdv4M7UaZmaTq7Shcq2y7",
+          "file_id": "file-WoD9TsWvnMMQm1GKrUSGM2",
           "heading_path": "Navigator design > Navigator elements layout in windows",
-          "section_payload_hash": "sha256:74e0b5ed5f17bbd85a50c1c57cae3a8cc3beb573f613967cf9ff1159a10ce94e",
+          "section_payload_hash": "sha256:7c98d80cb35d8d1f193cf16239d1df6e524c6aa28b908e182d300da72e6f3dc0",
           "source_file": "paradigm/Navigator_design.md"
         },
         "Navigator_design::selected-folder-selectedfolder": {
@@ -10554,9 +10554,9 @@
           "source_file": "paradigm/Navigator_design.md"
         },
         "Navigator_design::window-layout-on-the-desktop": {
-          "file_id": "file-Jw5WEZv7Jrs6WuyjbJoXM7",
+          "file_id": "file-4294NAK3rve7SjSPLRCjEL",
           "heading_path": "Navigator design > Window layout on the desktop",
-          "section_payload_hash": "sha256:8ef9d05cdfb89af860ef1abfb29ff7c5ecba853aba07d160f48b4bae507b1e2c",
+          "section_payload_hash": "sha256:2aae78be5571bbf3236d0c4d2ae2c0450aec0ca3e977a77c406f2461b225a77c",
           "source_file": "paradigm/Navigator_design.md"
         }
       },
@@ -10903,8 +10903,8 @@
       "stale": false
     },
     "paradigm/Paradigm.md": {
-      "file_hash": "sha256:19f6e64609e4fc23bc1f5a83c2755fd8810639e01e2761a7fc0eb0529258aa41",
-      "indexed_at": "2026-05-22T23:31:27Z",
+      "file_hash": "sha256:b284a8b71d45033e776b890678d5559d0c7c2ad30cafa68ad63030cf8a6ee815",
+      "indexed_at": "2026-05-23T08:09:38Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10914,9 +10914,9 @@
       },
       "sections": {
         "Paradigm::logical-modellogical_model.md+physical-modelphysical_model.md+stack": {
-          "file_id": "file-9RwdT3chkWgLsKxJeZuXT6",
+          "file_id": "file-XX3g5LLdx5YunMatYHkJ4H",
           "heading_path": "Paradigm > [Logical model](Logical_model.md) + [Physical model](Physical_model.md) + Stack",
-          "section_payload_hash": "sha256:3b6bb0fe45f38d8df9b5b099d37dec00ca44293a9f2a73882acc7ab741149216",
+          "section_payload_hash": "sha256:d1078c80ce3db3bf6ea64610f52f114173ff1da1ea1d9acaf417cffb6ef932ab",
           "source_file": "paradigm/Paradigm.md"
         },
         "Paradigm::paradigm": {
@@ -10961,8 +10961,8 @@
       "stale": false
     },
     "paradigm/Physical_model.md": {
-      "file_hash": "sha256:f020fa9c6c1443e7a02fa194b80c8493acd6281c0acd5a84d61dce991172d565",
-      "indexed_at": "2026-05-22T23:31:42Z",
+      "file_hash": "sha256:94918122796b8613472615e382e6577a10bb1293288f9ea57378a4f35eecb878",
+      "indexed_at": "2026-05-23T08:09:49Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10972,9 +10972,9 @@
       },
       "sections": {
         "Physical_model::developmentdevelopment.md+executionexecution.md+managementmanagement.md+stack": {
-          "file_id": "file-XkRpjdpauPa4gfoPNWzYoe",
+          "file_id": "file-Cz5dpDVMRfqx8hoQo8NzHy",
           "heading_path": "Physical model > [Development](Development.md) + [Execution](Execution.md) + [Management](Management.md) + Stack",
-          "section_payload_hash": "sha256:26c2b622067e25ba9d656513f3972622f079e0b850c8c4364843c0c1edcc7363",
+          "section_payload_hash": "sha256:4429eb37e115e9caf7c6eb2479da6ecaab8d414eef833ee66ac030bc0aa91cb2",
           "source_file": "paradigm/Physical_model.md"
         },
         "Physical_model::physical-model": {
@@ -11039,8 +11039,8 @@
       "stale": false
     },
     "paradigm/Print_view.md": {
-      "file_hash": "sha256:9233c7dd9ff28fa603705d3bac323e973eebe078e01d9288b76dac5bc91970de",
-      "indexed_at": "2026-05-22T23:32:25Z",
+      "file_hash": "sha256:b7e498c1dc433ab81fdf7c0b3ff2f8811be88b315a76b6b905bcc7dac3e21bb4",
+      "indexed_at": "2026-05-23T08:09:58Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11080,9 +11080,9 @@
           "source_file": "paradigm/Print_view.md"
         },
         "Print_view::report-hierarchy-example": {
-          "file_id": "file-7D8SZ5szSrofcnw1i4yFFe",
+          "file_id": "file-DtYYtW1XQKujFvwJvmaKnC",
           "heading_path": "Print view > Report hierarchy example",
-          "section_payload_hash": "sha256:8f01ea992aa8a269cbda7802189aca107bb326034fd3c5c04ff37d054e2692ab",
+          "section_payload_hash": "sha256:514035d809de04f9cbe78f5f70881b48daa18d03142f7d163ea7a3f1c30eb30f",
           "source_file": "paradigm/Print_view.md"
         }
       },
@@ -11925,8 +11925,8 @@
       "stale": false
     },
     "paradigm/Static_view.md": {
-      "file_hash": "sha256:7cec55e60a5a3fd07825d4bf24e8c1f21a98ff6902a50a6a09d00d8e505aa4d8",
-      "indexed_at": "2026-05-22T23:38:35Z",
+      "file_hash": "sha256:f2e01f4fef853adb51673c139403d1601ccea4bf706d9beb154b7fc86466df28",
+      "indexed_at": "2026-05-23T08:10:06Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11936,9 +11936,9 @@
       },
       "sections": {
         "Static_view::an-example-of-constructing-object-group-hierarchy-hierarchysample": {
-          "file_id": "file-Q98CAWJSDiHZ49PqBcRSFC",
+          "file_id": "file-UREp6Vj7FvMhUk9dEUf3U1",
           "heading_path": "Static view > An example of constructing object group hierarchy {#hierarchysample}",
-          "section_payload_hash": "sha256:091ea5a3c6558bd862dd815fa76839893aa096c6f6edddec97cc31ef0d48e007",
+          "section_payload_hash": "sha256:0e45d3f7f691cb3a2ab863d2715ffbcf6fb4e440d1b258ad9041fd5eb595ba80",
           "source_file": "paradigm/Static_view.md"
         },
         "Static_view::building-object-group-hierarchy": {
@@ -12376,8 +12376,8 @@
       "stale": false
     },
     "paradigm/View_logic.md": {
-      "file_hash": "sha256:1863fcfd10b41410795efc55d38ba8ac859ac404470297ce6be03db6cf2a626e",
-      "indexed_at": "2026-05-22T23:41:19Z",
+      "file_hash": "sha256:a4e6b9b22ff4264db7b9d4b86479a680592c9a2ffde9147ccd2f220a53c35874",
+      "indexed_at": "2026-05-23T08:10:13Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12393,9 +12393,9 @@
           "source_file": "paradigm/View_logic.md"
         },
         "View_logic::stack": {
-          "file_id": "file-GA4TEBUzjzD7fJ6wZ4cyF6",
+          "file_id": "file-4PpP8YJnQDiu7QYJPqLNvL",
           "heading_path": "View logic > Stack",
-          "section_payload_hash": "sha256:16be21172b90dd75490af2b0400dd1f0786ce327fa9e287fa5f54c5b79d8764d",
+          "section_payload_hash": "sha256:bbe0f1929ee9c77d3d5f2020fe6d2df65226ae3ce5d2e84a7d307acce4268991",
           "source_file": "paradigm/View_logic.md"
         },
         "View_logic::view-logic": {
@@ -12492,7 +12492,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "2a1ce73c75ef2588422b453270c25e1e2a635f00",
+  "last_indexed_docs_commit": "55a3498535d43575fa65fb6a44027f6b52ff9eef",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
