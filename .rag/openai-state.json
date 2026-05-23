@@ -1253,8 +1253,8 @@
       "stale": false
     },
     "how-to/How-to_GROUP_SUM.md": {
-      "file_hash": "sha256:34905f760f57a77f1008ff8d856cc29f79060d8e08a79903bfcb0927bc974fc5",
-      "indexed_at": "2026-05-22T21:49:30Z",
+      "file_hash": "sha256:a34d406e2570cac434e3d338c1b82a808e6fb2945f5e087c1b9cd54f5d3112c4",
+      "indexed_at": "2026-05-23T13:36:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1263,6 +1263,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "How-to_GROUP_SUM::pipeline-smoke-test-temporary": {
+          "file_id": "file-QwJWh4qmdu4QN6DAedysuc",
+          "heading_path": "How-to: GROUP SUM > Example 5 > Pipeline smoke test (temporary)",
+          "section_payload_hash": "sha256:11da48fa036abbc1cbafa14bc64d73750003b03a9118b5d7014f308723816952",
+          "source_file": "how-to/How-to_GROUP_SUM.md"
+        },
         "How-to_GROUP_SUM::task-001": {
           "file_id": "file-AWNjBFTxCwWPTJ1g5JzbHM",
           "heading_path": "How-to: GROUP SUM > Example 1",
@@ -12518,7 +12524,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "f503f449c422dc4aebc3d8707f26157acfdf22d0",
+  "last_indexed_docs_commit": "d04580c9e022d379d9c2f5ec42aa40df4c2d033f",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
