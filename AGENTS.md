@@ -190,45 +190,7 @@ The MCP server (`../mcp/`) exposes `brief.md` and `rules.md` (the "guidance") th
 - Don't comment what the code already says. Comments belong only where **why** is non-obvious: a hidden constraint, a workaround, a subtle invariant.
 - No emojis in source, commits, or comments unless the user explicitly asks.
 - Prefer editing existing files to creating new ones.
-- System `.lsf` modules shipped under `server/src/main/lsfusion/` must not emit deprecation warnings against their own code on startup. When a syntax form is deprecated, migrate those modules off the old form in the same change set (see Deprecating language syntax).
-
-## Deprecating language syntax
-
-When introducing a keyword rename, an alternative form, or removing a syntax construct:
-
-1. Update `LsfLogics.g`: accept both forms during a deprecation window, or drop the old form for an outright removal.
-2. **Deprecation only.** In `ScriptingLogicsModule.java`, desugar the old form into the new internal representation and append a migration hint to `warningList`. (For removals, skip this — the parser rejects the old form directly, and step 4 must land in the same commit so the platform doesn't fail to start.)
-3. Update the IntelliJ plugin per the Sister repository checklist (grammar + lexer + regeneration + annotator).
-4. Migrate the platform's own system `.lsf` modules (under `server/src/main/lsfusion/`) off the old form so the platform doesn't warn about itself on startup.
-5. Update documentation per the Documentation section.
-6. Land the platform change and self-migration together; coordinate the plugin commit via cross-link.
-
-## Bumping the API version
-
-`BaseUtils.getApiVersion()` in `api/src/main/java/lsfusion/base/BaseUtils.java` gates the RMI handshake between BLB and every RMI client (desktop JVM, web-client servlet JVM, external Java integrations). `BaseUtils.checkClientVersion()` compares `ServerSettings.apiVersion` against client-supplied `NavigatorInfo.apiVersion` via `.equals()` — mismatch hard-rejects the session.
-
-The gate protects the **RMI wire only**. GWT RPC between the browser and the web-client servlet is a separate protocol governed by GWT codegen and the servlet's redeploy; pure GWT-layer changes (`web-client/.../gwt/`) that don't touch `api/` don't need a bump.
-
-### Bump (+1, in the same commit) when
-
-**Remote interface signature changes.** Any method add/remove/rename, parameter/return type change, or `throws` clause change in one of: `RemoteLogicsInterface`, `RemoteLogicsLoaderInterface`, `RemoteConnectionInterface`, `RemoteFormInterface`, `RemoteClientInterface`, `RemoteNavigatorInterface`, `RemoteSessionInterface`, `RemoteRequestInterface`, `RemoteInterface` (all under `api/.../interop/`).
-
-**Serializable wire-format change.** Any change to the serialized form of a class reachable — directly or transitively — from a Remote method parameter or return type. Usually under `api/.../interop/`, but a Serializable field can reach elsewhere in `api/` (e.g. `lsfusion.base.*`); reachability matters, not path. Triggers: add/remove non-`transient` field, change field type, add/remove/rename an `enum` constant, introduce or change `serialVersionUID`, change `extends`/`implements`, or modify `readObject` / `writeObject` / `readResolve` / `writeReplace`.
-
-**New polymorphic subclass sent over RMI.** Java serialization writes the runtime class name; an old peer without the class hits `ClassNotFoundException`. Hierarchies that flow this way: `ClientAction` in `interop/action/` (server returns subclasses inside `ServerResponse`), `FormEvent`/`InputEvent` in `interop/form/event/`, `Authentication` in `interop/connection/authentication/`, and any sealed-by-convention hierarchy where the server picks a subclass and the client must deserialize it.
-
-**Protocol-semantics change.** Same bytes, different meaning — flipped default, previously-optional field now required, ignored value now interpreted, repurposed exception code. Both peers deserialize fine and then disagree on behavior.
-
-### Don't bump
-
-- Refactors that don't touch `api/`.
-- Changes inside an RMI implementation that don't change the interface or any Serializable wire type.
-- `transient` / `static` fields, caches, lazy holders. Plain `private` is **not** exempt — only `transient` is.
-- Private methods, non-serialized inner classes, helpers outside the Remote API and serialized form.
-- GWT-layer changes (`web-client/.../gwt/`) that don't touch `api/`.
-- `.lsf`, build, test, docs.
-
-**Quick fallback** when transitive reachability isn't obvious in 30 seconds: if the changed class is used by or contained in a known wire payload (`ServerResponse`, `ClientAction` subtree, `FormClientData`, `NavigatorInfo`, `ServerSettings`), assume reachable and bump unless you can prove otherwise. Call out the bump in the commit body so the reviewer can confirm the trigger.
+- Module-specific code/process rules live in the module's own `AGENTS.md`, auto-loaded when working there: language-syntax deprecation and the system `.lsf` deprecation-warning policy in `server/AGENTS.md`; API-version bumping in `api/AGENTS.md`.
 
 ## Risk discipline
 
@@ -243,5 +205,6 @@ Local, reversible work — editing files, running tests, regenerating parsers, c
 ## Per-agent extension files
 
 - `CLAUDE.md`, `GEMINI.md` at the repo root are thin wrappers that import this file (Claude Code and Gemini CLI don't auto-read `AGENTS.md` out of the box).
+- Module subdirs with their own scoped rules carry a local `AGENTS.md` plus `CLAUDE.md`/`GEMINI.md` wrappers, auto-loaded by ancestry when working in that subtree: `api/` (API-version bumping), `server/` (language-syntax deprecation, system `.lsf` policy), `docs/` (documentation rules, with its own per-type split).
 - `.github/copilot-instructions.md` — if added, GitHub Copilot in IDEs that don't read `AGENTS.md` will pick it up. Keep canonical guidance here, and let that file be a short reference or a generated mirror.
 - `.cursor/rules/*.mdc` — if added, lets Cursor apply scoped rules. Cursor also reads `AGENTS.md` natively, so most guidance can stay here.
