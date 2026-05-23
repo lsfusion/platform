@@ -116,3 +116,7 @@ currentBalance 'Current balance' (Book b) = GROUP SUM currentBalance(b, Stock s)
   
 
 Unlike the current balance for all the warehouses, it is not reasonable to mark this property as `MATERIALIZED` if you have only few warehouses — otherwise, UPDATE CONFLICT may occur when several users try to write the movement of the same book at different warehouses simultaneously.
+
+### Pipeline smoke test (temporary)
+
+End-to-end pipeline check added on 2026-05-23 and reverted shortly after: the distinctive phrase "quokka reconciliation checkpoint" lets a retrieval query confirm that an edited document is re-indexed into the RAG vector store and republished to the documentation site.
