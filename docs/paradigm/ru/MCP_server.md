@@ -1,6 +1,7 @@
 ---
 slug: "/MCP_server"
 title: 'Настройка MCP-сервера'
+sidebar_label: 'MCP-сервер'
 ---
 
 Платформа lsFusion может выступать в роли MCP-сервера ([Model Context Protocol](https://modelcontextprotocol.io/)) для внешних AI-клиентов (например, `claude.ai`). MCP-сервер работает поверх стандартного [HTTP API платформы](Access_from_an_external_system.md), поэтому отдельный сервис разворачивать не требуется — достаточно сконфигурировать на сервере приложений два параметра: `enableAPI` и HTTPS.

@@ -622,7 +622,7 @@ module.exports = {
       items: [
         {type: 'doc', id: 'brief/Brief', label: 'Brief'},
         {type: 'doc', id: 'rules/Rules', label: 'Rules'},
-        {type: 'doc', id: 'paradigm/MCP_server', label: 'MCP Server'},
+        {type: 'doc', id: 'paradigm/MCP_server'},
       ]
     },
     'paradigm/IDE',

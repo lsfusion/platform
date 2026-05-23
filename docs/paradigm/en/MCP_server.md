@@ -1,6 +1,7 @@
 ---
 slug: "/MCP_server"
 title: 'MCP server setup'
+sidebar_label: 'MCP Server'
 ---
 
 The lsFusion platform can act as an MCP server ([Model Context Protocol](https://modelcontextprotocol.io/)) for external AI clients (for example, `claude.ai`). The MCP server runs on top of the standard [HTTP API of the platform](Access_from_an_external_system.md), so no separate service has to be deployed — it is enough to configure two parameters on the application server: `enableAPI` and HTTPS.
