@@ -18,8 +18,11 @@ translated content):
 - LANGUAGE — docs/language/AGENTS.md   (syntax-construction articles)
 - PARADIGM — docs/paradigm/AGENTS.md   (abstractions and concepts)
 - HOW-TO   — docs/how-to/AGENTS.md      (task recipes)
-- GUIDE    — recommendation articles (filename prefix `Guide`); no dedicated
-  folder, so the GUIDE section stays in this file under TYPE-SPECIFIC RULES.
+- RULES    — docs/rules/AGENTS.md       (AI task rules / coding recommendations;
+  this is the `rules/` folder — what the earlier "Guide" recommendation part
+  is realized as)
+- BRIEF    — `brief/` is a derived AI capability map distilled from the above;
+  no per-type AGENTS.md (a common rule covers it)
 
 Keep a rule that applies to only one type in that type's docs/<type>/AGENTS.md.
 
@@ -109,35 +112,39 @@ Common structure rules:
   articles
   are primary documentation
   and MUST NOT
-  reference Guide
-  or How-to articles;
+  reference How-to,
+  Rules, or Brief articles;
   cross-references
-  go from Guide / How-to
+  go from How-to / Rules / Brief
   to Language / Paradigm,
   never the other way around
 
 The required order is:
 1) Language
 2) Paradigm
-3) Guide
-4) How-to
+3) How-to
+
+Rules and Brief are derived AI-guidance branches,
+distilled from the above
+(Rules = the task rules / recommendations in `rules/`;
+Brief = the concise capability map in `brief/`).
+The earlier "Guide" recommendation part
+is realized as the `rules/` folder.
 
 The assistant MUST first look at Language,
 then try to understand the abstractions,
-then try to compose Guide and How-to.
+then try to compose How-to
+and the Rules / Brief guidance.
 
 
 ----------------------------------------------------------------
 
 GENERAL GUIDE
 
-There is also a general guide: `../mcp/brief.md`.
-
-It is assumed to exist.
-It SHOULD contain important / key information
-from all documentation parts,
-and this information SHOULD always be available
-in the context for the AI assistant.
+There is also a general guide — the Brief at `brief/{en,ru}/Brief.md` —
+distilled from all documentation parts. It is served to the AI assistant by the
+MCP `lsfusion_get_guidance` tool (alongside the Rules at `rules/{en,ru}/Rules.md`),
+so its key information is always available in context.
 
 ----------------------------------------------------------------
 
@@ -206,8 +213,8 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    as carefully as possible
    so as not to miss non-obvious behavior.
 
-6. GUIDE / HOW-TO WRITING
-   When writing Guide / How-to,
+6. RULES / HOW-TO WRITING
+   When writing Rules / How-to,
    the assistant MUST also use examples
    from existing code.
 
@@ -654,7 +661,7 @@ and what it means,
 not speculative usage.
 Pure usage variants
 SHOULD appear
-only in Guide / How-to
+only in Rules / How-to
 and only when grounded
 in such sources.
 The assistant MUST NOT
@@ -862,52 +869,8 @@ plan or workflow file.
 
 TYPE-SPECIFIC RULES
 
-----------------------------------------------------------------
-
-
-----------------------------------------------------------------
-
-GUIDE — recommendation articles (no dedicated folder)
+Type-specific rules live in each type folder's own AGENTS.md (see RULE
+SCOPE at the top): docs/language/, docs/paradigm/, docs/how-to/, and
+docs/rules/AGENTS.md.
 
 ----------------------------------------------------------------
-
-### 3. Guide
-
-Guide documentation is organized by elements
-and functional blocks.
-
-It MUST contain general recommendations:
-- what should be done
-- what is better not to do
-
-That means recommendations, not errors.
-Errors should be described in Language / Paradigm.
-
-Guide documentation includes both:
-- recommendations for syntax usage
-- recommendations for using abstractions
-
-Guide file naming convention:
-- file names contain `Guide`
-- most often `Guide` is a prefix
-
-Guide structure SHOULD correspond to the Paradigm structure
-whenever possible,
-although several different `.md` files
-may be combined into one.
-
-Guide article structure convention:
-- a Guide article
-  SHOULD be organized
-  as a set of recommendations
-  and anti-recommendations,
-  not as a syntax reference
-- recommendations
-  SHOULD be grouped
-  by practical topic
-  or aspect of usage
-- examples may be used
-  to support recommendations,
-  but examples
-  are secondary
-  to the recommendations

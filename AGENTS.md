@@ -16,7 +16,7 @@ Maven multi-module project. Top-level modules: `api/`, `ai/`, `build/`, `desktop
   - `server/src/main/antlr3/lsfusion/server/language/LsfLogics.g` — ANTLR3 grammar source. Generated parser/lexer is written into `src/main/java` (path configured in `server/pom.xml`); never hand-edit generated files.
 - `web-client/` — GWT web client.
 - `desktop-client/` — Swing/Java desktop client.
-- `docs/{en,ru}/` — primary documentation. The sibling `../docusaurus/` consumes it — see the Documentation section for the rules.
+- `docs/<type>/{en,ru}/` — primary documentation, type-first (type ∈ `language`, `paradigm`, `how-to`, `brief`, `rules`). The sibling `../docusaurus/` consumes it — see the Documentation section for the rules.
 
 ## Sister repository
 
@@ -174,12 +174,11 @@ Workflow is master-direct (commits push to `master` after review). When a PR is 
 
 A user-visible platform change is not done when the code compiles — the documentation under `docs/` must reflect the new behavior, **either in the same commit or in an immediate follow-up before the change is published**. As a rule of thumb: if the change warrants a GitHub issue (see above), it warrants a docs update too.
 
-- Update both `docs/en/` and `docs/ru/` in lockstep — the two language versions are translations of the same content, not separate documents.
-- The sibling `../docusaurus/sidebars.js` is the navigation source of truth; update it when adding pages or restructuring sections.
-- The rest of `../docusaurus/` is a derived copy — don't edit it.
-- Docs-specific structural rules (Language → Paradigm → Guide → How-to ordering, cross-link direction, etc.) live in `docs/AGENTS.md`.
+- The docs layout is type-first: `docs/<type>/{en,ru}/` (type ∈ `language`, `paradigm`, `how-to`, `brief`, `rules`). Update both language versions of a page in lockstep — they are translations of the same content, not separate documents.
+- `docs/sidebars.js` (in this repo) is the navigation source of truth; update it when adding pages or restructuring sections. The sibling `../docusaurus/` is a derived copy — don't edit it; its own `sidebars.js` is just a loader for `docs/sidebars.js`.
+- Docs-specific structural rules live in `docs/AGENTS.md`, and per-type rules in `docs/<type>/AGENTS.md`.
 
-The MCP server (`../mcp/`) exposes `brief.md` and `rules.md` (the "guidance") that prime AI assistants writing `.lsf` code. Touch only when a platform change materially alters how developers reason about, structure, or write `.lsf` — a new core operator/paradigm with broad applicability, a deprecation of something the guidance recommends, or a default change that breaks existing examples. Niche options, isolated bug fixes, internal plumbing, anything confined to a subsystem most app developers never touch — leave alone. When in doubt, leave alone; the guidance is deliberately compact and noise hurts more than missing edges. If updating, mirror the change in `docs/` first (the guidance distills from docs, not the reverse).
+The AI guidance is published as documentation pages — `docs/brief/{en,ru}/Brief.md` (the concise capability map) and `docs/rules/{en,ru}/Rules.md` (the task rules) — and the MCP `lsfusion_get_guidance` tool serves them by fetching the published pages (`../mcp/` no longer ships separate `brief.md`/`rules.md`). Touch these pages only when a platform change materially alters how assistants or developers reason about, structure, or write `.lsf` — a new core operator/paradigm with broad applicability, a deprecation of something the guidance recommends, or a default change that breaks existing examples. Niche options, isolated bug fixes, internal plumbing, anything confined to a subsystem most app developers never touch — leave alone. When in doubt, leave alone; the guidance is deliberately compact and noise hurts more than missing edges. The guidance distills from the docs, not the reverse.
 
 ## Code conventions
 
