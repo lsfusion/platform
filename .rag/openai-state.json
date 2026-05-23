@@ -6920,6 +6920,32 @@
       },
       "stale": false
     },
+    "paradigm/AI.md": {
+      "file_hash": "sha256:ba21d7783d643de7c04157668c76ba495a4fdea041dc3ba48cd78b12e470d2b8",
+      "indexed_at": "2026-05-23T11:13:38Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "AI::ai": {
+          "file_id": "file-Aon3Npjd64F4oLPYqS7nQM",
+          "heading_path": "AI",
+          "section_payload_hash": "sha256:4b7ed97cde4733a67a68cdc3c86446fe9d827f8cbe9727c0308015cb2afce820",
+          "source_file": "paradigm/AI.md"
+        },
+        "AI::brief..briefbrief.md+rules..rulesrules.md": {
+          "file_id": "file-VjbrmEt3mub7YXDhGAEQ8z",
+          "heading_path": "AI > [Brief](../brief/Brief.md) + [Rules](../rules/Rules.md)",
+          "section_payload_hash": "sha256:bbe6594690da4c3335cf8b73977d36102915abc629f4a10bf0ebca96f4ecdc1f",
+          "source_file": "paradigm/AI.md"
+        }
+      },
+      "stale": false
+    },
     "paradigm/Access_from_an_external_system.md": {
       "file_hash": "sha256:604586e0aa71fd8a920fddb3889c92ec4fa197d3bbee34c8302bf13cf19f3bfb",
       "indexed_at": "2026-05-22T22:48:46Z",
@@ -9941,8 +9967,8 @@
       "stale": false
     },
     "paradigm/Learn.md": {
-      "file_hash": "sha256:66a755a0556abc7b348289af77f4a4b7b71647c3c63929cc6fbae0225d3f825d",
-      "indexed_at": "2026-05-22T23:26:32Z",
+      "file_hash": "sha256:80888d81355c25a0897fe07fb310f466878dceb3ea178ab001e94fd42f567d18",
+      "indexed_at": "2026-05-23T11:13:47Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9957,10 +9983,10 @@
           "section_payload_hash": "sha256:ec24431e2605e972a66a0feedb35bd6df04d2813c2f4ce33dd211c2ed1b8e287",
           "source_file": "paradigm/Learn.md"
         },
-        "Learn::paradigmparadigm.md+language..languagelanguage.md+ideide.md+learning-materialslearning_materials.md+online-demoonline_demo.md": {
-          "file_id": "file-K3oXLw2abv7yEc4kBcGNN4",
-          "heading_path": "Learn > [Paradigm](Paradigm.md) + [Language](../language/Language.md) + [IDE](IDE.md) + [Learning materials](Learning_materials.md) + [Online demo](Online_demo.md)",
-          "section_payload_hash": "sha256:8dc207834fa99b74a1ff4cba9063e5c8beba859ad6fdd7a685afa8798c311521",
+        "Learn::paradigmparadigm.md+language..languagelanguage.md+ideide.md+learning-materialslearning_materials.md+aiai.md+online-demoonline_demo.md": {
+          "file_id": "file-Qk5ZHk2ikNYsGbm91FLRnJ",
+          "heading_path": "Learn > [Paradigm](Paradigm.md) + [Language](../language/Language.md) + [IDE](IDE.md) + [Learning materials](Learning_materials.md) + [AI](AI.md) + [Online demo](Online_demo.md)",
+          "section_payload_hash": "sha256:3ec0242cd90bdd69e6240edb15592f6c52ce4f8e3d32f91cd3bfbb05b7cff1f5",
           "source_file": "paradigm/Learn.md"
         }
       },
@@ -12492,7 +12518,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "55a3498535d43575fa65fb6a44027f6b52ff9eef",
+  "last_indexed_docs_commit": "b2f09c64c2d67efbea8b716b452beb349c3e54c9",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
