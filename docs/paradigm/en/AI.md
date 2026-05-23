@@ -9,3 +9,5 @@ This section contains the guidance that helps AI assistants — and the develope
 A concise map of **lsFusion** elements — properties, actions, forms, and the core operators — written for quick understanding and code generation. It is deliberately compact; detailed syntax is looked up in the rest of the documentation as needed.
 ### [Rules](../rules/Rules.md)
 The mandatory conventions for writing **lsFusion** code: how to structure modules, declare and name properties and actions, and which common mistakes to avoid. An AI assistant should read and follow these before generating `.lsf` code.
+### [MCP server](MCP_server.md)
+How to run an lsFusion application itself as an MCP server (`enableAPI` + HTTPS) so external AI clients such as `claude.ai` can call its tools — including the OAuth `.well-known` discovery caveat for deployments that are not at the domain root.

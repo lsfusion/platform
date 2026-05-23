@@ -55,3 +55,25 @@ For example, if the application is deployed at `https://erp.example.com`, the UR
 ```
 https://erp.example.com/mcp
 ```
+
+### Authorization discovery on a non-root deployment {#well-known}
+
+When the API requires authentication (`enableAPI=1`), the platform also acts as an OAuth authorization server. After a `401` from `/mcp`, the MCP client (`claude.ai`, Claude Desktop, Cursor) fetches the authorization-server metadata to discover where to register and run the OAuth flow — `GET /.well-known/oauth-authorization-server` (RFC 8414). The metadata document is built from the request's external base URL on each call, so no static configuration is needed.
+
+This discovery silently breaks when the application is **not** deployed at the domain root — i.e. it runs under a context path such as `https://host/lsfusion` rather than at `https://host`:
+
+- RFC 8414 §3.1 puts the well-known segment at the host root and appends the issuer path **after** it, so the client looks at `https://host/.well-known/oauth-authorization-server/lsfusion`. A web application deployed under `/lsfusion` only owns `/lsfusion/*`, so it cannot serve that host-root URL; it serves the append-style `https://host/lsfusion/.well-known/oauth-authorization-server` instead.
+- Strict clients do **not** fall back from the host-root path to the append path on a `404` — verified against the `claude.ai` connector (2026-05), the client abandons discovery and the user sees a generic "couldn't reach the server" error with no useful server-side log. Treat this as the general case for any RFC-8414-strict OAuth/OIDC client.
+
+The fix belongs at the HTTP layer in front of the application (reverse proxy, ingress, or the servlet container) — not in application code: rewrite the host-root well-known request back into the application's context. For a Tomcat host-level `RewriteValve`:
+
+```
+RewriteRule ^/\.well-known/oauth-authorization-server/(.+)$ /$1/.well-known/oauth-authorization-server [L]
+RewriteRule ^/\.well-known/openid-configuration/(.+)$        /$1/.well-known/oauth-authorization-server [L]
+```
+
+The rules are generic — no per-context configuration, they work for any context path. The same rewrite applies in nginx, Apache, Traefik, or a Kubernetes ingress. The second line aliases OIDC discovery onto the OAuth metadata document, closing the OIDC-discovery `404` chain some clients walk after the OAuth one.
+
+:::note
+Root-context deployments (the application served directly at `https://host`, as in the `https://erp.example.com` example above) need none of this: the host-root and append URLs collapse to the same `/.well-known/oauth-authorization-server`.
+:::

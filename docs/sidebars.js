@@ -614,7 +614,18 @@ module.exports = {
         'language/Coding_conventions', 
       ]
     },
-    'paradigm/IDE', 
+    {
+      collapsed: false,
+      type: 'category',
+      label: 'AI',
+      link: {type: 'doc', id: 'paradigm/AI'},
+      items: [
+        {type: 'doc', id: 'brief/Brief', label: 'Brief'},
+        {type: 'doc', id: 'rules/Rules', label: 'Rules'},
+        {type: 'doc', id: 'paradigm/MCP_server', label: 'MCP Server'},
+      ]
+    },
+    'paradigm/IDE',
     {
       collapsed: false,
       type: 'category',
@@ -773,16 +784,6 @@ module.exports = {
             'how-to/How-to_Adding_New_Fonts',
           ]
         },
-      ]
-    },
-    {
-      collapsed: false,
-      type: 'category',
-      label: 'AI',
-      link: {type: 'doc', id: 'paradigm/AI'},
-      items: [
-        {type: 'doc', id: 'brief/Brief', label: 'Brief'},
-        {type: 'doc', id: 'rules/Rules', label: 'Rules'},
       ]
     },
     'paradigm/Online_demo',
