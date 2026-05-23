@@ -11,6 +11,6 @@ title: 'Логика представлений'
 
 ### Стек
 
-import PresentationRuSvg from './images/PresentationRu.svg';
+import PresentationRuSvg from '../images/PresentationRu.svg';
 
 <PresentationRuSvg />

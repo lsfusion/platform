@@ -12,7 +12,7 @@ title: 'Формы'
 
 ### Стек
 
-import FormRuSvg from './images/FormRu.svg';
+import FormRuSvg from '../images/FormRu.svg';
 
 <FormRuSvg />
 

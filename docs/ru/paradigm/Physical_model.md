@@ -19,7 +19,7 @@ title: 'Физическая модель'
 
 ### Стек
 
-import PhysicalModelRuSvg from './images/PhysicalModelRu.svg';
+import PhysicalModelRuSvg from '../images/PhysicalModelRu.svg';
 
 <PhysicalModelRuSvg />
   

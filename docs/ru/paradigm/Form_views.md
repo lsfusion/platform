@@ -29,6 +29,6 @@ title: 'Представления формы'
 
 ### Стек
 
-import FormPresentationRuSvg from './images/FormPresentationRu.svg';
+import FormPresentationRuSvg from '../images/FormPresentationRu.svg';
 
 <FormPresentationRuSvg />

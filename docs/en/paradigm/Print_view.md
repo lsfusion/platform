@@ -38,7 +38,7 @@ FORM myForm 'myForm'
 
 The report hierarchy for this form is built as follows:
 
-import ReportHierarchyEnSvg from './images/ReportHierarchyEn.svg';
+import ReportHierarchyEnSvg from '../images/ReportHierarchyEn.svg';
 
 <ReportHierarchyEnSvg />
 

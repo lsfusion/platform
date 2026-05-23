@@ -22,7 +22,7 @@ title: 'Логика предметной области'
 
 ### Стек
 
-import DomainRuSvg from './images/DomainRu.svg';
+import DomainRuSvg from '../images/DomainRu.svg';
 
 <DomainRuSvg />
 

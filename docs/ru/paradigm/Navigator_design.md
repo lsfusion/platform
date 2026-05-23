@@ -18,8 +18,8 @@ import ThemedImage from '@theme/ThemedImage';
 <ThemedImage
     alt="Docusaurus themed image"
     sources={{
-        light: require('./images/Navigator_designRu.png').default,
-        dark: require('./images/Navigator_designRu_dark.png').default,
+        light: require('../images/Navigator_designRu.png').default,
+        dark: require('../images/Navigator_designRu_dark.png').default,
     }}
 />
 
@@ -30,8 +30,8 @@ import ThemedImage from '@theme/ThemedImage';
 <ThemedImage
     alt="Docusaurus themed image"
     sources={{
-        light: require('./images/Navigator_design_light_Ru.png').default,
-        dark: require('./images/Navigator_design_dark_Ru.png').default,
+        light: require('../images/Navigator_design_light_Ru.png').default,
+        dark: require('../images/Navigator_design_dark_Ru.png').default,
     }}
 />
 
@@ -63,8 +63,8 @@ import ThemedImage from '@theme/ThemedImage';
 <ThemedImage
     alt="Docusaurus themed image"
     sources={{
-        light: require('./images/Navigator_design_default.png').default,
-        dark: require('./images/Navigator_design_default_dark.png').default,
+        light: require('../images/Navigator_design_default.png').default,
+        dark: require('../images/Navigator_design_default_dark.png').default,
     }}
 />
 

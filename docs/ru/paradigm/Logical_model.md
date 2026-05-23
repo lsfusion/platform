@@ -15,7 +15,7 @@ title: 'Логическая модель'
 
 ### Стек
 
-import DomainandPresentationRuSvg from './images/DomainandPresentationRu.svg';
+import DomainandPresentationRuSvg from '../images/DomainandPresentationRu.svg';
 
 <DomainandPresentationRuSvg />
 

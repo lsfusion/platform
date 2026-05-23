@@ -15,6 +15,6 @@ title: 'Парадигма'
 
 ### Стек
 
-import ParadigmRuSvg from './images/ParadigmRu.svg';
+import ParadigmRuSvg from '../images/ParadigmRu.svg';
 
 <ParadigmRuSvg />

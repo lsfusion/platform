@@ -15,6 +15,6 @@ Includes everything else - everything related to the development, performance im
 
 ### Stack
 
-import ParadigmENSvg from './images/ParadigmEn.svg';
+import ParadigmENSvg from '../images/ParadigmEn.svg';
 
 <ParadigmENSvg />

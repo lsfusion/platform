@@ -19,8 +19,8 @@ import ThemedImage from '@theme/ThemedImage';
 <ThemedImage
     alt="Docusaurus themed image"
     sources={{
-        light: require('./images/Navigator_design.png').default,
-        dark: require('./images/Navigator_design_dark.png').default,
+        light: require('../images/Navigator_design.png').default,
+        dark: require('../images/Navigator_design_dark.png').default,
     }}
 />
 
@@ -31,8 +31,8 @@ Each window occupies a predefined section of the desktop. Graphically, this can 
 <ThemedImage
     alt="Docusaurus themed image"
     sources={{
-        light: require('./images/Navigator_design_light_En.png').default,
-        dark: require('./images/Navigator_design_dark_En.png').default,
+        light: require('../images/Navigator_design_light_En.png').default,
+        dark: require('../images/Navigator_design_dark_En.png').default,
     }}
 />
 
@@ -64,8 +64,8 @@ By default, the desktop has the following layout (the left coordinate, upper coo
 <ThemedImage
     alt="Docusaurus themed image"
     sources={{
-        light: require('./images/Navigator_design_default.png').default,
-        dark: require('./images/Navigator_design_default_dark.png').default,
+        light: require('../images/Navigator_design_default.png').default,
+        dark: require('../images/Navigator_design_default_dark.png').default,
     }}
 />
 

@@ -22,6 +22,6 @@ Accordingly, the summary table for all elements of the business logic is as foll
 
 ### Stack
 
-import DomainENSvg from './images/DomainEn.svg';
+import DomainENSvg from '../images/DomainEn.svg';
 
 <DomainENSvg /> 

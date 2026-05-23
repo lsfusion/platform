@@ -12,6 +12,6 @@ In the user interface, a form is opened when a corresponding element is chosen i
 
 ### Stack
 
-import FormENSvg from './images/FormEn.svg';
+import FormENSvg from '../images/FormEn.svg';
 
 <FormENSvg />

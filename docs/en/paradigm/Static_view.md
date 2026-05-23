@@ -47,7 +47,7 @@ FORM myForm 'myForm'
 
 The hierarchy of groups of objects for this form will be constructed as follows:
 
-import GroupHierarchyEnSvg from './images/GroupHierarchyEn.svg';
+import GroupHierarchyEnSvg from '../images/GroupHierarchyEn.svg';
 
 <GroupHierarchyEnSvg />
 
