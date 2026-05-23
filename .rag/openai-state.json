@@ -6921,8 +6921,8 @@
       "stale": false
     },
     "paradigm/AI.md": {
-      "file_hash": "sha256:ba21d7783d643de7c04157668c76ba495a4fdea041dc3ba48cd78b12e470d2b8",
-      "indexed_at": "2026-05-23T11:13:38Z",
+      "file_hash": "sha256:478866390211acb031b213404a76a8c22896de45ccf55b3fb2f2e7cdaa580823",
+      "indexed_at": "2026-05-23T14:44:10Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6941,6 +6941,12 @@
           "file_id": "file-VjbrmEt3mub7YXDhGAEQ8z",
           "heading_path": "AI > [Brief](../brief/Brief.md) + [Rules](../rules/Rules.md)",
           "section_payload_hash": "sha256:bbe6594690da4c3335cf8b73977d36102915abc629f4a10bf0ebca96f4ecdc1f",
+          "source_file": "paradigm/AI.md"
+        },
+        "AI::mcp-servermcp_server.md": {
+          "file_id": "file-EAVDbgEDv46nE18X4nKwm2",
+          "heading_path": "AI > [MCP server](MCP_server.md)",
+          "section_payload_hash": "sha256:341630859037b0ab2b8a6400e3ef8e148f6fe90fc61b51402b36292749ea812d",
           "source_file": "paradigm/AI.md"
         }
       },
@@ -9967,8 +9973,8 @@
       "stale": false
     },
     "paradigm/Learn.md": {
-      "file_hash": "sha256:80888d81355c25a0897fe07fb310f466878dceb3ea178ab001e94fd42f567d18",
-      "indexed_at": "2026-05-23T11:13:47Z",
+      "file_hash": "sha256:ce0ea68553386785c26a3baa5aafaad59868f6931081ae4a8a61e0345eaaeded",
+      "indexed_at": "2026-05-23T14:44:23Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9984,9 +9990,9 @@
           "source_file": "paradigm/Learn.md"
         },
         "Learn::paradigmparadigm.md+language..languagelanguage.md+ideide.md+learning-materialslearning_materials.md+aiai.md+online-demoonline_demo.md": {
-          "file_id": "file-Qk5ZHk2ikNYsGbm91FLRnJ",
+          "file_id": "file-AWsDiDKwKoLTPAcDiNF2rV",
           "heading_path": "Learn > [Paradigm](Paradigm.md) + [Language](../language/Language.md) + [IDE](IDE.md) + [Learning materials](Learning_materials.md) + [AI](AI.md) + [Online demo](Online_demo.md)",
-          "section_payload_hash": "sha256:3ec0242cd90bdd69e6240edb15592f6c52ce4f8e3d32f91cd3bfbb05b7cff1f5",
+          "section_payload_hash": "sha256:1c6d5ba7ad2afe4e6be8d0925222fc9d8c4c9f6e656b82bed2200bc209cc16b0",
           "source_file": "paradigm/Learn.md"
         }
       },
@@ -10109,8 +10115,8 @@
       "stale": false
     },
     "paradigm/MCP_server.md": {
-      "file_hash": "sha256:a4207e36b374d77db5d2cf87b0da7eba4b30fbcfe8f55ad37b9876ec21bfa05c",
-      "indexed_at": "2026-05-22T23:27:24Z",
+      "file_hash": "sha256:a0d6c2c16cbd8f9b3b7e95748c17b53c5d74e61e927aa290bfaee48ad0e621a1",
+      "indexed_at": "2026-05-23T14:44:33Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10129,6 +10135,12 @@
           "file_id": "file-Y9JdzExTW2huDvKTd7nADX",
           "heading_path": "MCP server setup > 2. HTTPS is mandatory {#https}",
           "section_payload_hash": "sha256:63a148195d69412828352ba1ad4ac4552a405e811f18dc58b7190d37ed901155",
+          "source_file": "paradigm/MCP_server.md"
+        },
+        "MCP_server::authorization-discovery-on-a-non-root-deployment-well-known": {
+          "file_id": "file-4YC87HjWnuAbC8zQt9P9V8",
+          "heading_path": "MCP server setup > Authorization discovery on a non-root deployment {#well-known}",
+          "section_payload_hash": "sha256:09af4831ea5560b0515a727f671f3decbf034413b669c2f91baabfcdd86af83a",
           "source_file": "paradigm/MCP_server.md"
         },
         "MCP_server::mcp-server-setup": {
@@ -12518,7 +12530,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "9d84be82ccdff4db28c0c1326e229a7bc97137eb",
+  "last_indexed_docs_commit": "a79d694bdffd29d339684d67671858b5b92e8127",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
