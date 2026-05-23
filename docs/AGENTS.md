@@ -22,9 +22,10 @@ workspace).
 Common structure rules:
 - the documentation structure / hierarchy
   for navigation
-  is defined in `../docusaurus/sidebars.js`
+  is defined in `sidebars.js`
+  in this `platform/docs` directory
 - the assistant MUST treat
-  `../docusaurus/sidebars.js`
+  `platform/docs/sidebars.js`
   as the source of truth
   for section placement
   and parent-child relationships
@@ -34,11 +35,16 @@ Common structure rules:
   as a derived copy
   of the documentation
   from `platform/docs`
+  (its own `sidebars.js`
+  is only a loader
+  that reads
+  `platform/docs/sidebars.js`)
 - the assistant MUST NOT edit
-  files inside `../docusaurus/`
-  except `../docusaurus/sidebars.js`;
-  all documentation content changes
+  files inside `../docusaurus/`;
+  all documentation content
+  and navigation changes
   MUST be made in `platform/docs`
+  (navigation in `platform/docs/sidebars.js`)
 - the assistant MUST make
   all documentation content changes
   in both language versions
@@ -60,7 +66,7 @@ Common structure rules:
   of what that section covers
 - in that case,
   the assistant SHOULD also
-  update `../docusaurus/sidebars.js`
+  update `platform/docs/sidebars.js`
   so that the new block
   or section is included
   in the documentation hierarchy
