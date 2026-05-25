@@ -1,0 +1,27 @@
+name: Docs reference check
+
+# Fail fast (before deploy) on broken image refs, asset imports, and relative
+# doc links in docs/<type>/{en,ru}. docusaurus.config uses onBrokenLinks /
+# onBrokenMarkdownImages = 'warn', so a plain `yarn build` does NOT fail on
+# these — they 404 at runtime (which is how the Backup_restore images broke
+# while deployDocs still reported SUCCESS). This check validates that every
+# reference resolves in the flattened Docusaurus build layout.
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+
+permissions:
+  contents: read
+
+jobs:
+  refs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docs references resolve
+        run: python3 .github/scripts/check_docs_refs.py
