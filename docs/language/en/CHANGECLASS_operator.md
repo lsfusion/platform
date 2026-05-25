@@ -13,21 +13,23 @@ CHANGECLASS expr TO className [WHERE whereExpr]
 
 ### Description
 
-The `CHANGECLASS` operator creates an action that changes the class of objects for which a certain condition is met. This operator can add its local parameter, which will correspond to the objects being iterated. In this case, the `WHERE` block is required. This local parameter will not be a parameter of the action being created.
+The `CHANGECLASS` operator creates an action that assigns the class `className` to the object given by `expr` for every set of arguments where `whereExpr` is not `NULL`.
+
+The operator may introduce a local parameter in `expr`; in that case the `WHERE` block is required. Such a parameter corresponds to objects being iterated and is not a parameter of the created action.
 
 ### Parameters
 
 - `expr`
 
-    An [expression](Expression.md) or [typed parameter](IDs.md#paramid). You can either use an already declared parameter as a typed parameter, or declare a new local parameter. When using an expression, new local parameters cannot be added.
+    [Expression](Expression.md) or [typed parameter](IDs.md#paramid) for the object whose class is changed. As a typed parameter, you can both reference an already declared parameter and declare a new local parameter; as an expression, new local parameters cannot be added.
 
 - `className`
 
-    The name of the class to which you want to change the object classes. A [composite ID](IDs.md#cid), since the class must be a [custom](../paradigm/User_classes.md) class.
+    Name of the [custom class](../paradigm/User_classes.md) to which the object's class is changed. [Composite ID](IDs.md#cid). The class must be concrete.
 
 - `whereExpr`
 
-    An expression whose value is a condition for the created action. If not specified, it is considered equal to `TRUE`.
+    Expression whose value is the condition under which the class is changed. If not specified, it is considered equal to `TRUE`.
 
 ### Examples
 
