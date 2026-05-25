@@ -172,8 +172,8 @@ slug: "/Brief"
 - **Синтаксис (поиск)**: `OBJECTS alias = Class CUSTOM 'componentName' ...`, `prop(...) = JSON expr;`
 
 ### Из внешних систем в текущую
-- **Описание**: Action API — вызов действий lsFusion по HTTP. Протокол HTTP (порты `7651`). Режимы действий: `EXEC` (по имени), `EVAL` (код с действием `run`), `EVAL ACTION` (код действия). Form API — работа с формами по HTTP для фронтендов. Действия помечаются `@@api` для доступа через API.
-- **Синтаксис (поиск)**: опция действия `@@api`, URL `/exec?action=...`, `/eval?script=...`, `/eval/action?script=...`
+- **Описание**: Action API — вызов действий lsFusion по HTTP. Протокол HTTP (порты `7651`). Режимы действий: `EXEC` (по имени), `EVAL` (код с действием `run`), `EVAL ACTION` (код действия). Form API — работа с формами по HTTP для фронтендов. File API — просмотр classpath сервера по HTTP (`list`/`read`/`search`), только веб-сервер. Действия помечаются `@@api` для доступа через API.
+- **Синтаксис (поиск)**: опция действия `@@api`, URL `/exec?action=...`, `/eval?script=...`, `/eval/action?script=...`, `/files/list`, `/files/read`, `/files/search`
 
 ### Из текущей системы во внутреннюю (императивно)
 - **Описание**: `INTERNAL` — вызов Java-кода; на стороне Java использовать `findProperty`, `read`, `change`.

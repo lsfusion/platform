@@ -114,7 +114,7 @@ On the web server the container that keys sessions by the `session` parameter li
 The current implementation of the platform assumes that if sessions are used, the elements of the system (for example, local properties) created in the current call are deleted — that is, they are not visible in subsequent calls.
 :::
 
-##### Authentication
+##### Authentication {#authentication}
 
 When executing an http request, it is often necessary to identify the user on whose behalf the specified action will be executed. At the moment, two types of authentication are supported by the platform:
 
@@ -191,6 +191,68 @@ The library exports the following functions:
     -  `state` - a JS state object
 
 As the names of object groups and properties, not names on the form are used, but [export/import](Structured_view.md#extid) names (which, however, match the names on forms if not explicitly defined). While working with a form via Form API, actions created using operators for [object operations](Interactive_view.md#objectoperators) `NEW` and `DELETE` automatically get export/import names `NEW` and `DELETE`, respectively (that is you can call `change(setState, {game : {NEW:true}})` for adding an object, for example). Also, when Form API is used, it automatically adds a property called `logMessage` to the form to which all dialog messages are written (including those generated when [constraints](Constraints.md) were violated).
+
+## File API {#files}
+
+The platform also exposes a read-only **File API** for browsing the running application's classpath — its lsFusion source files and the resources packaged alongside them — over HTTP. It offers three operations: `list` (find files by name), `read` (fetch a file's contents), and `search` (find lines matching a regular expression). Like the [Form API](#form), it is served only by the web server, not by the application server's built-in HTTP server.
+
+A request is a `POST` to `/files/<operation>`, where `<operation>` is `list`, `read`, or `search`. The operation's arguments are passed as a JSON object in the request body; an empty body means no arguments, so each operation's defaults apply. The response body is the result as a JSON object (`application/json`), returned as-is with no wrapping envelope. [Authentication](#authentication) and the [`enableAPI`](Working_parameters.md) check work exactly as for the Action API, except that the per-action `@@noauth` / `@@api` annotations have no effect here, since no action is called.
+
+On failure the response carries an HTTP status and the error message, following the same scheme as the Action API: `401` when authentication is required or fails, `404` for an unknown operation, `405` for a non-`POST` method, `413` when the JSON argument body exceeds 256 KiB, and `500` for any other error — a missing or invalid `regex`, a `path` that does not resolve, or an unparseable glob.
+
+Files are selected by gitignore-style glob patterns: `*` matches any characters except `/`, `**` matches across directories, `?` matches one character, `[...]` is a character class, and `{a,b}` is alternation. A glob without a leading `/` matches at any depth (so `*.lsf` matches `/a/b/c.lsf`), while a leading `/` anchors it at the classpath root.
+
+### Listing files
+
+Arguments:
+
+-   `pathPattern` - glob selecting the files to return. The default, `**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}`, lists the project's source and resource files and skips classpath noise such as `.class` files and dependency-jar contents; pass `**` to list everything.
+-   `limit` - maximum number of paths to return (default `500`, clamped to 1–5000).
+-   `offset` - number of leading matches to skip, for paging (default `0`).
+
+Result:
+
+-   `files` - the matching classpath paths.
+-   `offset`, `limit` - the values applied.
+-   `truncated` - `true` if more files matched than were returned in this page.
+-   `timedOut` - `true` if matching stopped at an internal time limit.
+
+### Reading a file
+
+Arguments:
+
+-   `path` - classpath path of the file, as returned by `list` (required).
+-   `maxBytes` - size of the byte window to read (default `262144` - 256 KiB; clamped to 1 byte–4 MiB).
+-   `offset` - byte offset to start reading from (default `0`).
+
+Result:
+
+-   `path`, `offset` - the values applied.
+-   `bytesRead` - number of bytes read into this window.
+-   `eof` - `true` if the window reached the end of the file; `truncated` is the inverse (`true` if more bytes follow).
+-   `mimeType` - the content type registered for the file's extension, or `application/octet-stream` when the extension is absent or not in the platform's MIME table.
+-   `content` (text files) or `contentBase64` (binary files) - the bytes read, returned as UTF-8 text or Base64-encoded respectively; exactly one of the two is present. A file with a known binary extension (such as `pdf`, `zip`, `jar`, `png`, or an office format) is always `contentBase64`; a file with a known text extension (such as `lsf`, `java`, `md`, `json`, `xml`, `sql`) or a text MIME type, and any other file whose bytes are valid UTF-8 with no binary control characters, is `content`; anything else is `contentBase64`.
+-   `utf8BoundaryTrimmed` - present and `true` when, for a text file that has more bytes past the window, the window was shortened to end on a whole UTF-8 character (so the next read should start at `offset + bytesRead`).
+
+### Searching file contents
+
+Arguments:
+
+-   `regex` - Java regular expression, matched against each line (required); a line is reported when the pattern matches anywhere within its first 16 KiB (a longer line is matched only up to that cap).
+-   `pathPattern` - glob selecting the files to search (default as for `list`).
+-   `limit` - maximum number of matching lines to return (default `200`, clamped to 1–2000).
+-   `contextChars` - maximum length of the excerpt kept for each matching line (default `120`, clamped to 0–500).
+-   `timeoutSeconds` - wall-clock time limit in seconds for the whole search (default `5`, clamped to 1–30).
+-   `maxScannedFiles` - maximum number of files opened (default `2000`, clamped to 1–20000).
+-   `maxFileBytes` - maximum number of bytes read from each file (default `524288` - 512 KiB; clamped to 1 byte–4 MiB).
+
+Result:
+
+-   `hits` - the matches, each an object with `path`, `line` (1-based line number), and `excerpt` (the matching line, cut to `contextChars` with `…` appended if longer, and marked ` [line truncated]` if the line exceeded the 16 KiB cap).
+-   `scannedFiles` - number of files actually opened and scanned.
+-   `candidates` - number of files selected for scanning: those matching `pathPattern`, but no more than `maxScannedFiles` (fewer if enumeration hit the time limit). Can exceed `scannedFiles` when a hit limit or the deadline stops scanning early.
+-   `truncated` - `true` if a file limit, a hit limit, or the 16 KiB per-line cap cut the search short.
+-   `timedOut` - `true` if the time limit expired.
 
 ## Examples
 
