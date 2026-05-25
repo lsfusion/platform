@@ -7,28 +7,27 @@ title: 'Branching (CASE, IF, MULTI)'
 
 All conditions are defined as [properties](Properties.md) and/or parameters. Accordingly, a condition is *met* if the value of the property or parameter by which it is set is not equal to `NULL`.
 
+Conditions are checked in the order written; the first met condition selects the action to be called, and the remaining conditions are not checked. You can also specify an *alternative action* that is called only if none of the conditions is met.
+
+[Interruption](Interruption_BREAK.md), [next iteration](Next_iteration_CONTINUE.md) and [exit](Exit_RETURN.md) signals raised by the called action are passed on to the surrounding action — the branching operator itself does not consume them.
+
 ### Polymorphic form {#poly}
 
-This operator also allows to define a condition not explicitly but by using as a condition the signature of the action corresponding to that condition. We will call this the *polymorphic* form of the operator.
+This operator also allows defining a condition implicitly — the condition is that the arguments belong to the parameter classes of the action corresponding to that condition. We will call this the *polymorphic* form of the operator. The polymorphic form is the natural way to dispatch on the class of an argument.
 
 ### Mutual exclusion of conditions {#exclusive}
 
 The branching operator lets you specify that all its conditions are *mutually exclusive*. If this option is set, and the conditions are not in fact mutually exclusive, the platform will throw the corresponding error.
 
-It is worth noting that this check is no more than a hint to the platform (for better optimization), and also a kind of self-checking on the part of the developer. However, in many cases it allows you to make the code more transparent and readable (especially with the polymorphic form of the selection operator).
+The general form is non-exclusive by default and may be marked exclusive explicitly. The polymorphic form is mutually exclusive by default — implementations for disjoint argument classes do not overlap. The single form has exactly one condition and does not use mutual exclusion.
 
 ### Implicit definition
 
-This operator has the capability of an [implicit definition](Action_extension.md) using the technique of [extensions](Extensions.md), which allows, in particular, to implement polymorphism in the form that is common practice in OOP.
+The general and polymorphic forms support [implicit definition](Action_extension.md) through the technique of [extensions](Extensions.md). The single form has one fixed condition and does not support implicit definition.
 
 ### Single form {#single}
 
 The *single* form of the branching operator checks exactly one condition. If this condition is met, the specified action is called. It is also possible to specify an *alternative action* that is called if the condition is not met.
-
-
-:::info
-Type of mutual exclusion and implicit definition do not make sense/are not supported for this form of the operator
-:::
 
 ### Language
 
@@ -74,6 +73,3 @@ message (Circle c)  { MESSAGE 'Circle'; }
 
 message (Shape s) = MULTI message[Square](s), message[Circle](s);
 ```
-
-  
-

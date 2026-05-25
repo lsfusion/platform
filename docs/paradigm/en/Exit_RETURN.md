@@ -3,9 +3,9 @@ slug: "/Exit_RETURN"
 title: 'Exit (RETURN)'
 ---
 
-The *exit operator* creates an [action](Actions.md) that exits from the inmost [action call](Call_EXEC.md). Control is passed to the first action following that call operator.
+The *exit operator* creates an [action](Actions.md) that exits from the innermost enclosing [action call](Call_EXEC.md). Control is passed to the first action following that call operator.
 
-The exit operator can also specify the [result](Actions.md) of the surrounding [action call](Call_EXEC.md).
+The exit operator can also specify the [result](Actions.md) of the surrounding [action call](Call_EXEC.md). The supplied value becomes the result of that call: when the caller captures the result, the captured value comes from this operator; when the call is used as a value, this value is what the call yields. If the operator is used without a value, the result of the surrounding call is `NULL`.
 
 ### Language
 

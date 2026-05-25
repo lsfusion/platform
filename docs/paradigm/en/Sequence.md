@@ -3,11 +3,13 @@ slug: "/Sequence"
 title: 'Sequence ({...})'
 ---
 
-To create an [action](Actions.md) that performs a sequence of other actions, the `{...}` operator is used - a block enclosed by curly brackets. The body of this block must contain a sequence of [action operators](Action_operators_paradigm.md) and local property declarations.
+The *sequence* operator creates an [action](Actions.md) that runs a sequence of other actions one after another, in the written order. Execution stops as soon as one of the contained actions raises an [interruption](Interruption_BREAK.md), [next iteration](Next_iteration_CONTINUE.md) or [exit](Exit_RETURN.md) signal — the remaining actions are skipped and the signal is passed on to the surrounding action.
+
+Together with the running actions, the sequence may also introduce *local* properties — [data properties](Data_properties_DATA.md) declared inside the block. A local property exists only while the sequence is being executed, and its changes are dropped when the sequence ends.
 
 ### Language
 
-To declare an action that executes a sequence of other actions, use the [`{...}` operator](../language/Braces_operator.md). 
+To declare an action that executes a sequence of other actions, use the [`{...}` operator](../language/Braces_operator.md) — a block enclosed in curly braces, containing a sequence of [action operators](Action_operators_paradigm.md) and local property declarations.
 
 ### Examples
 

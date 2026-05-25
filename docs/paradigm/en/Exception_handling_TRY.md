@@ -3,11 +3,17 @@ slug: "/Exception_handling_TRY"
 title: 'Exception handling (TRY)'
 ---
 
-The *exception handling* operator enables you to execute an action and do the following if an error (exception) occurs:
+The *exception handling* operator creates an [action](Actions.md) that runs another action with exception handling.
 
--   ignore this error, 
--   execute a different action, then pass the error to the top action (as if the operation didn't exist),
--   execute a different action regardless of whether there's been an error or not, then pass the error to the top action (as if this operator didn't exist)
+The operator has up to three parts:
+
+-   the *main* action — always executed;
+-   the *recovery* action — executed only if the main action raises an error; the error is consumed and execution continues normally after the operator;
+-   the *cleanup* action — executed after the main action (and the recovery action, if both are specified) regardless of whether an error occurred.
+
+If the main action raises an error and no recovery action is specified: when no cleanup action is specified either, the error is consumed silently; when a cleanup action is specified, the cleanup action runs and the error is then re-raised to the surrounding action.
+
+Inside the recovery action, the error that triggered it is available through the system properties `messageCaughtException[]`, `javaStackTraceCaughtException[]`, and `lsfStackTraceCaughtException[]` — the error message, the Java stack trace, and the lsFusion stack trace, respectively.
 
 ### Language
 
@@ -40,6 +46,3 @@ singleDo ()  {
     }
 }
 ```
-
-  
-  
