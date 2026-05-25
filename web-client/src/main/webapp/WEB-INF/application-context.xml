@@ -54,6 +54,10 @@
         <constructor-arg ref="logicsProvider"/>
     </bean>
 
+    <bean id="filesHandler" class="lsfusion.http.controller.FilesRequestHandler">
+        <constructor-arg ref="logicsProvider"/>
+    </bean>
+
     <!-- OAuth Authorization Server endpoints — discovery, registration, token issuance / revocation -->
     <bean id="oauthWellKnownAuthorizationServerHandler" class="lsfusion.http.controller.oauth.WellKnownAuthorizationServerHandler">
         <constructor-arg ref="logicsProvider"/>

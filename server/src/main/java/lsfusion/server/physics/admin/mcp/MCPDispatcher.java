@@ -8,6 +8,8 @@ import lsfusion.interop.logics.remote.MCPResult;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
+import lsfusion.server.physics.admin.files.ClasspathFileTools;
+import lsfusion.server.physics.admin.files.JsonToolArgs;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,7 +33,7 @@ import java.util.Set;
  * <ul>
  *   <li>Pure protocol / no app state — {@code tools/list}, {@code initialize},
  *       {@code lsfusion_retrieve_*}, {@code lsfusion_get_guidance}. No session, no gate.</li>
- *   <li>Classpath read + gated — {@code lsfusion_files_*} (via {@link MCPFileTools}).
+ *   <li>Classpath read + gated — {@code lsfusion_files_*} (via {@link ClasspathFileTools}).
  *       {@code RemoteLogics.access} runs the per-role {@code enableAPI} check, then the
  *       classpath scan runs without a session.</li>
  *   <li>Script execution — {@code lsfusion_eval} via {@link MCPEvalTool} → {@code RemoteLogics.eval}.
@@ -49,9 +51,10 @@ public class MCPDispatcher {
 
     private static final String PROTOCOL_VERSION = "2024-11-05";
 
-    static final String TOOL_FILES_LIST = "lsfusion_files_list";
-    static final String TOOL_FILES_SEARCH = "lsfusion_files_search";
-    static final String TOOL_FILES_READ = "lsfusion_files_read";
+    static final String TOOL_FILES_PREFIX = "lsfusion_files_";
+    static final String TOOL_FILES_LIST = TOOL_FILES_PREFIX + "list";
+    static final String TOOL_FILES_SEARCH = TOOL_FILES_PREFIX + "search";
+    static final String TOOL_FILES_READ = TOOL_FILES_PREFIX + "read";
 
     static final String TOOL_RETRIEVE_DOCS = "lsfusion_retrieve_docs";
     static final String TOOL_GET_GUIDANCE = "lsfusion_get_guidance";
@@ -125,7 +128,7 @@ public class MCPDispatcher {
         String jsonrpc;
         String method;
         try {
-            String j = MCPArgs.getString(rpc, "jsonrpc");
+            String j = JsonToolArgs.getString(rpc, "jsonrpc");
             if (j == null) {
                 jsonrpc = "2.0";
             } else if (!"2.0".equals(j)) {
@@ -134,7 +137,7 @@ public class MCPDispatcher {
             } else {
                 jsonrpc = j;
             }
-            method = MCPArgs.getString(rpc, "method");
+            method = JsonToolArgs.getString(rpc, "method");
         } catch (IllegalArgumentException e) {
             return rpcError("2.0", id, -32600, "Invalid request: " + e.getMessage(), null);
         }
@@ -208,24 +211,18 @@ public class MCPDispatcher {
                 case TOOL_FILES_LIST:
                 case TOOL_FILES_SEARCH:
                 case TOOL_FILES_READ: {
-                    // Per-role enableAPI gate; releases the session before the classpath scan
-                    // (files_search can run up to 30s — no point holding a pooled session).
-                    remoteLogics.access(token, connectionInfo, request);
-                    JSONObject payload;
-                    switch (name) {
-                        case TOOL_FILES_LIST: payload = MCPFileTools.list(args); break;
-                        case TOOL_FILES_SEARCH: payload = MCPFileTools.search(args); break;
-                        case TOOL_FILES_READ: payload = MCPFileTools.read(args); break;
-                        default: throw new IllegalStateException("unexpected file tool: " + name);
-                    }
+                    // Reuse the same RemoteLogicsInterface.files the /files HTTP endpoint calls —
+                    // mirrors how the eval tool reuses remoteLogics.eval. It returns the payload as a
+                    // JSON String (its HTTP shape); reparse here for the MCP structured / resource
+                    // wrapping below. The enableAPI gate lives inside files(), so it is not repeated here.
+                    JSONObject payload = new JSONObject(remoteLogics.files(token, connectionInfo, request,
+                            name.substring(TOOL_FILES_PREFIX.length()), args.toString()));
                     JSONObject result;
                     if (TOOL_FILES_READ.equals(name)) {
                         // Single-copy invariant: large text content + binary blobs leave the
                         // structured / text views and live exactly once in a resource entry. Only
                         // small text content stays inline in the structured payload.
-                        MCPBinaryContent.SlimResult slim = MCPBinaryContent.slimFileRead(payload);
-                        result = structuredResult(slim.payload);
-                        appendAll(result.getJSONArray("content"), slim.resources);
+                        result = slimmedResult(MCPBinaryContent.slimFileRead(payload));
                     } else {
                         result = structuredResult(payload);
                     }
@@ -245,9 +242,9 @@ public class MCPDispatcher {
                     // resolveFiles() despite the JSON-RPC response containing an error result.
                     LinkedHashMap<String, NamedFileData> localFiles = new LinkedHashMap<>();
                     JSONObject payload = MCPEvalTool.eval(args, remoteLogics, token, connectionInfo, request, localFiles, placeholderId);
-                    MCPBinaryContent.SlimResult slim = MCPBinaryContent.slimEval(payload);
-                    JSONObject result = structuredResult(slim.payload);
-                    appendAll(result.getJSONArray("content"), slim.resources);
+                    JSONObject result = slimmedResult(MCPBinaryContent.slimEval(payload));
+                    // Merge the eval side-map only AFTER the result is fully built — a throw above
+                    // leaves the dispatcher-level `files` map clean (see localFiles rationale above).
                     files.putAll(localFiles);
                     return rpcResult(jsonrpc, id, result);
                 }
@@ -309,6 +306,18 @@ public class MCPDispatcher {
                 .put("isError", false);
     }
 
+    /**
+     * Build the tool result from a slimmed payload: the slim payload becomes both
+     * {@code content[0].text} and {@code structuredContent}, and any {@code resource} content
+     * entries (large text / binary moved out of the structured view) are appended to MCP
+     * {@code content}. Shared by the {@code files_read} and {@code eval} branches.
+     */
+    private static JSONObject slimmedResult(MCPBinaryContent.SlimResult slim) {
+        JSONObject result = structuredResult(slim.payload);
+        appendAll(result.getJSONArray("content"), slim.resources);
+        return result;
+    }
+
     private static JSONObject errorResult(String toolName, String message) {
         return new JSONObject()
                 .put("content", new JSONArray().put(new JSONObject()
@@ -350,8 +359,8 @@ public class MCPDispatcher {
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex). Examples: `**/*.lsf`, `lsfusion/**/Order*.lsf`, `**/*.{md,xml}`. Empty / omitted ⇒ default source-glob `" + MCPFileTools.DEFAULT_SOURCE_PATH_GLOB + "` (lsf / java / properties / xml / sql / md / json / yaml — skips .class files, jar metadata, dep-resources). Pass `**` to list everything in the classpath. Glob grammar reference: `*` `**` `?` `[abc]` `[!abc]` `{a,b}` `\\X`."))
-                        .put("limit", intProp("Max paths per call. Default " + MCPFileTools.DEFAULT_LIST_LIMIT + ", max " + MCPFileTools.MAX_LIST_LIMIT + ". Paginate via `offset`."))
+                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex). Examples: `**/*.lsf`, `lsfusion/**/Order*.lsf`, `**/*.{md,xml}`. Empty / omitted ⇒ default source-glob `" + ClasspathFileTools.DEFAULT_SOURCE_PATH_GLOB + "` (lsf / java / properties / xml / sql / md / json / yaml — skips .class files, jar metadata, dep-resources). Pass `**` to list everything in the classpath. Glob grammar reference: `*` `**` `?` `[abc]` `[!abc]` `{a,b}` `\\X`."))
+                        .put("limit", intProp("Max paths per call. Default " + ClasspathFileTools.DEFAULT_LIST_LIMIT + ", max " + ClasspathFileTools.MAX_LIST_LIMIT + ". Paginate via `offset`."))
                         .put("offset", intProp("Paths to skip; use to fetch next page after `truncated:true`. Default 0.")))
                 .put("additionalProperties", false);
         return new JSONObject()
@@ -365,12 +374,12 @@ public class MCPDispatcher {
                 .put("type", "object")
                 .put("properties", new JSONObject()
                         .put("regex", strProp("`java.util.regex` content matcher (this one IS a regex). Applied per line via `find()`. Examples: `\\bcustomer\\b`, `Customer.*name`, `^WHEN\\s`. Avoid catastrophic-backtracking shapes like `(a+)+b`."))
-                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex) restricting which files to scan. Same grammar and same default as `" + TOOL_FILES_LIST + ".pathPattern` (`" + MCPFileTools.DEFAULT_SOURCE_PATH_GLOB + "`)."))
-                        .put("limit", intProp("Max hits. Default " + MCPFileTools.DEFAULT_SEARCH_LIMIT + ", max " + MCPFileTools.MAX_SEARCH_LIMIT + "; sets `truncated:true` when hit."))
+                        .put("pathPattern", strProp("Gitignore-style glob (NOT a regex) restricting which files to scan. Same grammar and same default as `" + TOOL_FILES_LIST + ".pathPattern` (`" + ClasspathFileTools.DEFAULT_SOURCE_PATH_GLOB + "`)."))
+                        .put("limit", intProp("Max hits. Default " + ClasspathFileTools.DEFAULT_SEARCH_LIMIT + ", max " + ClasspathFileTools.MAX_SEARCH_LIMIT + "; sets `truncated:true` when hit."))
                         .put("contextChars", intProp("Excerpt length per hit. Default 120, max 500."))
-                        .put("timeoutSeconds", intProp("Wall-clock cap. Default " + MCPFileTools.DEFAULT_SEARCH_TIMEOUT_SECS + "s, max " + MCPFileTools.MAX_SEARCH_TIMEOUT_SECS + "s; sets `timedOut:true`."))
-                        .put("maxScannedFiles", intProp("Hard cap on files visited. Default " + MCPFileTools.DEFAULT_SEARCH_MAX_FILES + ", max " + MCPFileTools.MAX_SEARCH_MAX_FILES + "; sets `truncated:true`."))
-                        .put("maxFileBytes", intProp("Per-file scan budget in bytes. Default " + MCPFileTools.DEFAULT_SEARCH_MAX_FILE_BYTES + " (" + (MCPFileTools.DEFAULT_SEARCH_MAX_FILE_BYTES / 1024) + " KiB), max " + MCPFileTools.MAX_SEARCH_MAX_FILE_BYTES + ".")))
+                        .put("timeoutSeconds", intProp("Wall-clock cap. Default " + ClasspathFileTools.DEFAULT_SEARCH_TIMEOUT_SECS + "s, max " + ClasspathFileTools.MAX_SEARCH_TIMEOUT_SECS + "s; sets `timedOut:true`."))
+                        .put("maxScannedFiles", intProp("Hard cap on files visited. Default " + ClasspathFileTools.DEFAULT_SEARCH_MAX_FILES + ", max " + ClasspathFileTools.MAX_SEARCH_MAX_FILES + "; sets `truncated:true`."))
+                        .put("maxFileBytes", intProp("Per-file scan budget in bytes. Default " + ClasspathFileTools.DEFAULT_SEARCH_MAX_FILE_BYTES + " (" + (ClasspathFileTools.DEFAULT_SEARCH_MAX_FILE_BYTES / 1024) + " KiB), max " + ClasspathFileTools.MAX_SEARCH_MAX_FILE_BYTES + ".")))
                 .put("required", new JSONArray().put("regex"))
                 .put("additionalProperties", false);
         return new JSONObject()
@@ -385,7 +394,7 @@ public class MCPDispatcher {
                 .put("properties", new JSONObject()
                         .put("path", strProp("Full classpath path with leading `/`, exactly as returned by `" + TOOL_FILES_LIST + "` or `" + TOOL_FILES_SEARCH + "` (e.g. `/lsfusion/main/Sale.lsf`). NOT a glob, NOT a regex — a single literal resource path. Required."))
                         .put("offset", intProp("Byte offset to start reading from (default 0). Use after a previous truncated read to fetch the next chunk: pass `offset = previous.offset + previous.bytesRead`. For text files this works correctly across multi-byte UTF-8 boundaries — chunks are trimmed to end on a complete character, with `utf8BoundaryTrimmed:true` flagged when that happened."))
-                        .put("maxBytes", intProp("Max bytes to return in this call. Default " + MCPFileTools.DEFAULT_READ_MAX_BYTES + " (" + (MCPFileTools.DEFAULT_READ_MAX_BYTES / 1024) + " KiB), capped at " + MCPFileTools.MAX_READ_MAX_BYTES + " (" + (MCPFileTools.MAX_READ_MAX_BYTES / (1024 * 1024)) + " MiB). When the underlying resource has more bytes past this window the response sets `truncated:true` and `eof:false`. Edge case: when `maxBytes < 4` and the chunk would otherwise land mid-UTF-8 character on a known-text file, up to 3 additional bytes may be appended so the response surfaces at least one complete character (forward-progress guarantee for tiny chunked reads).")))
+                        .put("maxBytes", intProp("Max bytes to return in this call. Default " + ClasspathFileTools.DEFAULT_READ_MAX_BYTES + " (" + (ClasspathFileTools.DEFAULT_READ_MAX_BYTES / 1024) + " KiB), capped at " + ClasspathFileTools.MAX_READ_MAX_BYTES + " (" + (ClasspathFileTools.MAX_READ_MAX_BYTES / (1024 * 1024)) + " MiB). When the underlying resource has more bytes past this window the response sets `truncated:true` and `eof:false`. Edge case: when `maxBytes < 4` and the chunk would otherwise land mid-UTF-8 character on a known-text file, up to 3 additional bytes may be appended so the response surfaces at least one complete character (forward-progress guarantee for tiny chunked reads).")))
                 .put("required", new JSONArray().put("path"))
                 .put("additionalProperties", false);
         int largeKiB = MCPBinaryContent.LARGE_TEXT_THRESHOLD_BYTES / 1024;

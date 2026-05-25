@@ -7,7 +7,6 @@ import lsfusion.http.controller.oauth.OAuthRequestHandlerBase;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
-import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.MCPResult;
 import lsfusion.interop.oauth.OAuthOperations;
 import lsfusion.interop.session.ExternalRequest;
@@ -18,7 +17,6 @@ import org.springframework.web.HttpRequestHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -137,7 +135,7 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
         ConnectionInfo connectionInfo = RequestUtils.getConnectionInfo(request);
 
         MCPResult result = runRequest(request, (sessionObject, retry) -> {
-            ExternalRequest envelope = buildEnvelope(request, bodyBytes, sessionObject);
+            ExternalRequest envelope = RequestUtils.buildExternalRequest(request, bodyBytes, sessionObject);
             return sessionObject.remoteLogics.mcp(token, connectionInfo, envelope, body);
         });
 
@@ -230,48 +228,6 @@ public class MCPRequestHandler extends LogicsRequestHandler implements HttpReque
                 }
             }
         }
-    }
-
-    /**
-     * Capture the inbound HTTP request's metadata into an {@link ExternalRequest} envelope —
-     * same shape {@code /eval} builds via {@code ExternalUtils.processRequest} +
-     * {@code RequestUtils.getRequestInfo}. {@code returnNames} / {@code params} are
-     * placeholders here (zero-length arrays); the eval tool overrides them from its own
-     * JSON args.
-     */
-    private static ExternalRequest buildEnvelope(HttpServletRequest request, byte[] body, LogicsSessionObject sessionObject) {
-        RequestUtils.RequestInfo info = RequestUtils.getRequestInfo(request);
-
-        // Same logicsHost selection as ExternalLogicsAndSessionRequestHandler — prefer the
-        // configured app server host unless it is the loopback alias, in which case fall back
-        // to the request's server name.
-        String logicsHost = sessionObject.connection.host != null
-                && !sessionObject.connection.host.equals("localhost")
-                && !sessionObject.connection.host.equals("127.0.0.1")
-                ? sessionObject.connection.host : request.getServerName();
-
-        // getSession(false): MCP is wired through the security chain with `create-session=
-        // never`, so most calls (tools/list, file tools, anonymous tools/call) ride without
-        // an HttpSession. Calling getSession() unconditionally would conjure one for every
-        // such request and defeat that contract. When no session exists we surface "" — the
-        // ExternalRequest envelope expects a non-null sessionId field shape.
-        HttpSession session = request.getSession(false);
-        String sessionId = session != null ? session.getId() : "";
-
-        return new ExternalRequest(
-                new String[0],
-                new ExternalRequest.Param[0],
-                info.headerNames, info.headerValues, info.cookieNames, info.cookieValues,
-                logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
-                request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(),
-                nvl(request.getContextPath(), ""), nvl(request.getServletPath(), ""), info.pathInfo, info.query,
-                request.getContentType(), sessionId, body,
-                null, null,
-                false, false);
-    }
-
-    private static String nvl(String s, String fallback) {
-        return s == null ? fallback : s;
     }
 
     /**

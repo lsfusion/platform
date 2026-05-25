@@ -11,6 +11,8 @@ import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.ResultExternalResponse;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
+import lsfusion.server.physics.admin.files.FileContentUtils;
+import lsfusion.server.physics.admin.files.JsonToolArgs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -81,7 +83,7 @@ public class MCPEvalTool {
                                   AuthenticationToken token, ConnectionInfo connectionInfo,
                                   ExternalRequest envelope,
                                   LinkedHashMap<String, NamedFileData> files, String placeholderId) throws Exception {
-        String script = MCPArgs.getString(args, "script");
+        String script = JsonToolArgs.getString(args, "script");
         if (script == null || script.isEmpty()) {
             throw new IllegalArgumentException("'script' is required (non-empty string)");
         }
@@ -193,8 +195,8 @@ public class MCPEvalTool {
                         + "`; allowed: " + FILE_PARAM_KEYS);
             }
         }
-        String b64 = MCPArgs.getStringAt(fp, "base64", origin + ".base64");
-        String text = MCPArgs.getStringAt(fp, "text", origin + ".text");
+        String b64 = JsonToolArgs.getStringAt(fp, "base64", origin + ".base64");
+        String text = JsonToolArgs.getStringAt(fp, "text", origin + ".text");
         if (b64 != null && text != null) {
             throw new IllegalArgumentException(origin + " has both `base64` and `text`; pick one (mutually exclusive)");
         }
@@ -214,8 +216,8 @@ public class MCPEvalTool {
         // Resolve fileName + extension: explicit `extension` wins, else extracted from
         // `fileName` (if it has a dot), else fallback "file"; fileName is normalized to its
         // base name only (no directory part, no extension fragment).
-        String rawFileName = nullIfEmpty(MCPArgs.getStringAt(fp, "fileName", origin + ".fileName"));
-        String explicitExt = normalizeExtension(MCPArgs.getStringAt(fp, "extension", origin + ".extension"), origin);
+        String rawFileName = nullIfEmpty(JsonToolArgs.getStringAt(fp, "fileName", origin + ".fileName"));
+        String explicitExt = normalizeExtension(JsonToolArgs.getStringAt(fp, "extension", origin + ".extension"), origin);
         String extension = explicitExt;
         if (extension == null && rawFileName != null) {
             String fromName = BaseUtils.getFileExtension(rawFileName);
@@ -311,7 +313,7 @@ public class MCPEvalTool {
             }
             byte[] bytes = fd.getRawFile().getBytes();
             String extension = fd.getExtension();
-            // Same case-insensitivity rule as MCPFileTools: lowercase before MIME lookup,
+            // Same case-insensitivity rule as ClasspathFileTools: lowercase before MIME lookup,
             // octet-stream fallback when the extension isn't in the catalog.
             String extKey = extension == null ? null : extension.toLowerCase(Locale.ROOT);
             String mimeType = "application/octet-stream";
@@ -323,7 +325,7 @@ public class MCPEvalTool {
             item.put("mimeType", mimeType);
             item.put("size", bytes != null ? bytes.length : 0);
             if (bytes == null) return item;
-            if (MCPBinaryContent.isLikelyText(extension, bytes, 0, bytes.length)) {
+            if (FileContentUtils.isLikelyText(extension, bytes, 0, bytes.length)) {
                 inlineFileText(item, bytes, inlineRemaining);
             } else {
                 dispatchBinary(item, fd, result.fileName, index, inlineRemaining, files, placeholderId);

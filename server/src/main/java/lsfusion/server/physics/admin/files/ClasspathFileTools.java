@@ -1,4 +1,4 @@
-package lsfusion.server.physics.admin.mcp;
+package lsfusion.server.physics.admin.files;
 
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.server.base.ResourceUtils;
@@ -22,11 +22,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Server-classpath browsing tools surfaced as MCP tools. Caps below are intentionally tight;
- * an arbitrary AI client can drive these, so every entry point bounds wall-clock time, total
- * files visited, and bytes scanned per file.
+ * Server-classpath browsing tools shared by the plain-HTTP /files path and MCP. Caps below
+ * are intentionally tight; an arbitrary external client can drive these, so every entry point
+ * bounds wall-clock time, total files visited, and bytes scanned per file.
  */
-public class MCPFileTools {
+public class ClasspathFileTools {
 
     public static final int DEFAULT_LIST_LIMIT = 500;
     public static final int MAX_LIST_LIMIT = 5000;
@@ -62,7 +62,7 @@ public class MCPFileTools {
      * by default. To list <em>everything</em> in the classpath (including binaries and
      * dep-jar contents) pass {@code pathPattern: "**"} explicitly.
      */
-    static final String DEFAULT_SOURCE_PATH_GLOB = "**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}";
+    public static final String DEFAULT_SOURCE_PATH_GLOB = "**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}";
 
     /**
      * One-shot snapshot of every classpath resource. The classpath is fixed at JVM startup, so
@@ -77,7 +77,7 @@ public class MCPFileTools {
     private static List<String> getAllResources() {
         List<String> cached = ALL_RESOURCES_CACHE;
         if (cached != null) return cached;
-        synchronized (MCPFileTools.class) {
+        synchronized (ClasspathFileTools.class) {
             if (ALL_RESOURCES_CACHE == null) {
                 // ResourceUtils walks every classpath element and concatenates results, so the
                 // same path can appear once per overlapping classpath entry. Dedup via a
@@ -140,14 +140,31 @@ public class MCPFileTools {
         return out;
     }
 
+    /**
+     * Dispatch a bare file-tool verb ({@code list} / {@code search} / {@code read}) to the matching
+     * method. The single switch shared by both entry points — the plain-HTTP {@code /files/<op>}
+     * path ({@code RemoteLogics.files}) and the MCP {@code tools/call} path
+     * ({@code MCPDispatcher.handleToolsCall}). An unknown verb is a caller error.
+     */
+    public static JSONObject execute(String operation, JSONObject args) {
+        switch (operation) {
+            case "list":   return list(args);
+            case "search": return search(args);
+            case "read":   return read(args);
+            default:
+                throw new IllegalArgumentException("Unknown files operation: " + operation
+                        + " (expected list / search / read)");
+        }
+    }
+
     public static JSONObject list(JSONObject args) {
-        String globRaw = MCPArgs.getString(args, "pathPattern");
+        String globRaw = JsonToolArgs.getString(args, "pathPattern");
         // Default to the source-glob so a no-arg `lsfusion_files_list` doesn't enumerate
         // every .class / dep-jar resource in the classpath — see DEFAULT_SOURCE_PATH_GLOB
         // for the rationale and the escape hatch.
         String glob = (globRaw == null || globRaw.isEmpty()) ? DEFAULT_SOURCE_PATH_GLOB : globRaw;
-        int limit = clamp(MCPArgs.getInt(args, "limit", DEFAULT_LIST_LIMIT), 1, MAX_LIST_LIMIT);
-        int offset = Math.max(0, MCPArgs.getInt(args, "offset", 0));
+        int limit = clamp(JsonToolArgs.getInt(args, "limit", DEFAULT_LIST_LIMIT), 1, MAX_LIST_LIMIT);
+        int offset = Math.max(0, JsonToolArgs.getInt(args, "offset", 0));
 
         Pattern compiled = compileGlob(glob);
         // Hard cap matched-list size at offset+limit+1; the +1 lets us tell whether more
@@ -175,17 +192,17 @@ public class MCPFileTools {
     }
 
     public static JSONObject search(JSONObject args) {
-        String regex = MCPArgs.getString(args, "regex");
+        String regex = JsonToolArgs.getString(args, "regex");
         if (regex == null || regex.isEmpty()) {
             throw new IllegalArgumentException("'regex' is required (non-empty string)");
         }
-        String pathGlobRaw = MCPArgs.getString(args, "pathPattern");
+        String pathGlobRaw = JsonToolArgs.getString(args, "pathPattern");
         String pathGlob = pathGlobRaw == null ? DEFAULT_SOURCE_PATH_GLOB : pathGlobRaw;
-        int limit = clamp(MCPArgs.getInt(args, "limit", DEFAULT_SEARCH_LIMIT), 1, MAX_SEARCH_LIMIT);
-        int contextChars = clamp(MCPArgs.getInt(args, "contextChars", 120), 0, 500);
-        int timeoutSecs = clamp(MCPArgs.getInt(args, "timeoutSeconds", DEFAULT_SEARCH_TIMEOUT_SECS), 1, MAX_SEARCH_TIMEOUT_SECS);
-        int maxFiles = clamp(MCPArgs.getInt(args, "maxScannedFiles", DEFAULT_SEARCH_MAX_FILES), 1, MAX_SEARCH_MAX_FILES);
-        int maxFileBytes = clamp(MCPArgs.getInt(args, "maxFileBytes", DEFAULT_SEARCH_MAX_FILE_BYTES), 1, MAX_SEARCH_MAX_FILE_BYTES);
+        int limit = clamp(JsonToolArgs.getInt(args, "limit", DEFAULT_SEARCH_LIMIT), 1, MAX_SEARCH_LIMIT);
+        int contextChars = clamp(JsonToolArgs.getInt(args, "contextChars", 120), 0, 500);
+        int timeoutSecs = clamp(JsonToolArgs.getInt(args, "timeoutSeconds", DEFAULT_SEARCH_TIMEOUT_SECS), 1, MAX_SEARCH_TIMEOUT_SECS);
+        int maxFiles = clamp(JsonToolArgs.getInt(args, "maxScannedFiles", DEFAULT_SEARCH_MAX_FILES), 1, MAX_SEARCH_MAX_FILES);
+        int maxFileBytes = clamp(JsonToolArgs.getInt(args, "maxFileBytes", DEFAULT_SEARCH_MAX_FILE_BYTES), 1, MAX_SEARCH_MAX_FILE_BYTES);
 
         Pattern bodyRegex = compile(regex);
         Pattern pathRegex = compileGlob(pathGlob);
@@ -361,12 +378,12 @@ public class MCPFileTools {
     }
 
     public static JSONObject read(JSONObject args) {
-        String path = MCPArgs.getString(args, "path");
+        String path = JsonToolArgs.getString(args, "path");
         if (path == null || path.isEmpty()) {
             throw new IllegalArgumentException("'path' is required (non-empty string)");
         }
-        int maxBytes = clamp(MCPArgs.getInt(args, "maxBytes", DEFAULT_READ_MAX_BYTES), 1, MAX_READ_MAX_BYTES);
-        int offset = Math.max(0, MCPArgs.getInt(args, "offset", 0));
+        int maxBytes = clamp(JsonToolArgs.getInt(args, "maxBytes", DEFAULT_READ_MAX_BYTES), 1, MAX_READ_MAX_BYTES);
+        int offset = Math.max(0, JsonToolArgs.getInt(args, "offset", 0));
 
         try (InputStream in = ResourceUtils.getResourceAsStream(path, false)) {
             if (in == null) {
@@ -389,7 +406,7 @@ public class MCPFileTools {
             // catalog entry as their lowercase form — the catalog itself is keyed lowercase.
             String extension = pathExtension(path);
             String extKey = extension == null ? null : extension.toLowerCase(Locale.ROOT);
-            boolean isKnownText = MCPBinaryContent.isKnownTextExtension(extKey);
+            boolean isKnownText = FileContentUtils.isKnownTextExtension(extKey);
 
             // Forward-progress read-ahead: if the entire window is one incomplete UTF-8 char
             // (caller passed maxBytes < 4 and we landed on a multi-byte char start), read up
@@ -400,7 +417,7 @@ public class MCPFileTools {
             // -1 and we skip the trim below, letting the validator route the partial bytes
             // into base64.
             if (isKnownText && total > 0 && total < 4) {
-                int safeLen = MCPBinaryContent.utf8SafeLength(buf, 0, total);
+                int safeLen = FileContentUtils.utf8SafeLength(buf, 0, total);
                 if (safeLen == 0) {
                     byte[] extended = new byte[total + 3];
                     System.arraycopy(buf, 0, extended, 0, total);
@@ -426,7 +443,7 @@ public class MCPFileTools {
             // `eof:true, truncated:false` while the file actually has those bytes).
             boolean trimmedForUtf8 = false;
             if (!eof && isKnownText && total > 0) {
-                int safeLen = MCPBinaryContent.utf8SafeLength(buf, 0, total);
+                int safeLen = FileContentUtils.utf8SafeLength(buf, 0, total);
                 if (safeLen < total) {
                     total = safeLen;
                     trimmedForUtf8 = true;
@@ -464,7 +481,7 @@ public class MCPFileTools {
             // binary reads as MCP `resource` content entries. Classification combines the
             // extension's MIME type with UTF-8 validation, so PDF / DOCX / etc. don't slip
             // through the byte heuristic and get UTF-8-mangled.
-            if (MCPBinaryContent.isLikelyText(extension, buf, 0, total)) {
+            if (FileContentUtils.isLikelyText(extension, buf, 0, total)) {
                 result.put("content", new String(buf, 0, total, StandardCharsets.UTF_8));
             } else {
                 result.put("contentBase64",

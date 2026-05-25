@@ -48,6 +48,18 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // irrelevant — eval supplies its own from tool args.
     MCPResult mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException;
 
+    // Plain-HTTP sibling of the MCP file tools — backs the /files/{list,search,read} endpoints.
+    // Symmetric with eval: where /eval runs an lsf action under the caller's auth, /files browses
+    // the server classpath (the same code MCP's lsfusion_files_* tools run), so HTTP callers get
+    // the file tools without speaking JSON-RPC. {@code operation} is the bare verb
+    // ({@code list} / {@code search} / {@code read}); {@code argsJson} is the JSON arguments object
+    // (same shape as the matching MCP tool's inputSchema — empty / null ⇒ no args). Runs the same
+    // per-role {@code enableAPI} gate as the MCP file tools, then returns the raw MCPFileTools
+    // payload as a JSON string — no JSON-RPC envelope, no binary slimming (a read of a binary
+    // resource returns {@code contentBase64} inline). The {@code request} envelope carries the
+    // inbound HTTP request's metadata, same as {@link #mcp} / {@code /eval}.
+    String files(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String operation, String argsJson) throws RemoteException;
+
     // OAuth Authorization Server — single dispatch method for all OAuth-server operations.
     // {@code operation} is one of the wire-stable strings declared as constants in
     // {@code OAuthOperations} ({@code registerClient}, {@code getClient},

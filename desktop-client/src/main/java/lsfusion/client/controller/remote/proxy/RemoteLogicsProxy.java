@@ -86,6 +86,14 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
+    public String files(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String operation, String argsJson) throws RemoteException {
+        logRemoteMethodStartCall("files");
+        String result = target.files(token, connectionInfo, request, operation, argsJson);
+        logRemoteMethodEndVoidCall("files");
+        return result;
+    }
+
+    @Override
     public String oauth(AuthenticationToken token, String operation, String requestJson) throws RemoteException {
         logRemoteMethodStartCall("oauth");
         String result = target.oauth(token, operation, requestJson);

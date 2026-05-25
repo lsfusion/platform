@@ -6,6 +6,8 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.interop.connection.ComputerInfo;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.UserInfo;
+import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalHttpUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -13,6 +15,7 @@ import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import java.net.URLDecoder;
 import java.util.Locale;
@@ -109,6 +112,37 @@ public class RequestUtils {
             out.write(buf, 0, n);
         }
         return out.toByteArray();
+    }
+
+    public static ExternalRequest buildExternalRequest(HttpServletRequest request, byte[] body, LogicsSessionObject sessionObject) {
+        RequestUtils.RequestInfo info = RequestUtils.getRequestInfo(request);
+
+        // Same logicsHost selection as ExternalLogicsAndSessionRequestHandler — prefer the
+        // configured app server host unless it is the loopback alias, in which case fall back
+        // to the request's server name.
+        String logicsHost = sessionObject.connection.host != null
+                && !sessionObject.connection.host.equals("localhost")
+                && !sessionObject.connection.host.equals("127.0.0.1")
+                ? sessionObject.connection.host : request.getServerName();
+
+        // getSession(false): MCP is wired through the security chain with `create-session=
+        // never`, so most calls (tools/list, file tools, anonymous tools/call) ride without
+        // an HttpSession. Calling getSession() unconditionally would conjure one for every
+        // such request and defeat that contract. When no session exists we surface "" — the
+        // ExternalRequest envelope expects a non-null sessionId field shape.
+        HttpSession session = request.getSession(false);
+        String sessionId = session != null ? session.getId() : "";
+
+        return new ExternalRequest(
+                new String[0],
+                new ExternalRequest.Param[0],
+                info.headerNames, info.headerValues, info.cookieNames, info.cookieValues,
+                logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
+                request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(),
+                nvl(request.getContextPath(), ""), nvl(request.getServletPath(), ""), info.pathInfo, info.query,
+                request.getContentType(), sessionId, body,
+                null, null,
+                false, false);
     }
 
     /** Thrown by {@link #readBoundedBody} when the inbound body exceeds the cap. */

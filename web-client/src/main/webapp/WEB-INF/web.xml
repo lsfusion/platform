@@ -84,6 +84,16 @@
         <url-pattern>/mcp</url-pattern>
     </servlet-mapping>
 
+    <!-- Plain-HTTP classpath file tools — forwards to RemoteLogicsInterface.files -->
+    <servlet>
+        <servlet-name>filesHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>filesHandler</servlet-name>
+        <url-pattern>/files/*</url-pattern>
+    </servlet-mapping>
+
     <!-- OAuth Authorization Server — discovery + registration + token + revoke. Each is its
          own HttpRequestHandlerServlet looking up the bean by name in application-context.xml. -->
     <servlet>
@@ -223,6 +233,7 @@
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/exec/*</url-pattern>
         <url-pattern>/eval/*</url-pattern>
+        <url-pattern>/files/*</url-pattern>
         <url-pattern>/form</url-pattern>
         <url-pattern>/mcp</url-pattern>
         <url-pattern>/oauth/*</url-pattern>
@@ -281,6 +292,7 @@
              https://claude.ai), so the OAuth endpoints need CORS too. -->
         <url-pattern>/exec/*</url-pattern>
         <url-pattern>/eval/*</url-pattern>
+        <url-pattern>/files/*</url-pattern>
         <url-pattern>/form</url-pattern>
         <url-pattern>/mcp</url-pattern>
         <url-pattern>/oauth/*</url-pattern>

@@ -34,12 +34,14 @@ import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
+import lsfusion.server.physics.admin.files.ClasspathFileTools;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.mcp.MCPDispatcher;
 import lsfusion.server.physics.admin.oauth.OAuthDispatcher;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -222,6 +224,19 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return mcpDispatcher.dispatch(token, connectionInfo, request, body);
     }
 
+    @Override
+    public String files(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String operation, String argsJson) throws RemoteException {
+        // The one method both transports route through — /files over plain HTTP and the MCP
+        // lsfusion_files_* tools — exactly as /eval and the MCP eval tool both route through eval().
+        // The per-role enableAPI gate via access(), then the classpath browse via ClasspathFileTools,
+        // serialized as the raw JSON payload (no JSON-RPC envelope; the MCP dispatcher reparses + wraps).
+        // Parse before the gate so malformed JSON fails without opening a pooled session. Empty/blank
+        // body = no-arg call (e.g. /files/list with classpath defaults).
+        JSONObject args = argsJson == null || argsJson.trim().isEmpty() ? new JSONObject() : new JSONObject(argsJson);
+        access(token, connectionInfo, request);
+        return ClasspathFileTools.execute(operation, args).toString();
+    }
+
     private OAuthDispatcher oauthDispatcher;
     private OAuthDispatcher getOAuthDispatcher() {
         // Lazy: businessLogics / authenticationLM are wired after construction, before first request.
@@ -294,4 +309,3 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         rmiManager.registerClient(client);
     }
 }
-
