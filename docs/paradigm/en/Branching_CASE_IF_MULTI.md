@@ -9,7 +9,7 @@ All conditions are defined as [properties](Properties.md) and/or parameters. Acc
 
 ### Polymorphic form {#poly}
 
-This operator also allows to define a condition not explicitly but by using as a condition the [signature](../language/Property_signature_ISCLASS.md) of the action corresponding to that condition. We will call this the *polymorphic* form of the operator.
+This operator also allows to define a condition not explicitly but by using as a condition the signature of the action corresponding to that condition. We will call this the *polymorphic* form of the operator.
 
 ### Mutual exclusion of conditions {#exclusive}
 

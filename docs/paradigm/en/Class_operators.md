@@ -6,6 +6,6 @@ title: 'Class operators'
 Class operators include the following operators:
 
 -   [Classification (`AS`/`IS`)](Classification_IS_AS.md)
--   [Signature matching (`ISCLASS`)](../language/Property_signature_ISCLASS.md)
+-   Signature matching (`ISCLASS`)
 
   

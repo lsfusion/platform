@@ -21,8 +21,8 @@ While the application is running, there is a number of events for each form that
 -   `CHANGEWYS` - the user initiated a WYSIWYG property change using the PASTE operation or a special input mechanism. 
 -   `GROUPCHANGE` - the user initiated a property change for all objects in the table.
 -   `EDIT` - the user initiated editing of an object.
--   `CONTEXTMENU [caption]` - the user selected the specified item in the context menu of a property (action) on the form. If necessary, you can also define the caption of this menu item ([string literal](../language/Literals.md#strliteral)). If it is not specified, then, by default, it will be the same as the action caption.
--   `KEYPRESS key` - the user has pressed the specified `key` ([string literal](../language/Literals.md#strliteral)) on keyboard.
+-   `CONTEXTMENU [caption]` - the user selected the specified item in the context menu of a property (action) on the form. If necessary, you can also define the caption of this menu item ([string literal](Constant.md)). If it is not specified, then, by default, it will be the same as the action caption.
+-   `KEYPRESS key` - the user has pressed the specified `key` ([string literal](Constant.md)) on keyboard.
 
 There are also several so-called *derivative* events that are nothing more than syntactic sugar, but at the same time allow you more effectively to solve typical problems that arise when working with forms:
 

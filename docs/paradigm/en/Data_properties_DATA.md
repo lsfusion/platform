@@ -17,11 +17,11 @@ A *nested local data property* is a local data property whose value is preserved
 
 The basic nested mode preserves the property value for all major session-management operations:
 
-- when entering and leaving a [new session](../language/NEWSESSION_operator.md);
+- when entering and leaving a [new session](New_session_NEWSESSION_NESTEDSESSION.md);
 - after [applying changes](Apply_changes_APPLY.md);
 - after [canceling changes](Cancel_changes_CANCEL.md).
 
-If preservation is required only for part of these operations, a restricted nested mode is used: either only for [applying changes](Apply_changes_APPLY.md) and [canceling changes](Cancel_changes_CANCEL.md), or only when entering and leaving a [new session](../language/NEWSESSION_operator.md).
+If preservation is required only for part of these operations, a restricted nested mode is used: either only for [applying changes](Apply_changes_APPLY.md) and [canceling changes](Cancel_changes_CANCEL.md), or only when entering and leaving a [new session](New_session_NEWSESSION_NESTEDSESSION.md).
 
 ### Language
 

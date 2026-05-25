@@ -11,9 +11,9 @@ The platform currently supports the following types of internal calls:
 
 ### Java - executing Java code in the application-server JVM {#java}
 
-The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`; its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified (compiled class or inline Java fragment) is covered by the [`INTERNAL` operator](../language/INTERNAL_operator.md).
+The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`; its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified (compiled class or inline Java fragment) is covered by the `INTERNAL` operator.
 
-The classes of the action's parameters and the behaviour for `NULL` arguments are defined by the [`INTERNAL` operator](../language/INTERNAL_operator.md); by default the action rejects `NULL` parameter values, and on the Java side `NULL` acceptance can also be controlled by overriding `allowNulls()`.
+The classes of the action's parameters and the behaviour for `NULL` arguments are defined by the `INTERNAL` operator; by default the action rejects `NULL` parameter values, and on the Java side `NULL` acceptance can also be controlled by overriding `allowNulls()`.
 
 Inside the Java code the platform runtime is reached through the `context` parameter (the current change [session](Change_sessions.md), parameter values, and execution environment) and through the resolving methods of `InternalAction`. Returning results in this call type needs no separate mechanism: the Java code writes values directly into lsFusion properties from the body of the action itself, within the same change session.
 
@@ -27,11 +27,11 @@ For this type of interaction, the name of a client-side target is specified — 
 
 Client calls are asynchronous by default: the server does not wait for the client to complete. Synchronous execution has to be requested explicitly; capturing a result in the inline form additionally forces synchronous execution.
 
-Auxiliary operations on already-loaded file resources — such as unloading a previously-loaded script or stylesheet — are expressed through a reserved prefix on the resource name; see the [`INTERNAL` operator](../language/INTERNAL_operator.md) article for the exact syntax.
+Auxiliary operations on already-loaded file resources — such as unloading a previously-loaded script or stylesheet — are expressed through a reserved prefix on the resource name; see the `INTERNAL` operator article for the exact syntax.
 
 ### DB - SQL against the platform's own database {#db}
 
-For this type of interaction, an SQL command is specified as a property expression evaluated at call time. Parameter substitution, table-valued parameters, loading the command from a classpath resource, and routing results to properties all follow the same rules as [`EXTERNAL SQL`](Access_to_an_external_system_EXTERNAL.md#sql) — the differences are that no connection string is supplied and the call runs inside the current change [session](Change_sessions.md), so temporary tables, transactional state, and result writes roll back or commit together with that session. This is also the only supported way to run arbitrary SQL against the platform's own database.
+For this type of interaction, an SQL command is specified as a property value evaluated at call time. Parameter substitution, table-valued parameters, loading the command from a classpath resource, and routing results to properties all follow the same rules as [`EXTERNAL SQL`](Access_to_an_external_system_EXTERNAL.md#sql) — the differences are that no connection string is supplied and the call runs inside the current change [session](Change_sessions.md), so temporary tables, transactional state, and result writes roll back or commit together with that session. This is also the only supported way to run arbitrary SQL against the platform's own database.
 
 ## Language
 
@@ -39,7 +39,7 @@ To declare an action or write an action statement implemented via an internal ca
 
 ## Examples
 
-Syntactic variants of `INTERNAL` on the lsFusion side (Java / CLIENT / DB targets, declarative and inline forms) are listed in the [operator article](../language/INTERNAL_operator.md). The example below covers the Java target itself.
+Syntactic variants of `INTERNAL` on the lsFusion side (Java / CLIENT / DB targets, declarative and inline forms) are listed in the operator article. The example below covers the Java target itself.
 
 A minimal example of a Java class extending `InternalAction` — resolves a property and an action in the constructor via `findProperty` / `findAction`, then in `executeInternal` reads and writes a property and runs an action:
 

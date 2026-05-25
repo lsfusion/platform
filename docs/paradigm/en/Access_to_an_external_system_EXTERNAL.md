@@ -26,7 +26,7 @@ Parameters can be passed both in the request string (to refer to the parameter, 
 
 When processing file class parameters (`FILE`, `PDFFILE`, etc.) to BODY, the [content type](https://en.wikipedia.org/wiki/Media_type) of the parameter, depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 
-The file extension in this case is determined automatically, similarly to the [`WRITE` operator](../language/WRITE_operator.md).
+The file extension in this case is determined automatically, similarly to the [`WRITE` operator](Write_file_WRITE.md).
 
 In each of the three cases above, if the parameter value is `NULL`, `null` is substituted for the file extension in the content type (for example, `application/null`), and an empty string is passed as the parameter itself.
 
@@ -44,7 +44,7 @@ Results with content types different from the ones above are considered strings 
 
 Response [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be captured into properties. The captured cookies combine the ones sent with the request and those received in `Set-Cookie` response headers; cookie attributes (`path`, `domain`, etc.) are dropped.
 
-The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](../language/TRY_operator.md) operator to inspect `System.statusHttp[]` instead. Under client execution in the regular browser, a network / CORS / DNS failure surfaces as `status = 0`; in that case the exception carries a generic localized error message rather than a status + body.
+The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](Exception_handling_TRY.md) operator to inspect `System.statusHttp[]` instead. Under client execution in the regular browser, a network / CORS / DNS failure surfaces as `status = 0`; in that case the exception carries a generic localized error message rather than a status + body.
 
 #### Multiple results / parameters in BODY
 

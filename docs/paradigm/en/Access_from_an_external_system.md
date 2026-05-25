@@ -29,7 +29,7 @@ The URL format, depending on the method of [action definition](#actiontype), loo
 -   `EVAL` - `http://server address:port/eval?script=<code>`. If the `script` parameter is not specified, it is assumed that the code is passed in the first BODY parameter.
 -   `EVAL ACTION` – `http://server address:port/eval/action?script=<action code>`. If the `script` parameter is not specified, it is assumed that the code is passed in the first BODY parameter.
 
-For `EXEC`, the action name can be either the action's [compound name](../language/IDs.md#cid) or its [`EXTID`](../language/Action_options.md) (the compound name is tried first). In the path form, the platform looks up the action greedily: it first tries the full path as an action name (with any `/` replaced by `_` for the compound name lookup), and if no such action exists, drops the last path segment and retries, until a match is found or `404` is returned. The part of the path left after the matched action name is passed to the `System.actionPathInfo[]` property. For example, for `/exec/df/fdf/dffd` the platform tries actions `df_fdf_dffd`, then `df_fdf`, then `df`; if only `df` matches, `fdf/dffd` is written to `System.actionPathInfo[]`.
+For `EXEC`, the action name can be either the action's [compound name](Element_identification.md) or its `EXTID` (the compound name is tried first). In the path form, the platform looks up the action greedily: it first tries the full path as an action name (with any `/` replaced by `_` for the compound name lookup), and if no such action exists, drops the last path segment and retries, until a match is found or `404` is returned. The part of the path left after the matched action name is passed to the `System.actionPathInfo[]` property. For example, for `/exec/df/fdf/dffd` the platform tries actions `df_fdf_dffd`, then `df_fdf`, then `df`; if only `df` matches, `fdf/dffd` is written to `System.actionPathInfo[]`.
 
 ##### Servers {#servers}
 
@@ -74,7 +74,7 @@ Properties whose values must be returned as the result are passed in the request
 
 If the result of a request is a file (`FILE`, `PDFFILE`, etc.), the response [content type](https://en.wikipedia.org/wiki/Media_type) , depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 
-The file extension in this case is determined automatically, similarly to the [`WRITE` operator](../language/WRITE_operator.md).
+The file extension in this case is determined automatically, similarly to the [`WRITE` operator](Write_file_WRITE.md).
 
 In all of the three cases above, if the result value is `NULL`, a `null` string (for example, `application/null`) is substituted for the file extension in the content type, and an empty string is returned as the response itself.
 
@@ -123,7 +123,7 @@ When executing an http request, it is often necessary to identify the user on wh
     -   At the first stage, you need to execute the `Authentication.getAuthToken[]` action with basic authentication. The result of this action will be an authentication token with a fixed lifetime (one day [by default](Working_parameters.md#authTokenExpiration)). An example of a request:  `http://localhost/exec?action=getAuthToken`.
     -   The token you receive can be used for authentication during its lifetime by passing it in the `Authorization: Bearer <token>` header (similarly to JWT which is used in the current implementation of the platform for generating authentication tokens).
 
-Whether a request is accepted also depends on the [`enableAPI`](Working_parameters.md) setting, which allows disabling the API by default, restricting it to authenticated requests, or additionally allowing anonymous requests. An individual action can be annotated with [`@@noauth`](../language/Action_options.md) to bypass both the authentication check and `enableAPI`, or with [`@@api`](../language/Action_options.md) to allow it at `enableAPI=0` (still requiring an authenticated user). At `enableAPI=0`, an authenticated user who has access to the `System.interpreter` navigator form is also allowed to use the external API, because that user can already execute arbitrary lsFusion code through the browser UI.
+Whether a request is accepted also depends on the [`enableAPI`](Working_parameters.md) setting, which allows disabling the API by default, restricting it to authenticated requests, or additionally allowing anonymous requests. An individual action can be annotated with `@@noauth` to bypass both the authentication check and `enableAPI`, or with `@@api` to allow it at `enableAPI=0` (still requiring an authenticated user). At `enableAPI=0`, an authenticated user who has access to the `System.interpreter` navigator form is also allowed to use the external API, because that user can already execute arbitrary lsFusion code through the browser UI.
 
 ##### Interactive actions {#interactive}
 
@@ -131,8 +131,8 @@ An external call may need to trigger an action that interacts with the user - op
 
 When an action is considered interactive:
 
--   [`@@ui`](../language/Action_options.md) - always interactive.
--   [`@@noui`](../language/Action_options.md) - never detected as interactive, so the action runs synchronously (unless the client explicitly requests a notification ID via the `Need-Notification-Id` header, which is always honoured).
+-   `@@ui` - always interactive.
+-   `@@noui` - never detected as interactive, so the action runs synchronously (unless the client explicitly requests a notification ID via the `Need-Notification-Id` header, which is always honoured).
 -   Neither annotation - interactive automatically when the request comes from a browser navigation (signalled by the `sec-fetch-mode: navigate` header) and the action body uses any interactive feature; otherwise synchronous.
 
 How the caller obtains the notification:

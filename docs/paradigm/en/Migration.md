@@ -40,7 +40,7 @@ On the right side of `STORED PROPERTY` and `PROPERTY` changes it is not necessar
 
 ### Changing the name of a property/action on a form
 
-When changing [the name of the property on a form](../language/Properties_and_actions_block.md#name) using the migration file, you can preserve information from the table settings for this property/action on the form. For this, the `FORM PROPERTY` change type is used. The old and new names are the name of the form namespace, the name of the form, and the name of the property on the form, separated by dots. Also, using this type of change you can preserve information from the table settings when changing the canonical name of the form. To do this, add `FORM PROPERTY` changes to the migration file for all properties/actions on the form with the changed canonical name of the form.
+When changing [the name of the property on a form](Form_structure.md) using the migration file, you can preserve information from the table settings for this property/action on the form. For this, the `FORM PROPERTY` change type is used. The old and new names are the name of the form namespace, the name of the form, and the name of the property on the form, separated by dots. Also, using this type of change you can preserve information from the table settings when changing the canonical name of the form. To do this, add `FORM PROPERTY` changes to the migration file for all properties/actions on the form with the changed canonical name of the form.
 
 ### Changing the name of a custom class
 

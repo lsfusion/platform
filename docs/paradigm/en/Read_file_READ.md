@@ -5,7 +5,7 @@ title: 'Read file (READ)'
 
 The *read file* operator creates an [action](Actions.md) that reads a file from a defined source and [writes](Property_change_CHANGE.md) this file to the specified property without parameters.
 
-The source is defined by a string [expression](../language/Expression.md) whose value is the URL to read from. The following types of data sources (URLs) are supported: FILE, HTTP, HTTPS, FTP, FTPS, SFTP.
+The source is defined by a string value — the URL to read from. The following types of data sources (URLs) are supported: FILE, HTTP, HTTPS, FTP, FTPS, SFTP.
 
 ### Language
 

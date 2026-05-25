@@ -17,7 +17,7 @@ Beyond the thread itself, it is useful to specify where it runs — which pool o
 
 #### Server-side execution
 
-A fixed-size server-side thread pool — thread actions run on the application server in its worker threads and share the change session with the calling code. Since change sessions are not thread-safe, the thread body is typically wrapped in a [new session](New_session_NEWSESSION_NESTEDSESSION.md); if a separate database transaction is required, a [new session on a separate SQL connection](New_session_NEWSESSION_NESTEDSESSION.md#newsql) is used. The pool size is given by an integer-typed expression. Delayed and periodic dispatches are served by the server-side pool scheduler.
+A fixed-size server-side thread pool — thread actions run on the application server in its worker threads and share the change session with the calling code. Since change sessions are not thread-safe, the thread body is typically wrapped in a [new session](New_session_NEWSESSION_NESTEDSESSION.md); if a separate database transaction is required, a [new session on a separate SQL connection](New_session_NEWSESSION_NESTEDSESSION.md#newsql) is used. The pool size is given by an integer value. Delayed and periodic dispatches are served by the server-side pool scheduler.
 
 #### Client-side execution
 
@@ -25,7 +25,7 @@ A client-side dispatcher tied to a user's [connection](User_IS_interaction.md) �
 
 #### Synchronization
 
-Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads for which a future is registered to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md); in the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout; if some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](../language/TRY_operator.md).
+Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads for which a future is registered to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md); in the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout; if some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](Exception_handling_TRY.md).
 
 ### Language
 

@@ -14,7 +14,7 @@ The operator can work in *non-strict* mode (used by default). Here the platform 
 
 As for other operations with sets, an *order* can (and usually must) be defined for the distribution operator.
 
-The result class of the distribution follows the class of the per-element shape expression — the limit for the limiting form, or the proportion for the proportional form — rather than the class of the distributable property itself. So when the limit / proportion has a wider or different numeric class than the distributable value, the result takes the class of the limit / proportion.
+The result class of the distribution follows the class of the per-element shape property — the limit for the limiting form, or the proportion for the proportional form — rather than the class of the distributable property itself. So when the limit / proportion has a wider or different numeric class than the distributable value, the result takes the class of the limit / proportion.
 
 The general algorithm of the distribution operator, depending on the type of distribution, is as follows:
 

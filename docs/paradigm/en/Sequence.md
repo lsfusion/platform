@@ -3,7 +3,7 @@ slug: "/Sequence"
 title: 'Sequence ({...})'
 ---
 
-To create an [action](Actions.md) that performs a sequence of other actions, the [`{...}` operator](../language/Braces_operator.md) is used - a block enclosed by curly brackets. The body of this block must contain a sequence of [action operators](Action_operators_paradigm.md) and local property declarations.
+To create an [action](Actions.md) that performs a sequence of other actions, the `{...}` operator is used - a block enclosed by curly brackets. The body of this block must contain a sequence of [action operators](Action_operators_paradigm.md) and local property declarations.
 
 ### Language
 

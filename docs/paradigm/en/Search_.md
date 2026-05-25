@@ -143,7 +143,7 @@ If the parameter classes of a property (action) are not explicitly specified, th
 
 | Context                       | Call parameter classes                                   |
 | ----------------------------- | -------------------------------------------------------- |
-| Expressions                   | Classes of the parameters (in the order of their use)    |
+| Computed properties           | Classes of the parameters (in the order of their use)    |
 | Primary, Abstract             | Classes are specified explicitly in the operator itself  |
 | Formula, Internal Call        | The classes can be specified explicitly in the operator itself; if not specified, all parameter classes are considered unknown (`?`) and the number is determined by the specifics of the particular operator |
 | Grouping                      | Classes of the values of group properties (`BY` block)   |

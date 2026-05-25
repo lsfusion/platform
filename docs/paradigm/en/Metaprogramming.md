@@ -7,7 +7,7 @@ title: 'Metaprogramming'
 
 ### Metacode {#metacode}
 
-In **lsFusion** the metaprogramming tool used is *metacode*, which is described by the [`META` statement](../language/META_statement.md). Metacode consists of a header and an **lsFusion** code block describing the [statement](../language/Statements.md) sequence. This code block must end with the keyword `END`. Let us consider an example of metacode that allows you to add two [actions](Actions.md) to an arbitrary [form](Forms.md):
+In **lsFusion** the metaprogramming tool used is *metacode*, which is described by the `META` statement. Metacode consists of a header and an **lsFusion** code block describing the statement sequence. This code block must end with the keyword `END`. Let us consider an example of metacode that allows you to add two [actions](Actions.md) to an arbitrary [form](Forms.md):
 
 ```lsf
 META addActions(formName)
@@ -17,7 +17,7 @@ META addActions(formName)
 END
 ```
 
-The first line of the example contains the metacode header. It consists of the keyword `META`, metacode name, and parameter list. In this example, the metacode `addActions` has one parameter: `formName`. This is the name of the form to which the actions will be added. Let's consider the possible uses for this metacode, which are described by the [`@` statement](../language/commat_statement.md). 
+The first line of the example contains the metacode header. It consists of the keyword `META`, metacode name, and parameter list. In this example, the metacode `addActions` has one parameter: `formName`. This is the name of the form to which the actions will be added. Let's consider the possible uses for this metacode, which are described by the `@` statement. 
 
 ```lsf
 @addActions(documentForm);
@@ -38,7 +38,7 @@ EXTEND FORM orderForm
 
 ### Lexeme concatenation  {#concat}
 
-Simply substituting an ID for a metacode parameter is often not enough. For example, when creating a large number of new [system elements](Element_identification.md) inside the metacode, you must be able to specify these new names. Passing all the names as metacode parameters can be inconvenient. For this reason the metacode contains the special operation `##`, which operates at the [tokens](../language/Tokens.md) level. This operation can concatenate two adjacent lexemes into one. If one of the concatenated lexemes is a [string literal](../language/Literals.md#strliteral), the concatenation will result in a single string literal.
+Simply substituting an ID for a metacode parameter is often not enough. For example, when creating a large number of new [system elements](Element_identification.md) inside the metacode, you must be able to specify these new names. Passing all the names as metacode parameters can be inconvenient. For this reason the metacode contains the special operation `##`, which operates at the tokens level. This operation can concatenate two adjacent lexemes into one. If one of the concatenated lexemes is a string literal, the concatenation will result in a single string literal.
 
 ```lsf
 META objectProperties(object, caption)

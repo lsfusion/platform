@@ -7,7 +7,7 @@ The *recursion* operator is an operator that creates a [property](Properties.md)
 
 1.  Recursively builds an intermediate property (result) with an additional first parameter (operation number) as follows:
     1.  `result(0, o1, o2, ..., oN) = initial(o1, ..., oN)`, where `initial` is an *initial* property.
-    2.  `result(i+1, o1, o2, ..., oN) = step(o1, ..., oN, $o1, $o2, ..., $oN) IF result(i, $o1, $o2, ..., $oN)`, where `step` is a *step* property and `$o1, ..., $oN` denote the parameter values at the previous iteration (in source code these are written as `$name` — see the [`RECURSION` operator](../language/RECURSION_operator.md)).
+    2.  `result(i+1, o1, o2, ..., oN) = step(o1, ..., oN, $o1, $o2, ..., $oN) IF result(i, $o1, $o2, ..., $oN)`, where `step` is a *step* property and `$o1, ..., $oN` denote the parameter values at the previous iteration (in source code these are written as `$name` — see the `RECURSION` operator).
 2.  For all values of the obtained property, it calculates the given [aggregate function](Set_operations.md#func) grouping by all its parameters except the operation number.
 
 The aggregate function is selected automatically based on the value class of `initial`/`step`: if they are of class `BOOLEAN`, `OR` is used; otherwise, `SUM` is used.

@@ -13,7 +13,7 @@ By default, the result class of the custom operator is a [common ancestor](Built
 
 ### Referencing parameters
 
-A custom formula contains references to its parameters within its SQL text; the property's arguments are substituted in place at the points the formula refers to them. Both positional and named references are available — the exact notation and the rules for the resulting property's arity belong to the [`FORMULA` operator](../language/FORMULA_operator.md) article.
+A custom formula contains references to its parameters within its SQL text; the property's arguments are substituted in place at the points the formula refers to them. Both positional and named references are available — the exact notation and the rules for the resulting property's arity belong to the `FORMULA` operator article.
 
 ### Table-valued formulas
 
@@ -23,7 +23,7 @@ A custom formula is not limited to producing one scalar value per call — it ma
 - reuse SQL table-valued functions as lsFusion properties;
 - unnest rows, JSON documents, or array values into row-keyed properties.
 
-The rules for how the property's parameters relate to the underlying table belong to the [`FORMULA` operator](../language/FORMULA_operator.md) article.
+The rules for how the property's parameters relate to the underlying table belong to the `FORMULA` operator article.
 
 ### `NULL` handling
 

@@ -3,9 +3,9 @@ slug: "/Change_operators_SET_CHANGED_etc"
 title: 'Change operators (SET, CHANGED, ...)'
 ---
 
-*Change operators* determine whether some types of changes have occurred for a given expression in the current session. All these operators are derived from the [previous value operator (`PREV`)](Previous_value_PREV.md), however, it is recommended to use them to improve readability and performance.
+*Change operators* determine whether some types of changes have occurred for a given property in the current session. All these operators are derived from the [previous value operator (`PREV`)](Previous_value_PREV.md), however, it is recommended to use them to improve readability and performance.
 
-In the table below, `f` stands for the expression being checked (parameters omitted) and `PREV(f)` for its value at the start of the session.
+In the table below, `f` stands for the property being checked (parameters omitted) and `PREV(f)` for its value at the start of the session.
 
 |Operator     |Value                                                            |Description                   |
 |-------------|-----------------------------------------------------------------|------------------------------|
