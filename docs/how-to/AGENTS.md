@@ -38,3 +38,28 @@ How-to article structure convention:
   the target result,
   not on full reference-style
   coverage of the syntax
+
+Cross-references:
+How-to articles
+reference Language
+and Paradigm
+(the primary documentation)
+as needed;
+the reverse is not allowed —
+a Language / Paradigm article
+never links back
+to a How-to article.
+
+Examples and grounding:
+When writing How-to,
+the assistant MUST
+use examples
+from existing lsFusion code.
+Usage variants
+documented here
+MUST be grounded
+in the grammar,
+platform / plugin code,
+existing examples,
+or existing documentation —
+not speculative.

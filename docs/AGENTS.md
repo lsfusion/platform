@@ -108,16 +108,6 @@ Common structure rules:
   into logically complete blocks,
   the assistant SHOULD do that
   or suggest doing that
-- Language and Paradigm
-  articles
-  are primary documentation
-  and MUST NOT
-  reference How-to,
-  Rules, or Brief articles;
-  cross-references
-  go from How-to / Rules / Brief
-  to Language / Paradigm,
-  never the other way around
 
 The required order is:
 1) Language
@@ -145,6 +135,10 @@ There is also a general guide — the Brief at `brief/{en,ru}/Brief.md` —
 distilled from all documentation parts. It is served to the AI assistant by the
 MCP `lsfusion_get_guidance` tool (alongside the Rules at `rules/{en,ru}/Rules.md`),
 so its key information is always available in context.
+
+Brief, which has no per-type AGENTS.md, references Language / Paradigm
+(the primary documentation) and never the reverse — the same cross-reference
+direction that `how-to/AGENTS.md` and `rules/AGENTS.md` state for those types.
 
 ----------------------------------------------------------------
 
@@ -212,11 +206,6 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    The assistant MUST inspect the source code
    as carefully as possible
    so as not to miss non-obvious behavior.
-
-6. RULES / HOW-TO WRITING
-   When writing Rules / How-to,
-   the assistant MUST also use examples
-   from existing code.
 
 ----------------------------------------------------------------
 
@@ -361,6 +350,37 @@ if a plain word
 fits,
 use the plain word.
 
+The assistant MUST
+keep the set of terms
+as small as possible:
+once a concept
+is named
+by a given term,
+the assistant MUST reuse
+that same term
+and MUST NOT introduce
+a second,
+near-synonymous term
+for the same
+or an overlapping concept
+(for example,
+not "property"
+in one place
+and "computation"
+for the same notion
+in another),
+since parallel terms
+for one idea
+leave the reader
+unsure whether
+two different things
+are meant;
+prefer the term
+already established
+for that concept
+in the same
+or related articles.
+
 The assistant MUST NOT describe a construction
 by metaphor, analogy,
 or a label imported
@@ -442,26 +462,6 @@ in square brackets
 parenthesis-call notation
 (`foo()`, `foo(<name>)`)
 MUST NOT be used.
-
-In Paradigm articles
-and in other prose
-describing the abstraction
-of a language construction,
-the human-language name
-of that construction
-SHOULD be used,
-not its keyword form.
-Language articles
-are exempt,
-since they describe
-the syntax of the keyword
-and naturally take
-the keyword form as the subject.
-Inside `Syntax` blocks
-and code examples
-in any article
-the keyword form
-is also appropriate.
 
 Preserving existing material:
 
@@ -617,29 +617,6 @@ that are not directly needed
 to understand
 the current article
 or the current rule.
-In particular,
-internal optimisations
-performed by the platform
-(short-cutting
-identity compositions,
-caching,
-shared sub-expression reuse,
-constant folding,
-and similar runtime
-or query-builder optimisations)
-MUST NOT be documented
-in Paradigm articles
-unless the optimisation
-is itself
-an abstraction
-the developer must reason about;
-typical optimisation tells
-such as
-"no new property is created" /
-"the result is equivalent to X" /
-"computed in a single pass"
-add no abstraction-level information
-and MUST be omitted.
 The assistant MUST NOT
 invent,
 extrapolate,
@@ -652,18 +629,6 @@ by the grammar,
 platform or plugin code,
 existing lsFusion examples,
 or existing documentation.
-This is especially important
-for Language articles:
-syntax documentation
-MUST describe
-what can be written
-and what it means,
-not speculative usage.
-Pure usage variants
-SHOULD appear
-only in Rules / How-to
-and only when grounded
-in such sources.
 The assistant MUST NOT
 add abstract,
 empty,

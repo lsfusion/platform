@@ -46,3 +46,28 @@ Rules article structure convention:
   the assistant's context,
   so noise hurts
   more than missing edges
+
+Cross-references:
+Rules articles
+reference Language
+and Paradigm
+(the primary documentation)
+as needed;
+the reverse is not allowed —
+a Language / Paradigm article
+never links back
+to a Rules article.
+
+Examples and grounding:
+When writing Rules,
+the assistant MUST
+use examples
+from existing lsFusion code.
+Usage variants
+documented here
+MUST be grounded
+in the grammar,
+platform / plugin code,
+existing examples,
+or existing documentation —
+not speculative.

@@ -39,6 +39,30 @@ It MUST:
   could be different
   and the syntax could change
 
+Cross-references:
+A Paradigm article
+is primary documentation
+and MUST NOT
+reference (link to)
+How-to, Rules,
+or Brief articles;
+cross-references
+run only the other way
+(How-to / Rules / Brief
+link to Paradigm,
+never the reverse).
+Navigation and index pages
+(the documentation
+root / overview page
+and section-overview pages,
+such as `Learn.md`,
+whose purpose is
+to point readers
+to every part)
+are exempt
+and MAY link
+to any part.
+
 Paradigm article structure convention:
 - a Paradigm article
   SHOULD begin
@@ -57,8 +81,29 @@ Paradigm article structure convention:
   and the Paradigm article
   SHOULD contain
   a `Language` section
-  linking to the relevant
-  Language articles;
+  that links
+  ONLY to the Language
+  article(s) of the
+  construction(s)
+  the abstraction
+  is written as
+  — the realizing
+  operator, statement, or block;
+  a concept article
+  qualifies only when
+  it is itself
+  that construction
+  (a constant
+  is written as a literal,
+  a name as an identifier),
+  but a generic
+  concept or companion
+  article MUST NOT
+  be linked on top of
+  the realizing construction
+  (such as the
+  expression article
+  beside a file operator);
   every such link
   MUST be accompanied
   by at least
@@ -77,6 +122,37 @@ Paradigm article structure convention:
   or
   `[Type conversion operator](Type_conversion_operator.md).`
   are forbidden
+- links to Language articles
+  MUST appear
+  ONLY in the article's
+  `Language` (`Язык`) section;
+  the definition,
+  body, `Examples`,
+  and any other section
+  of a Paradigm article
+  MUST NOT link
+  to a Language article.
+  Beyond links,
+  a Paradigm article
+  MUST NOT use,
+  anywhere in its prose,
+  a Language-specific term —
+  one whose meaning
+  is owned by
+  a Language article
+  (for example
+  *expression*) —
+  whether or not
+  it would be linked;
+  name the paradigm
+  abstraction directly
+  instead
+  (a filter is a
+  *condition* / *property*;
+  a computed value
+  is a *property*
+  or its *value*,
+  not an *expression*)
 - a Paradigm article
   SHOULD also include
   an `Examples` section
@@ -93,6 +169,26 @@ Paradigm article structure convention:
   of all syntactic variants
   remains the responsibility
   of the Language article
+- an intermediate
+  (umbrella) Paradigm article —
+  one whose child
+  Paradigm articles
+  already cover
+  the concrete constructions,
+  their syntax,
+  and their examples —
+  SHOULD NOT carry
+  its own `Language`
+  or `Examples` section;
+  those sections
+  belong to the leaf
+  articles that own
+  the concrete construction,
+  and duplicating them
+  at the umbrella level
+  only restates
+  what a child
+  already owns
 
 Documentation-part placement:
 
@@ -436,6 +532,40 @@ canonical sibling article.
 
 
 Paradigm article writing:
+
+In a Paradigm article
+(and in other prose
+describing the abstraction
+of a construction),
+use the construction's
+human-language name,
+not its keyword form;
+the keyword form
+is appropriate only
+inside `Syntax` blocks
+and code examples.
+
+Internal optimisations
+performed by the platform
+(short-cutting
+identity compositions,
+caching,
+shared sub-expression reuse,
+constant folding,
+and similar runtime
+or query-builder optimisations)
+MUST NOT be documented
+in a Paradigm article
+unless the optimisation
+is itself an abstraction
+the developer must reason about;
+typical optimisation tells
+such as
+"no new property is created" /
+"the result is equivalent to X" /
+"computed in a single pass"
+add no abstraction-level information
+and MUST be omitted.
 
 When several
 paradigm articles

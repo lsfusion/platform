@@ -37,6 +37,47 @@ It MUST contain:
   assuming that the reader already more or less understands
   the paradigm
 
+Cross-references:
+A Language article
+is primary documentation
+and MUST NOT
+reference (link to)
+How-to, Rules,
+or Brief articles;
+cross-references
+run only the other way
+(How-to / Rules / Brief
+link to Language,
+never the reverse).
+Navigation and index pages
+(the documentation
+root / overview page
+and section-overview pages,
+such as `Learn.md`,
+whose purpose is
+to point readers
+to every part)
+are exempt
+and MAY link
+to any part.
+
+Keyword form and grounding:
+A Language article
+describes the syntax
+of the keyword
+and naturally takes
+the keyword form
+as its subject —
+not the human-language name
+that abstraction prose uses.
+Syntax documentation
+MUST describe
+what can be written
+and what it means,
+not speculative usage;
+pure usage variants
+belong to Rules / How-to.
+
 Language article structure convention:
 - a Language article SHOULD begin
   with a short definition
