@@ -14,6 +14,6 @@ A series of videos that demonstrate techniques for working with the **lsFusion**
 
 ### [Examples](Examples.md) 
 Examples of simple application development designed to demonstrate the features of the platform.
-### [Typical tasks](../how-to/How-to.md) 
+### [Typical tasks](How-to.md) 
 Categorized examples of solutions to typical tasks.
 

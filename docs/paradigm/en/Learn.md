@@ -20,7 +20,7 @@ This section describes the syntax of the **lsFusion** language used in the platf
 
 This section describes the basic actions in the **lsFusion** platform development environment.
 
-### [Learning materials](Learning_materials.md)
+### [Learning materials](../how-to/Learning_materials.md)
 
 This section contains additional resources that demonstrate the features of the **lsFusion** platform and help you learn how to use them.
 
@@ -28,6 +28,6 @@ This section contains additional resources that demonstrate the features of the 
 
 This section contains the guidance that helps AI assistants read and write **lsFusion** code — a brief on the language elements, the mandatory coding rules, and how to run an application as an MCP server.
 
-### [Online demo](Online_demo.md)
+### [Online demo](../how-to/Online_demo.md)
 
 This section contains links to examples of applications running on the **lsFusion** platform.

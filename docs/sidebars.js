@@ -630,15 +630,15 @@ module.exports = {
       collapsed: false,
       type: 'category',
       label: 'Learning materials',
-      link: {type: 'doc', id: 'paradigm/Learning_materials'},
+      link: {type: 'doc', id: 'how-to/Learning_materials'},
       items: [
       {
           type: 'category',
           label: 'Examples',
-          link: {type: 'doc', id: 'paradigm/Examples'},
+          link: {type: 'doc', id: 'how-to/Examples'},
           items: [
-            'paradigm/Score_table',
-            'paradigm/Materials_management',
+            'how-to/Score_table',
+            'how-to/Materials_management',
             ]
         },
         {
@@ -786,6 +786,6 @@ module.exports = {
         },
       ]
     },
-    'paradigm/Online_demo',
+    'how-to/Online_demo',
   ]
 };

@@ -11,7 +11,7 @@ For simplicity, let's define one type of document in our system that increases t
 
 ## Defining domain logic
 
-The information system will consist of a set of [modules](Modules.md), each implementing a logically isolated piece of functionality. Each module can use the functionality of other modules, which involves special syntax constructions for defining module dependencies.
+The information system will consist of a set of [modules](../paradigm/Modules.md), each implementing a logically isolated piece of functionality. Each module can use the functionality of other modules, which involves special syntax constructions for defining module dependencies.
 
 Based on our task, let's define the list of modules to be implemented: stock module, item module, legal entity module, receipt module, shipment module, current balance module. We will separately define the main module that will be executed and will basically be a compound solution. The composition of modules can be different and is determined by the developer depending on the need to re-use the functionality elsewhere.
 

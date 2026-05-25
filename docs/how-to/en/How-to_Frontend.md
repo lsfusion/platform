@@ -14,7 +14,7 @@ A safer way would be to create a separate action for each request, with an @@api
 
 ###  Example 1
 
-For clarity, we implement the simple form from the [Score table](../paradigm/Score_table.md) example (in read-only mode).
+For clarity, we implement the simple form from the [Score table](Score_table.md) example (in read-only mode).
 
 We will implement reading flat data set as a function with one parameter – the query text, – to which `EXPORT FROM` is added on the left:
 ```js
@@ -77,7 +77,7 @@ It only remains to use this data as a state(s) for React component(s) (for examp
 
 ### Example 2
 
-Let's consider a slightly more complicated case, when you need to make parameterized queries depending on data selected by the user. For backend logic we'll take the [Material Flow Management](../paradigm/Materials_management.md) example.
+Let's consider a slightly more complicated case, when you need to make parameterized queries depending on data selected by the user. For backend logic we'll take the [Material Flow Management](Materials_management.md) example.
 
 Suppose we need to build a form in which we need to show shipments, with the ability to filter by date and warehouse. And when the user selects a specific document, its lines should be displayed.
 
