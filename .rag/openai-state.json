@@ -7723,8 +7723,8 @@
       "stale": false
     },
     "paradigm/Backup_restore.md": {
-      "file_hash": "sha256:5c88d7a5f17f7e140c9a00b0f4d8745d5e5d1b6138f25bad4186c5c5cfbff3a3",
-      "indexed_at": "2026-05-25T10:10:09Z",
+      "file_hash": "sha256:00337ee90d61af5d57b58b97d93402d59d78c7c91551fcb907b73a396d1e7b51",
+      "indexed_at": "2026-05-25T14:25:58Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7734,21 +7734,21 @@
       },
       "sections": {
         "Backup_restore::backups": {
-          "file_id": "file-557JJNQreNUJMGJMo7V6Lw",
+          "file_id": "file-R39Xo7haegNFiApp5hdVgz",
           "heading_path": "Backups",
-          "section_payload_hash": "sha256:fec7babebba7525081e029a237e00ba8183edd00be684b8c58c0c2bfeeb34841",
+          "section_payload_hash": "sha256:a2e4ea9b9213de946d9bed2a7d2db1e58d15c80e4fe5ec21ad9743d036687a5c",
           "source_file": "paradigm/Backup_restore.md"
         },
         "Backup_restore::creating-a-backup": {
-          "file_id": "file-U9Hb49StJVrjUbbVzwLoPF",
+          "file_id": "file-TS1fe4ux1SXXNPn2qVjWKq",
           "heading_path": "Backups > Creating a backup",
-          "section_payload_hash": "sha256:46dba3461c097691e203cefa01630a3b61c049eb7f869b65d1eb1af3a39ba482",
+          "section_payload_hash": "sha256:836c8ea7f8152bb53c6ad9d8fa7cea4ac550f53c330397c17651a5e9a02c4381",
           "source_file": "paradigm/Backup_restore.md"
         },
         "Backup_restore::restoring-data": {
-          "file_id": "file-CcVL4EhQo9nqAQR8JoFxGS",
+          "file_id": "file-7yQW81hwoB86R4EAeEJUi4",
           "heading_path": "Backups > Restoring data",
-          "section_payload_hash": "sha256:3eaee8694cf281faaa0d3f85f7f028c5aff365f56a2b1cbf8c2aeb7110759fb3",
+          "section_payload_hash": "sha256:3acef8251fef9da8f3eff8f884123026f6ef5a53bfea47402626ab22d379ccef",
           "source_file": "paradigm/Backup_restore.md"
         },
         "Backup_restore::retention": {
@@ -7758,9 +7758,9 @@
           "source_file": "paradigm/Backup_restore.md"
         },
         "Backup_restore::settings": {
-          "file_id": "file-FaPiUUfWQcWih49j7KY617",
+          "file_id": "file-LNBFzcWLdV32vGsoWiSuNb",
           "heading_path": "Backups > Settings",
-          "section_payload_hash": "sha256:076aff061d2fa0658a20c96153d1638ee2e7f0497863c2614daeb7543e6ba6d1",
+          "section_payload_hash": "sha256:2ce8464192fccb695571e5bb37d6d0f2d6ef23f3f915569ea66aa16490d3061d",
           "source_file": "paradigm/Backup_restore.md"
         }
       },
@@ -12612,7 +12612,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "67401b905c468099e0a7db28e83cfe9f993170ad",
+  "last_indexed_docs_commit": "62968355791538ee3abfa6ade2b5261df933fe1a",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
