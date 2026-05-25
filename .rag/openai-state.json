@@ -7166,7 +7166,7 @@
     },
     "language/plus_equals_statement.md": {
       "file_hash": "sha256:73dd7e31a09abbae450bbe59bf4a9d7563bd39800b507c76e43c078ec9664da5",
-      "indexed_at": "2026-05-25T10:23:16Z",
+      "indexed_at": "2026-05-25T10:32:20Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7188,9 +7188,9 @@
           "source_file": "language/plus_equals_statement.md"
         },
         "plus_equals_statement::parameters": {
-          "file_id": "file-3Kh9efuYDdNb7xYDPJjypj",
+          "file_id": "file-DvLxbVNSTy4RYnC2AhB1p2",
           "heading_path": "+= statement > Parameters",
-          "section_payload_hash": "sha256:dab44ce5610e228a6e5adfdbe7116747251c7bcdeb13f3665f231b52f3cb887e",
+          "section_payload_hash": "sha256:5ebe537e4124d5cdc38257579d756dd0944a5d4b1c6c7ebfbf17d8d41846ae3d",
           "source_file": "language/plus_equals_statement.md"
         },
         "plus_equals_statement::syntax+description": {
@@ -7200,7 +7200,7 @@
           "source_file": "language/plus_equals_statement.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/AI.md": {
       "file_hash": "sha256:478866390211acb031b213404a76a8c22896de45ccf55b3fb2f2e7cdaa580823",
@@ -12612,7 +12612,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5a253d3edf62b0d2558f866cfa091cf2269bd6d4",
+  "last_indexed_docs_commit": "67401b905c468099e0a7db28e83cfe9f993170ad",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
