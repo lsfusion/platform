@@ -23,6 +23,10 @@ Contains a description of the settings for accessing system elements depending o
 
 Describes the mechanisms that enable you to run actions on a schedule.
 
+### [Backups](Backup_restore.md)
+
+Describes how to create full and partial database backups, retain them, and restore data — fully or selectively — from a backup.
+
 ### [Journals and logs](Journals_and_logs.md)
 
 Contains a description of journals and logs with detailed information on events that occurred in the system.
