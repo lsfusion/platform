@@ -3,7 +3,7 @@ slug: "/EXEC_operator"
 title: 'Оператор EXEC'
 ---
 
-Оператор `EXEC` - создание [действия](../paradigm/Actions.md), [выполняющего](../paradigm/Call_EXEC.md) другое действие.
+Оператор `EXEC` создает [действие](../paradigm/Actions.md), [выполняющее](../paradigm/Call_EXEC.md) другое действие.
 
 ### Синтаксис
 
@@ -32,7 +32,7 @@ title: 'Оператор EXEC'
 ### Примеры
 
 ```lsf
-// объявление действие importData с двумя параметрами
+// объявление действия importData с двумя параметрами
 importData(Sku sku, Order order)  {
     MESSAGE 'Run import for ' + id(sku) + ' ' + customer(order);
 }

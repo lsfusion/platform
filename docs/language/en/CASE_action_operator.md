@@ -17,20 +17,16 @@ CASE [exclusionType]
 
 ### Description
 
-The `CASE` operator creates an action that executes one of the actions passed to it depending on whether the selection conditions are met. Selection conditions are defined using the properties specified in the `WHEN` block. If a selection condition is met, the action specified in the corresponding `THEN` block is executed. If none of the conditions is met, the action specified in the `ELSE` block will be executed if this block is specified.
+The `CASE` operator creates an action that executes one of the actions passed to it depending on whether the selection conditions are met. Selection conditions are defined by the expressions specified in the `WHEN` blocks. If a selection condition is met, the action specified in the corresponding `THEN` block is executed. If none of the conditions is met, the action specified in the `ELSE` block will be executed if this block is specified.
 
 ### Parameters
 
 - `exclusionType`
 
-    [Type of mutual exclusion](../paradigm/Branching_CASE_IF_MULTI.md#exclusive). Determines whether several conditions can be met simultaneously for a certain set of parameters. It is specified by one of the keywords:
+    [Type of mutual exclusion](../paradigm/Branching_CASE_IF_MULTI.md#exclusive). Determines whether several conditions can be met simultaneously for a certain set of parameters:
 
-    - `EXCLUSIVE`
-    - `OVERRIDE`
-
-  The `EXCLUSIVE` type indicates that none of the conditions listed can be met simultaneously. The `OVERRIDE` type allows several conditions to be met simultaneously, in this case, the action corresponding to the first met condition is executed
-
-    The `OVERRIDE` type is used by default.
+    - `EXCLUSIVE` - none of the conditions can be met simultaneously.
+    - `OVERRIDE` - several conditions can be met simultaneously; in this case the action corresponding to the first met condition is executed. Used by default.
 
 - `condition1 ... conditionN`
 

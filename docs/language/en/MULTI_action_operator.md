@@ -13,20 +13,16 @@ MULTI [exclusionType] action1, ..., actionN
 
 ### Description
 
-The `MULTI` operator creates an action that executes one of the actions passed to it depending on whether the selection conditions are met. The property selection condition is that the parameters match this action [signature](ISCLASS_operator.md). 
+The `MULTI` operator creates an action that executes one of the actions passed to it depending on whether the selection conditions are met. The selection condition for each action is that the call parameters match that action's [signature](Property_signature_ISCLASS.md); the action whose condition is met is executed.
 
 ### Parameters
 
 - `exclusionType`
 
-    [Type of mutual exclusion](../paradigm/Branching_CASE_IF_MULTI.md#exclusive). Determines whether several conditions for the action selection can be met simultaneously with a certain set of parameters. It is specified by one of the keywords:
+    [Type of mutual exclusion](../paradigm/Branching_CASE_IF_MULTI.md#exclusive). Determines whether several action-selection conditions can be met simultaneously for a certain set of parameters:
 
-    - `EXCLUSIVE`
-    - `OVERRIDE`
-
-  The `EXCLUSIVE` type indicates that the conditions for the action selection cannot be met simultaneously. The `OVERRIDE` type allows several conditions to be met simultaneously, in which case the first action in the list which selection condition is met will be selected. 
-
-    The `EXCLUSIVE` type is used by default.
+    - `EXCLUSIVE` - the action-selection conditions cannot be met simultaneously. Used by default.
+    - `OVERRIDE` - several conditions can be met simultaneously; in this case the first action in the list whose condition is met is selected.
 
 - `action1, ..., actionN` 
 

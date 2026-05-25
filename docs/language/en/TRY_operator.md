@@ -13,11 +13,11 @@ TRY action [CATCH catchAction] [FINALLY finallyAction]
 
 ### Description
 
-The `TRY` operator creates an action that executes another action and handles exceptions within it. 
+The `TRY` operator creates an action that executes another action and handles exceptions within it. The exception-handling behavior depends on whether the `FINALLY` keyword is present.
 
-An operator form without the `FINALLY` keyword creates an action that executes another action and intercepts errors that are thrown in it. In this case, the error is not passed anywhere.
+Without the `FINALLY` keyword, errors raised by the main action are intercepted and not propagated.
 
-An operator form with the `FINALLY` keyword creates an action that executes another action, intercepts errors that occur, then, regardless of whether an error was thrown or not, executes the action specified in the `FINALLY` block, and then, if an error was thrown and there was no `CATCH` block, passes this error to the top action in the stack.
+With the `FINALLY` keyword, `finallyAction` runs after the main action regardless of whether an error was raised. If an error was raised and no `CATCH` block is present, the error is re-raised to the surrounding action after `finallyAction` runs.
 
 ### Parameters
 
@@ -27,7 +27,7 @@ An operator form with the `FINALLY` keyword creates an action that executes anot
 
 - `catchAction`
 
-    A context-dependent operator that describes an action to be executed if an error is thrown while executing the action. Here the error message will be written to the property `System.messageCaughtException[]`, the java error stack will be written to `System.javaStackTraceCaughtException[]`, and the LSF stack will be written to `System.lsfStackTraceCaughtException[]`.
+    A context-dependent operator that describes an action to be executed if an error is thrown while executing the action. Here the error message will be written to the property `messageCaughtException[]`, the java error stack will be written to `javaStackTraceCaughtException[]`, and the LSF stack will be written to `lsfStackTraceCaughtException[]`.
 
 - `finallyAction`
 

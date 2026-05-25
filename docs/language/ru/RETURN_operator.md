@@ -3,7 +3,7 @@ slug: "/RETURN_operator"
 title: 'Оператор RETURN'
 ---
 
-Оператор `RETURN` - создание [действия](../paradigm/Actions.md), реализующего [выход](../paradigm/Exit_RETURN.md) из действия, созданного [оператором `EXEC`](../paradigm/Call_EXEC.md).
+Оператор `RETURN` создает [действие](../paradigm/Actions.md), реализующее [выход](../paradigm/Exit_RETURN.md) из [вызова действия](../paradigm/Call_EXEC.md).
 
 ### Синтаксис
 

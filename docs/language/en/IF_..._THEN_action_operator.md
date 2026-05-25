@@ -15,7 +15,7 @@ THEN action
 
 ### Description
 
-The `IF ... THEN` operator creates an action that implements branching with one condition. When this action is executed, the condition is checked and, if the condition is met, the action specified after the keyword `THEN` is called. There is also the option of specifying an alternative action with the keyword `ELSE`, which is called if the condition is not met.
+The `IF ... THEN` operator creates an action that implements branching with one condition. When this action is executed, the condition is checked: if it is met, the action specified after the keyword `THEN` is called; if it is not met, the action specified after the keyword `ELSE` is called (if this block is specified).
 
 ### Parameters
 
