@@ -196,7 +196,7 @@
     },
     "how-to/Examples.md": {
       "file_hash": "sha256:62ac345be10523875edd2e458b4d77a799e93b616396d379d7502a9afee7218a",
-      "indexed_at": "2026-05-25T09:58:39Z",
+      "indexed_at": "2026-05-25T10:09:54Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -211,6 +211,12 @@
           "section_payload_hash": "sha256:fcbd27e3140a804036ad94025b4140888d5d65155a9749b38ddfece920bbbeb7",
           "source_file": "how-to/Examples.md"
         },
+        "Examples::materials-management": {
+          "file_id": "file-TrBDzy8GsBz2dBDmZNcM5g",
+          "heading_path": "Examples > Materials management",
+          "section_payload_hash": "sha256:5c31d62fd3664b018a6f37c270b660deb8582b29eeb26f20939a0d5297c2fe7e",
+          "source_file": "how-to/Examples.md"
+        },
         "Examples::score-table": {
           "file_id": "file-QBBzGFVHDza38oMMiSeK7p",
           "heading_path": "Examples > Score table",
@@ -218,7 +224,7 @@
           "source_file": "how-to/Examples.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to.md": {
       "file_hash": "sha256:d205f660baee47eaf1372fb7d1980a656dd2f12d5814ee28e0f21de3858938a2",
@@ -2202,7 +2208,7 @@
     },
     "how-to/Materials_management.md": {
       "file_hash": "sha256:806ed8f457ca29573778232ff40eba970d43a388fd70f365539076ffe9eecfed",
-      "indexed_at": "2026-05-25T09:59:39Z",
+      "indexed_at": "2026-05-25T10:10:02Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2221,6 +2227,12 @@
           "file_id": "file-RAnBZ12gBtdoPcyraiRh5V",
           "heading_path": "Materials management > Defining domain logic > Defining a receipt",
           "section_payload_hash": "sha256:a59c4bd198ddeb2b14813a58d017fd7acf0107b759a36f054193272a6ea20e98",
+          "source_file": "how-to/Materials_management.md"
+        },
+        "Materials_management::defining-a-shipment": {
+          "file_id": "file-1r2iF8BrM68CPJ47iTcp6t",
+          "heading_path": "Materials management > Defining domain logic > Defining a shipment",
+          "section_payload_hash": "sha256:8f3f5252268052c05491b2afba400a21e487441269705dd0e834f4b9e59432c1",
           "source_file": "how-to/Materials_management.md"
         },
         "Materials_management::defining-a-stock": {
@@ -2266,7 +2278,7 @@
           "source_file": "how-to/Materials_management.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/Online_demo.md": {
       "file_hash": "sha256:79fc21cf3286920000f1c95bdd38354c6e17d1d00508a8ee19a9131c6b58bbd8",
@@ -7674,7 +7686,7 @@
     },
     "paradigm/Backup_restore.md": {
       "file_hash": "sha256:5c88d7a5f17f7e140c9a00b0f4d8745d5e5d1b6138f25bad4186c5c5cfbff3a3",
-      "indexed_at": "2026-05-25T10:01:30Z",
+      "indexed_at": "2026-05-25T10:10:09Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7683,6 +7695,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Backup_restore::backups": {
+          "file_id": "file-557JJNQreNUJMGJMo7V6Lw",
+          "heading_path": "Backups",
+          "section_payload_hash": "sha256:fec7babebba7525081e029a237e00ba8183edd00be684b8c58c0c2bfeeb34841",
+          "source_file": "paradigm/Backup_restore.md"
+        },
         "Backup_restore::creating-a-backup": {
           "file_id": "file-U9Hb49StJVrjUbbVzwLoPF",
           "heading_path": "Backups > Creating a backup",
@@ -7708,7 +7726,7 @@
           "source_file": "paradigm/Backup_restore.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Branching_CASE_IF_MULTI.md": {
       "file_hash": "sha256:32b48c758097b12af54e3a193e5d277fed200923c8fd4e43f2298e569dd199c5",
@@ -12550,7 +12568,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "70b2364cbccb861ed6e24ac059be5d75bbeeb493",
+  "last_indexed_docs_commit": "5a253d3edf62b0d2558f866cfa091cf2269bd6d4",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
