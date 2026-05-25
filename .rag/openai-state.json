@@ -1,8 +1,8 @@
 {
   "files": {
     "brief/Brief.md": {
-      "file_hash": "sha256:1a73228c1cc1c0b8b39da4f24c61de6237feff5b76e74c5bb07d4ee54535feeb",
-      "indexed_at": "2026-05-22T23:45:18Z",
+      "file_hash": "sha256:e9fa86612dfb1e437ca53103f7198d6bc338d5dc7d10599f85688fa0500c8bba",
+      "indexed_at": "2026-05-25T16:44:02Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v3",
@@ -108,9 +108,9 @@
           "source_file": "brief/Brief.md"
         },
         "Brief::from-external-systems-to-current": {
-          "file_id": "file-QLmqh4c3CEFrTwc8DM3wXA",
+          "file_id": "file-8wkDsfqi1WBi16PZ8YfJgQ",
           "heading_path": "lsFusion Brief > Integration > From external systems to current",
-          "section_payload_hash": "sha256:a0a42cd116a006e502b9875f589d39a171419892586cdb5e4374ff75a873c7fa",
+          "section_payload_hash": "sha256:bc2cb51c061e42cb6384df1a6e568ff0d37e8aaeb437b73c81c7f5dba305f3da",
           "source_file": "brief/Brief.md"
         },
         "Brief::integration": {
@@ -7235,8 +7235,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:2687e8b071966b462d91357f8ea8f85282c2cac5bef0b547132697d9a3faacef",
-      "indexed_at": "2026-05-25T10:00:46Z",
+      "file_hash": "sha256:f822ffa33985cf73692a571a6be83ef976aace5f54bbbbb50f285be92a914b9f",
+      "indexed_at": "2026-05-25T16:44:10Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7263,10 +7263,22 @@
           "section_payload_hash": "sha256:613656a9327cf08fb38fcab87a2418a2062e076a5609a58b5a7de49f1ec400de",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
+        "Access_from_an_external_system::file-api-files": {
+          "file_id": "file-H42oXfQ2g3UKEfcZscBPdA",
+          "heading_path": "Access from an external system > File API {#files}",
+          "section_payload_hash": "sha256:450b93a3315f64eee3eda8157170593fd8267b886ee6ad46636a69e846872078",
+          "source_file": "paradigm/Access_from_an_external_system.md"
+        },
         "Access_from_an_external_system::form-api-form": {
           "file_id": "file-UZHkh7826DvpSjjJtAdHkh",
           "heading_path": "Access from an external system > Form API {#form}",
           "section_payload_hash": "sha256:03ab885bec01f8c318a86148dbfcf5ccad0dcb2c9b85ad3cc549ce9baed542fd",
+          "source_file": "paradigm/Access_from_an_external_system.md"
+        },
+        "Access_from_an_external_system::listing-files": {
+          "file_id": "file-WMpRaJmMGUgX8Y8NLYyYwD",
+          "heading_path": "Access from an external system > File API {#files} > Listing files",
+          "section_payload_hash": "sha256:602e520a83557f6dced0e14c8b9c877b82dec1b4d678b163fc77e0c595383b89",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::dup-1": {
@@ -7282,15 +7294,27 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-01": {
-          "file_id": "file-URPaFUeaMQLaVKxSid7zLC",
+          "file_id": "file-Q4TuAHjQJWf1w9iS98S6Ys",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:e797242f68e76379c71964103418c6236b89849ad0311e021ca862522f21ffd4",
+          "section_payload_hash": "sha256:dbe7d7a3914566efe53a6202b9af60107b3270109464a9a51d39f212ef7b558e",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
           "file_id": "file-84TW1ygBrK2dJDyaT8qppa",
           "heading_path": "Access from an external system > Action API > Protocols",
           "section_payload_hash": "sha256:bf68150ebcb665cb357f60f21a60f99b8c77a19b44a25c5071b1401db2651e62",
+          "source_file": "paradigm/Access_from_an_external_system.md"
+        },
+        "Access_from_an_external_system::reading-a-file": {
+          "file_id": "file-Fvnugw4ocQcjN2K8yEwcna",
+          "heading_path": "Access from an external system > File API {#files} > Reading a file",
+          "section_payload_hash": "sha256:9e76453e4790a5e1dd089414a2b715990e86b2d037878095f760faae4466e390",
+          "source_file": "paradigm/Access_from_an_external_system.md"
+        },
+        "Access_from_an_external_system::searching-file-contents": {
+          "file_id": "file-AgwCm68xSNcT7ydSHQBUSf",
+          "heading_path": "Access from an external system > File API {#files} > Searching file contents",
+          "section_payload_hash": "sha256:9b3f746f55fea6fd1ba3500046a9ea7b60e9345d45823a4a81f7a2b7ab961ff3",
           "source_file": "paradigm/Access_from_an_external_system.md"
         }
       },
@@ -12612,7 +12636,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "62968355791538ee3abfa6ade2b5261df933fe1a",
+  "last_indexed_docs_commit": "7451be5e0046329e1c74b4f03e629a4a47019123",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
