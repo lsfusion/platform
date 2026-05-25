@@ -13,6 +13,7 @@ name: Deploy docs
 # Jenkins API credentials already configured on lsfusion/mcp. A POST with an
 # API token is CSRF-crumb-exempt, so no crumb fetch is needed.
 on:
+  workflow_dispatch:
   push:
     branches: [master]
     paths:
