@@ -429,8 +429,9 @@ module.exports = {
                 'paradigm/Interpreter', 
                 'paradigm/Security_policy', 
                 'paradigm/Process_monitor', 
-                'paradigm/Scheduler', 
-                'paradigm/Journals_and_logs', 
+                'paradigm/Scheduler',
+                'paradigm/Backup_restore',
+                'paradigm/Journals_and_logs',
                 'paradigm/Profiler', 
                 'paradigm/Chat', 
               ]
