@@ -15,8 +15,6 @@ The `CHANGE` operator creates an [action](../paradigm/Actions.md) that [changes 
 
 The `CHANGE` operator creates an action that writes the value of `valueExpr` into the property at the arguments `expr1, ..., exprN` for every set of arguments where `whereExpr` is not `NULL`. The argument list may introduce new local parameters; such parameters correspond to objects being iterated and are not parameters of the created action.
 
-The `CHANGE` keyword may be omitted.
-
 ### Parameters
 
 - `propertyId`
