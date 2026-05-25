@@ -5,7 +5,7 @@ title: 'Backups'
 
 The platform creates database backups by calling the standard PostgreSQL utility `pg_dump`, and restores selected tables of a backup by calling `pg_restore` into a temporary database. Backup management is performed in the `Administration > System > Scheduler > Backup` menu (Fig. 1.). Selective restore is performed in the `Administration > System > Scheduler > Data recovery` menu.
 
-![](../../images/en/Backup_restore_backups.png)
+![](../images/Backup_restore_backups.png)
 
 Fig. 1. List of created backups
 
@@ -13,7 +13,7 @@ Fig. 1. List of created backups
 
 Backup parameters are configured on the `Settings` tab of the `Backup` form (Fig. 2.).
 
-![](../../images/en/Backup_restore_settings.png)
+![](../images/Backup_restore_settings.png)
 
 Fig. 2. Backup settings
 
@@ -57,7 +57,7 @@ A partial backup omits the data of selected tables; the table structure and the 
 - by setting the `Exclude from partial backup` flag on a row of the table list shown on the same tab. This setting is persistent and is applied every time `Create a backup (partial)` is pressed;
 - by listing the table names, separated by commas, in the `Excluded` field below the table list. This is convenient for tables that are not yet present in the table list at configuration time.
 
-![](../../images/en/Backup_restore_exclude.png)
+![](../images/Backup_restore_exclude.png)
 
 Fig. 3. Configuring tables to exclude from a partial backup
 
@@ -91,7 +91,7 @@ A full restore replaces the entire working database with the contents of a backu
 4. Run `pg_restore --dbname=<dbname> <backup_file>` against the empty database. The `pg_restore`, `dropdb`, and `createdb` utilities are taken from `Bin Directory Path PostgreSQL` (see [Settings](#settings)) or from the system `PATH`.
 5. Start the platform server. On startup the platform synchronizes the database structure with the current set of `.lsf` modules, migrating any tables that are missing or have changed since the backup was created.
 
-![](../../images/en/Backup_restore_full_restore.png)
+![](../images/Backup_restore_full_restore.png)
 
 Fig. 5. Full restore command sequence
 
@@ -101,7 +101,7 @@ A backup created in `directory` format (with `Thread count PostgreSQL backup` gr
 
 The selective restore form is opened from `Administration > System > Scheduler > Data recovery` (Fig. 4.).
 
-![](../../images/en/Backup_restore_custom_restore.png)
+![](../images/Backup_restore_custom_restore.png)
 
 Fig. 4. Selecting tables and columns to restore
 
