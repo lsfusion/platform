@@ -3,15 +3,20 @@ slug: "/Property_change_CHANGE"
 title: 'Property change (CHANGE)'
 ---
 
-The *property change* operator allows you to change the values of one property (*write*) to the value of another property (*read*) for all object collections for which the value of a third property (*condition*) is not `NULL`. The condition can be omitted (in which case it is considered to be equal to `TRUE`).
+The *property change* operator creates an [action](Actions.md) that writes the value of an expression (*source*) into a property (*destination*) for every set of arguments where a third expression (*condition*) is not `NULL`. The condition may be omitted; in that case it is considered to always hold.
+
+The source and the condition share the same arguments as the destination property. If the source evaluates to `NULL` for a set of arguments matched by the condition, `NULL` is written for that set, which erases the previously stored value.
 
 ### Changeable properties {#changeable}
 
-In general, the property to be written should be [data](Data_properties_DATA.md), but the platform also allows writing to properties created using the [selection](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) operator. In this case, the platform determines the condition that is met in this selection operator for the created property; the property corresponding to that condition is written to. Accordingly, all properties that can be written to we'll call *mutable*.
+The destination property must be a *mutable* property. Mutable properties are:
 
+-   [data properties](Data_properties_DATA.md), including local data properties;
+-   properties created by the [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) — the platform determines which condition is satisfied for the assigned arguments and writes the value into the corresponding result property;
+-   [composition](Composition_JOIN.md) of mutable properties — the write is routed through the composition to the underlying mutable property at the resolved arguments.
 
 :::info
-In addition to the above, mutable properties are also properties created using the [extremum operator](Extremum_MAX_MIN.md) and [logical operators](Logical_operators_AND_OR_NOT_XOR.md) (which are basically varieties of the selection operator)
+In addition to the above, mutable properties are also properties created using the [extremum operator](Extremum_MAX_MIN.md) and [logical operators](Logical_operators_AND_OR_NOT_XOR.md) (which are basically varieties of the selection operator).
 :::
 
 ### Language

@@ -3,22 +3,23 @@ slug: "/New_object_NEW"
 title: 'New object (NEW)'
 ---
 
-The *new object* operator creates an [action](Actions.md) that creates objects of a specified [custom class](User_classes.md) for object collections where the value of some [property](Properties.md) (*condition*) is not `NULL`. The condition can be omitted, in which case it is considered to be equal to `TRUE`.
+The *new object* operator creates an [action](Actions.md) that creates objects of a specified [custom class](User_classes.md) and optionally writes each created object to a [data property](Data_properties_DATA.md). The target class must be a concrete custom class — an object cannot be added to the system without a known concrete class.
 
-This operator also allows you to set a [primary property](Data_properties_DATA.md), to whose values the added objects will be written. If no condition is specified, by default this property is considered to be `addedObject`.
+The operator has two forms.
 
-The custom class whose objects will be created by this operator must be concrete.
+-   In the *bulk* form, an object is created for every set of arguments where some expression (*condition*) is not `NULL`. The created object can be written to a specified target data property on each row; if no target is specified, the created object is not written anywhere.
+-   In the *block* form, exactly one object is created and a body that follows the action has read access to the new object through a local name. This form is the natural way to create one object and initialize its properties in the same action.
 
-You can also create objects using the corresponding [option](Loop_FOR.md#addobject) in the [loop](Loop_FOR.md) operator.
+Objects can also be created inside the [loop](Loop_FOR.md) action, which creates one object per loop iteration and exposes it to the loop body — see the [loop](Loop_FOR.md#addobject) article for the corresponding option.
 
 ### Language
 
-To declare an action that implements objects creation, use the [`NEW` operator](../language/NEW_operator.md). The `NEW` option in the [`FOR` operator](../language/FOR_operator.md) is also used to implement similar functionality.
+To declare an action that creates objects, use the [`NEW` operator](../language/NEW_operator.md). For loop-driven creation, see the `NEW` option of the [`FOR` operator](../language/FOR_operator.md).
 
 ### Examples
 
 ```lsf
-
+// bulk form: create three Sku objects and write each one into addedSkus(i)
 newSku ()  {
     LOCAL addedSkus = Sku (INTEGER);
     NEW Sku WHERE iterate(i, 1, 3) TO addedSkus(i);
@@ -27,29 +28,8 @@ newSku ()  {
         name(s) <- 'New Sku';
     }
 }
-```
 
-```lsf
-name = DATA STRING[100] (Store);
-
-testFor  {
-    LOCAL sum = INTEGER ();
-    FOR iterate(i, 1, 100) DO {
-        sum() <- sum() (+) i;
-    }
-
-    FOR in(Sku s) DO {
-        MESSAGE 'Sku ' + id(s) + ' was selected';
-    }
-
-    FOR Store st IS Store DO { // iterating over all objects of the Store class
-        FOR in(st, Sku s) DO { // iterating over all Sku for which in is set
-            MESSAGE 'There is Sku ' + id(s) + ' in store ' + name(st);
-        }
-
-    }
-}
-
+// block form: create one Sku and initialize its properties
 newSku ()  {
     NEW s = Sku {
         id(s) <- 425;
@@ -57,6 +37,7 @@ newSku ()  {
     }
 }
 
+// block form: create a copy of a Sku, sharing the same id and name
 copy (Sku old)  {
     NEW new = Sku {
         id(new) <- id(old);
@@ -64,6 +45,7 @@ copy (Sku old)  {
     }
 }
 
+// loop-driven creation: one OrderDetail per Sku where in(s) holds
 createDetails (Order o)  {
     FOR in(Sku s) NEW d = OrderDetail DO {
         order(d) <- o;
