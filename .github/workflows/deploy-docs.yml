@@ -1,0 +1,41 @@
+name: Deploy docs
+
+# Auto-deploy the documentation site when docs change on master.
+#
+# The heavy build/deploy runs on Jenkins (the `deployDocs` job, which
+# reconstructs the flat Docusaurus tree from the type-first docs/<type>/{en,ru}
+# layout, materializes sidebars.js, and publishes the site). That job has no
+# trigger of its own, so a docs change used to require a manual Jenkins run.
+# This workflow just POSTs the build trigger — mirroring the pattern in
+# mcp/.github/workflows/docker.yml (which POSTs to the `deployMcp` job).
+#
+# Requires repo (or org) secrets JENKINS_USER / JENKINS_TOKEN — the same
+# Jenkins API credentials already configured on lsfusion/mcp. A POST with an
+# API token is CSRF-crumb-exempt, so no crumb fetch is needed.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+
+# Coalesce rapid successive docs pushes into a single in-flight trigger;
+# Jenkins itself queues/serializes the actual deploy.
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
+
+# No GITHUB_TOKEN permissions needed — the job only calls out to Jenkins.
+permissions: {}
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Jenkins deployDocs
+        env:
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+        run: |
+          curl -fsS -X POST \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            "https://jenkins.lsfusion.org/job/deployDocs/build"
