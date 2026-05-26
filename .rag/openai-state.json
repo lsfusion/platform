@@ -10872,7 +10872,7 @@
     },
     "paradigm/New_session_NEWSESSION_NESTEDSESSION.md": {
       "file_hash": "sha256:3403b88ef9bfd3e1970299b924741f845d6389d4c42188e610529f44a1a3dc2c",
-      "indexed_at": "2026-05-26T14:59:16Z",
+      "indexed_at": "2026-05-26T15:01:36Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10900,9 +10900,9 @@
           "source_file": "paradigm/New_session_NEWSESSION_NESTEDSESSION.md"
         },
         "New_session_NEWSESSION_NESTEDSESSION::new-session-newsession-nestedsession": {
-          "file_id": "file-KMc8iP1gBNnfaTH5NJfACa",
+          "file_id": "file-AMyTw2vQDKsLXMjj4xsdYm",
           "heading_path": "New session (NEWSESSION, NESTEDSESSION)",
-          "section_payload_hash": "sha256:772791418d5e75727e2da724f21ffcbd68afffa1cbf81e100cdf55833a05a613",
+          "section_payload_hash": "sha256:9d9b4645cd9f89a6d58f4f8d4af8f468ecf3a7b490aa52dbbdad614eeba97dd3",
           "source_file": "paradigm/New_session_NEWSESSION_NESTEDSESSION.md"
         },
         "New_session_NEWSESSION_NESTEDSESSION::new-sql-connection-newsql": {
@@ -10912,7 +10912,7 @@
           "source_file": "paradigm/New_session_NEWSESSION_NESTEDSESSION.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md": {
       "file_hash": "sha256:d9bc1f334736bf080a9dc3aec814af2e32d4ff55d985cb0c54bc39f147301344",
@@ -12648,7 +12648,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ac27846ecd745e0ac5c40c0fc5293dac7c5198fe",
+  "last_indexed_docs_commit": "005e64d8e5efd6f1b2c36a5e31b81b8ff130261b",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
