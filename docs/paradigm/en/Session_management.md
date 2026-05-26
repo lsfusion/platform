@@ -3,7 +3,7 @@ slug: "/Session_management"
 title: 'Session management'
 ---
 
-The system has the following operators for working with sessions:
+*Session management* covers the operators that work with a [change session](Change_sessions.md) — applying or cancelling its accumulated changes, running an action in a different session, or accessing those changes:
 
 -   [Apply changes (`APPLY`)](Apply_changes_APPLY.md)
 -   [Cancel changes (`CANCEL`)](Cancel_changes_CANCEL.md)
@@ -24,4 +24,4 @@ When changes are [applied](Apply_changes_APPLY.md), [canceled](Cancel_changes_CA
 2.  When changes are applied, all values of the local property are preserved after the transaction is completed (by default, after applying changes the session is cleared along with the values of all local properties).
 3.  When changes are canceled, all values of the local property will remain the same as they were before the cancellation.
 
-The nesting mark can be added both globally for a local property (and, accordingly, for all of its uses), and separately for each session control operation. For every session management operation, you can also specify that all local properties should be nested.
+The nesting mark can be added globally on a local property's declaration (and applies to all of its uses), or specified separately on each session-management operator — including a blanket mark covering all local properties of the current session.
