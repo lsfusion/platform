@@ -7747,8 +7747,8 @@
       "stale": false
     },
     "paradigm/Backup_restore.md": {
-      "file_hash": "sha256:00337ee90d61af5d57b58b97d93402d59d78c7c91551fcb907b73a396d1e7b51",
-      "indexed_at": "2026-05-25T14:25:58Z",
+      "file_hash": "sha256:a0f71c94e16d5618b8d22c2962ad265178045cc9d28d98690af5989c663e3974",
+      "indexed_at": "2026-05-26T07:21:16Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7764,9 +7764,9 @@
           "source_file": "paradigm/Backup_restore.md"
         },
         "Backup_restore::creating-a-backup": {
-          "file_id": "file-TS1fe4ux1SXXNPn2qVjWKq",
+          "file_id": "file-8buiwecz3wE3zvYEZu18FN",
           "heading_path": "Backups > Creating a backup",
-          "section_payload_hash": "sha256:836c8ea7f8152bb53c6ad9d8fa7cea4ac550f53c330397c17651a5e9a02c4381",
+          "section_payload_hash": "sha256:fd304022e0af21194f6cfdc09c09d27631685b468b35eb045da8f03b1e674aaf",
           "source_file": "paradigm/Backup_restore.md"
         },
         "Backup_restore::restoring-data": {
@@ -12648,7 +12648,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ac7ab606e2a18b544cf9a421b7004627fe6757b7",
+  "last_indexed_docs_commit": "5b6734ff2598b8fbbec3e276a3c3878771d91d70",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
