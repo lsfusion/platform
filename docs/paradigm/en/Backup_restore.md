@@ -34,7 +34,7 @@ The toolbar contains three buttons:
 - `Create a backup (partial)` – creates a backup that excludes the tables marked for exclusion (see below).
 - `Thin out` – immediately applies the retention rules (see [Retention](#retention)).
 
-After installation the platform creates a scheduled task `Backup` that runs daily at 01:00 and executes `Backup.makeBackup[]` followed by `Backup.decimateBackups[]`. The schedule and the list of actions can be edited like any other task — see [Scheduler](Scheduler.md).
+The platform ships with a default scheduled task `Backup` that runs daily at 01:00 and executes `Backup.makeBackup[]` followed by `Backup.decimateBackups[]`. The task is not created automatically on startup: it is registered when default data is loaded for the application (the `Load default data` button on the `Administration > Application > Default data` form). The schedule and the list of actions can be edited like any other task — see [Scheduler](Scheduler.md).
 
 Each created backup is stored as a row on the `Backups` tab with the following columns:
 
