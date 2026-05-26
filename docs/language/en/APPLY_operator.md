@@ -20,13 +20,13 @@ LOCAL
 
 ### Description
 
-The `APPLY` operator creates an action that applies changes to the database. By specifying the keyword `NESTED` you can specify [local properties](../paradigm/Data_properties_DATA.md#local) whose changes are not dropped when applying the changes. This operator also includes an action to be executed before applying the changes to the database.
+The `APPLY` operator creates an action that applies changes to the database. If an action is given inside the operator, it is run as part of the same apply transaction.
 
 ### Parameters
 
 - `NESTED`
 
-    Optional keyword after which you can specify which local properties preserve their changes after the `APPLY` operator is executed. By itself, with neither `LOCAL` nor a property list, it has no effect on the operator.
+    Optional keyword after which you can specify which [local properties](../paradigm/Data_properties_DATA.md#local) preserve their changes after the `APPLY` operator is executed. By itself, with neither `LOCAL` nor a property list, it has no effect on the operator.
 
 - `LOCAL`
 

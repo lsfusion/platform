@@ -13,7 +13,7 @@ NESTEDSESSION [SINGLE] action
 
 ### Description
 
-The `NESTEDSESSION` operator creates an action which executes the other action in a nested session. With that, all changes that have already been made in the current session get into the created nested session. Also, all changes that are made in the nested session will get into the current session when [the changes are applied](../paradigm/Apply_changes_APPLY.md) in the nested session.
+The `NESTEDSESSION` operator creates an action that executes the other action in a nested session. Applying changes inside the nested session copies them back into the surrounding session rather than committing to the database.
 
 ### Parameters
 
