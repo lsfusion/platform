@@ -23,11 +23,7 @@ title: 'Отмена изменений (CANCEL)'
 CLASS Sku;
 in = DATA LOCAL BOOLEAN (Sku);
 
-// сбрасываем всё, что накоплено в текущей сессии
-dropChanges()  { CANCEL; }
-
-// отменяем изменения, сохраняя локальное свойство `in[Sku]`
-dropChangesKeepIn()  {
-    CANCEL NESTED (in[Sku]);
+dropChanges()  {
+    CANCEL NESTED (in[Sku]); // отменяем все изменения, кроме свойства `in[Sku]`
 }
 ```
