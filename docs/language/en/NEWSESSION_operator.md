@@ -20,15 +20,13 @@ LOCAL
 
 ### Description
 
-The `NEWSESSION` operator creates an action which executes the other action in a new session.
-
-If `NESTED LOCAL` or `NESTED (propertyId1, ..., propertyIdN)` is specified, changes of the corresponding [local properties](../paradigm/Data_properties_DATA.md#local) of the current session are made visible in the new session. Also, changes to these local properties in the new session will get to the current session when applying changes in this new session.
+The `NEWSESSION` operator creates an action that executes the other action in a new session. `NEWSQL` and `NESTED` are mutually exclusive: when `NEWSQL` is given, the entire `NESTED ... [CLASSES]` clause is ignored and the new session inherits neither local-property values nor class changes from the current one.
 
 ### Parameters
 
 - `NEWSQL`
 
-    Keyword. When the operator runs outside an already-running apply transaction, the new session gets a [separate SQL connection](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md#newsql), independent of the current session's connection, and the entire `NESTED ... [CLASSES]` block is ignored — neither local property values nor class changes are migrated into the new session. When the operator is invoked inside the current session's `APPLY` transaction, behavior follows the recursive-apply rules and a separate SQL connection is not opened in that case.
+    Optional keyword. Opens the new session on a [separate SQL connection](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md#newsql), independent of the current session's connection. Has no effect when `NEWSESSION` is itself called inside an [apply transaction](../paradigm/Apply_changes_APPLY.md) of the current session — the platform falls back to recursive apply and does not open a separate SQL connection in that case.
 
 - `formId1, ..., formIdM`
 
@@ -36,7 +34,7 @@ If `NESTED LOCAL` or `NESTED (propertyId1, ..., propertyIdN)` is specified, chan
 
 - `NESTED`
 
-    Optional keyword after which you can specify which local properties of the current session are migrated into the new session. By itself, with neither `LOCAL` nor a property list, it has no effect.
+    Optional keyword after which you can specify which [local properties](../paradigm/Data_properties_DATA.md#local) of the current session are migrated into the new session. By itself, with neither `LOCAL` nor a property list, it has no effect.
 
 - `LOCAL`
 
