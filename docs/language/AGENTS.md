@@ -544,15 +544,65 @@ Syntax block rules:
   the documented syntax
   for presentational redundancy
   and readability;
-  if several variants
-  differ only
-  in one fragment,
-  common parts
-  SHOULD be factored out
-  into the main rule
-  or a shared subrule,
-  rather than repeated
-  in each variant;
+  whenever several variants
+  of one construction
+  share any non-trivial
+  common parts —
+  a multi-line tail,
+  a non-trivial common prefix,
+  a non-trivial common suffix
+  even on a single line,
+  the same option list,
+  or the same
+  per-element sub-structure
+  reused in another position
+  (for instance,
+  the object-spec form
+  appearing both
+  inside an `OBJECTS` list
+  and directly
+  after a class name) —
+  those common parts
+  MUST be factored
+  into the main syntax block
+  or into a shared
+  intermediate rule
+  (introduced
+  with `Where ... is defined as:`)
+  and referenced
+  from the variants
+  by name;
+  duplicating
+  a syntax fragment
+  across two
+  top-level syntax blocks
+  of the same construction
+  is the same
+  presentational defect
+  as duplicating it
+  across alternative lines
+  of one block —
+  the choice
+  gets buried,
+  the common part
+  ends up repeated,
+  and edits
+  touch only one copy
+  by mistake;
+  before adding
+  a second top-level
+  syntax block
+  for the same construction,
+  the assistant MUST list
+  the shared lines
+  and the differing lines
+  and, if any shared part
+  is non-trivial,
+  pull it
+  into a shared
+  intermediate rule
+  or the main syntax
+  before committing;
   after factoring out
   common parts,
   the assistant MUST check
