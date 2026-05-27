@@ -3,7 +3,7 @@ slug: "/REQUEST_operator"
 title: 'Оператор REQUEST'
 ---
 
-Оператор `REQUEST` - создание [действия](../paradigm/Actions.md), осуществляющего [запрос значения](../paradigm/Value_request_REQUEST.md).
+Оператор `REQUEST` создаёт [действие](../paradigm/Actions.md), осуществляющее [запрос значения](../paradigm/Value_request_REQUEST.md).
 
 ### Синтаксис
 
@@ -20,15 +20,15 @@ DO doAction [ELSE elseAction]
 
 - `requestAction`
 
-    [Контекстно-зависимый оператор-действие](Action_operators.md), выполняет запрос значения.
+    [Контекстно-зависимый оператор-действие](Action_operators.md#contextdependent), выполняет запрос значения.
 
 - `doAction`
 
-    [Контекстно-зависимый оператор-действие](Action_operators.md), выполняется, если ввод был успешно завершен.
+    Контекстно-зависимый оператор-действие, выполняется, если ввод был успешно завершен.
 
 - `elseAction`
 
-    [Контекстно-зависимый оператор-действие](Action_operators.md), выполняется, если ввод был [отменен](../paradigm/Value_input.md#result).
+    Контекстно-зависимый оператор-действие, выполняется, если ввод был [отменен](../paradigm/Value_input.md#result).
 
 ### Примеры
 

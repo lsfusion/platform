@@ -3,12 +3,12 @@ slug: "/MESSAGE_operator"
 title: 'Оператор MESSAGE'
 ---
 
-Оператор `MESSAGE` - создание [действия](../paradigm/Actions.md), показывающего пользователю [сообщение](../paradigm/Show_message_MESSAGE_ASK.md).
+Оператор `MESSAGE` создаёт [действие](../paradigm/Actions.md), показывающее пользователю [сообщение](../paradigm/Show_message_MESSAGE_ASK.md).
 
 ### Синтаксис
 
 ```
-MESSAGE expression options
+MESSAGE expression [HEADER headerExpression] options
 ```
 
 Опции оператора `options` могут перечисляться друг за другом в произвольном порядке. Поддерживается следующий набор опций:
@@ -27,6 +27,10 @@ messageType
 - `expression`
 
     Выражение, значением которого является текст сообщения.
+
+- `headerExpression`
+
+    Выражение, значение которого используется как заголовок диалога. Если не указано или его значение равно `NULL`, используется заголовок `lsFusion`.
 
 - `syncType`
 
@@ -56,6 +60,8 @@ messageType
 
 ```lsf
 message { MESSAGE 'Hello World!'; } // простое текстовое сообщение
+
+messageWithHeader { MESSAGE 'Hello World!' HEADER 'Приветствие'; } // диалог с заданным заголовком
 
 isGood = DATA BOOLEAN (Item);
 stringData(Item i) {

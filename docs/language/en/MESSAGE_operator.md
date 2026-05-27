@@ -8,7 +8,7 @@ The `MESSAGE` operator creates an [action](../paradigm/Actions.md) that shows th
 ### Syntax
 
 ```
-MESSAGE expression options
+MESSAGE expression [HEADER headerExpression] options
 ```
 
 Operator options `options` can be listed one after another in any order. The following set of options is supported:
@@ -27,6 +27,10 @@ The `MESSAGE` operator creates an action that shows a message to the user either
 - `expression`
 
     An expression which value is the message text.
+
+- `headerExpression`
+
+    An expression whose value is used as the dialog header. If omitted, or if its value is `NULL`, the `lsFusion` header is used.
 
 - `syncType`
 
@@ -56,6 +60,8 @@ The `MESSAGE` operator creates an action that shows a message to the user either
 
 ```lsf
 message { MESSAGE 'Hello World!'; } // plain text message
+
+messageWithHeader { MESSAGE 'Hello World!' HEADER 'Greeting'; } // dialog with a custom header
 
 isGood = DATA BOOLEAN (Item);
 stringData(Item i) {

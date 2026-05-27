@@ -3,7 +3,7 @@ slug: "/ASK_operator"
 title: 'Оператор ASK'
 ---
 
-Оператор `ASK` - создание [действия](../paradigm/Actions.md), которое задает пользователю вопрос или запрашивает подтверждение в [диалоговой форме](../paradigm/Show_message_MESSAGE_ASK.md#dialog).
+Оператор `ASK` создаёт [действие](../paradigm/Actions.md), которое задает пользователю вопрос или запрашивает подтверждение в [диалоговой форме](../paradigm/Show_message_MESSAGE_ASK.md#dialog).
 
 ### Синтаксис
 
