@@ -23,7 +23,11 @@ To declare an action that implements cancellation, use the [`CANCEL` operator](.
 CLASS Sku;
 in = DATA LOCAL BOOLEAN (Sku);
 
-dropChanges()  {
-    CANCEL NESTED (in[Sku]); // cancel all changes except the `in[Sku]` property
+// drop everything accumulated in the current session
+dropChanges()  { CANCEL; }
+
+// drop changes but preserve the `in[Sku]` local property
+dropChangesKeepIn()  {
+    CANCEL NESTED (in[Sku]);
 }
 ```

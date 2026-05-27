@@ -20,13 +20,13 @@ LOCAL
 
 ### Description
 
-The `CANCEL` operator creates an action that cancels changes in the current session. By specifying the keyword `NESTED` you can specify [local properties](../paradigm/Data_properties_DATA.md#local) whose changes are not dropped when cancelling the changes.
+The `CANCEL` operator creates an action that cancels changes in the current session. If executed during an [apply transaction](../paradigm/Apply_changes_APPLY.md), the operator cancels the running apply instead of clearing the session.
 
 ### Parameters
 
 - `NESTED`
 
-    Optional keyword after which you can specify which local properties preserve their changes after the `CANCEL` operator is executed. By itself, with neither `LOCAL` nor a property list, it has no effect on the operator.
+    Optional keyword after which you can specify which [local properties](../paradigm/Data_properties_DATA.md#local) preserve their changes after the `CANCEL` operator is executed. By itself, with neither `LOCAL` nor a property list, it has no effect on the operator.
 
 - `LOCAL`
 
