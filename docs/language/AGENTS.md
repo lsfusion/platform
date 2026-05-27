@@ -540,6 +540,58 @@ Syntax block rules:
   usually introduced
   in the style
   `Where ... is defined as:`
+- an option bundle —
+  a set of independent
+  optional options,
+  each typically
+  a mutually-exclusive
+  choice among keywords —
+  is NOT
+  a structural subrule;
+  it MUST NOT
+  be given
+  its own syntax block
+  listing its keywords,
+  since that
+  duplicates
+  the `Parameters` / `Options`
+  description
+  and hides
+  the per-dimension
+  mutual exclusion;
+  reference it
+  in `Syntax`
+  by a single
+  optional placeholder,
+  and describe
+  each option
+  in `Parameters` / `Options`
+  with its keyword values,
+  default,
+  and exclusivity;
+  a mutually-exclusive
+  keyword family
+  is one option,
+  not several
+  independent ones;
+  a subrule
+  with real
+  internal structure
+  is not a bundle
+  and keeps
+  its own block
+- mark optionality once:
+  inside an option bundle
+  already framed as optional,
+  individual options
+  MUST NOT also
+  be bracketed;
+  brackets mark
+  an optional
+  syntactic fragment
+  of the construction,
+  not each value
+  of an option dimension
 - check
   the documented syntax
   for presentational redundancy
