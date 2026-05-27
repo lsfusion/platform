@@ -121,6 +121,10 @@ SYNTAX RULES
 
 2. Properties and forms MUST be declared before use.
    The assistant MUST NOT rely on forward use.
+
+3. String literals MUST use single quotes.
+   Double quotes are NOT a valid string literal delimiter
+   in lsFusion and MUST NOT be used.
 ----------------------------------------------------------------
 BOOLEAN TYPE RULES
 
@@ -195,6 +199,85 @@ PROPERTY RULES
 
 14. The assistant SHOULD NOT specify an explicit namespace
     for a property unless necessary.
+----------------------------------------------------------------
+ACTION RULES
+
+1. The assistant MUST avoid `FOR` when the same result
+   can be expressed with a set-based construct.
+
+   `FOR` iterates row by row and SHOULD be the last resort
+   when no declarative alternative exists.
+
+   Prefer set-based alternatives, for example:
+   - aggregation or set materialization
+     -> `GROUP SUM`, `GROUP CONCAT`, `GROUP MAX`,
+        `GROUP LAST`, `GROUP AGGR`
+   - assigning a property over a set
+     -> direct property assignment with parameters
+        instead of a `FOR ... DO` loop
+   - exporting tabular or hierarchical data
+     -> `EXPORT FROM`, `EXPORT JSON FROM`,
+        `EXPORT XML FROM`, `EXPORT CSV FROM`
+   - building structured payloads
+     -> `JSON FROM`, `XML FROM`
+   - bulk integration writes
+     -> `NEW`, `DELETE`, or set-based property change
+        instead of a per-row `FOR`
+
+   `FOR` is acceptable when the body has genuine
+   per-row control flow such as conditional `APPLY`,
+   `MESSAGE`, `throwException`, or external calls
+   that cannot be expressed as a set operation.
+
+2. Parameters introduced in `NEW alias = Class`
+   and `FOR expr(p) [NEW alias = Class] DO { ... }`
+   do NOT follow the usual lexical scoping rules
+   of mainstream programming languages.
+
+   Such parameters are visible ONLY inside the body
+   of the `NEW` block or the `FOR` loop that introduces them.
+
+   The assistant MUST NOT reference these parameters
+   outside their introducing block.
+
+   When dependent computation must reuse these parameters,
+   the assistant SHOULD nest further `NEW` or `FOR` blocks
+   inside the introducing block, where the parameters
+   are still in scope, rather than lifting values out
+   into auxiliary storage.
+
+3. The assistant SHOULD avoid introducing `LOCAL`
+   properties without a concrete need.
+
+   Each `LOCAL` is backed by a temporary table
+   in PostgreSQL, so it carries a real runtime cost
+   well above a stack variable in a conventional language.
+
+4. A `LOCAL` is normally justified when BOTH conditions hold:
+   - its value is non-trivial to compute
+     (aggregation, joins, multi-step logic, external calls,
+     or other work worth materializing), AND
+   - the same value is consumed more than once,
+     so materializing it avoids recomputation.
+
+5. When possible, the assistant SHOULD prefer alternatives
+   to a fresh `LOCAL`:
+   - inline the expression at each use site if it is cheap
+   - nest `NEW` / `FOR` blocks so intermediate values stay
+     in parameter scope
+   - use a regular (non-`LOCAL`) calculated property
+     when the value is reusable across actions
+
+6. These are recommendations, not hard prohibitions.
+   If the assistant cannot find a working syntax for
+   a `LOCAL`-free construction, or some other approach
+   keeps failing and a clean action cannot be built,
+   falling back to a `LOCAL` is acceptable as a last resort.
+
+   Established `LOCAL` patterns mandated by other rules
+   (e.g. import staging, nested-session carry-over)
+   remain valid; the assistant SHOULD still keep such
+   `LOCAL`s minimal in count and scope.
 ----------------------------------------------------------------
 PROPERTY NAMING POLICY
 
@@ -415,35 +498,6 @@ MODULE DESIGN RULES
 9. When introducing a new module,
    the assistant MUST choose dependencies deliberately
    and avoid circular or unnecessary dependencies.
-----------------------------------------------------------------
-ACTION RULES
-
-1. The assistant MUST avoid `FOR` when the same result
-   can be expressed with a set-based construct.
-
-   `FOR` iterates row by row and SHOULD be the last resort
-   when no declarative alternative exists.
-
-   Prefer set-based alternatives, for example:
-   - aggregation or set materialization
-     -> `GROUP SUM`, `GROUP CONCAT`, `GROUP MAX`,
-        `GROUP LAST`, `GROUP AGGR`
-   - assigning a property over a set
-     -> direct property assignment with parameters
-        instead of a `FOR ... DO` loop
-   - exporting tabular or hierarchical data
-     -> `EXPORT FROM`, `EXPORT JSON FROM`,
-        `EXPORT XML FROM`, `EXPORT CSV FROM`
-   - building structured payloads
-     -> `JSON FROM`, `XML FROM`
-   - bulk integration writes
-     -> `NEW`, `DELETE`, or set-based property change
-        instead of a per-row `FOR`
-
-   `FOR` is acceptable when the body has genuine
-   per-row control flow such as conditional `APPLY`,
-   `MESSAGE`, `throwException`, or external calls
-   that cannot be expressed as a set operation.
 ----------------------------------------------------------------
 CHANGE SESSION RULES (`NEWSESSION`, `NESTEDSESSION`, `APPLY`)
 
