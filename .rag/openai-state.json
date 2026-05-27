@@ -2779,8 +2779,8 @@
       "stale": false
     },
     "language/AND_OR_NOT_XOR_operators.md": {
-      "file_hash": "sha256:fdf1f2c89b0ecce5a3c60685f5abf005d895131c6a58de08085d6d8102832a24",
-      "indexed_at": "2026-05-22T22:02:43Z",
+      "file_hash": "sha256:859a5c0926b474839fb31456881b8e4617b918af2f357ba58f3584b6d27fe25b",
+      "indexed_at": "2026-05-27T09:29:38Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2790,9 +2790,9 @@
       },
       "sections": {
         "AND_OR_NOT_XOR_operators::and-or-not-xor-operators": {
-          "file_id": "file-6Bu757SMg6qAHyyauF6x82",
+          "file_id": "file-AfdudgncoBotdq3JTwAYJb",
           "heading_path": "AND, OR, NOT, XOR operators",
-          "section_payload_hash": "sha256:190442bfa441eb929cab100cf8e1e1fb85d004af8d93c19d9c6f757b29a29958",
+          "section_payload_hash": "sha256:2c808e41835e65cd8adb3b855b30fb67c952811977c396f1737a281fe7e55004",
           "source_file": "language/AND_OR_NOT_XOR_operators.md"
         },
         "AND_OR_NOT_XOR_operators::examples": {
@@ -2801,10 +2801,10 @@
           "section_payload_hash": "sha256:edf3389c1099165fdb0bfd761d587c26e35262313da3fd8dbc2a557dd71a8d8e",
           "source_file": "language/AND_OR_NOT_XOR_operators.md"
         },
-        "AND_OR_NOT_XOR_operators::syntax+parameters": {
-          "file_id": "file-LXeoWNPSgCZDAjCKNgg9qP",
-          "heading_path": "AND, OR, NOT, XOR operators > Syntax + Parameters",
-          "section_payload_hash": "sha256:077e93f969f98fa0198e76e8da90ba5054855aa89a9253b9fc7d74091f0aa6a1",
+        "AND_OR_NOT_XOR_operators::syntax+description+parameters": {
+          "file_id": "file-93guMko9DmoE1aHymtfH4S",
+          "heading_path": "AND, OR, NOT, XOR operators > Syntax + Description + Parameters",
+          "section_payload_hash": "sha256:c7b2369fa73e5fe00166bea8cb4612c551a9961f3cd7ade463afbdc572441549",
           "source_file": "language/AND_OR_NOT_XOR_operators.md"
         }
       },
@@ -3001,8 +3001,8 @@
       "stale": false
     },
     "language/Arithmetic_operators.md": {
-      "file_hash": "sha256:da6e855097b82911e23f7ba701613274a58919a033af2ffc970d3b17ae2958b5",
-      "indexed_at": "2026-05-22T22:03:31Z",
+      "file_hash": "sha256:64c49767ab0322e0c48f211a7ad53ad170120974e1f2f3539116dc3cbcbac46c",
+      "indexed_at": "2026-05-27T09:29:48Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3012,15 +3012,15 @@
       },
       "sections": {
         "Arithmetic_operators::arithmetic-operators": {
-          "file_id": "file-DrgXJ8rb587k4vXmbSeG3L",
+          "file_id": "file-7dyxDJ4KmcCPFpqdYxjWNy",
           "heading_path": "Arithmetic operators",
-          "section_payload_hash": "sha256:c8cbc8237fb989bb31d480534f285ff883885f3898be9ef20eb10be74a998809",
+          "section_payload_hash": "sha256:c69141dc9ef122a64a259b5b76546ec6688521e0f42fd024bbdb87f6fdeb6d4d",
           "source_file": "language/Arithmetic_operators.md"
         },
-        "Arithmetic_operators::syntax+parameters+examples": {
-          "file_id": "file-LimbFNUpGtoS2pz3519Qv2",
-          "heading_path": "Arithmetic operators > Syntax + Parameters + Examples",
-          "section_payload_hash": "sha256:ff6f8e1f6c131a5b7fcb87e586f03d04a0a7299bdea40398846be2cd8fb9a547",
+        "Arithmetic_operators::syntax+description+parameters+examples": {
+          "file_id": "file-MzEiTenMEwAx1hU6LYeAPr",
+          "heading_path": "Arithmetic operators > Syntax + Description + Parameters + Examples",
+          "section_payload_hash": "sha256:a2881dc78bd818315f8df165bb1a067a14e14bf41caadb69edeb5c8f455e1d4c",
           "source_file": "language/Arithmetic_operators.md"
         }
       },
@@ -3637,8 +3637,8 @@
       "stale": false
     },
     "language/Comparison_operators.md": {
-      "file_hash": "sha256:367d2bf5f362457230b69f8396be8a03251b80ffd38d1cb2afc9399bb81dca31",
-      "indexed_at": "2026-05-22T22:07:18Z",
+      "file_hash": "sha256:3fbbbfd818f95db904bd388b658d21d6f942d4928f522c8db80616af27281465",
+      "indexed_at": "2026-05-27T09:29:57Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3648,9 +3648,9 @@
       },
       "sections": {
         "Comparison_operators::comparison-operators": {
-          "file_id": "file-RotCrig7tMtCRu8w3kacFA",
+          "file_id": "file-F41kqfrjcYZgADMBuSQhbg",
           "heading_path": "Comparison operators",
-          "section_payload_hash": "sha256:4f1217702e9848a08650974597f4fbd9f67be062d49acfce1907cc69d3dea4f0",
+          "section_payload_hash": "sha256:54ed406d4f9ae7aecfb6b44fd408be5ab9e69722345256920de083d0175ec57e",
           "source_file": "language/Comparison_operators.md"
         },
         "Comparison_operators::examples": {
@@ -3659,10 +3659,10 @@
           "section_payload_hash": "sha256:4a95aa4e68e7694e040d707eb6adfdbb366e2c05f4fda085f6de5c84e09b0f21",
           "source_file": "language/Comparison_operators.md"
         },
-        "Comparison_operators::syntax+parameters": {
-          "file_id": "file-2Dz8hW4yxihSFc4hmtM3GR",
-          "heading_path": "Comparison operators > Syntax + Parameters",
-          "section_payload_hash": "sha256:ea975a510f93df5fb8a080838393a95863603fa8725e44323387946cfd8468b0",
+        "Comparison_operators::syntax+description+parameters": {
+          "file_id": "file-ARcrp7PJY3SsfeesC5gzRL",
+          "heading_path": "Comparison operators > Syntax + Description + Parameters",
+          "section_payload_hash": "sha256:df5b757c12b1547f716242348f05c6d1da36464ee74ae32898b1fa84ac7a6fe2",
           "source_file": "language/Comparison_operators.md"
         }
       },
@@ -7695,8 +7695,8 @@
       "stale": false
     },
     "paradigm/Arithmetic_operators_plus_minus_etc.md": {
-      "file_hash": "sha256:40741344fef7cfbf9b7e4e90d3fc4e3a734c218130e5d158ec44e4158de94f9d",
-      "indexed_at": "2026-05-22T22:52:15Z",
+      "file_hash": "sha256:78ff0ed7a86ed1962c8f3127ce678c24fc5f220bebce3a6c0acedd8421dbf708",
+      "indexed_at": "2026-05-27T09:30:17Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7712,9 +7712,9 @@
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::determining-the-result-class": {
-          "file_id": "file-JNujvyLMoKMFXxmTXhrZyg",
+          "file_id": "file-2bZ78fTnbtzK6bYyrEkqQM",
           "heading_path": "Arithmetic operators (+, -, *, ...) > Determining the result class",
-          "section_payload_hash": "sha256:4eccb1a7ba1ebbb39889e01eb1c702cca017858d9b4362b60072bb8059a33628",
+          "section_payload_hash": "sha256:c2f8043a29dca963d1372483cb208770e38bb36cb38c6b5b6119498f7e65c906",
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::language+examples": {
@@ -7724,7 +7724,7 @@
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "paradigm/Automatic_installation.md": {
       "file_hash": "sha256:787265b704894d19aceb427b6a36e9a092f1697c6cfc2642efb98d08a7ee1b7a",
@@ -8220,8 +8220,8 @@
       "stale": false
     },
     "paradigm/Comparison_operators_=_etc.md": {
-      "file_hash": "sha256:d66c144443af1c4d29c49ca7b99e740dc3a19e7155f20dfafe2897f6a1414c2c",
-      "indexed_at": "2026-05-22T23:02:03Z",
+      "file_hash": "sha256:8a016ada5f897b68a5a14a2d558901028e0398002e5426123e6464ee2907207b",
+      "indexed_at": "2026-05-27T09:30:57Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8231,9 +8231,9 @@
       },
       "sections": {
         "Comparison_operators_=_etc::comparison-operators-=---...": {
-          "file_id": "file-TdU6nFfuMrAHNP32HTEGrk",
+          "file_id": "file-NPWgsnXCzkuiBfTSRjJPoZ",
           "heading_path": "Comparison operators (=, >, <, ...)",
-          "section_payload_hash": "sha256:33cbf758d9e266a543a2afe653314d087b30758b16efaa661f78c28b8c9e31d1",
+          "section_payload_hash": "sha256:cc2e0671cb2e058a3952708e6dbe66396160e1ef4b87e30849e07d14c38205f0",
           "source_file": "paradigm/Comparison_operators_=_etc.md"
         },
         "Comparison_operators_=_etc::examples": {
@@ -8278,8 +8278,8 @@
       "stale": false
     },
     "paradigm/Constant.md": {
-      "file_hash": "sha256:68f4e58d0cad2baa681941a37641f2b95f6d934824639ff66982f749a2fdca73",
-      "indexed_at": "2026-05-22T23:03:25Z",
+      "file_hash": "sha256:da1fc54eb825e05eedf6bffae29daa7a5ced6f522817687171ba4bab95e53694",
+      "indexed_at": "2026-05-27T09:31:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8289,15 +8289,15 @@
       },
       "sections": {
         "Constant::constant": {
-          "file_id": "file-GReaNkX1M4FoePXdGxtEyG",
+          "file_id": "file-DahZjqvdEL552FphWCnJK5",
           "heading_path": "Constant",
-          "section_payload_hash": "sha256:f91726105089c31598a54fad0147219d0e7255aa3ef1464a1ea39aef006daa18",
+          "section_payload_hash": "sha256:771cfbe222f17dbf3fda806da84701c6d8a3a0609cb00444750720277777c245",
           "source_file": "paradigm/Constant.md"
         },
         "Constant::language+examples": {
-          "file_id": "file-KWk9xkNLVUYZskf1xAiJqo",
+          "file_id": "file-PALRkKwXk21ccQTqy3NnKY",
           "heading_path": "Constant > Language + Examples",
-          "section_payload_hash": "sha256:61a7d8fd2abd3218d5f9f7cbebf10fa8f917fcb8ca2e5237a04ee566de144cb7",
+          "section_payload_hash": "sha256:c7e7b95d0c40e0d63d8f88594369128d4ff0d48bc236682604755a9f13c62f81",
           "source_file": "paradigm/Constant.md"
         }
       },
@@ -10343,8 +10343,8 @@
       "stale": false
     },
     "paradigm/Logical_operators_AND_OR_NOT_XOR.md": {
-      "file_hash": "sha256:c6c5a3422944cadf72de7a3f42658dea9c75ce8d619b782cc771a62061e2216b",
-      "indexed_at": "2026-05-22T23:26:55Z",
+      "file_hash": "sha256:a34bdb250b8c5b4c25070614b3908e07ba078572eb01ec52192b4948aeb3f729",
+      "indexed_at": "2026-05-27T09:31:15Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10360,9 +10360,9 @@
           "source_file": "paradigm/Logical_operators_AND_OR_NOT_XOR.md"
         },
         "Logical_operators_AND_OR_NOT_XOR::logical-operators-and-or-not-xor": {
-          "file_id": "file-7fDHAKdJGxKVySz3tcn3P8",
+          "file_id": "file-CG89ndEgox6kHV2Lkx7vjY",
           "heading_path": "Logical operators (AND, OR, NOT, XOR)",
-          "section_payload_hash": "sha256:e7f72f90866e45c76467f3f109b45d67008e74b965aba9ce552952cfdbc9fc25",
+          "section_payload_hash": "sha256:519f668e2ecb595386673339a3085a30294ca80967f586fc5b7135ade8729864",
           "source_file": "paradigm/Logical_operators_AND_OR_NOT_XOR.md"
         }
       },
