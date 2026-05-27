@@ -18,7 +18,7 @@ The platform currently supports the following comparison operators:
 
 A comparison result is always either `TRUE` or `NULL`, never `FALSE`: when the comparison condition does not hold, the result is `NULL`. If one of the operands is `NULL`, all operators will return `NULL` as a result.
 
-For equality and ordering comparisons, the two operands must belong to compatible classes — the same built-in class family, or classes related by inheritance; comparing values of unrelated classes is not allowed.
+For equality and ordering comparisons, the two operands must belong to compatible classes — built-in classes of the same family, or user classes related by inheritance.
 
 ### Language
 
