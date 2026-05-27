@@ -15,7 +15,7 @@ Activation of a form, tab, or property changes the focus / selection in the user
 
 If the form is not open, or the tab does not belong to the active form, the action simply performs no changes. Property activation, in contrast, expects to be called from the context of the form that contains the property: if there is no form in the action's context or the property does not belong to that form, the behavior is undefined.
 
-Activation of these kinds only switches focus / selection in the user interface and does not modify data or the set of opened forms: if the target form is not yet opened for the user, it has to be opened first ([`SHOW`](In_an_interactive_view_SHOW_DIALOG.md)).
+Activation of these kinds only switches focus / selection in the user interface and does not modify data or the set of opened forms: if the target form is not yet opened for the user, it has to be [opened first](In_an_interactive_view_SHOW_DIALOG.md).
 
 ### Activation of objects in a group {#search}
 

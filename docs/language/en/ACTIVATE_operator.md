@@ -12,8 +12,8 @@ ACTIVATE FORM formName
 ACTIVATE TAB formName.componentSelector
 ACTIVATE PROPERTY formPropertyId
 
-ACTIVATE [FIRST | LAST | NULL] formObjectId = expr
-ACTIVATE [FIRST | LAST | NULL] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprK]
+ACTIVATE [seekDirection] formObjectId = expr
+ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprK]
 ```
 
 ### Description
@@ -32,10 +32,6 @@ The `ACTIVATE FORM`, `ACTIVATE TAB` and `ACTIVATE PROPERTY` forms create an acti
 
 The `ACTIVATE ... formObjectId = expr` and `ACTIVATE ... formGroupObjectId [OBJECTS ...]` forms create an action that activates objects in a group (see [object search](../paradigm/Activation_ACTIVATE.md#search)). In the first form, the required value of a single object on a form is specified (this object may be a part of an object group); in the second form, a specific object group and the required values for some of its objects are specified (these objects shall be called *seek objects*).
 
-The [seek direction](../paradigm/Activation_ACTIVATE.md#direction) is specified with one of the keywords `FIRST`, `LAST`, or `NULL` (`PREV` cannot be written directly in the operator). If none of these keywords is specified, the [default objects type](Object_blocks.md) set on the object group is used.
-
-For the single-object form (`formObjectId = expr`) and for the group form with an `OBJECTS` block, the `NULL` keyword resets to `NULL` the objects of the group that are not listed explicitly (including *additional* ones); the explicitly listed objects take the specified values.
-
 ### Parameters
 
 - `formName`
@@ -50,23 +46,15 @@ For the single-object form (`formObjectId = expr`) and for the group form with a
 
     The global [ID of a property or action on a form](IDs.md#formpropertyid) which should receive focus.
 
-- `FIRST`
+- `seekDirection`
 
-    Keyword. If specified, the current set of objects for:
+    Option. It specifies the [seek direction](../paradigm/Activation_ACTIVATE.md#direction). Possible values:
 
-    - additional objects will be the **first** matching collection, selected in accordance with the specified order. 
-    - main objects, if the required object collection is not found, will be the **next** closest collection, selected in accordance with the specified order. 
+    - `FIRST` - for additional objects, the **first** matching collection is selected; for seek objects, if the required collection is not found, the **next** closest one is selected.
+    - `LAST` - for additional objects, the **last** matching collection is selected; for seek objects, if the required collection is not found, the **previous** closest one is selected.
+    - `NULL` - the current values of the objects of the specified object group are reset to `NULL`. For the single-object form and for the group form with an `OBJECTS` block, all objects of the group not listed explicitly in the operator (including *additional* ones) are reset; the explicitly listed objects take the specified values.
 
-- `LAST`
-
-    Keyword. If specified, the current set of objects for:
-
-    - additional objects will be the **last** matching collection, selected in accordance with the specified order. 
-    - main objects, if the required object collection is not found, will be the **previous** closest collection, selected in accordance with the specified order. 
-
-- `NULL`
-
-    Keyword. If specified, the current values of the objects of the specified object group are reset to `NULL` (objects explicitly listed in the operator take the specified expressions instead).
+    If this option is omitted, the [default objects type](Object_blocks.md) set on the object group is used (`PREV` cannot be written directly in the operator).
 
 - `formObjectId`
 
