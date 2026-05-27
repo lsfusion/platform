@@ -2621,8 +2621,8 @@
       "stale": false
     },
     "language/ACTIVATE_operator.md": {
-      "file_hash": "sha256:f97a5b2f92d7506e2526f2ccb5466285fe888339a898e165c6e42bd3fbeb237b",
-      "indexed_at": "2026-05-22T21:57:04Z",
+      "file_hash": "sha256:702380b4e90bc21bf07e2eab7998e289107b6188ebb261b24c64c74b084dba9a",
+      "indexed_at": "2026-05-27T13:24:34Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2638,9 +2638,9 @@
           "source_file": "language/ACTIVATE_operator.md"
         },
         "ACTIVATE_operator::description": {
-          "file_id": "file-5ntVouLskjiQvJKn6Kwdv8",
+          "file_id": "file-9LZc27755Ngp1jWQxk4MyL",
           "heading_path": "ACTIVATE operator > Description",
-          "section_payload_hash": "sha256:b74b9aa75ed99c0baa0672e8837fcef0f04f1d457dd9a80896ae4ac6d6e435c9",
+          "section_payload_hash": "sha256:de5a4cf794887f2ac328851c1a2bba22f3585c52c3ee23bc34479a907d72a038",
           "source_file": "language/ACTIVATE_operator.md"
         },
         "ACTIVATE_operator::examples": {
@@ -2650,23 +2650,23 @@
           "source_file": "language/ACTIVATE_operator.md"
         },
         "ACTIVATE_operator::parameters": {
-          "file_id": "file-BmX4DifE9KP1eU5xqRvhdj",
+          "file_id": "file-KRHM2vRtb3FThv2PntEBPb",
           "heading_path": "ACTIVATE operator > Parameters",
-          "section_payload_hash": "sha256:73c7532d25a1885a73c25c24f2457fd680334b8c0c127a53e21dc157dfab6a5e",
+          "section_payload_hash": "sha256:ddcf824f63fc14e3af621f7da7fadcafadf329c12fc272c734cf4e29fd30e964",
           "source_file": "language/ACTIVATE_operator.md"
         },
         "ACTIVATE_operator::syntax": {
-          "file_id": "file-KY5GjvmAfSYqWsbuPcgYky",
+          "file_id": "file-DQwEzBqN39PTq6o2bx7ivL",
           "heading_path": "ACTIVATE operator > Syntax",
-          "section_payload_hash": "sha256:92a939c6dde3ee47ac1f7c3a3ab33801c683fa778d6a8afc8e1654a18e6e5ad1",
+          "section_payload_hash": "sha256:d9adc69dc0d5e590732a3e1cff43fe9d9f85b799d061ed06d4c30d1227360559",
           "source_file": "language/ACTIVATE_operator.md"
         }
       },
       "stale": false
     },
     "language/ACTIVE_operator.md": {
-      "file_hash": "sha256:f932adfb713d452b4f1f0c0679cc4012733339654ba6b32999c53735e541deb6",
-      "indexed_at": "2026-05-22T21:57:20Z",
+      "file_hash": "sha256:f79960f32689e3d51d4c5e21e4d14398ebbaf0853eebb092c4e9591decc73595",
+      "indexed_at": "2026-05-27T13:24:45Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2682,9 +2682,9 @@
           "source_file": "language/ACTIVE_operator.md"
         },
         "ACTIVE_operator::description": {
-          "file_id": "file-BxZ9qsdpMkokoBqcJtwHDb",
+          "file_id": "file-FWkFQ7d1khhco9BQj8mFv7",
           "heading_path": "ACTIVE operator > Description",
-          "section_payload_hash": "sha256:9b370b586712c6e7e58837c86503ebc203d752a98fffc901bd4438ee28fcbd6c",
+          "section_payload_hash": "sha256:3d0607342f1aa112a3ceb134d8f9cb928ec0ef1bf06bf0bf9d2b6a83901bd33c",
           "source_file": "language/ACTIVE_operator.md"
         },
         "ACTIVE_operator::examples": {
@@ -7585,8 +7585,8 @@
       "stale": false
     },
     "paradigm/Activation_ACTIVATE.md": {
-      "file_hash": "sha256:28d8e8e977d4d459cf972f58d04c8ced522e5903c8da9a38d600535a8d1e9399",
-      "indexed_at": "2026-05-25T10:01:14Z",
+      "file_hash": "sha256:0a6b42606e169993dc34acfd8f41ca50fd09a3488da296783dc601c2d3f8b521",
+      "indexed_at": "2026-05-27T13:24:53Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7602,9 +7602,9 @@
           "source_file": "paradigm/Activation_ACTIVATE.md"
         },
         "Activation_ACTIVATE::activation-of-a-form-tab-or-property": {
-          "file_id": "file-7sgWbshE7j42W8k4rUY2Xg",
+          "file_id": "file-NCszHoXbg6nJpnbPye7KVg",
           "heading_path": "Activation (ACTIVATE) > Activation of a form, tab, or property",
-          "section_payload_hash": "sha256:20f885cfd77a4933d9910d0bb14155c153a364c3a3e2849df40337909c186d9d",
+          "section_payload_hash": "sha256:600614041c23f928071cc3944ba39c37d85c6d833b133fe97857ffa5368ee69b",
           "source_file": "paradigm/Activation_ACTIVATE.md"
         },
         "Activation_ACTIVATE::activation-of-objects-in-a-group-search": {
@@ -7629,8 +7629,8 @@
       "stale": false
     },
     "paradigm/Activity_ACTIVE.md": {
-      "file_hash": "sha256:d4f38f53f813cbaa6ddb66420f4179f65a6afd9a71f8c7f341d934b2494e334f",
-      "indexed_at": "2026-05-25T10:01:23Z",
+      "file_hash": "sha256:877903930244fb495f89e11cbea43d86897dc04f2125a7741bc9db1a302ae274",
+      "indexed_at": "2026-05-27T13:25:00Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7640,9 +7640,9 @@
       },
       "sections": {
         "Activity_ACTIVE::activity-active": {
-          "file_id": "file-RdYZ8nWyEk1Q2PX3QDUhz4",
+          "file_id": "file-3wiF6tGPfaof5nWQPCMz1S",
           "heading_path": "Activity (ACTIVE)",
-          "section_payload_hash": "sha256:2e04ab7fc8b57805eb05eda14d08762a75be9411dcd9f1b28d3c2031488daf22",
+          "section_payload_hash": "sha256:8da90a990546a0f49125762d74d13eaf5c1d334ddbc89559d2c310ab16cb8a18",
           "source_file": "paradigm/Activity_ACTIVE.md"
         },
         "Activity_ACTIVE::examples": {
@@ -12708,7 +12708,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4aae01da6f6d23651a1c191247ce634a5323dcf7",
+  "last_indexed_docs_commit": "8d1f15e3003351d31fe003fe25993b47ee090fe5",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
