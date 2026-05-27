@@ -13,7 +13,7 @@ searchExpr LIKE compareExpr
 
 ### Description
 
-The `LIKE` operator creates a property that returns `TRUE` if the specified string matches the given pattern. The pattern can include the following wildcard characters:
+The `LIKE` operator creates a property that returns `TRUE` if the specified string matches the given pattern, following the [comparison-operator](../paradigm/Comparison_operators_=_etc.md) result rule (`TRUE` or `NULL`, never `FALSE`). The pattern can include the following wildcard characters:
 
 - `%` (percent sign) - replaces any number of characters, including zero characters. This wildcard is used when the exact content or number of characters in a part of the string is unknown.
 - `_` (underscore) - replaces exactly one character. It is used when the exact location of a single character is required, but the character itself can be anything.

@@ -13,11 +13,11 @@ searchExpr MATCH compareExpr
 
 ### Description
 
-The `MATCH` operator compares `searchExpr` with a search string or a prepared search query. The `%` and `_` characters in `compareExpr` are not wildcard characters.
+The `MATCH` operator compares `searchExpr` with a search string or a prepared search query, following the [comparison-operator](../paradigm/Comparison_operators_=_etc.md) result rule (`TRUE` or `NULL`, never `FALSE`). The `%` and `_` characters in `compareExpr` are not wildcard characters.
 
 - If both `MATCH` operands belong to string classes, the platform converts them using the current full-text search language and returns `TRUE` if either the full-text condition or the case-insensitive substring inclusion check succeeds.
 - Prepared full-text values are supported only in their standard roles: `TSVECTOR` in `searchExpr` and `TSQUERY` in `compareExpr`. In these roles, the platform uses the prepared value directly and converts only the string operand, if any; the additional substring inclusion check is not added.
-- Values of type `TSVECTOR` and `TSQUERY` are usually obtained with the `toTsVector` and `toTsQuery` functions.
+- Values of type `TSVECTOR` and `TSQUERY` are usually obtained with the `toTsVector[STRING]` and `toTsQuery[STRING]` properties.
 
 ### Parameters
 

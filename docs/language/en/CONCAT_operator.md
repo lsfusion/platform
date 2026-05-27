@@ -13,17 +13,17 @@ CONCAT separatorExpr, concatExpr1, ..., concatExprN
 
 ### Description
 
-The `CONCAT` operator creates a property that concatenates values using the `separatorExpr` separator. Here, `NULL` values are skipped and the separator is inserted only between non-`NULL` values.
+The `CONCAT` operator creates a property that concatenates the values of `concatExpr1, ..., concatExprN`, in the order written, placing the `separatorExpr` separator between them. The handling of the separator and of `NULL` operands follows the [`CONCAT` concatenation](../paradigm/String_operators_plus_CONCAT_SUBSTRING.md).
 
 ### Parameters
 
 - `separatorExpr`
 
-    [Expression](Expression.md) to be used as a separator.
+    [Expression](Expression.md) whose value is used as the separator. It is most often a string literal but may be any string expression.
 
 - `concatExpr1, ..., concatExprN`
 
-    Expressions whose values are to be concatenated.
+    Expressions whose values are concatenated. At least one operand must be specified.
 
 ### Examples
 

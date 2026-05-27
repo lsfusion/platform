@@ -13,19 +13,21 @@ MIN expr1, ..., exprN
 
 ### Описание
 
-Оператор `MIN` создает свойство, которое возвращает минимальное значение среди значений заданных свойств.
+Оператор `MIN` создает свойство, значением которого является минимальное среди значений заданных операндов. Пропуск `NULL`-операндов и определение класса результата соответствуют [экстремуму](../paradigm/Extremum_MAX_MIN.md).
 
 ### Параметры
 
 - `expr1, ..., exprN`
 
-    Список [выражений](Expression.md), среди значений которых выбирается минимальное.
+    [Выражения](Expression.md), среди значений которых выбирается минимальное. Должен быть задан хотя бы один операнд.
 
 ### Примеры
 
 ```lsf
-minPrice(Book b) = MIN price1(b), price2(b);
+price1 = DATA NUMERIC[10,2] (Book);
+price2 = DATA NUMERIC[10,2] (Book);
+minPrice (Book b) = MIN price1(b), price2(b);
 
-date (INTEGER i) = DATA DATE (INTEGER);
+date = DATA DATE (INTEGER);
 minDate (INTEGER i) = MIN date(i), 2001_01_01;
 ```

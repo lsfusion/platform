@@ -8,18 +8,18 @@ The `STRUCT` operator creates a [property](../paradigm/Properties.md) that creat
 ### Syntax
 
 ```
-STRUCT(expr1, ..., exprN)   
+STRUCT(expr1, ..., exprN)
 ```
 
 ### Description
 
-The `STRUCT` operator creates a property whose value will be a structure created from the objects passed. 
+The `STRUCT` operator creates a property whose value is the [structure](../paradigm/Structure_operators_STRUCT.md) made up of the operand values, in the order they are listed.
 
 ### Parameters
 
 - `expr1, ..., exprN`
 
-    List of [expressions](Expression.md) whose values will be elements of the structure. The list cannot be empty.
+    List of [expressions](Expression.md) whose values become the elements of the structure. The list cannot be empty.
 
 ### Examples
 

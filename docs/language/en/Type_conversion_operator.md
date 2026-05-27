@@ -8,22 +8,22 @@ The type conversion operator creates a [property](../paradigm/Properties.md) tha
 ### Syntax
 
 ```
-typeName(expression) 
+className(expr)
 ```
 
 ### Description
 
-The operator creates a property that converts the value of a certain expression into a value of a specified [built-in class](../paradigm/Built-in_classes.md). If conversion is impossible, the value of the property will be `NULL`.
+The operator creates a property whose value is the value of `expr` converted to the [built-in class](../paradigm/Built-in_classes.md) `className`. Which conversions are meaningful, and when the result is `NULL`, is determined by the [type conversion](../paradigm/Type_conversion.md) abstraction.
 
 ### Parameters
 
-- `typeName`
+- `className`
 
-    The name of the [built-in class](../paradigm/Built-in_classes.md) that the values will be converted into.
+    The target [built-in class](../paradigm/Built-in_classes.md) that the value is converted into. Any built-in class may be specified, including parameterized ones written with their parameters (for example, `STRING[15]`, `BPSTRING[10]`, or `NUMERIC[10,2]`).
 
-- `expression`
+- `expr`
 
-    The [expression](Expression.md) whose value will be converted into the value of the specified built-in class.
+    The [expression](Expression.md) whose value is converted.
 
 ### Examples
 

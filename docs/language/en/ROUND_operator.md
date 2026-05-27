@@ -13,17 +13,17 @@ ROUND(numExpr[, scaleExpr])
 
 ### Description
 
-The `ROUND` operator creates a property whose value is a number rounded to a specified precision. The precision can be set to a negative value, which results in rounding the least significant digits in the integer part of the number.
+The `ROUND` operator creates a property whose value is the number rounded to the given precision. See the [rounding operation](../paradigm/Rounding_operator_ROUND.md) for the result class and the rounding behavior, including how the precision determines the rounding direction.
 
 ### Parameters
 
 - `numExpr`
 
-    [Expression](Expression.md) whose value determines the number to be rounded. The value must belong to one of the [numerical classes](../paradigm/Built-in_classes.md).
+    [Expression](Expression.md) whose value determines the number to be rounded. The value must belong to one of the numeric [built-in classes](../paradigm/Built-in_classes.md).
 
 - `scaleExpr`
 
-    Expression whose value determines the number of digits to which the number is rounded. The value of the expression must belong to the `INTEGER` class. A positive value indicates the number of digits after the decimal point, a negative value indicates the number of digits before the decimal point, and zero indicates rounding to the nearest integer. If not specified, it defaults to zero.
+    Expression whose value determines the number of digits to which the number is rounded. The value must belong to the `INTEGER` class. If not specified, the number is rounded to the nearest integer.
 
 ### Examples
 
