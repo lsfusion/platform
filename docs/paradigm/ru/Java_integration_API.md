@@ -97,7 +97,7 @@ lsfusion.interop.server.RmiServerInterface
 
 `InternalAction extends ExplicitAction` (`lsfusion.server.physics.dev.integration.internal.to.InternalAction`) — базовый класс Java-цели `INTERNAL`. Конструктор: `(ScriptingLogicsModule LM, ValueClass... classes)`.
 
-- `executeInternal(ExecutionContext<ClassPropertyInterfaCustomce> context)` — единственная override-точка, вызывается на каждом запуске.
+- `executeInternal(ExecutionContext<ClassPropertyInterface> context)` — единственная override-точка, вызывается на каждом запуске.
 - `findProperty(name)` / `findAction(name)` / `findClass(name)` / `findGroup(name)` / `findForm(name)` — резолвинг через `LM`.
 - `getParam(int i, context)` → `Object` — позиционный доступ к значению параметра.
 - `getParamValue(int i, context)` → `ObjectValue` — позиционный `ObjectValue`-доступ.
