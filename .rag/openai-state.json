@@ -8226,8 +8226,8 @@
       "stale": false
     },
     "paradigm/Comparison_operators_=_etc.md": {
-      "file_hash": "sha256:8a016ada5f897b68a5a14a2d558901028e0398002e5426123e6464ee2907207b",
-      "indexed_at": "2026-05-27T09:30:57Z",
+      "file_hash": "sha256:2cc90e5b773a72cefb89d2087e0444f5ef7e5da40b3191b5f44093e553170726",
+      "indexed_at": "2026-05-27T10:40:03Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8237,9 +8237,9 @@
       },
       "sections": {
         "Comparison_operators_=_etc::comparison-operators-=---...": {
-          "file_id": "file-NPWgsnXCzkuiBfTSRjJPoZ",
+          "file_id": "file-SCMXYhQYCHLnjBtU9SnHuf",
           "heading_path": "Comparison operators (=, >, <, ...)",
-          "section_payload_hash": "sha256:cc2e0671cb2e058a3952708e6dbe66396160e1ef4b87e30849e07d14c38205f0",
+          "section_payload_hash": "sha256:dd57c7dc1b098781df40dc11db4462b8b748d037d16a95fc63f2e19c7d2e8c98",
           "source_file": "paradigm/Comparison_operators_=_etc.md"
         },
         "Comparison_operators_=_etc::examples": {
@@ -8404,8 +8404,8 @@
       "stale": false
     },
     "paradigm/Custom_formula_FORMULA.md": {
-      "file_hash": "sha256:0cf5878eb42ed647bb8ca44850a43bdcc7d8741d2d096601fa05b432c91ab5f4",
-      "indexed_at": "2026-05-25T10:02:53Z",
+      "file_hash": "sha256:1f5e0d0bac62abf146e670209e5f5d66a9e80a567b7b4e47f27d86bd34bd1b0f",
+      "indexed_at": "2026-05-27T10:40:12Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8415,15 +8415,9 @@
       },
       "sections": {
         "Custom_formula_FORMULA::custom-formula-formula": {
-          "file_id": "file-ARTN3rtP8jCxydqUb3SiwS",
+          "file_id": "file-3M6CsGEywTK43bRBdy4GJa",
           "heading_path": "Custom formula (FORMULA)",
-          "section_payload_hash": "sha256:0641d5c7acbfd229a39062c8a4f1a16f09919cc93cb81bec2f12c1e90409c071",
-          "source_file": "paradigm/Custom_formula_FORMULA.md"
-        },
-        "Custom_formula_FORMULA::determining-the-result-class+referencing-parameters": {
-          "file_id": "file-XtkVBVnkHkrWTcnty7S14e",
-          "heading_path": "Custom formula (FORMULA) > Determining the result class + Referencing parameters",
-          "section_payload_hash": "sha256:39f85c4589d616f0913e1ac5fc8edc051e5336260b399d8d039542e8ab7e88f2",
+          "section_payload_hash": "sha256:78239a38dfb1792725b90e05576a504a5785248d8183239e09516bd282feeb0e",
           "source_file": "paradigm/Custom_formula_FORMULA.md"
         },
         "Custom_formula_FORMULA::language+examples": {
@@ -8433,9 +8427,15 @@
           "source_file": "paradigm/Custom_formula_FORMULA.md"
         },
         "Custom_formula_FORMULA::null-handling": {
-          "file_id": "file-ExP6Y1KNYmYS3pHN3zfBvw",
+          "file_id": "file-Liq4kPrwiC71cHPYYFbsHx",
           "heading_path": "Custom formula (FORMULA) > `NULL` handling",
-          "section_payload_hash": "sha256:8394bfb5129ad9493d433e228f1fc7a6e56f4f74bd786bd1f49bcd18e509d894",
+          "section_payload_hash": "sha256:a7dae76f96a7e8cd955ef1df57196f8166cb867b05cda5d7bd0fe823008549e9",
+          "source_file": "paradigm/Custom_formula_FORMULA.md"
+        },
+        "Custom_formula_FORMULA::result-class+parameter-references": {
+          "file_id": "file-V86sLdBC25vzU1S8343M8v",
+          "heading_path": "Custom formula (FORMULA) > Result class + Parameter references",
+          "section_payload_hash": "sha256:388c8a6a4eaacd96f3b2e5285d2dcd6ba5a31b58fa8a5e84c410c57556a0c8c2",
           "source_file": "paradigm/Custom_formula_FORMULA.md"
         },
         "Custom_formula_FORMULA::table-valued-formulas": {
@@ -9110,8 +9110,8 @@
       "stale": false
     },
     "paradigm/Extremum_MAX_MIN.md": {
-      "file_hash": "sha256:0fb29fda935189060e88db5c3433fe3589d495056cab109d18a68600eb35ed9a",
-      "indexed_at": "2026-05-22T23:14:16Z",
+      "file_hash": "sha256:ab6ae6eb7fa049f034b3153c883fa9c9ab7b81e125071923a73f0ba2a65f1920",
+      "indexed_at": "2026-05-27T10:40:23Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9120,16 +9120,22 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Extremum_MAX_MIN::extremum-max-min": {
-          "file_id": "file-Qmi29R7Bi9U7JHofyL5Eov",
-          "heading_path": "Extremum (MAX, MIN)",
-          "section_payload_hash": "sha256:aac3ef49a9fba4c733380a4499ab00396112533b6259690cc87d6540547ae343",
+        "Extremum_MAX_MIN::determining-the-result-class+language": {
+          "file_id": "file-Htb4d9Y2j72DLDfqtWJmjA",
+          "heading_path": "Extremum (MAX, MIN) > Determining the result class + Language",
+          "section_payload_hash": "sha256:00f0d847743f9979df8a5bfb441d84717015d39f9759182df3955c7bd946f9e5",
           "source_file": "paradigm/Extremum_MAX_MIN.md"
         },
-        "Extremum_MAX_MIN::language+examples": {
-          "file_id": "file-HVyKA8ETUTbAqi4femTMwP",
-          "heading_path": "Extremum (MAX, MIN) > Language + Examples",
-          "section_payload_hash": "sha256:48da51746515889ac0903468613a02930dfd86d32b9367831152080c330e3664",
+        "Extremum_MAX_MIN::examples": {
+          "file_id": "file-1pAJpJYJRdcNP6oucvT1Fs",
+          "heading_path": "Extremum (MAX, MIN) > Examples",
+          "section_payload_hash": "sha256:4ebecf619cc1ec4f85c5b33a2cf1661fdb75142cc6b5bfaee7854acc6d670f51",
+          "source_file": "paradigm/Extremum_MAX_MIN.md"
+        },
+        "Extremum_MAX_MIN::extremum-max-min": {
+          "file_id": "file-CinuicwXqirXBQ636DpMLG",
+          "heading_path": "Extremum (MAX, MIN)",
+          "section_payload_hash": "sha256:0950dc9255d2f446133d102c72fc9ef9625a138ca34f58e3775eaf04f16ffed5",
           "source_file": "paradigm/Extremum_MAX_MIN.md"
         }
       },
@@ -11615,8 +11621,8 @@
       "stale": false
     },
     "paradigm/Rounding_operator_ROUND.md": {
-      "file_hash": "sha256:2de54ed68f8263e45a70f36df5a233a2898309bbfc53925caeb71073f7b6e34b",
-      "indexed_at": "2026-05-22T23:35:23Z",
+      "file_hash": "sha256:ae6bcb5003ca175d463f0a77fb14c47ce9128a5bc72aac50a383a8a910377117",
+      "indexed_at": "2026-05-27T10:40:39Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11625,6 +11631,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Rounding_operator_ROUND::determining-the-result-class": {
+          "file_id": "file-3uFVakczXkVFDPjDHBnWsf",
+          "heading_path": "Rounding operator (ROUND) > Determining the result class",
+          "section_payload_hash": "sha256:2abd2f08da2541944a5fe2e4f84a236a513146c337125c70ddc67d2c5121049c",
+          "source_file": "paradigm/Rounding_operator_ROUND.md"
+        },
         "Rounding_operator_ROUND::language+examples": {
           "file_id": "file-4ZAA3NUomBkgsH77gcoiaA",
           "heading_path": "Rounding operator (ROUND) > Language + Examples",
@@ -11632,9 +11644,9 @@
           "source_file": "paradigm/Rounding_operator_ROUND.md"
         },
         "Rounding_operator_ROUND::rounding-operator-round": {
-          "file_id": "file-HkkKJ9hwzsNcgWqvriK9mQ",
+          "file_id": "file-Ervdy1bcNuujPLEaWpKrZq",
           "heading_path": "Rounding operator (ROUND)",
-          "section_payload_hash": "sha256:2376e79ed3fdef877e031fcf4d0b68859da92cd6e6fdc6a653f66ed7bea30ee3",
+          "section_payload_hash": "sha256:7f483600dfbcde6460e5ced34b8abeddfd5c7ea9339941028ec003e5b3085f04",
           "source_file": "paradigm/Rounding_operator_ROUND.md"
         }
       },
@@ -12131,8 +12143,8 @@
       "stale": false
     },
     "paradigm/String_operators_plus_CONCAT_SUBSTRING.md": {
-      "file_hash": "sha256:2eb1ec3fb21a93db36664c71fff63ab63e45648405012c7f0ede1e76508d13b7",
-      "indexed_at": "2026-05-25T10:08:15Z",
+      "file_hash": "sha256:04312d3d139ec31d02c32d7f05fcf32958e8fa8a82134d69a2649187d79d44b8",
+      "indexed_at": "2026-05-27T10:40:47Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12142,9 +12154,9 @@
       },
       "sections": {
         "String_operators_plus_CONCAT_SUBSTRING::determining-the-result-class": {
-          "file_id": "file-FFDPN65PEfyoByiNzHivWY",
+          "file_id": "file-Hf6tpFc1AxcH7jTuz4cYYS",
           "heading_path": "String operators (+, CONCAT) > Determining the result class",
-          "section_payload_hash": "sha256:939f27476475b42dd0f9c5a86ee58a4a521b7f5977f8a2dce1a7b34ff80bdab1",
+          "section_payload_hash": "sha256:21eb59fb70b3cebc0206a2f06e408dd8664204cf8036203702f565df1c7b2800",
           "source_file": "paradigm/String_operators_plus_CONCAT_SUBSTRING.md"
         },
         "String_operators_plus_CONCAT_SUBSTRING::examples": {
@@ -12153,18 +12165,24 @@
           "section_payload_hash": "sha256:73977173b3decd4509ac5cfaa5dd01c41a761ce7e5bd33912a59e6a17aaad72b",
           "source_file": "paradigm/String_operators_plus_CONCAT_SUBSTRING.md"
         },
+        "String_operators_plus_CONCAT_SUBSTRING::language": {
+          "file_id": "file-1EMZ7FZTJTpShqgVUKDDCC",
+          "heading_path": "String operators (+, CONCAT) > Language",
+          "section_payload_hash": "sha256:9a369259c540dfd874022db0beb06fc730743b48cf73708af2fba9f929d7349b",
+          "source_file": "paradigm/String_operators_plus_CONCAT_SUBSTRING.md"
+        },
         "String_operators_plus_CONCAT_SUBSTRING::string-operators--concat": {
-          "file_id": "file-RQxnkiQoQAffsgYgA2ca1n",
+          "file_id": "file-Sok4tUiP8SqevhshFVqwxr",
           "heading_path": "String operators (+, CONCAT)",
-          "section_payload_hash": "sha256:f826a0db2c1ed604c3dabfc55810df79ba73cc515fcf55e216b2a8ab8159ccea",
+          "section_payload_hash": "sha256:b19c9d974c5fdacbf5c298b5d2a59815368c062173d8c38d2866a4357715fd68",
           "source_file": "paradigm/String_operators_plus_CONCAT_SUBSTRING.md"
         }
       },
       "stale": false
     },
     "paradigm/Structure_operators_STRUCT.md": {
-      "file_hash": "sha256:73228e539483dfa632895ec580dd3e73ba878c2950d2743deed0d17cfbd95abb",
-      "indexed_at": "2026-05-22T23:50:59Z",
+      "file_hash": "sha256:91643bc588298e8eed9dc4007dd231912134eb488cd96ea2892e9a3e80c4f35f",
+      "indexed_at": "2026-05-27T10:41:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12173,6 +12191,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Structure_operators_STRUCT::determining-the-result-class": {
+          "file_id": "file-6XsKP6b3126DjfZTvF3jTZ",
+          "heading_path": "Structure operators (STRUCT, []) > Determining the result class",
+          "section_payload_hash": "sha256:d97b363c519b84ba672ad6520aea59e69271472f45acc9e4d3953c7bb53dc869",
+          "source_file": "paradigm/Structure_operators_STRUCT.md"
+        },
         "Structure_operators_STRUCT::examples": {
           "file_id": "file-5GYXHorEQFRwGf89Rc5MVL",
           "heading_path": "Structure operators (STRUCT, []) > Examples",
@@ -12186,9 +12210,9 @@
           "source_file": "paradigm/Structure_operators_STRUCT.md"
         },
         "Structure_operators_STRUCT::structure-operators-struct-": {
-          "file_id": "file-VfNxTttBnKWPttRmLM1MeU",
+          "file_id": "file-GLVQXykYWaHmhaL1VdzPsG",
           "heading_path": "Structure operators (STRUCT, [])",
-          "section_payload_hash": "sha256:4d04a101e388d85204d07a3c5a998a075454c68a4a069ad773d24bbc17a91fb6",
+          "section_payload_hash": "sha256:0fd2c145f16e7827c60e91498ee8fab97bb4393cd2f4f54b868ae6efdcb13435",
           "source_file": "paradigm/Structure_operators_STRUCT.md"
         }
       },
@@ -12345,8 +12369,8 @@
       "stale": false
     },
     "paradigm/Type_conversion.md": {
-      "file_hash": "sha256:2968996389f6418bcadea400b85c395fcf7767ed0904db62f3fdf49bd794007c",
-      "indexed_at": "2026-05-22T23:40:12Z",
+      "file_hash": "sha256:6b711aab2ebbd81341d159702fb05fc3e2484c4e5910a3b3c6c3da0a944b1f62",
+      "indexed_at": "2026-05-27T10:41:14Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12355,6 +12379,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Type_conversion::implicit-conversions": {
+          "file_id": "file-HYTrJxWzxptu1feBzjjLx9",
+          "heading_path": "Type conversion > Implicit conversions",
+          "section_payload_hash": "sha256:77d04725ec37bc7139fc6c59baa2c7e439024c7f5a423c44f94820939914b08b",
+          "source_file": "paradigm/Type_conversion.md"
+        },
         "Type_conversion::language+examples": {
           "file_id": "file-98xmaRYvFNoUobqtMedDQc",
           "heading_path": "Type conversion > Language + Examples",
@@ -12362,15 +12392,21 @@
           "source_file": "paradigm/Type_conversion.md"
         },
         "Type_conversion::string-and-file-types": {
-          "file_id": "file-M9QcnTqzhkU2J5GRnthjRv",
+          "file_id": "file-1ixM7XdpCxmpvtNEm7uEdQ",
           "heading_path": "Type conversion > String and file types",
-          "section_payload_hash": "sha256:51cd593f3a0c38e6c6c0bd90db2a11bfc70e8c1a6c2c4a4729eaa8c05884c032",
+          "section_payload_hash": "sha256:f05e4fb627d7a3e9ce841c87db19f16e1dbbe1fb4ed9e064a2f96932be9fde2d",
+          "source_file": "paradigm/Type_conversion.md"
+        },
+        "Type_conversion::supported-conversions": {
+          "file_id": "file-LdZ8inZKeKvZp1QFuY2Ekh",
+          "heading_path": "Type conversion > Supported conversions",
+          "section_payload_hash": "sha256:1b4d980c33e69a49387cdca194afd5a4be0597ed62930240579443b660cb41b3",
           "source_file": "paradigm/Type_conversion.md"
         },
         "Type_conversion::type-conversion": {
-          "file_id": "file-5cb6CAVEKAoWtbaYfK9ztt",
+          "file_id": "file-GcBXtVt9bj1xdVg3vVFiTt",
           "heading_path": "Type conversion",
-          "section_payload_hash": "sha256:064b340decf84759fdd3aa071870e8da75428765f1b4398cdae965c60407f61d",
+          "section_payload_hash": "sha256:a920fffee1e0bafdfebeeae13ad89a89040d4e11f9117f41aea98b8a10f54a63",
           "source_file": "paradigm/Type_conversion.md"
         }
       },
@@ -12660,7 +12696,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3a298fd73207a9e1425a6aa739d8b0a9ba348add",
+  "last_indexed_docs_commit": "82c3128aef9bf15835941700941aa35cd1e27f9b",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
