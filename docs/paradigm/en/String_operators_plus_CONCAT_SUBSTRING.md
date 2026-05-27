@@ -3,13 +3,13 @@ slug: "/String_operators_plus_CONCAT_SUBSTRING"
 title: 'String operators (+, CONCAT)'
 ---
 
-String operators are operators which parameters and result are the properties which values are instances of the string classes. The platform currently supports the following string operators:
+String operators are operators which parameters and result are the properties which values are instances of the [string classes](Built-in_classes.md). The platform currently supports the following string operators:
 
 |Operator|Name|Description|Example|Result|
 |--------|----|-----------|-------|------|
-|`+`,&nbsp;`CONCAT`|Concatenation|Takes two operands and returns a string obtained by concatenating the strings specified in the operands|`'a' + 'b'`|`'ab'`|
+|`+`,&nbsp;`CONCAT`|Concatenation|Returns a string obtained by concatenating the operand strings|`'a' + 'b'`|`'ab'`|
 
-The `+` operator returns `NULL` if one of the operands is `NULL`. The `CONCAT` operator treats `NULL` value of the operand as an empty string (however, concatenation of two `NULL` values still returns `NULL`). Also, in the `CONCAT` operator you can optionally specify the third operand (*delimiter*) which will be inserted if and only if both operands are not `NULL`. For example, `CONCAT ' ', 'John', 'Smith'` = `'John Smith'`, but `CONCAT ' ', 'John', NULL` = `'John'`.
+The `+` operator returns `NULL` if one of the operands is `NULL`. The `CONCAT` operator treats a `NULL` operand as an empty string (however, concatenating values that are all `NULL` still returns `NULL`) and joins the operands with a *delimiter* that is inserted only between operands that are not `NULL`. For example, `CONCAT ' ', 'John', 'Smith'` = `'John Smith'`, but `CONCAT ' ', 'John', NULL` = `'John'`.
 
 ### Determining the result class
 
@@ -19,7 +19,7 @@ The result class is defined as:
 |---|---|
 |`+`, `CONCAT`|`result = STRING[p1.blankPadded AND p2.blankPadded, p1.caseInsensitive OR p2.caseInsensitive, p1.length + p2.length]`|
 
-where `blankPadded`, `caseInsensitive` and `length` are determined similarly to the rules for construction of a common ancestor for two built-in classes (Strings family).
+where `blankPadded`, `caseInsensitive` and `length` are determined similarly to the rules for construction of a [common ancestor](Built-in_classes.md#commonparentclass) for two built-in classes (Strings family). For `CONCAT`, the result length also includes the delimiter inserted between operands.
 
 In the `+` operator, operands which classes are other than string are cast to strings in accordance with the following table:
 
@@ -31,6 +31,14 @@ In the `+` operator, operands which classes are other than string are cast to st
 |`FILE`                    |`TEXT`              |
 |[Object](User_classes.md) |`STRING[10]`        |
 |Other                     |`STRING[8]`         |
+
+If any operand belongs to the unlimited-length string class `TEXT` (or to one of its variants such as rich or HTML text), the result is that text class rather than a fixed-length string.
+
+### Language
+
+The summation operator concatenates strings when at least one operand is a string — see the [arithmetic operators](../language/Arithmetic_operators.md).
+
+To concatenate several values with a delimiter inserted only between operands that are not `NULL`, use the [`CONCAT` operator](../language/CONCAT_operator.md).
 
 ### Examples
 
