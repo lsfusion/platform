@@ -472,6 +472,23 @@ at the same depth
 SHOULD follow one consistent form
 (usually the shortest noun phrase
 that names the topic).
+The single-term rule above
+applies to headings
+as much as to running text,
+and across heading depth:
+a sub-heading,
+the parent heading
+it sits under,
+and the prose
+the heading introduces
+MUST name a shared concept
+with the same term,
+not a near-synonym
+(for example,
+not "выполнение"
+in a parent heading
+and "исполнение"
+in its sub-headings).
 When a subset of siblings
 shares a common umbrella,
 the umbrella SHOULD be factored

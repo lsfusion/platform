@@ -3,15 +3,15 @@ slug: "/New_threads_NEWTHREAD_NEWEXECUTOR"
 title: 'New threads (NEWTHREAD, NEWEXECUTOR)'
 ---
 
-The *new thread* operator allows you to execute an action in a thread other than the current one.
+The *new thread* operator executes an action in a thread other than the current one.
 
 By default, an action is executed once in a new thread, immediately after the creation of this thread. However, if necessary, the action can be executed with a defined delay and/or performed continuously at a specified time interval.
 
-If needed, a thread can return a value; it is written into a designated property after the thread completes, provided the enclosing pool operator waits for completion (see below).
+If needed, a thread can return a value; it is written into a designated property after the thread completes, provided the enclosing execution-service operator waits for completion (see below).
 
 The thread-creation operator itself does not open a new [change session](Change_sessions.md) or a separate SQL connection. The environment in which the body actually runs depends on the execution service (see below).
 
-### Where threads execute
+### Execution service
 
 Beyond the thread itself, it is useful to specify where it runs — which pool or which user it belongs to, and whether to wait for it. The platform splits this into a separate operator — the *new execution service* operator: one operator defines the thread itself (which action, with what delay and period, where to write the return value), the other defines the service that executes it (on the application server or on a user's client connection; synchronously or asynchronously). The kind of service determines the execution location, paralleling the split used in [external-system calls](Access_to_an_external_system_EXTERNAL.md) and [internal calls](Access_to_an_internal_system_INTERNAL_FORMULA.md).
 
@@ -25,7 +25,7 @@ A client-side dispatcher tied to a user's [connection](User_IS_interaction.md) �
 
 #### Synchronization
 
-Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads for which a future is registered to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md); in the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout; if some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](Exception_handling_TRY.md).
+Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md). In the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout; if some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](Exception_handling_TRY.md).
 
 ### Language
 

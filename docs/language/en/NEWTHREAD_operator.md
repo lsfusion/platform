@@ -8,19 +8,24 @@ The `NEWTHREAD` operator creates an [action](../paradigm/Actions.md) that execut
 ### Syntax
 
 ```
-NEWTHREAD action
-NEWTHREAD action SCHEDULE [PERIOD periodExpr] [DELAY delayExpr] [TO toPropertyId]
-NEWTHREAD action CLIENT notificationPropertyId [TO toPropertyId]
-NEWTHREAD action TO toPropertyId
+NEWTHREAD action [dispatchClause]
+```
+
+where `dispatchClause` has one of the following forms:
+
+```
+SCHEDULE [PERIOD periodExpr] [DELAY delayExpr] [TO toPropertyId]
+CLIENT notificationPropertyId [TO toPropertyId]
+TO toPropertyId
 ```
 
 ### Description
 
 The `NEWTHREAD` operator creates an action that executes another action in a new thread. When the operator is enclosed in a [`NEWEXECUTOR`](NEWEXECUTOR_operator.md) scope, the thread is taken from the execution service that scope establishes (a server-side pool or a client-side dispatcher); otherwise a free thread is created on the application server.
 
-`SCHEDULE` runs the action with a delay and/or with periodic repetition. Inside `NEWEXECUTOR ... CLIENT` delayed and periodic dispatches are served by the client's timer; inside `NEWEXECUTOR ... THREADS` they are served by the server-side pool's scheduler. Without `PERIOD` the action fires once; with `PERIOD` it re-fires every period — a periodic thread cannot be joined to a waiting `NEWEXECUTOR ... WAIT` because it never completes.
+`SCHEDULE` runs the action with a delay and/or with periodic repetition. Inside `NEWEXECUTOR ... CLIENT` delayed and periodic dispatches are served by the client's timer; inside `NEWEXECUTOR ... THREADS` they are served by the server-side pool's scheduler. Without `PERIOD` the action fires once; with `PERIOD` it re-fires every period — a periodic dispatch requires the enclosing `NEWEXECUTOR` to be `NOWAIT` (or no enclosing `NEWEXECUTOR` at all), since it never completes.
 
-`CLIENT` registers the action as a client notification and writes its id into `notificationPropertyId`. The form does not by itself deliver the notification to any connection — delivery is left to the calling code, which uses the recorded id to target the dispatch. An enclosing `NEWEXECUTOR ... WAIT` does not wait for such a bare `CLIENT p` — no future is registered for it. With `CLIENT p TO q`, however, the thread is awaited until the notification actually fires (when the calling code delivers the id) or until it is evicted by the retention timeout. For automatic delivery of an action on the client side, use a plain `NEWTHREAD action` inside `NEWEXECUTOR ... CLIENT conn` without the `CLIENT` clause.
+`CLIENT` registers the action as a client notification and writes its id into `notificationPropertyId`. The form does not by itself deliver the notification to any connection — delivery is left to the calling code, which uses the recorded id to target the dispatch. An enclosing `NEWEXECUTOR ... WAIT` does not wait for such a bare `CLIENT p`. With `CLIENT p TO q`, however, the thread is awaited until the notification actually fires (when the calling code delivers the id) or until it is evicted by the retention timeout. For automatic delivery of an action on the client side, use a plain `NEWTHREAD action` inside `NEWEXECUTOR ... CLIENT conn` without the `CLIENT` clause.
 
 `TO` stores the value returned by the inner action via `RETURN` into the given property. The inner action must declare a return value (through [`RETURN`](RETURN_operator.md)) and be written in block form — `NEWTHREAD { ... RETURN ...; } TO p` or with a wrapper such as `NEWTHREAD NEWSESSION { ... RETURN ...; } TO p`. A direct call `NEWTHREAD a(args) TO p` is parsed as an inner-action [`EXEC a(args) TO p`](../paradigm/Call_EXEC.md) and does not invoke this `NEWTHREAD ... TO` form. The form is allowed only inside `NEWEXECUTOR ... WAIT`: the write happens when the thread completes, and the stored values are then applied to the current session when `NEWEXECUTOR` exits. Combining `PERIOD` with `TO` is not allowed, because a periodic thread never completes.
 

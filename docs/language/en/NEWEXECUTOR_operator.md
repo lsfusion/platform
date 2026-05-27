@@ -8,11 +8,17 @@ The `NEWEXECUTOR` operator creates an [action](../paradigm/Actions.md) that runs
 ### Syntax
 
 ```
-NEWEXECUTOR action THREADS threadExpr [syncType]
-NEWEXECUTOR action CLIENT connectionExpr [syncType]
+NEWEXECUTOR action serviceClause [syncType]
 ```
 
-where `syncType` is one of:
+where `serviceClause` has one of the following forms:
+
+```
+THREADS threadExpr
+CLIENT connectionExpr
+```
+
+and `syncType` is one of:
 
 ```
 WAIT [timeoutExpr]
@@ -23,7 +29,7 @@ NOWAIT
 
 The `NEWEXECUTOR` operator creates an action inside which every [`NEWTHREAD`](NEWTHREAD_operator.md) is dispatched by the execution service this operator establishes. In `THREADS` mode the service is a server-side thread pool of the given size: each nested thread's body shares the calling code's [change session](../paradigm/Change_sessions.md), and `NEWTHREAD ... SCHEDULE` uses the server-side scheduler. In `CLIENT` mode the service is a client-side dispatcher tied to the given connection: each nested thread's action is delivered to that connection and executed on the application server in its own fresh change session at the connection's navigator level, not bound to any opened form; interactive operators inside the thread target that connection's UI, and `NEWTHREAD ... SCHEDULE` uses the client-side timer.
 
-`syncType` controls whether the operator waits for nested threads to complete. The default is `WAIT` without a timeout: the operator does not return until every nested thread for which the service registers a future has completed, after which the values written by [`NEWTHREAD ... TO p`](NEWTHREAD_operator.md) are applied to the current [session](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md). [`NEWTHREAD ... CLIENT p`](NEWTHREAD_operator.md) without `TO` does not register a future and is not part of the wait. If a wait timeout is given and some threads do not fit within it, the operator throws; values from threads that completed earlier are still applied and are visible in an enclosing [`TRY ... CATCH`](TRY_operator.md).
+`syncType` controls whether the operator waits for nested threads to complete. In `WAIT` mode the operator does not return until every nested `NEWTHREAD` has completed, after which the values written by [`NEWTHREAD ... TO p`](NEWTHREAD_operator.md) are applied to the current [session](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md). A bare [`NEWTHREAD ... CLIENT p`](NEWTHREAD_operator.md) without `TO` is not awaited. If a wait timeout is given and some threads do not fit within it, the operator throws; values from threads that completed earlier are still applied and are visible in an enclosing [`TRY ... CATCH`](TRY_operator.md).
 
 ### Parameters
 
@@ -43,7 +49,7 @@ The `NEWEXECUTOR` operator creates an action inside which every [`NEWTHREAD`](NE
 
     Synchronization type. One of the following keywords:
 
-    - `WAIT` — synchronous execution: the operator waits for every nested `NEWTHREAD` for which a future is registered to complete and applies their `TO` results. May be followed by a timeout expression (see `timeoutExpr`).
+    - `WAIT` — synchronous execution: the operator waits for every nested `NEWTHREAD` to complete (except a bare `NEWTHREAD ... CLIENT p` without `TO`, which is not awaited) and applies their `TO` results. May be followed by a timeout expression (see `timeoutExpr`).
     - `NOWAIT` — asynchronous execution: the operator returns as soon as all nested `NEWTHREAD`s are dispatched. Incompatible with [`NEWTHREAD ... TO`](NEWTHREAD_operator.md), which requires `WAIT`. `NEWTHREAD ... SCHEDULE PERIOD ...` requires this form because a periodic thread never completes.
 
     Without `syncType` the operator behaves as `WAIT` without a timeout.
@@ -68,7 +74,7 @@ testExecutor {
         }
     } THREADS 10 WAIT;
 
-    // Fire-and-forget on the client side
+    // Dispatch on the client side without waiting
     NEWEXECUTOR {
         NEWTHREAD MESSAGE 'Hello from client';
     } CLIENT currentConnection() NOWAIT;

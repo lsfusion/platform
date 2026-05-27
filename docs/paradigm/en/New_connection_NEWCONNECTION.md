@@ -3,9 +3,9 @@ slug: "/New_connection_NEWCONNECTION"
 title: 'New external connections (NEWCONNECTION)'
 ---
 
-[External connections](Access_to_an_external_system_EXTERNAL.md) opened while calling an external system can be reused across several successive calls to the same endpoint. This saves the cost of establishing the connection and also lets calls share state that the connection itself holds — SQL temporary tables and session variables, an open TCP socket and its read buffer, the current position inside a DBF file, and so on.
+The *new external connection* operator scopes a block inside which every call to the same external endpoint reuses an [external connection](Access_to_an_external_system_EXTERNAL.md) opened earlier in the block, instead of opening a new one each time. This saves the cost of establishing the connection and also lets calls share state that the connection itself holds — SQL temporary tables and session variables, an open TCP socket and its read buffer, the current position inside a DBF file, and so on.
 
-The platform allows scoping a block inside which every call to the same endpoint reuses the previously opened connection. Typical cases — a series of SQL queries against the same external database, a series of operations over DBF files in a single directory, or a TCP session of several messages.
+Typical cases — a series of SQL queries against the same external database, a series of operations over DBF files in a single directory, or a TCP session of several messages.
 
 Every connection opened inside the block is closed when the block exits, regardless of whether the inner action completed normally or threw.
 
