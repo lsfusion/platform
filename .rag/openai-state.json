@@ -7696,7 +7696,7 @@
     },
     "paradigm/Arithmetic_operators_plus_minus_etc.md": {
       "file_hash": "sha256:78ff0ed7a86ed1962c8f3127ce678c24fc5f220bebce3a6c0acedd8421dbf708",
-      "indexed_at": "2026-05-27T09:30:17Z",
+      "indexed_at": "2026-05-27T09:40:27Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7706,9 +7706,9 @@
       },
       "sections": {
         "Arithmetic_operators_plus_minus_etc::arithmetic-operators-----...": {
-          "file_id": "file-Y1sS5iEzcbNmGMaBzkMpP2",
+          "file_id": "file-Chy64EqNT5xjLdAXr8Sf7T",
           "heading_path": "Arithmetic operators (+, -, *, ...)",
-          "section_payload_hash": "sha256:2b95e532a14145f583bf5d413f433c4880362c9b2ffaa44260335bc76382f378",
+          "section_payload_hash": "sha256:2c61c48aa2e76ef15cb79ecb19ec0bbff2c397c318a8deee4b942a5d0782f679",
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::determining-the-result-class": {
@@ -7724,7 +7724,7 @@
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Automatic_installation.md": {
       "file_hash": "sha256:787265b704894d19aceb427b6a36e9a092f1697c6cfc2642efb98d08a7ee1b7a",
@@ -12648,7 +12648,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "005e64d8e5efd6f1b2c36a5e31b81b8ff130261b",
+  "last_indexed_docs_commit": "7d55fd07510d85afeae753d20251cf4d5a1c83d2",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
