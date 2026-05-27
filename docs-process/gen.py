@@ -319,7 +319,7 @@ for tid,tname,_ in TRACKS:
         p.append("Перед работой прочитай: docs/AGENTS.md (релевантные разделы целиком) и docs-process/DOCS-DESC-PLAN.md.")
         p.append("Источник истины — КОД платформы (LsfLogics.g -> ScriptingLogicsModule.java -> LogicsModule.java -> классы;")
         p.append("примеры в server/src/main/lsfusion; плагин — вторичен). Не описывай по памяти.")
-        p.append(f"Работай в выданной под блок ветке (docs/{bid} от master): коммить туда; в master сам не мерджи и master не пушь.")
+        p.append(f"Работай в выданной под блок ветке (docs/{bid} от master) — создай её ПЕРВЫМ действием и в ОТДЕЛЬНОМ рабочем дереве (git worktree add), не в общем чекауте: иначе параллельные блоки/исполнители молча затрут несохранённое. Коммить в ветку рано (commit-first); в master сам не мерджи и master не пушь.")
         if LAY[bid]>=2:
             p.append("ВАЖНО: это обзорный/корневой блок. Его источник истины — уже описанные ДОЧЕРНИЕ статьи (их состав")
             p.append("и термины) и дерево docs/sidebars.js, в большей степени чем код. Обзорная статья вводит и связывает")
