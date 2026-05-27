@@ -1,6 +1,5 @@
 ---
 slug: "/Property_signature_ISCLASS"
-id: Property_signature_CLASS
 title: 'Signature matching (ISCLASS)'
 ---
 

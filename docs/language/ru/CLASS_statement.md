@@ -8,15 +8,22 @@ title: 'Инструкция CLASS'
 ### Синтаксис
 
 ```
-CLASS ABSTRACT name [caption] [: parent1, ..., parentN];
+CLASS ABSTRACT name [caption] [imageSetting] [: parent1, ..., parentN];
  
-CLASS [NATIVE] name [caption] 
+CLASS [NATIVE] name [caption] [imageSetting]
 [{
-    objectName1 [objectCaption1] [imageSetting1],
+    objectName1 [objectCaption1] [imageSetting],
     ...
-    objectNameM [objectCaptionM] [imageSettingM]
+    objectNameM [objectCaptionM] [imageSetting]
 }] 
 [: parent1, ..., parentN];
+```
+
+Где `imageSetting` принимает один из видов:
+
+```
+IMAGE [imageLiteral]
+NOIMAGE
 ```
 
 ### Описание
@@ -37,29 +44,25 @@ CLASS [NATIVE] name [caption]
 
     Заголовок класса. [Строковый литерал](Literals.md#strliteral). Если заголовок не задан, то заголовком класса будет являться его имя.  
 
-- `objectName1, ..., objectNameM`
+- `imageSetting`
 
-    Имена статических объектов данного класса. Каждое имя задается простым идентификатором. Значения имен хранятся в системном свойстве `System.staticName`.
+    Настройка иконки класса (если указана после заголовка класса) или статического объекта (если указана после заголовка объекта). Один из вариантов:
 
-- `objectCaption1, ..., objectCaptionM`
+    - `IMAGE`
 
-    Заголовки статических объектов данного класса. Каждый заголовок является строковым литералом. Если заголовок не задан, то заголовком статического объекта будет являться его имя. Значения заголовков хранятся в системном свойстве `System.staticCaption`.
-
-- `imageSetting1, ..., imageSettingM`
-
-    Настройки иконок заголовков статических объектов данного класса. Значение класса `HTML`, используемое для отображения иконки, хранится в системном свойстве `System.image[StaticObject]`. Эта опция позволяет настроить отображение иконки вручную. Может иметь один из двух видов:
-
-    - `IMAGE [imageLiteral]`
-
-        [Указание иконки](../paradigm/Icons.md#manual) иконки заголовка статического объекта. Если `imageLiteral` не указывается, то происходит переключение в режим [автоматической установки](../paradigm/Icons.md#auto) иконки.
-
-        - `imageLiteral`
-
-            Строковый литерал, значение которого определяет иконку.
+        [Указание иконки](../paradigm/Icons.md#manual) вручную, после которого может следовать `imageLiteral` — [строковый литерал](Literals.md#strliteral), значение которого определяет иконку. Если `imageLiteral` не указан, происходит переключение в режим [автоматической установки](../paradigm/Icons.md#auto) иконки.
 
     - `NOIMAGE`
 
-        Ключевое слово, указывающее на то, что иконка заголовка статического объекта должна отсутствовать.
+        У класса или статического объекта не должно быть иконки.
+
+- `objectName1, ..., objectNameM`
+
+    Имена статических объектов данного класса. Каждое имя задается простым идентификатором. Имя каждого статического объекта доступно через свойство `name[StaticObject]`.
+
+- `objectCaption1, ..., objectCaptionM`
+
+    Заголовки статических объектов данного класса. Каждый заголовок является строковым литералом. Если заголовок не задан, то заголовком статического объекта будет являться его имя. Заголовок каждого статического объекта доступен через свойство `caption[StaticObject]`.
 
 - `parent1, ..., parentN`
 
@@ -82,4 +85,6 @@ CLASS PrintOrientation {
     portrait 'Книжная',
     landscape 'Альбомная'
 }
+
+CLASS Currency 'Валюта' IMAGE 'currency.png'; // класс с иконкой
 ```

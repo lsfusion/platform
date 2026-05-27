@@ -1,6 +1,5 @@
 ---
 slug: "/ISCLASS_operator"
-id: CLASS_operator
 title: 'ISCLASS operator'
 ---
 

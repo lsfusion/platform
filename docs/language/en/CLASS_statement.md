@@ -8,15 +8,22 @@ title: 'CLASS statement'
 ### Syntax
 
 ```
-CLASS ABSTRACT name [caption] [: parent1, ..., parentN];
+CLASS ABSTRACT name [caption] [imageSetting] [: parent1, ..., parentN];
  
-CLASS [NATIVE] name [caption] 
+CLASS [NATIVE] name [caption] [imageSetting]
 [{
-    objectName1 [objectCaption1] [imageSetting1],
+    objectName1 [objectCaption1] [imageSetting],
     ...
-    objectNameM [objectCaptionM] [imageSettingM]
+    objectNameM [objectCaptionM] [imageSetting]
 }] 
 [: parent1, ..., parentN];
+```
+
+Where `imageSetting` is one of:
+
+```
+IMAGE [imageLiteral]
+NOIMAGE
 ```
 
 ### Description
@@ -37,29 +44,25 @@ The `NATIVE` keyword is used in some system modules. It is used to declare indiv
 
     Class caption. [String literal](Literals.md#strliteral). If the caption is not defined, the name of the class will be its caption.  
 
-- `objectName1, ..., objectNameM`
+- `imageSetting`
 
-    The names of static objects of this class. Each name is defined by a simple ID. Name values are stored in the `System.staticName` system property.
+    Icon setting for the class (when written after the class caption) or for a static object (when written after the object's caption). One of:
 
-- `objectCaption1, ..., objectCaptionM`
+    - `IMAGE`
 
-    Captions of static objects of this class. Each caption is a string literal. If the caption is not defined, the name of the static object will be its caption. Caption values are stored in the `System.staticCaption` system property.
-
-- `imageSetting1, ..., imageSettingM`
-
-    Icon settings for the captions of the static objects of this class. The `HTML` class value used to display the icon is stored in the system property `System.image[StaticObject]`. This option allows you to configure the icon manually. It can have one of the following forms:
-
-    - `IMAGE [imageLiteral]`
-
-        [Manual icon specification](../paradigm/Icons.md#manual) for the static object's caption. If `imageLiteral` is not provided, the [automatic assignment](../paradigm/Icons.md#auto) mode is enabled.
-
-        - `imageLiteral`
-
-            String literal whose value defines the icon.
+        [Manual icon specification](../paradigm/Icons.md#manual), optionally followed by `imageLiteral` — a [string literal](Literals.md#strliteral) whose value defines the icon. If `imageLiteral` is omitted, the [automatic assignment](../paradigm/Icons.md#auto) mode is enabled.
 
     - `NOIMAGE`
 
-        Keyword indicating that the static object's caption should have no icon.
+        The class or static object has no icon.
+
+- `objectName1, ..., objectNameM`
+
+    The names of static objects of this class. Each name is defined by a simple ID. The name of each static object is available through the `name[StaticObject]` property.
+
+- `objectCaption1, ..., objectCaptionM`
+
+    Captions of static objects of this class. Each caption is a string literal. If the caption is not defined, the name of the static object will be its caption. The caption of each static object is available through the `caption[StaticObject]` property.
 
 - `parent1, ..., parentN`
 
@@ -82,5 +85,6 @@ CLASS PrintOrientation {
     portrait 'Portrait',
     landscape 'Landscape'
 }
-```
 
+CLASS Currency 'Currency' IMAGE 'currency.png'; // a class with an icon
+```
