@@ -3357,8 +3357,8 @@
       "stale": false
     },
     "language/CLASS_statement.md": {
-      "file_hash": "sha256:2c69098629d0b6cd9c7a91212b0281e775811873bedc041cf7894d3826945a05",
-      "indexed_at": "2026-05-22T22:05:36Z",
+      "file_hash": "sha256:3f18357d8c96d43faea9bccab937c5d7cc900add0defabe5912eda694510f6ce",
+      "indexed_at": "2026-05-27T09:50:25Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3380,21 +3380,21 @@
           "source_file": "language/CLASS_statement.md"
         },
         "CLASS_statement::examples": {
-          "file_id": "file-Ed65RX6Vg4YQLDxKUiASBS",
+          "file_id": "file-CcJQmi9zpo2PpugfVmLW6C",
           "heading_path": "CLASS statement > Examples",
-          "section_payload_hash": "sha256:517ae29cddc278ac8cf9dbebf1e65d11afb7fae749f16b52991cad1ec7246475",
+          "section_payload_hash": "sha256:4358195675ccbf283a5132129eef4f4df0011f6cd320894a5994bc44bc7bac71",
           "source_file": "language/CLASS_statement.md"
         },
         "CLASS_statement::parameters": {
-          "file_id": "file-J1g3EZyTN2NUN64mWZgCAE",
+          "file_id": "file-5Ws9Cpv7ngHSwxwH1ovYeL",
           "heading_path": "CLASS statement > Parameters",
-          "section_payload_hash": "sha256:75f1d61282ba55529980e755a98307ff335625a0ca9d706c02f6c5a2c46f5822",
+          "section_payload_hash": "sha256:100cbe5dc55aa58128f1717f325b8118bce05911e6fac8ea1ea8abca56d9ce20",
           "source_file": "language/CLASS_statement.md"
         },
         "CLASS_statement::syntax": {
-          "file_id": "file-JENThGZ4dxDH75E3cRKGLz",
+          "file_id": "file-SUFsRNsCC3ciGJEtjqa3AH",
           "heading_path": "CLASS statement > Syntax",
-          "section_payload_hash": "sha256:f843f7007038a29955ca7cf96a82c5458d6bcd1e723db75d03c82500a71c1a3b",
+          "section_payload_hash": "sha256:2f23ef24751667b4ed1cfb977d6db5c12047ab789476a328206662823bb8fe23",
           "source_file": "language/CLASS_statement.md"
         }
       },
@@ -5087,8 +5087,8 @@
       "stale": false
     },
     "language/ISCLASS_operator.md": {
-      "file_hash": "sha256:48aebe73aa1d1da51d17dac895bb5669e83d253c4e008549c0c099bec6c38520",
-      "indexed_at": "2026-05-22T22:20:28Z",
+      "file_hash": "sha256:e2272d2dd2b636d49adbaf071a69a4d448c2bbf4d5d67160df4f39386ef37faa",
+      "indexed_at": "2026-05-27T09:51:35Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5119,8 +5119,8 @@
       "stale": false
     },
     "language/IS_AS_operators.md": {
-      "file_hash": "sha256:f977bc94af32b06288938cdb6e4abb8e3b514c82e140949bb9b6a42814f0094f",
-      "indexed_at": "2026-05-22T22:21:04Z",
+      "file_hash": "sha256:bdcfce8b2eceb1f3587d1c9a1b8ea3222d8e119b2581f6f4fb4ec4c76b9e49ec",
+      "indexed_at": "2026-05-27T09:51:35Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5130,15 +5130,15 @@
       },
       "sections": {
         "IS_AS_operators::is-as-operators": {
-          "file_id": "file-1qNmnScvyia8k3Nc512UQt",
+          "file_id": "file-Ff3txJBzNn6hB1LpBKe5bc",
           "heading_path": "IS, AS operators",
-          "section_payload_hash": "sha256:c3173bed6d21eb8b9fd187380c6ac4225fe5d9a6a1a34a35b7669b4d36714798",
+          "section_payload_hash": "sha256:cee26fa878bd73f0e15a9d6414cb4e27a70e1d9e2337bbeb7491d4a4f22c2a24",
           "source_file": "language/IS_AS_operators.md"
         },
         "IS_AS_operators::syntax+description+parameters+examples": {
-          "file_id": "file-PrjEyBkLdV4dDbEUyF5KM8",
+          "file_id": "file-T8XzaPyN98pw5hCw5TeCHf",
           "heading_path": "IS, AS operators > Syntax + Description + Parameters + Examples",
-          "section_payload_hash": "sha256:8706c396599780cd1c3a627cfb864eec1f2013da164c5706673c5314578718a6",
+          "section_payload_hash": "sha256:6c42f66c65c744b455538c9619d4c4fe9dbbb53e13e5e6b56acfa34717f03206",
           "source_file": "language/IS_AS_operators.md"
         }
       },
@@ -6397,8 +6397,8 @@
       "stale": false
     },
     "language/Property_signature_ISCLASS.md": {
-      "file_hash": "sha256:6c96cd47f5977c6e7ea80cccdf44ebfc4c794bae26116338b6646816fda7ed6d",
-      "indexed_at": "2026-05-22T22:41:21Z",
+      "file_hash": "sha256:1a7c6b0a1ee70c0378961b0ff69d62dda6fae1124b65465ad86170b723f62d14",
+      "indexed_at": "2026-05-27T09:54:01Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7841,8 +7841,8 @@
       "stale": false
     },
     "paradigm/Built-in_classes.md": {
-      "file_hash": "sha256:c75fd0b847a8eb3a511634fab7e9b39cb6b4ca91bfb93e657aa72c7951937aa3",
-      "indexed_at": "2026-05-22T22:53:56Z",
+      "file_hash": "sha256:811822ed401562b7af56857937cc44644cffec56d825ba75887ffadd92489455",
+      "indexed_at": "2026-05-27T09:54:01Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7852,9 +7852,9 @@
       },
       "sections": {
         "Built-in_classes::built-in-classes": {
-          "file_id": "file-6vVSyHEkN3fT1HnQvkPTMU",
+          "file_id": "file-9PRzbwZw9NZeJLnWExD9QE",
           "heading_path": "Built-in classes",
-          "section_payload_hash": "sha256:5523a08b8df88717488464561646f048ab759f8ddc84581008142bd9ef5cf9a3",
+          "section_payload_hash": "sha256:69ddff0022bc0dcbe58b374726849aba00b391032c5a879d4a4cc6065703611b",
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::common-ancestor-commonparentclass": {
@@ -7870,9 +7870,9 @@
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::extensions-of-specific-type-files-extension": {
-          "file_id": "file-Un4mW5zmXjUKUPhdo6NnFn",
+          "file_id": "file-S3xg2mkhPAbGkBMNKpuTa6",
           "heading_path": "Built-in classes > Extensions of specific type files {#extension}",
-          "section_payload_hash": "sha256:95a85a2694ba48fac76de68722b3c7a1b5cf79a6cea28777224d9a917b1ab314",
+          "section_payload_hash": "sha256:b9d67e635e1e3bc318de834e54a7fd51d4428f07a05dbad7fb1db17a1ee4fbd9",
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::files-of-a-specific-type+links-to-files-of-a-specific-type": {
@@ -7882,9 +7882,9 @@
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::inheritance-inheritance": {
-          "file_id": "file-5RcDR28FeEkNZJP4chccE6",
+          "file_id": "file-SdadeZcRzxCkn2JJDkKMKd",
           "heading_path": "Built-in classes > Inheritance {#inheritance}",
-          "section_payload_hash": "sha256:d2b61cae712762f93aeeec5a865decd3968bd447068a0f61543d74ccd2909385",
+          "section_payload_hash": "sha256:c86606d9200ab507f40698815fe86848db2f1e23e69131595c5434176247aeda",
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::numbers": {
@@ -7900,9 +7900,9 @@
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::the-order-of-determining-the-result-property-when-accessing-from-an-external-systemaccess_from_an_external_system.mdhttpresult-export": {
-          "file_id": "file-LNQ18qXRxek4rtaxs5Zx6Z",
+          "file_id": "file-5cSE8kFphLCgBQoVp7psma",
           "heading_path": "Built-in classes > The order of determining the result property when [accessing from an external system](Access_from_an_external_system.md#httpresult) {#export}",
-          "section_payload_hash": "sha256:551b8c1d9e53c94e59a16f98d422ff8dd3a873d068ca3fa9095de9e568bdf6d5",
+          "section_payload_hash": "sha256:af6a2cda7ab380d2d4330744e74e35bfe65469ce0124825292d0583fc3dca6d5",
           "source_file": "paradigm/Built-in_classes.md"
         }
       },
@@ -8142,8 +8142,8 @@
       "stale": false
     },
     "paradigm/Class_operators.md": {
-      "file_hash": "sha256:458ba747ecd1fba286f52a4966bd510bfcf9239f84cc0a530a972db97364e1b5",
-      "indexed_at": "2026-05-25T10:02:43Z",
+      "file_hash": "sha256:b3b8f434eca70a940d91cd4a2c178d14b29afe07cfffd7fdc240ef6c30dcba08",
+      "indexed_at": "2026-05-27T09:54:11Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8153,17 +8153,17 @@
       },
       "sections": {
         "Class_operators::class-operators": {
-          "file_id": "file-CnuJmQEnNFnW9Bq6L1wBTz",
+          "file_id": "file-2ubnbgjfpriUpsSgQksaMd",
           "heading_path": "Class operators",
-          "section_payload_hash": "sha256:d471a1951a976d3cbcab1cd50bfdec9f201f7bc5c1caea28bd02a4bf88dca436",
+          "section_payload_hash": "sha256:8acb50a445882cf54b75049e1eba486bbb415d0f29928f31a223615fbf2d8d44",
           "source_file": "paradigm/Class_operators.md"
         }
       },
       "stale": false
     },
     "paradigm/Classes.md": {
-      "file_hash": "sha256:9ad868abc5203fb45421942e9f73ef1fa7a56fff9da5e565439aa5ffa4b37ab9",
-      "indexed_at": "2026-05-22T23:48:23Z",
+      "file_hash": "sha256:733247040ab011e1767f97f88387523e5cd1043301384f4bc479f6db4e6320f7",
+      "indexed_at": "2026-05-27T09:54:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8173,9 +8173,9 @@
       },
       "sections": {
         "Classes::class-limitations": {
-          "file_id": "file-TByppxyPekDWpvHV5yKZwS",
+          "file_id": "file-WaaenzUtDe8WynhouhbPph",
           "heading_path": "Classes > Class limitations",
-          "section_payload_hash": "sha256:cb250ae0b70482b81553c2a8ae468c1abd5b008c00bdc2439ce1c94e25ca12f5",
+          "section_payload_hash": "sha256:1d2c0c4bdfe4844a2cb008d25260f869443ab0f1704c8ac2ddfb3f4564257cd6",
           "source_file": "paradigm/Classes.md"
         },
         "Classes::classes": {
@@ -8194,8 +8194,8 @@
       "stale": false
     },
     "paradigm/Classification_IS_AS.md": {
-      "file_hash": "sha256:7d324cbbccc92ef75c2ef0031643fdff1c1194483794284601ff13f49b9020af",
-      "indexed_at": "2026-05-22T23:48:31Z",
+      "file_hash": "sha256:113de44d3f3da366969045ac2e625d97b42833ffa7ce077228650a51c587e54e",
+      "indexed_at": "2026-05-27T09:54:27Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8205,9 +8205,9 @@
       },
       "sections": {
         "Classification_IS_AS::classification-isas": {
-          "file_id": "file-3EwXvYc5WGMPwiL27c6fYE",
+          "file_id": "file-VmhEHYny8e2zNbNeCq2Rbt",
           "heading_path": "Classification (IS/AS)",
-          "section_payload_hash": "sha256:d02ffd13daa46e31f65c57c74edf5d3996f584edf64dd0d6f8d5f38bdb72f959",
+          "section_payload_hash": "sha256:2a28c1a17427cb3e9f3bdb5301853de414519819e4e793953af587e4b065045b",
           "source_file": "paradigm/Classification_IS_AS.md"
         },
         "Classification_IS_AS::language+examples": {
@@ -12055,8 +12055,8 @@
       "stale": false
     },
     "paradigm/Static_objects.md": {
-      "file_hash": "sha256:9f9e93416f1877ae6d297a8dae5efd2106b33ce8a22a91b4a3e6249a1bb16718",
-      "indexed_at": "2026-05-22T23:38:29Z",
+      "file_hash": "sha256:ac7e7e6dc636a554fe20ba738c43798b67cfbd01ce99f57c3d7a39f55226566f",
+      "indexed_at": "2026-05-27T09:54:36Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12066,15 +12066,15 @@
       },
       "sections": {
         "Static_objects::language+examples": {
-          "file_id": "file-QucXrzbHjizySyqG4vT4Gj",
+          "file_id": "file-Mn9ZFcPJAXDoMGDqf3kne6",
           "heading_path": "Static objects > Language + Examples",
-          "section_payload_hash": "sha256:309b4713bb63fb414b47facd5bb02b0b68b850acc67b84492869b5f57d0eaa0f",
+          "section_payload_hash": "sha256:0d4f3831501d8282c62396f8967796670b6c2c5691a4d69ff65aaa0c185337df",
           "source_file": "paradigm/Static_objects.md"
         },
         "Static_objects::static-objects": {
-          "file_id": "file-G7cV1dXqNK2hQzTgbm2a26",
+          "file_id": "file-2bKkgGiQ5PLVFMfKoePFQ2",
           "heading_path": "Static objects",
-          "section_payload_hash": "sha256:9312dba2bf7ff12e7a3c43f8844efb7af3fcd782009ec429213ae4ffb48a4c91",
+          "section_payload_hash": "sha256:4bae8e66a7dc20c805e4df3228641b3643474c1b4783919900e2a41a70647fc4",
           "source_file": "paradigm/Static_objects.md"
         }
       },
@@ -12391,8 +12391,8 @@
       "stale": false
     },
     "paradigm/User_classes.md": {
-      "file_hash": "sha256:ceec5198821d060d809b00c851a42aafec69631c0f3e70aa1800bedda21368a7",
-      "indexed_at": "2026-05-22T23:40:37Z",
+      "file_hash": "sha256:a46c6dd4f8903f29ea554e523d245f54dc5f278968f9b6ba2f4e4d71c8e4ffed",
+      "indexed_at": "2026-05-27T09:54:46Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12401,22 +12401,28 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "User_classes::abstract-classes-abstract+class-change+common-ancestor-commonparentclass+language": {
-          "file_id": "file-YM21DsRXShxdxkLqAyLEGh",
-          "heading_path": "User classes > Abstract classes {#abstract} + Class change + Common ancestor {#commonparentclass} + Language",
-          "section_payload_hash": "sha256:a1c7c6bd2abc6660f38e8dfb8b4606ccba45be4c0a8aed84467998df0ea584d3",
+        "User_classes::abstract-classes-abstract+class-change": {
+          "file_id": "file-SQdvyhMDCTvseR8vVuAJYU",
+          "heading_path": "User classes > Abstract classes {#abstract} + Class change",
+          "section_payload_hash": "sha256:4dca5aca17e78e38d1c8a4841295df71660dc60a116adb7f1810a970bb0cc615",
           "source_file": "paradigm/User_classes.md"
         },
-        "User_classes::examples": {
-          "file_id": "file-HCzeCJQw6JnCzeKq4t3xp1",
-          "heading_path": "User classes > Examples",
-          "section_payload_hash": "sha256:62f609c5e878863426ce5aa69bcb5eb0f580cf2eca293cf1d1f3a3b198cafb4f",
+        "User_classes::common-ancestor-commonparentclass": {
+          "file_id": "file-7DXyhKfRebSi3xTA1angnS",
+          "heading_path": "User classes > Common ancestor {#commonparentclass}",
+          "section_payload_hash": "sha256:85f5c32ccea7f5816f5622de430b5882b2209259222ba21ca0771bddd48d5006",
           "source_file": "paradigm/User_classes.md"
         },
         "User_classes::inheritance-inheritance": {
           "file_id": "file-28rpdu3uikJQS9REnYoTkC",
           "heading_path": "User classes > Inheritance {#inheritance}",
           "section_payload_hash": "sha256:32467f48845a9168e7822d8871532504ad07bf382186a8a8a77d2fa35fcbe680",
+          "source_file": "paradigm/User_classes.md"
+        },
+        "User_classes::language+examples": {
+          "file_id": "file-CmMuAburfipRQRHwg27Yy5",
+          "heading_path": "User classes > Language + Examples",
+          "section_payload_hash": "sha256:dd8745d00be4f69b21d2ce7a4db15e1ae387e28fc272a70b6954dce8d328e81f",
           "source_file": "paradigm/User_classes.md"
         },
         "User_classes::user-classes": {
@@ -12648,7 +12654,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "7d55fd07510d85afeae753d20251cf4d5a1c83d2",
+  "last_indexed_docs_commit": "71eb931c7ce0a859d335538fa6cc3d3598e50cec",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
