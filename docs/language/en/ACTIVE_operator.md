@@ -30,7 +30,7 @@ To run an action at the moment a tab is switched to (as opposed to reading the c
 
 #### Form activity
 
-The `ACTIVE FORM` form creates an action that performs the activity check for the specified form for the current user and writes the result (`TRUE` or `FALSE`) into the built-in [local](../paradigm/Data_properties_DATA.md#local) `System.isActiveForm[]` property. The result is available for reading via the `isActiveForm()` property within the same action block / session.
+The `ACTIVE FORM` form creates an action that performs the activity check for the specified form for the current user and writes the result (`TRUE` or `FALSE`) into the built-in [local](../paradigm/Data_properties_DATA.md#local) `System.isActiveForm[]` property. The result is then available for reading via `isActiveForm[]` within the same action block / session.
 
 #### Current object value
 
