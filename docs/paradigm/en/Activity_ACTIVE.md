@@ -8,9 +8,9 @@ The *activity* operator creates a property or an action that returns information
 -   Property — returns `TRUE` if the focus is on the specified [property](Properties.md) (or [action](Actions.md)) on the form; `NULL` otherwise, including when the form is not open.
 -   Tab — returns `TRUE` if the specified tab is active in its [tab panel](Form_design.md#containers); `NULL` otherwise.
 -   Form — writes `TRUE` into a local property if the specified [form](Forms.md), or a form that [extends](Form_extension.md) it, is currently active for the user; `FALSE` otherwise.
--   Objects — returns the current value of the specified object in a form's object group (`ACTIVE formObjectId`).
+-   Objects — returns the current value of the specified object in a form's object group.
 
-For tabs, properties, and objects, the operator creates a regular property; the platform automatically updates its value whenever the focus changes, a different tab is selected, or the current object changes, so it can be used in other properties (in particular, to gate computations on inactive tabs via `IF` or `SHOWIF`). Activity of a form, on the other hand, depends on the current state of the user session and is therefore exposed via an [action](Actions.md) that writes the result of the check into the [local](Data_properties_DATA.md#local) property `isActiveForm[]`.
+For tabs, properties, and objects, the operator creates a regular property; the platform automatically updates its value whenever the focus changes, a different tab is selected, or the current object changes, so it can be used in other properties — in particular, to skip computation of values that depend on inactive tabs. Activity of a form, on the other hand, depends on the current state of the user session and is therefore exposed via an [action](Actions.md) that writes the result of the check into the [local](Data_properties_DATA.md#local) property `isActiveForm[]`.
 
 ### Language
 
