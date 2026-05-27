@@ -819,6 +819,29 @@ new rules SHOULD be phrased
 as briefly as possible
 without losing precision.
 
+Rules in this file
+MUST be stated
+abstractly:
+they MUST NOT include
+concrete examples —
+specific keywords,
+literals,
+identifiers,
+syntax fragments,
+code snippets,
+or worked cases
+illustrating a rule.
+A rule
+states
+what to do
+in general terms;
+concrete examples
+belong
+in the documentation
+the rule governs,
+never
+in the rule itself.
+
 This file describes
 general documentation
 conventions only.

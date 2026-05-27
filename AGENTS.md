@@ -94,7 +94,7 @@ A check must produce **evidence**: a saved screenshot, a DOM assertion (expected
 
 ## Commits
 
-- Short imperative subject, ≤72 chars. Suffix `(closes #NNNN)` when the commit fully resolves a tracked issue.
+- Short imperative subject in English, ≤72 chars. Suffix `(closes #NNNN)` when the commit fully resolves a tracked issue.
 - Body explains **why** — motivation, design constraints, alternatives rejected. The diff already shows what.
 - Multi-paragraph bodies are normal for non-trivial changes.
 - Never amend or force-push commits that may have been pulled by others. Always create a new commit on top.
