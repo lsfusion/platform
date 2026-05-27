@@ -80,6 +80,38 @@ Common structure rules:
   they are translations
   of the same documentation,
   not separate documents
+- the Russian version
+  is the source
+  of truth
+  for terminology;
+  the English version
+  is its translation.
+  When the two locales
+  seem to disagree
+  on a term,
+  the assistant MUST
+  defer to the Russian side
+  and adjust the English,
+  not the reverse.
+  When drafting prose
+  on the Russian side,
+  the assistant MUST NOT
+  transliterate
+  an English compound noun
+  into a hyphenated calque
+  and MUST use
+  a natural descriptive
+  Russian form
+  in lead occurrences
+  and section openings;
+  the compact form
+  MAY remain
+  in a few
+  less prominent
+  spots
+  where the descriptive
+  form would be
+  too heavy
 - if a new block
   or section is created,
   the parent
