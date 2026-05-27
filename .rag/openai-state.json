@@ -2957,8 +2957,8 @@
       "stale": false
     },
     "language/Action_options.md": {
-      "file_hash": "sha256:0324814658dad833d535c94278e3369413c7d8bdd0d9e44fc0bccb4385fd1c27",
-      "indexed_at": "2026-05-22T22:03:23Z",
+      "file_hash": "sha256:3daaef799f8a98caeb50c8e7e5a76681aefd2989fe62ecc42e1cc2cf9e110f94",
+      "indexed_at": "2026-05-27T10:09:06Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2986,9 +2986,9 @@
           "source_file": "language/Action_options.md"
         },
         "Action_options::interactive-view-block": {
-          "file_id": "file-Jw35vWXAxmFf9pTPsJcZmc",
+          "file_id": "file-CX26AXdXVsNC24uySq4JAi",
           "heading_path": "Action options > Description and parameters > Interactive view block",
-          "section_payload_hash": "sha256:bae1e7c4bf2f1b42dcc88248dfd4a1ebc6ced28d5982ca29b4d6a9732f1589e8",
+          "section_payload_hash": "sha256:9d2731ecb7e00cde1353bf7f46820edb3d05632546d847d4cab43cd919fdd7b8",
           "source_file": "language/Action_options.md"
         },
         "Action_options::syntax": {
@@ -4145,8 +4145,8 @@
       "stale": false
     },
     "language/EXTEND_CLASS_statement.md": {
-      "file_hash": "sha256:2ae14bbfe9224919cf7067d88ec9d91cb855e70aff0ead689fd86c83c3ccefe4",
-      "indexed_at": "2026-05-22T22:10:57Z",
+      "file_hash": "sha256:675e3e6b722c5096fc83776d54b71676453e6eeba9b8e1dca4b803f462a99674",
+      "indexed_at": "2026-05-27T10:09:20Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4155,6 +4155,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "EXTEND_CLASS_statement::description": {
+          "file_id": "file-VQnsEM4yq35xDvk5un6oae",
+          "heading_path": "EXTEND CLASS statement > Description",
+          "section_payload_hash": "sha256:24f47fed6e12f6376c2898840d7ea6a3cd613248ba23888478ba1b9fcfbdc4f6",
+          "source_file": "language/EXTEND_CLASS_statement.md"
+        },
         "EXTEND_CLASS_statement::examples": {
           "file_id": "file-E9K6GQRBKy6fXowbMYg8Zi",
           "heading_path": "EXTEND CLASS statement > Examples",
@@ -4168,15 +4174,15 @@
           "source_file": "language/EXTEND_CLASS_statement.md"
         },
         "EXTEND_CLASS_statement::parameters": {
-          "file_id": "file-HwvegAWrGBXaL3HCuwf5ec",
+          "file_id": "file-X9wBrtUYdVSWbcXvZd1qQ9",
           "heading_path": "EXTEND CLASS statement > Parameters",
-          "section_payload_hash": "sha256:134bdf0ef206d5b17431644077a073fdc4ef083252443ba0606e1ced5670a2de",
+          "section_payload_hash": "sha256:392d40c477379cec0d5ec4f04c7d9d1ec6620128cf8e50d54f5c44f4f70f3ddd",
           "source_file": "language/EXTEND_CLASS_statement.md"
         },
-        "EXTEND_CLASS_statement::syntax+description": {
-          "file_id": "file-7RCLw2xSq6PS6ZhFJarDkP",
-          "heading_path": "EXTEND CLASS statement > Syntax + Description",
-          "section_payload_hash": "sha256:209a36d870f20eccc5e6689a8f6863372c8a3f5b25cc5a96514b3afabb669ea2",
+        "EXTEND_CLASS_statement::syntax": {
+          "file_id": "file-4JPo145jkxcgBFFoKWseEB",
+          "heading_path": "EXTEND CLASS statement > Syntax",
+          "section_payload_hash": "sha256:fe35b41fdc51634168eb3fcdcb14d33723912279110e7b3b942069b692773122",
           "source_file": "language/EXTEND_CLASS_statement.md"
         }
       },
@@ -12654,7 +12660,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "71eb931c7ce0a859d335538fa6cc3d3598e50cec",
+  "last_indexed_docs_commit": "83d85cfaa2a591691c1b5d455fe1d742908c7cd8",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
