@@ -89,19 +89,15 @@ EXTID extID
 
 - `imageSetting`
 
-    Icon settings for the action. This option allows you to configure the icon manually. It can have one of the following forms:
+    Icon setting for the action. One of:
 
-    - `IMAGE [imageLiteral]`
+    - `IMAGE`
 
-        [Manual icon specification](../paradigm/Icons.md#manual) for the action. If `imageLiteral` is not provided, the [automatic assignment](../paradigm/Icons.md#auto) mode is enabled.
-
-        - `imageLiteral`
-
-            [String literal](Literals.md#strliteral) whose value defines the icon.
+        [Manual icon specification](../paradigm/Icons.md#manual), optionally followed by `imageLiteral` — a [string literal](Literals.md#strliteral) whose value defines the icon. If `imageLiteral` is omitted, the [automatic assignment](../paradigm/Icons.md#auto) mode is enabled.
 
     - `NOIMAGE`
 
-        Keyword indicating that the action should have no icon.
+        The action has no icon.
 
 - `annotationSetting`
 

@@ -10,11 +10,18 @@ The `EXTEND CLASS` statement [extends](../paradigm/Class_extension.md) an existi
 ```
 EXTEND CLASS name 
 [{
-    objectName1 [objectCaption1] [imageSetting1],
+    objectName1 [objectCaption1] [imageSetting],
     ...
-    objectNameM [objectCaptionM] [imageSettingM]
+    objectNameM [objectCaptionM] [imageSetting]
 }] 
 [: parent1, ..., parentN];
+```
+
+Where `imageSetting` is one of:
+
+```
+IMAGE [imageLiteral]
+NOIMAGE
 ```
 
 ### Description
@@ -29,27 +36,23 @@ The `EXTEND CLASS` statement extends an existing [custom class](../paradigm/User
 
 - `objectName1, ..., objectNameM`
 
-    Names of new static objects of the specified class. Each name is defined [by a simple ID](IDs.md#id). Name values are stored in the `System.staticName` system property.
+    Names of new static objects of the specified class. Each name is defined [by a simple ID](IDs.md#id). The name of each static object is available through the `name[StaticObject]` property.
 
 - `objectCaption1, ..., objectCaptionM`
 
-    Captions of new static objects of the specified class. Each caption is a [string literal](IDs.md#strliteral). If the caption is not defined, the name of the static object will be its caption. Caption values are stored in the `System.staticCaption` system property.
+    Captions of new static objects of the specified class. Each caption is a [string literal](Literals.md#strliteral). If the caption is not defined, the name of the static object will be its caption. The caption of each static object is available through the `caption[StaticObject]` property.
  
-- `imageSetting1, ..., imageSettingM`
+- `imageSetting`
 
-    Icon settings for the captions of new static objects of this class. The `HTML` class value used to display the icon is stored in the system property `System.image[StaticObject]`. This option allows you to configure the icon manually. It can have one of the following forms:
+    Icon setting for a static object. One of:
 
-    - `IMAGE [imageLiteral]`
+    - `IMAGE`
 
-        [Manual icon specification](../paradigm/Icons.md#manual) for the static object's caption. If `imageLiteral` is not provided, the [automatic assignment](../paradigm/Icons.md#auto) mode is enabled.
-
-        - `imageLiteral`
-
-            String literal whose value defines the icon.
+        [Manual icon specification](../paradigm/Icons.md#manual), optionally followed by `imageLiteral` — a [string literal](Literals.md#strliteral) whose value defines the icon. If `imageLiteral` is omitted, the [automatic assignment](../paradigm/Icons.md#auto) mode is enabled.
 
     - `NOIMAGE`
 
-        Keyword indicating that the static object's caption should have no icon.
+        The static object has no icon.
 
 - `parent1, ..., parentN`
 
