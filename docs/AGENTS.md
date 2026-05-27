@@ -265,6 +265,43 @@ without the rule
 that produces the result,
 is insufficient.
 
+Tabular presentation:
+
+When information
+is naturally tabular —
+several items
+each described
+along the same dimensions,
+or a correspondence
+from one set of values
+to another —
+it SHOULD be presented
+as a table
+rather than as
+repetitive prose
+or a flat list;
+a run of parallel
+sentences
+or list items
+that repeats
+the same structure
+for each entry
+SHOULD be converted
+into a table,
+since a table
+makes the shared structure
+and the per-item values
+easier to scan
+and compare.
+Prose or a list
+SHOULD be kept
+only when the items
+do not share
+a common set
+of described dimensions,
+or when there is
+a single item.
+
 Wording, naming, and terminology:
 
 The assistant SHOULD try to describe
