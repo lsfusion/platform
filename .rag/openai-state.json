@@ -2811,8 +2811,8 @@
       "stale": false
     },
     "language/APPLY_operator.md": {
-      "file_hash": "sha256:fbb90fbb9cd76e06f91fd8c149a1971488e147ae3a00cff8954c17383dd7b171",
-      "indexed_at": "2026-05-26T14:56:57Z",
+      "file_hash": "sha256:063e0619dd603f3074b42c1e7192f59d8af511d4ca584e3043603bc6d547ed2e",
+      "indexed_at": "2026-05-27T10:18:44Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2828,9 +2828,9 @@
           "source_file": "language/APPLY_operator.md"
         },
         "APPLY_operator::description": {
-          "file_id": "file-W6sPkxYJsd2vUP7capPZF8",
+          "file_id": "file-JuwKUVY4TQ1L9CoFcsfijk",
           "heading_path": "APPLY operator > Description",
-          "section_payload_hash": "sha256:f008bef53a0f86962bd04a45751f90cbba97766305d32b976569cc211e359ad6",
+          "section_payload_hash": "sha256:726305fbbfdc273a4b828edbc7aeeb14c2e9ba6452e28409a6a306d908a99014",
           "source_file": "language/APPLY_operator.md"
         },
         "APPLY_operator::examples": {
@@ -2840,9 +2840,9 @@
           "source_file": "language/APPLY_operator.md"
         },
         "APPLY_operator::parameters": {
-          "file_id": "file-5mNiSxBARnX4FTT2mDGV7y",
+          "file_id": "file-LigtnsLmiYtPtgCA3QBP51",
           "heading_path": "APPLY operator > Parameters",
-          "section_payload_hash": "sha256:d59794a8d4fc5f8e29e0e628549e20611a70f07ccdb169050a4ee76434b6668b",
+          "section_payload_hash": "sha256:efda633d93fe672711af990f9c6c625bbacdb1f908f1145a1369ed9bcf1b3510",
           "source_file": "language/APPLY_operator.md"
         },
         "APPLY_operator::syntax": {
@@ -3167,8 +3167,8 @@
       "stale": false
     },
     "language/CANCEL_operator.md": {
-      "file_hash": "sha256:e462fc244ba2f18335ded971582e54978e1e1531dcc8ec4f17e5e605cc2c2c47",
-      "indexed_at": "2026-05-26T14:57:22Z",
+      "file_hash": "sha256:05f521216afe110b83251fa8231970171b3e8d1487e7cb9fa48bfdf4024cacf7",
+      "indexed_at": "2026-05-27T10:18:53Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3190,15 +3190,15 @@
           "source_file": "language/CANCEL_operator.md"
         },
         "CANCEL_operator::parameters": {
-          "file_id": "file-NWYBd6e9tCWEotyB3WXdRC",
+          "file_id": "file-2ZJhEj2Ti9TBqM88hwqt8T",
           "heading_path": "CANCEL operator > Parameters",
-          "section_payload_hash": "sha256:08ebf76154f053080208bcf182a1d4219fd1eff89579def0571cd14848cd2247",
+          "section_payload_hash": "sha256:ad578660badf21caccbea03e039cd7842088310c1888f93aff60646d8f6a764d",
           "source_file": "language/CANCEL_operator.md"
         },
         "CANCEL_operator::syntax+description": {
-          "file_id": "file-Kos1X5qrShjnpwnfCSroAA",
+          "file_id": "file-CD7TTkuQ1tnP7jXR18Pve2",
           "heading_path": "CANCEL operator > Syntax + Description",
-          "section_payload_hash": "sha256:031eded86a0674f08ee9a50e1d41f0d6e75af28e0f72db6bfcd8778fb9866199",
+          "section_payload_hash": "sha256:338d7ce3a87b05e5c8264442b76c15e37055358cfd1a936aa68c75a0fe2725c5",
           "source_file": "language/CANCEL_operator.md"
         }
       },
@@ -5665,8 +5665,8 @@
       "stale": false
     },
     "language/NESTEDSESSION_operator.md": {
-      "file_hash": "sha256:ee9c2668eb1e4a6b04d41b03e331aa1c21263570a86989586eaca57106062438",
-      "indexed_at": "2026-05-26T14:57:32Z",
+      "file_hash": "sha256:5c0e4803b9b6f8e74e161429492335f2628cc3be2b503c78ba9b73e387804624",
+      "indexed_at": "2026-05-27T10:19:02Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5694,9 +5694,9 @@
           "source_file": "language/NESTEDSESSION_operator.md"
         },
         "NESTEDSESSION_operator::syntax+description": {
-          "file_id": "file-5w715mnikzZPsWUyJpFm8x",
+          "file_id": "file-CyK4Bve3av2hTioqxeGTSL",
           "heading_path": "NESTEDSESSION operator > Syntax + Description",
-          "section_payload_hash": "sha256:980465fa108880fffc8524d3ee318789fe6e3b9fdf7082a825ad49bac63be4a2",
+          "section_payload_hash": "sha256:fbe60418e6a4a4a53e79dadd4105cb3ff16d8cb82eb112271703aab4bd62a259",
           "source_file": "language/NESTEDSESSION_operator.md"
         }
       },
@@ -5779,8 +5779,8 @@
       "stale": false
     },
     "language/NEWSESSION_operator.md": {
-      "file_hash": "sha256:0eecef3c2cce2c2842e8a17a3594d58c39923162e6657d1ab90f6a2ff6682f7c",
-      "indexed_at": "2026-05-26T14:57:39Z",
+      "file_hash": "sha256:f7c936b346e04c38a3a9a174ccc64765919abb20337b0b505c486e3cc5c29ca1",
+      "indexed_at": "2026-05-27T10:19:11Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5790,9 +5790,9 @@
       },
       "sections": {
         "NEWSESSION_operator::description": {
-          "file_id": "file-GHuwZkRaE5Fq7wk4qp51ny",
+          "file_id": "file-12Zu3gA3gKDCh59rQXaMMC",
           "heading_path": "NEWSESSION operator > Description",
-          "section_payload_hash": "sha256:d4dbfe3585144b2a07760764bb351104ace6d7ce85dec51e8a296c76bf168f91",
+          "section_payload_hash": "sha256:9ebb52189a003548f6c55342e991debdb5d562a903044d1a348d5cc94264c05c",
           "source_file": "language/NEWSESSION_operator.md"
         },
         "NEWSESSION_operator::examples": {
@@ -5808,9 +5808,9 @@
           "source_file": "language/NEWSESSION_operator.md"
         },
         "NEWSESSION_operator::parameters": {
-          "file_id": "file-2couRL6yRrYdqvscBoW1WN",
+          "file_id": "file-GpMewZLq2i4Sx5KWYBw8zv",
           "heading_path": "NEWSESSION operator > Parameters",
-          "section_payload_hash": "sha256:b0bba35aa7f0b3585fbaee8792402b29cb307bbaaf99038316b20182481870eb",
+          "section_payload_hash": "sha256:312d502db91a2463584e7fd8b13e56171c741a69719036078717ed94f2650319",
           "source_file": "language/NEWSESSION_operator.md"
         },
         "NEWSESSION_operator::syntax": {
@@ -7675,8 +7675,8 @@
       "stale": false
     },
     "paradigm/Apply_changes_APPLY.md": {
-      "file_hash": "sha256:4ac85ffd59f6fa0ff5f127d9ebab0239c55549731935bdcf48686d0c58c11aa8",
-      "indexed_at": "2026-05-26T14:58:53Z",
+      "file_hash": "sha256:f10af0815a24a5923753375a0b1e3683d20e8cf8a8b02e99435bf58d70405568",
+      "indexed_at": "2026-05-27T10:19:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7686,9 +7686,9 @@
       },
       "sections": {
         "Apply_changes_APPLY::apply-changes-apply": {
-          "file_id": "file-NDWDvrPAnF2VR1He22EyXr",
+          "file_id": "file-2vFR2wXPkPak7YwxN7MpR4",
           "heading_path": "Apply changes (APPLY)",
-          "section_payload_hash": "sha256:12ee3c85486f4251a666329d031c780f68484ad09953bc1780cd64c6275a3715",
+          "section_payload_hash": "sha256:a35d45e317a05e769469c90fa33c82fdca98a88ddf0f9bb34d35c1686ad4aa98",
           "source_file": "paradigm/Apply_changes_APPLY.md"
         },
         "Apply_changes_APPLY::language+examples": {
@@ -7967,8 +7967,8 @@
       "stale": false
     },
     "paradigm/Cancel_changes_CANCEL.md": {
-      "file_hash": "sha256:e0750792a0e9b381eea8ec466b74f1de7bf9f92498cfb892bd03554f9b4b022e",
-      "indexed_at": "2026-05-26T14:59:00Z",
+      "file_hash": "sha256:9baa7268a67ec02594316fa4ce621f9f532ff14cd88fce8a3ac27f3c19e83d8b",
+      "indexed_at": "2026-05-27T10:19:32Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7984,9 +7984,9 @@
           "source_file": "paradigm/Cancel_changes_CANCEL.md"
         },
         "Cancel_changes_CANCEL::language+examples": {
-          "file_id": "file-1xMG1nQcPnhNFuVokz7GCz",
+          "file_id": "file-DvXNRfkWRFHmP2YvHyUgpX",
           "heading_path": "Cancel changes (CANCEL) > Language + Examples",
-          "section_payload_hash": "sha256:635050b882cd13426f87200101af644be11acae80d472e599748933091fd536e",
+          "section_payload_hash": "sha256:a262aa84a8cddf76c54d413a064421b312bb9937a43d208f5cb377b5648fba4c",
           "source_file": "paradigm/Cancel_changes_CANCEL.md"
         }
       },
@@ -8063,8 +8063,8 @@
       "stale": false
     },
     "paradigm/Change_sessions.md": {
-      "file_hash": "sha256:e7b51c7e30587401b71a62d2b7d93216b9928ca4e0e25eee7fd23dd0e956da90",
-      "indexed_at": "2026-05-26T14:59:07Z",
+      "file_hash": "sha256:06bca5cd7bf15bd47792a891d7f0864b55b35c0013d43e3c56372ad71362effe",
+      "indexed_at": "2026-05-27T10:19:41Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8074,9 +8074,9 @@
       },
       "sections": {
         "Change_sessions::change-sessions": {
-          "file_id": "file-TPQeyXsdb7qARaH5QMR7Cj",
+          "file_id": "file-1vpcch4SsXGMwnpKgyHWMT",
           "heading_path": "Change sessions",
-          "section_payload_hash": "sha256:6aa42fc8c89de41d3610ef0f36bcb4b4fed810e48c9e61e4c311056750b541fb",
+          "section_payload_hash": "sha256:d309924ded8517117c6ad028cc626594100498ead85241785aec7dcb1f211a3b",
           "source_file": "paradigm/Change_sessions.md"
         }
       },
@@ -10877,8 +10877,8 @@
       "stale": false
     },
     "paradigm/New_session_NEWSESSION_NESTEDSESSION.md": {
-      "file_hash": "sha256:3403b88ef9bfd3e1970299b924741f845d6389d4c42188e610529f44a1a3dc2c",
-      "indexed_at": "2026-05-26T15:01:36Z",
+      "file_hash": "sha256:939f50bf6ba0f2df2209f6f2d996f2c179b86a1ce8875edac2dd77b081750ae1",
+      "indexed_at": "2026-05-27T10:19:50Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10906,15 +10906,15 @@
           "source_file": "paradigm/New_session_NEWSESSION_NESTEDSESSION.md"
         },
         "New_session_NEWSESSION_NESTEDSESSION::new-session-newsession-nestedsession": {
-          "file_id": "file-AMyTw2vQDKsLXMjj4xsdYm",
+          "file_id": "file-6VkHDMruAaU2sX1ExcxK9Y",
           "heading_path": "New session (NEWSESSION, NESTEDSESSION)",
-          "section_payload_hash": "sha256:9d9b4645cd9f89a6d58f4f8d4af8f468ecf3a7b490aa52dbbdad614eeba97dd3",
+          "section_payload_hash": "sha256:772791418d5e75727e2da724f21ffcbd68afffa1cbf81e100cdf55833a05a613",
           "source_file": "paradigm/New_session_NEWSESSION_NESTEDSESSION.md"
         },
         "New_session_NEWSESSION_NESTEDSESSION::new-sql-connection-newsql": {
-          "file_id": "file-96jbqtYRZGeNuw5qbLvp9w",
+          "file_id": "file-L8ziiqpdUbCoTjwZF4hnbX",
           "heading_path": "New session (NEWSESSION, NESTEDSESSION) > New SQL connection {#newsql}",
-          "section_payload_hash": "sha256:1e84474496d424810fcfe3d0f1d5e2b05cbc81e7c012fe6a0363f63f2af8c9b3",
+          "section_payload_hash": "sha256:44d94a3eb6dbb54f916617ff6fc93ac81d8c1117627dffc38cb6f94c1f7e9145",
           "source_file": "paradigm/New_session_NEWSESSION_NESTEDSESSION.md"
         }
       },
@@ -11875,8 +11875,8 @@
       "stale": false
     },
     "paradigm/Session_management.md": {
-      "file_hash": "sha256:f86dae070ba3506cb618a6fe6a1657bccd17b1f80e256cfb82a9f688b16c0321",
-      "indexed_at": "2026-05-26T14:59:58Z",
+      "file_hash": "sha256:0248f9c3b838820dc4588395dbbe2be4a1330ed717a1f5f5b5296823b4fcf359",
+      "indexed_at": "2026-05-27T10:19:57Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11886,15 +11886,15 @@
       },
       "sections": {
         "Session_management::nested-local-properties-nested": {
-          "file_id": "file-FAMBqASfoswHLDXn5B18Qc",
+          "file_id": "file-UQkFUpw2Aq9bFa8EvGFZQi",
           "heading_path": "Session management > Nested local properties {#nested}",
-          "section_payload_hash": "sha256:85599a55ea18d6efcb8baaaa1391d2aa75803ac97387f1596ea37b013aeb1891",
+          "section_payload_hash": "sha256:0360950773178065c8a7a7c85aaa9ac8fb0d7f6cc2a143aa0029c3750b52d6ca",
           "source_file": "paradigm/Session_management.md"
         },
         "Session_management::session-management": {
-          "file_id": "file-7wQ5xPtFkAoT5jiAQ4dYuV",
+          "file_id": "file-22PgZzTCovFm23vLNKP2PA",
           "heading_path": "Session management",
-          "section_payload_hash": "sha256:d756201acc5e0fd368d22c974d9ab42012f90dcec013e866ae0845946524e400",
+          "section_payload_hash": "sha256:8106d8a6af8cf729eef40411fb57dec9385b9cfaf06937be102a6708b1485960",
           "source_file": "paradigm/Session_management.md"
         }
       },
@@ -12660,7 +12660,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "83d85cfaa2a591691c1b5d455fe1d742908c7cd8",
+  "last_indexed_docs_commit": "3a298fd73207a9e1425a6aa739d8b0a9ba348add",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
