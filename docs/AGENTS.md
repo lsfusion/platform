@@ -604,7 +604,26 @@ and adds no new
 local information;
 a plain link
 without such a remark
-is preferred.
+is preferred;
+in particular,
+a remark
+that only states
+the construction
+obeys a general,
+cross-cutting mechanism
+documented elsewhere —
+such as
+operator priority,
+parameter binding,
+or `NULL` propagation —
+which applies
+uniformly
+to every such
+construction
+and carries no
+construction-specific
+detail
+MUST be omitted.
 
 What not to restate or invent:
 

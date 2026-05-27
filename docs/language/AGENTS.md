@@ -397,6 +397,31 @@ Reader-facing explanation:
   or options,
   not as one
   combined keyword value;
+  more generally,
+  every distinct
+  reader-visible
+  parameter
+  or independent option
+  MUST be
+  its own
+  `Parameters` item,
+  and several
+  distinct parameters
+  MUST NOT
+  be merged
+  under one
+  comma-joined header
+  (for instance,
+  a single-value form
+  and the key
+  and the value
+  of a map form
+  are separate items);
+  the keyword values
+  of one choice,
+  however,
+  stay together
+  in that choice's item;
   the assistant MUST NOT
   spell out
   trivial consequences
@@ -405,12 +430,27 @@ Reader-facing explanation:
   directly from the syntax,
   such as explaining
   how an empty list
-  is written;
+  is written,
+  or calling
+  a parameter
+  "optional"
+  (or its translation)
+  in prose
+  when the syntax
+  already marks it
+  optional
+  with `[...]`;
   however,
   it MUST still say
   whether the list
   may be empty
-  or not;
+  or not,
+  and what
+  the absence
+  of an optional element
+  means
+  when that
+  is not obvious;
   for IDs,
   expressions,
   typed parameters,
