@@ -7,7 +7,7 @@ title: 'Static objects'
 
 When declaring a [custom class](User_classes.md), you can declare objects of this class which will be static objects. If you do this, this custom class automatically [inherits](User_classes.md#inheritance) from class `System.StaticObject`.
 
-For each static object of a custom class name and title must be specified. Later these name and title can be accessed using the [properties](Properties.md) `System.staticName[System.StaticObject]` and `System.staticCaption[System.StaticObject]` respectively. 
+For each static object of a custom class name and title must be specified, and an image can also be specified. Later this name, title, and image can be accessed using the [properties](Properties.md) `name[StaticObject]`, `caption[StaticObject]`, and `image[StaticObject]` respectively. 
 
 Static objects of [built-in classes](Built-in_classes.md) are numbers, strings, date values, etc., used by the user in describing the logic.
 
@@ -31,14 +31,14 @@ CLASS Direction 'Direction'
 direction = DATA Direction ();
 
 showDirection  {
-    MESSAGE staticName(direction());
-    MESSAGE staticCaption(direction());
+    MESSAGE name(direction());
+    MESSAGE caption(direction());
 }
 
 // creating a form by choosing an object of Direction class
 FORM directions 'Directions'
     OBJECTS d = Direction
-    PROPERTIES(d) READONLY staticCaption
+    PROPERTIES(d) READONLY caption
 
     LIST Direction OBJECT d
 ;

@@ -14,9 +14,11 @@ title: 'Built-in classes'
 |`BOOLEAN`            |Logical data type         |`TRUE`, `NULL`|
 |`TBOOLEAN`           |Three-state data type         |`TTRUE`, `TFALSE`, `NULL`|
 |`DATE`               |Date                          |`13_07_1982`|
-|`DATETIME`           |Date and time                 |`13_07_1982_18:00`, `13_07_1982_18:00:00`|
-|`TIME`               |Time                          |`18:00`, `18:00:00`|
+|`DATETIME`, `DATETIME[ ]`|Date and time, optionally with fractional-seconds precision (0 to 6)|`13_07_1982_18:00`, `13_07_1982_18:00:00`|
+|`ZDATETIME`, `ZDATETIME[ ]`|Date and time with time zone, optionally with fractional-seconds precision (0 to 6)||
+|`TIME`, `TIME[ ]`    |Time, optionally with fractional-seconds precision (0 to 6)|`18:00`, `18:00:00`|
 |`YEAR`               |Year                          ||
+|`INTERVAL[DATE]`, `INTERVAL[DATETIME]`, `INTERVAL[TIME]`, `INTERVAL[ZDATETIME]`|Interval — a pair of boundary values (from / to) of the corresponding date / time class||
 |`STRING`, `STRING[ ]`|String data type with optional maximum length, case-sensitive||
 |`ISTRING`, `ISTRING[ ]`|String data type with optional maximum length, case-insensitive||
 |`BPSTRING[]`         |String data type with maximum length, case-sensitive, padded at the end with spaces|`'text'`, `'text with\nbreak'`|
@@ -26,14 +28,16 @@ title: 'Built-in classes'
 |`HTMLTEXT`           |String data type of arbitrary length with HTML markup, case-insensitive||
 |`COLOR`              |Color                         |`#00ccff`, `#AA55CC`, `RGB(0, 255, 0)`|
 |`JSON`               |JSON                          |`{"a":["x","y","z"]}`|
+|`JSONTEXT`           |JSON stored as a text string  ||
 |`XML`                |XML                           |`<tag>value</tag>`|
+|`HTML`               |HTML markup stored as a string||
 |`TSVECTOR`           |Full-text search vector       ||
 |`TSQUERY`            |Full-text search query        ||
 |`FILE`               |File of dynamic type (file content together with extension)||
 |`NAMEDFILE`          |File of dynamic type (file content together with name and extension)||
-|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
+|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
 |`LINK`               |Link to a file (URI)          ||
-|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Link to a file of a specific type (`RAWLINK`: link to a file with no extension or an unknown extension)||
+|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Link to a file of a specific type (`RAWLINK`: link to a file with no extension or an unknown extension)||
 
 ## Inheritance {#inheritance}
 
@@ -43,8 +47,8 @@ The builtin classes can be divided into four class *families* (assuming that eac
 |---------------------------------|---------------------------------------------------------------------------------------------------------|
 |Numbers                          |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC[ , ]`|
 |Strings                          |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`, `RICHTEXT`, `HTMLTEXT`|
-|Files of a specific type         |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
-|Links to files of a specific type|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
+|Files of a specific type         |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
+|Links to files of a specific type|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
 The builtin classes inherit only from one another within a single family, and cannot inherit from or be inherited by user classes. Inheritance within each family works on the principle that the narrower class inherits from the broader one.
 
@@ -141,6 +145,7 @@ When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file 
 |`JSONFILE`  |json            |
 |`XMLFILE`   |xml             |
 |`CSVFILE`   |csv             |
+|`TEXTFILE`  |txt             |
 |`WORDFILE`  |doc             |
 |`EXCELFILE` |xls             |
 |`HTMLFILE`  |html            |
@@ -154,10 +159,10 @@ When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file 
 
 |Class name|Property name|
 |---|---|
-|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`,`exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`,`exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportTextFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`|`exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
-|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`, `XML`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`, `exportXML`|
 |[User classes](User_classes.md)|`exportObject`|

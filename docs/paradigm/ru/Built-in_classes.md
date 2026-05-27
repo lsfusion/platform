@@ -14,9 +14,11 @@ title: 'Встроенные классы'
 |`BOOLEAN`            |Логический тип данных     |`TRUE`, `NULL`|
 |`TBOOLEAN`           |Расширенный логический тип данных |`TTRUE`, `TFALSE`, `NULL`|
 |`DATE`               |Дата                      |`13_07_1982`|
-|`DATETIME`           |Дата и время              |`13_07_1982_18:00`, `13_07_1982_18:00:00`|
-|`TIME`               |Время                     |`18:00`, `18:00:00`|
+|`DATETIME`, `DATETIME[ ]`|Дата и время, при необходимости с точностью до долей секунды (от 0 до 6)|`13_07_1982_18:00`, `13_07_1982_18:00:00`|
+|`ZDATETIME`, `ZDATETIME[ ]`|Дата и время с часовым поясом, при необходимости с точностью до долей секунды (от 0 до 6)||
+|`TIME`, `TIME[ ]`    |Время, при необходимости с точностью до долей секунды (от 0 до 6)|`18:00`, `18:00:00`|
 |`YEAR`               |Год                       ||
+|`INTERVAL[DATE]`, `INTERVAL[DATETIME]`, `INTERVAL[TIME]`, `INTERVAL[ZDATETIME]`|Интервал — пара граничных значений (от / до) соответствующего класса даты / времени||
 |`STRING`, `STRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, зависимый от регистра||
 |`ISTRING`, `ISTRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, независимый от регистра||
 |`BPSTRING[]`         |Строковый тип данных с максимальной длиной, зависимый от регистра, с пробелами в конце|`'text'`, `'text with\nbreak'`|
@@ -24,16 +26,18 @@ title: 'Встроенные классы'
 |`TEXT`               |Строковый тип данных произвольной длины, независимый от регистра||
 |`RICHTEXT`           |Строковый тип данных произвольной длины с форматированием, независимый от регистра||
 |`HTMLTEXT`           |Строковый тип данных произвольной длины с HTML-разметкой, независимый от регистра||
-|`COLOR`              |Цвет|`#00ссff`, `#AA55CC`, `RGB(0, 255, 0)`|
+|`COLOR`              |Цвет|`#00ccff`, `#AA55CC`, `RGB(0, 255, 0)`|
 |`JSON`               |JSON|`{"a":["x","y","z"]}`|
+|`JSONTEXT`           |JSON, хранящийся в виде текстовой строки||
 |`XML`                |XML|`<tag>value</tag>`|
+|`HTML`               |HTML-разметка, хранящаяся в виде строки||
 |`TSVECTOR`           |Вектор полнотекстового поиска||
 |`TSQUERY`            |Запрос полнотекстового поиска||
 |`FILE`               |Файл динамического типа (содержимое файла вместе с его расширением)||
 |`NAMEDFILE`          |Файл динамического типа (содержимое файла вместе с его именем и расширением)||
-|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
+|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
 |`LINK`               |Символьный идентификатор-ссылка на файл (URI)||
-|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Символьный идентификатор-ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
+|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Символьный идентификатор-ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
 
 ## Наследование {#inheritance}
 
@@ -43,8 +47,8 @@ title: 'Встроенные классы'
 |----------------------------------|--------------------------------------------|
 |Числа                             |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC [ , ]`|
 |Строки                            |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`, `RICHTEXT`, `HTMLTEXT`|
-|Файлы конкретного типа            |`RAWFILE,` `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
-|Ссылки на файлы конкретного типа  |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
+|Файлы конкретного типа            |`RAWFILE,` `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
+|Ссылки на файлы конкретного типа  |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
 Встроенные классы наследуют друг друга только в рамках одного семейства и не могут наследовать / наследоваться от пользовательских классов. Наследование в рамках одного семейства строится по принципу: более узкий класс наследуется от более широкого.
 
@@ -141,6 +145,7 @@ ELSE
 |`JSONFILE`  |json         |
 |`XMLFILE`   |xml          |
 |`CSVFILE`   |csv          |
+|`TEXTFILE`  |txt          |
 |`WORDFILE`  |doc          |
 |`EXCELFILE` |xls          |
 |`HTMLFILE`  |html         |
@@ -154,10 +159,10 @@ ELSE
 
 |Имя класса|Имя свойства|
 |----------|------------|
-|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportTextFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`| `exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
-|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`, `XML`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`, `exportXML`|
 |[Пользовательские классы](User_classes.md)|`exportObject`|
