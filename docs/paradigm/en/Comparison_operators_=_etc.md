@@ -16,7 +16,9 @@ The platform currently supports the following comparison operators:
 | `LIKE`      | Comparison with a pattern | Accepts two operands: a string and a pattern. Returns `TRUE` if the string matches the pattern |`'abc' LIKE 'a%'`|`TRUE`|
 | `MATCH`     | Full-text search          | Takes a string or `TSVECTOR` on the left and a string or `TSQUERY` on the right. For string operands it performs full-text search and an additional substring inclusion check, while prepared `TSVECTOR` / `TSQUERY` values are used directly |`'abc def' MATCH 'abc'`|`TRUE`|
 
-If one of the operands is `NULL`, all operators will return `NULL` as a result.
+A comparison result is always either `TRUE` or `NULL`, never `FALSE`: when the comparison condition does not hold, the result is `NULL`. If one of the operands is `NULL`, all operators will return `NULL` as a result.
+
+For equality and ordering comparisons, the two operands must belong to compatible classes — the same built-in class family, or classes related by inheritance; comparing values of unrelated classes is not allowed.
 
 ### Language
 

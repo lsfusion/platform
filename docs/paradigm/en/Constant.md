@@ -3,13 +3,19 @@ slug: "/Constant"
 title: 'Constant'
 ---
 
-The *constant* operator is used to create properties without parameters which always return the same value. This value can be [static objects](Static_objects.md) of [custom](User_classes.md) and [built-in](Built-in_classes.md) classes as well as the special `NULL` value. 
+The *constant* operator is used to create properties without parameters which always return the same value. This value can be [static objects](Static_objects.md) of [custom](User_classes.md) and [built-in](Built-in_classes.md) classes as well as the special `NULL` value. The value class is fixed by the value itself:
+
+|Constant value|Value class|
+|--------------|---|
+|Static object of a custom class|the class in whose declaration the object is listed|
+|Built-in value|that value's built-in class|
+|`NULL`|none — the surrounding context supplies a class where one is required|
+
+There is no `FALSE` constant — the false value is represented by `NULL`.
 
 ### Language
 
-Static objects of custom classes are specified as `<class name>.<object name>`.
-
-Static objects of built-in classes are specified by special [literals](../language/Literals.md).
+Constants are written as references to [static objects](Static_objects.md) for custom-class values, and as [literals](../language/Literals.md) for built-in-class values and `NULL`.
 
 ### Examples
 

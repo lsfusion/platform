@@ -3,7 +3,7 @@ slug: "/AND_OR_NOT_XOR_operators"
 title: 'Операторы AND, OR, NOT, XOR'
 ---
 
-Операторы `AND`, `OR`, `NOT`, `XOR` - создание [свойств](../paradigm/Properties.md), реализующих [логические операции](../paradigm/Logical_operators_AND_OR_NOT_XOR.md).
+Операторы `AND`, `OR`, `NOT`, `XOR` создают [свойства](../paradigm/Properties.md), реализующие [логические операции](../paradigm/Logical_operators_AND_OR_NOT_XOR.md).
 
 ### Синтаксис
 
@@ -14,11 +14,15 @@ expression1 XOR expression2
 NOT expression1
 ```
 
+### Описание
+
+`AND`, `OR` и `XOR` - инфиксные операторы, принимающие два операнда; `NOT` - префиксный оператор, принимающий один операнд. Порядок вычисления относительно других операторов определяется [приоритетом операторов](Operator_priority.md).
+
 ### Параметры
 
 - `expression1, expression2`
 
-    [Выражения](Expression.md), значения которых будут являться аргументами операторов. Значения выражений будут рассматриваться как значения [класса `BOOLEAN`](../paradigm/Built-in_classes.md) в зависимости от того, равны они `NULL` или нет.
+    [Выражения](Expression.md), используемые в качестве операндов.
 
 ### Примеры
 

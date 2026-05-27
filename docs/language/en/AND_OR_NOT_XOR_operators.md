@@ -3,7 +3,7 @@ slug: "/AND_OR_NOT_XOR_operators"
 title: 'AND, OR, NOT, XOR operators'
 ---
 
-`AND`, `OR`, `NOT`, `XOR` operators that create [properties](../paradigm/Properties.md) that implement [logical operations](../paradigm/Logical_operators_AND_OR_NOT_XOR.md).
+The `AND`, `OR`, `NOT`, `XOR` operators create [properties](../paradigm/Properties.md) that implement [logical operations](../paradigm/Logical_operators_AND_OR_NOT_XOR.md).
 
 ### Syntax
 
@@ -14,11 +14,15 @@ expression1 XOR expression2
 NOT expression1
 ```
 
+### Description
+
+`AND`, `OR`, and `XOR` are infix operators taking two operands; `NOT` is a prefix operator taking a single operand. The evaluation order relative to other operators follows [operator priority](Operator_priority.md).
+
 ### Parameters
 
 - `expression1, expression2`
 
-    [Expressions](Expression.md) whose values will be the operator arguments. Expression values are considered to be `BOOLEAN` class values depending on whether they are `NULL` or not.
+    [Expressions](Expression.md) used as the operands.
 
 ### Examples
 

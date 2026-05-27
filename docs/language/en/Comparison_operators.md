@@ -3,7 +3,7 @@ slug: "/Comparison_operators"
 title: 'Comparison operators'
 ---
 
-`==`, `=`, `!=`, `<`, `>`, `<=`, `>=` operators create [properties](../paradigm/Properties.md) that implement [comparison operations](../paradigm/Comparison_operators_=_etc.md).
+The `==`, `=`, `!=`, `<`, `>`, `<=`, `>=` operators create [properties](../paradigm/Properties.md) that implement [comparison operations](../paradigm/Comparison_operators_=_etc.md).
 
 ### Syntax
 
@@ -16,6 +16,10 @@ expression1 > expression2
 expression1 <= expression2
 expression1 >= expression2
 ```
+
+### Description
+
+The `=` and `==` forms are equivalent. Each operator takes two operands and cannot be chained — `expression1 < expression2 < expression3` is not valid. The evaluation order relative to other operators follows [operator priority](Operator_priority.md).
 
 ### Parameters
 
