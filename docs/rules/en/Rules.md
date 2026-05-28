@@ -279,6 +279,48 @@ ACTION RULES
    remain valid; the assistant SHOULD still keep such
    `LOCAL`s minimal in count and scope.
 ----------------------------------------------------------------
+EVENT RULES (`WHEN`)
+
+1. A `WHEN` event fires whenever its condition becomes true
+   during a session and writes its target property
+   unconditionally. If the same target property is also
+   changed explicitly elsewhere in the session
+   (user input, action assignment, import),
+   the event overwrites that explicit change.
+
+2. When the event's purpose is only to derive or default
+   a value from other inputs, the assistant SHOULD guard
+   the condition with `AND NOT CHANGED(<target>)`
+   for each target property the event writes.
+
+   This prevents the event from clobbering an explicit
+   change to the target made elsewhere in the same session.
+
+3. The guard SHOULD be omitted only when the event must
+   forcibly override any explicit change — for example,
+   maintained totals, audit stamps, or invariants
+   the user is not allowed to bypass.
+----------------------------------------------------------------
+CONSTRAINT RULES
+
+1. When a value choice in one property must be restricted
+   based on values of other properties — sibling fields
+   on the same form, current context, related objects —
+   the assistant SHOULD first consider
+   `CONSTRAINT ... CHECKED BY <property>`.
+
+   `CHECKED BY` makes the selection dialog for the listed
+   property automatically filter out values that would
+   violate the constraint, so the restriction is enforced
+   declaratively at the point of selection, not after
+   the fact.
+
+2. Manual form filters or hand-rolled validation actions
+   SHOULD be the fallback only when `CHECKED BY` cannot
+   express the restriction (e.g. the filter depends on
+   transient UI state not modeled as a property, or the
+   rule is advisory rather than enforced).
+----------------------------------------------------------------
 PROPERTY NAMING POLICY
 
 1. Property names MUST follow lowerCamelCase,
@@ -498,6 +540,20 @@ MODULE DESIGN RULES
 9. When introducing a new module,
    the assistant MUST choose dependencies deliberately
    and avoid circular or unnecessary dependencies.
+
+10. To use a property, action, class, or form
+    from another module, that module MUST be reachable
+    from the current module's `REQUIRE` chain — either
+    directly, or transitively through other required modules.
+
+    If the owning module is not in the transitive `REQUIRE`
+    closure, the platform raises a "Property not found"
+    (or analogous "not found") error at startup.
+
+    The assistant MUST add the owning module
+    (or any module that already requires it)
+    to the current module's `REQUIRE` list before using
+    its elements.
 ----------------------------------------------------------------
 CHANGE SESSION RULES (`NEWSESSION`, `NESTEDSESSION`, `APPLY`)
 
