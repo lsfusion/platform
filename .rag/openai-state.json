@@ -12676,8 +12676,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:a3b395565356d0348e7ee3d5b89183b4192ec5d96eb769ea0858038996a099db",
-      "indexed_at": "2026-05-27T13:48:55Z",
+      "file_hash": "sha256:1628bee98eb3210a10a16e919ff0546475da0395cead9b42d0e180fb3f6fa976",
+      "indexed_at": "2026-05-28T08:30:45Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12693,22 +12693,28 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
-          "file_id": "file-EDFFzDQddLhd9RMdNEpDbR",
+          "file_id": "file-UTvfQsmUPfftnDSngkBRJe",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:baa898dbe1682e7e93ee2751cb579caf67dc23e1c6efac4ef0ea4443cbebe3a1",
+          "section_payload_hash": "sha256:2135b1f6420bb1f28038ce1873f55f720155fa514311f3bb9fde14a111257ca5",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-K2Gn1HKqsnjfuTZjPd8jch",
+          "file_id": "file-Rv9PrJAhpboNYhMSnM5uKg",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:a10e2c9a04eb1b4f42ee6d9e510affa2e3ae2ac8babc06ffac898d1ef5ac61d6",
+          "section_payload_hash": "sha256:77f2a55573f5f7c346dce1f7908833d8ddaa11234805f7632f4cdb3feb64f8ac",
+          "source_file": "rules/Rules.md"
+        },
+        "Rules::lsfusion-rules::part-03": {
+          "file_id": "file-PiZEba3WF9XSV6TQCEUVvW",
+          "heading_path": "lsFusion Rules",
+          "section_payload_hash": "sha256:2cf41de419ebe06cd414a3cff66e59a6531608f28cb7125b780b3f74ceea6acf",
           "source_file": "rules/Rules.md"
         }
       },
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3a3e46964a356573d6ab1915f1b664dff8871931",
+  "last_indexed_docs_commit": "519862de08804d22629cf0e41b9dda95d0449367",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
