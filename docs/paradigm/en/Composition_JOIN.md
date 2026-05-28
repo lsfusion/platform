@@ -3,7 +3,9 @@ slug: "/Composition_JOIN"
 title: 'Composition (JOIN)'
 ---
 
-The composition operator allows you to use values of other properties as *arguments* for one (*main*) property.
+The *composition* operator creates a [property](Properties.md) whose value is another property — the *main* property — applied to the values returned by other properties supplied as its *arguments*.
+
+The result class is the value class of the main property.
 
 ### Language
 
