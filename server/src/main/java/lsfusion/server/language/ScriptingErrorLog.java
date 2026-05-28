@@ -5,8 +5,9 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import org.antlr.runtime.BaseRecognizer;
-import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenStream;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -17,8 +18,18 @@ public class ScriptingErrorLog {
     public static class SemanticErrorException extends RecognitionException {
         private String msg;
 
-        public SemanticErrorException(IntStream input) {
+        public SemanticErrorException(TokenStream input) {
             super(input);
+            // RecognitionException(IntStream) records line/charPositionInLine from LT(1) — the next,
+            // not-yet-consumed token. For a semantic error, the offending token is the one the parser
+            // just consumed, so LT(1) points past it (often onto the next line). Re-anchor the position
+            // on LT(-1) without mutating the input stream.
+            Token prev = input.LT(-1);
+            if (prev != null) {
+                this.token = prev;
+                this.line = prev.getLine();
+                this.charPositionInLine = prev.getCharPositionInLine();
+            }
         }
 
         public void setMessage(String msg) {
