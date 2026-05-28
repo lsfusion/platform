@@ -5157,8 +5157,8 @@
       "stale": false
     },
     "language/JOIN_operator.md": {
-      "file_hash": "sha256:2b31e0eb34d194d77b12772deb8f7081691c826191b0ab3c8eee8c15682bfb32",
-      "indexed_at": "2026-05-22T22:21:11Z",
+      "file_hash": "sha256:f2dad9cc0bd8c071afe7981334a77b461f528ea5dd60548f45b66e089de1b0ec",
+      "indexed_at": "2026-05-28T16:57:20Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5168,9 +5168,9 @@
       },
       "sections": {
         "JOIN_operator::description": {
-          "file_id": "file-89du1s2PwLLLgmuQw1Ffmt",
+          "file_id": "file-UADTDoNKvPG6PZ7LAucTa3",
           "heading_path": "JOIN operator > Description",
-          "section_payload_hash": "sha256:cc9168d46e09fb4dad31af9628939a94257a68a618f3e04b9bfae8f8c7b7bf87",
+          "section_payload_hash": "sha256:0d207feb6c7d1e6be403efe9717960f27f48b86789096f30c6e2e16b666e3fd3",
           "source_file": "language/JOIN_operator.md"
         },
         "JOIN_operator::examples": {
@@ -5186,15 +5186,15 @@
           "source_file": "language/JOIN_operator.md"
         },
         "JOIN_operator::parameters": {
-          "file_id": "file-UeRthY1ykkeC6aPZXUoK6r",
+          "file_id": "file-9M4sGJbBPS1B2jHMs4KZ8A",
           "heading_path": "JOIN operator > Parameters",
-          "section_payload_hash": "sha256:aabd8bbe72c6aeaf18f1dd7f0b7c3238be93a071f84e08223a9b8c76f05ccaf3",
+          "section_payload_hash": "sha256:1328f2ad537ecc077be58c0e3204f08ee1535c135036058d4b3d7f7fe6fbe2df",
           "source_file": "language/JOIN_operator.md"
         },
         "JOIN_operator::syntax": {
-          "file_id": "file-EbFRhwdJeFZkXafJF4MSAq",
+          "file_id": "file-L32jTEMPGrKeuZiUNVFsaz",
           "heading_path": "JOIN operator > Syntax",
-          "section_payload_hash": "sha256:e62ad24634565e5906e94dfe80c65234759ee1a224f08055a77907cf4d097832",
+          "section_payload_hash": "sha256:fabf007ea918cf054df3640fe818cf13555e638eb93e7f1e4b1a4e5e9927e0d9",
           "source_file": "language/JOIN_operator.md"
         }
       },
@@ -8270,8 +8270,8 @@
       "stale": false
     },
     "paradigm/Composition_JOIN.md": {
-      "file_hash": "sha256:c8c9cfd5e61fc3ede3558d3d486d4f6d58450983bb711b03858c535c479c6217",
-      "indexed_at": "2026-05-22T23:02:34Z",
+      "file_hash": "sha256:4b45a8889ffdcfb4eafebb6a7756eab060839214046000b4807b4b6d0616c0f5",
+      "indexed_at": "2026-05-28T16:57:33Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8281,9 +8281,9 @@
       },
       "sections": {
         "Composition_JOIN::composition-join": {
-          "file_id": "file-Rt5EnC2NwYkBwiMf4UzrCb",
+          "file_id": "file-5uCv5WYgWscac3XG7qNCqX",
           "heading_path": "Composition (JOIN)",
-          "section_payload_hash": "sha256:6ceb65a9a61027f86761a7dfa4817227f184836bacefcbfb1876dc542425e29e",
+          "section_payload_hash": "sha256:a2b3170e840399dff1f7896370a309404f5c463a6e7cc994820927a4ff5341b9",
           "source_file": "paradigm/Composition_JOIN.md"
         },
         "Composition_JOIN::language+examples": {
@@ -12714,7 +12714,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "519862de08804d22629cf0e41b9dda95d0449367",
+  "last_indexed_docs_commit": "4e3010d8a44b9022bd13bd51585865c02c09eeda",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
