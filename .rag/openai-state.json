@@ -5747,8 +5747,8 @@
       "stale": false
     },
     "language/NEWEXECUTOR_operator.md": {
-      "file_hash": "sha256:e5fd6146a0fefddfed2bee5cdda0143739e653eab34962676a3e93e93c514d9c",
-      "indexed_at": "2026-05-22T22:36:28Z",
+      "file_hash": "sha256:34a6bb5857481d3aba10bf16929d9f194f8f1ac39deafa739eb96d5452af5355",
+      "indexed_at": "2026-05-28T06:57:19Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5758,15 +5758,15 @@
       },
       "sections": {
         "NEWEXECUTOR_operator::description": {
-          "file_id": "file-Cm31jkYoaLtdgJGfpa54ov",
+          "file_id": "file-5BtNfntxwbGL5jaiC2mMoP",
           "heading_path": "NEWEXECUTOR operator > Description",
-          "section_payload_hash": "sha256:84cdcdeee68ed14746483c3887785496ef83fc2cf2dceb80641ea95f30fffd55",
+          "section_payload_hash": "sha256:5e71ae49339676512d5ad64129458e7a42f3d0fb49098a13642fbb5f74721987",
           "source_file": "language/NEWEXECUTOR_operator.md"
         },
         "NEWEXECUTOR_operator::examples": {
-          "file_id": "file-47xss4zisDyYtBfA72mWJz",
+          "file_id": "file-HDmsXDrv4TjYhZPTzd262z",
           "heading_path": "NEWEXECUTOR operator > Examples",
-          "section_payload_hash": "sha256:74980fcbde3b904ef5fefa687ade8037bd591b3c2376c14ba7b19a37f8ba113e",
+          "section_payload_hash": "sha256:8162323033feccc5eb273e7f61709e5cf05a57f4cc6bce858277826e09ea7675",
           "source_file": "language/NEWEXECUTOR_operator.md"
         },
         "NEWEXECUTOR_operator::newexecutor-operator": {
@@ -5776,15 +5776,15 @@
           "source_file": "language/NEWEXECUTOR_operator.md"
         },
         "NEWEXECUTOR_operator::parameters": {
-          "file_id": "file-EUjFBEFrwn8yxGdcD5ZtXL",
+          "file_id": "file-2usz8AN68jg17xxLHD9vn2",
           "heading_path": "NEWEXECUTOR operator > Parameters",
-          "section_payload_hash": "sha256:52d19771a22a7452af20276739b428131776d399c29f03fc6ac8a7c8cbb7cb74",
+          "section_payload_hash": "sha256:9a18311788d7a528dc735e5c16d324818ca0679b38c0a494e70850cd20ed7331",
           "source_file": "language/NEWEXECUTOR_operator.md"
         },
         "NEWEXECUTOR_operator::syntax": {
-          "file_id": "file-K3FRQqb8v5RyYXN74psqip",
+          "file_id": "file-NMVm4FuFjqyuNTXmR1FC5r",
           "heading_path": "NEWEXECUTOR operator > Syntax",
-          "section_payload_hash": "sha256:39c31e8466a349ad757d7d26138933abb19b301f9fd359d944904c86da098d20",
+          "section_payload_hash": "sha256:8df980d104d42eb093dd36bea4050b293db05e260e1c64a3949860bf4961f900",
           "source_file": "language/NEWEXECUTOR_operator.md"
         }
       },
@@ -5835,8 +5835,8 @@
       "stale": false
     },
     "language/NEWTHREAD_operator.md": {
-      "file_hash": "sha256:fb2b9171d9f9f406d383e245292d2f41315f1fb4a821c90ea0df43a65c52ab1c",
-      "indexed_at": "2026-05-22T22:37:45Z",
+      "file_hash": "sha256:f6f830c03368709d2aa3ab8ae0eff85a030b50fc22212b544f0e4f6e78942424",
+      "indexed_at": "2026-05-28T06:57:29Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5846,9 +5846,9 @@
       },
       "sections": {
         "NEWTHREAD_operator::description": {
-          "file_id": "file-T5gLXrzjSg3nFbngdq3s2g",
+          "file_id": "file-5shHgoMcmfdnAB4xHqxjLS",
           "heading_path": "NEWTHREAD operator > Description",
-          "section_payload_hash": "sha256:cbc10bec6395e879244641ae188b135557df457c3197519bd94898ee7bcb55a0",
+          "section_payload_hash": "sha256:9de61fcba943c2492d14c6716ef3199b130a2a3d59dc3fd9440bb363d23a2595",
           "source_file": "language/NEWTHREAD_operator.md"
         },
         "NEWTHREAD_operator::examples": {
@@ -5870,9 +5870,9 @@
           "source_file": "language/NEWTHREAD_operator.md"
         },
         "NEWTHREAD_operator::syntax": {
-          "file_id": "file-Qbuvh4B7yQyyjvirYJtKH3",
+          "file_id": "file-U1nVCJoWUDGDPoyspjT9rM",
           "heading_path": "NEWTHREAD operator > Syntax",
-          "section_payload_hash": "sha256:3e5f8f3a00f5b7b48acacf0451875bad551e0956fcf7f4a0a62ebd919102a9e8",
+          "section_payload_hash": "sha256:ae65c76bac8e07c621f60b1fda57013aa841f68e53a8f0f1b9128bd8d04a0a4e",
           "source_file": "language/NEWTHREAD_operator.md"
         }
       },
@@ -10837,8 +10837,8 @@
       "stale": false
     },
     "paradigm/New_connection_NEWCONNECTION.md": {
-      "file_hash": "sha256:3b9a691d01bf6ec9b5e4b1d8679e19fc40a06afbac327b9eaac87b4bc9495a7a",
-      "indexed_at": "2026-05-22T23:29:58Z",
+      "file_hash": "sha256:e5c4520484742bc92c2e149eff2a5b09bb8554bc99adbe01ec282da9295531b1",
+      "indexed_at": "2026-05-28T06:57:38Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10854,9 +10854,9 @@
           "source_file": "paradigm/New_connection_NEWCONNECTION.md"
         },
         "New_connection_NEWCONNECTION::new-external-connections-newconnection": {
-          "file_id": "file-WGeZEAZPPweobsNbT39MQE",
+          "file_id": "file-PHD9F88KfGKy67NYwmVSJN",
           "heading_path": "New external connections (NEWCONNECTION)",
-          "section_payload_hash": "sha256:1fe4101bc1a3c94ec1cfbf949fa81ee99115db4ddad191fc81f86a838c4853b0",
+          "section_payload_hash": "sha256:a22e11fad59022c27140688d5b4b7811ffc479211215a66f23d81d3df6834e38",
           "source_file": "paradigm/New_connection_NEWCONNECTION.md"
         }
       },
@@ -10939,8 +10939,8 @@
       "stale": false
     },
     "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md": {
-      "file_hash": "sha256:d9bc1f334736bf080a9dc3aec814af2e32d4ff55d985cb0c54bc39f147301344",
-      "indexed_at": "2026-05-25T10:06:36Z",
+      "file_hash": "sha256:f60693e2018d547650a67205fcc967f69debaa884d07c49111a5a841fe0cc8d8",
+      "indexed_at": "2026-05-28T06:57:56Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10962,19 +10962,13 @@
           "source_file": "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md"
         },
         "New_threads_NEWTHREAD_NEWEXECUTOR::new-threads-newthread-newexecutor": {
-          "file_id": "file-3DwAuNgmnzQkZwX1yA32hT",
+          "file_id": "file-BVtEaZddYUyfcSJBoCV3UV",
           "heading_path": "New threads (NEWTHREAD, NEWEXECUTOR)",
-          "section_payload_hash": "sha256:1ac3a81ccd78097ec8a70c35a9da60eaa2c68a5dfdd46d4a077a71f5e3377c9b",
-          "source_file": "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md"
-        },
-        "New_threads_NEWTHREAD_NEWEXECUTOR::where-threads-execute": {
-          "file_id": "file-JPcRSJ94Fzoc24k4Hbv74F",
-          "heading_path": "New threads (NEWTHREAD, NEWEXECUTOR) > Where threads execute",
-          "section_payload_hash": "sha256:0dbda01c534f5a4999a70d127b1f7dbc63b444649224b20329842be5710b9c18",
+          "section_payload_hash": "sha256:d5f28ec65224e49040367e70d3eec7e3ff7cd6acdeb3ba1c88a260157a55108b",
           "source_file": "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "paradigm/Next_iteration_CONTINUE.md": {
       "file_hash": "sha256:559b1f32b05a4837ca2c3ba149244849459d3c11131d1dfaf611c327563bb066",
