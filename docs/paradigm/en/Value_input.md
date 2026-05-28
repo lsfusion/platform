@@ -10,6 +10,10 @@ This category includes operators responsible for inputting a value:
 
 In addition to the above operators, data input is also performed via the *dialog forms* of message display  [(`ASK`)](Show_message_MESSAGE_ASK.md#dialog)  and [form opening (`DIALOG`)](In_an_interactive_view_SHOW_DIALOG.md#dialog) operators in an interactive view.
 
+### Input execution {#execution}
+
+A value input action runs as part of an event handler on an open form. When the action is invoked, it pauses the executing thread and asks the [interactive view](Interactive_view.md) of that form — the user session in which the event was triggered — to obtain a value from the user. The platform shows the user an input control matched to the requested value (for example, a text field for a string value, a date picker for a date, or a file selection dialog for a file); the user enters or picks a value, or cancels the input. The result is always a typed value of the requested class — the platform validates what the user supplied as a value of that class and never executes it as code — and this typed result is then used to invoke the main or alternative action.
+
 ### Cancellation and input result {#result}
 
 In value input operators, an input operation can be  *canceled* (for each operator, this situation is determined in its own way). If it happens, a `TRUE` value is written to the `System.requestCanceled` property (otherwise it will be `NULL`).
