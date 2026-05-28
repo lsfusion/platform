@@ -10940,7 +10940,7 @@
     },
     "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md": {
       "file_hash": "sha256:f60693e2018d547650a67205fcc967f69debaa884d07c49111a5a841fe0cc8d8",
-      "indexed_at": "2026-05-28T06:57:56Z",
+      "indexed_at": "2026-05-28T06:59:58Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10953,6 +10953,12 @@
           "file_id": "file-1QYFR123sCZpPeJpJCo8g4",
           "heading_path": "New threads (NEWTHREAD, NEWEXECUTOR) > Examples",
           "section_payload_hash": "sha256:82fb64cdca464fa4e7a7bb45a6247a546524966abe04b5fbb167136ad2bbdc20",
+          "source_file": "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md"
+        },
+        "New_threads_NEWTHREAD_NEWEXECUTOR::execution-service": {
+          "file_id": "file-CtsiZPzkqsXThXczFhEm1D",
+          "heading_path": "New threads (NEWTHREAD, NEWEXECUTOR) > Execution service",
+          "section_payload_hash": "sha256:94f59e7c18687c6a4759584d73be0fa74667899664324c9e7b6db795fb61873e",
           "source_file": "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md"
         },
         "New_threads_NEWTHREAD_NEWEXECUTOR::language": {
@@ -10968,7 +10974,7 @@
           "source_file": "paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Next_iteration_CONTINUE.md": {
       "file_hash": "sha256:559b1f32b05a4837ca2c3ba149244849459d3c11131d1dfaf611c327563bb066",
@@ -12702,7 +12708,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "44abcb50ef9da0d34deae7677e6b3336e3fd2ec8",
+  "last_indexed_docs_commit": "3a3e46964a356573d6ab1915f1b664dff8871931",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
