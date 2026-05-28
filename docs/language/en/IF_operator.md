@@ -3,7 +3,7 @@ slug: "/IF_operator"
 title: 'IF operator'
 ---
 
-The `IF` operator - creating a [property](../paradigm/Properties.md) implementing [selection](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) of a value by condition (single form). 
+The `IF` operator - creating a [property](../paradigm/Properties.md) implementing [selection](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#single) of a value by condition (single form). 
 
 ### Syntax
 

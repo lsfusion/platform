@@ -3,7 +3,7 @@ slug: "/IF_operator"
 title: 'Оператор IF'
 ---
 
-Оператор `IF` - создание [свойства](../paradigm/Properties.md), реализующего [выбор](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) значения по условию (одиночная форма). 
+Оператор `IF` - создание [свойства](../paradigm/Properties.md), реализующего [выбор](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#single) значения по условию (одиночная форма). 
 
 ### Синтаксис
 

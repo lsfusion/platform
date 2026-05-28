@@ -3,7 +3,7 @@ slug: "/CASE_operator"
 title: 'CASE operator'
 ---
 
-The `CASE` operator  creates a [property](../paradigm/Properties.md) that [selects](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) a result by condition.
+The `CASE` operator creates a [property](../paradigm/Properties.md) that [selects](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) a result by condition.
 
 ### Syntax 
 

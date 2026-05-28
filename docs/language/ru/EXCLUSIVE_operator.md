@@ -3,7 +3,7 @@ slug: "/EXCLUSIVE_operator"
 title: 'Оператор EXCLUSIVE'
 ---
 
-Оператор `EXCLUSIVE` - создание [свойства](../paradigm/Properties.md), реализующего [выбор](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#exclusive) одного из значений (полиморфная форма).
+Оператор `EXCLUSIVE` - создание [свойства](../paradigm/Properties.md), реализующего [выбор](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly) одного из значений (полиморфная форма).
 
 ### Синтаксис
 

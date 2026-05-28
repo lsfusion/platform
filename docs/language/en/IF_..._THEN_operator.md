@@ -3,7 +3,7 @@ slug: "/IF_..._THEN_operator"
 title: 'IF ... THEN operator'
 ---
 
-The `IF ... THEN` operator creates a [property](../paradigm/Properties.md) that implements [selection](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) with one condition (single form).
+The `IF ... THEN` operator creates a [property](../paradigm/Properties.md) that implements [selection](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#single) with one condition (single form).
 
 ### Syntax
 
@@ -15,7 +15,7 @@ IF condition
 
 ### Description
 
-The `IF ... THEN` operator creates an action that implements conditional selection. The condition is defined using a property. If this condition is met, that is, the value of the property does not equal `NULL`, then the value of the created property will be the value of the property specified in the `THEN` block; otherwise, the value will be the value of the property in the `ELSE` block, or `NULL` if no `ELSE` block was specified.
+The `IF ... THEN` operator creates a property that implements conditional selection. The condition is defined using a property. If this condition is met, that is, the value of the property does not equal `NULL`, then the value of the created property will be the value of the property specified in the `THEN` block; otherwise, the value will be the value of the property in the `ELSE` block, or `NULL` if no `ELSE` block was specified.
 
 ### Parameters
 

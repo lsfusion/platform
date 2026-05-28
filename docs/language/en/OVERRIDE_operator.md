@@ -3,7 +3,7 @@ slug: "/OVERRIDE_operator"
 title: 'OVERRIDE operator'
 ---
 
-The `OVERRIDE` operator creates a [property](../paradigm/Properties.md) that implements the [selection](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#exclusive) of one of the values (polymorphic form).
+The `OVERRIDE` operator creates a [property](../paradigm/Properties.md) that implements the [selection](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly) of one of the values (polymorphic form).
 
 ### Syntax
 
