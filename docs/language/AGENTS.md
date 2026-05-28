@@ -484,10 +484,20 @@ Syntax block rules:
 - make sure
   that each syntax block
   reflects the full real grammar,
-  including all relevant variants;
+  including all relevant variants,
+  but only as supported
+  by the construction,
+  not the parser's over-acceptance;
+  optionality,
+  required elements,
+  and mutual constraints
+  MUST be checked
+  against the semantic layer
+  that builds the construction;
   all code-valid
   grammatical branches,
   optional syntactic continuations,
+  permitted order and repetition,
   and other real syntax variants
   MUST appear
   in syntax blocks,
