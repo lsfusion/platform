@@ -8,14 +8,14 @@ The `RECURSION` operator creates a [property](../paradigm/Properties.md) that im
 ### Syntax 
 
 ```
-RECURSION initialExpr STEP stepExpr [CYCLES YES | CYCLES NO | CYCLES IMPOSSIBLE]
+RECURSION initialExpr STEP stepExpr [CYCLES policy]
 ```
 
 ### Description
 
 The `RECURSION` operator creates a property that implements recursion. An [expression](Expression.md) that describes the next step of the recursion may access not only the property parameters but also the parameters at the previous step. This access has the syntax `$name`, where `name` is the name of the parameter. If `$name` is used, the corresponding parameter `name` (without `$`) must also appear in `initialExpr` or `stepExpr` — using `$name` alone in `stepExpr` is not enough.
 
-Values produced across all iterations are aggregated: if `initialExpr` and `stepExpr` are of `BOOLEAN` class, the `OR` aggregation is used; otherwise, `SUM` is used. For a detailed description of the semantics and cycle policies, see [Recursion (RECURSION)](../paradigm/Recursion_RECURSION.md).
+Values produced across all iterations are aggregated: if `initialExpr` and `stepExpr` are of a numeric class, the `SUM` aggregation is used; otherwise (typically when they are `BOOLEAN`), the `OR` aggregation is used. For a detailed description of the semantics and cycle policies, see [Recursion (RECURSION)](../paradigm/Recursion_RECURSION.md).
 
 Another `RECURSION` operator cannot be used inside `stepExpr` — such nesting is forbidden. The restriction applies only to `stepExpr`; `RECURSION` may appear inside `initialExpr`.
 
@@ -29,17 +29,13 @@ Another `RECURSION` operator cannot be used inside `stepExpr` — such nesting i
 
     An expression whose value is a property of a recursion step. Allows a special syntax `$name` to access the value of the `name` parameter in the previous step.
 
-- `CYCLES YES`
+- `policy`
 
-    Specifies that cycles are allowed. Not supported when `initialExpr` and `stepExpr` are of `BOOLEAN` class.
+    Cycle-handling policy. One of:
 
-- `CYCLES NO`
-
-    Specifies that cycles are not allowed. This option is used by default.
-
-- `CYCLES IMPOSSIBLE`
-
-    Specifies that cycles are not possible.
+    - `YES` — cycles are allowed. For `BOOLEAN`-valued recursion there is no maximum to use as a cycle marker, so the marker has no effect on the result.
+    - `NO` (default) — cycles are not allowed; a constraint is added that the result must not reach the maximum value of its class.
+    - `IMPOSSIBLE` — cycles are not possible (an optimisation hint, typically used when one of the parameters is a strictly increasing counter).
 
 ### Examples
 

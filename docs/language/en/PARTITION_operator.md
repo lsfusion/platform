@@ -7,27 +7,25 @@ The `PARTITION` operator creates a [property](../paradigm/Properties.md) that im
 
 ### Syntax
 
-There are two different types of `PARTITION` operator. The first implements partition/order:
-
 ```
 PARTITION 
-type expr
+type [expr1, ..., exprN]
 [ORDER [DESC] orderExpr1, ..., orderExprK]
 [TOP topExpr] [OFFSET offsetExpr]
 [BY groupExpr1, ..., groupExprM]
 ```
 
-The second implements simple distribution:
+Where `type` is defined as:
 
 ```
-PARTITION 
-UNGROUP propertyId distributionType expr
-[ORDER [DESC] orderExpr1, ..., orderExprK]
-[TOP topExpr] [OFFSET offsetExpr]
-[BY groupExpr1, ..., groupExprM]
+SUM
+PREV
+LAST
+UNGROUP propertyId distributionType
+CUSTOM [NULL] [className] aggrFunc
 ```
 
-where `distributionType` can be described in several ways:
+And `distributionType` is defined as:
 
 ```
 PROPORTION [STRICT] ROUND(digits)
@@ -36,74 +34,74 @@ LIMIT [STRICT]
 
 ### Description
 
-The `PARTITION` operator creates a property that divides all object collections in the system into groups, and taking into account the specified order:
+The `PARTITION` operator creates a property that, for each object collection, either computes an [aggregate function](../paradigm/Set_operations.md#func) over the partition window (`SUM`, `PREV`, `LAST`, `CUSTOM`) or distributes a value among the object collections of the group (`UNGROUP`).
 
--   calculates an [aggregate function](../paradigm/Set_operations.md) for each object collection. In case of partition/order,
--   it distributes a certain value among the object collections of one group in the case of distribution.
+The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group.
 
-The `BY` block describes the groups into which numerous sets of object collections will be divided. If the `BY` block is not specified, all object collections are considered to belong to the same group. 
+The `ORDER` block defines the order in which the aggregate function will be calculated or the distribution will take place. If this function is [non-commutative](../paradigm/Set_operations.md), the specified order must be uniquely determined. If a new parameter (not used earlier in the `PARTITION` and `BY` options and in the upper context) is declared in the expressions defining the order, the condition of non-`NULL`ness of all these expressions is automatically added when calculating the resulting value.
 
-The `ORDER` block defines the order in which the aggregate function will be calculated or the distribution will take place. If this function is [non-commutative](../paradigm/Set_operations.md), the specified order must be uniquely determined. If a new parameter (not used earlier in the  `PARTITION` and `BY` options and in the upper context) is declared in the expressions defining the order, when calculating the resulting value the condition of non-NULLness of all these expressions is automatically added.
+The `TOP` and `OFFSET` blocks restrict the subset of records selected inside each partition: first `OFFSET` skips the leading records, then the next `TOP` records are taken in the specified order. Either block may be specified independently.
 
 ### Parameters
 
 - `type`
 
-    Type of aggregate function. Currently the aggregate function types `SUM` and `PREV` are supported.
+    Type of operation. Can be one of: `SUM`, `PREV`, `LAST`, `UNGROUP`, `CUSTOM`.
 
 - `propertyId`
 
-    [ID](IDs.md#propertyid) of the distributed property. The value of this property must be numeric, and the number of parameters must be equal to the number of groups in the `BY` block. When calculating the values of group/partition expressions, objects that identify a certain group of object sets will be passed to this property as an input.
+    [ID](IDs.md#propertyid) of the distributed property. The value of this property must be numeric, and the number of parameters must be equal to the number of groups in the `BY` block. Objects identifying a group are passed to this property as input.
 
 - `distributionType`
 
-    Distribution type. These are of the following types:
+    Distribution strategy. One of:
 
-    - `PROPORTION`
+    - `PROPORTION` — proportional distribution: the value of `propertyId` is split among the object collections of the group in proportion to the main expression and rounded to `digits` decimal places.
+    - `LIMIT` — limit-based distribution: the value of `propertyId` is assigned to the first object collection up to the limit given by the main expression; the remainder is then assigned to the next collection, and so on.
 
-        Keyword specifying the use of proportional distribution. In this case, the value of the distributed property for a particular group is distributed proportionally among the object collections belonging to the group. The proportion is defined by the `expr` expression that is specified after the distribution type.
+- `STRICT`
 
-        - `STRICT`
+    The value of `propertyId` must be split exactly (without remainder) across the object collections of the group. If a remainder remains (which may be negative for `PROPORTION`), it is added to the first object collection in the `ORDER` for `PROPORTION` and to the last object collection in the `ORDER` for `LIMIT`.
 
-            When this keyword is specified, the value of the distributed property must be exactly (without a remainder) distributed between the object collections belonging to the group. If after distribution there is a remainder (which may also be negative), it is added to the first object collection in accordance with the order defined in the `ORDER` block.
+- `digits`
 
-        - `ROUND(digits)`
+    [Integer literal](Literals.md#intliteral) specifying the number of decimal places used by `PROPORTION` rounding.
 
-            Specifies the number of decimal places the value will be rounded to.
+- `NULL`
 
-            - `digits` – [Integer literal](Literals.md#intliteral) specifying the number of decimal places. 
+    Specifies that the aggregate may return `NULL` even when all parameter values are non-`NULL`.
 
-    - `LIMIT`
+- `className`
 
-        A keyword specifying the use of distribution with specified limits. In this case, the value of the distributed property is initially set for the first object collection. If the limit is exceeded for this set, the limit is set to the first object collection, and the rest of the value of the distributed property is assigned to the second object collection. It is then checked for exceeding the limit for the second object collection, and so on. The limit is defined by the `expr` expression specified after specifying the distribution type.
+    Name of the [built-in class](../paradigm/Built-in_classes.md) of the value returned by `CUSTOM`. If omitted, the result class is inferred from the first main expression (or from the first `ORDER` expression when the main expression list is empty).
 
-        - `STRICT`
+- `aggrFunc`
 
-            When this keyword is specified, the value of the distributed property must be exactly (without a remainder) distributed between the object collections belonging to the group. If after distribution there is a remainder, it is added to the last object collection in accordance with the order defined in the `ORDER` block.
+    [String literal](IDs.md#strliteral) containing the name of a user-defined or DBMS built-in aggregate function.
 
-- `expr`
+- `expr1, ..., exprN`
 
-    An [expression](Expression.md) whose value is passed as an input to the aggregating function as an operand in case of partition/order. In case of distribution with type `PROPORTION` it defines the proportion, and with type `LIMIT` it defines the limit.
+    Main expressions. For `SUM`, `PREV`, `LAST`, and `UNGROUP` the list contains exactly one expression: for `SUM` it is summed cumulatively over the partition window; for `PREV` and `LAST` it is taken from the previous-row and current-row respectively (`NULL` for the first row in the case of `PREV`); for `UNGROUP` it defines the proportion (with `PROPORTION`) or the limit (with `LIMIT`). For `CUSTOM`, the list contains the operands passed to `aggrFunc`; it may be empty, but then the `ORDER` block is mandatory.
 
-- `groupExpr1, ..., groupExprM`  
+- `groupExpr1, ..., groupExprM`
 
-    List of group expressions (groups). 
+    List of group expressions.
 
 - `DESC`
 
-    Keyword. Specifies a reverse iteration order for object collections. 
+    Keyword. Specifies a reverse iteration order for object collections.
 
 - `orderExpr1, ..., orderExprK`
 
-    A list of expressions that define the order in which object collections will be iterated when calculating the aggregate function or during distribution. To determine the order, first the value of the first expression is used; then, if equal, the value of the second is used, etc. 
+    A list of expressions that define the order in which object collections will be iterated. To determine the order, first the value of the first expression is used; then, if equal, the value of the second is used, etc.
 
 - `TOP topExpr`
 
-    Only first `n` records will participate in the grouping, where `n` is value of expression `topExpr`.
+    Within each partition, only the first `n` records in the partition order will participate in the calculation, where `n` is the value of the expression `topExpr`.
 
 - `OFFSET offsetExpr`
 
-    Only records with offset `m` will participate in the grouping, where `m` is value of expression `offsetExpr`.
+    Within each partition, the first `m` records in the partition order will be skipped, where `m` is the value of the expression `offsetExpr`.
 
 ### Examples
 
