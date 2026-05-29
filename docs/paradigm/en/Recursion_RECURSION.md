@@ -3,18 +3,18 @@ slug: "/Recursion_RECURSION"
 title: 'Recursion (RECURSION)'
 ---
 
-The *recursion* operator is an operator that creates a [property](Properties.md) which sequentially performs two operations:
+The *recursion* operator creates a [property](Properties.md) that sequentially performs two operations:
 
 1.  Recursively builds an intermediate property (result) with an additional first parameter (operation number) as follows:
     1.  `result(0, o1, o2, ..., oN) = initial(o1, ..., oN)`, where `initial` is an *initial* property.
-    2.  `result(i+1, o1, o2, ..., oN) = step(o1, ..., oN, $o1, $o2, ..., $oN) IF result(i, $o1, $o2, ..., $oN)`, where `step` is a *step* property and `$o1, ..., $oN` denote the parameter values at the previous iteration (in source code these are written as `$name` — see the `RECURSION` operator).
+    2.  `result(i+1, o1, o2, ..., oN) = step(o1, ..., oN, $o1, $o2, ..., $oN) IF result(i, $o1, $o2, ..., $oN)`, where `step` is a *step* property and `$o1, ..., $oN` denote the parameter values at the previous iteration.
 2.  For all values of the obtained property, it calculates the given [aggregate function](Set_operations.md#func) grouping by all its parameters except the operation number.
 
-The aggregate function is selected automatically based on the value class of `initial`/`step`: if they are of class `BOOLEAN`, `OR` is used; otherwise, `SUM` is used.
+The aggregate function is selected automatically based on the value class of `initial`/`step`: if they are of a numeric class, `SUM` is used and the result class is the same numeric class; otherwise (typically when they are `BOOLEAN`), `OR` is used and the result class is the same non-numeric class.
 
 Note that sets of objects may begin to repeat after a certain number of iterations. In this case, we say that a cycle is formed. There are three policies for working with cycles:
 
-1.  `CYCLES YES` - cycles are allowed. In this case, when a cycle is detected, the value of the property will be equal to the maximum allowed value for the value class of this property. This policy is not supported when the initial value and step are of class `BOOLEAN`.
+1.  `CYCLES YES` - cycles are allowed. In this case, when a cycle is detected, the value of the property will be equal to the maximum allowed value for the value class of this property; for `BOOLEAN`-valued recursion there is no such maximum, and the cycle marker has no effect on the result.
 2.  `CYCLES NO` (default) - cycles are not allowed. It works similarly to the previous policy, but an additional constraint is created that the value of the obtained property should not be equal to the maximum value (which just means that a cycle has formed for this set of objects).
 3.  `CYCLES IMPOSSIBLE` - cycles are impossible. As a rule, it is used if there is a counter among the objects which increases at each iteration and, as a result, cannot be repeated.
 
