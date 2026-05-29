@@ -97,21 +97,37 @@ Common structure rules:
   on the Russian side,
   the assistant MUST NOT
   transliterate
-  an English compound noun
-  into a hyphenated calque
-  and MUST use
-  a natural descriptive
-  Russian form
+  an English term
+  into Russian —
+  neither a single word
+  (a bare phonetic borrowing
+  of an English word)
+  nor a compound noun
+  into a hyphenated calque —
+  when an ordinary Russian word,
+  a natural descriptive form,
+  or an established
+  platform / documentation term
+  carries the same meaning;
+  it MUST use
+  that natural Russian form,
+  especially
   in lead occurrences
   and section openings;
-  the compact form
+  the compact
+  or borrowed form
   MAY remain
-  in a few
+  only in a few
   less prominent
   spots
-  where the descriptive
-  form would be
-  too heavy
+  where the natural form
+  would be too heavy
+  and no established
+  Russian equivalent exists,
+  or where the borrowing
+  is itself
+  the established
+  platform term
 - if a new block
   or section is created,
   the parent
