@@ -66,8 +66,6 @@ POPUP
 IN containerName
 ```
 
-The other options (`manageSessionType`, `sessionScopeType`, `cancelType`) take keyword values listed in their Parameters items below.
-
 ### Description
 
 The `DIALOG` operator creates an action that opens the specified form for value input: every object marked with `INPUT` or `CHANGE` returns its last current value when the form closes. The `OBJECTS` block sets [initial values](../paradigm/Open_form.md#params) for the form's objects (in the class-form, the per-object spec attaches directly to the class and plays the same role for the form's only object, which is implicitly named `object` and serves as the default `alias` and as the parameter name inside `FILTERS` and `DO` expressions). Inside `formActionOptions`, the `FILTERS` clause attaches [additional filters](../paradigm/Open_form.md#contextFilters) computed from the calling context; the remaining options control the form-opening behavior — layout, session, system-action visibility, and other modifiers. The trailing block `{initActionOperator}` runs once when the form is opened.
@@ -126,11 +124,11 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `NOCONSTRAINTFILTER`
 
-    Keyword (after `CHANGE`). Disables the constraint-respecting filter that `CHANGE` adds by default.
+    Keyword. Disables the constraint-respecting filter that `CHANGE` adds by default.
 
 - `NOCHANGE`
 
-    Keyword (after `CHANGE`). Suppresses the write-back; the returned value is bound to `alias` but no property is updated. Use to get the `CHANGE` constraint-filter behavior without the implicit assignment.
+    Keyword. Suppresses the write-back; the returned value is bound to `alias` but no property is updated. Use to get the `CHANGE` constraint-filter behavior without the implicit assignment.
 
 - `alias`
 
@@ -160,7 +158,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `windowType`
 
-    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location), chosen from the alternatives listed in the Syntax block above: `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. `FLOAT` is the default.
+    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. `FLOAT` is the default.
 
 - `manageSessionType`
 

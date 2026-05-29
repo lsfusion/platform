@@ -48,8 +48,6 @@ POPUP
 IN containerName
 ```
 
-The other options (`syncType`, `manageSessionType`, `sessionScopeType`, `cancelType`) take keyword values listed in their Parameters items below.
-
 ### Description
 
 The `SHOW` operator creates an action that opens the specified form. The `OBJECTS` block sets [initial values](../paradigm/Open_form.md#params) for the form's objects (in the class-form, the single `= expr` plays the same role for the form's only object, which is implicitly named `object` and can be referenced by that name inside `FILTERS` expressions). Inside `formActionOptions`, the `FILTERS` clause attaches [additional filters](../paradigm/Open_form.md#contextFilters) computed from the calling context; the remaining options control the form-opening behavior — flow, layout, session, system-action visibility, and other modifiers. The trailing block `{initActionOperator}` runs once when the form is opened.
@@ -105,7 +103,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
 - `windowType`
 
-    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location), chosen from the alternatives listed in the Syntax block above: `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. By default, `FLOAT` is used in synchronous mode and `DOCKED` in asynchronous mode.
+    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. By default, `FLOAT` is used in synchronous mode and `DOCKED` in asynchronous mode.
 
 - `manageSessionType`
 
