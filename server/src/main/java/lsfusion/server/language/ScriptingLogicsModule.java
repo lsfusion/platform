@@ -756,7 +756,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             convertResolveError(e);
         }
 
-        checks.checkAction(action, sourceName == null ? name : sourceName, params, orPropertyMessage);
+        checks.checkAction(action, name, params, orPropertyMessage);
         return action;
     }
 
