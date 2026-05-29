@@ -3243,8 +3243,8 @@
       "stale": false
     },
     "language/CASE_operator.md": {
-      "file_hash": "sha256:016abe7ab83928ba8849a0808f204ab824b28576442da466ae6807bab64d937f",
-      "indexed_at": "2026-05-22T23:46:23Z",
+      "file_hash": "sha256:5a6e1070a6d76fb228e87c905ff71fa3014d799723a6b06c572155dac5e6ea6e",
+      "indexed_at": "2026-05-29T08:36:37Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3254,9 +3254,9 @@
       },
       "sections": {
         "CASE_operator::case-operator": {
-          "file_id": "file-LQby3N6LB2TRWfi7P8JG5w",
+          "file_id": "file-JQHtP7WUtabP8dAiXgxtoX",
           "heading_path": "CASE operator",
-          "section_payload_hash": "sha256:e1e742d82e78216c663d6712cd4e485a809c038e7c1d44ba4a5f725abe1dcc54",
+          "section_payload_hash": "sha256:51e0bb4e100fbfff5048e73c95ccf98078b4b53f6b9dae302247023dd43652b4",
           "source_file": "language/CASE_operator.md"
         },
         "CASE_operator::examples": {
@@ -3987,8 +3987,8 @@
       "stale": false
     },
     "language/EXCLUSIVE_operator.md": {
-      "file_hash": "sha256:dba24297aeddfadac734faa8741e4e94ae8ad8c4db8f0deb963363ee79c73c6e",
-      "indexed_at": "2026-05-22T22:09:52Z",
+      "file_hash": "sha256:9364a9d32c828d6e6fab7c69b1fe7828d58ce0da63b09351e5facd7165a68f16",
+      "indexed_at": "2026-05-29T08:36:46Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4004,9 +4004,9 @@
           "source_file": "language/EXCLUSIVE_operator.md"
         },
         "EXCLUSIVE_operator::exclusive-operator": {
-          "file_id": "file-DoSHzQeG6EsJzBSNpU7gKr",
+          "file_id": "file-UR994hCMvbr3QGaNW33PjE",
           "heading_path": "EXCLUSIVE operator",
-          "section_payload_hash": "sha256:bce6267c42e7ef6d034835bfb990588737158ad8182ac367574d4a4ffa1d9f50",
+          "section_payload_hash": "sha256:0e12741f174e27bb25124708a1294b33792c9946504496f853d83fa6ca13b727",
           "source_file": "language/EXCLUSIVE_operator.md"
         },
         "EXCLUSIVE_operator::syntax+description+parameters": {
@@ -4841,8 +4841,8 @@
       "stale": false
     },
     "language/IF_..._THEN_operator.md": {
-      "file_hash": "sha256:f550bb3aca0d8fc73d2b6134292166f294281abcef0a98427ff17262cfbabfee",
-      "indexed_at": "2026-05-22T22:19:28Z",
+      "file_hash": "sha256:98c700d9d8c0e72677347a77b9fbb1048d6cd23fd7b40fbdc3d722118fc9ccf4",
+      "indexed_at": "2026-05-29T08:36:56Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4858,9 +4858,9 @@
           "source_file": "language/IF_..._THEN_operator.md"
         },
         "IF_..._THEN_operator::if-...-then-operator": {
-          "file_id": "file-U241b4F72BeMYBCJV81Mi3",
+          "file_id": "file-LtrF1R1SMMx4Ac9MnsuRJ5",
           "heading_path": "IF ... THEN operator",
-          "section_payload_hash": "sha256:cdda390a6ce795c7ec1141f128e015fde6229b7572357b492c2de30545f5f511",
+          "section_payload_hash": "sha256:24d84c375e3c61380b3e84def5d957514ec334fe9be89d0d256dda60f9631263",
           "source_file": "language/IF_..._THEN_operator.md"
         },
         "IF_..._THEN_operator::parameters": {
@@ -4870,17 +4870,17 @@
           "source_file": "language/IF_..._THEN_operator.md"
         },
         "IF_..._THEN_operator::syntax+description": {
-          "file_id": "file-JrQfP3g2LnDYQwMNa44ixz",
+          "file_id": "file-EceGiqCMT7d8eBhs45tZKz",
           "heading_path": "IF ... THEN operator > Syntax + Description",
-          "section_payload_hash": "sha256:a27bf16952ce3386743d175a2a1765b5d0131be2d7920cff561a208b4b9d00ad",
+          "section_payload_hash": "sha256:3d7d56323c2f690d2bda0e68bd089f449f0319ddf3482faa1e22afa62831c3c7",
           "source_file": "language/IF_..._THEN_operator.md"
         }
       },
       "stale": false
     },
     "language/IF_operator.md": {
-      "file_hash": "sha256:581384c54d57817fbec2f14adb2c4852d7a0ecbeeb3f49b3f54bdbc9ac40503e",
-      "indexed_at": "2026-05-22T22:19:36Z",
+      "file_hash": "sha256:7faf47b02de6c8bc414de9ae7fe6ae3f2e6013dbb1fd21ae008c7697a0d460c9",
+      "indexed_at": "2026-05-29T08:37:15Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4896,9 +4896,9 @@
           "source_file": "language/IF_operator.md"
         },
         "IF_operator::if-operator": {
-          "file_id": "file-EFpg3pDnUB29CAkmPCVbJC",
+          "file_id": "file-TCjMGdvGhkqdwPQjdrCr2a",
           "heading_path": "IF operator",
-          "section_payload_hash": "sha256:51d31d2bf69549a65d4e16a439ac17a990d35e1b82a07738e45bfbaf300e0930",
+          "section_payload_hash": "sha256:71c1630f04798ba409001f83eadaea70d2b6a2c7e61f80d4c10f54c09f0cfd01",
           "source_file": "language/IF_operator.md"
         },
         "IF_operator::syntax+description+parameters": {
@@ -5551,8 +5551,8 @@
       "stale": false
     },
     "language/MULTI_operator.md": {
-      "file_hash": "sha256:420bcddab1ed64b0bb960caeb81e7c3a85a2e6a891f43c93ec4b37131d46e6c5",
-      "indexed_at": "2026-05-22T22:33:54Z",
+      "file_hash": "sha256:16aed3c63dc11f4379a53173df49a1991c18427ea264713a2d84b6ec1bc9cc9e",
+      "indexed_at": "2026-05-29T08:37:24Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5568,21 +5568,21 @@
           "source_file": "language/MULTI_operator.md"
         },
         "MULTI_operator::multi-operator": {
-          "file_id": "file-RvdNUH2W2QwHn3EEiH3RvT",
+          "file_id": "file-Rht2o8sRcmcsBx1uTMwtjw",
           "heading_path": "MULTI operator",
-          "section_payload_hash": "sha256:d50a48238ff51fd28b13c1c8f405c1dd164825a986992c37795dbcd9bf1b76d4",
+          "section_payload_hash": "sha256:0f4048e51c8c3092d72f3269871e85eb8a21b0553b52d4e73405f55338b024be",
           "source_file": "language/MULTI_operator.md"
         },
         "MULTI_operator::parameters": {
-          "file_id": "file-U117uqy1czKJAGC8ZmbCwb",
+          "file_id": "file-KmqZ1MVh6p2pBWMHJ2Qzod",
           "heading_path": "MULTI operator > Parameters",
-          "section_payload_hash": "sha256:6d219105442f18460a7a88b9154e6e8929ef1dacd002f1ba43c1080999a09f9c",
+          "section_payload_hash": "sha256:f8f11a74e2d852fe93d9ef5cc317f888c8d75b9abdcbf3055fd2a2bbc293eb7e",
           "source_file": "language/MULTI_operator.md"
         },
         "MULTI_operator::syntax+description": {
-          "file_id": "file-6hSMjt2WAA6YsvGzXRSuZt",
+          "file_id": "file-Q2cgXAQCoReNw9KrubDFpP",
           "heading_path": "MULTI operator > Syntax + Description",
-          "section_payload_hash": "sha256:a989fec3351e19fec67a4c7e46882ac04330d927d727d3512348a12ae8b79583",
+          "section_payload_hash": "sha256:beecf2379e942d23fa38d82171ca8fb379f23aa0f79a8960be3eef4bd5ca1a5d",
           "source_file": "language/MULTI_operator.md"
         }
       },
@@ -5955,8 +5955,8 @@
       "stale": false
     },
     "language/OVERRIDE_operator.md": {
-      "file_hash": "sha256:557e16663195223f0fb2ae7bcf7eabaf9f2f75f3c70bdc9f1a662a755f1af863",
-      "indexed_at": "2026-05-22T22:38:14Z",
+      "file_hash": "sha256:1d20413175529a59bf0ee307ccb3b9db2d6648736d63c9f103443befbe866f1a",
+      "indexed_at": "2026-05-29T08:37:33Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5972,9 +5972,9 @@
           "source_file": "language/OVERRIDE_operator.md"
         },
         "OVERRIDE_operator::override-operator": {
-          "file_id": "file-WjuTX9nW266eEkvpjczygB",
+          "file_id": "file-XJjoNSgw9A7SoZ6YffZDmn",
           "heading_path": "OVERRIDE operator",
-          "section_payload_hash": "sha256:3beb0f2ab53b909772d2c8697f7832b15f0b09ee9b8cf47aee4338d92056685a",
+          "section_payload_hash": "sha256:20f8a42b8930cbede6a46e0db43d0d198354c08e4da601c345853308e10f9536",
           "source_file": "language/OVERRIDE_operator.md"
         },
         "OVERRIDE_operator::syntax+description+parameters": {
@@ -11791,8 +11791,8 @@
       "stale": false
     },
     "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md": {
-      "file_hash": "sha256:7105d69bf792bc8d7dbf4c5e8d8e8c9e900764f78aea6250e0d64cb992d85d13",
-      "indexed_at": "2026-05-25T10:07:48Z",
+      "file_hash": "sha256:f6d836919afc2466e4907336ef680c5045cbd61e4df1c1f6c8282112f67eb6a2",
+      "indexed_at": "2026-05-29T08:37:42Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11807,22 +11807,10 @@
           "section_payload_hash": "sha256:faa094b2a998a22e8f9e65c6b234c0e2806d1e6fdb2f15937d00e92b95c73b25",
           "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
         },
-        "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::implicit-definition+single-form-single+determining-the-result-class": {
-          "file_id": "file-1PiiFRSTbhFr8QEfe2AgC8",
-          "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE) > Implicit definition + Single form {#single} + Determining the result class",
-          "section_payload_hash": "sha256:5e93e9cfbc5af56b2f4c61db24cbce3bb43797db02256b4ba13b3829eb6618cc",
-          "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
-        },
-        "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::language": {
-          "file_id": "file-8jRGXBuwKUqciQNGEMK3Aa",
-          "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE) > Language",
-          "section_payload_hash": "sha256:79e665ced2e9c39290c456b85deb5ea3a2f4ea94a3484aa976d7f2b9f77d62d0",
-          "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
-        },
-        "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::mutual-exclusion-of-conditions-exclusive": {
-          "file_id": "file-9LnLFCkbFtgrp2hq5SWeiH",
-          "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE) > Mutual exclusion of conditions {#exclusive}",
-          "section_payload_hash": "sha256:572b8bd3738c398f58b14c84eed6ed593689621f79df31f9fd03592e2c5183be",
+        "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::mutual-exclusion-of-conditions-exclusive+implicit-definition": {
+          "file_id": "file-2rBGY463cKiUyHWLVKC7zn",
+          "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE) > Mutual exclusion of conditions {#exclusive} + Implicit definition",
+          "section_payload_hash": "sha256:8a91466e35639edb30dd64219d4a3c8c8282c6e6ae23381f7c913d33296e3e87",
           "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
         },
         "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::polymorphic-form-poly": {
@@ -11831,10 +11819,22 @@
           "section_payload_hash": "sha256:a34110a8da98b7e1852babf0d0f09a5014d6b05f7c0c2edcea77696a8f044e8c",
           "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
         },
+        "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::result-class+language": {
+          "file_id": "file-4LWe5i1ruHtH9WU988XRWa",
+          "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE) > Result class + Language",
+          "section_payload_hash": "sha256:27e1ffa9c637c658422e4268d388220cfaab8b2cb0515a4165ede34cb656f8e9",
+          "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
+        },
         "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::selection-case-if-multi-override-exclusive": {
-          "file_id": "file-Av9bysUFMK51y5DsFrdRgv",
+          "file_id": "file-Gt8GWWtQBxmiaJio9p1nuk",
           "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE)",
-          "section_payload_hash": "sha256:03d1d09fb70a03d6f6b24f7bbd25dce0d676bf56a43bdea933d0c89a3bb23f9a",
+          "section_payload_hash": "sha256:3f10d0d54565e81a8445e8717c61691c1facc974e786fb1f0dbfacc387e13782",
+          "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
+        },
+        "Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE::single-form-single": {
+          "file_id": "file-5GfDv1RX748d6g9tCgAmXB",
+          "heading_path": "Selection (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE) > Single form {#single}",
+          "section_payload_hash": "sha256:52cf487791a49201452467413786d6340665f6b0d82830bf3a360812d06fe655",
           "source_file": "paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md"
         }
       },
@@ -12714,7 +12714,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4e3010d8a44b9022bd13bd51585865c02c09eeda",
+  "last_indexed_docs_commit": "089be4265bf22786cdccd14accda3612f904c409",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
