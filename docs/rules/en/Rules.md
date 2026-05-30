@@ -170,6 +170,17 @@ SYNTAX RULES
 3. String literals MUST use single quotes.
    Double quotes are NOT a valid string literal delimiter
    in lsFusion and MUST NOT be used.
+
+4. Expressions with commas (`OVERRIDE` with multiple
+   operands, multi-argument `FORMULA` calls such as
+   `toChar(...)`, `GROUP CONCAT` with an explicit separator,
+   and similar) placed inside a comma-separated field list
+   (`PROPERTIES` blocks, `EXPORT FROM`, `JSON FROM`, `ORDER`
+   lists, group-object lists, parameter lists) MUST be
+   wrapped in an extra pair of parentheses or extracted
+   into a separately named property. Otherwise the inner
+   comma is parsed as the list separator and the list
+   silently reshapes into something other than the intent.
 ----------------------------------------------------------------
 BOOLEAN TYPE RULES
 
