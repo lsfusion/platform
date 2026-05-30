@@ -58,6 +58,7 @@ public class MCPDispatcher {
 
     static final String TOOL_RETRIEVE_DOCS = "lsfusion_retrieve_docs";
     static final String TOOL_GET_GUIDANCE = "lsfusion_get_guidance";
+    static final String TOOL_REPORT_FEEDBACK = "lsfusion_report_feedback";
 
     static final String TOOL_EVAL = "lsfusion_eval";
 
@@ -68,7 +69,7 @@ public class MCPDispatcher {
     // VS indexes all five doc folders (language, paradigm, how-to, brief, rules)
     // under the single lsfusion_retrieve_docs tool.
     private static final Set<String> REMOTE_TOOLS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            TOOL_RETRIEVE_DOCS, TOOL_GET_GUIDANCE)));
+            TOOL_RETRIEVE_DOCS, TOOL_GET_GUIDANCE, TOOL_REPORT_FEEDBACK)));
 
     private final RemoteLogics remoteLogics;
 
@@ -351,6 +352,7 @@ public class MCPDispatcher {
         tools.put(filesReadDescriptor());
         tools.put(retrieveDocsDescriptor());
         tools.put(getGuidanceDescriptor());
+        tools.put(reportFeedbackDescriptor());
         tools.put(evalDescriptor());
         return tools;
     }
@@ -435,6 +437,79 @@ public class MCPDispatcher {
         return new JSONObject()
                 .put("name", TOOL_GET_GUIDANCE)
                 .put("description", "Fetch the brief overview and mandatory rules for working with lsFusion. The assistant MUST call this at the start of ANY lsFusion-related task if the guidance isn't already in context, and MUST then read and strictly follow all rules it returns.")
+                .put("inputSchema", input);
+    }
+
+    // Proxied to the central server (A). Schema mirrors mcp/tools/feedback.py::FeedbackReport
+    // — keep in sync; the central server validates authoritatively.
+    private static JSONObject reportFeedbackDescriptor() {
+        JSONArray targets = arr("how-to", "rules", "brief", "paradigm", "language",
+                "code-bug", "rag-retrieval", "eval-error-message");
+        JSONObject recommendation = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject()
+                        .put("primary_target", enumProp("Main artifact to change.", targets))
+                        .put("secondary_targets", arrProp(enumProp("", targets), "Other plausibly-affected artifacts."))
+                        .put("suggested_change", strProp("Concrete suggestion (depersonalized)."))
+                        .put("confidence", enumProp("How confident the agent is.", arr("low", "medium", "high")))
+                        .put("rationale", strProp("Why, briefly.")))
+                .put("required", arr("primary_target", "suggested_change"));
+        JSONObject expectation = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject()
+                        .put("expected", strProp("What the agent expected (depersonalized)."))
+                        .put("actual", strProp("What actually happened (depersonalized).")))
+                .put("required", arr("expected", "actual"));
+        JSONObject evalError = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject()
+                        .put("message", strProp("The error text (depersonalized)."))
+                        .put("phase", enumProp("Where it surfaced.", arr("syntax", "semantic", "runtime", "unknown")))
+                        .put("code_excerpt", strProp("Tiny abstracted snippet if essential — NO full source / project code."))
+                        .put("normalized_message", strProp("Optional normalized form (ids/literals stripped) for clustering.")))
+                .put("required", arr("message"));
+        JSONObject retrieveQuery = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject()
+                        .put("query", strProp("The query text."))
+                        .put("returned_sources", arrProp(new JSONObject().put("type", "string"), "Doc branches/files it surfaced, if noted."))
+                        .put("usefulness", enumProp("How useful the result was for this error.", arr("helpful", "irrelevant", "misleading", "incomplete"))))
+                .put("required", arr("query"));
+        JSONObject toolContext = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject()
+                        .put("eval_server_kind", strProp("Eval server kind."))
+                        .put("eval_server_version", strProp("Eval server version.")));
+        JSONObject report = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject()
+                        .put("agent_journey_id", strProp("Agent-generated id grouping this task's errors/queries."))
+                        .put("signal_type", enumProp("What kind of reinforcement signal this is (routing hint, not the decision).",
+                                arr("doc-gap", "expectation-mismatch", "unclear-error", "missing-capability", "rag-retrieval", "other")))
+                        .put("problem_summary", strProp("Short depersonalized task description."))
+                        .put("recommendation", recommendation)
+                        .put("expectation", expectation)
+                        .put("eval_errors", arrProp(evalError, "Errors hit while running lsFusion code via eval."))
+                        .put("retrieve_queries", arrProp(retrieveQuery, "retrieve_docs queries tried while fixing the error."))
+                        .put("retrieved_docs_summary", arrProp(new JSONObject().put("type", "string"), "Short PUBLIC summaries of retrieved docs (no chunk bodies)."))
+                        .put("final_outcome", enumProp("How the task ended (guards against survivorship bias).",
+                                arr("fixed", "not_fixed", "workaround", "abandoned", "unknown")))
+                        .put("tool_context", toolContext)
+                        .put("client_dedup_hint", strProp("Optional agent hint; the SERVER computes the canonical dedup_fingerprint."))
+                        .put("lsfusion_version", strProp("lsFusion version, if known."))
+                        .put("deployment_kind", strProp("Deployment kind, if known."))
+                        .put("agent", strProp("Reporting client name/version, e.g. claude-code."))
+                        .put("n_eval_attempts", new JSONObject().put("type", "integer").put("description", "Number of eval attempts.")))
+                .put("required", arr("agent_journey_id", "signal_type", "problem_summary", "recommendation"));
+        JSONObject input = new JSONObject()
+                .put("type", "object")
+                .put("properties", new JSONObject().put("report", report))
+                .put("required", arr("report"))
+                .put("additionalProperties", false);
+        return new JSONObject()
+                .put("name", TOOL_REPORT_FEEDBACK)
+                .put("description",
+                        "Submit ONE anonymous, depersonalized reinforcement-quality signal so lsFusion docs / RAG / eval diagnostics / the platform can be improved. Use `signal_type` to say what kind: a documentation gap, an expectation-mismatch (you expected lsFusion to behave/mean X but it was actually Y — fill `expectation`), an unclear/unactionable `eval` error, a missing capability, a RAG miss, or other. Call this ONLY per the workflow rule from `lsfusion_get_guidance` (the friction was action-affecting) AND only after the user explicitly consents. Send NO source code, file paths, schema/table/customer names, or secrets — only the depersonalized journey and a recommendation. The feedback is a suggestion, not a decision. Returns `{report_id, status, dedup_fingerprint}`.")
                 .put("inputSchema", input);
     }
 
@@ -559,6 +634,20 @@ public class MCPDispatcher {
 
     private static JSONObject strProp(String description) {
         return new JSONObject().put("type", "string").put("description", description);
+    }
+
+    private static JSONArray arr(String... values) {
+        JSONArray a = new JSONArray();
+        for (String v : values) a.put(v);
+        return a;
+    }
+
+    private static JSONObject enumProp(String description, JSONArray values) {
+        return new JSONObject().put("type", "string").put("enum", values).put("description", description);
+    }
+
+    private static JSONObject arrProp(JSONObject items, String description) {
+        return new JSONObject().put("type", "array").put("items", items).put("description", description);
     }
 
     private static JSONObject intProp(String description) {

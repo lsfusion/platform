@@ -109,6 +109,51 @@ C. ELEMENT SEARCH
 
 6. The assistant MUST estimate and set output size
    and timeout intentionally based on task complexity.
+
+D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
+
+1. This tool submits ONE depersonalized report that helps
+   improve lsFusion docs, RAG, or `eval` diagnostics, or
+   surfaces an lsFusion code bug or a missing capability.
+   It is a suggestion, not a decision.
+
+2. The assistant MUST consider it ONLY when the task hit
+   ACTION-AFFECTING friction — at least one of:
+   - 3 or more diagnosed `eval` failures for the same
+     task or misconception;
+   - 2 or more failed or misleading documentation lookups;
+   - abandonment, a workaround, or a materially worse final
+     answer caused by docs, RAG, `eval` diagnostics,
+     or an lsFusion code bug or missing capability;
+   - a clear expectation mismatch, where a reasonable reading
+     of lsFusion semantics or tool behavior led down a wrong
+     implementation path;
+   - an `eval` error whose message was so unclear or
+     unactionable that the fix could not be found
+     without extra probing.
+
+3. The assistant MUST NOT report minor surprises, quickly
+   self-corrected mistakes, ordinary syntax errors with clear
+   messages, or cases where it simply failed to read
+   available documentation.
+
+4. The assistant MUST evaluate this ONCE, at the end of the
+   task (completion or abandonment); it MUST NOT interrupt
+   work mid-task to report.
+
+5. CONSENT IS MANDATORY. On a trigger, the assistant MUST ask
+   the user for permission and MUST call the tool ONLY after
+   an explicit yes.
+
+6. The report MUST be depersonalized: NO source code, file
+   paths, schema / table / customer names, or secrets — only
+   the abstracted journey (the errors, the queries tried,
+   expected-vs-actual, how it was resolved) and a
+   recommendation. Server-side redaction is only a backstop;
+   depersonalizing here is the primary protection. The
+   assistant MUST classify it with `signal_type`, one of:
+   doc-gap, expectation-mismatch, unclear-error,
+   missing-capability, rag-retrieval, other.
 ----------------------------------------------------------------
 SYNTAX RULES
 
