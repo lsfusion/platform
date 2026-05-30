@@ -9174,8 +9174,8 @@
       "stale": false
     },
     "paradigm/Filter_FILTER.md": {
-      "file_hash": "sha256:a827101b6053d278bc7ce5f9c1c128d470901ca9350ea8f2e2320e55833e02b5",
-      "indexed_at": "2026-05-22T23:15:27Z",
+      "file_hash": "sha256:f03272f9b8e12872ea4e23d9569083894d9298977444d0a0ee4951fe6bdd84d0",
+      "indexed_at": "2026-05-30T13:01:18Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9185,9 +9185,9 @@
       },
       "sections": {
         "Filter_FILTER::filter-filter": {
-          "file_id": "file-AcJH1e3Stbr4JrQpNjQLPE",
+          "file_id": "file-CnjM1RDjL9KV1585fqYNC7",
           "heading_path": "Filter (FILTER)",
-          "section_payload_hash": "sha256:1eb259fa7640e2b76ce55e7426ee6ca9cf86308459d3e93a9d25ef015d7fc7da",
+          "section_payload_hash": "sha256:079d63cd03063b745d3c2f36bc20d2205e00c53cc822786a5b2b7a9e2c179332",
           "source_file": "paradigm/Filter_FILTER.md"
         },
         "Filter_FILTER::language+examples": {
@@ -11113,8 +11113,8 @@
       "stale": false
     },
     "paradigm/Order_ORDER.md": {
-      "file_hash": "sha256:30c4f0a61b79b60982f197aaf7c2acfc3fe63e6319e31ef9125e4be109fbe89b",
-      "indexed_at": "2026-05-22T23:31:19Z",
+      "file_hash": "sha256:dced19e0957e6715f922f4f9a5d6722117579f20ec84915ab35bfdd3e3935e93",
+      "indexed_at": "2026-05-30T13:01:30Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11130,9 +11130,9 @@
           "source_file": "paradigm/Order_ORDER.md"
         },
         "Order_ORDER::order-order": {
-          "file_id": "file-CXBJcQ84KEF9kbAeCUwumo",
+          "file_id": "file-4WyY7tJKAt3uzFAzWzRNFN",
           "heading_path": "Order (ORDER)",
-          "section_payload_hash": "sha256:3e0b050da76e10a85cf5f0d8ceb6d69762698b1101a0aadf6f486b482ca9fc59",
+          "section_payload_hash": "sha256:10e288b8968026a083c850edd682539a6a47666e2dd6946e0cde5f7d04174143",
           "source_file": "paradigm/Order_ORDER.md"
         }
       },
@@ -12714,7 +12714,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "54dc081e229c87013d1b837b818ff03f511bbb7f",
+  "last_indexed_docs_commit": "943c557c2e988cd6b14488d0e60854bac026c320",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
