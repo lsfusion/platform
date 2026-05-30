@@ -12676,8 +12676,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:76cfa82e08150f81ce2a842c676f0267dd508141fcede3569c9c85efd15ab10a",
-      "indexed_at": "2026-05-29T12:47:01Z",
+      "file_hash": "sha256:aa7be333cf487910927fa892b42a2ec9894d7de45930e53f265578657f4677e4",
+      "indexed_at": "2026-05-30T06:41:27Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12687,9 +12687,9 @@
       },
       "sections": {
         "Rules::lsfusion-rules::part-00": {
-          "file_id": "file-NkdrstESi3kPf2U2QWdcVo",
+          "file_id": "file-CXt7YofqAspgsoF6gFytAi",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:b7338ccf81a28dcf43424d91e9ce4243815edc5f404642effdd5686a98de224a",
+          "section_payload_hash": "sha256:28be71ee78b4f0cf32bc572648216a38bedc76bcf7b9134e056f87fe10e94614",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
@@ -12699,19 +12699,19 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-QYmhgz5adu6thhmudZ1TGR",
+          "file_id": "file-8fDnaYfktdZ7rCYTjEt4ry",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:2e786f00b880e6637f0e92e56f670978329367dd8a0d659273f308bf1a20b0c0",
+          "section_payload_hash": "sha256:b42736140d8e224d9e24a7a2c08b437f1bc49f0666f5178bee3b800670178226",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-GCdHi8nfoEAJVUfsWvZNXV",
+          "file_id": "file-859eiBHfLyyyLuZYAWfXKx",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:a68ed3bfe34f813af929665e21c77e1d8d5daa0ad15985d49ec260f6f4d8ff02",
+          "section_payload_hash": "sha256:bedcf06db2820cd728c7f698bbf8048793d060dd7bd9f32e1fd416ea7742cce5",
           "source_file": "rules/Rules.md"
         }
       },
-      "stale": false
+      "stale": true
     }
   },
   "last_indexed_docs_commit": "0beb0e4937ba6d7dea76d5e0017bd96113a741af",
