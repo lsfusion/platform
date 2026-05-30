@@ -694,10 +694,20 @@ CHANGE SESSION RULES (`NEWSESSION`, `NESTEDSESSION`, `APPLY`)
    This pattern is used before status changes,
    document generation, and other isolated follow-up actions.
 
-9. After `APPLY`, if later logic depends on whether the save
-   succeeded, the assistant MUST check `canceled()`.
-   If the failure must be surfaced to the user or integration,
-   the assistant SHOULD use `applyMessage()`.
+9. After `APPLY`, the assistant MUST check `canceled()`
+   only when later logic depends on whether the save
+   succeeded — to early-return, skip a follow-up side
+   effect, or roll back staged work.
+
+   `APPLY` in an interactive context shows the constraint
+   message to the user on its own. The assistant MUST NOT
+   add `IF canceled() THEN MESSAGE applyMessage()` after
+   `APPLY` in interactive actions solely to report the
+   failure — it duplicates the message the platform
+   already shows. Explicit surfacing via `applyMessage()`
+   or `throwException(applyMessage())` is required only
+   for non-interactive callers (API endpoints, background
+   integrations) where no dialog is shown.
 
    If `APPLY` fails because of a constraint, the changes
    remain unsaved in the current session, and any following
@@ -808,23 +818,29 @@ IMPORT RULES (`IMPORT`)
     the assistant SHOULD isolate persistence in `NEWSESSION`.
 
     After domain writes, the assistant SHOULD `APPLY;`.
-    If later logic depends on success,
-    the assistant MUST check `canceled()`
-    and surface `applyMessage()` or `throwException(...)`.
+    If later logic depends on success, the assistant MUST
+    check `canceled()` to gate that follow-up logic;
+    explicit surfacing via `applyMessage()` or
+    `throwException(...)` is needed only for non-interactive
+    callers (see CHANGE SESSION RULES, rule 9).
 
     If the import must see upper-session local buffers,
     the assistant MUST use nested session semantics
     instead of plain `NEWSESSION`.
 
 11. The assistant MUST NOT partially persist
-    a failed import silently.
-
-    It SHOULD use `MESSAGE`, `RETURN`,
-    `throwException`, or an explicit failure flag,
-    consistent with the caller:
+    a failed import silently. For failures the assistant
+    detects on its own (missing references, malformed
+    payload, pre-`APPLY` validation), it SHOULD use
+    `MESSAGE`, `RETURN`, `throwException`, or an explicit
+    failure flag, consistent with the caller:
     - interactive import -> `MESSAGE`
     - API or background integration
       -> exception or explicit failure state
+
+    Failures raised by `APPLY` itself are already surfaced
+    by the platform (see CHANGE SESSION RULES, rule 9);
+    the assistant MUST NOT duplicate them.
 
 12. When importing booleans,
     the assistant MUST remember workspace boolean rules:
