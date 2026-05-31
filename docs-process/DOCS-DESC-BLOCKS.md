@@ -377,6 +377,7 @@ _Learn, обучающие материалы, примеры, онлайн-де
 - **B24 `DIALOG_operator` / `Open_form`:** `CHECK`, `EMBEDDED` (windowType), `NOCHANGE`, `THISSESSION` (form session scope).
 - **B26 объекты:** `CONTAINER` (`COLLAPSE`/`EXPAND`), `VIEWTYPE` (`Object_group_operator`).
 - **B27 form-блоки (`Properties_and_actions_block`/`Object_blocks`):** `COLUMN`/`MEASURE` (pivot роли), `CONFIG` (`PIVOT ... CONFIG`), `DISABLEIF`, `HINTNOUPDATE`, `HINTTABLE`, `NOEXTID`, `NOSELECT`, `OPTIONS`, `POPUP`.
+- **B27 ↔ `Property_options` (из B03):** опции, задаваемые в объявлении свойства целиком, но по сути являющиеся опциями свойства на форме — `CUSTOM`/`SELECT`/`NOSELECT` (customView), `EXTID` — описать в form-блоке B27 и доописать в `Property_options` со ссылкой. (`AGGR` как опция свойства относится к оператору агрегации — покрыть в агрегациях.)
 - **B28 `Form_design`/`DESIGN_statement`:** `CLASSCHOOSER`, `FILTERBOX`, `FILTERCONTROLS`.
 - **B28 `Report_design` / B27 `FORM_statement`:** `REPORTS`, `REPORTFILES`.
 - **B40 `EXTERNAL_operator`:** `JAVA` (формат внешнего вызова).
