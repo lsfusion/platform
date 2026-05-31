@@ -44,6 +44,7 @@ Context dependent action operators can use external context parameters. They can
 -   [`NEWTHREAD` operator](NEWTHREAD_operator.md)
 -   [`PRINT` operator](PRINT_operator.md)
 -   [`READ` operator](READ_operator.md)
+-   [`RECALCULATE` operator](RECALCULATE_operator.md)
 -   [`REQUEST` operator](REQUEST_operator.md)
 -   [`RETURN` operator](RETURN_operator.md)
 -   [`SCREENSHOT` operator](SCREENSHOT_operator.md)

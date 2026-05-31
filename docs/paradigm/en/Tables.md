@@ -15,7 +15,7 @@ For each property, you can specify in which table it should be stored. In this c
 
 For each table created in the platform, a corresponding table is created in the database, which name, depending on the selected naming policy, is defined as follows:
 
-| Naming policy                 | Field name            |
+| Naming policy                 | Table name            |
 | ----------------------------- | --------------------- |
 | Full with signature (default) | `NameSpace_TableName` |
 | Full without signature        | `NameSpace_TableName` |
@@ -44,13 +44,13 @@ The naming policy is defined using the [`db.namingPolicy`](Launch_parameters.md#
 
 ### Default tables
 
-If the system cannot determine the table in which the property should be put, then a table with a name equal to `auto_<class ID 1 in the property signature>_<class ID 2 in the property signature>_...<class ID n in the property signature>` is automatically created. For example, for a property with class arguments `DATE`, `Item.Item`, `Country.Country`, `INTEGER`, the table `auto_DATE_Item_Item_Country_Country_INTEGER` will be created. However, it is recommended to avoid situations when the default table is used and explicitly specify the tables in which properties will be stored.
+If the system cannot determine the table in which the property should be put, a table is automatically created with a name formed from the prefix `_auto` followed by the property's class IDs sorted alphabetically: `_auto_<class ID>_..._<class ID>`. For example, for a property with class arguments `DATE`, `Item.Item`, `Country.Country`, `INTEGER`, the table `_auto_Country_Country_DATE_INTEGER_Item_Item` is created. However, it is recommended to avoid situations when the default table is used and explicitly specify the tables in which properties will be stored.
 
 Also, it is possible to create a custom policy for naming tables in the platform if the basic policy does not suit for some reason.
 
 ### Default indexes
 
-By default, a unique [index](Indexes.md) is built for each table by its key fields `key0`, `key1`, ..., `keyN` named as `pk_<table ID>` where `N` is the number of key fields in the table minus `1`. Also indexes on key fields `keyK`, ..., `keyN` with names like `<table ID>_keyK _..._ keyN_idx` are automatically added for all `K` from `1` to `N`.
+By default, a unique [index](Indexes.md) (the primary key) is built for each table on all its key fields `key0`, `key1`, ..., `keyN`, where `N` is the number of key fields in the table minus `1`. Additional indexes on the key suffixes `keyK`, ..., `keyN` are automatically added for all `K` from `1` to `N`.
 
 ### Full tables {#full}
 
@@ -81,7 +81,7 @@ in = DATA BOOLEAN (Sku, Stock);
 TABLE skuStock (Sku, Stock); // it will store the in property
 
 price = DATA NUMERIC[10,2] (Sku, DATE);
-TABLE skuDate (Sku, DATE); // it will store the Sku property
+TABLE skuDate (Sku, DATE); // it will store the price property
 
 TABLE sku (Sku) FULL;
 ```

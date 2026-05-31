@@ -8,7 +8,7 @@ The `TABLE` statement creates an new [table](../paradigm/Tables.md).
 ### Syntax
 
 ```
-TABLE name(className1, ..., classNameN) [FULL | NODEFAULT];
+TABLE name [dbName] (className1, ..., classNameN) [FULL | NODEFAULT];
 ```
 
 ### Description
@@ -22,9 +22,13 @@ The `TABLE` statement declares a new table and adds it to the current [module](.
 
     Table name. [Simple ID](IDs.md#id). The name must be unique within the current [namespace](../paradigm/Naming.md#namespace).
 
+- `dbName`
+
+    [String literal](Literals.md#strliteral) that specifies the physical table name in the database. If omitted, the name is generated automatically.
+
 - `className1, ..., classNameN`
 
-    List of class names. Each name is a [class ID](IDs.md#classid). Specifies classes for the key fields of the table being created. Cannot be empty,
+    List of class names. Each name is a [class ID](IDs.md#classid). Specifies the classes of the table's key fields. The list may be empty — a table with no keys stores a single row.
 
 - `FULL`
 

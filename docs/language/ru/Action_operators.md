@@ -44,6 +44,7 @@ title: 'Операторы-действия'
 -   [Оператор `NEWTHREAD`](NEWTHREAD_operator.md)
 -   [Оператор `PRINT`](PRINT_operator.md)
 -   [Оператор `READ`](READ_operator.md)
+-   [Оператор `RECALCULATE`](RECALCULATE_operator.md)
 -   [Оператор `REQUEST`](REQUEST_operator.md)
 -   [Оператор `RETURN`](RETURN_operator.md)
 -   [Оператор `SCREENSHOT`](SCREENSHOT_operator.md)

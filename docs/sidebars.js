@@ -567,6 +567,7 @@ module.exports = {
                     'language/NEWTHREAD_operator', 
                     'language/PRINT_operator',
                     'language/READ_operator',
+                    'language/RECALCULATE_operator',
                     'language/REQUEST_operator',
                     'language/RETURN_operator',
                     'language/SCREENSHOT_operator',
