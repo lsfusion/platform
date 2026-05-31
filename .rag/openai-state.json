@@ -6365,8 +6365,8 @@
       "stale": false
     },
     "language/Property_options.md": {
-      "file_hash": "sha256:af25a0b5347ad329736900d2779bbbcb4c6d6ef4d044e98f87175d1e3cb23d48",
-      "indexed_at": "2026-05-22T22:41:06Z",
+      "file_hash": "sha256:5a6ce1bfa5c293bb87749676fb6a5fb00721b66d61eef2c4e07be4e186fe1439",
+      "indexed_at": "2026-05-31T10:39:17Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6376,15 +6376,15 @@
       },
       "sections": {
         "Property_options::description-and-parameters": {
-          "file_id": "file-MU9mbYow2FhmUQJy7wKdyA",
+          "file_id": "file-6dqTXbp9CfPg77nnZKCfde",
           "heading_path": "Property options > Description and parameters",
-          "section_payload_hash": "sha256:8ac120f418bd06aa0da26eb4a2c8077aba0d7a56009be9ed22b470600edd21f0",
+          "section_payload_hash": "sha256:32b16bc28402b38b5cf51bf72984390b5f3d37cf2eee7b88993f4ab01c1fc626",
           "source_file": "language/Property_options.md"
         },
         "Property_options::design-statement-default-values-block": {
-          "file_id": "file-Qbr6ThTQpHcTX2mVh6PT8s",
+          "file_id": "file-RT9EK5JehM8qBWH1QBQmu3",
           "heading_path": "Property options > Description and parameters > `DESIGN` statement default values block",
-          "section_payload_hash": "sha256:59810cbe12d6b9dba918e3975efd2639c7ecb76dec41dab6fdbd3a2096eb9cd4",
+          "section_payload_hash": "sha256:28b7c1cd305574c2786c1bb77dc8fc4634b655e8de2b8dd88741de0b4b8714dc",
           "source_file": "language/Property_options.md"
         },
         "Property_options::examples": {
@@ -6406,9 +6406,9 @@
           "source_file": "language/Property_options.md"
         },
         "Property_options::syntax": {
-          "file_id": "file-BvaAEMqaKpT3wyqLGKb84u",
+          "file_id": "file-FjHAbfMXUQdm3f7EnBmdQp",
           "heading_path": "Property options > Syntax",
-          "section_payload_hash": "sha256:7c3fe99a6d1535e97705137348c1ccd69fa120fd225497c06574e0ee3b5d8cf9",
+          "section_payload_hash": "sha256:debfe54e883e4efed3e6cee0af83334df53e1b02ac0cf9598ae78fd023467f0c",
           "source_file": "language/Property_options.md"
         }
       },
@@ -12714,7 +12714,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "236b4fa437f44250ea10ace05fb747f5849b811f",
+  "last_indexed_docs_commit": "083be15b52a9873704bc645d975d89d715b79328",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
