@@ -6099,8 +6099,8 @@
       "stale": false
     },
     "language/Operator_priority.md": {
-      "file_hash": "sha256:752ddff65e15849ac8b75ae7d0ba3a71f0c5de206e0555b26258334fc4d6b1b7",
-      "indexed_at": "2026-05-22T22:39:00Z",
+      "file_hash": "sha256:ff9d1b9917747a2b5276d0aba1c9585aed8e788f5d2508f222a55e7edd63e118",
+      "indexed_at": "2026-05-31T08:40:02Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6110,9 +6110,9 @@
       },
       "sections": {
         "Operator_priority::operator-priority": {
-          "file_id": "file-Px3kEgk8v9UgP4RBx9Cesk",
+          "file_id": "file-9ZitGkfaJb7x4Q4AdFHnoU",
           "heading_path": "Operator priority",
-          "section_payload_hash": "sha256:b59789aa32d88f6cba880a343108ff0f88862029e5f44ea4792d406406750725",
+          "section_payload_hash": "sha256:b0b3da4667104c6a6116a509e6ca046f42f22a3cb614efcad8fe67643070988e",
           "source_file": "language/Operator_priority.md"
         }
       },
@@ -6333,8 +6333,8 @@
       "stale": false
     },
     "language/Property_operators.md": {
-      "file_hash": "sha256:c45cdc253c98eb160809fc8bbc48d572da5a18c9e2783312fe3414336fa5c923",
-      "indexed_at": "2026-05-22T22:40:59Z",
+      "file_hash": "sha256:f5a460db9ded1f98e59acb50925a17bfc955e5bce54c45a3693e5bd9c0db5543",
+      "indexed_at": "2026-05-31T08:40:12Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6344,15 +6344,15 @@
       },
       "sections": {
         "Property_operators::context-dependent-operators": {
-          "file_id": "file-7qSCACWH8SKEhk5MasX32r",
+          "file_id": "file-Qj8JbDshNaAGifBykmdM35",
           "heading_path": "Property operators > Context dependent operators",
-          "section_payload_hash": "sha256:d0bcb74322bd1b87fa38befee398bd06789b361e02b8472e1be116d0f7ab4411",
+          "section_payload_hash": "sha256:42122937c74b263f2802a4f46c974bfc7e91f437b680cf04101a65588e120535",
           "source_file": "language/Property_operators.md"
         },
         "Property_operators::context-independent-operators-contextindependent": {
-          "file_id": "file-Qa5KDfirT2vGjj1hkqnrjr",
+          "file_id": "file-KWqTsVUqadFfQiCtH1siDt",
           "heading_path": "Property operators > Context independent operators {#contextindependent}",
-          "section_payload_hash": "sha256:8f312d783210421ca5e8fc744e5c501e3950656a3a18cb816ddd6d39014c1bcd",
+          "section_payload_hash": "sha256:38833da0c31c844bd8cf146f28c04a5f4a3232a44fa0fef559db35ec717439e2",
           "source_file": "language/Property_operators.md"
         },
         "Property_operators::property-operators": {
@@ -11093,8 +11093,8 @@
       "stale": false
     },
     "paradigm/Operations_with_primitives.md": {
-      "file_hash": "sha256:ae045290c5300774144d54c9885d48c4c9c630cc03351fa31beafece6ecfad7b",
-      "indexed_at": "2026-05-22T23:31:13Z",
+      "file_hash": "sha256:599771fffc1b566eb5011ab82a4b95cf45e1b8ca84d1b9b5354cf1a22b86516e",
+      "indexed_at": "2026-05-31T08:40:20Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11104,9 +11104,9 @@
       },
       "sections": {
         "Operations_with_primitives::operations-with-primitives": {
-          "file_id": "file-DPDRhFHCCB18PaRBsDSvVL",
+          "file_id": "file-MyagpYcxbbhvsFEaMLGM3J",
           "heading_path": "Operations with primitives",
-          "section_payload_hash": "sha256:7fba712555d1921cb647dafddb091b1af63b15d3095cfff3cbad4bf70ae20faa",
+          "section_payload_hash": "sha256:38d05fb6401d46d4819adfaf9572a30c8f6b1f8f85ca7f6d210e523f73051e6e",
           "source_file": "paradigm/Operations_with_primitives.md"
         }
       },
@@ -11509,8 +11509,8 @@
       "stale": false
     },
     "paradigm/Property_operators_paradigm.md": {
-      "file_hash": "sha256:49bc1a64e052f45816f37402c1b59585362949e2632edfc873c955cd80a82d4e",
-      "indexed_at": "2026-05-22T23:34:01Z",
+      "file_hash": "sha256:5793daac563db2f59948bc4b19a73f1c7ab96b556789895f13f3c48bdaac86fa",
+      "indexed_at": "2026-05-31T08:40:39Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11520,9 +11520,9 @@
       },
       "sections": {
         "Property_operators_paradigm::operators": {
-          "file_id": "file-N9UeqqW1HUTaLq5ENQ5utT",
+          "file_id": "file-UaBW4SQnGB39rQuLHS5JHo",
           "heading_path": "Operators",
-          "section_payload_hash": "sha256:5a67a2a74a58a3bff86064effc6dde47c39191631020bee7f5e62485f1b9694d",
+          "section_payload_hash": "sha256:7da08e9516c54503ca545d1e76585e0545088d91d82c67f7dbae0907c98faabb",
           "source_file": "paradigm/Property_operators_paradigm.md"
         }
       },
@@ -12714,7 +12714,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "943c557c2e988cd6b14488d0e60854bac026c320",
+  "last_indexed_docs_commit": "236b4fa437f44250ea10ace05fb747f5849b811f",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
