@@ -339,17 +339,27 @@ module.exports = {
                   label: 'Modularity',
                   link: {type: 'doc', id: 'paradigm/Modularity'},
                   items: [
-                    'paradigm/Modules', 
-                    'paradigm/Projects', 
+                    'paradigm/Modules',
+                    {
+                      type: 'category',
+                      label: 'System modules',
+                      link: {type: 'doc', id: 'paradigm/System_modules'},
+                      items: [
+                        'paradigm/System_System',
+                        'paradigm/System_Time',
+                        'paradigm/System_Utils',
+                      ]
+                    },
+                    'paradigm/Projects',
                     {
                       type: 'category',
                       label: 'Extensions',
                       link: {type: 'doc', id: 'paradigm/Extensions'},
                       items: [
-                        'paradigm/Class_extension', 
-                        'paradigm/Property_extension', 
-                        'paradigm/Action_extension', 
-                        'paradigm/Form_extension', 
+                        'paradigm/Class_extension',
+                        'paradigm/Property_extension',
+                        'paradigm/Action_extension',
+                        'paradigm/Form_extension',
                       ]
                     },
                   ]
@@ -749,8 +759,9 @@ module.exports = {
                   label: 'How-to: Working with external formats',
                   link: {type: 'doc', id: 'how-to/How-to_Working_with_external_formats'},
                   items: [
-                    'how-to/How-to_Data_export', 
-                    'how-to/How-to_Data_import', 
+                    'how-to/How-to_Data_export',
+                    'how-to/How-to_Data_import',
+                    'how-to/How-to_JSON_parsing',
                   ]
                 },
                 'how-to/How-to_Interaction_via_HTTP_protocol',
