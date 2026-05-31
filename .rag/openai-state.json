@@ -8764,8 +8764,8 @@
       "stale": false
     },
     "paradigm/Domain_logic.md": {
-      "file_hash": "sha256:a8a7dd7098a48f04a478ff454511b803a317e9b39b56fbde777fd59d76aff975",
-      "indexed_at": "2026-05-23T08:08:39Z",
+      "file_hash": "sha256:b59d7d576b60c4d60e3daf8d0f6d485a4994ab063ced28e998e9ab38288f05d6",
+      "indexed_at": "2026-05-31T10:57:01Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8775,9 +8775,9 @@
       },
       "sections": {
         "Domain_logic::domain-logic": {
-          "file_id": "file-3twEPfcpvPhCzgj42FeQVw",
+          "file_id": "file-411b2g5BnA6k3vPNEU98Sr",
           "heading_path": "Domain logic",
-          "section_payload_hash": "sha256:a7915e03f917b1194eb4a83a9d59b92d7bfdfa9bbd73e636413265a4751c102d",
+          "section_payload_hash": "sha256:ce5d4c0faaa5dcf5f2cedead8c13aac47efbe974115a1458e8c654236bae999a",
           "source_file": "paradigm/Domain_logic.md"
         },
         "Domain_logic::stack": {
@@ -10341,8 +10341,8 @@
       "stale": false
     },
     "paradigm/Logical_model.md": {
-      "file_hash": "sha256:fb03785998b90dd155843634209ed1f810548cc18baac7c01ede75bfd2bee447",
-      "indexed_at": "2026-05-23T08:09:22Z",
+      "file_hash": "sha256:c7318e5fd0c15def5f54f09906028387d48294a98d54b4a54d958db967bf13d6",
+      "indexed_at": "2026-05-31T10:57:20Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10352,9 +10352,9 @@
       },
       "sections": {
         "Logical_model::domain-logicdomain_logic.md+view-logicview_logic.md+stack": {
-          "file_id": "file-6dRXNZWWgXwPrVs2NbjUtN",
+          "file_id": "file-N2xJnA2yPwZKGyXijQkSbC",
           "heading_path": "Logical model > [Domain logic](Domain_logic.md) + [View logic](View_logic.md) + Stack",
-          "section_payload_hash": "sha256:5028ff138c141d925e2e589cac4849197e6f506d2422eaad866b4001e88561ed",
+          "section_payload_hash": "sha256:4795ab24d866549abea51ff9cf14ba97a513e563d3e77be1c8b12cc49fe49257",
           "source_file": "paradigm/Logical_model.md"
         },
         "Logical_model::logical-model": {
@@ -12714,7 +12714,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "083be15b52a9873704bc645d975d89d715b79328",
+  "last_indexed_docs_commit": "4aae46388659be719c8c5d76e27e781f0a6d4632",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
