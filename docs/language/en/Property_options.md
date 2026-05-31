@@ -26,13 +26,16 @@ syncType
 MATERIALIZED
 TABLE tableName
 INDEXED [dbName] [indexType]
+COMPLEX | NOCOMPLEX
+PREREAD
+HINT | NOHINT
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
 PATTERN patternExpr
 REGEXP rexpr [message] 
 ECHO
-DEFAULTCOMPARE [compare]
+DEFAULTCOMPARE compare
 EVENTID eventId
 LAZY [WEAK | STRONG]
 imageSetting
@@ -91,6 +94,18 @@ annotationSetting
 
             Specialized `LIKE` / `MATCH` indexes are created only when the current DB adapter has the corresponding trigram/full-text support enabled. The usual index is created regardless of that support.
 
+- `COMPLEX | NOCOMPLEX`
+
+    Keywords marking the property's calculation as complex (`COMPLEX`) or explicitly not (`NOCOMPLEX`). A complex property is always read in advance. If neither is specified, the property is complex only when it depends, directly or transitively, on a complex property.
+
+- `PREREAD`
+
+    Keyword that makes the property's value be read in advance during change processing, instead of being recomputed inline.
+
+- `HINT | NOHINT`
+
+    Keywords controlling automatic incremental caching of a property's changes. `HINT` forces this caching for the property when applicable; `NOHINT` disables it for the property and the properties depending on it. Without either, the platform decides automatically (heuristically).
+
 - `NONULL [DELETE] eventClause`
 
     Adds a [definiteness](../paradigm/Simple_constraints.md) constraint. If this constraint is violated as a result of some changes for some objects, either the corresponding message will be displayed, or, if `DELETE` is specified, such objects will be deleted.
@@ -102,6 +117,10 @@ annotationSetting
     - `eventClause`
 
         [Event type description block](Event_description_block.md). Describes the event by which the property will be checked for `NULL`.
+
+- `AUTOSET`
+
+    Keyword marking a [data property](../paradigm/Data_properties_DATA.md) with an object parameter and an object value for automatic setting on object creation. When an object is created with the `AUTOSET` option (for example, `NEW ... AUTOSET`) and its class matches the property's parameter class or a subclass, the platform sets this property for it to the current object of the value class, if one is available.
 
 ### Interactive view block
 
@@ -322,13 +341,14 @@ Property annotation. Begins with `@@`. The following annotations are supported:
 
 - `syncType`
 
-    Defines whether the property is executed synchronously or asynchronously:
+    Determines whether the property's actions are executed asynchronously:
 
-    - `WAIT` — synchronously.
+    - `WAIT` — asynchronous execution is disabled.
+    - `NOWAIT` — asynchronous execution is enabled.
 
-    - `NOWAIT` — asynchronously. This is the default behaviour.
+    If omitted, the actions are executed synchronously.
 
-- `DEFAULTCOMPARE [compare]`
+- `DEFAULTCOMPARE compare`
 
     Specifies a [default filter](../paradigm/Interactive_view.md#userfilters) type for the property.
 
