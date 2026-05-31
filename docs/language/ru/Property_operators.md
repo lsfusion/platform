@@ -14,7 +14,6 @@ title: 'Операторы-свойства'
 -   [Арифметические операторы](Arithmetic_operators.md)
 -   [Оператор `[]`](Brackets_operator.md)
 -   [Оператор `ACTIVE`](ACTIVE_operator.md)
--   [Оператор `AGGR`](AGGR_operator.md)
 -   [Оператор `CASE`](CASE_operator.md)
 -   [Оператор `CONCAT`](CONCAT_operator.md)
 -   [Оператор `EXCLUSIVE`](EXCLUSIVE_operator.md)
@@ -22,7 +21,6 @@ title: 'Операторы-свойства'
 -   [Оператор `IF`](IF_operator.md)
 -   [Оператор `IF ... THEN`](IF_..._THEN_operator.md)
 -   [Оператор `ISCLASS`](ISCLASS_operator.md)
--   [Оператор `JSON`](JSON_operator.md)
 -   [Оператор `JOIN`](JOIN_operator.md)
 -   [Оператор `JSON`](JSON_operator.md)
 -   [Оператор `LIKE`](LIKE_operator.md)
@@ -48,6 +46,7 @@ title: 'Операторы-свойства'
 Контекстно-независимые операторы-свойства отличаются от контекстно-зависимых тем, что сами определяют параметры (а не просто используют верхние). Как следствие, они не могут являться частью выражений, и могут быть использованы только в [инструкции `=`](=_statement.md) и [операторе `JOIN`](JOIN_operator.md): 
 
 -   [Оператор `DATA`](DATA_operator.md)
+-   [Оператор `AGGR`](AGGR_operator.md) (только в инструкции `=`)
 -   [Оператор `GROUP`](GROUP_operator.md) (с блоком `BY`)
 -   [Оператор `FORMULA`](FORMULA_operator.md)
 -   [Оператор `ABSTRACT`](ABSTRACT_operator.md)
