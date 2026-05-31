@@ -137,13 +137,31 @@ Common structure rules:
   to that new section
   and a brief description
   of what that section covers
-- in that case,
-  the assistant SHOULD also
+- `platform/docs/sidebars.js`
+  is itself part
+  of the documentation,
+  not a separate
+  downstream artifact
+  or a later step;
+  whenever an article
+  is added,
+  removed,
+  renamed,
+  or moved,
+  the assistant MUST
   update `platform/docs/sidebars.js`
-  so that the new block
-  or section is included
+  in the same change
+  so that the new
+  or relocated article
+  takes its place
   in the documentation hierarchy
-  and navigation
+  and navigation,
+  and MUST NOT
+  leave it
+  disconnected
+  from the navigation
+  or defer the wiring
+  to a separate step
 - the documentation
   SHOULD preserve
   clear links between sections
