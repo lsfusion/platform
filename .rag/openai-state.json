@@ -1580,6 +1580,56 @@
       },
       "stale": false
     },
+    "how-to/How-to_JSON_parsing.md": {
+      "file_hash": "sha256:8dc7bb7f4013c24d6c26cd88f5885055dcde53a2a021cc6942dbdcc278d4492e",
+      "indexed_at": "2026-05-31T16:42:55Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_JSON_parsing::how-to-json-parsing": {
+          "file_id": "file-968yyZTzwGbYnXSNQTLX9L",
+          "heading_path": "How-to: JSON parsing",
+          "section_payload_hash": "sha256:e4aa163acb69c6522fca74c98fdb6558a775604a98df833ada897946076a3e1f",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        },
+        "How-to_JSON_parsing::task-001": {
+          "file_id": "file-6P3ZkrevDeFYqyziWc9BuU",
+          "heading_path": "How-to: JSON parsing > Example 1",
+          "section_payload_hash": "sha256:0255ededb8811ccc064163810e9008c516d16db6c42e88a83d13560e518008f1",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        },
+        "How-to_JSON_parsing::task-002": {
+          "file_id": "file-873Joqvq1g6gZkjDNquDC7",
+          "heading_path": "How-to: JSON parsing > Example 2",
+          "section_payload_hash": "sha256:9abe96ee75c455c6fe3204400e2cfede694b6fd820246e7be400e27920d55dd5",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        },
+        "How-to_JSON_parsing::task-003": {
+          "file_id": "file-XiCXVL1okmt2Ys6sGTDPGL",
+          "heading_path": "How-to: JSON parsing > Example 3",
+          "section_payload_hash": "sha256:f7fb74b28c393398fa66fa0a8a20fc7c5dbd55bb79386421333405893ae44abc",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        },
+        "How-to_JSON_parsing::task-004": {
+          "file_id": "file-FkWwqNsJ5FaAE3LhSnQZcK",
+          "heading_path": "How-to: JSON parsing > Example 4",
+          "section_payload_hash": "sha256:963a6f89c5e66f51299552a7736c0d24271f0d11d2319505f7cb2d12e037ce4d",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        },
+        "How-to_JSON_parsing::task-005": {
+          "file_id": "file-T1eX1yzPc7cJDNdyUebyUy",
+          "heading_path": "How-to: JSON parsing > Example 5",
+          "section_payload_hash": "sha256:e883ff0169afd70f67ea49ec66b02aac9473dcae3a027945ad4d712366e708ae",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        }
+      },
+      "stale": false
+    },
     "how-to/How-to_Matrix.md": {
       "file_hash": "sha256:ba4f76b97fc8f70528857bd696b0635a38b005b2e6ad522c0818ca449fe30488",
       "indexed_at": "2026-05-22T21:50:50Z",
@@ -12288,6 +12338,344 @@
           "heading_path": "Structured view > XML namespaces",
           "section_payload_hash": "sha256:292353e2e038bd7a5054ad86e894ee785bf93f5f6e4257db585482fd8c7c23f4",
           "source_file": "paradigm/Structured_view.md"
+        }
+      },
+      "stale": false
+    },
+    "paradigm/System_System.md": {
+      "file_hash": "sha256:165275e570927af8bbb8aa89f7de3d63f58d0f16b26e9735bfd7a25d8487902f",
+      "indexed_at": "2026-05-31T16:43:14Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "System_System::application-identity": {
+          "file_id": "file-G6AWsAtJWfvEYKgkKybWVc",
+          "heading_path": "System > Application identity",
+          "section_payload_hash": "sha256:28163c14187a7ad231898237f140580fef8437abc747ee4f2deca67a4d9f4e01",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::caught-exception-state": {
+          "file_id": "file-83izyecCNoCBQRHb4ZQWWo",
+          "heading_path": "System > Caught-exception state",
+          "section_payload_hash": "sha256:95987549fee4f0f2a151069c5ed949933473dbc16be3e909fbc2b3a1edc6d21d",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::change-session-control": {
+          "file_id": "file-2EiCFEmNcaLvsMgy3G33HZ",
+          "heading_path": "System > Change-session control",
+          "section_payload_hash": "sha256:21db6c80472126e37cc430698bb748a2449aee37da6090349ec44008ebec8a66",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::client-side-loading+windows-and-navigator": {
+          "file_id": "file-Wb5Rdu62wGuNtjyjxu7VjT",
+          "heading_path": "System > Client-side loading + Windows and navigator",
+          "section_payload_hash": "sha256:6031f677125f1ddbf4e7fd497528cd56b3b5d089a59c7967e9f84bd73c1c91f0",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::file-helpers": {
+          "file_id": "file-R5vVU1srKwKmjfMoxyf4Dt",
+          "heading_path": "System > File helpers",
+          "section_payload_hash": "sha256:1a32221967724277a52939b2245cdf28a48669e1876f0f06cb6e3fe116e5d8b6",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::form-context-flags": {
+          "file_id": "file-BYSyzwewK9yQKxeU9y9TkA",
+          "heading_path": "System > Form context flags",
+          "section_payload_hash": "sha256:a65fb37e914c5dce41fc8ebca3ad20d15162c36b5aa59242b949b57268775717",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::form-lifecycle": {
+          "file_id": "file-LoFN38bVjkZokjg5EeZ8Vm",
+          "heading_path": "System > Form lifecycle",
+          "section_payload_hash": "sha256:5c0584763583e58cc07fb1aae46f0eb618c5e4afc3a6255d1af19b4c884eedae",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::http-request-context": {
+          "file_id": "file-C1kGp9E3KXW3sEy4bKQkFe",
+          "heading_path": "System > HTTP request context",
+          "section_payload_hash": "sha256:7b1a1ad43700d095c0b9841fba8810039147a02c0efd5258cd6084787e07b740",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::language": {
+          "file_id": "file-WYV6527PKS5mL3WeUzYLfi",
+          "heading_path": "System > Language",
+          "section_payload_hash": "sha256:ea1fb57850f60177b07df85b3a1e03e2fedc683543a994ebf1d9d3d41fbf2f34",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::local-buffers": {
+          "file_id": "file-AXtDKhqiJkb6u5nth2BGo3",
+          "heading_path": "System > Local buffers",
+          "section_payload_hash": "sha256:210eb16bfe05add96f5e277b2b7904423bd75c4b12069178db03193cede8c4e2",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::object-metadata": {
+          "file_id": "file-Ez5f324vV2kTQCmkDuUW55",
+          "heading_path": "System > Object metadata",
+          "section_payload_hash": "sha256:01e90dfe0a0ecdb994337638eaee6e84cc7fe49d65bf6fe64ced3820efee39d2",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::opening-files-and-links": {
+          "file_id": "file-9nQHZdLjb8xDAhcdNMQJX1",
+          "heading_path": "System > Opening files and links",
+          "section_payload_hash": "sha256:f49e0c4f0b8f173a04f14150658b693c15f2fd2d3bafa30b82b6a122793402df",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::polymorphic-edit-and-delete": {
+          "file_id": "file-FQRtbiGNRGEpwQD8n2DPXN",
+          "heading_path": "System > Polymorphic edit and delete",
+          "section_payload_hash": "sha256:a78f735d56783453760e11238c6fcf045455dd808df6eb1d6383d112ce549e7d",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::root-classes": {
+          "file_id": "file-N7kD1iCsGUxWFe5xfynyWU",
+          "heading_path": "System > Root classes",
+          "section_payload_hash": "sha256:e9b93b9a4e7ff9461e85b2783337b8c15887aba8a259510d89c713ecfcb6d5eb",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::runtime-and-checks": {
+          "file_id": "file-823xLFbNTxRNfxUu86YRzy",
+          "heading_path": "System > Runtime and checks",
+          "section_payload_hash": "sha256:36d308b839297f41543d181411b17382e6c3ba5db6611d528a87ba442bee738c",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::see-also": {
+          "file_id": "file-CEd8AYyJPw4BgbS5jBmFT8",
+          "heading_path": "System > See also",
+          "section_payload_hash": "sha256:22d2ec29c68fa950c7b59619832600a0d0ce70b00d2628e2c6fbfe9e780bfd8c",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::standard-groups": {
+          "file_id": "file-KHYEVwyJJSmaDuKPZgdpTi",
+          "heading_path": "System > Standard groups",
+          "section_payload_hash": "sha256:a96cedcd57d513d01e32b7fc9d14b0021fba7789bc6b4db329a4a42910eddbe8",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::system": {
+          "file_id": "file-CaBpAgqS3EakXcYovfy1Ts",
+          "heading_path": "System",
+          "section_payload_hash": "sha256:0d44d8fcc0f8358f653f95bee2c275f5ef9e27bdb376e9d343ca8582eb545cb2",
+          "source_file": "paradigm/System_System.md"
+        },
+        "System_System::ui-defaults": {
+          "file_id": "file-Sc39vJgogXUL5RxB7NhA9s",
+          "heading_path": "System > UI defaults",
+          "section_payload_hash": "sha256:f4667f9cc0649bb5c5629b01c49b9db470d2b5411d166d5a33c496d1b114ce77",
+          "source_file": "paradigm/System_System.md"
+        }
+      },
+      "stale": false
+    },
+    "paradigm/System_Time.md": {
+      "file_hash": "sha256:896767cd4f73a062520082f0bf10804bafea9f6de363e2c95ab292fabef53e3b",
+      "indexed_at": "2026-05-31T16:46:32Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "System_Time::arithmetic": {
+          "file_id": "file-NAi9XqjHsyQRKhSuNgESoM",
+          "heading_path": "Time > Arithmetic",
+          "section_payload_hash": "sha256:97f00b7d583e89283d5af4f2219f2e194e07f698f062d6c4db8ba900ecfa69e4",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::calendar-classes-and-forms": {
+          "file_id": "file-MdKru4qbPWqMsKpK2Gixxc",
+          "heading_path": "Time > Calendar classes and forms",
+          "section_payload_hash": "sha256:51a4fbbd1a164dcd213c30b007b48765ce66ebb434eb8e6e8eea158724fdacd1",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::conversion": {
+          "file_id": "file-CGy2RRMeEzFvkqQJkHVLjd",
+          "heading_path": "Time > Conversion",
+          "section_payload_hash": "sha256:5ad438372a65cf9d78005d068d5b936dff9c6ed386b81919551c7ece8653da5e",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::current-value": {
+          "file_id": "file-FZmov5qxCE1deUZHt9EByT",
+          "heading_path": "Time > Current value",
+          "section_payload_hash": "sha256:8478b4833c13c75d0d86f4dd0852b2262655eb3c461a305ff57117ce7273334c",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::extracting-parts": {
+          "file_id": "file-JWRfzqmgyNJhoLGeC6SdRc",
+          "heading_path": "Time > Extracting parts",
+          "section_payload_hash": "sha256:ae4cb51494aae03ccc5fd738c059e033cbc3471b833d48fefb30d17eed707585",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::see-also": {
+          "file_id": "file-11pnqUqSoNV8cVTGBeJRCi",
+          "heading_path": "Time > See also",
+          "section_payload_hash": "sha256:aa815f1b5e484c0bc4869aaa9a625e5c0978ada00827a113205c8cea80f999e0",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::time": {
+          "file_id": "file-XNB6Bx5utas3zVujnkjZHd",
+          "heading_path": "Time",
+          "section_payload_hash": "sha256:ef9df320bb78ccd821e9c28f8d2589220be31689553f7da7d6e4a5df98453b95",
+          "source_file": "paradigm/System_Time.md"
+        }
+      },
+      "stale": true
+    },
+    "paradigm/System_Utils.md": {
+      "file_hash": "sha256:5e00cf8b798c000c95de50e039c40403f51ca83ef0f772c3e7cd684ff17c5db9",
+      "indexed_at": "2026-05-31T16:47:14Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "System_Utils::archives": {
+          "file_id": "file-VYCfb91KkSAZNLjc2Sty5G",
+          "heading_path": "Utils > Archives",
+          "section_payload_hash": "sha256:c1c0fdfb58cf46f5ba420ac2fcfb5678fd1387c79b7fb2735d4f5330f5b64bd1",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::color+full-text-search": {
+          "file_id": "file-T7pgYj2nEGJVgo68AQVHak",
+          "heading_path": "Utils > Color + Full-text search",
+          "section_payload_hash": "sha256:03bdf5b48ab5b47f6394a5e99795a02d74ad91cfee2cca2dacabded361ed4b2c",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::console-and-network": {
+          "file_id": "file-A6YHBUr8r8ehK7eiUGTJoz",
+          "heading_path": "Utils > Console and network",
+          "section_payload_hash": "sha256:54581351ffa33358c1b39b76856c402bf6ae7bea7fdc4c3fef2de7543a79695c",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::dialog-forms": {
+          "file_id": "file-LbpfrwwPWvqyjsZpZPGNWr",
+          "heading_path": "Utils > Dialog forms",
+          "section_payload_hash": "sha256:ee3bfe549073d307d1f03b78e0b20f44ba3dcedfb801dd7e0dd7df2e8e9dd960",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::excel": {
+          "file_id": "file-FTwDcbhskbzzsKn4rvoU1S",
+          "heading_path": "Utils > Excel",
+          "section_payload_hash": "sha256:b7414f7007dffed3be78e508c1acb7e40afccd73c87ac71586b90391809e06d6",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::file-contents-and-encoding": {
+          "file_id": "file-AyR6Pt3aZ85bARFbppY9Jg",
+          "heading_path": "Utils > File contents and encoding",
+          "section_payload_hash": "sha256:b5122b445a4dcecff02e2ae17f9ef91630205066d99618379a351bf073355393",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::file-system": {
+          "file_id": "file-3CVadrKpF7ycUE5oNd5ck4",
+          "heading_path": "Utils > File system",
+          "section_payload_hash": "sha256:8517726e7bd7a30819744f3fad09ae6f4647f04adac7b23ff2226eb6077df0eb",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::iteration": {
+          "file_id": "file-R57rYWuu7pQKgFrHzGWJfz",
+          "heading_path": "Utils > Iteration",
+          "section_payload_hash": "sha256:b38626fee318d300c7771b95e13ce9a65cb22e7f38228f7606ab57b4778706a2",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::json-access-properties-json-access": {
+          "file_id": "file-CHT1k5iG3EMih5ux6qXsK4",
+          "heading_path": "Utils > JSON access properties {#json-access}",
+          "section_payload_hash": "sha256:9d457e9422850c78a19d3c659c6700202d6b87ad0c6a631ddd314023bab0113c",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::language": {
+          "file_id": "file-8xLSrpzGNVyohWjwptuRtf",
+          "heading_path": "Utils > Language",
+          "section_payload_hash": "sha256:4d3ea5095c10c4ee2c4842b055398e25904a52d2f6010b3d2066bc4d9478ee19",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::local-file-class-properties": {
+          "file_id": "file-37tYGQaphmH96P86GJ4nky",
+          "heading_path": "Utils > Local file-class properties",
+          "section_payload_hash": "sha256:6590070173d66d3290efb3d3c96d7f11f18989e2b4237822326f67c7ce216c10",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::logging": {
+          "file_id": "file-Nzndj3LjJJgrLjmxRY1LoH",
+          "heading_path": "Utils > Logging",
+          "section_payload_hash": "sha256:59dac8d091577b8006e9265e3dbae6f802ecb87d271db677f802d04d8645f03f",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::numbers": {
+          "file_id": "file-Vc6Pc5LTrrw2fcvcGdTD9C",
+          "heading_path": "Utils > Numbers",
+          "section_payload_hash": "sha256:2febf59e672e0b0ea176caef216ab65b57a3e24e8a3de6411237117cffd04cc2",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::pdf-and-word": {
+          "file_id": "file-TwAQ5QEMHSbZaxdFVQ8jgc",
+          "heading_path": "Utils > PDF and Word",
+          "section_payload_hash": "sha256:670a7af14dfaaec6370792aac30932721ec552e1a84eb59e9075aa4fea8e9a6d",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::runtime-environment": {
+          "file_id": "file-YGyx7pSZuxNjKwa6qXvpza",
+          "heading_path": "Utils > Runtime environment",
+          "section_payload_hash": "sha256:dd6d252021328405f0c9fa1f15b637cccd97b5087abd4105304839e6451cf106",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::see-also": {
+          "file_id": "file-KAKJnVc6QtxiUcWJwqrUh6",
+          "heading_path": "Utils > See also",
+          "section_payload_hash": "sha256:8db4e98b89068b86b9ce9f7350ef9db73d9175474ef51325c6db4eb989512bd2",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::strings": {
+          "file_id": "file-GMFsTtbBsXFWqnaL6RpZnH",
+          "heading_path": "Utils > Strings",
+          "section_payload_hash": "sha256:e938d0dc3e8842a46f31a3a797ecb8091a09bd4574e24261717591100f7d9569",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::utils": {
+          "file_id": "file-WUgEeo5w16FfDtYGqzp4YF",
+          "heading_path": "Utils",
+          "section_payload_hash": "sha256:46c01e5b8f30dd5e9bf634a2a042694ad382f8323e62fbb10fecf24fbe37d5ae",
+          "source_file": "paradigm/System_Utils.md"
+        }
+      },
+      "stale": false
+    },
+    "paradigm/System_modules.md": {
+      "file_hash": "sha256:9c3e69b22161744d74e1f01be06538c64847a9a6dbf6a682ee47ff830dc90909",
+      "indexed_at": "2026-05-31T16:47:57Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "System_modules::inventory": {
+          "file_id": "file-6hPXkWRDnA9rDxyyuXycBT",
+          "heading_path": "System modules > Inventory",
+          "section_payload_hash": "sha256:c07d74be24cc82937e3f596b737af8adce10d43d0d9c155468c9c8e94ecc5cbc",
+          "source_file": "paradigm/System_modules.md"
+        },
+        "System_modules::language": {
+          "file_id": "file-3ys2yk8Ex2rnYPJyBkpbbB",
+          "heading_path": "System modules > Language",
+          "section_payload_hash": "sha256:c98f612cfb398f0e06489f07bf1670d3db2df4b6bf403d8d7389cb330a952288",
+          "source_file": "paradigm/System_modules.md"
+        },
+        "System_modules::system-modules": {
+          "file_id": "file-NkmkeANpnuVgpNW3yVw2zV",
+          "heading_path": "System modules",
+          "section_payload_hash": "sha256:c78868b6f4f5333056d02c16b86978f73c471dfcd89cc508d46fd8a492d8fc1f",
+          "source_file": "paradigm/System_modules.md"
         }
       },
       "stale": false
