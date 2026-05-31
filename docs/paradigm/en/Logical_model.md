@@ -7,7 +7,7 @@ The logical model is traditionally divided into two parts:
 
 ### [Domain logic](Domain_logic.md)
 
-It determines what information the system stores and what you can do with this information. This logic is also often called domain-specific logic.
+It determines what information the system stores and what you can do with this information. This logic is also often called business logic.
 
 ### [View logic](View_logic.md)
 
