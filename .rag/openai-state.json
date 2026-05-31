@@ -12472,7 +12472,7 @@
     },
     "paradigm/System_Time.md": {
       "file_hash": "sha256:896767cd4f73a062520082f0bf10804bafea9f6de363e2c95ab292fabef53e3b",
-      "indexed_at": "2026-05-31T16:46:32Z",
+      "indexed_at": "2026-05-31T16:57:48Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12511,6 +12511,12 @@
           "section_payload_hash": "sha256:ae4cb51494aae03ccc5fd738c059e033cbc3471b833d48fefb30d17eed707585",
           "source_file": "paradigm/System_Time.md"
         },
+        "System_Time::iteration-and-intervals": {
+          "file_id": "file-DgP3uhMrhNkRoA26eK7CiS",
+          "heading_path": "Time > Iteration and intervals",
+          "section_payload_hash": "sha256:a48b1f433ef1bc49827809e204dbadb76c49bf09904cae36b5a7e4d9bb114502",
+          "source_file": "paradigm/System_Time.md"
+        },
         "System_Time::see-also": {
           "file_id": "file-11pnqUqSoNV8cVTGBeJRCi",
           "heading_path": "Time > See also",
@@ -12524,7 +12530,7 @@
           "source_file": "paradigm/System_Time.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/System_Utils.md": {
       "file_hash": "sha256:5e00cf8b798c000c95de50e039c40403f51ca83ef0f772c3e7cd684ff17c5db9",
@@ -13102,7 +13108,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4aae46388659be719c8c5d76e27e781f0a6d4632",
+  "last_indexed_docs_commit": "c512cd3cf1ce878aeb14771d61bf9be112b8e07a",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
