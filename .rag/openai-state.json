@@ -1580,6 +1580,56 @@
       },
       "stale": false
     },
+    "how-to/How-to_JSON_export.md": {
+      "file_hash": "sha256:cb5ee478d04ee97c0ff3e1e7c3f86b3ae1bd82981d14f5c455ff8e9e93791169",
+      "indexed_at": "2026-06-01T14:34:25Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_JSON_export::task-001": {
+          "file_id": "file-5Umn6dy7uSVsbqHhv8KWMc",
+          "heading_path": "How-to: JSON export > Example 1",
+          "section_payload_hash": "sha256:dd980deafb5a02b51951c236026443c15789de25b8a6e00a46603ba5a2b163c0",
+          "source_file": "how-to/How-to_JSON_export.md"
+        },
+        "How-to_JSON_export::task-002": {
+          "file_id": "file-K7oBsQd9wyZsK3CZ1pPCn3",
+          "heading_path": "How-to: JSON export > Example 2",
+          "section_payload_hash": "sha256:cbed826309eea9a012491faafc2e2f006196bbc86233fb617a6f419bc12f9ad5",
+          "source_file": "how-to/How-to_JSON_export.md"
+        },
+        "How-to_JSON_export::task-003": {
+          "file_id": "file-CZJ3Qh7tEWFGqLv6QvkVJu",
+          "heading_path": "How-to: JSON export > Example 3",
+          "section_payload_hash": "sha256:7df9760571df089b8cc4054616c322b338c2b329945fa2997474dabb216a546e",
+          "source_file": "how-to/How-to_JSON_export.md"
+        },
+        "How-to_JSON_export::task-004": {
+          "file_id": "file-GDfjErEieHMhNdQdmsVkBE",
+          "heading_path": "How-to: JSON export > Example 4",
+          "section_payload_hash": "sha256:0e195bd2fe0b184dd6020cc237d5997395992077fc236690b335239b2fd5f159",
+          "source_file": "how-to/How-to_JSON_export.md"
+        },
+        "How-to_JSON_export::task-005": {
+          "file_id": "file-9qJFYH8DobdwNgWVpbGJKr",
+          "heading_path": "How-to: JSON export > Example 5",
+          "section_payload_hash": "sha256:6c279cdc30468dd4a16104d9073f8219d7ab6100cad7bd76c1817baca67dde43",
+          "source_file": "how-to/How-to_JSON_export.md"
+        },
+        "How-to_JSON_export::task-006": {
+          "file_id": "file-Gq2BqKWd2qfuLvF6oje1Kq",
+          "heading_path": "How-to: JSON export > Example 6",
+          "section_payload_hash": "sha256:08469272f23e884b18968294ae3b3f8085cd39a6ac636bbbc508b7b6b3f36a5e",
+          "source_file": "how-to/How-to_JSON_export.md"
+        }
+      },
+      "stale": false
+    },
     "how-to/How-to_JSON_parsing.md": {
       "file_hash": "sha256:8dc7bb7f4013c24d6c26cd88f5885055dcde53a2a021cc6942dbdcc278d4492e",
       "indexed_at": "2026-05-31T16:42:55Z",
@@ -13152,7 +13202,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "737662d94ead8acbe69c9a0746be61fdb3bf6c82",
+  "last_indexed_docs_commit": "e4721ec8dfe1c6d6c8461ed67dd18811f8954904",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
