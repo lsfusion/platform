@@ -762,6 +762,7 @@ module.exports = {
                   items: [
                     'how-to/How-to_Data_export',
                     'how-to/How-to_Data_import',
+                    'how-to/How-to_JSON_export',
                     'how-to/How-to_JSON_parsing',
                   ]
                 },
