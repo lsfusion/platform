@@ -6169,8 +6169,8 @@
       "stale": false
     },
     "language/PARTITION_operator.md": {
-      "file_hash": "sha256:b79e0670881b120737260dc3db8727ba0775d844786803f7161d7281cbfd8eee",
-      "indexed_at": "2026-05-22T23:47:28Z",
+      "file_hash": "sha256:99633ac8fc3efadb2dac2b782c44ca6450424704f3da112dd30c5c07c231afd3",
+      "indexed_at": "2026-06-01T06:20:55Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6180,9 +6180,9 @@
       },
       "sections": {
         "PARTITION_operator::description": {
-          "file_id": "file-VWt5A7Xcajtde26ia48bZA",
+          "file_id": "file-7FuqK1NG43EcGWktSZcmbi",
           "heading_path": "PARTITION operator > Description",
-          "section_payload_hash": "sha256:f7c0a4b3dc4364a595f614e68282759c3b699d5e8cac10fadbd918011ec37045",
+          "section_payload_hash": "sha256:9e039078e3b946c0d260cb9145333d4e90de5bc53bebe1d5f74e8c0de40776d7",
           "source_file": "language/PARTITION_operator.md"
         },
         "PARTITION_operator::examples": {
@@ -6192,9 +6192,9 @@
           "source_file": "language/PARTITION_operator.md"
         },
         "PARTITION_operator::parameters": {
-          "file_id": "file-W6aCkFpZ1CrGuSe8Mhk1vZ",
+          "file_id": "file-2NVCtqxXMtTVq2qko26Gsh",
           "heading_path": "PARTITION operator > Parameters",
-          "section_payload_hash": "sha256:2b2e288660fb3770ec01e4025980a172be35fbec256135cf4fa3b432b9ca0dcc",
+          "section_payload_hash": "sha256:9e8fcc3d61fa1570c21f2d83e7ecb1049f34a43f368276f9f7692ebf6e470a16",
           "source_file": "language/PARTITION_operator.md"
         },
         "PARTITION_operator::partition-operator": {
@@ -6204,9 +6204,9 @@
           "source_file": "language/PARTITION_operator.md"
         },
         "PARTITION_operator::syntax": {
-          "file_id": "file-CozFaDTB1i2ih2NC6cgzgj",
+          "file_id": "file-Ku9coBV62fo9ydzhy8QuL9",
           "heading_path": "PARTITION operator > Syntax",
-          "section_payload_hash": "sha256:7d496d98ba97b95431d2bf8ac6e12022e27b5d5e3653f1805e68ee482e691383",
+          "section_payload_hash": "sha256:836c189ee55ae2cb7fce6e62514ae4187f6f82e88720db5b55c168114d031c3a",
           "source_file": "language/PARTITION_operator.md"
         }
       },
@@ -6567,8 +6567,8 @@
       "stale": false
     },
     "language/RECURSION_operator.md": {
-      "file_hash": "sha256:56cdb342647ed0328ba884cdffa2982d5c58b09ffb1e0ba96651369a4af46c66",
-      "indexed_at": "2026-05-22T22:42:04Z",
+      "file_hash": "sha256:a55e13285cba161c022e172caeaccaf0d4e67364f0009bc41ca42669104675e8",
+      "indexed_at": "2026-06-01T06:21:21Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6577,12 +6577,6 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "RECURSION_operator::description": {
-          "file_id": "file-XUX23KwRwLWdgfGnuPeEH2",
-          "heading_path": "RECURSION operator > Description",
-          "section_payload_hash": "sha256:39b62f8597671f6193c37a3a2395b7b3d84c5cde25249e79440548c52ce66833",
-          "source_file": "language/RECURSION_operator.md"
-        },
         "RECURSION_operator::examples": {
           "file_id": "file-XEBmFC14idjRy7emBYo1LH",
           "heading_path": "RECURSION operator > Examples",
@@ -6590,9 +6584,9 @@
           "source_file": "language/RECURSION_operator.md"
         },
         "RECURSION_operator::parameters": {
-          "file_id": "file-WEAe9wRE1qpU5eM9KM49oP",
+          "file_id": "file-RJpFtLnErf9AXz5ySHoMQZ",
           "heading_path": "RECURSION operator > Parameters",
-          "section_payload_hash": "sha256:e0962f2228d9499fc27343c1a38f38b379204266261660b5180f4dcb950e5b71",
+          "section_payload_hash": "sha256:b8b502eb0f892672cddce68653d0abfd3b5f890a0fdfc057156d3edf761328b3",
           "source_file": "language/RECURSION_operator.md"
         },
         "RECURSION_operator::recursion-operator": {
@@ -6601,10 +6595,10 @@
           "section_payload_hash": "sha256:d792cdcbd1e3f8669d1bae306fcb1ee16cedcd7f17c62ce88f39e6f3cde19dba",
           "source_file": "language/RECURSION_operator.md"
         },
-        "RECURSION_operator::syntax": {
-          "file_id": "file-CPWFj1VfZx7GJx83LN7yxQ",
-          "heading_path": "RECURSION operator > Syntax",
-          "section_payload_hash": "sha256:22c9b3c5f9582e55be64b0d004b9e34e5285e9ba264b60406b8ce8ff27a975d0",
+        "RECURSION_operator::syntax+description": {
+          "file_id": "file-GQRGDjcT111j3UBjtZnWKV",
+          "heading_path": "RECURSION operator > Syntax + Description",
+          "section_payload_hash": "sha256:9a6311505bfbebadc1063bd0447f1780df4747b2260246bbf11159c18db866d4",
           "source_file": "language/RECURSION_operator.md"
         }
       },
@@ -11265,8 +11259,8 @@
       "stale": false
     },
     "paradigm/Partitioning_sorting_PARTITION_..._ORDER.md": {
-      "file_hash": "sha256:b174137987e9b7a875ef7767e5b54dd6d2a89453106d2465bd3feae856ecf1d5",
-      "indexed_at": "2026-05-22T23:31:34Z",
+      "file_hash": "sha256:86e4a44843f3b276c2dbef56fcf7a33697f59245d3a605ebe1d0b6cee51c0baa",
+      "indexed_at": "2026-06-01T06:21:30Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11288,9 +11282,9 @@
           "source_file": "paradigm/Partitioning_sorting_PARTITION_..._ORDER.md"
         },
         "Partitioning_sorting_PARTITION_..._ORDER::partitioning--sorting-partition-...-order": {
-          "file_id": "file-KCYQWMLW7zgWbJr7qgzfaK",
+          "file_id": "file-XPjKyjveuFj7fCBPLh9jHu",
           "heading_path": "Partitioning / sorting (PARTITION ... ORDER)",
-          "section_payload_hash": "sha256:6145f259a55d37341c0fb9a43d7908e4bc79a1d3dea305a348850836f0d0936d",
+          "section_payload_hash": "sha256:053d163a3331b97cfe7894cb84dfc84a818f60d05a26b61b1d0c0a68392c6dcf",
           "source_file": "paradigm/Partitioning_sorting_PARTITION_..._ORDER.md"
         }
       },
@@ -11655,8 +11649,8 @@
       "stale": false
     },
     "paradigm/Recursion_RECURSION.md": {
-      "file_hash": "sha256:091d240da98fc141424fbd3956971962f49a6d7445d373154bcb5bcc2ff02fb6",
-      "indexed_at": "2026-05-25T10:07:18Z",
+      "file_hash": "sha256:1f6c34ff76f5785f9c753096545ead2bce8a0eef4653e8e3cb1530fd9484f93d",
+      "indexed_at": "2026-06-01T06:21:39Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11678,9 +11672,9 @@
           "source_file": "paradigm/Recursion_RECURSION.md"
         },
         "Recursion_RECURSION::recursion-recursion": {
-          "file_id": "file-7YCNZezi3q18JiFx89q3T6",
+          "file_id": "file-KmV51dDjbd23KxsUkT41yU",
           "heading_path": "Recursion (RECURSION)",
-          "section_payload_hash": "sha256:a6f6348240b0b5f688ee2b84badfeb83b857aa4835ae918a7aca682f55eef659",
+          "section_payload_hash": "sha256:d1ae636d40f3850110231a7c34c24f444203a6a93eb24c7a34bcb938bc2ced08",
           "source_file": "paradigm/Recursion_RECURSION.md"
         }
       },
@@ -13158,7 +13152,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "c87e6c984f02708fc1f332697c8de5f58f1bc124",
+  "last_indexed_docs_commit": "737662d94ead8acbe69c9a0746be61fdb3bf6c82",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
