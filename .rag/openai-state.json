@@ -4043,8 +4043,8 @@
       "stale": false
     },
     "language/EVAL_operator.md": {
-      "file_hash": "sha256:ee4b2cfd0fc3c16bc254794c407dd78f42e73477201d3eb621ffde4afaec0c44",
-      "indexed_at": "2026-05-22T22:09:41Z",
+      "file_hash": "sha256:64eb6578e42b89ec26a568de31317bd5a56695ab45a4457426780d2b38704c50",
+      "indexed_at": "2026-06-02T11:09:06Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4053,34 +4053,28 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "EVAL_operator::description": {
-          "file_id": "file-L1h9qEpkoFPfNm4GrTFaJh",
-          "heading_path": "EVAL operator > Description",
-          "section_payload_hash": "sha256:8cf2c2e80c3baee3febe23b4e84c92f0989a0997c2d358c1c96fe701362d4c75",
-          "source_file": "language/EVAL_operator.md"
-        },
         "EVAL_operator::eval-operator": {
-          "file_id": "file-YaHyvETzx1tsMfAWygEyu9",
+          "file_id": "file-SxfpU17W3CEHv8WiLrHEfT",
           "heading_path": "EVAL operator",
-          "section_payload_hash": "sha256:3bda9a7faabdc1faaf86088adc376ffb974289660108e5577078b8707b8ee9b5",
+          "section_payload_hash": "sha256:e964a47f1a16bb975b2d2d918746020fe0127bc04595539b0c943663e4ada4a7",
           "source_file": "language/EVAL_operator.md"
         },
         "EVAL_operator::examples": {
-          "file_id": "file-75jjb3NKb5drYAufKddipp",
+          "file_id": "file-T6NZcbZJFpLHd4aUA673yH",
           "heading_path": "EVAL operator > Examples",
-          "section_payload_hash": "sha256:751587263d7d83d746b3a4474b81e3df1c3de20ec8c2a9643da142d49bf19a91",
+          "section_payload_hash": "sha256:ca23317294d8558581d61f0efbe78b6f3197b06a304916cd1c8ee3a690409fd1",
           "source_file": "language/EVAL_operator.md"
         },
         "EVAL_operator::parameters": {
-          "file_id": "file-18x9E6cM2bo3MnSnXttSYQ",
+          "file_id": "file-5MTQo8sGkhAU3Usajh9jk9",
           "heading_path": "EVAL operator > Parameters",
-          "section_payload_hash": "sha256:9ed7e37f5142b8696606da18127d7c6d0a0252834610e0665e0e6c5ea9b50946",
+          "section_payload_hash": "sha256:e5533453692e38eebc979a56f25965069755a22b43216df73e0af2b16b933133",
           "source_file": "language/EVAL_operator.md"
         },
-        "EVAL_operator::syntax": {
-          "file_id": "file-8w4hdyieXdqC8hxoccnhXE",
-          "heading_path": "EVAL operator > Syntax",
-          "section_payload_hash": "sha256:a5030afc139be309940514102f304f7977890ab96da1ac717391d899089f16c7",
+        "EVAL_operator::syntax+description": {
+          "file_id": "file-CE6uVW1iyZZyPPvq399HV4",
+          "heading_path": "EVAL operator > Syntax + Description",
+          "section_payload_hash": "sha256:11a670629ac53b9c46a005ade82b2164d7db9341621513f96830d10a3e77f2c1",
           "source_file": "language/EVAL_operator.md"
         }
       },
@@ -8948,8 +8942,8 @@
       "stale": false
     },
     "paradigm/Eval_EVAL.md": {
-      "file_hash": "sha256:6d5d102bc0d648bc0eea337542315637b034a1d161f0ca7b1ca0862a360a171d",
-      "indexed_at": "2026-05-25T10:05:02Z",
+      "file_hash": "sha256:5d0c70522beae8ff0e30fb7603d8c1a8d54157110e03e743308984b9b38ca2b8",
+      "indexed_at": "2026-06-02T11:09:17Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8958,28 +8952,34 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Eval_EVAL::action-execution": {
-          "file_id": "file-SNwWeHyykBTpzCTgeL1cnb",
-          "heading_path": "Eval (EVAL) > Action execution",
-          "section_payload_hash": "sha256:23db2b8aa0f698b0b38d4eac964d726749c769e6aa7635d9f22587e2d6e7a67d",
-          "source_file": "paradigm/Eval_EVAL.md"
-        },
         "Eval_EVAL::eval-eval": {
-          "file_id": "file-BAo4o3pnoCnu5xWa9JvgSM",
+          "file_id": "file-8ityjcRduGhjDoYvWqukou",
           "heading_path": "Eval (EVAL)",
-          "section_payload_hash": "sha256:754dc2392948042a68248716ea430532557fcdba41eeb73a92fdaa55a1f5c168",
-          "source_file": "paradigm/Eval_EVAL.md"
-        },
-        "Eval_EVAL::executable-code-restrictions": {
-          "file_id": "file-UM3RymCYJzJEKZHqnuyHiW",
-          "heading_path": "Eval (EVAL) > Executable code restrictions",
-          "section_payload_hash": "sha256:ddf612875bde0a0f215c58ea3e3072a32fd90130bc2b89a3b7727d4065b20030",
+          "section_payload_hash": "sha256:903187deaf1a3481717f51c84c6f4a756735d494fe503e4a6dbb79e7897129cc",
           "source_file": "paradigm/Eval_EVAL.md"
         },
         "Eval_EVAL::language+examples": {
-          "file_id": "file-2RpL6pRe75v5DUe7bXmLfe",
+          "file_id": "file-LWYWau7QCxvA9cR2DeuZEi",
           "heading_path": "Eval (EVAL) > Language + Examples",
-          "section_payload_hash": "sha256:d86a206e50d3f1bf5e920416e8231bc2fb8db06d4453bd212daad1b51531b3ef",
+          "section_payload_hash": "sha256:a88f30a6390eb2babb10174dff715546507c664f3470e5af6e72fb01d455f40d",
+          "source_file": "paradigm/Eval_EVAL.md"
+        },
+        "Eval_EVAL::parameters+execution-scope": {
+          "file_id": "file-VNVdfecC7L15kd5Ha9XPbc",
+          "heading_path": "Eval (EVAL) > Parameters + Execution scope",
+          "section_payload_hash": "sha256:db14785005ba6b3cc4a2a53ac4b03cb51ab2e4eab99b573acf3503f315a14f26",
+          "source_file": "paradigm/Eval_EVAL.md"
+        },
+        "Eval_EVAL::restrictions-on-the-executable-code": {
+          "file_id": "file-UnyHtgQJwpZ8oykE5RPixx",
+          "heading_path": "Eval (EVAL) > Restrictions on the executable code",
+          "section_payload_hash": "sha256:fa7a20e1466647c6785da3dcd3d780a3ab55d77384b75f336e1e3f20e49e4c64",
+          "source_file": "paradigm/Eval_EVAL.md"
+        },
+        "Eval_EVAL::source-code": {
+          "file_id": "file-7q8h72tsCdYRP4ouwLYmS2",
+          "heading_path": "Eval (EVAL) > Source code",
+          "section_payload_hash": "sha256:64ab615c5be2fcfddc01e73c70fd40ab75a0bcf05c9d1225d5da4c0993d77a3d",
           "source_file": "paradigm/Eval_EVAL.md"
         }
       },
@@ -13202,7 +13202,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "2d4f1fd18b14fac593cdbfc0475a1cad20062b12",
+  "last_indexed_docs_commit": "e11a82bf79842929a5208ed689761bdd0ea3111c",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
