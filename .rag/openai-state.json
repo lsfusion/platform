@@ -1981,8 +1981,8 @@
       "stale": false
     },
     "how-to/How-to_Reports.md": {
-      "file_hash": "sha256:72ee18984fb3d9f54ca38adecc72e08a4b61440acceada5da6a2d089965bf066",
-      "indexed_at": "2026-05-22T21:53:29Z",
+      "file_hash": "sha256:fdd6a2a57ae532e4b0a4110581b7d6d6eac401129d26f752255ad9c0bb74f345",
+      "indexed_at": "2026-06-02T12:32:15Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1998,9 +1998,9 @@
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-001::part-01": {
-          "file_id": "file-59qphydf9JHHxPZFCUNyNA",
+          "file_id": "file-QQVAjjnj5vGwrawoRcVNP2",
           "heading_path": "How-to: Reports > Example 1",
-          "section_payload_hash": "sha256:e6eedc25e154adf5b538661a795b245fb7515e2f8b5f6f832a8ef64835f118a9",
+          "section_payload_hash": "sha256:994f5f4a030eb48fbd72c68a7993938ac96d1ca9df2feea2e3f5e2edaf8dec3e",
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-001::part-02": {
@@ -2016,21 +2016,21 @@
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-002::part-01": {
-          "file_id": "file-AG7tB1fyRRcz4FTBAnWJji",
+          "file_id": "file-UYfmSEh3j8B89zRJCdsLH1",
           "heading_path": "How-to: Reports > Example 2",
-          "section_payload_hash": "sha256:a62684e38e0ece409ac01223968a3758832a9a998af77dc137734b6abc502735",
+          "section_payload_hash": "sha256:d66cf4208057087252d34cf0c1d4ae07c8e82e6b89fcab884a7ba5fd2089a1bb",
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-003::part-00": {
-          "file_id": "file-9jfWNkkzKsKfnyjYGxsib3",
+          "file_id": "file-Jg14pNgto4GNxRVRe7S1zv",
           "heading_path": "How-to: Reports > Example 3",
-          "section_payload_hash": "sha256:196a77bf19a5c0ddaad011e29e2eb8c1d04dbcb50c018015c20fb2d22010f9e9",
+          "section_payload_hash": "sha256:cd336023a79d256cbc12b23b7b312631fd80f82ed13a6ba3a8c28545a9c31ffd",
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-003::part-01": {
-          "file_id": "file-XF1nyCbPfcjzmoxfjQ7Cjj",
+          "file_id": "file-8cg4o99ZZMepMCzEhXfMAM",
           "heading_path": "How-to: Reports > Example 3",
-          "section_payload_hash": "sha256:2bc2e328077e4bd56c1065757bd8cf677573d0e31e660508184a98ab14c2abc9",
+          "section_payload_hash": "sha256:1d608cd91f5073f007ac50d6fb5523f793483157e3596498d4c1974bb8adf29e",
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-003::part-02": {
@@ -2040,9 +2040,9 @@
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-003::part-03": {
-          "file_id": "file-QvmwSD8bAoA5rCHkymDMAr",
+          "file_id": "file-W7M3GxW5keBHAgtN9Dnq1M",
           "heading_path": "How-to: Reports > Example 3",
-          "section_payload_hash": "sha256:4a2e262d282726521b2cd29de02b30a7ebb6c7861bf65a89fa965e5e77405adc",
+          "section_payload_hash": "sha256:cafc24ba5de9b59914b057e34617efab8aa0f9f5ae05e436e00fd398e46ca156",
           "source_file": "how-to/How-to_Reports.md"
         },
         "How-to_Reports::task-003::part-04": {
@@ -11757,8 +11757,8 @@
       "stale": false
     },
     "paradigm/Report_design.md": {
-      "file_hash": "sha256:484b650a8f195ec203f1ac382df76613f2f26b010e7449e3d77f6da58eaf3056",
-      "indexed_at": "2026-05-22T23:35:14Z",
+      "file_hash": "sha256:15f85b04f480d0d7bf3c27ab4b40f1bd6e3a104c8bff88b640eb775514092fa7",
+      "indexed_at": "2026-06-02T12:33:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11768,9 +11768,9 @@
       },
       "sections": {
         "Report_design::report-design": {
-          "file_id": "file-HpG293Uqa1bKQEPbBA9yPn",
+          "file_id": "file-TPyvQTX5h2zDzdUpUy54iH",
           "heading_path": "Report design",
-          "section_payload_hash": "sha256:1d818eca0695d89f9da8a40296d8fa3e9ec387dbdb1ff04f538d6f5d760afff4",
+          "section_payload_hash": "sha256:219136a8af726090a4f989e2d2eb9d47ce521c9ef31c0e36d6abfa9cae7c4e9c",
           "source_file": "paradigm/Report_design.md"
         }
       },
@@ -13202,7 +13202,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "e11a82bf79842929a5208ed689761bdd0ea3111c",
+  "last_indexed_docs_commit": "3141e111f40e62efdd8b8ddff0163e24d04f7608",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
