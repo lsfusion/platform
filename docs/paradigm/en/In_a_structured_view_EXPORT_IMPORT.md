@@ -7,9 +7,9 @@ This operator creates an action that [opens a form](Open_form.md) in the [struct
 
 ### Format {#format}
 
-In this operator, you can define the format that all form data will be converted to:  **XML**, **JSON**, **DBF**, **CSV**, **XLS**. The generated file(s) in this format is then written to the specified property.
+In this operator, you can define the format that all form data will be converted to: **XML**, **JSON**, **DBF**, **CSV**, **XLS**, **XLSX**, **TABLE**. The generated file(s) in this format is then written to the specified property.
 
-Form export is a general case of the  [data export operator](Data_export_EXPORT.md).
+Form export is a general case of the [data export operator](Data_export_EXPORT.md).
 
 ### Form import {#importForm}
 
@@ -17,7 +17,7 @@ Form import is an operation that is opposite to opening the form in a structured
 
 Since the import operator is essentially an "input operator", the following constraints apply to the form being imported:
 
--   All form objects must belong to  [numeric](Built-in_classes.md#inheritance) or [concrete](User_classes.md#abstract) [user](User_classes.md) classes. Object groups must consist of exactly one object (this constraint is caused by the fact that all the used formats are essentially lists — that is, mappings of numbers to values).
+-   All form objects must belong to [numeric](Built-in_classes.md#inheritance) or [concrete](User_classes.md#abstract) [user](User_classes.md) classes. Object groups must consist of exactly one object (this constraint is caused by the fact that all the used formats are essentially lists — that is, mappings of numbers to values).
 
 -   Properties and [filters](Form_structure.md#filters) on the form should be [changeable](Property_change_CHANGE.md) by a given value (that is, as a rule, be [primary](Data_properties_DATA.md)). Before importing, any existing changes to the imported properties in the current session are canceled.
 
@@ -46,7 +46,7 @@ FORM exportSku
     FILTERS in(st, s)
 ;
 
-exportSku (Store store)  {
+exportSku (Store store) {
     // uploading to DBF all Sku for which in (Store, Sku) is specified for the desired warehouse
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866';
     EXPORT exportSku XML;
@@ -69,7 +69,7 @@ FORM import
 
 ;
 
-importForm()  {
+importForm() {
     INPUT f = FILE DO {
         IMPORT import JSON FROM f;
         SHOW import; // showing what was imported

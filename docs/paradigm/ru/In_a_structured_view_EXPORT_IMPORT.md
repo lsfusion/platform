@@ -7,7 +7,7 @@ title: 'В структурированном представлении (EXPORT
 
 ### Формат {#format}
 
-В этом операторе можно задать формат, в который будут преобразованы данные формы :  **XML**, **JSON**, **DBF**, **CSV**, **XLS**, после чего сформированный файл(ы) в этом формате записывается в заданное свойство.
+В этом операторе можно задать формат, в который будут преобразованы данные формы: **XML**, **JSON**, **DBF**, **CSV**, **XLS**, **XLSX**, **TABLE**, после чего сформированный файл(ы) в этом формате записывается в заданное свойство.
 
 Экспорт формы является общим случаем оператора [экспорта данных](Data_export_EXPORT.md).
 
@@ -46,7 +46,7 @@ FORM exportSku
     FILTERS in(st, s)
 ;
 
-exportSku (Store store)  {
+exportSku (Store store) {
     // выгружаем в DBF все Sku, для которых задано in (Store, Sku) для нужного склада
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866';
     EXPORT exportSku XML;
@@ -69,7 +69,7 @@ FORM import
 
 ;
 
-importForm()  {
+importForm() {
     INPUT f = FILE DO {
         IMPORT import JSON FROM f;
         SHOW import; // показываем что импортировалось
