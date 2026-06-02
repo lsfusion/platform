@@ -93,25 +93,25 @@ Let's make a few changes in the automatic template and save it:
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Книги по категориям" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" uuid="31977562-8391-4ea1-a6bd-a5081bbc75bb">
-    <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
         <paragraph leftIndent="2" rightIndent="2"/>
     </style>
-    <style name="GroupCellStyle2" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="GroupCellStyle2" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
         <paragraph leftIndent="2" rightIndent="2"/>
     </style>
-    <style name="GroupCellStyle1" mode="Opaque" backcolor="#DFDFDF" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="GroupCellStyle1" mode="Opaque" backcolor="#DFDFDF" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
         <paragraph leftIndent="2" rightIndent="2"/>
     </style>
-    <style name="GroupCellStyle0" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="GroupCellStyle0" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
@@ -211,25 +211,25 @@ Let's move the invoice data from the group header (**Group Header**) to the invo
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Счет" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" uuid="f60eb956-09f7-45ef-a1e0-3345187967cb">
-    <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
         <paragraph leftIndent="2" rightIndent="2"/>
     </style>
-    <style name="GroupCellStyle2" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="GroupCellStyle2" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
         <paragraph leftIndent="2" rightIndent="2"/>
     </style>
-    <style name="GroupCellStyle1" mode="Opaque" backcolor="#DFDFDF" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="GroupCellStyle1" mode="Opaque" backcolor="#DFDFDF" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
         <paragraph leftIndent="2" rightIndent="2"/>
     </style>
-    <style name="GroupCellStyle0" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+    <style name="GroupCellStyle0" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
         <box>
             <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
         </box>
@@ -368,19 +368,19 @@ Since the dependency between objects forms a tree with two leaf nodes, a total o
     <?xml version="1.0" encoding="UTF-8"?>
     <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
     <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Информация по клиенту" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" uuid="06ed2f8a-ff5b-497a-925f-5a8722df2e57">
-        <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
             <paragraph leftIndent="2" rightIndent="2"/>
         </style>
-        <style name="GroupCellStyle3" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="GroupCellStyle3" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
             <paragraph leftIndent="2" rightIndent="2"/>
         </style>
-        <style name="GroupCellStyle2" mode="Opaque" backcolor="#D5D5D5" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="GroupCellStyle2" mode="Opaque" backcolor="#D5D5D5" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
@@ -406,19 +406,19 @@ Since the dependency between objects forms a tree with two leaf nodes, a total o
     <?xml version="1.0" encoding="UTF-8"?>
     <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
     <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="o" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="b5fa21a2-3583-4e69-9766-70ddacc9af1f">
-        <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
             <paragraph leftIndent="2" rightIndent="2"/>
         </style>
-        <style name="GroupCellStyle0" mode="Opaque" backcolor="#F0F0F0" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="GroupCellStyle0" mode="Opaque" backcolor="#F0F0F0" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
             <paragraph leftIndent="2" rightIndent="2"/>
         </style>
-        <style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
@@ -444,19 +444,19 @@ Since the dependency between objects forms a tree with two leaf nodes, a total o
     <?xml version="1.0" encoding="UTF-8"?>
     <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
     <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="i" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="5" bottomMargin="0" uuid="82cf7f76-d161-47d0-a5eb-7c4c08a08c5f">
-        <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="DefaultStyle" isDefault="true" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
             <paragraph leftIndent="2" rightIndent="2"/>
         </style>
-        <style name="GroupCellStyle0" mode="Opaque" backcolor="#F0F0F0" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="GroupCellStyle0" mode="Opaque" backcolor="#F0F0F0" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
             <paragraph leftIndent="2" rightIndent="2"/>
         </style>
-        <style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle" vImageAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+        <style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
             <box>
                 <pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
             </box>
