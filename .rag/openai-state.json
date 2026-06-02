@@ -3999,8 +3999,8 @@
       "stale": false
     },
     "language/EMAIL_operator.md": {
-      "file_hash": "sha256:0f9bfa2e584fa739f5b8f023fd467186d465b94e48933b8b34f11486d47810ca",
-      "indexed_at": "2026-05-22T23:46:44Z",
+      "file_hash": "sha256:42016fda3fd7078b9d58629ca710f603b7a23525b43a7f841d82991149327baa",
+      "indexed_at": "2026-06-02T13:53:43Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4028,9 +4028,9 @@
           "source_file": "language/EMAIL_operator.md"
         },
         "EMAIL_operator::parameters": {
-          "file_id": "file-RV2arAvP5nFM6YRsipVz87",
+          "file_id": "file-1r6XCnhNAZxieYDmLrzDpb",
           "heading_path": "EMAIL operator > Parameters",
-          "section_payload_hash": "sha256:f5a38781e766a4b2ac948973111217e08f52402c5aa4310da0d3645794ba2848",
+          "section_payload_hash": "sha256:93ab2e0fbe89ca012f7c8bddbee2068284a367e858fd4dedd00acd527b7c7c18",
           "source_file": "language/EMAIL_operator.md"
         },
         "EMAIL_operator::syntax": {
@@ -4189,8 +4189,8 @@
       "stale": false
     },
     "language/EXPORT_operator.md": {
-      "file_hash": "sha256:d0875995f62770027cfc8065f3a47ff97e93dee5018b79d81275e0792a065e8a",
-      "indexed_at": "2026-05-22T22:10:38Z",
+      "file_hash": "sha256:cd9d1e48407a77f4f669520b168fb575d2261c642669e352585f1e60bdd5b78f",
+      "indexed_at": "2026-06-02T13:53:53Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4218,9 +4218,9 @@
           "source_file": "language/EXPORT_operator.md"
         },
         "EXPORT_operator::export-format": {
-          "file_id": "file-XZ1V4zB2jkqyd8pLMafD9F",
+          "file_id": "file-ARNhzyaC575yWN5uHJ57wf",
           "heading_path": "EXPORT operator > Parameters > Export format",
-          "section_payload_hash": "sha256:1c0157501ec59005708d539a764d64d67f78872d0159301c16912c31edbd08bf",
+          "section_payload_hash": "sha256:d242091c79cebb2d80a0a8ec34cebd2969fbf2f34b3a0b7c0f03a46da6b3d92a",
           "source_file": "language/EXPORT_operator.md"
         },
         "EXPORT_operator::export-operator": {
@@ -4236,9 +4236,9 @@
           "source_file": "language/EXPORT_operator.md"
         },
         "EXPORT_operator::syntax": {
-          "file_id": "file-KAgBwU3zUy7rw2KqN4Ss1a",
+          "file_id": "file-KShoLm69vYAYYVgoaUwZUM",
           "heading_path": "EXPORT operator > Syntax",
-          "section_payload_hash": "sha256:0b26f8abf38353fef3620db49cc777e2df92f826e8eac5d0ce013be9b121c949",
+          "section_payload_hash": "sha256:a90140a8bb0da70c0fb5b85fa84dd098708f54a16ccf76cbb50d25c732afff3f",
           "source_file": "language/EXPORT_operator.md"
         }
       },
@@ -5005,8 +5005,8 @@
       "stale": false
     },
     "language/IMPORT_operator.md": {
-      "file_hash": "sha256:fe4dbd0ec96ce229b16273e55ac63b3822d243c68cb41b6c42eb3f802b3b93c9",
-      "indexed_at": "2026-05-22T22:19:44Z",
+      "file_hash": "sha256:01442aebf8048877350874e61a22a6623385d9e5bc13ac1c718ab3042f61ee26",
+      "indexed_at": "2026-06-02T13:54:01Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5034,9 +5034,9 @@
           "source_file": "language/IMPORT_operator.md"
         },
         "IMPORT_operator::import-format": {
-          "file_id": "file-KwKe1RBrTg9WZZMZTikTgQ",
+          "file_id": "file-86AmNDj4oHwzpWfY7SChmW",
           "heading_path": "IMPORT operator > Parameters > Import format",
-          "section_payload_hash": "sha256:db5eb11853d61e789821811559ea131be4e0ba8d14668eb4b5b6167cc186acae",
+          "section_payload_hash": "sha256:990076eb44d35cbfbad6ee8c32a663c831fa94502c7b2545ba17ef8797228fce",
           "source_file": "language/IMPORT_operator.md"
         },
         "IMPORT_operator::import-operator": {
@@ -5052,9 +5052,9 @@
           "source_file": "language/IMPORT_operator.md"
         },
         "IMPORT_operator::syntax": {
-          "file_id": "file-JqcgEf3UjmVJyQokFQuCQ9",
+          "file_id": "file-7yTnsB5R76en2PDwuuhybJ",
           "heading_path": "IMPORT operator > Syntax",
-          "section_payload_hash": "sha256:ad8b6d6de8a94192ceda11c4fea9c5836ae9799c528bc55bee8d00d9379fa49f",
+          "section_payload_hash": "sha256:3ac876bdaf9dcd3ee0c3d1d3cb0f7151813b0626ef3d13f019a9c94022818aff",
           "source_file": "language/IMPORT_operator.md"
         }
       },
@@ -11985,8 +11985,8 @@
       "stale": false
     },
     "paradigm/Send_mail_EMAIL.md": {
-      "file_hash": "sha256:fea822d302e51cf123f8862bc950f3a76a8ba3ba78123803ed6c39640543be50",
-      "indexed_at": "2026-05-22T23:36:52Z",
+      "file_hash": "sha256:8921c97bfbb40245eefba0c7a3220a65614cc17301fcc7178043954317d7c6c6",
+      "indexed_at": "2026-06-02T13:54:21Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11995,16 +11995,46 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Send_mail_EMAIL::language": {
-          "file_id": "file-5ics15vPCXYv2sjbziKiZd",
-          "heading_path": "Send mail (EMAIL) > Language",
-          "section_payload_hash": "sha256:4514a9ff151183b727594fb70b385fa8fa40db846644a058dd34bca41dec06c1",
+        "Send_mail_EMAIL::attachments": {
+          "file_id": "file-PPmp9kgPnwx5DFFK9r7FrN",
+          "heading_path": "Send mail (EMAIL) > Attachments",
+          "section_payload_hash": "sha256:adb3a3842eb2f70b407194f00898bf22fbf4ea3448b98d6fc9a3acf78b28e5d7",
+          "source_file": "paradigm/Send_mail_EMAIL.md"
+        },
+        "Send_mail_EMAIL::completion-mode": {
+          "file_id": "file-RDzckWSqcDPTnmwJYpU2af",
+          "heading_path": "Send mail (EMAIL) > Completion mode",
+          "section_payload_hash": "sha256:dc022e4100dd656150ae1c40e4afb7fff24752d7a1dceb7fe4da47cbb8b0bc3c",
+          "source_file": "paradigm/Send_mail_EMAIL.md"
+        },
+        "Send_mail_EMAIL::language+examples": {
+          "file_id": "file-MJp2ETc46pyL48FXEAcAVq",
+          "heading_path": "Send mail (EMAIL) > Language + Examples",
+          "section_payload_hash": "sha256:5fbef0795098151bd7309ef3c00d0123bb1231135764413c8c154fd683553e8b",
+          "source_file": "paradigm/Send_mail_EMAIL.md"
+        },
+        "Send_mail_EMAIL::recipients": {
+          "file_id": "file-Fq6QfeXxgQk5sv9hUAmnwp",
+          "heading_path": "Send mail (EMAIL) > Recipients",
+          "section_payload_hash": "sha256:82af71971ddbe38a66e97dbbfbfeffb4ad4f182208a451de81f7f2d861a9d025",
           "source_file": "paradigm/Send_mail_EMAIL.md"
         },
         "Send_mail_EMAIL::send-mail-email": {
-          "file_id": "file-MDeYtNW3LF9HV5N3FJjicY",
+          "file_id": "file-Nk24TaRRLUzRmX5mLURAAy",
           "heading_path": "Send mail (EMAIL)",
-          "section_payload_hash": "sha256:cbc443b43064c1baa851c788a4970d77bd86764b5e16d3683a0d94d5442eaea6",
+          "section_payload_hash": "sha256:e94c4cd20723094568fcc4f7ea83411d3f9f44e7c9f99c9fc745360c450ea338",
+          "source_file": "paradigm/Send_mail_EMAIL.md"
+        },
+        "Send_mail_EMAIL::sender-address": {
+          "file_id": "file-9sidXYW49xSPW4L8pzCDgj",
+          "heading_path": "Send mail (EMAIL) > Sender address",
+          "section_payload_hash": "sha256:2b56086c1f0618fade78ab236fd632c83df55c3d026c41f16105d3d4967db087",
+          "source_file": "paradigm/Send_mail_EMAIL.md"
+        },
+        "Send_mail_EMAIL::subject-and-body": {
+          "file_id": "file-DWp1UtYknvgquiE95kSvCs",
+          "heading_path": "Send mail (EMAIL) > Subject and body",
+          "section_payload_hash": "sha256:c612a059148ecbf6ddf34a1a9b32558043b20a70365852a4837578406f803557",
           "source_file": "paradigm/Send_mail_EMAIL.md"
         }
       },
@@ -13202,7 +13232,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3141e111f40e62efdd8b8ddff0163e24d04f7608",
+  "last_indexed_docs_commit": "ee442eef8c4b4a5b48e6d6fc764629be6fa59d52",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
