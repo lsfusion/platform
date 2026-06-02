@@ -259,6 +259,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 merge(dynamicFilters.filterViewFilters(SetFact.fromJavaSet(viewFilters)));
     }
 
+    private boolean hasDynamicFilters() {
+        return !getDynamicFilters(DynamicFilters.ALL).isEmpty();
+    }
+
     public interface DynamicFilters {
 
         ImList<FilterInstance> filterUserFilters(ImList<FilterInstance> userFilters);
@@ -817,6 +821,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return recursiveWhere.and(CompareWhere.compareInclValues(mapExprs, upObjects));
     }
 
+    // nodes that are an ancestor-or-self of some node matching the (interactive) filter. Used to reveal filter
+    // matches together with their full path from the root, instead of hiding deep matches whose
+    // ancestors don't match the filter. Mirrors getRecursiveExpandWhere (up direction), but starts the recursion from the
+    // filter matches and does NOT re-apply the filter to intermediate ancestors (so the path to a match stays visible).
+    private Where getFilterTreeWhere(final ImRevMap<ObjectInstance, ? extends Expr> mapExprs, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+        ImRevMap<KeyExpr, KeyExpr> mapKeysPrevKeys = KeyExpr.getMapKeys(mapKeys.valuesSet());
+
+        Where initialWhere = getWhere(mapKeys, modifier, reallyChanged); // start from the nodes matching the filter
+        Where stepWhere = getRecursiveStepWhere(mapKeys, mapKeys.join(mapKeysPrevKeys), modifier, reallyChanged); // current == parent(prev): walk up to ancestors, no filter on them
+        return RecursiveExpr.create(mapKeysPrevKeys, ValueExpr.get(initialWhere), ValueExpr.get(stepWhere), mapKeys.crossJoin(mapExprs)).getWhere();
+    }
+
     private Query<ObjectInstance, String> getRecursiveExpandQuery(boolean down, ImMap<ObjectInstance, DataObject> objects, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
@@ -833,6 +850,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                             expandingTable != null ? expandingTable.join(mapKeys).getWhere() : Where.TRUE());
 
         return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
+    }
+
+    // auto-expand the ancestors of the current filter matches into expandTable, so an interactive filter reveals
+    // the matching nodes with their full path expanded by default. Called from readKeys only on filter change, so a subsequent
+    // manual collapse (which only removes entries from expandTable, without UPDATED_FILTER) is not undone.
+    private void expandFilterTree(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (expandTable == null)
+            expandTable = createKeyTable("expgo");
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+        Query<ObjectInstance, String> query = new Query<>(mapKeys, MapFact.EMPTY(), getFilterTreeWhere(mapKeys, modifier, reallyChanged));
+        expandTable.modifyRows(session, query, baseClass, Modify.LEFT, env, SessionTable.nonead);
     }
 
     public void collapse(DataSession session, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
@@ -905,7 +933,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-        return castExecuteObjects(new Query<>(mapKeys, mPropertyExprs.immutable(), filterWhere.and(expandWhere)).
+        // when an interactive filter is active on a recursive tree, show the matching nodes together with their
+        // ancestor path (file-explorer style) instead of filterWhere.and(expandWhere), which hides deep matches whose ancestors
+        // don't match. Without an interactive filter the behavior is unchanged (regular expand/collapse navigation).
+        Where resultWhere = parent != null && hasDynamicFilters()
+                ? getFilterTreeWhere(mapKeys, modifier, reallyChanged).and(expandWhere)
+                : filterWhere.and(expandWhere);
+
+        return castExecuteObjects(new Query<>(mapKeys, mPropertyExprs.immutable(), resultWhere).
                     executeClasses(session, env, baseClass, orderExprs));
     }
 
@@ -1381,7 +1416,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             return readKeys;
         } else {
             int activeRow = -1; // какой ряд выбранным будем считать
-            if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
+            if (isInTree()) {
+                if (updateFilters && parent != null && hasDynamicFilters()) // on filter change, reveal matches with their ancestor path expanded (collapse afterwards still works)
+                    expandFilterTree(sql, env, modifier, baseClass, reallyChanged);
                 ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> treeElements = executeTree(sql, env, modifier, baseClass, reallyChanged);
 
                 ImList<ImMap<ObjectInstance, DataObject>> expandParents = treeElements.mapListValues(
