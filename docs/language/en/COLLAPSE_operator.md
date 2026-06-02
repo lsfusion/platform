@@ -3,7 +3,7 @@ slug: "/COLLAPSE_operator"
 title: 'COLLAPSE operator'
 ---
 
-The `COLLAPSE` operator creates an [action](../paradigm/Actions.md) that collapses either [elements](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) of an [object tree](../paradigm/Interactive_view.md#tree) on a form, or a collapsible [container](../paradigm/Form_design.md#containers) of a form.
+The `COLLAPSE` operator creates an [action](../paradigm/Actions.md) that collapses either [elements](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) of an [object tree](../paradigm/Interactive_view.md#tree) on a form, or a [collapsible container](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) of a form.
 
 ### Syntax
 

@@ -3,7 +3,7 @@ slug: "/EXPAND_operator"
 title: 'Оператор EXPAND'
 ---
 
-Оператор `EXPAND` создаёт [действие](../paradigm/Actions.md), которое разворачивает либо [элементы](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree) на форме, либо сворачиваемый [контейнер](../paradigm/Form_design.md#containers) формы.
+Оператор `EXPAND` создаёт [действие](../paradigm/Actions.md), которое разворачивает либо [элементы](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree) на форме, либо [сворачиваемый контейнер](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) формы.
 
 ### Синтаксис
 ```

@@ -15,3 +15,5 @@ Object group operators operate on an [object group](Form_structure.md#objects) o
 -   [Filter (`FILTER`)](Filter_FILTER.md)
 -   [Order (`ORDER`)](Order_ORDER.md)
 -   [View (`VIEW`)](View_VIEW.md)
+-   [Selection (`SELECT`)](Selection_SELECT.md)
+-   [View type (`VIEWTYPE`)](View_type_VIEWTYPE.md)

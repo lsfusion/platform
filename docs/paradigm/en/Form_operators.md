@@ -9,6 +9,7 @@ Form operators can be divided into several categories:
 -   [Object group operators](Object_group_operators.md)
 -   [Focus operators](Focus_operators.md)
 -   [Capture](Capture_SCREENSHOT.md)
+-   [Container visibility](Container_visibility_EXPAND_COLLAPSE.md)
 
   
 

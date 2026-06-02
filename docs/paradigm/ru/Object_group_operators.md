@@ -15,3 +15,5 @@ title: 'Операции с группами объектов'
 -   [Фильтр (`FILTER`)](Filter_FILTER.md)
 -   [Порядок (`ORDER`)](Order_ORDER.md)
 -   [Отображение (`VIEW`)](View_VIEW.md)
+-   [Выделение (`SELECT`)](Selection_SELECT.md)
+-   [Вид отображения (`VIEWTYPE`)](View_type_VIEWTYPE.md)

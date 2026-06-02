@@ -3,7 +3,7 @@ slug: "/COLLAPSE_operator"
 title: 'Оператор COLLAPSE'
 ---
 
-Оператор `COLLAPSE` создаёт [действие](../paradigm/Actions.md), которое сворачивает либо [элементы](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree) на форме, либо сворачиваемый [контейнер](../paradigm/Form_design.md#containers) формы.
+Оператор `COLLAPSE` создаёт [действие](../paradigm/Actions.md), которое сворачивает либо [элементы](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree) на форме, либо [сворачиваемый контейнер](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) формы.
 
 ### Синтаксис
 
