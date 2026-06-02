@@ -15,12 +15,12 @@ IMPORT formName [importFormat] [FROM (fileExpr | (groupId1 = fileExpr1 [, ..., g
 `importFormat` может задаваться одним из следующих вариантов:
 
 ```
-JSON [CHARSET charsetStr]
-XML [ATTR] [CHARSET charsetStr]
-CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)]
-DBF [CHARSET charsetStr]
-TABLE
+JSON [ROOT rootExpr] [WHERE whereExpr] [CHARSET charsetStr]
+XML [ROOT rootExpr] [ATTR] [WHERE whereExpr] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [WHERE whereExpr] [CHARSET charsetStr]
+XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)] [WHERE whereExpr]
+DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetStr]
+TABLE [WHERE whereExpr]
 ```
 
 `importDestination` может задаваться одним из следующих вариантов:
@@ -67,6 +67,10 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias1, ..., objClassIdK objAlias
 
 ### Формат импорта
 
+- `rootExpr`
+
+    [Выражение](Expression.md) строкового класса, задающее имя элемента, считаемого корнем при импорте. В исходном файле выполняется рекурсивный поиск первого элемента с таким именем; от найденного узла начинается обработка вложенных записей. Применяется только для импорта **JSON** и **XML**.
+
 - `ATTR`
 
     Ключевое слово, указывающее на чтение значений из атрибутов элемента. Если не указывается, то чтение производится из дочерних элементов. Применяется только для импорта **XML**.
@@ -107,6 +111,14 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias1, ..., objClassIdK objAlias
     - `charsetStr`
     
         Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`. Для `XML` по умолчанию используется кодировка, указанная в заголовке. При её отсутствии - `UTF-8`.
+
+- `whereExpr`
+
+    [Выражение](Expression.md) строкового класса, задающее текстовое условие фильтрации строк. Условие — это цепочка пар вида `field sign value`, соединённых ` AND ` или ` OR ` (каждая пара может предваряться `NOT `), где `field` — имя колонки (поля) импортируемого файла, `sign` — один из `=`, `<`, `>`, `<=`, `>=`, ` IN `, `value` — литеральное значение того же типа, что и колонка (пробелы внутри `value` не допускаются). Импортируются только строки, для которых условие истинно. Применяется для всех форматов; для импорта формы целиком не поддерживается.
+
+- `memoExpr`
+
+    Выражение, значение которого используется как файл с MEMO-данными DBF (внешний `.dbt`/`.fpt`). Значение выражения должно быть файлового класса. Применяется только для импорта **DBF**.
 
 - `actionOperator`
 

@@ -15,12 +15,12 @@ IMPORT formName [importFormat] [FROM (fileExpr | (groupId1 = fileExpr1 [, ..., g
 `importFormat` can be specified by one of the following options:
 
 ```
-JSON [CHARSET charsetStr]
-XML [ATTR] [CHARSET charsetStr]
-CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)]
-DBF [CHARSET charsetStr]
-TABLE
+JSON [ROOT rootExpr] [WHERE whereExpr] [CHARSET charsetStr]
+XML [ROOT rootExpr] [ATTR] [WHERE whereExpr] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [WHERE whereExpr] [CHARSET charsetStr]
+XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)] [WHERE whereExpr]
+DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetStr]
+TABLE [WHERE whereExpr]
 ```
 
 `importDestination` can be specified by one of the following options:
@@ -68,6 +68,10 @@ The first passed file is used to automatically determine a flat file format by i
 
 ### Import format
 
+- `rootExpr`
+
+    [Expression](Expression.md) of a string class specifying the name of the element treated as the root on import. The source file is searched recursively for the first element with that name; processing of nested records starts from the found node. Only applicable for import from **JSON** and **XML**.
+
 - `ATTR`
 
     A keyword that specifies that values should be read from the attributes of an element. If not specified, then reading happens from child elements. Only applicable for import from **XML**.
@@ -108,6 +112,14 @@ The first passed file is used to automatically determine a flat file format by i
     - `charsetStr`
     
         A string literal that defines the encoding. Default value for `JSON`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.For `XML` the encoding specified in the header is used by default. If it is absent, `UTF-8` is default.
+
+- `whereExpr`
+
+    [Expression](Expression.md) of a string class specifying a textual row-filter condition. The condition is a chain of `field sign value` triplets joined with ` AND ` or ` OR ` (each optionally prefixed with `NOT `), where `field` is the imported column (field) name, `sign` is one of `=`, `<`, `>`, `<=`, `>=`, ` IN `, and `value` is a literal of the same type as the column (spaces inside `value` are not allowed). Only rows for which the condition holds are imported. Applicable for all formats; not supported when importing a whole form.
+
+- `memoExpr`
+
+    Expression whose value is used as the file with DBF MEMO data (external `.dbt` / `.fpt`). The value of the expression must be of a file class. Only applicable for import from **DBF**.
 
 - `actionOperator`
 

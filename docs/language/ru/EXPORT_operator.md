@@ -21,7 +21,7 @@ EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat]
 
 ```
 JSON [CHARSET charsetStr]
-XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetStr]
 CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
 XLS [SHEET sheetProperty] [HEADER | NOHEADER]
 XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
@@ -97,6 +97,14 @@ TABLE
     Экспорт только записей со смещением `m`, где `m` - значение выражения `offsetExpr` или `offsetPropertyExprF` для группы объектов `offsetGroupIdF`.
 
 ### Формат экспорта
+
+- `rootExpr`
+
+    [Выражение](Expression.md), значение которого используется как имя корневого XML-элемента. Значение выражения должно быть строкового класса. Если не указано, используется имя экспортируемой формы (`export` при экспорте свойств напрямую). Применяется только для экспорта в **XML**.
+
+- `tagExpr`
+
+    Выражение, значение которого используется как имя XML-элемента, оборачивающего каждую экспортируемую запись. Значение выражения должно быть строкового класса. Если не указано, используется имя группы объектов экспортируемой формы. Применяется только для экспорта в **XML**.
 
 - `ATTR`
 

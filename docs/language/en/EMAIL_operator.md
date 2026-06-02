@@ -76,7 +76,7 @@ In the `NAME` option within `attachDescription`, file names are specified withou
 
 - `attachNamePropertyID`
 
-    Property ID which determines a list of attachment names. The property must have exactly one parameter of the `INTEGER` class.
+    Property ID which determines a list of attachment names. The property must have exactly one parameter of the `INTEGER` class and return a value of a string class.
 
 - `syncType`
 

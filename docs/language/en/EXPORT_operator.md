@@ -21,7 +21,7 @@ EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat]
 
 ```
 JSON [CHARSET charsetStr]
-XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetStr]
 CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
 XLS [SHEET sheetProperty] [HEADER | NOHEADER]
 XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
@@ -96,6 +96,14 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
     Export only records with offset `m`, where `m` is value of expression `offsetExpr` or `offsetPropertyExprF` for group object `offsetGroupIdF`.
 
 ### Export format
+
+- `rootExpr`
+
+    [Expression](Expression.md) whose value is used as the name of the root XML element. The value of the expression must be of a string class. If not specified, the name of the exported form is used (`export` when properties are exported directly). Only applicable for export to **XML**.
+
+- `tagExpr`
+
+    Expression whose value is used as the name of the XML element that wraps each exported record. The value of the expression must be of a string class. If not specified, the name of the exported form's object group is used. Only applicable for export to **XML**.
 
 - `ATTR`
 
