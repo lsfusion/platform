@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GFullInputType;
 import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -19,6 +20,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
+import lsfusion.gwt.client.view.MainFrame;
 
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on needReplace)
 public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor {
@@ -129,7 +131,11 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
         InputBasedCellRenderer.appendInputElement(cellParent, inputElement, true, false, editInputType);
         if(editInputType.isStretchText())
             CellRenderer.renderTextAlignment(inputElement, property.getHorzTextAlignment(), property.getVertTextAlignment());
-        GFormController.setFont(inputElement, GFormController.getFont(property, renderContext));
+        GFont font = GFormController.getFont(property, renderContext);
+        GFormController.setFont(inputElement, font);
+
+        if (!MainFrame.useBootstrap)
+            GFormController.setFont(cellParent, font);
 
         // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
         // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
