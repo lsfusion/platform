@@ -15,7 +15,6 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -27,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TimeZone;
@@ -152,27 +150,18 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
     }
 
     @Override
-    protected Instant parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
-        try {
-            try {
-                return formatter.parse(s, Instant::from);
-            } catch (DateTimeParseException ignored) {
-            }
-            return DateConverter.smartParseInstant(s);
-        } catch (Exception e) {
-            throw ParseException.propagateWithMessage("Error parsing zdatetime: " + s, e);
-        }
-    }
+    protected java.time.temporal.TemporalQuery<Instant> getTemporalQuery() { return Instant::from; }
+    @Override
+    protected java.util.function.Function<java.time.OffsetDateTime, Instant> getISOProjection() { return java.time.OffsetDateTime::toInstant; }
+    @Override
+    protected Instant smartParse(String s) { return DateConverter.smartParseInstant(s); }
 
     @Override
-    public Instant parseString(String s) throws ParseException {
-        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_INSTANT : ThreadLocalContext.getTFormats().zDateTimeParser);
-    }
-
+    protected DateTimeFormatter getISOFormatter() { return DateTimeFormatter.ISO_INSTANT; }
     @Override
-    public String formatString(Instant value) {
-        return value != null ? (Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_INSTANT : ThreadLocalContext.getTFormats().zDateTimeFormatter).format(value) : null;
-    }
+    protected DateTimeFormatter getLocaleParser() { return ThreadLocalContext.getTFormats().zDateTimeParser; }
+    @Override
+    protected DateTimeFormatter getLocaleFormatter() { return ThreadLocalContext.getTFormats().zDateTimeFormatter; }
 
     @Override
     public Instant parseUI(String s, String pattern) throws ParseException {

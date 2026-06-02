@@ -381,6 +381,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GControllerResultAction action) {
+    }
+
+    @Override
+    public void execute(GControllerExceptionAction action) {
+    }
+
+    @Override
     public void execute(GAsyncGetRemoteChangesAction action) {
         assert false;
     }

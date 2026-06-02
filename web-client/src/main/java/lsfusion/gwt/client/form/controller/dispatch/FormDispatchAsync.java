@@ -61,6 +61,9 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     protected boolean isClosed() {
         return formClosed;
     }
+    public boolean isFormClosed() { // public accessor so the form controller can reject pending callbacks when closed
+        return formClosed;
+    }
 
     @Override
     protected int getDispatchPriority() {

@@ -44,6 +44,7 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -488,6 +489,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
      *                      {@link AuthenticationException}.
      */
     public void checkAPIAccess(boolean apiAnnotation, boolean redirect) {
+        checkAPIAccess(securityPolicy, token, businessLogics, apiAnnotation, redirect);
+    }
+
+    // Parameterized form of the gate so other request contexts (e.g. RemoteForm's controller
+    // exec/eval/change) enforce the SAME policy as /exec /eval instead of duplicating it (avoids
+    // security drift). The form passes its own securityPolicy (RemoteFormContext.getSecurityPolicy)
+    // and token. Logic identical to the original instance method.
+    public static void checkAPIAccess(SecurityPolicy securityPolicy, AuthenticationToken token, BusinessLogics businessLogics, boolean apiAnnotation, boolean redirect) {
         byte enableApi = Settings.get().getEnableAPI();
         if(enableApi == 0) {
             if(apiAnnotation || (securityPolicy != null && securityPolicy.canDeriveAPIAccess(businessLogics)))
@@ -735,6 +744,15 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     public static Pair<String[], ObjectValue[]> readResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm, Result<SessionDataProperty> resultProp) throws SQLException, SQLHandledException {
         return lm.getExportValueProperty().readFirstNotNull(env, resultProp, action);
+    }
+
+    // symmetric with readResult: drop the session changes of the SAME properties readResult would read (the
+    // action's RETURN result props, else the "export" holder). A fresh ExecSession (the /exec /eval path) starts
+    // with these null; callers reusing a persistent session (the form controller, RemoteForm.runControllerAction)
+    // must drop them first or readResult returns a value left by a previous call.
+    public static void dropResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm) throws SQLException, SQLHandledException {
+        ImOrderSet<SessionDataProperty> resultProps = action.getResultProps();
+        env.getSession().dropSessionChanges((!resultProps.isEmpty() ? resultProps : lm.getExportValueProperty().getProps()).getSet());
     }
 
     private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {

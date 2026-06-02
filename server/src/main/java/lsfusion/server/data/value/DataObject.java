@@ -185,6 +185,16 @@ public class DataObject extends ObjectValue<DataObject> implements ImportKeyInte
         return BaseUtils.immutableCast(map);
     }
 
+    public static DataObject[] onlyDataObjects(ObjectValue[] values) {
+        DataObject[] result = new DataObject[values.length];
+        for(int i = 0; i < values.length; i++) {
+            if(!(values[i] instanceof DataObject))
+                return null;
+            result[i] = (DataObject) values[i];
+        }
+        return result;
+    }
+
     public static <K> ImMap<K,Object> getMapDataValues(ImMap<K, DataObject> map) {
         return map.mapValues(value -> value.object);
     }

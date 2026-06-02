@@ -1902,6 +1902,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return BusinessLogicsResolvingUtils.findActionByExtId(this, extId);
     }
 
+    public LP<?> findPropertyByExtId(String extId) {
+        return BusinessLogicsResolvingUtils.findPropertyByExtId(this, extId);
+    }
+
     @IdentityLazy
     public LA<?> findActionByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLAFinder());

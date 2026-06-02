@@ -15,7 +15,6 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -145,28 +144,21 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
 
     @Override
-    protected LocalDate parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
-        try {
-            //try to parse with default locale formats
-            try {
-                return LocalDate.parse(s, formatter);
-            } catch (Exception ignored) {
-            }
-            LocalDateTime result = DateConverter.smartParse(s);
-            return result != null ? result.toLocalDate() : null;
-        } catch (Exception e) {
-            throw ParseException.propagateWithMessage("Error parsing date: " + s, e);
-        }
+    protected java.time.temporal.TemporalQuery<LocalDate> getTemporalQuery() { return LocalDate::from; }
+    @Override
+    protected java.util.function.Function<java.time.OffsetDateTime, LocalDate> getISOProjection() { return java.time.OffsetDateTime::toLocalDate; }
+    @Override
+    protected LocalDate smartParse(String s) {
+        LocalDateTime result = DateConverter.smartParse(s);
+        return result != null ? result.toLocalDate() : null;
     }
 
     @Override
-    public LocalDate parseString(String s) throws ParseException {
-        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_DATE : ThreadLocalContext.getTFormats().dateParser);
-    }
-
-    public String formatString(LocalDate value) {
-        return value != null ? value.format(Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_DATE : ThreadLocalContext.getTFormats().dateFormatter) : null;
-    }
+    protected DateTimeFormatter getISOFormatter() { return DateTimeFormatter.ISO_LOCAL_DATE; }
+    @Override
+    protected DateTimeFormatter getLocaleParser() { return ThreadLocalContext.getTFormats().dateParser; }
+    @Override
+    protected DateTimeFormatter getLocaleFormatter() { return ThreadLocalContext.getTFormats().dateFormatter; }
 
     public String getSID() {
         return "DATE";

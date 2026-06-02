@@ -91,6 +91,31 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+// form controller exec/eval/change (ParseException / IOException already imported above / via java.io.*)
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ControllerResultClientAction;
+import lsfusion.interop.action.ControllerExceptionClientAction;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
+import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.HumanReadableFileClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import org.apache.commons.net.util.Base64;
+import java.nio.charset.StandardCharsets;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
+import lsfusion.server.language.property.oraction.LAP;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
+import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
+
 import javax.swing.*;
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -1197,6 +1222,176 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 currentInvocationExternal = false;
             }
         });
+    }
+
+    // form controller (CUSTOM / INTERNAL CLIENT) exec/eval/change — see GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
+    // Executed in THIS form's session (processPausableRMIRequest -> FormInstance), result/exception
+    // delivered by a terminal ControllerCallbackClientAction keyed by callbackId.
+
+    // NB: inlined (not a shared controllerRequest(ControllerExec) helper) on purpose — a captured custom-interface
+    // lambda gets serialized by the pausable mechanism and the web tier can't load RemoteForm$ControllerExec.
+    // Each method matches the surrounding processPausableRMIRequest(stack -> ...) pattern (context via
+    // getRemoteContext()), capturing only serializable args + this.
+
+    @Override
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            ClientAction terminal;
+            try {
+                LA<?> la = resolveAction(action);
+                if(la == null)
+                    throw new RuntimeException("Action was not found: " + action);
+                controllerGate(la.getActionOrProperty().hasAnnotation("api")); // §12.3: resolve -> gate(@api)
+                terminal = runControllerAction(callbackId, la, params, stack); // §12.3.5
+            } catch (Exception e) { // §12.10: business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
+                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+            }
+            delayUserInteraction(terminal);
+        });
+    }
+
+    @Override
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            ClientAction terminal;
+            try {
+                controllerGate(false); // §12.3/§12.7: gate BEFORE evaluateRun, no @api for dynamic script
+                LA<?> la = form.BL.evaluateRun(script, true); // controller eval always runs as an action (§12.1; result via return)
+                if(la == null)
+                    throw new RuntimeException("Eval 'run' action was not found");
+                terminal = runControllerAction(callbackId, la, params, stack);
+            } catch (Exception e) {
+                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+            }
+            delayUserInteraction(terminal);
+        });
+    }
+
+    @Override
+    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            ClientAction terminal;
+            try {
+                LP<?> lp = resolveProperty(property);
+                if(lp == null)
+                    throw new RuntimeException("Property was not found: " + property);
+                controllerGate(lp.getActionOrProperty().hasAnnotation("api"));
+                // §12.6 TODO: per-property change permission. SecurityPolicy.checkPropertyChangePermission needs a
+                // change event-action (RoleSecurityPolicy dereferences it), which a direct LP change has none of —
+                // passing null NPEs. For now change is gated by the API gate above (enableAPI/canDeriveAPIAccess —
+                // deriving API access already implies the ability to run arbitrary lsf, hence change anything).
+                DataObject[] keys = bindKeys(lp, params);
+                lp.change(bindObjectValue(lp.property.getValueClass(ClassType.editValuePolicy), value), (ExecutionEnvironment) form, keys);
+                terminal = new ControllerResultClientAction(callbackId, null, null); // change is a pure mutation, no value -> resolve(undefined), just to settle the Promise
+            } catch (Exception e) {
+                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+            }
+            delayUserInteraction(terminal);
+        });
+    }
+
+    // resolve by compound name, falling back to external id (mirrors RemoteConnection.findAction); the form
+    // controller's exec/change resolve a system action/property BY NAME (a different branch from draw-based
+    // changeProperty, §4a)
+    private LA<?> resolveAction(String name) {
+        LA<?> action;
+        try {
+            action = form.BL.findActionByCompoundName(name.replace('/', '_'));
+        } catch (CompoundNameUtils.ParseException e) {
+            action = null;
+        }
+        return action != null ? action : form.BL.findActionByExtId(name);
+    }
+    private LP<?> resolveProperty(String name) {
+        LP<?> property;
+        try {
+            property = form.BL.findPropertyByCompoundName(name);
+        } catch (CompoundNameUtils.ParseException e) {
+            property = null;
+        }
+        return property != null ? property : form.BL.findPropertyByExtId(name);
+    }
+
+    // API gate, delegating to the single core impl in RemoteConnection (enableAPI / @api / canDeriveAPIAccess +
+    // anonymous) so it can't drift from /exec /eval; HTTP-only pre-gate bypasses (@noauth, signed-payload,
+    // postponed authException) don't apply to an authenticated in-form call. See §6.
+    private void controllerGate(boolean apiAnnotation) {
+        String tokenString = form.session.sql.contextProvider.getCurrentAuthToken();
+        AuthenticationToken token = tokenString != null ? new AuthenticationToken(tokenString) : AuthenticationToken.ANONYMOUS;
+        RemoteConnection.checkAPIAccess(form.securityPolicy, token, form.BL, apiAnnotation, false);
+    }
+
+    // JSON-decoded canonical values (Number/String/Boolean/null/FileData; one per positional interface, §4b/§12)
+    // -> typed values; binding (incl. offset-ISO dates) handled inside Type.parseJSON
+    private ObjectValue[] bindParams(LAP<?, ?> property, Object[] params) throws SQLException, SQLHandledException, ParseException {
+        ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
+        ObjectValue[] values = new ObjectValue[classes.length];
+        for(int i = 0; i < classes.length; i++)
+            values[i] = bindObjectValue(classes[i], (params != null && i < params.length) ? params[i] : null);
+        return values;
+    }
+
+    private DataObject[] bindKeys(LAP<?, ?> property, Object[] params) throws SQLException, SQLHandledException, ParseException {
+        DataObject[] keys = DataObject.onlyDataObjects(bindParams(property, params)); // change keys must be non-null object values
+        if(keys == null)
+            throw new RuntimeException("change requires non-null object values for keys");
+        return keys;
+    }
+
+    private ObjectValue bindObjectValue(ValueClass valueClass, Object raw) throws SQLException, SQLHandledException, ParseException {
+        if(valueClass == null) // unconstrained interface — getInterfaceClasses can return null entries
+            throw new RuntimeException("Unconstrained parameter type is not supported by the form controller");
+        // raw == null -> parseJSON returns null -> getObjectValue returns NullValue; dates handled inside Type.parseJSON
+        return form.session.getObjectValue(valueClass, valueClass.getType().parseJSON(raw));
+    }
+
+    // drop the result properties BEFORE running, then execute and read the result. The controller runs in the
+    // form's PERSISTENT session (unlike /exec /eval which get a fresh ExecSession), so without the drop
+    // readControllerResult would return a value left by a previous controller call when this action returns
+    // nothing. RemoteConnection.dropResult mirrors readResult (drops exactly the props readResult reads: the
+    // action's RETURN result props, else the "export" holder).
+    private ClientAction runControllerAction(long callbackId, LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+        RemoteConnection.dropResult(la.action, form, form.BL.LM);
+        la.execute(form, stack, bindParams(la, params));
+        return controllerResultAction(callbackId, getRemoteContext(), readControllerResult(la.action));
+    }
+
+    private ObjectValue readControllerResult(Action<?> action) throws SQLException, SQLHandledException {
+        Result<SessionDataProperty> resultProp = new Result<>();
+        Pair<String[], ObjectValue[]> result = RemoteConnection.readResult(action, form, form.BL.LM, resultProp);
+        return result.second.length > 0 ? result.second[0] : null;
+    }
+
+    private ClientAction controllerResultAction(long callbackId, FormInstanceContext context, ObjectValue result) throws IOException {
+        if(result == null || result.getValue() == null) // no export value / null value -> JS undefined
+            return new ControllerResultClientAction(callbackId, null, null);
+        Object value = result.getValue();
+        Type<?> type = result.getType();
+        if(type instanceof FileClass) { // EXPORT (default JSON) and other file results carry CONTENT, not a
+            // deliverable scalar -> hand the JS the content as a String. Text formats (json/csv/xml/txt/html, the
+            // common EXPORT case; mirrors the HTTP /exec /eval response body, JSON callers JSON.parse it) go as the
+            // text content; binary formats (xls/pdf/image/...) go as base64 rather than a corrupt UTF-8 decode.
+            RawFileData raw = rawFileData(value);
+            value = type instanceof HumanReadableFileClass ? raw.getString(StandardCharsets.UTF_8) : Base64.encodeBase64StringUnChunked(raw.getBytes());
+            type = StringClass.text;
+        }
+        // serialize the client value the SAME way value-bearing form actions do (InternalClientAction /
+        // UpdateEditValue): serializeConvertFileValue + the web reader ClientActionToGwtConverter.deserializeServerValue.
+        return new ControllerResultClientAction(callbackId, FormChanges.serializeConvertFileValue(value, context), TypeSerializer.serializeType(type));
+    }
+
+    private static RawFileData rawFileData(Object value) {
+        if(value instanceof RawFileData)
+            return (RawFileData) value;
+        if(value instanceof NamedFileData)
+            return ((NamedFileData) value).getRawFile();
+        if(value instanceof FileData)
+            return ((FileData) value).getRawFile();
+        return null;
+    }
+
+    private static String controllerMessage(Throwable t) {
+        return t.getMessage() != null ? t.getMessage() : String.valueOf(t);
     }
 
     private static Object formatJSON(ObjectInstance object, ObjectValue value) {

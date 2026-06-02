@@ -166,6 +166,55 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return PValue.getPValue(toString(value));
     }
 
+    // JS-VALUE STRATEGY SEAM (V1 server-projection; V2 client-typed). Switch point.
+    // Returns a PValue, symmetric with convertFromJSValue(type, ...): the form controller's exec/eval/change is
+    // type-agnostic (no GType on the client), so for V1 the encoding is type-agnostic canonical
+    // (number -> Double, boolean -> Boolean, string -> String, Date -> offset-ISO String yyyy-MM-dd'T'HH:mm:ssXXX,
+    // object/array -> JSON String; null/undefined -> null) and the resolved server type projects it. A future V2
+    // would swap this body for a type-aware convertFromJSValue(fetchedType, ...) with no change to the callers.
+    public static PValue convertFromUnknownJSValue(JavaScriptObject value) {
+        if (isUndefinedOrNull(value))
+            return null;
+        if (isBoolean(value))
+            return PValue.getPValue(toBoolean(value));
+        if (isNumber(value))
+            return PValue.getPValue(toDouble(value));
+        if (isDate(value))
+            return PValue.getPValue(formatJSDateOffsetISO(value));
+        if (isString(value))
+            return PValue.getPValue(toString(value));
+        return PValue.getPValue(GwtClientUtils.jsonStringify(value)); // object / array
+    }
+    // PValue -> canonical wire value via convertFileValueBack (DisplayString -> rawString, else unwrap), the same
+    // step GClientWebAction.onJSFunctionExecuted uses; for these type-agnostic values it is a plain unwrap today,
+    // but keeping it here means a future V2 / new convertFileValueBack semantics land in one place.
+    public static Serializable encodeUnknownJSValue(JavaScriptObject value) {
+        return PValue.convertFileValueBack(convertFromUnknownJSValue(value));
+    }
+    public static ArrayList<Serializable> encodeUnknownJSValues(JavaScriptObject array) {
+        ArrayList<Serializable> result = new ArrayList<>();
+        int length = jsArrayLength(array);
+        for (int i = 0; i < length; i++)
+            result.add(encodeUnknownJSValue(jsArrayGet(array, i)));
+        return result;
+    }
+    private static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
+    private static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
+    private static native boolean isUndefinedOrNull(JavaScriptObject v) /*-{ return v === undefined || v === null; }-*/;
+    private static native boolean isBoolean(JavaScriptObject v) /*-{ return typeof v === 'boolean'; }-*/;
+    private static native boolean isNumber(JavaScriptObject v) /*-{ return typeof v === 'number'; }-*/;
+    private static native boolean isString(JavaScriptObject v) /*-{ return typeof v === 'string'; }-*/;
+    private static native boolean isDate(JavaScriptObject v) /*-{ return Object.prototype.toString.call(v) === '[object Date]'; }-*/;
+    // local components + numeric offset (-getTimezoneOffset() so +03:00 stays +03:00; zero -> +00:00, not Z), seconds always
+    private static native String formatJSDateOffsetISO(JavaScriptObject d) /*-{
+        function p2(n) { return (n < 10 ? '0' : '') + n; }
+        var off = -d.getTimezoneOffset();
+        var aoff = Math.abs(off);
+        return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + 'T' +
+               p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()) +
+               (off >= 0 ? '+' : '-') + p2(Math.floor(aoff / 60)) + ':' + p2(aoff % 60);
+    }-*/;
+
     public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, boolean imageToHTML, PValue value) {
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)

@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -165,6 +166,16 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if(editContext != null) {
             form.setValue(editContext, PValue.convertFileValue(action.value));
         }
+    }
+
+    @Override
+    public void execute(GControllerResultAction action) {
+        form.controllerCallbackResult(action.callbackId, GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
+    }
+
+    @Override
+    public void execute(GControllerExceptionAction action) {
+        form.controllerCallbackException(action.callbackId, action.message, action.cancelled);
     }
 
     @Override

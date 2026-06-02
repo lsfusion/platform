@@ -13,7 +13,6 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -61,27 +60,18 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     }
 
     @Override
-    protected LocalTime parseFormat(String s, DateTimeFormatter formatter) throws ParseException {
-        try {
-            try {
-                return LocalTime.parse(s, formatter);
-            } catch (Exception ignored) {
-            }
-            return TimeConverter.smartParse(s);
-        } catch (Exception e) {
-            throw ParseException.propagateWithMessage("Error parsing time: " + s, e);
-        }
-    }
+    protected java.time.temporal.TemporalQuery<LocalTime> getTemporalQuery() { return LocalTime::from; }
+    @Override
+    protected java.util.function.Function<java.time.OffsetDateTime, LocalTime> getISOProjection() { return java.time.OffsetDateTime::toLocalTime; }
+    @Override
+    protected LocalTime smartParse(String s) { return TimeConverter.smartParse(s); }
 
     @Override
-    public LocalTime parseString(String s) throws ParseException {
-        return parseFormat(s, Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_TIME : ThreadLocalContext.getTFormats().timeParser);
-    }
-
+    protected DateTimeFormatter getISOFormatter() { return DateTimeFormatter.ISO_LOCAL_TIME; }
     @Override
-    public String formatString(LocalTime value) {
-        return value != null ? value.format(Settings.get().isUseISOTimeFormatsInIntegration() ? DateTimeFormatter.ISO_LOCAL_TIME : ThreadLocalContext.getTFormats().timeFormatter) : null;
-    }
+    protected DateTimeFormatter getLocaleParser() { return ThreadLocalContext.getTFormats().timeParser; }
+    @Override
+    protected DateTimeFormatter getLocaleFormatter() { return ThreadLocalContext.getTFormats().timeFormatter; }
 
     public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getTimeType(millisLength);

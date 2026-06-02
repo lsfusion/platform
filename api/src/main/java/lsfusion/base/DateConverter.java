@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -146,6 +147,18 @@ public class DateConverter {
         ZONED_DATETIME_FORMAT_REGEXPS.put("^\\d{4}-\\d{1,2}-\\d{1,2}t\\d{1,2}:\\d{2}:\\d{2}\\.\\d{1,7}(([+-]\\d{2}:\\d{2})|z)$", "yyyy-MM-dd'T'H:mm:ss[.[SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S]]XXX");
     }
 
+    // Strict ISO-8601 offset-bearing datetime parse (e.g. "2026-06-01T00:30:00+03:00", or trailing "Z"),
+    // returns null when there is no explicit offset / not parseable. Used by date/time type parseJSON to
+    // accept a complete client value and project per type WITHOUT timezone normalization for the naive types
+    // (DATE/DATETIME/TIME -> local components; ZDATETIME -> instant). See GFORM-CONTROLLER-EXEC-EVAL-PLAN §11.1/§12.
+    public static OffsetDateTime parseOffsetOrNull(String s) {
+        try {
+            return OffsetDateTime.parse(s);
+        } catch (java.time.format.DateTimeParseException e) {
+            return null;
+        }
+    }
+
     public static LocalDateTime smartParse(String dateString) {
         dateString = dateString.trim();
         if(dateString.isEmpty())
@@ -168,7 +181,7 @@ public class DateConverter {
                 return ZonedDateTime.parse(dateString, DateTimeFormatter.ofPattern(ZONED_DATETIME_FORMAT_REGEXPS.get(regexp))).toLocalDateTime();
             }
         }
-    
+
         dateString = dateString.replaceAll(DATE_SYMBOLS_REGEXP, "").trim();
         if(dateString.isEmpty())
             return null;

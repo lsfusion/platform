@@ -241,6 +241,18 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GUpdateEditValueAction(deserializeServerValue(action.value, formSessionObject, servlet));
     }
 
+    @Converter(from = ControllerResultClientAction.class)
+    public GControllerResultAction convertAction(ControllerResultClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
+        GType type = action.type != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.type)) : null;
+        Serializable value = action.value != null ? (Serializable) deserializeServerValue(action.value, formSessionObject, servlet) : null;
+        return new GControllerResultAction(action.callbackId, type, value);
+    }
+
+    @Converter(from = ControllerExceptionClientAction.class)
+    public GControllerExceptionAction convertAction(ControllerExceptionClientAction action) {
+        return new GControllerExceptionAction(action.callbackId, action.message, action.cancelled);
+    }
+
     @Converter(from = AsyncGetRemoteChangesClientAction.class)
     public GAsyncGetRemoteChangesAction convertAction(AsyncGetRemoteChangesClientAction action) throws IOException {
         return new GAsyncGetRemoteChangesAction(action.forceLocalEvents);

@@ -387,11 +387,98 @@ public class GFormController implements EditManager {
                 if(value === undefined) // not passed, so it's an action
                     value = @GwtClientUtils::UNDEFINED;
                 return thisObj.@GFormController::changePropertyCustom(*)(propertyName, value);
+            },
+            exec: function (action) { // exec(action, ...params) -> Promise
+                return thisObj.@GFormController::controllerExec(*)(action, Array.prototype.slice.call(arguments, 1));
+            },
+            eval: function (script) { // eval(script, ...params) -> Promise (always run as an action; result via return)
+                return thisObj.@GFormController::controllerEval(*)(script, Array.prototype.slice.call(arguments, 1));
+            },
+            change: function (property) { // change(property, ...keyParams, value) -> Promise; value is the LAST argument
+                var args = Array.prototype.slice.call(arguments, 1);
+                var value = args.length > 0 ? args[args.length - 1] : null;
+                var keyParams = args.length > 0 ? args.slice(0, args.length - 1) : args;
+                return thisObj.@GFormController::controllerChange(*)(property, keyParams, value);
             }
         }
     }-*/;
 
     public final JavaScriptObject controller = initController();
+
+    // pending JS promise callbacks for controller exec/eval/change keyed by callbackId; the call stores {resolve, reject}
+    // here and the terminal GControllerCallbackAction resolves/rejects it (see GFORM-CONTROLLER-EXEC-EVAL-PLAN §12.3/§12.4).
+    private final JavaScriptObject controllerCallbacks = JavaScriptObject.createObject();
+
+    private long nextControllerCallbackId = 0;
+
+    public JavaScriptObject controllerExec(String action, JavaScriptObject params) {
+        return controllerCall(new ControllerExecAction(action, GSimpleStateTableView.encodeUnknownJSValues(params)));
+    }
+    public JavaScriptObject controllerEval(String script, JavaScriptObject params) {
+        return controllerCall(new ControllerEvalAction(script, GSimpleStateTableView.encodeUnknownJSValues(params)));
+    }
+    public JavaScriptObject controllerChange(String property, JavaScriptObject keyParams, JavaScriptObject value) {
+        return controllerCall(new ControllerChangeAction(property, GSimpleStateTableView.encodeUnknownJSValues(keyParams), GSimpleStateTableView.encodeUnknownJSValue(value)));
+    }
+    // shared: assign a fresh callbackId to the request, return a Promise registered under it, and dispatch (rejecting on transport failure)
+    private JavaScriptObject controllerCall(ControllerRequestAction action) {
+        long callbackId = action.callbackId = nextControllerCallbackId++;
+        return createControllerPromise(callbackId, () -> asyncDispatch(action, new ControllerServerResponseCallback(callbackId)));
+    }
+
+    private boolean isControllerDispatchClosed() {
+        return dispatcher.isFormClosed();
+    }
+
+    // register {resolve, reject} under callbackId BEFORE kicking off the (async) dispatch, so the entry exists when
+    // the terminal GControllerCallbackAction is processed (single JS turn; the response is a later macrotask). If the
+    // form is already closed the dispatch is skipped silently (no callback ever fires) -> reject so the Promise can't hang.
+    private native JavaScriptObject createControllerPromise(double callbackId, Runnable dispatch) /*-{
+        var self = this;
+        var callbacks = this.@GFormController::controllerCallbacks;
+        return new $wnd.Promise(function (resolve, reject) {
+            callbacks[callbackId] = { resolve: resolve, reject: reject };
+            dispatch.@java.lang.Runnable::run()();
+            if(self.@GFormController::isControllerDispatchClosed()())
+                @GFormController::rejectControllerCallback(*)(callbacks, callbackId, "Form is closed", false);
+        });
+    }-*/;
+
+    // rejects the pending controller promise on transport/RPC failure (the terminal action would never arrive)
+    private class ControllerServerResponseCallback extends ServerResponseCallback {
+        private final long callbackId;
+        public ControllerServerResponseCallback(long callbackId) {
+            this.callbackId = callbackId;
+        }
+        @Override
+        public void onFailure(ExceptionResult exceptionResult) {
+            super.onFailure(exceptionResult);
+            controllerCallbackException(callbackId, "Request failed", false);
+        }
+    }
+
+    public void controllerCallbackResult(long callbackId, JavaScriptObject result) {
+        resolveControllerCallback(controllerCallbacks, callbackId, result);
+    }
+    public void controllerCallbackException(long callbackId, String message, boolean cancelled) {
+        rejectControllerCallback(controllerCallbacks, callbackId, message, cancelled);
+    }
+    private static native void resolveControllerCallback(JavaScriptObject callbacks, double callbackId, JavaScriptObject result) /*-{
+        var cb = callbacks[callbackId];
+        if(cb) {
+            delete callbacks[callbackId];
+            cb.resolve(result == null ? undefined : result); // no/null server value -> JS undefined (§12.3 contract)
+        }
+    }-*/;
+    private static native void rejectControllerCallback(JavaScriptObject callbacks, double callbackId, String message, boolean cancelled) /*-{
+        var cb = callbacks[callbackId];
+        if(cb) {
+            delete callbacks[callbackId];
+            var error = new Error(message || "Cancelled");
+            error.cancelled = cancelled;
+            cb.reject(error);
+        }
+    }-*/;
 
     public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
         List<Widget> groupFilters = filterViews.get(groupObject);

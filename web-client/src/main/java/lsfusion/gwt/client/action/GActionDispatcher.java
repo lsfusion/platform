@@ -34,6 +34,10 @@ public interface GActionDispatcher {
 
     void execute(GUpdateEditValueAction action);
 
+    void execute(GControllerResultAction action);
+
+    void execute(GControllerExceptionAction action);
+
     void execute(GLogOutAction action);
 
     void execute(GOpenUriAction action);

@@ -39,6 +39,30 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
+    @Override
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException {
+        logRemoteMethodStartVoidCall("exec");
+        ServerResponse result = target.exec(requestIndex, lastReceivedRequestIndex, callbackId, action, params);
+        logRemoteMethodEndVoidCall("exec");
+        return result;
+    }
+
+    @Override
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException {
+        logRemoteMethodStartVoidCall("eval");
+        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, callbackId, script, params);
+        logRemoteMethodEndVoidCall("eval");
+        return result;
+    }
+
+    @Override
+    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] keyParams, Object value) throws RemoteException {
+        logRemoteMethodStartVoidCall("change");
+        ServerResponse result = target.change(requestIndex, lastReceivedRequestIndex, callbackId, property, keyParams, value);
+        logRemoteMethodEndVoidCall("change");
+        return result;
+    }
+
     public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
         return target.getGroupReportData(requestIndex, lastReceivedRequestIndex, groupId, userPreferences);
     }
