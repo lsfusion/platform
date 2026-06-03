@@ -2841,8 +2841,8 @@
       "stale": false
     },
     "language/AGGR_operator.md": {
-      "file_hash": "sha256:77b756b176238c7bdcb8e7f888b74b3480fe59bc236670dbd92900f7666f7b27",
-      "indexed_at": "2026-05-22T22:02:35Z",
+      "file_hash": "sha256:e5ab5d6ef1e1f78b1fc60ea98bf5a25b414a1f392d6d3369b0bb0d5ee14447f6",
+      "indexed_at": "2026-06-03T09:31:09Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2864,15 +2864,15 @@
           "source_file": "language/AGGR_operator.md"
         },
         "AGGR_operator::parameters": {
-          "file_id": "file-GDjt3FzPNJYogGLPjSQJX2",
+          "file_id": "file-UndRemPYwgv2VQCwdYbTdi",
           "heading_path": "AGGR operator > Parameters",
-          "section_payload_hash": "sha256:43e843a1a054766a9d260a593cc0ebdb656d1903b144b0d985df20ee152cd6f5",
+          "section_payload_hash": "sha256:b0659bbf04b5674b7756389613000879e58e4dd095188e30b13307fa9c8d1307",
           "source_file": "language/AGGR_operator.md"
         },
         "AGGR_operator::syntax+description": {
-          "file_id": "file-VdBpvUX8FnF2JU663pAW2H",
+          "file_id": "file-KE2FWisha2uq4vwsGUD13i",
           "heading_path": "AGGR operator > Syntax + Description",
-          "section_payload_hash": "sha256:6400887e71a194c74a7e3327072a2a3a4249ff3594be7fa7b1e7bde94640e8fa",
+          "section_payload_hash": "sha256:1d66346c58fda6a2ec96d6bd5e3e62e9b782a6a0ef749aba333be59fc642536b",
           "source_file": "language/AGGR_operator.md"
         }
       },
@@ -7793,8 +7793,8 @@
       "stale": false
     },
     "paradigm/Aggregations.md": {
-      "file_hash": "sha256:80ca628c868a508a6636343cf1eb5d1cbd7841095fa48af7f1329a29ea31e044",
-      "indexed_at": "2026-05-22T22:51:48Z",
+      "file_hash": "sha256:870fd5f77c9f42d77a4684b0ecbb4a5ba9092d9fc8e01e6a5383898f4e95ea4e",
+      "indexed_at": "2026-06-03T09:31:22Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7804,9 +7804,9 @@
       },
       "sections": {
         "Aggregations::aggregations": {
-          "file_id": "file-KmkQWAa4iU14LDNZMzs2dr",
+          "file_id": "file-X9LfLaG3TiNDTGZ4p5qAAW",
           "heading_path": "Aggregations",
-          "section_payload_hash": "sha256:a4f1e33ebb132d20a4472c05a162de84f99af2aae61953e6a953cce357cb6f97",
+          "section_payload_hash": "sha256:6562cc2c2cf44236084fca90ae90657d31c3d06f2e73bf0112cb9f17ac030ca8",
           "source_file": "paradigm/Aggregations.md"
         },
         "Aggregations::language+examples": {
@@ -13232,7 +13232,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ee442eef8c4b4a5b48e6d6fc764629be6fa59d52",
+  "last_indexed_docs_commit": "4c2e53d7b545d5b03989b27451937ab0af3ed757",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
