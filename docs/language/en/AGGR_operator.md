@@ -17,7 +17,7 @@ In addition to the property that is the result of this operator and contains the
 
 `eventClause` specifies the base check event; `NEW` and `DELETE` specify resolution events for creating and deleting aggregated objects respectively.
 
-Unlike other context-dependent operators, the `AGGR` operator cannot be used in [expressions](Expression.md) inside other operators (in this sense it is more like context-independent operators), or in the [`JOIN` operator](JOIN_operator.md) (inside `[= ]`)
+The `AGGR` operator may appear only as a top-level property definition in the [`=` statement](=_statement.md); it cannot be used inside an [expression](Expression.md), inside other operators, or inside the [`JOIN` operator](JOIN_operator.md)'s `[= ]` form.
 
 ### Parameters
 
@@ -31,7 +31,7 @@ Unlike other context-dependent operators, the `AGGR` operator cannot be used in 
 
 - `aggrExpr`
 
-    An [expression](Expression.md) whose non-`NULL` values drive the aggregation; its typed parameters determine the parameters of the result property and of the auto-created properties for each parameter.
+    An expression whose non-`NULL` values drive the aggregation; its typed parameters determine the parameters of the result property and of the auto-created properties for each parameter.
 
 - `NEW`
 
@@ -39,7 +39,7 @@ Unlike other context-dependent operators, the `AGGR` operator cannot be used in 
 
 - `newEventClause`
 
-    [Event description block](Event_description_block.md). If `NEW` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `NEW` is specified but `newEventClause` is omitted, the default global `APPLY` event is used.
+    Event description block. If `NEW` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `NEW` is specified but `newEventClause` is omitted, the default global `APPLY` event is used.
 
 - `DELETE`
 
@@ -47,7 +47,7 @@ Unlike other context-dependent operators, the `AGGR` operator cannot be used in 
 
 - `deleteEventClause`
 
-    [Event description block](Event_description_block.md). If `DELETE` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `DELETE` is specified but `deleteEventClause` is omitted, the default global `APPLY` event is used.
+    Event description block. If `DELETE` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `DELETE` is specified but `deleteEventClause` is omitted, the default global `APPLY` event is used.
 
 ### Examples
 

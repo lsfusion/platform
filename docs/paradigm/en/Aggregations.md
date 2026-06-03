@@ -18,7 +18,7 @@ The aggregation mechanism is driven by three events:
 In a particular aggregation all three events may coincide, or the create and delete events may differ both from the base event and from each other.
 
 :::info
-At its core, aggregation is just syntactic sugar. Unrolled, it expands into:
+At its core, aggregation is equivalent to the following explicit combination of properties and events. Unrolled, it expands into:
 
 - for each parameter — a property that remembers what value that parameter had on each aggregated object;
 - the reverse direction — a lookup from the parameter values back to the aggregated object (a grouping over those properties gives you exactly that);
@@ -43,7 +43,7 @@ WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(
     DELETE aggrObject;
 ```
 
-Aggregation bundles all of that up — same behavior, one declarative line instead of the whole expansion.
+Aggregation expresses the same behavior in one declarative line instead of the whole expansion.
 :::
 
 ### Language
