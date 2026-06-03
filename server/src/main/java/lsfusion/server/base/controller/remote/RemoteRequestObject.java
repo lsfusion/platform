@@ -18,10 +18,6 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.NamedFileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -37,9 +33,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.HumanReadableFileClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -49,7 +43,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -461,44 +454,12 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return new ControllerResultClientAction(callbackId, null, null);
         Object value = result.getValue();
         Type<?> type = result.getType();
-        if(type instanceof FileClass) { // EXPORT (default JSON) and other file results carry CONTENT, not a
-            // deliverable scalar -> hand the JS the content as a String (the JS value channel has no binary type, so
-            // bytes can only travel as a string). Text formats (json/csv/xml/txt/html; mirrors the HTTP /exec /eval
-            // response body, JSON callers JSON.parse it) go as the text content; binary formats (xls/pdf/image/...)
-            // go as base64 via FileClass.formatString -- lsFusion's canonical file-as-string encoding.
-            value = isTextFile(type, value) ? rawFileData(value).getString(StandardCharsets.UTF_8) : ((FileClass) type).formatString(value);
-            type = StringClass.text;
-        }
-        // serialize the client value the SAME way value-bearing form actions do (InternalClientAction /
-        // UpdateEditValue): serializeConvertFileValue + the web reader ClientActionToGwtConverter.deserializeServerValue.
-        return new ControllerResultClientAction(callbackId, FormChanges.serializeConvertFileValue(value, context), TypeSerializer.serializeType(type));
-    }
-
-    private static RawFileData rawFileData(Object value) {
-        if(value instanceof RawFileData)
-            return (RawFileData) value;
-        if(value instanceof NamedFileData)
-            return ((NamedFileData) value).getRawFile();
-        if(value instanceof FileData)
-            return ((FileData) value).getRawFile();
-        return null;
-    }
-
-    // a file result is text if the static type is human-readable OR the file's extension is a text one. An EXPORT
-    // result is typically a dynamic-format FileData typed as a generic FileClass (not JSONFileClass), so the
-    // extension check (same as FormChanges.convertFileData) is what recognizes EXPORT JSON/CSV/XML/... as text.
-    private static boolean isTextFile(Type<?> type, Object value) {
-        if(type instanceof HumanReadableFileClass)
-            return true;
-        String extension = fileExtension(value);
-        return extension != null && (HumanReadableFileClass.is(extension) || ExternalUtils.isTextExtension(extension));
-    }
-    private static String fileExtension(Object value) {
-        if(value instanceof NamedFileData)
-            return ((NamedFileData) value).getExtension();
-        if(value instanceof FileData)
-            return ((FileData) value).getExtension();
-        return null; // RawFileData carries no format
+        // a FILE result -> a download URL (NeedFile registers the file; the client maps the GFileType subtype to
+        // getAppDownloadURL, image -> src). Structured/native data is returned via VALUE classes (JSON/JSONTEXT/XML,
+        // string, number, ...) which aren't FileClass and serialize natively (e.g. GJSONType -> JSON.parse'd object).
+        FormChanges.ConvertData convertData = type instanceof FileClass ? new FormChanges.NeedFile(type) : null;
+        // the web reader ClientActionToGwtConverter.deserializeServerValue + convertToJSValue turn (serialized, type) into the JS value
+        return new ControllerResultClientAction(callbackId, FormChanges.serializeConvertFileValue(convertData, value, context), TypeSerializer.serializeType(type));
     }
 
     private static String controllerMessage(Throwable t) {
