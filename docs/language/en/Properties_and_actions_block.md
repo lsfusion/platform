@@ -47,6 +47,7 @@ FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
 viewType
 NEWSESSION | NESTEDSESSION
+APPLY
 DRAW groupObjectName 
 insertPosition 
 ORDER [USER | FIXED] [DESC]
@@ -220,6 +221,10 @@ In the current platform implementation, if the name and caption are not specifie
 - `NEWSESSION` | `NESTEDSESSION`
 
     Modifiers specifying that object operators (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) must be executed in a new (nested) session.
+
+- `APPLY`
+
+    Modifier specifying that a change of the property being added (or execution of the action being added) is immediately applied (committed) to the database, instead of remaining in the current form session until it is applied explicitly. It can be combined with `NEWSESSION` / `NESTEDSESSION` (the session scope determines the session in which the change is executed, after which `APPLY` commits it) or used on its own.
 
 - `insertPosition`
 

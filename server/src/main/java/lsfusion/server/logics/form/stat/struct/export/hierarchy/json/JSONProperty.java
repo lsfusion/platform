@@ -29,6 +29,8 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.form.interactive.action.input.InputContextListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
@@ -306,7 +308,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
     @Override
     @IdentityStrongLazy
-    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
 
@@ -314,6 +316,10 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         ImRevMap<ObjectEntity, ClassPropertyInterface> mappedObjects = staticForm.second.rightJoin(this.mapObjects);
 
         ChangeAction changeAction = new ChangeAction(LocalizedString.NONAME, staticForm.first, mappedObjects.keys().toOrderSet());
-        return new ActionMapImplement<>(changeAction, changeAction.mapObjects.crossJoin(mappedObjects));
+        // commit-on-edit: wrap the re-import change only on APPLY (like the ordinary property write), NOT unconditionally on scope -
+        // a non-applied NEWSESSION would lose the change. wrap over the change action's own interface set (mappedObjects), NOT the property's
+        // full interfaces (context) - the result must stay over the set the caller maps (PropertyDrawEntity eventMapping).
+        return PropertyFact.createApplyChangeAction(defaultChangeEventScope, mappedObjects.valuesSet(),
+                new ActionMapImplement<>(changeAction, changeAction.mapObjects.crossJoin(mappedObjects)));
     }
 }

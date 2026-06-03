@@ -41,6 +41,7 @@ import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -392,7 +393,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     // actually protected (friend of PropertyMapImplement)
-    public ActionMapImplement<?, T> getEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, T> getEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         ActionMapImplement<?, T> eventAction = getExplicitEventAction(eventActionSID);
         if (eventAction != null)
             return eventAction;
@@ -405,7 +406,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return getEventActions().get(eventActionSID);
     }
 
-    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
+    public abstract ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
     public boolean checkEquals() {
         return this instanceof Property;

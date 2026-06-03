@@ -26,6 +26,7 @@ import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.property.classes.data.*;
@@ -346,7 +347,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         Property<T> implementProperty = implement.property;
         ImMap<T, PropertyInterfaceImplement<Interface>> implementMapping = implement.mapping;
 
@@ -377,7 +378,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public ActionMapImplement<?, Interface> getJoinDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, Interface> getJoinDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         // we want "value edit object" to have "higher priority" than "value unique join edit object"
         ActionMapImplement<?, Interface> result = super.getJoinDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
         if(result != null)

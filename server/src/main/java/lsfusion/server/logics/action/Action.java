@@ -42,6 +42,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -541,10 +542,11 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @Override
     @IdentityStrongLazy
-    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, P> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
-        return PropertyFact.createSessionScopeAction(BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE), interfaces, getImplement(), SetFact.EMPTY());
+        // APPLY additionally APPLYs at the end of the (new) session (commit-on-edit) - handled inside createSessionScopeAction
+        return PropertyFact.createSessionScopeAction(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE, interfaces, getImplement(), SetFact.EMPTY());
     }
 
     private Function<AsyncMapEventExec<P>, AsyncMapEventExec<P>> forceAsyncEventExec;

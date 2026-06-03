@@ -93,6 +93,7 @@ import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -2052,7 +2053,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return baseLM.addFinalIntegrationForm(orderInterfaces, orderClasses, orderMapInterfaces, properties, propUsages, propOrders, where, interactive);
     }
     @IdentityStrongLazy // STRONG for using in security policy
-    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
 
         ActionMapImplement<?, T> joinDefaultEventAction = getJoinDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
         if(joinDefaultEventAction != null)
@@ -2076,7 +2077,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return null;
     }
 
-    public ActionMapImplement<?, T> getJoinDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, T> getJoinDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         if (eventActionSID.equals(ServerResponse.CHANGE) && !canBeChanged(false)) // optimization
             return null;
 
@@ -2116,19 +2117,25 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
                 // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-                LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull, MapFact.EMPTYREV());
+                LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, ChangeEventScope.getScope(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull, MapFact.EMPTYREV());
 
                 action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
             } else {
                 // INPUT valueCLass
                 action = lm.addDataInputAProp((DataClass) valueClass, targetProp, false, this, SetFact.EMPTYORDER(),
-                        null, null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
+                        null, null, ChangeEventScope.getScope(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
             }
+
+            // APPLY (commit-on-edit): wrap the WRITE in its (new) session + APPLY. the requested value (target) is nested (LocalNestedType.REQUESTED = ALL)
+            // and migrates into the new session automatically. bare APPLY (no explicit scope) applies the current form session.
+            // group change replicates this per row in getGroupChange (per-row session + apply).
+            ActionMapImplement<?, T> doAction = PropertyFact.createApplyChangeAction(defaultChangeEventScope, interfaces,
+                    PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()));
 
             ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
                     // adaptive canBeChanged, to provide better ergonomics for abstracts
                     PropertyFact.createListAction(interfaces, PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()), action),
-                    PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()), null);// INPUT scripted input generates FOR, but now it's not important
+                    doAction, null);// INPUT scripted input generates FOR, but now it's not important
 
             setResetAsync(result);
 

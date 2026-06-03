@@ -105,6 +105,14 @@ public class FormPropertyOptions {
         this.formSessionScope = formSessionScope;
     }
 
+    private Boolean applyChange;
+    public Boolean getApplyChange() {
+        return applyChange;
+    }
+    public void setApplyChange(Boolean applyChange) {
+        this.applyChange = applyChange;
+    }
+
     public Boolean getSelector() {
         return isSelector;
     }
@@ -516,6 +524,7 @@ public class FormPropertyOptions {
         FormPropertyOptions merged = new FormPropertyOptions();
 
         merged.setFormSessionScope(nvl(overrides.getFormSessionScope(), formSessionScope));
+        merged.setApplyChange(nvl(overrides.getApplyChange(), applyChange));
         merged.setEditType(nvl(overrides.getEditType(), editType));
         merged.setSelector(nvl(overrides.getSelector(), isSelector));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));

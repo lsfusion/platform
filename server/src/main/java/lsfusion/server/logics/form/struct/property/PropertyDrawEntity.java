@@ -43,6 +43,7 @@ import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
@@ -501,7 +502,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             if (eventAction != null)
                 return eventAction.getGroupChange(getToDraw(context.entity), getReadOnly());
         } else { // default handler
-            ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? getDefaultChangeEventScope() : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? getCustomChangeFunction() : null);
+            ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? new ChangeEventScope(getDefaultChangeEventScope(), Boolean.TRUE.equals(getApplyChange())) : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? getCustomChangeFunction() : null);
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
         }
@@ -750,6 +751,14 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     public void setDefaultChangeEventScope(FormSessionScope defaultChangeEventScope, Version version) {
         this.defaultChangeEventScope.set(defaultChangeEventScope, version);
+    }
+
+    private final NFProperty<Boolean> applyChange = NFFact.property(); // APPLY: commit the change at the end of its session (commit-on-edit)
+    public Boolean getApplyChange() {
+        return applyChange.get();
+    }
+    public void setApplyChange(Boolean applyChange, Version version) {
+        this.applyChange.set(applyChange, version);
     }
 
     // should be the same property that is used in getEventAction (because eventActions should be synchronized with the contextMenuBindings)
@@ -1441,6 +1450,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         mapping.sets(lastAggrDesc, src.lastAggrDesc);
 
         mapping.sets(defaultChangeEventScope, src.defaultChangeEventScope);
+        mapping.sets(applyChange, src.applyChange);
 
         mapping.set(quickFilterProperty, src.quickFilterProperty);
     }

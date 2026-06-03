@@ -533,6 +533,8 @@ public class ScriptingFormEntity {
         property.setLastAggrDesc(nvl(options.lastAggrDesc, false), version);
 
         property.setDefaultChangeEventScope(options.getFormSessionScope(), version);
+        // APPLY: commit the change at the end of its session (commit-on-edit). combinable with any/no session scope - developer's responsibility.
+        property.setApplyChange(options.getApplyChange(), version);
 
         property.setQuickFilterProperty(options.getQuickFilterPropertyDraw(), version);
 

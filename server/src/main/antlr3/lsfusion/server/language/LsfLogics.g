@@ -1032,6 +1032,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
         |   fs = formSessionScopeClause { $options.setFormSessionScope($fs.result); }
+		|	'APPLY' { $options.setApplyChange(true); }
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }

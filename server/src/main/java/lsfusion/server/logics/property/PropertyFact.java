@@ -29,6 +29,9 @@ import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.LocalNestedType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.action.ApplyAction;
 import lsfusion.server.logics.action.session.action.NewSessionAction;
 import lsfusion.server.logics.classes.StaticClass;
@@ -47,6 +50,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.change.CheckCanBeChangedAction;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.PushRequestAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
@@ -752,6 +756,17 @@ public class PropertyFact {
         return dataProperty.getImplement(orderInterfaces.keyOrderSet());
     }
 
+    // FORM nesting (like ACTIVE/VIEW/SELECT) - the prop survives session operations (migrates in/out of a new session), unlike a FOR loop accumulator
+    public static <T extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, T> createFormDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+        ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
+        SessionDataProperty dataProperty = SessionDataProperty.createChange(LocalizedString.NONAME, orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]), valueClass, true, LocalNestedType.FORM);
+        return dataProperty.getImplement(orderInterfaces.keyOrderSet());
+    }
+    // shaped like ifProp minus mapInterfaces (same derivation as ForAction.createForDataProp, but FORM-nested) - for a select buffer
+    public static <I extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, I> createFormDataProp(PropertyMapImplement<?, I> ifProp, ImRevMap<?, I> mapInterfaces, ValueClass valueClass) {
+        return createFormDataProp(ifProp.mapInterfaceClasses(ClassType.forPolicy).remove(mapInterfaces.valuesSet()), valueClass != null ? valueClass : ifProp.property.getValueClass(ClassType.forPolicy));
+    }
+
     public static LP<ClassPropertyInterface> createReturnDataProp(Pair<ValueClass, ImList<ValueClass>> classes) {
         return new LP<>(SessionDataProperty.createChange(LocalizedString.NONAME, classes.second.toArray(new ValueClass[classes.second.size()]), classes.first, true, LocalNestedType.RETURN));
     }
@@ -943,10 +958,29 @@ public class PropertyFact {
         return aggAction.getImplement(listInterfaces);
     }
     public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, FunctionSet<SessionDataProperty> migrateSessionProps) {
-        return createSessionScopeAction(scope, innerInterfaces, action, LocalizedString.NONAME, migrateSessionProps);
+        return createSessionScopeAction(scope, false, innerInterfaces, action, LocalizedString.NONAME, migrateSessionProps);
     }
     public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, LocalizedString caption, FunctionSet<SessionDataProperty> migrateSessionProps) {
-        if(scope.isNewSession())
+        return createSessionScopeAction(scope, false, innerInterfaces, action, caption, migrateSessionProps);
+    }
+    // whole default action: always honor the session scope, and APPLY at the end when the event says APPLY
+    public static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(ChangeEventScope eventScope, FormSessionScope defaultScope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, FunctionSet<SessionDataProperty> migrateSessionProps) {
+        return createSessionScopeAction(ChangeEventScope.getScope(eventScope, defaultScope), ChangeEventScope.isApply(eventScope), innerInterfaces, action, LocalizedString.NONAME, migrateSessionProps);
+    }
+    // property/order change writes: wrap the write into its (new) session + APPLY only when APPLY is set (commit-on-edit); otherwise returns the write unchanged
+    public static <T extends PropertyInterface> ActionMapImplement<?, T> createApplyChangeAction(ChangeEventScope eventScope, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action) {
+        if(ChangeEventScope.isApply(eventScope))
+            return createSessionScopeAction(ChangeEventScope.getScope(eventScope), true, innerInterfaces, action, LocalizedString.NONAME, SetFact.EMPTY());
+        return action;
+    }
+    private static <T extends PropertyInterface> ActionMapImplement<?, T> createSessionScopeAction(FormSessionScope scope, boolean apply, ImSet<T> innerInterfaces, ActionMapImplement<?, T> action, LocalizedString caption, FunctionSet<SessionDataProperty> migrateSessionProps) {
+        if(apply) { // commit-on-edit: run the action, THEN a bare APPLY (action; APPLY).
+            // NOT createApplyAction(action) - that runs the action AS an apply-action inside the apply transaction, which breaks interactive actions (dialog opens in transaction).
+            BaseLogicsModule lm = ThreadLocalContext.getBaseLM();
+            ActionMapImplement<?, T> bareApply = createApplyAction(innerInterfaces, PropertyFact.<T>createEmptyAction(), SetFact.EMPTY(), false, lm.getCanceled().property, lm.getApplyMessage().property);
+            action = createListAction(innerInterfaces, action, bareApply);
+        }
+        if(scope != null && scope.isNewSession()) // null scope - no session scope (run in the current session)
             return createNewSessionAction(innerInterfaces, action, caption, false, false, migrateSessionProps, scope.isNestedSession());
         return action;
     }

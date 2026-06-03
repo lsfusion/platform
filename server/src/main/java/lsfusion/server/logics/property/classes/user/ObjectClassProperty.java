@@ -21,8 +21,10 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.event.ChangeEvent;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -126,10 +128,13 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
-        return ChangeClassAction.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));
+        // commit-on-edit: wrap the class change only on APPLY (like the ordinary property write), NOT unconditionally on scope -
+        // a non-applied NEWSESSION would lose the change (its session edits are neither committed nor migrated back).
+        return PropertyFact.createApplyChangeAction(defaultChangeEventScope, interfaces,
+                ChangeClassAction.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface())));
     }
 
     @Override

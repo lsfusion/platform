@@ -21,11 +21,10 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.CalcType;
@@ -137,22 +136,29 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
 
     @Override
     @IdentityStrongLazy
-    public ActionMapImplement<?, Interface<I>> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+    public ActionMapImplement<?, Interface<I>> getDefaultEventAction(String eventActionSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null && !eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             BaseLogicsModule baseLM = getBaseLM();
 
-            PropertyMapImplement<ClassPropertyInterface, I> selectProp = ForAction.createForDataProp((PropertyMapImplement<?, I>) whereProp, groupMap, null, null);
+            // selectProp holds the user's SELECTION in the embedded select form, so it must survive the form's session -> FORM-nested
+            // (not ForAction.createForDataProp, which gives LocalNestedType.FOR: not migrated across a new session, silently losing the selection for GROUP CONCAT ... NEWSESSION).
+            PropertyMapImplement<ClassPropertyInterface, I> selectProp = PropertyFact.createFormDataProp((PropertyMapImplement<?, I>) whereProp, groupMap, null);
             ActionMapImplement<?, Interface<I>> writeAction = PropertyFact.createSetAction(innerInterfaces, groupMap, selectProp, whereProp);
 
             // now Object.noClasses doesn't work for interactive forms (so we can return innerClasses to null if it will be fixed)
             LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, selectProp, (PropertyMapImplement<?, I>) nameProp, orders, false, true);
-            LA<?> la = baseLM.addIFAProp(null, LocalizedString.NONAME, selectForm.form, selectForm.objectsToSet, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), true, ModalityWindowFormType.EMBEDDED, false);
+            LA<?> la = baseLM.addIFAProp(null, LocalizedString.NONAME, selectForm.form, selectForm.objectsToSet, ChangeEventScope.getScope(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), true, ModalityWindowFormType.EMBEDDED, false);
             ActionMapImplement<?, Interface<I>> selectFormAction = la.getImplement(selectForm.getOrderInterfaces(groupMap));
 
+            // APPLY (commit-on-edit): write whereProp from the selection, wrapped in its (new) session + APPLY when set - inside the request's
+            // do-slot, so only on OK (not cancel). selectProp is FORM-nested (survives session ops), so it migrates into the new session like
+            // Property's requested target - same handling as the ordinary property write.
+            ActionMapImplement<?, Interface<I>> doWrite = PropertyFact.createApplyChangeAction(defaultChangeEventScope, interfaces,
+                    PropertyFact.createSetAction(innerInterfaces, groupMap, (PropertyMapImplement<?, I>) whereProp, selectProp));
             ActionMapImplement<?, Interface<I>> result = PropertyFact.createRequestAction(interfaces,
                     PropertyFact.createListAction(interfaces, writeAction, selectFormAction),
-                    PropertyFact.createSetAction(innerInterfaces, groupMap, (PropertyMapImplement<?, I>) whereProp, selectProp), null);
+                    doWrite, null);
             return result;
         }
 

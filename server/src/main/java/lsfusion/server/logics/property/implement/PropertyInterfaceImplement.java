@@ -22,6 +22,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.edit.ChangeEventScope;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
@@ -59,7 +60,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     }
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
-    ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
+    ActionMapImplement<?, P> mapEventAction(String eventSID, ChangeEventScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
     Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect);
     boolean mapNameValueUnique();
