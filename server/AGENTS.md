@@ -4,6 +4,26 @@ Module-specific rules for `server/`. The cross-cutting process, commit, issue,
 verification, rebuild, sister-repository, and documentation rules in `../AGENTS.md`
 still apply.
 
+## Running the server in development mode
+
+When starting BLB for local development or debugging, pass `-Dlsfusion.server.devmode=true`
+(the `lsfusion.server.devmode` system property, exposed as `SystemProperties.inDevMode`).
+The IDE's lsFusion server run configuration sets it automatically; for headless or manual
+launches add it to the JVM args yourself. When unset it falls back to
+`lsfusion.server.plugin.enabled`; an explicit `=false` disables dev mode even with the plugin enabled.
+
+In dev mode:
+
+- Some periodic system tasks are skipped (the `if (!inDevMode)` block in `getSystemTasks`), so
+  maintenance/background jobs are less likely to interfere with breakpoints.
+- Anonymous access to the API and UI is enabled and runs as the admin user (`enableAPI`/`enableUI`
+  are forced to `2`).
+- Report designs can be edited from the interactive `PRINT` view, and the cache for reading reports
+  from resources is turned off, so edits are picked up without a restart.
+- The client auto-reconnects when the connection is lost.
+
+Don't enable it in production — it allows anonymous API/UI access as the admin user.
+
 ## Deprecating language syntax
 
 When introducing a keyword rename, an alternative form, or removing a syntax construct:
