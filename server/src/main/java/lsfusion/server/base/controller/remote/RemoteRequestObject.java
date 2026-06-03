@@ -21,6 +21,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -466,7 +467,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             // common EXPORT case; mirrors the HTTP /exec /eval response body, JSON callers JSON.parse it) go as the
             // text content; binary formats (xls/pdf/image/...) go as base64 rather than a corrupt UTF-8 decode.
             RawFileData raw = rawFileData(value);
-            value = type instanceof HumanReadableFileClass ? raw.getString(StandardCharsets.UTF_8) : Base64.encodeBase64StringUnChunked(raw.getBytes());
+            value = isTextFile(type, value) ? raw.getString(StandardCharsets.UTF_8) : Base64.encodeBase64StringUnChunked(raw.getBytes());
             type = StringClass.text;
         }
         // serialize the client value the SAME way value-bearing form actions do (InternalClientAction /
@@ -482,6 +483,23 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         if(value instanceof FileData)
             return ((FileData) value).getRawFile();
         return null;
+    }
+
+    // a file result is text if the static type is human-readable OR the file's extension is a text one. An EXPORT
+    // result is typically a dynamic-format FileData typed as a generic FileClass (not JSONFileClass), so the
+    // extension check (same as FormChanges.convertFileData) is what recognizes EXPORT JSON/CSV/XML/... as text.
+    private static boolean isTextFile(Type<?> type, Object value) {
+        if(type instanceof HumanReadableFileClass)
+            return true;
+        String extension = fileExtension(value);
+        return extension != null && (HumanReadableFileClass.is(extension) || ExternalUtils.isTextExtension(extension));
+    }
+    private static String fileExtension(Object value) {
+        if(value instanceof NamedFileData)
+            return ((NamedFileData) value).getExtension();
+        if(value instanceof FileData)
+            return ((FileData) value).getExtension();
+        return null; // RawFileData carries no format
     }
 
     private static String controllerMessage(Throwable t) {
