@@ -44,7 +44,6 @@ import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
-import org.apache.commons.net.util.Base64;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -463,11 +462,11 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         Object value = result.getValue();
         Type<?> type = result.getType();
         if(type instanceof FileClass) { // EXPORT (default JSON) and other file results carry CONTENT, not a
-            // deliverable scalar -> hand the JS the content as a String. Text formats (json/csv/xml/txt/html, the
-            // common EXPORT case; mirrors the HTTP /exec /eval response body, JSON callers JSON.parse it) go as the
-            // text content; binary formats (xls/pdf/image/...) go as base64 rather than a corrupt UTF-8 decode.
-            RawFileData raw = rawFileData(value);
-            value = isTextFile(type, value) ? raw.getString(StandardCharsets.UTF_8) : Base64.encodeBase64StringUnChunked(raw.getBytes());
+            // deliverable scalar -> hand the JS the content as a String (the JS value channel has no binary type, so
+            // bytes can only travel as a string). Text formats (json/csv/xml/txt/html; mirrors the HTTP /exec /eval
+            // response body, JSON callers JSON.parse it) go as the text content; binary formats (xls/pdf/image/...)
+            // go as base64 via FileClass.formatString -- lsFusion's canonical file-as-string encoding.
+            value = isTextFile(type, value) ? rawFileData(value).getString(StandardCharsets.UTF_8) : ((FileClass) type).formatString(value);
             type = StringClass.text;
         }
         // serialize the client value the SAME way value-bearing form actions do (InternalClientAction /
