@@ -6377,8 +6377,8 @@
       "stale": false
     },
     "language/Properties_and_actions_block.md": {
-      "file_hash": "sha256:12cfcf34400730c36d0511b1c027db67b0a1606e9099a9b1ebf73f3b0628cc03",
-      "indexed_at": "2026-05-22T22:40:49Z",
+      "file_hash": "sha256:db2917c21748b5717c31662471fa9390ef320c046acf8caa116b8801ccc3d05a",
+      "indexed_at": "2026-06-03T21:21:28Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6400,15 +6400,15 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-00": {
-          "file_id": "file-Swh1M6oYeJYE32Vc9y2DTU",
+          "file_id": "file-EWcJ7rZWsJyiajJiYXzAJF",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:6824e9040968cb35074c4a45d77469e07d3d5ea579fffa3510dd1c4eea313718",
+          "section_payload_hash": "sha256:de2e2213a45925110b3c7c8e130300b8e6b1ba235b72413e0985877f0a8a8c17",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-01": {
-          "file_id": "file-Uk2SJPw56cpxVFoSwnoktG",
+          "file_id": "file-SGjngMFssYzLDLXqJHBPNA",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:85502c45a756bfd1cefd04f100c4f33cf54bf64316d140d12faf5a2b00a0919f",
+          "section_payload_hash": "sha256:726d3cb9e8b78c6703c3a2f953c660f9a7fb1e68f63b08cfbc29c891e7ff73ed",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::properties-and-actions-block": {
@@ -6418,9 +6418,9 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::syntax": {
-          "file_id": "file-GFqDdMuTHAQ83fQq3Y2TLc",
+          "file_id": "file-W1SLh8dp14W6CwMKYSofqx",
           "heading_path": "Properties and actions block > Syntax",
-          "section_payload_hash": "sha256:a63354ddfaef1b36dee74492dae686cc97ca69680a4bd0a4ff5a313c8cacbc14",
+          "section_payload_hash": "sha256:351f8e2b55a40ae97e08eb5cc97e0fd5d7e06365545151b19f67543d3683521a",
           "source_file": "language/Properties_and_actions_block.md"
         }
       },
@@ -13232,7 +13232,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4c2e53d7b545d5b03989b27451937ab0af3ed757",
+  "last_indexed_docs_commit": "5aa80ef33c8b4b15e429944a29e2823253f91624",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
