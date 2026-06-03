@@ -15,11 +15,43 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.RawFileData;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
+import lsfusion.server.language.property.oraction.LAP;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.HumanReadableFileClass;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
+import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
+import org.apache.commons.net.util.Base64;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -291,6 +323,182 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
     public Object requestUserInteraction(ClientAction action) {
         return RemotePausableInvocation.runUserInteraction(currentInvocation -> currentInvocation.pauseForUserInteraction(action));
+    }
+
+    // ---- form/navigator JS controller: exec(action) / eval(script) / change(property) over the pausable channel ----
+    // Shared orchestration (resolve by name -> bind params -> run -> read & serialize result -> deliver to the JS
+    // callback). The execution context differs by remote and is supplied via the 3 hooks below: form runs in its
+    // PERSISTENT session with a FormInstanceContext; navigator opens a FRESH session per call with the connection
+    // context. See GFORM-CONTROLLER-EXEC-EVAL-PLAN.
+
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            ClientAction terminal;
+            try {
+                LA<?> la = resolveAction(action);
+                if(la == null)
+                    throw new RuntimeException("Action was not found: " + action);
+                controllerGate(la.getActionOrProperty().hasAnnotation("api")); // resolve -> gate(@api)
+                terminal = runControllerAction(callbackId, la, params, stack);
+            } catch (Exception e) { // business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
+                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+            }
+            delayUserInteraction(terminal);
+        });
+    }
+
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            ClientAction terminal;
+            try {
+                controllerGate(false); // gate BEFORE evaluateRun, no @api for a dynamic script
+                LA<?> la = getControllerBL().evaluateRun(script, true); // controller eval always runs as an action (result via return)
+                if(la == null)
+                    throw new RuntimeException("Eval 'run' action was not found");
+                terminal = runControllerAction(callbackId, la, params, stack);
+            } catch (Exception e) {
+                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+            }
+            delayUserInteraction(terminal);
+        });
+    }
+
+    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            ClientAction terminal;
+            try {
+                LP<?> lp = resolveProperty(property);
+                if(lp == null)
+                    throw new RuntimeException("Property was not found: " + property);
+                controllerGate(lp.getActionOrProperty().hasAnnotation("api"));
+                terminal = runControllerChange(callbackId, lp, params, value, stack);
+            } catch (Exception e) {
+                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+            }
+            delayUserInteraction(terminal);
+        });
+    }
+
+    // hooks: form -> persistent form.session + FormInstanceContext; navigator -> fresh createSession() + connection context
+    protected abstract BusinessLogics getControllerBL();
+    protected abstract void controllerGate(boolean apiAnnotation);
+    protected abstract ClientAction runControllerRequest(ExecutionStack stack, ControllerBody body) throws SQLException, SQLHandledException, ParseException, IOException;
+
+    protected interface ControllerBody {
+        ClientAction run(ExecutionEnvironment env, ConnectionContext context) throws SQLException, SQLHandledException, ParseException, IOException;
+    }
+
+    // resolve by compound name, falling back to external id (mirrors RemoteConnection.findAction)
+    private LA<?> resolveAction(String name) {
+        BusinessLogics BL = getControllerBL();
+        LA<?> action;
+        try {
+            action = BL.findActionByCompoundName(name.replace('/', '_'));
+        } catch (CompoundNameUtils.ParseException e) {
+            action = null;
+        }
+        return action != null ? action : BL.findActionByExtId(name);
+    }
+    private LP<?> resolveProperty(String name) {
+        BusinessLogics BL = getControllerBL();
+        LP<?> property;
+        try {
+            property = BL.findPropertyByCompoundName(name);
+        } catch (CompoundNameUtils.ParseException e) {
+            property = null;
+        }
+        return property != null ? property : BL.findPropertyByExtId(name);
+    }
+
+    private ClientAction runControllerAction(long callbackId, LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+        return runControllerRequest(stack, (env, context) -> {
+            dropResult(la.action, env, getControllerBL().LM); // persistent (form) session may carry a stale result; harmless no-op on a fresh (navigator) session
+            la.execute(env, stack, bindParams(env, la, params));
+            return controllerResultAction(callbackId, context, readControllerResult(env, la.action));
+        });
+    }
+
+    private ClientAction runControllerChange(long callbackId, LP<?> lp, Object[] params, Object value, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+        return runControllerRequest(stack, (env, context) -> {
+            DataObject[] keys = bindKeys(env, lp, params);
+            lp.change(bindObjectValue(env, lp.property.getValueClass(ClassType.editValuePolicy), value), env, keys);
+            return new ControllerResultClientAction(callbackId, null, null); // change is a pure mutation, no value -> resolve(undefined)
+        });
+    }
+
+    // JSON-decoded canonical values (Number/String/Boolean/null/FileData; one per positional interface) -> typed
+    // values; binding (incl. offset-ISO dates) handled inside Type.parseJSON
+    private ObjectValue[] bindParams(ExecutionEnvironment env, LAP<?, ?> property, Object[] params) throws SQLException, SQLHandledException, ParseException {
+        ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
+        ObjectValue[] values = new ObjectValue[classes.length];
+        for(int i = 0; i < classes.length; i++)
+            values[i] = bindObjectValue(env, classes[i], (params != null && i < params.length) ? params[i] : null);
+        return values;
+    }
+
+    private DataObject[] bindKeys(ExecutionEnvironment env, LAP<?, ?> property, Object[] params) throws SQLException, SQLHandledException, ParseException {
+        DataObject[] keys = DataObject.onlyDataObjects(bindParams(env, property, params)); // change keys must be non-null object values
+        if(keys == null)
+            throw new RuntimeException("change requires non-null object values for keys");
+        return keys;
+    }
+
+    private ObjectValue bindObjectValue(ExecutionEnvironment env, ValueClass valueClass, Object raw) throws SQLException, SQLHandledException, ParseException {
+        if(valueClass == null) // unconstrained interface -- getInterfaceClasses can return null entries
+            throw new RuntimeException("Unconstrained parameter type is not supported by the controller");
+        // raw == null -> parseJSON returns null -> getObjectValue returns NullValue; dates handled inside Type.parseJSON
+        return env.getSession().getObjectValue(valueClass, valueClass.getType().parseJSON(raw));
+    }
+
+    private ObjectValue readControllerResult(ExecutionEnvironment env, Action<?> action) throws SQLException, SQLHandledException {
+        Result<SessionDataProperty> resultProp = new Result<>();
+        Pair<String[], ObjectValue[]> result = readResult(action, env, getControllerBL().LM, resultProp);
+        return result.second.length > 0 ? result.second[0] : null;
+    }
+
+    private ClientAction controllerResultAction(long callbackId, ConnectionContext context, ObjectValue result) throws IOException {
+        if(result == null || result.getValue() == null) // no export value / null value -> JS undefined
+            return new ControllerResultClientAction(callbackId, null, null);
+        Object value = result.getValue();
+        Type<?> type = result.getType();
+        if(type instanceof FileClass) { // EXPORT (default JSON) and other file results carry CONTENT, not a
+            // deliverable scalar -> hand the JS the content as a String. Text formats (json/csv/xml/txt/html, the
+            // common EXPORT case; mirrors the HTTP /exec /eval response body, JSON callers JSON.parse it) go as the
+            // text content; binary formats (xls/pdf/image/...) go as base64 rather than a corrupt UTF-8 decode.
+            RawFileData raw = rawFileData(value);
+            value = type instanceof HumanReadableFileClass ? raw.getString(StandardCharsets.UTF_8) : Base64.encodeBase64StringUnChunked(raw.getBytes());
+            type = StringClass.text;
+        }
+        // serialize the client value the SAME way value-bearing form actions do (InternalClientAction /
+        // UpdateEditValue): serializeConvertFileValue + the web reader ClientActionToGwtConverter.deserializeServerValue.
+        return new ControllerResultClientAction(callbackId, FormChanges.serializeConvertFileValue(value, context), TypeSerializer.serializeType(type));
+    }
+
+    private static RawFileData rawFileData(Object value) {
+        if(value instanceof RawFileData)
+            return (RawFileData) value;
+        if(value instanceof NamedFileData)
+            return ((NamedFileData) value).getRawFile();
+        if(value instanceof FileData)
+            return ((FileData) value).getRawFile();
+        return null;
+    }
+
+    private static String controllerMessage(Throwable t) {
+        return t.getMessage() != null ? t.getMessage() : String.valueOf(t);
+    }
+
+    // symmetric readResult/dropResult (the shared base owns them; the /exec /eval HTTP path and InternalAction
+    // reach them via inheritance through RemoteConnection):
+    public static Pair<String[], ObjectValue[]> readResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm, Result<SessionDataProperty> resultProp) throws SQLException, SQLHandledException {
+        return lm.getExportValueProperty().readFirstNotNull(env, resultProp, action);
+    }
+    // symmetric with readResult: drop the session changes of the SAME properties readResult would read (the action's
+    // RETURN result props, else the "export" holder). A fresh session (navigator, /exec /eval) starts with these null;
+    // a persistent session (the form controller) must drop them first or readResult returns a value left by a previous call.
+    public static void dropResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm) throws SQLException, SQLHandledException {
+        ImOrderSet<SessionDataProperty> resultProps = action.getResultProps();
+        env.getSession().dropSessionChanges((!resultProps.isEmpty() ? resultProps : lm.getExportValueProperty().getProps()).getSet());
     }
 
     private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();

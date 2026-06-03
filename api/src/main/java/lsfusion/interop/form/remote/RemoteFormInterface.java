@@ -114,16 +114,4 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     // external
 
     Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException;
-
-    // form controller (CUSTOM / INTERNAL CLIENT) exec/eval/change — executed in THIS form's session/pipeline.
-    // params/value are JSON-decoded canonical values (the servlet decodes the browser's JSON into the
-    // supported set: String/Number/Boolean/null/FileData; dates arrive as offset-bearing ISO strings), bound
-    // positionally per interface via Type.parseJSON. The result/exception is delivered by a terminal
-    // ControllerCallbackClientAction keyed by callbackId. See GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
-
-    ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException;
-
-    ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException;
-
-    ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException;
 }

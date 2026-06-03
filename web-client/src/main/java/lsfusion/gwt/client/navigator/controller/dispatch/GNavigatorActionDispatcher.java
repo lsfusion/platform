@@ -7,18 +7,59 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorControllerChangeAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorControllerEvalAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorControllerExecAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
+
+import java.io.Serializable;
+import java.util.ArrayList;
 
 public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     
     private final WindowsController windowsController;
     private final FormsController formsController;
     private final GNavigatorController navigatorController;
+
+    // INTERNAL CLIENT in navigator context gets exec/eval/change too — same shared machinery as the form, but the
+    // request runs in the navigator's session (a fresh DataSession per call). The navigator has no per-form close,
+    // so isClosed() is always false. See NAVIGATOR-CONTROLLER-PLAN.
+    private final GController gController = new GController() {
+        @Override
+        protected void dispatchExec(long callbackId, String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            NavigatorControllerExecAction a = new NavigatorControllerExecAction(action, params);
+            a.callbackId = callbackId;
+            MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
+        }
+        @Override
+        protected void dispatchEval(long callbackId, String script, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            NavigatorControllerEvalAction a = new NavigatorControllerEvalAction(script, params);
+            a.callbackId = callbackId;
+            MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
+        }
+        @Override
+        protected void dispatchChange(long callbackId, String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {
+            NavigatorControllerChangeAction a = new NavigatorControllerChangeAction(property, keyParams, value);
+            a.callbackId = callbackId;
+            MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
+        }
+        @Override
+        protected boolean isClosed() {
+            return false;
+        }
+        @Override
+        protected GwtActionDispatcher getControllerDispatcher() {
+            return GNavigatorActionDispatcher.this;
+        }
+    };
 
     public GNavigatorActionDispatcher(WindowsController windowsController, FormsController formsController, GNavigatorController navigatorController) {
         this.windowsController = windowsController;
@@ -80,7 +121,17 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     protected JavaScriptObject getController() {
-        return null;
+        return gController.controller;
+    }
+
+    @Override
+    public void execute(GControllerResultAction action) {
+        gController.controllerCallbackResult(action.callbackId, GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
+    }
+
+    @Override
+    public void execute(GControllerExceptionAction action) {
+        gController.controllerCallbackException(action.callbackId, action.message, action.cancelled);
     }
 
     @Override

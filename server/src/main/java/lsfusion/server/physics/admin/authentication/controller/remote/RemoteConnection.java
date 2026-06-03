@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientType;
+import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.*;
@@ -60,6 +61,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -492,6 +494,25 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         checkAPIAccess(securityPolicy, token, businessLogics, apiAnnotation, redirect);
     }
 
+    // JS controller (exec/eval/change in the shared base RemoteRequestObject) connection-context hooks, inherited by
+    // RemoteNavigator and RemoteSession: a FRESH session per call (like /exec /eval -> no stale result, the base's
+    // dropResult is a harmless no-op), the connection API gate, and the connection result context. RemoteForm
+    // overrides these to run in the form's persistent session with the form context.
+    @Override
+    protected BusinessLogics getControllerBL() {
+        return businessLogics;
+    }
+    @Override
+    protected void controllerGate(boolean apiAnnotation) {
+        checkAPIAccess(apiAnnotation, false);
+    }
+    @Override
+    protected ClientAction runControllerRequest(ExecutionStack stack, ControllerBody body) throws SQLException, SQLHandledException, ParseException, IOException {
+        try (DataSession session = createSession()) {
+            return body.run(session, getContext().getConnectionContext());
+        }
+    }
+
     // Parameterized form of the gate so other request contexts (e.g. RemoteForm's controller
     // exec/eval/change) enforce the SAME policy as /exec /eval instead of duplicating it (avoids
     // security drift). The form passes its own securityPolicy (RemoteFormContext.getSecurityPolicy)
@@ -740,19 +761,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
 
         return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK), logMessages);
-    }
-
-    public static Pair<String[], ObjectValue[]> readResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm, Result<SessionDataProperty> resultProp) throws SQLException, SQLHandledException {
-        return lm.getExportValueProperty().readFirstNotNull(env, resultProp, action);
-    }
-
-    // symmetric with readResult: drop the session changes of the SAME properties readResult would read (the
-    // action's RETURN result props, else the "export" holder). A fresh ExecSession (the /exec /eval path) starts
-    // with these null; callers reusing a persistent session (the form controller, RemoteForm.runControllerAction)
-    // must drop them first or readResult returns a value left by a previous call.
-    public static void dropResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm) throws SQLException, SQLHandledException {
-        ImOrderSet<SessionDataProperty> resultProps = action.getResultProps();
-        env.getSession().dropSessionChanges((!resultProps.isEmpty() ? resultProps : lm.getExportValueProperty().getProps()).getSet());
     }
 
     private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {
