@@ -18,6 +18,10 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         this.editManager = editManager;
     }
 
+    public EditManager getEditManager() { // CustomCellEditor.getEditManager — lets the CUSTOM editor reach the form controller
+        return editManager;
+    }
+
     // force commit with the current value
     public void commit(Element parent, CommitReason commitReason) {
         validateAndCommit(parent, null, commitReason);

@@ -113,7 +113,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         cellEditor.setDeferredCommitOnBlur(deferredCommitOnBlur);
     }
 
-    public static native JavaScriptObject getController(CustomCellEditor thisObj, Element cellParent)/*-{
+    public static native JavaScriptObject getController(CustomCellEditor thisObj, Element cellParent, JavaScriptObject formController)/*-{
         return {
             setDeferredCommitOnBlur: function (deferredCommitOnBlur) {
                 @CustomReplaceCellEditor::setDeferredCommit(*)(thisObj, deferredCommitOnBlur);
@@ -129,7 +129,8 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
-            }
+            },
+            form: formController // form controller ({changeProperty, exec, eval, change}); same bridge as CUSTOM grid/cell-renderer views
         }
     }-*/;
 

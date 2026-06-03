@@ -436,6 +436,11 @@ public class GFormController implements EditManager {
         gController.controllerCallbackException(callbackId, message, cancelled);
     }
 
+    @Override
+    public JavaScriptObject getFormController() { // EditManager: the form's JS controller, exposed as the CUSTOM editor's `form` field
+        return controller;
+    }
+
     public void setFiltersVisible(GGroupObject groupObject, boolean visible) {
         List<Widget> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null)
