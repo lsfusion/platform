@@ -8,7 +8,7 @@ title: 'Инструкция =>'
 ### Синтаксис
 
 ```
-leftPropertyId(param1, ..., paramN) => eventClause rightExpr [RESOLVE resolveType];
+leftPropertyId(param1, ..., paramN) => [eventClause] rightExpr [RESOLVE [LEFT] [RIGHT]];
 ```
 
 ### Описание
@@ -21,14 +21,14 @@ leftPropertyId(param1, ..., paramN) => eventClause rightExpr [RESOLVE resolveTyp
 CONSTRAINT eventClause leftPropertyId(param1, ..., paramN) AND NOT rightExpr MESSAGE 'Нарушено следствие';
 ```
 
-но при этом позволяет автоматически разрешать ситуации нарушения этого ограничения. Так тип разрешения `RESOLVE LEFT` будет эквивалентен созданию [простого события](../paradigm/Simple_event.md):
+но при этом позволяет автоматически разрешать ситуации нарушения этого ограничения. Так использование опции `LEFT` в `RESOLVE` будет эквивалентно созданию [простого события](../paradigm/Simple_event.md):
 
 ```
 WHEN eventClause SET(leftPropertyId(param1, ..., paramN)) DO 
     SETACTION(rightExpr);
 ```
 
-А `RESOLVE RIGHT` соответственно:
+Опция `RIGHT`, соответственно:
 
 ```
 WHEN eventClause DROPPED(rightExpr) DO
@@ -49,17 +49,17 @@ WHEN eventClause DROPPED(rightExpr) DO
 
     [Выражение](Expression.md), значение которого определяет следствие.
 
-- `resolveType`
+- `LEFT`
 
-    Тип [автоматического разрешения](../paradigm/Simple_event.md) при нарушении следствия. Задается одним из следующих вариантов:
+    Включает [автоматическое разрешение](../paradigm/Simple_event.md) следствия: если посылка (левая часть инструкции) изменяется на не `NULL`, то следствие изменяется на не `NULL`.
 
-    - `LEFT` - если посылка (левая часть инструкции) изменяется на не `NULL`, то следствие изменяется на не `NULL`.
-    - `RIGHT` -  если следствие (правая часть инструкции) изменяется на `NULL`, то посылка изменяется на `NULL`.
-    - `LEFT RIGHT` - аналогично `LEFT` и `RIGHT` вместе. 
+- `RIGHT`
+
+    Включает автоматическое разрешение следствия: если следствие (правая часть инструкции) изменяется на `NULL`, то посылка изменяется на `NULL`.
 
 - `eventClause`
 
-    [Блок описания события](Event_description_block.md). Описывает [событие](../paradigm/Events.md), при наступлении которого будет проверяться создаваемое следствие и выполняться операции автоматического разрешения.
+    [Блок описания события](Event_description_block.md). Описывает [событие](../paradigm/Events.md), при наступлении которого будет проверяться создаваемое следствие и выполняться операции автоматического разрешения. Если не указан, используется глобальное событие `APPLY`.
 
 ### Примеры
 

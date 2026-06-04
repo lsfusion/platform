@@ -8,8 +8,8 @@ title: 'Инструкция CONSTRAINT'
 ### Синтаксис
 
 ```
-CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
-    [PROPERTIES outPropertyId1, ..., outPropertyIdM];
+CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
+    [PROPERTIES outExpr1, ..., outExprM];
 ```
 
 ### Описание
@@ -37,7 +37,7 @@ WHEN eventClause [=GROUP MAX constraintProperty(...)]() DO {
 
 - `eventClause`
 
-    [Блок описания события](Event_description_block.md). Описывает [событие](../paradigm/Events.md), при наступлении которого будет проверяться создаваемое ограничение.
+    [Блок описания события](Event_description_block.md). Описывает [событие](../paradigm/Events.md), при наступлении которого будет проверяться создаваемое ограничение. Если не указан, используется глобальное событие `APPLY`.
 
 - `constraintExpr`
 
@@ -49,11 +49,11 @@ WHEN eventClause [=GROUP MAX constraintProperty(...)]() DO {
 
 - `messageExpr`
 
-    Выражение, значение которого выдаётся в качестве сообщения пользователю, когда заданное ограничение нарушается. Может быть [строковым литералом](IDs.md#strliteral) либо свойством без параметров.
+    Выражение, значение которого выдаётся в качестве сообщения пользователю, когда заданное ограничение нарушается. Не должно иметь параметров — например, [строковый литерал](IDs.md#strliteral) или свойство без параметров.
 
-- `outPropertyId1, ..., outPropertyIdM`
+- `outExpr1, ..., outExprM`
 
-    Список идентификаторов свойств, значения которых выдаются в сообщении пользователю, когда заданное ограничение нарушается. Если список не указывается, то выбираются свойства, подходящие по классам параметров к условию ограничения и принадлежащие [группе свойств](../paradigm/Groups_of_properties_and_actions.md) `System.id`.
+    Список [выражений](Expression.md) над параметрами условия ограничения, значения которых выдаются в сообщении пользователю, когда заданное ограничение нарушается. Если список не указывается, то выбираются свойства, подходящие по классам параметров к условию ограничения и принадлежащие [группе свойств](../paradigm/Groups_of_properties_and_actions.md) `System.id`.
 
 ### Примеры
 

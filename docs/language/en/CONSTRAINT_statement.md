@@ -8,8 +8,8 @@ The `CONSTRAINT` statement creates a [constraint](../paradigm/Constraints.md).
 ### Syntax
 
 ```
-CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
-    [PROPERTIES outPropertyId1, ..., outPropertyIdM];
+CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
+    [PROPERTIES outExpr1, ..., outExprM];
 ```
 
 ### Description
@@ -37,7 +37,7 @@ but it also has [a number of advantages](../paradigm/Constraints.md).
 
 - `eventClause`
 
-    [Event description block](Event_description_block.md). Describes [the event](../paradigm/Events.md) upon occurrence of which the created constraint will be checked.
+    [Event description block](Event_description_block.md). Describes [the event](../paradigm/Events.md) upon occurrence of which the created constraint will be checked. If omitted, the global `APPLY` event is used.
 
 - `constraintExpr`
 
@@ -49,11 +49,11 @@ but it also has [a number of advantages](../paradigm/Constraints.md).
 
 - `messageExpr`
 
-    An expression whose value is shown as a message to the user when the set constraint is violated. It may be either a [string literal](IDs.md#strliteral) or a property without parameters.
+    An expression whose value is shown as a message to the user when the set constraint is violated. It must have no parameters — for example, a [string literal](IDs.md#strliteral) or a property without parameters.
 
-- `outPropertyId1, ..., outPropertyIdM`
+- `outExpr1, ..., outExprM`
 
-    List of property IDs whose values are displayed in a message to the user when the specified constraint is violated. If no list is specified, the properties matching the parameter classes of the constraint condition and belonging to [property group](../paradigm/Groups_of_properties_and_actions.md) `System.id` are selected.
+    List of [expressions](Expression.md) over the parameters of the constraint condition whose values are displayed in a message to the user when the specified constraint is violated. If no list is specified, the properties matching the parameter classes of the constraint condition and belonging to [property group](../paradigm/Groups_of_properties_and_actions.md) `System.id` are selected.
 
 ### Examples
 
