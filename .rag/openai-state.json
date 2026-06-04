@@ -4441,8 +4441,8 @@
       "stale": false
     },
     "language/Event_description_block.md": {
-      "file_hash": "sha256:81a052f90197a098b686c865ceb10930600ace50a2fc1b04df9623f22c29df59",
-      "indexed_at": "2026-05-22T22:13:23Z",
+      "file_hash": "sha256:8d3cb779b3b7c6c25fe4924327b40caa1a03988b7e0d9cc212d33632b483ed6a",
+      "indexed_at": "2026-06-04T07:58:32Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4458,9 +4458,9 @@
           "source_file": "language/Event_description_block.md"
         },
         "Event_description_block::syntax+parameters": {
-          "file_id": "file-TXdivtxwniyD3H2cff7xKC",
+          "file_id": "file-DqURgVmKHkEVVvUBA5nPqm",
           "heading_path": "Event description block > Syntax + Parameters",
-          "section_payload_hash": "sha256:f50f265f22186fe43eac6f6457447c140c9f08057efd8f172d7881e75c741203",
+          "section_payload_hash": "sha256:c98fb46f87a73035829202e90ef3edc4f2a36cdc44f98835d6528bce4167b4a2",
           "source_file": "language/Event_description_block.md"
         }
       },
@@ -7081,8 +7081,8 @@
       "stale": false
     },
     "language/WHEN_statement.md": {
-      "file_hash": "sha256:e19bf348fb20bc591c61b74e77716b1d41f53c7ff8672257883b986232deb629",
-      "indexed_at": "2026-05-22T22:45:50Z",
+      "file_hash": "sha256:31558dba965850027930ab74b7acc5e5f35896dd27ea10ebaa81d052f48a547b",
+      "indexed_at": "2026-06-04T07:58:43Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7098,9 +7098,9 @@
           "source_file": "language/WHEN_statement.md"
         },
         "WHEN_statement::parameters": {
-          "file_id": "file-GZMuMX4SdsM9J3H3JWjV9k",
+          "file_id": "file-JzyFesqPGX7v8b3t5HPwgx",
           "heading_path": "WHEN statement > Parameters",
-          "section_payload_hash": "sha256:a7b59b104345e756ba7ef8694f36b51ed972e2430d65c47b1f483ce249d3495f",
+          "section_payload_hash": "sha256:ef097ca9c9970f659dd288f8f98840ba583895c4e59778c92c48c77fa72a6e54",
           "source_file": "language/WHEN_statement.md"
         },
         "WHEN_statement::syntax+description": {
@@ -7283,8 +7283,8 @@
       "stale": false
     },
     "language/lt-_WHEN_statement.md": {
-      "file_hash": "sha256:9df7979da9ee7721db0ce3b7007cfa1d0f9fa9d9bfb9df1ff85f13bf064c21c3",
-      "indexed_at": "2026-05-22T22:48:29Z",
+      "file_hash": "sha256:428ae5ca3805a9211ee1982a9541212435f9cea3a49058657817151a63b6a664",
+      "indexed_at": "2026-06-04T07:58:53Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7306,9 +7306,9 @@
           "source_file": "language/lt-_WHEN_statement.md"
         },
         "lt-_WHEN_statement::parameters": {
-          "file_id": "file-JoHoffnwdb4SCBoDDSGM5j",
+          "file_id": "file-KsKYqTrr4VdDB1GGdnLFE1",
           "heading_path": "<- WHEN statement > Parameters",
-          "section_payload_hash": "sha256:28796a522f216901d72aedfab5116eeb6f4943da8320b647ec4fa456779654f0",
+          "section_payload_hash": "sha256:615cf2cb3b3b2ae4694bf8cd9213e5301230ed7133e94a936f4c3fcae58c9a5b",
           "source_file": "language/lt-_WHEN_statement.md"
         },
         "lt-_WHEN_statement::syntax+description": {
@@ -8065,8 +8065,8 @@
       "stale": false
     },
     "paradigm/Calculated_events.md": {
-      "file_hash": "sha256:ceb9bcdc64622b399f11abfd5ed13826f876949c798cd0a59caf5635aa441731",
-      "indexed_at": "2026-05-22T22:54:29Z",
+      "file_hash": "sha256:974418a4cf1174fdbe89f753be757a911d078354692aa63bdd921754707f7df6",
+      "indexed_at": "2026-06-04T07:59:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8076,9 +8076,9 @@
       },
       "sections": {
         "Calculated_events::calculated-events": {
-          "file_id": "file-RJ6yF8GKJcpQi7Y287xDHa",
+          "file_id": "file-M5xzzfv93ZoFEM75ptoDp1",
           "heading_path": "Calculated events",
-          "section_payload_hash": "sha256:96cbbe5420eb23b0cd0adefa9c90dcb0dceef1c23a64ed82a56d3b0077701b68",
+          "section_payload_hash": "sha256:4a169054f4f60e115b1839a96375b1e3125efdb6f58e802d9ab05683141849db",
           "source_file": "paradigm/Calculated_events.md"
         },
         "Calculated_events::language+examples": {
@@ -8992,8 +8992,8 @@
       "stale": false
     },
     "paradigm/Events.md": {
-      "file_hash": "sha256:4f882d9a1710fde04999aa0165aca6f33a16852087875a32b635a15218ad155b",
-      "indexed_at": "2026-05-22T23:49:17Z",
+      "file_hash": "sha256:6a5c815afbd989a2e4d052d90318f2822ea3ea76c806893254268a8282644a90",
+      "indexed_at": "2026-06-04T07:59:17Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9009,9 +9009,9 @@
           "source_file": "paradigm/Events.md"
         },
         "Events::event-types-type": {
-          "file_id": "file-XZCpRiR3qfeyADziBGuK4F",
+          "file_id": "file-ArGtriMw5WPNgdJRJtJa3P",
           "heading_path": "Events > Event types {#type}",
-          "section_payload_hash": "sha256:155680f1b76c6f7a337639a73fb64f38cc4129d19dbf22a91ba4f48c9fd083fe",
+          "section_payload_hash": "sha256:72d0dc74875fcbb0614e0bf72406009394c86485ae48f71ae605bc79911c30d5",
           "source_file": "paradigm/Events.md"
         },
         "Events::events": {
@@ -12213,8 +12213,8 @@
       "stale": false
     },
     "paradigm/Simple_event.md": {
-      "file_hash": "sha256:eada2d0e5ccba2b5bbf7448ec801c4e87acc7634c2dbc6feb67e66decb6be4d3",
-      "indexed_at": "2026-05-22T23:38:10Z",
+      "file_hash": "sha256:5c40b455f3256455c79c22f05c3196bda753c54c84b4f309b26731113369589e",
+      "indexed_at": "2026-06-04T07:59:26Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12230,9 +12230,9 @@
           "source_file": "paradigm/Simple_event.md"
         },
         "Simple_event::simple-event": {
-          "file_id": "file-5CN72uZqjxqPJUsfhu1JjZ",
+          "file_id": "file-J8Cvh7FFtodnKS7sZ8wFec",
           "heading_path": "Simple event",
-          "section_payload_hash": "sha256:8554cd16c1025956be6320336ecd2da00d55114f272ba96d4f0cb0dbcf59be4c",
+          "section_payload_hash": "sha256:4881f193ae3e5a7b7ec7d21d861d8c342cd5f8eb723ba6ec87dddbdc72ef130c",
           "source_file": "paradigm/Simple_event.md"
         }
       },
@@ -13238,7 +13238,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "1929cddf3a3adb1e6742ebe82266acb497570485",
+  "last_indexed_docs_commit": "049ebffb3784ddf388e6c4c726c9969d32297f4f",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
