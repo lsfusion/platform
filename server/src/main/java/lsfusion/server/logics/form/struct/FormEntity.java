@@ -195,6 +195,60 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return eventActions.getList().groupList(key -> key.event).mapValues(key -> key.mapListValues(event -> event.action));
     }
 
+    // form controller API allow-list (issue #1650): actions/properties callable via the form controller exec/change,
+    // bypassing the @@api/enableAPI gate, optionally under an alias. Phase 1 is access + aliasing only — parameters
+    // keep coming from JS as in the plain controller; accessing a form's active object from a script uses the
+    // ACTIVE operator (object-parameter mapping is phase 2, #1651).
+    public static class FormAPIEntry implements MappingInterface<FormAPIEntry> {
+        public final String localName; // the form-local call name: the alias if declared, else the target's simple name
+        public final ActionOrProperty<?> property; // the allowed action/property; resolved to its LA/LP at call time
+
+        public FormAPIEntry(String localName, ActionOrProperty<?> property) {
+            this.localName = localName;
+            this.property = property;
+        }
+        public boolean isAction() {
+            return property instanceof Action;
+        }
+        @Override
+        public FormAPIEntry get(ObjectMapping mapping) {
+            return this; // a global action/property — no form-specific (ObjectEntity) refs to remap
+        }
+    }
+    public NFList<FormAPIEntry> apiList = NFFact.list();
+    public void addAPIEntry(FormAPIEntry entry, Version version) {
+        apiList.add(entry, version);
+    }
+    public Iterable<FormAPIEntry> getNFAPIListIt(Version version) { // for build-time duplicate-alias check
+        return apiList.getNFListIt(version);
+    }
+    // form-local call name -> entry (alias, else the target's simple name); checked unique at build time. The form API
+    // resolves this LOCAL name first (priority), like form properties resolve by alias/sid before global.
+    @IdentityLazy
+    public ImMap<String, FormAPIEntry> getAPILocalNameMap() {
+        ImList<FormAPIEntry> list = apiList.getList();
+        MExclMap<String, FormAPIEntry> mResult = MapFact.mExclMap();
+        for(int i = 0, size = list.size(); i < size; i++) {
+            FormAPIEntry entry = list.get(i);
+            mResult.exclAdd(entry.localName, entry); // duplicate local names rejected at build time
+        }
+        return mResult.immutable();
+    }
+    // the allow-listed actions/properties by object identity, so an entry is also reachable by any (global) name that
+    // resolves to it. The action/property object itself distinguishes an action from a property of the same
+    // name+signature, so no kind/canonical bookkeeping is needed (a canonical string would not, ns.name[signature]
+    // doesn't encode the kind).
+    @IdentityLazy
+    public ImSet<ActionOrProperty> getAPIProperties() {
+        return apiList.getList().getCol().mapMergeSetValues(entry -> entry.property); // merge: two aliases may point to one target
+    }
+    public FormAPIEntry getAPIByLocalName(String localName) {
+        return getAPILocalNameMap().get(localName);
+    }
+    public boolean hasAPI(ActionOrProperty property) {
+        return getAPIProperties().contains(property);
+    }
+
     private NFOrderSet<ObjectEntity> objects = NFFact.orderSet(); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<ObjectEntity> getNFObjectsIt(Version version) { // не finalized
         return objects.getNFIt(version);
@@ -1345,6 +1399,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         propertyDraws.finalizeChanges();
         fixedFilters.finalizeChanges();
         eventActions.finalizeChanges();
+        apiList.finalizeChanges();
         defaultOrders.finalizeChanges();
         fixedOrders.finalizeChanges();
 
@@ -1885,6 +1940,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         mapping.adds(hintsNoUpdate, src.hintsNoUpdate);
 
         mapping.add(eventActions, src.eventActions);
+        mapping.add(apiList, src.apiList);
         mapping.add(objects, src.objects);
         mapping.add(groups, src.groups);
         mapping.add(treeGroups, src.treeGroups);

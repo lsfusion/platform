@@ -37,7 +37,6 @@ import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -328,11 +327,12 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
-                LA<?> la = resolveAction(action);
-                if(la == null)
+                ControllerResolved resolved = resolveController(action, true); // form API allow-list first (RemoteForm), then global
+                if(resolved.lap == null)
                     throw new RuntimeException("Action was not found: " + action);
-                controllerGate(la.getActionOrProperty().hasAnnotation("api")); // resolve -> gate(@api)
-                terminal = runControllerAction(callbackId, la, params, stack);
+                if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
+                    controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
+                terminal = runControllerAction(callbackId, (LA<?>) resolved.lap, params, stack);
             } catch (Exception e) { // business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
                 terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
             }
@@ -360,11 +360,12 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
-                LP<?> lp = resolveProperty(property);
-                if(lp == null)
+                ControllerResolved resolved = resolveController(property, false); // form API allow-list first (RemoteForm), then global
+                if(resolved.lap == null)
                     throw new RuntimeException("Property was not found: " + property);
-                controllerGate(lp.getActionOrProperty().hasAnnotation("api"));
-                terminal = runControllerChange(callbackId, lp, params, value, stack);
+                if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
+                    controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
+                terminal = runControllerChange(callbackId, (LP<?>) resolved.lap, params, value, stack);
             } catch (Exception e) {
                 terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
             }
@@ -381,26 +382,18 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         ClientAction run(ExecutionEnvironment env, ConnectionContext context) throws SQLException, SQLHandledException, ParseException, IOException;
     }
 
-    // resolve by compound name, falling back to external id (mirrors RemoteConnection.findAction)
-    private LA<?> resolveAction(String name) {
-        BusinessLogics BL = getControllerBL();
-        LA<?> action;
-        try {
-            action = BL.findActionByCompoundName(name.replace('/', '_'));
-        } catch (CompoundNameUtils.ParseException e) {
-            action = null;
-        }
-        return action != null ? action : BL.findActionByExtId(name);
+    // controller exec/change resolution: by default a plain global resolve (by compound name, else external id, via
+    // BusinessLogics), gated by @api/enableAPI (formAuthorized false). RemoteForm overrides this to consult the form
+    // API allow-list first and skip the gate when matched. action selects the kind (exec -> action, change ->
+    // property); lap is the resolved LA (action) or LP (property), narrowed at the run boundary in exec/change.
+    protected static class ControllerResolved {
+        public final LAP<?,?> lap; // null if unresolved; an LA when action, an LP otherwise
+        public final boolean formAuthorized;
+        public ControllerResolved(LAP<?,?> lap, boolean formAuthorized) { this.lap = lap; this.formAuthorized = formAuthorized; }
     }
-    private LP<?> resolveProperty(String name) {
+    protected ControllerResolved resolveController(String name, boolean action) {
         BusinessLogics BL = getControllerBL();
-        LP<?> property;
-        try {
-            property = BL.findPropertyByCompoundName(name);
-        } catch (CompoundNameUtils.ParseException e) {
-            property = null;
-        }
-        return property != null ? property : BL.findPropertyByExtId(name);
+        return new ControllerResolved(action ? BL.findActionByName(name) : BL.findPropertyByName(name), false);
     }
 
     private ClientAction runControllerAction(long callbackId, LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {

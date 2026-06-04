@@ -1242,6 +1242,25 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         RemoteConnection.checkAPIAccess(form.securityPolicy, token, form.BL, apiAnnotation, false);
     }
 
+    // form API allow-list (issue #1650): an entry is reachable by its alias, or by any name that resolves to the
+    // entry's target canonical name; a matched entry skips the @api/enableAPI gate (formAuthorized). action selects
+    // the kind: exec needs an action entry, change a property entry (a wrong-kind local name is reported, not silently
+    // resolved the other way).
+    @Override
+    protected ControllerResolved resolveController(String name, boolean action) {
+        FormEntity.FormAPIEntry entry = form.entity.getAPIByLocalName(name);
+        if(entry != null) {
+            if(entry.isAction() != action)
+                throw new RuntimeException("Form API entry '" + name + "' is " + (entry.isAction() ? "an action; use exec" : "a property; use change"));
+            String canonical = entry.property.getCanonicalName();
+            return new ControllerResolved(action ? form.BL.findAction(canonical) : form.BL.findProperty(canonical), true);
+        }
+        ControllerResolved global = super.resolveController(name, action);
+        if(global.lap != null && form.entity.hasAPI(global.lap.getActionOrProperty()))
+            return new ControllerResolved(global.lap, true);
+        return global;
+    }
+
     // the controller runs in the form's PERSISTENT session (so the base drops the stale result before each run)
     // and serializes the result value with the form context
     @Override

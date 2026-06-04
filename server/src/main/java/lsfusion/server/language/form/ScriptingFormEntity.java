@@ -386,6 +386,16 @@ public class ScriptingFormEntity {
         return propertyDraw;
     }
 
+    // form API allow-list entry (issue #1650): resolve the action/property, store its canonical name + kind on the form
+    public void addScriptedAPIEntry(String alias, ScriptingLogicsModule.ActionOrPropertyUsage usage, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        LAP<?, ?> lap = LM.findLAPByActionOrPropertyUsage(usage);
+        String localName = alias != null ? alias : lap.getActionOrProperty().getName(); // call name: alias, else the target's simple name
+        for(FormEntity.FormAPIEntry existing : form.getNFAPIListIt(version))
+            if(localName.equals(existing.localName))
+                LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "API entry", form.getCanonicalName(), localName, "");
+        form.addAPIEntry(new FormEntity.FormAPIEntry(localName, lap.getActionOrProperty()), version);
+    }
+
     private Version getCheckVersion(Version version) {
         return version;
     }

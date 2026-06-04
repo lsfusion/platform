@@ -115,6 +115,7 @@ import lsfusion.server.physics.dev.i18n.ResourceBundleGenerator;
 import lsfusion.server.physics.dev.i18n.ReversedI18NDictionary;
 import lsfusion.server.physics.dev.icon.IconLogicsModule;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
@@ -1914,6 +1915,31 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public LP<?> findPropertyByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLPFinder());
+    }
+
+    // compound name (slashes -> underscores), falling back to external id; used by the JS controller and the external
+    // HTTP exec to resolve an action/property by the name a caller supplies. Property names carry no path slashes, so
+    // only the action lookup translates them.
+    @IdentityLazy
+    public LA<?> findActionByName(String name) {
+        LA<?> action;
+        try {
+            action = findActionByCompoundName(name.replace('/', '_'));
+        } catch (CompoundNameUtils.ParseException e) {
+            action = null;
+        }
+        return action != null ? action : findActionByExtId(name);
+    }
+
+    @IdentityLazy
+    public LP<?> findPropertyByName(String name) {
+        LP<?> property;
+        try {
+            property = findPropertyByCompoundName(name);
+        } catch (CompoundNameUtils.ParseException e) {
+            property = null;
+        }
+        return property != null ? property : findPropertyByExtId(name);
     }
 
     @IdentityLazy
