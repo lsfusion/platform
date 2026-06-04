@@ -606,7 +606,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     public PValue getValue(GPropertyDraw property, GGroupObjectValue fullKey) {
-        return values.get(properties.indexOf(property)).get(fullKey);
+        int index = properties.indexOf(property);
+        if(index < 0) // property is not a column of this grid (e.g. global / panel property changed via the controller) - nothing to render optimistically here
+            return null;
+        return values.get(index).get(fullKey);
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, boolean rendered) {
