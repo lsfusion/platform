@@ -20,7 +20,7 @@ This log contains all errors that occurred during the operation. Errors are divi
 
  Fig. 1 Error log.
 
-The `Exception trace` section displays the java stack for the error; the `Exception LSF trace` displays the lsfusion stack. 
+The `Exception trace` section displays the java stack for the error; the `Exception LSF trace` displays the lsfusion stack; the `Async exception trace` section displays the stack of the asynchronous request that spawned the failing one (relevant for errors in background threads and event handlers, where the regular stack does not show the originating user context). 
 
 -   Connection Log (fig. 2).
 
@@ -81,6 +81,12 @@ Fig. 7 Setting user logging.
 Fig. 8. Property change history.
 
 The retention time for these logs is set to the same retention time as for the Change Log.
+
+### Journal setup mechanism {#defineLog}
+
+Each of the journals above is set up in the platform's system modules in a uniform way: a dedicated class is declared for the journal, together with a form for viewing it, a retention-days parameter, and an extension point for clearing stale records. This bundle is generated on the system-module side by the same template, so the retention time is set independently for each journal — on the `Administration > Settings > Logging` form each journal gets its own row.
+
+Stale records are cleared on schedule through a common `clearApplicationLog` extension point. An application module can hook into this point to add its own journal to the shared cleanup cycle without setting up a separate scheduler entry.
 
 ### Logs {#logs}
 
