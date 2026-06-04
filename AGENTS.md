@@ -159,11 +159,11 @@ Issues are drafted as local `github_issue*.md` files before posting. Standard fo
 <motivation: why this matters, what it unblocks or fixes>
 ```
 
-Bug reports add a `### Fix` section naming the affected files/methods and the resolution direction.
+Bug reports may add a `### Fix` section, but stated in developer-facing terms (what observable behavior changes) — not the affected files, classes, or methods.
 
 ### Audience and content
 
-The issue is read by **application developers using the platform**, not by maintainers debugging internals. Lead with the developer-facing surface (new syntax, option, default, behavior); keep implementation details (class names, refactoring shape) in the commit body.
+The issue is read by **application developers using the platform**, not by maintainers debugging internals. Lead with the developer-facing surface (new syntax, option, default, behavior). By default an issue carries **no implementation specifics** — file/class/method names, internal grammar-rule or collection names, refactoring shape — those belong only in the commit body, never in the issue.
 
 - **Include a short `.lsf` example** (3–10 lines, fenced) whenever the change introduces, modifies, or deprecates syntax. For deprecations show old vs new side-by-side; for bug fixes show the minimal reproducer.
 - Use developer-facing vocabulary (`operator`, `form`, `property`, `action`, `session`) — not platform internals (`aspect`, `post-process visitor`, `ImMap`).
