@@ -572,6 +572,7 @@ module.exports = {
                     'language/RETURN_operator',
                     'language/SCREENSHOT_operator',
                     'language/SHOW_operator',
+                    'language/SHOWDEP_operator',
                     'language/TRY_operator',
                     'language/WHILE_operator', 
                     'language/WRITE_operator', 
