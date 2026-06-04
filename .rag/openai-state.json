@@ -625,8 +625,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:ed7ac27500db3cca4663735f9e12bcadae4c2b7d9e9cae8403413b58489b1667",
-      "indexed_at": "2026-05-22T21:41:47Z",
+      "file_hash": "sha256:3b6f0ed97fba29961c45517420c4b57baa464b1a394effe7429052008b524211",
+      "indexed_at": "2026-06-04T07:21:21Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -635,6 +635,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "How-to_Custom_components_objects::calling-the-server": {
+          "file_id": "file-AjUviEE3uWwnrkLcNQGDtn",
+          "heading_path": "How-to: Custom Components (objects) > Calling the server",
+          "section_payload_hash": "sha256:97b28b52356338f24d386b3e14e18940cf7cb3cf4135d6202f2e3226faff224b",
+          "source_file": "how-to/How-to_Custom_components_objects.md"
+        },
         "How-to_Custom_components_objects::domain-logic": {
           "file_id": "file-LEZeSbqTPpTtjxDafLzNQz",
           "heading_path": "How-to: Custom Components (objects) > Domain Logic",
@@ -13232,7 +13238,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5aa80ef33c8b4b15e429944a29e2823253f91624",
+  "last_indexed_docs_commit": "1929cddf3a3adb1e6742ebe82266acb497570485",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
