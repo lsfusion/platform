@@ -36,7 +36,7 @@ but it also has [a number of advantages](../paradigm/Simple_event.md).
 
 - `eventExpr`
 
-    An [expression](Expression.md) whose value is used as a condition for the created simple event. If the obtained property does not contain the [`PREV`](../paradigm/Previous_value_PREV.md) operator, the platform automatically wraps it into the [`CHANGE`](../paradigm/Property_change_CHANGE.md) operator.
+    An [expression](Expression.md) whose value is used as a condition for the created simple event. If the obtained property does not contain the [`PREV`](../paradigm/Previous_value_PREV.md) operator, the platform automatically wraps it into the [`SET`](../paradigm/Change_operators_SET_CHANGED_etc.md) operator.
 
 - `eventAction`
 

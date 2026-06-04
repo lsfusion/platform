@@ -33,7 +33,7 @@ Only one calculated event can be defined for a property.
 
 - `eventExpr`
 
-    An expression whose value is a condition for the generated event.
+    An expression whose value is a condition for the generated event. If the obtained property does not contain the [`PREV`](../paradigm/Previous_value_PREV.md) operator, the platform automatically wraps it into the [`SET`](../paradigm/Change_operators_SET_CHANGED_etc.md) operator.
 
 ### Examples
 

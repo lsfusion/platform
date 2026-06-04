@@ -26,18 +26,20 @@ Advantages of synchronous events:
 
 Advantages of asynchronous events:
 
--   You can release the user immediately and perform the handling "in the background". This improves system ergonomics; however, it is possible only when updating the data is not critical for the user's further work (for global events, for example, within the next 5-10 minutes, until the server has time to complete the next handling cycle).
--   Handlings are grouped for a large number of changes, including those made by different users (in the case of global events), and, accordingly, are performed fewer times, thereby improving the overall system performance.
+-   You can release the user immediately and run the handlers "in the background". This improves system ergonomics; however, it is possible only when updating the data is not critical for the user's further work (for global events, for example, within the next 5-10 minutes, until the server has time to complete the next handling cycle).
+-   Handlers are grouped for a large number of changes, including those made by different users (in the case of global events), and, accordingly, are run fewer times, thereby improving the overall system performance.
 
 Advantages of local events:
 
--   The user sees the results of event handling immediately, not only after he has saved to the common database.
+-   The user sees the results of the event handlers immediately, not only after he has saved to the common database.
 
 Advantages of global events:
 
--   They provide better performance and integrity, due both to the fact that the handling is performed only after the changes are saved to the common database (that is, significantly less often), and to the use of the numerous DBMS capabilities for working with transactions.
+-   They provide better performance and integrity, due both to the fact that the handlers are run only after the changes are saved to the common database (that is, significantly less often), and to the use of the numerous DBMS capabilities for working with transactions.
 
-The platform also allows to additionally specify that the event will occur only if the change session belongs to one of the given forms. If this is not done, then it must be kept in mind that most of the described events occur very often, so their handling should not have side effects (for example, showing messages) if there are no changes in the session. Ideally, events should be [simple](Simple_event.md) and should generally be used only to optimize the performance of really complex cases.
+The platform also allows to additionally specify that the event will occur only if the change session belongs to one of the given forms. If this is not done, then it must be kept in mind that most of the described events occur very often, so their handlers should not have side effects (for example, showing messages) if there are no changes in the session. Ideally, events should be [simple](Simple_event.md) and should generally be used only to optimize the performance of really complex cases.
+
+When several handlers react to the same change, the order in which they are executed follows the data dependencies between them: a handler that uses data modified by another handler is executed after it. A handler can also be required explicitly to be executed after the specified properties and actions.
 
 ### Change operators' event mode {#change}
 
