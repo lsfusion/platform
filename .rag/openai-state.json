@@ -8738,8 +8738,8 @@
       "stale": false
     },
     "paradigm/Development_auto.md": {
-      "file_hash": "sha256:691861b0e4408379a007ed4c24204443f8d86e3cb783c73a19dee577f9b3aee5",
-      "indexed_at": "2026-05-22T23:08:55Z",
+      "file_hash": "sha256:48a5c4cb7c3bfe30d0a29779d25e7ea50275a919f857d10da44e8cbc549aceb6",
+      "indexed_at": "2026-06-04T13:29:33Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8761,9 +8761,9 @@
           "source_file": "paradigm/Development_auto.md"
         },
         "Development_auto::launching-ide+launching-the-client": {
-          "file_id": "file-AJ21KDh4etYgyt4fv4ce6g",
+          "file_id": "file-UfDEqAGkZ8o48hj7uNuUUh",
           "heading_path": "For development > After installation > Launching IDE + Launching the client",
-          "section_payload_hash": "sha256:be12ac21bcf6808ee047274d9e48fa7d0627119d228256a10ab3b8f15b3e0fb1",
+          "section_payload_hash": "sha256:5f9d57a1ae13462a47ed0e0933085a0a27e7a740b4872ecb71f0e8ca861aee2d",
           "source_file": "paradigm/Development_auto.md"
         },
         "Development_auto::windows": {
@@ -9982,8 +9982,8 @@
       "stale": false
     },
     "paradigm/Install.md": {
-      "file_hash": "sha256:c7d1410fd09528c454f888e25a05340e96082625e9d603ad900425528bd3cbbf",
-      "indexed_at": "2026-05-22T23:20:16Z",
+      "file_hash": "sha256:224f1b9874d0196f4d5772484494e34a2fc80b76a7e7a644a62d8777f3c41436",
+      "indexed_at": "2026-06-04T13:29:44Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10008,6 +10008,12 @@
           "file_id": "file-NPvXi4QnpCqXU8b3KNsdzn",
           "heading_path": "Install > Install manually",
           "section_payload_hash": "sha256:a6b853f93b5993991a82d56c06f37a66b28814fef0ab4737c2d74ad8a692cf50",
+          "source_file": "paradigm/Install.md"
+        },
+        "Install::install-with-docker": {
+          "file_id": "file-4RAutgmeoJEigFstzsKkZt",
+          "heading_path": "Install > Install with Docker",
+          "section_payload_hash": "sha256:ed2480f2756468ced5eb71ad6ad4590e20807c6b4b98050a598d92976e67e6c7",
           "source_file": "paradigm/Install.md"
         }
       },
@@ -13238,7 +13244,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "049ebffb3784ddf388e6c4c726c9969d32297f4f",
+  "last_indexed_docs_commit": "38e8f0cfa6835c2dfad84b90de1e7a967f964703",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
