@@ -168,6 +168,37 @@ Common structure rules:
   so that its hierarchy
   and navigation
   remain explicit
+- because the layout
+  is type-first
+  (`docs/<type>/{en,ru}/`),
+  a link
+  to an article
+  of a different type
+  is written
+  as a relative path
+  that crosses
+  only the type level
+  (`../<other-type>/<name>.md`),
+  and a link
+  within the same type
+  is written
+  as the bare
+  article name
+  (`<name>.md`);
+  such cross-type links
+  resolve
+  by the target article's
+  document id,
+  so they are
+  correct
+  and MUST NOT
+  be treated
+  as broken
+  merely because
+  the literal path
+  does not exist
+  as a sibling
+  on disk
 - if a section
   becomes too large
   and can be split
