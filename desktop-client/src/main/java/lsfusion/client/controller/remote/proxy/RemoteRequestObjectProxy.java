@@ -44,9 +44,9 @@ public abstract class RemoteRequestObjectProxy<T extends RemoteRequestInterface>
     }
 
     @Override
-    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException {
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, boolean evalAction, Object[] params) throws RemoteException {
         logRemoteMethodStartVoidCall("eval");
-        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, callbackId, script, params);
+        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, callbackId, script, evalAction, params);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }

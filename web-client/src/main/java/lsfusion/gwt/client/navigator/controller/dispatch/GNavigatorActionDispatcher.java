@@ -40,8 +40,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
             MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
         }
         @Override
-        protected void dispatchEval(long callbackId, String script, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            NavigatorControllerEvalAction a = new NavigatorControllerEvalAction(script, params);
+        protected void dispatchEval(long callbackId, String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            NavigatorControllerEvalAction a = new NavigatorControllerEvalAction(script, evalAction, params);
             a.callbackId = callbackId;
             MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
         }

@@ -340,12 +340,12 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         });
     }
 
-    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException {
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, boolean evalAction, Object[] params) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
                 controllerGate(false); // gate BEFORE evaluateRun, no @api for a dynamic script
-                LA<?> la = getControllerBL().evaluateRun(script, true); // controller eval always runs as an action (result via return)
+                LA<?> la = getControllerBL().evaluateRun(script, evalAction); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
                 if(la == null)
                     throw new RuntimeException("Eval 'run' action was not found");
                 terminal = runControllerAction(callbackId, la, params, stack);

@@ -31,8 +31,11 @@ public abstract class GController {
             exec: function (action) { // exec(action, ...params) -> Promise
                 return thisObj.@GController::controllerExec(*)(action, Array.prototype.slice.call(arguments, 1));
             },
-            eval: function (script) { // eval(script, ...params) -> Promise (always run as an action; result via return)
-                return thisObj.@GController::controllerEval(*)(script, Array.prototype.slice.call(arguments, 1));
+            eval: function (script) { // eval(script, ...params) -> Promise; script defines its own run action (typed params), result via return
+                return thisObj.@GController::controllerEval(*)(script, false, Array.prototype.slice.call(arguments, 1));
+            },
+            evalAction: function (script) { // evalAction(script, ...params) -> Promise; script is an action body, auto-wrapped into run(), result via return
+                return thisObj.@GController::controllerEval(*)(script, true, Array.prototype.slice.call(arguments, 1));
             },
             change: function (property) { // change(property, ...keyParams, value) -> Promise; value is the LAST argument
                 var args = Array.prototype.slice.call(arguments, 1);
@@ -48,10 +51,10 @@ public abstract class GController {
         ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
         return createControllerPromise(callbackId, () -> dispatchExec(callbackId, action, encoded, new ControllerServerResponseCallback(callbackId)));
     }
-    public JavaScriptObject controllerEval(String script, JavaScriptObject params) {
+    public JavaScriptObject controllerEval(String script, boolean evalAction, JavaScriptObject params) {
         long callbackId = nextControllerCallbackId++;
         ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
-        return createControllerPromise(callbackId, () -> dispatchEval(callbackId, script, encoded, new ControllerServerResponseCallback(callbackId)));
+        return createControllerPromise(callbackId, () -> dispatchEval(callbackId, script, evalAction, encoded, new ControllerServerResponseCallback(callbackId)));
     }
     public JavaScriptObject controllerChange(String property, JavaScriptObject keyParams, JavaScriptObject value) {
         long callbackId = nextControllerCallbackId++;
@@ -62,7 +65,7 @@ public abstract class GController {
 
     // context-specific transport: build the request action (set its callbackId) and dispatch it with the callback
     protected abstract void dispatchExec(long callbackId, String action, ArrayList<Serializable> params, ServerResponseCallback callback);
-    protected abstract void dispatchEval(long callbackId, String script, ArrayList<Serializable> params, ServerResponseCallback callback);
+    protected abstract void dispatchEval(long callbackId, String script, boolean evalAction, ArrayList<Serializable> params, ServerResponseCallback callback);
     protected abstract void dispatchChange(long callbackId, String property, ArrayList<Serializable> keyParams, Serializable value, ServerResponseCallback callback);
     protected abstract boolean isClosed();
     // the GwtActionDispatcher that processes the response actions (form: the form action dispatcher; navigator: the navigator dispatcher)

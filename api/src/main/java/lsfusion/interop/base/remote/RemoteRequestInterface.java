@@ -20,7 +20,10 @@ public interface RemoteRequestInterface extends PendingRemoteInterface {
 
     ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException;
 
-    ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, Object[] params) throws RemoteException;
+    // evalAction toggles how the script is parsed: true -> the script is an action body, auto-wrapped into a
+    // run(...) action (EVAL ACTION / HTTP /eval/action); false -> the script defines its own run action and can
+    // declare typed parameters (EVAL / HTTP /eval).
+    ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, boolean evalAction, Object[] params) throws RemoteException;
 
     ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException;
 }

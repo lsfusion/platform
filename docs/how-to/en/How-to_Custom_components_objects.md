@@ -192,3 +192,33 @@ onWebClientInit() + {
 
 The resulting form will look like this:
 ![](../images/How-to_Custom_components_objects.png)
+
+### Calling the server
+
+Besides the rendering helpers above, the _controller_ lets the client JS call back into the server and get the result as a `Promise`. The same object is passed as the first argument to the JavaScript function bound by an [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action.
+
+- `exec(action, ...params)` — runs a named action; resolves to the action's `RETURN` value, if it has one.
+- `eval(script, ...params)` — runs an lsf script that defines its own `run` action, so its parameters can be declared with explicit types.
+- `evalAction(script, ...params)` — runs an action body, wrapped into a `run` action whose parameters are referenced positionally as `$1`, `$2`, ….
+- `change(property, ...keyParams, value)` — changes a property; the last argument is the value, the preceding ones are the keys.
+
+```js
+controller.exec('recalc', orderId);
+controller.eval('run(INTEGER a) { RETURN a * 2; }', 21).then(v => console.log(v)); // 42
+controller.evalAction('RETURN 2 + 3;').then(v => console.log(v));                   // 5
+controller.change('note', orderId, 'checked');
+```
+
+The result is converted to a JS value:
+
+| Server result | JS value |
+| --- | --- |
+| number, string, boolean, or date scalar | a number, string, boolean, or `Date` |
+| `JSON` | a parsed object or array |
+| `JSONTEXT`, `XML` | the raw string |
+| a file — an `EXPORT`, an image, or a file-typed property | a download URL string |
+| a missing or `NULL` result | `undefined` |
+
+Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter) and bound positionally. An error — a missing action or property, a script error, or a runtime exception — rejects the promise with its message.
+
+In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.

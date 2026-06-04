@@ -390,8 +390,8 @@ public class GFormController implements EditManager {
             asyncDispatch(a, callback);
         }
         @Override
-        protected void dispatchEval(long callbackId, String script, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            ControllerEvalAction a = new ControllerEvalAction(script, params);
+        protected void dispatchEval(long callbackId, String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            ControllerEvalAction a = new ControllerEvalAction(script, evalAction, params);
             a.callbackId = callbackId;
             asyncDispatch(a, callback);
         }
@@ -423,7 +423,8 @@ public class GFormController implements EditManager {
                 return thisObj.@GFormController::changePropertyCustom(*)(propertyName, value);
             },
             exec: base.exec, // exec(action, ...params) -> Promise
-            eval: base.eval, // eval(script, ...params) -> Promise
+            eval: base.eval, // eval(script, ...params) -> Promise (script defines its own run)
+            evalAction: base.evalAction, // evalAction(script, ...params) -> Promise (action body, auto-wrapped into run())
             change: base.change // change(property, ...keyParams, value) -> Promise
         }
     }-*/;
