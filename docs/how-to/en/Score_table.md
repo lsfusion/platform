@@ -26,7 +26,7 @@ MODULE HockeyStats;
 We define the use of functionality from other modules in the `HockeyStats` module. In particular, we need the system module `System`, in which some system elements used in the example are declared.
 
 ```lsf
-REQUIRE System, Utils;
+REQUIRE System;
 ```
 
 ### Team definition
@@ -126,7 +126,7 @@ Here we use the operator [`IF... THEN... ELSE`](../paradigm/Selection_CASE_IF_MU
 By a similar principle, the team that participated in the game and scored fewer goals than its opponent will be considered the loser.
 
 ```lsf
-looser(Game game) = IF hostGoals(game) > guestGoals(game)
+loser(Game game) = IF hostGoals(game) > guestGoals(game)
                     THEN guestTeam(game)
                     ELSE hostTeam(game);
 ```
@@ -138,14 +138,14 @@ We introduce the concept of the possible game result with a predefined set of va
 ```lsf
 CLASS GameResult 'G/R' {
     win 'W',
-    winOT 'LO',
-    winSO 'LB'
+    winOT 'OW',
+    winSO 'SW'
 }
 ```
 
 For this purpose we create a `GameResult` class and add three [static objects](../paradigm/Static_objects.md) to it that are specified using expressions specified in braces `{ }`. In this case, the values `win`, `winOT`, `winSO` and `W`, `OW`, `SW` will be stored in the system properties `staticName` and `staticCaption`, respectively.
 
-We create the `resultName` property, which will return the caption of the game result (`W`, `OW`, or `SW`). To do this, we take the system property `staticCaption`, which is supported for all objects in the system, and constrain its signature using the `IF` operator, indicating that the object must be of the `Game` class. This property is added to the `base` property group so that it appears in the automatic dialog for selecting an object of the `GameResult` class.
+We create the `resultName` property, which will return the caption of the game result (`W`, `OW`, or `SW`). To do this, we take the system property `staticCaption`, which is supported for all objects in the system, and constrain its signature using the `IF` operator, indicating that the object must be of the `GameResult` class. This property is added to the `base` property group so that it appears in the automatic dialog for selecting an object of the `GameResult` class.
 
 ```lsf
 resultName 'Name' (GameResult game) = staticCaption(game) IF game IS GameResult IN base;
@@ -200,7 +200,7 @@ To determine the number of games played by the team at home and away, the [`GROU
     
     gamesWon 'W' (Team team) = gamesWonBy(team, GameResult.win);
     gamesWonOT 'WO' (Team team) = gamesWonBy(team, GameResult.winOT);
-    gamesWonSO 'WB' (Team team) = gamesWonBy(team, GameResult.winSO);
+    gamesWonSO 'WS' (Team team) = gamesWonBy(team, GameResult.winSO);
     ```
 
 Since the logic for determining the number of wins of each type for a team is almost identical, we create and use the intermediate property `gamesWonByResult`, which is defined for a pair of objects (arguments). This property calculates for the team (first argument) the number of wins of a given type (second argument). The value of the `gamesWonBy` property is calculated with the `OVERRIDE` operator, which takes as input an expression specified in brackets `[...]` and `0`. If the expression value is `NULL`, the result of the whole property will be the value `0`. A nested expression is specified in square brackets using the [`GROUP SUM`](../paradigm/Grouping_GROUP.md) construct. Using a given expression in brackets is identical to using a previously defined property with a similar expression. Thus, the construction `[...]` allows you to simply reduce the number of lines of code. Here, [`GROUP SUM`](../paradigm/Grouping_GROUP.md) returns the total sum on number `1` for all games grouped by game winner and game result.
@@ -210,12 +210,12 @@ The total result of the `gamesWonByResult` property will be the number of wins o
 -   number of games played in regular time, in overtime and in extra time (determined by analogy with the above-specified properties of the number of wins)  
       
     ```lsf
-    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
-                                                       0 IF team IS Team AND type IS GameResult MATERIALIZED;;
+    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY loser(Game game), result(game)](team, type),
+                                                       0 IF team IS Team AND type IS GameResult MATERIALIZED;
     
     gamesLost 'L' (Team team) = gamesLostBy(team, GameResult.win);
     gamesLostOT 'LO' (Team team) = gamesLostBy(team, GameResult.winOT);
-    gamesLostSO 'LB' (Team team) = gamesLostBy(team, GameResult.winSO);
+    gamesLostSO 'LS' (Team team) = gamesLostBy(team, GameResult.winSO);
     ```
 
 We calculate the number of points scored by the team in the tournament. The calculation is the sum of the number of wins of a particular type for each team, multiplied by the number of points awarded.
@@ -310,7 +310,7 @@ The process of creating an information system is completed.
 ```lsf
 MODULE HockeyStats;
 
-REQUIRE System, Utils;
+REQUIRE System;
 
 CLASS Team 'Team';
 
@@ -354,14 +354,14 @@ winner(Game game) = IF hostGoals(game) > guestGoals(game)
                     THEN hostTeam(game)
                     ELSE guestTeam(game);
 
-looser(Game game) = IF hostGoals(game) > guestGoals(game)
+loser(Game game) = IF hostGoals(game) > guestGoals(game)
                     THEN guestTeam(game)
                     ELSE hostTeam(game);
 
 CLASS GameResult 'G/R' {
     win 'W',
-    winOT 'LO',
-    winSO 'LB'
+    winOT 'OW',
+    winSO 'SW'
 }
 
 resultName 'Name' (GameResult game) = staticCaption(game) IF game IS GameResult IN base;
@@ -386,14 +386,14 @@ gamesWonBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY winner(Game ga
 
 gamesWon 'W' (Team team) = gamesWonBy(team, GameResult.win);
 gamesWonOT 'WO' (Team team) = gamesWonBy(team, GameResult.winOT);
-gamesWonSO 'WB' (Team team) = gamesWonBy(team, GameResult.winSO);
+gamesWonSO 'WS' (Team team) = gamesWonBy(team, GameResult.winSO);
 
-gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY loser(Game game), result(game)](team, type),
                                                    0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesLost 'L' (Team team) = gamesLostBy(team, GameResult.win);
 gamesLostOT 'LO' (Team team) = gamesLostBy(team, GameResult.winOT);
-gamesLostSO 'LB' (Team team) = gamesLostBy(team, GameResult.winSO);
+gamesLostSO 'LS' (Team team) = gamesLostBy(team, GameResult.winSO);
 
 points 'Points' (Team team) = gamesWon(team) * 3 + (gamesWonSO(team) + gamesWonOT(team)) * 2 + gamesLostOT(team) + gamesLostSO(team);
 

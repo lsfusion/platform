@@ -126,7 +126,7 @@ winner(Game game) = IF hostGoals(game) > guestGoals(game)
 По аналогичному принципу команда, участвовавшая в игре и забившая голов меньше соперника, будет считаться проигравшей.
 
 ```lsf
-looser(Game game) = IF hostGoals(game) > guestGoals(game)
+loser(Game game) = IF hostGoals(game) > guestGoals(game)
                     THEN guestTeam(game)
                     ELSE hostTeam(game);
 ```
@@ -145,7 +145,7 @@ CLASS GameResult 'Р/И' {
 
 Для этой цели создаем класс `GameResult` и добавляем ему три [статических объекта](../paradigm/Static_objects.md), которые задаются с помощью выражений, заданных в фигурных скобках `{ }`. При этом значения `win`, `winOT`, `winSO` и `П`, `ПО`, `ПБ` будут находится в системных свойства `staticName` и `staticCaption`, соответственно.
 
-Создаем свойство `resultName`, которое будет возвращать заголовок результата игры (`П`, `ПО` или `ПБ`). Для этого берется системное свойство `staticCaption`, которое действует для всех объектов в системе, и ограничиваем его сигнатуру при помощи конструкции `IF`, указывая что объект должен быть класса `Game`. Это свойство добавляется в группу свойств `base`, чтобы оно показывалось в автоматическом диалоге по выбору объекта класса `GameResult`.
+Создаем свойство `resultName`, которое будет возвращать заголовок результата игры (`П`, `ПО` или `ПБ`). Для этого берется системное свойство `staticCaption`, которое действует для всех объектов в системе, и ограничиваем его сигнатуру при помощи конструкции `IF`, указывая что объект должен быть класса `GameResult`. Это свойство добавляется в группу свойств `base`, чтобы оно показывалось в автоматическом диалоге по выбору объекта класса `GameResult`.
 
 ```lsf
 resultName 'Имя' (GameResult game) = staticCaption(game) IF game IS GameResult IN base;
@@ -212,7 +212,7 @@ CONSTRAINT ((hostGoals(Game game) (-) guestGoals(game)) < 2 AND (hostGoals(game)
 -   количество игр, проигранных в основное время, в овертайме и в дополнительное время (определяем по аналогии с выше заданными свойствами количества побед)  
       
     ```lsf
-    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type), 
+    gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY loser(Game game), result(game)](team, type), 
                                                        0 IF team IS Team AND type IS GameResult MATERIALIZED;
     
     gamesLost 'П' (Team team) = gamesLostBy(team, GameResult.win);
@@ -356,7 +356,7 @@ winner(Game game) = IF hostGoals(game) > guestGoals(game)
                     THEN hostTeam(game)
                     ELSE guestTeam(game);
 
-looser(Game game) = IF hostGoals(game) > guestGoals(game)
+loser(Game game) = IF hostGoals(game) > guestGoals(game)
                     THEN guestTeam(game)
                     ELSE hostTeam(game);
 
@@ -390,7 +390,7 @@ gamesWon 'В' (Team team) = gamesWonBy(team, GameResult.win);
 gamesWonOT 'ВО' (Team team) = gamesWonBy(team, GameResult.winOT);
 gamesWonSO 'ВБ' (Team team) = gamesWonBy(team, GameResult.winSO);
 
-gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY looser(Game game), result(game)](team, type),
+gamesLostBy(Team team, GameResult type) = OVERRIDE [GROUP SUM 1 BY loser(Game game), result(game)](team, type),
                                                    0 IF team IS Team AND type IS GameResult MATERIALIZED;
 
 gamesLost 'П' (Team team) = gamesLostBy(team, GameResult.win);

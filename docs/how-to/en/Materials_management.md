@@ -270,18 +270,17 @@ FORM stocks 'Warehouses'
 In a similar manner, we'll create an item form in the `Item` module, and a legal entity form in the `LegalEntity` module.
 
 ```lsf
-CLASS Item 'Product';
-
-name 'Name' = DATA STRING[100](Item) IN base;
-barcode 'Barcode' = DATA BPSTRING[13](Item) IN base;
+FORM items 'Products'
+	OBJECTS i = Item
+	PROPERTIES(i) name, barcode, salePrice, NEW, DELETE
+;
 ```
 
 ```lsf
-CLASS LegalEntity 'Organization';
-
-name 'Name' = DATA STRING[100](LegalEntity) IN base;
-address 'Address' = DATA STRING[150](LegalEntity) IN base;
-inn 'TIN' = DATA BPSTRING[9](LegalEntity) IN base;
+FORM legalEntities 'Organization'
+	OBJECTS l = LegalEntity
+	PROPERTIES(l) name, inn, address, NEW, DELETE
+;
 ```
 
 Let's create edit forms for a receipt and a shipment. These forms will be used for creating new documents or editing existing ones. The layout of the forms will be similar: two vertical blocks, the top one containing a panel with the header attributes of the document being created/edited, and the lower one containing the document lines in a grid view and their attributes.
@@ -301,7 +300,7 @@ FORM receipt 'Receipt'
 ;
 ```
 
-Line filtering for the current receipt is performed with the help of the `FILTERS receipt(d) == r` expression. The `FILTERS` construct displays an object of a corresponding class on the form if the filter expression returns a value different from `NULL`. In this case, the receipt line will be displayed on the form if the header of the document to which the line is linked (`receipt` property) equals to the current object of the top block. In other words, only the lines of the created/edited document will be displayed.
+Line filtering for the current receipt is performed with the help of the `FILTERS receipt(d) = r` expression. The `FILTERS` construct displays an object of a corresponding class on the form if the filter expression returns a value different from `NULL`. In this case, the receipt line will be displayed on the form if the header of the document to which the line is linked (`receipt` property) equals to the current object of the top block. In other words, only the lines of the created/edited document will be displayed.
 
 In addition, if a filter is specified for objects of this class on the form, then when the user presses the `NEW` button, the property of the newly added object will be automatically filled in a way that will make this object meet the filter conditions. In this case, when a new receipt line is created, the `receipt` property of this line will be automatically filled with a link to the current header of the receipt.
 
