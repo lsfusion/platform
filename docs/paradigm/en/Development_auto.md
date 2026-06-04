@@ -30,7 +30,7 @@ After the installation completes successfully, the corresponding shortcuts for l
 
 ### Launching IDE
 
-When using silent installation, a shortcut is created that launches IDEA.
+When using automatic installation, a shortcut is created that launches IDEA.
 
 ![](../images/Development_auto_IDEA.png)
 
