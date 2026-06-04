@@ -229,8 +229,8 @@ By default these calls are gated like the external HTTP API: with the default `e
 FORM order 'Order'
     OBJECTS o = Order
     PROPERTIES(o) number, note
-    API recalc, setQty = setQuantity, note
+    API round, format = formatSum, taxRate
 ;
 ```
 
-Now `controller.exec("recalc", id)`, `controller.exec("setQty", id, 5)` and `controller.change("note", id, "ok")` work on this form without `@@api` or `enableAPI`. Each entry may be renamed with an alias (`setQty = setQuantity`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`Sales.post[Order]`) to pick an overload; `exec` needs an action entry and `change` a property entry. Parameters are still passed positionally by the caller, so the clause changes which calls are allowed, not how they are bound, and does not restrict the key or object the caller targets. `eval`/`evalAction` run arbitrary script and stay under the gate.
+Now `controller.exec("round", 3.14159)`, `controller.exec("format", 1990, "USD")` and `controller.change("taxRate", 0.2)` work on this form without `@@api` or `enableAPI`. Each entry may be renamed with an alias (`format = formatSum`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`round[NUMERIC]`) to pick an overload; `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values — phase 1 entries are mostly primitive calls like these. The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument (forcing a parameter to the form's own object is phase 2). `eval`/`evalAction` run arbitrary script and stay under the gate.
