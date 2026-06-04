@@ -128,6 +128,8 @@ EOF
 
 Significant, user-visible platform changes get a GitHub issue on `lsfusion/platform` **before** the commit lands. The commit that resolves it ends its subject with `(closes #NNNN)` — **release notes are generated from these closing references**, so missing or vague issues directly degrade the changelog.
 
+A `closes #NNNN` (or `fixes` / `resolves`) reference in a commit message makes GitHub **close the issue automatically** once the commit lands on the default branch (`master`) — it happens on push, so don't close the issue by hand; just land the commit with the reference. Keep the resolving change and its documentation in that **one** commit (carry the `closes #NNNN` there) rather than splitting the docs into a separate follow-up commit.
+
 Issue creation is a remote publishing action — it requires explicit user authorization (see Risk discipline). When publishing isn't authorized but the change warrants an issue, prepare the `github_issue*.md` draft locally and either commit the change without a `closes #NNNN` reference or leave a TODO for the user to wire it up post-publish. **Never fabricate `closes #NNNN` against an issue that hasn't actually been opened** — the changelog generator will follow it to a broken link.
 
 Create an issue when the change is one of:
