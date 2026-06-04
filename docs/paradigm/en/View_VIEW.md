@@ -3,7 +3,7 @@ slug: "/View_VIEW"
 title: 'View (VIEW)'
 ---
 
-The view operator creates a property that returns `TRUE` if the object collection is visible to the user in the specified object group, and `NULL` otherwise.
+The *view* operator creates a [property](Properties.md), defined on the objects of an object group, that returns `TRUE` when their object collection is included in the set of object collections currently displayed to the user in the group, and `NULL` otherwise.
 
 ### Language
 
