@@ -42,6 +42,7 @@ formPropertyName | MEASURES(groupObject)
 pivotType
 calcType
 settingsType
+CONFIG configFunction
 ```
 
 ### Описание
@@ -98,6 +99,10 @@ settingsType
     
     - `SETTINGS` - настройки показываются (значение по умолчанию)
     - `NOSETTINGS` - настройки не показываются
+
+- `configFunction`
+
+    [Строковый литерал](Literals.md#strliteral) с именем клиентской JavaScript-функции, которая переопределяет опции отображения сводной таблицы. По умолчанию функция не применяется.
 
 ### Пример
 
