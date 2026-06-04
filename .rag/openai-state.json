@@ -2313,8 +2313,8 @@
       "stale": false
     },
     "how-to/Materials_management.md": {
-      "file_hash": "sha256:806ed8f457ca29573778232ff40eba970d43a388fd70f365539076ffe9eecfed",
-      "indexed_at": "2026-05-25T10:10:02Z",
+      "file_hash": "sha256:aad06bd723c151d0850e1986f28a065d00c19eb4edc72f3b5e3d49126e8eb732",
+      "indexed_at": "2026-06-04T14:46:02Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2366,9 +2366,9 @@
           "source_file": "how-to/Materials_management.md"
         },
         "Materials_management::defining-view-logic": {
-          "file_id": "file-3eDX5YjNv2omfCz8FBQK1C",
+          "file_id": "file-8JaCBxQKAPCTsrZARpyr6J",
           "heading_path": "Materials management > Defining view logic",
-          "section_payload_hash": "sha256:83aebbd491ad5389ee30bbdd69ec3513ddd00bf7a0bbafc99e472fdd421966fa",
+          "section_payload_hash": "sha256:0da8713561c03ad9e72497f29b0fb57f957de35d3b6b25b7513a0dbe8fdb8bda",
           "source_file": "how-to/Materials_management.md"
         },
         "Materials_management::description-of-the-materials-management-task": {
@@ -2425,8 +2425,8 @@
       "stale": false
     },
     "how-to/Score_table.md": {
-      "file_hash": "sha256:345b4071703ee3d66889837a183f5fef3736d5778b90ecc550997abd81e35fb3",
-      "indexed_at": "2026-05-25T10:00:32Z",
+      "file_hash": "sha256:fcc600f67677cbf0be9291e1fe917e6de0cccbef8bbd558264d9c6f3a983e89e",
+      "indexed_at": "2026-06-04T14:46:12Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2436,9 +2436,9 @@
       },
       "sections": {
         "Score_table::creating-a-score-table": {
-          "file_id": "file-JGWDwFbSMDHd1tDEykqzVY",
+          "file_id": "file-3igmbjkbgeBVimBHh2RjbQ",
           "heading_path": "Score table > Defining the domain logic > Creating a score table",
-          "section_payload_hash": "sha256:2e049a0a9c22b43f8d0d87e58634df2aa805f0d31697b47c2b6f371de782fed4",
+          "section_payload_hash": "sha256:3de8c58504497062ceddef005c7a7f46390088e806d7f0f1bf144793d9a54508",
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::defining-view-logic": {
@@ -2448,15 +2448,15 @@
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::determining-game-result": {
-          "file_id": "file-KWVqS2Xzc2Nc9x1XPDWCVN",
+          "file_id": "file-EhDoVFBxrcZN9QpycFQo8T",
           "heading_path": "Score table > Defining the domain logic > Determining game result",
-          "section_payload_hash": "sha256:22beedb959d1fd5e19b0c9ea77d15776beb122876cffa3a7cf8da25374407359",
+          "section_payload_hash": "sha256:20259c941e9cf01333f6b41bc2592ed45858f2a71c5b0fa6b627aa92c337169b",
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::determining-the-winner-of-the-game": {
-          "file_id": "file-1QHX823LZhEB6QZJv8AyiX",
+          "file_id": "file-U76d4f8asGWd12RnXNW6zf",
           "heading_path": "Score table > Defining the domain logic > Determining the winner of the game",
-          "section_payload_hash": "sha256:0c78c3118f16b2dce304067cf9b3c8c9e567f353fcf754c7aafad4f13f6d9e90",
+          "section_payload_hash": "sha256:c83ff44770198ad6a6ccb54a1d688c280e5f7d866bb911b9a703cb2e1a11387d",
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::game-definition": {
@@ -2466,9 +2466,9 @@
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::module-declaration": {
-          "file_id": "file-GrvD1FcEPUETaqqbsrkpB6",
+          "file_id": "file-1FUjMH7UdhVaFookr5vg5d",
           "heading_path": "Score table > Defining the domain logic > Module declaration",
-          "section_payload_hash": "sha256:54baaf63a71907b9b86ee979021abea381fa6df2f3795d2df0ab15115df3437c",
+          "section_payload_hash": "sha256:6d3f2fec3d20dcc2f010fee0cd92164c7ec34932878cc8723af1996e8dceae83",
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::score-table-task-description": {
@@ -2484,9 +2484,9 @@
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::the-complete-source-code": {
-          "file_id": "file-TWPenGAJ6FTfnAY4P5ByJH",
+          "file_id": "file-9t8Y6kLa5mdLu3CBnXGxey",
           "heading_path": "Score table > The complete source code",
-          "section_payload_hash": "sha256:eeafd5c20bf5e2929cca632d0c18b746c193a280fb319dddc97a2702db5a7297",
+          "section_payload_hash": "sha256:9cbf0da5b80898a0a216ab968e9a424bbc27a95d5e7cd7f3a7c0e560e3f043c0",
           "source_file": "how-to/Score_table.md"
         }
       },
@@ -13244,7 +13244,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "85277610e75a5a3030ad335477b89e68913ffe95",
+  "last_indexed_docs_commit": "d4e588aa71c7a61f77392debb5d0e7b4087aa95e",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
