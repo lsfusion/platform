@@ -33,6 +33,7 @@ AFTER action(param1, ..., paramN) DO aspectAction;
 
 ```lsf
 changePrice(Sku s, DATE d, NUMERIC[10,2] price)  { price(s, d) <- price; }
+
 // Сообщение будет показано после каждого вызова changePrice
 AFTER changePrice(Sku s, DATE d, NUMERIC[10,2] price) DO MESSAGE 'Price was changed'; 
 ```

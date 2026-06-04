@@ -11,7 +11,7 @@ title: 'Инструкция BEFORE'
 BEFORE action(param1, ..., paramN) DO aspectAction;
 ```
 
-Описание
+### Описание
 
 Инструкция `BEFORE` задает действие (будем называть его *аспектом*), которое будет вызываться перед вызовом указанного действия.
 
@@ -33,6 +33,7 @@ BEFORE action(param1, ..., paramN) DO aspectAction;
 
 ```lsf
 changeName(Sku s, STRING[100] name)  { name(s) <- name; }
+
 // Сообщение будет показано перед каждым вызовом changeName
 BEFORE changeName(Sku s, STRING[100] name) DO MESSAGE 'Changing user name'; 
 ```

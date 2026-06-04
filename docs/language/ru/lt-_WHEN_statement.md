@@ -33,7 +33,7 @@ propertyId(param1, ..., paramN) <- valueExpr WHEN eventExpr;
 
 - `eventExpr`
 
-    Выражение, значение которого является условием создаваемого события.
+    Выражение, значение которого является условием создаваемого события. Если полученное свойство не содержит внутри [оператора `PREV`](../paradigm/Previous_value_PREV.md), то платформа автоматически оборачивает его в [оператор `SET`](../paradigm/Change_operators_SET_CHANGED_etc.md).
 
 ### Примеры
 
