@@ -76,7 +76,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column column = columnMap.get(key);
         if (column == null) {
             for (GPropertyDraw property : form.getPropertyDraws()) {
-                if (key.equals(property.integrationSID)) {
+                // only properties that are columns of this grid: otherwise the parallel-array
+                // getters index by properties.indexOf(property) == -1 and throw (the column key is
+                // also unknown here, so EMPTY is only meaningful for an in-grid ungrouped property)
+                if (key.equals(property.integrationSID) && containsProperty(property)) {
                     column = new Column(property, GGroupObjectValue.EMPTY);
                     break;
                 }
@@ -351,8 +354,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
         PValue[] mappedValues = new PValue[newValues.length];
-        for (int i = 0; i < newValues.length; i++)
-            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(getColumn(columns[i]).property, newValues[i]);
+        for (int i = 0; i < newValues.length; i++) {
+            Column column = getColumn(columns[i]);
+            mappedValues[i] = column != null ? GSimpleStateTableView.convertFromJSUndefValue(column.property, newValues[i]) : null; // unknown column is skipped in changeProperties below
+        }
         changeProperties(columns, objects, mappedValues);
     }
 
@@ -361,22 +366,29 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void changeProperties(String[] columns, JavaScriptObject[] objects, PValue[] newValues) {
-        int length = columns.length;
-        GPropertyDraw[] properties = new GPropertyDraw[length];
-        GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
+        List<GPropertyDraw> properties = new ArrayList<>();
+        List<GGroupObjectValue> fullKeys = new ArrayList<>();
+        List<PValue> values = new ArrayList<>();
 
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < columns.length; i++) {
             Column column = getColumn(columns[i]);
-            properties[i] = column.property;
-            fullKeys[i] = GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey);
+            if(column == null) // unknown property key passed from the (external) JS API
+                continue;
+            properties.add(column.property);
+            fullKeys.add(GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey));
+            values.add(newValues[i]);
         }
 
-        form.executePropertyEventAction(properties, fullKeys, newValues, changeRequestIndex -> {
-            for (int i = 0; i < length; i++) {
-                GPropertyDraw property = properties[i];
-                if(newValues[i] != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
-                    GGroupObjectValue fullKey = fullKeys[i];
-                    form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
+        GPropertyDraw[] propertiesArray = properties.toArray(new GPropertyDraw[0]);
+        GGroupObjectValue[] fullKeysArray = fullKeys.toArray(new GGroupObjectValue[0]);
+        PValue[] valuesArray = values.toArray(new PValue[0]);
+
+        form.executePropertyEventAction(propertiesArray, fullKeysArray, valuesArray, changeRequestIndex -> {
+            for (int i = 0; i < propertiesArray.length; i++) {
+                GPropertyDraw property = propertiesArray[i];
+                if(valuesArray[i] != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
+                    GGroupObjectValue fullKey = fullKeysArray[i];
+                    form.pendingChangeProperty(property, fullKey, valuesArray[i], getValue(property, fullKey), changeRequestIndex);
                 }
             }
         });
@@ -605,6 +617,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
         Column startColumn = getColumn(startProperty);
         Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
+        if(startColumn == null || endColumn == null)
+            return;
 
         boolean isDateTimeFilter = !(startColumn.property.getCellType() instanceof GDateType);
         PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
@@ -616,6 +630,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void setBooleanViewFilter(String property, int pageSize) {
         Column column = getColumn(property);
+        if(column == null)
+            return;
         setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
     }
 
@@ -626,6 +642,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount) {
         Column column = getColumn(property);
+        if(column == null) { // unknown property key passed from the (external) JS API
+            if(failureCallBack != null)
+                GwtClientUtils.call(failureCallBack);
+            return;
+        }
         form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
     }
 
