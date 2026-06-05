@@ -30,7 +30,7 @@ Change operators create [properties](../paradigm/Properties.md) which determine 
 
 - `propExpr`
 
-    The [expression](Expression.md) whose change is checked.
+    The [expression](Expression.md) whose change is checked. It must denote a property; a bare parameter cannot be used as the operand.
 
 ### Examples
 
