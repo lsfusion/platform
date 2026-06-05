@@ -13,7 +13,7 @@ The platform currently supports the following types of interactions / external s
 
 For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed. The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`) is chosen separately; the default is `POST`. By default the request is executed on the application server, but can be redirected to the user's client instead — useful when the target is reachable from the client but not from the server.
 
-The call timeout and SSL strictness are read from the `System.timeoutHttp[]` property (in milliseconds, with a built-in default) and the `System.insecureSSL[]` property (when truthy, disables TLS certificate verification).
+The call timeout and SSL strictness are read from the `System.timeoutHttp[]` property (in milliseconds, defaulting to 30 minutes when unset) and the `System.insecureSSL[]` property (when truthy, disables TLS certificate verification).
 
 
 :::info

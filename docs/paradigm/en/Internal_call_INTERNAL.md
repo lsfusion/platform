@@ -39,7 +39,32 @@ To declare an action or write an action statement implemented via an internal ca
 
 ## Examples
 
-Syntactic variants of `INTERNAL` on the lsFusion side (Java / CLIENT / DB targets, declarative and inline forms) are listed in the operator article. The example below covers the Java target itself.
+```lsf
+// Java target — a compiled InternalAction class
+cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient, BOOLEAN wait)
+    INTERNAL 'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
+
+// Java target — inline Java fragment, runtime is reached through `context`
+setNoCancelInTransaction() INTERNAL <{ context.getSession().setNoCancelInTransaction(true); }>;
+
+// Client target — file resources loaded into the web client at start-up, each call waited for
+onWebClientStarted() + {
+    INTERNAL CLIENT WAIT 'plotly-3.0.1.min.js';
+    INTERNAL CLIENT WAIT 'dashboard.js';
+}
+
+// Client target — a JavaScript function called synchronously, its return value captured
+getCookie(STRING name) {
+    LOCAL cookie = STRING();
+    INTERNAL CLIENT 'getCookie' PARAMS name TO cookie;
+}
+
+// Internal SQL target — SQL executed inside the current change session
+loadPrices() {
+    EXPORT TABLE FROM bc=barcode(Article a) WHERE name(a) LIKE '%Meat%';
+    INTERNAL DB 'select price, barcode from $1' PARAMS exportFile() TO exportFile;
+}
+```
 
 A minimal example of a Java class extending `InternalAction` — resolves a property and an action in the constructor via `findProperty` / `findAction`, then in `executeInternal` reads and writes a property and runs an action:
 

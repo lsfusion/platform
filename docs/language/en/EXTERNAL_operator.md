@@ -37,7 +37,7 @@ NOENCODE
 
 ### Description
 
-The `EXTERNAL` operator creates an action that makes a request to an external system.
+The `EXTERNAL` operator creates an action that performs a single call to an external system. The call type (`HTTP`, `SQL`, `LSF`, `TCP`, `UDP`, `DBF`) selects the protocol or interface used; each type accepts its own clauses on top of the shared `PARAMS` and `TO` lists.
 
 ### Parameters
 
