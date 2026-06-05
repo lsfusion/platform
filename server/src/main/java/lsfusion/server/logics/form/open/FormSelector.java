@@ -22,6 +22,11 @@ public interface FormSelector<O extends ObjectSelector> {
     ValueClass getBaseClass(O object);
     boolean isSingleGroup(O object);
 
+    // a single-group object of a custom (object) class - the only input shape that defaults to the object's LONG id list (see LogicsModule.addDialogInputAProp)
+    default boolean isSingleCustomObject(O object) {
+        return getBaseClass(object) instanceof CustomClass && isSingleGroup(object);
+    }
+
     FormEntity getNFStaticForm();
     default FormEntity getStaticForm(BusinessLogics BL) {
         return getForm(BL).first; // always not null since session is null

@@ -1205,6 +1205,12 @@ public abstract class LogicsModule {
     }
     
     public <T extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> formSelector, LP targetProp, O object, boolean hasOldValue, ImOrderSet<T> orderInterfaces, FormSessionScope scope, InputPropertyListEntity<?, T> list, ImSet<ContextFilterSelector<T, O>> filters, ImList<InputContextAction<?, T>> contextActions, String customChangeFunction, boolean notNull) {
+        // no explicit value list for a single custom-class object input (default object-property change, or INPUT MyClass without LIST):
+        // default to the object's LONG id as the (strict) input list, so the input becomes an AsyncInput(LongClass) and a pushed object id resolves
+        // (custom-component changeProperty(prop, obj, id)); PropertyDrawView then disables the inline list so editing opens the picker dialog.
+        // (done in this single-property input overload, not the full one, so the DIALOG operator - which calls the full overload directly - is unaffected.)
+        if(list == null && formSelector.isSingleCustomObject(object))
+            list = new InputPropertyListEntity<>(((LP<?>) addObjectIdInputProp()).property, MapFact.EMPTYREV());
         return addDialogInputAProp(formSelector,
                 hasOldValue ? ListFact.singleton(object) : ListFact.EMPTY(), hasOldValue ? ListFact.singleton(true) : ListFact.EMPTY(),
                 ListFact.singleton(object), ListFact.singleton(targetProp), ListFact.singleton(true), scope, list,
@@ -1212,13 +1218,8 @@ public abstract class LogicsModule {
     }
 
     public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputPropertyListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, ImList<InputContextAction<?, P>> contextActions, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull, ActionMapImplement<?, P> initAction) {
-        // no explicit value list for a single-object custom-class input (default object-property change, or INPUT MyClass without LIST):
-        // default to the object's LONG id as the (strict) input list, so the input becomes an AsyncInput(LongClass) and a pushed object id resolves
-        // (custom-component changeProperty(prop, obj, id)). interactive editing still opens the picker dialog (the input keeps its FormInteractiveAction
-        // as the INPUT_DIALOG context action); a non-LONG property drawing this input gets no value select (see Property.getSelectProperty's class check).
-        if(list == null && inputObjects.size() == 1 && form.getBaseClass(inputObjects.single()) instanceof CustomClass && form.isSingleGroup(inputObjects.single()))
-            list = new InputPropertyListEntity<>(((LP<?>) addCastProp(ObjectType.idClass)).property, MapFact.EMPTYREV());
-        final InputPropertyListEntity<?, P> fList = list; // effectively-final copy for the lambda below
+        O inputObject = inputObjects.size() == 1 ? inputObjects.single() : null;
+        boolean singleCustomObject = inputObject != null && form.isSingleCustomObject(inputObject);
 
         // objects + contextInterfaces
         Result<InputPropertyListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
@@ -1227,7 +1228,7 @@ public abstract class LogicsModule {
         FormInteractiveAction<O> formAction = new FormInteractiveAction<>(LocalizedString.NONAME, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextFilters,
                 map -> {
                     if (mappedList != null)
-                        mappedList.set(fList.mapProperty(map));
+                        mappedList.set(list.mapProperty(map));
                     mappedContextActions.set(contextActions.mapListValues(action -> action.map(map)));
                     if (initAction != null)
                         mappedInitAction.set(initAction.map(map));
@@ -1241,11 +1242,8 @@ public abstract class LogicsModule {
         formImplement = (ActionMapImplement<X, ClassPropertyInterface>) PropertyFact.createSessionScopeAction(scope, formAction.interfaces, formImplement, getMigrateInputProps(inputProps));
 
         LA<?> resultAction;
-        O inputObject;
-        ValueClass objectClass;
         // wrapping dialog into input operator
-        if(inputObjects.size() == 1 && list != null && (objectClass = form.getBaseClass(inputObject = inputObjects.single())) instanceof CustomClass
-                && form.isSingleGroup(inputObject)) { // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
+        if(list != null && singleCustomObject) { // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
             LP<?> inputProp = inputProps.single();
 
             // adding asyncUpdate with list value
@@ -1256,7 +1254,7 @@ public abstract class LogicsModule {
             InputContextSelector<ClassPropertyInterface> inputSelector = new FormInputContextSelector<>(form, formAction.getContextFilterSelectors(), inputObject, formAction.mapObjects);
 
             // the order will / have to be the same as in formAction itself
-            return addInputAProp((CustomClass)objectClass, inputProp, false, formAction.mapObjects.get(inputObject), listInterfaces,
+            return addInputAProp((CustomClass) form.getBaseClass(inputObject), inputProp, false, formAction.mapObjects.get(inputObject), listInterfaces,
                     mappedList.result, scope, inputSelector,
                     mappedContextActions.result.addList(new InputContextAction<>(AppServerImage.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)),
                     customChangeFunction, notNull, form); // // adding dialog action (no string parameter, but extra parameters)
@@ -1343,6 +1341,10 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> LP addCastProp(DataClass castClass) {
         return baseLM.addCastProp(castClass);
+    }
+
+    protected LP addObjectIdInputProp() {
+        return baseLM.addObjectIdInputProp();
     }
 
     // ------------------- AND ----------------- //

@@ -67,6 +67,11 @@ public class InputContextPropertyListEntity<P extends PropertyInterface, V exten
         return view.getDataClass();
     }
 
+    @Override
+    public boolean isDisableInputList() {
+        return view.isDisableInputList();
+    }
+
     public boolean isNewSession() {
         return view.newSession;
     }

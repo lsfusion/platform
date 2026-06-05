@@ -21,6 +21,8 @@ public interface InputContextListEntity<P extends PropertyInterface, V extends P
 
     boolean isNewSession();
 
+    default boolean isDisableInputList() { return false; } // true when the list property disables its inline value list (the dedicated object-id input cast)
+
     <C extends PropertyInterface> InputContextListEntity<P, C> map(ImRevMap<V, C> map);
 
     ImSet<V> getValues();

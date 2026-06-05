@@ -30,6 +30,11 @@ public abstract class InputListEntity<P extends PropertyInterface, V extends Pro
         assert property.interfaces.containsAll(mapValues.keys());
     }
 
+    // the list property is marked to disable the inline value list (e.g. the dedicated object-id input cast) - editing opens the picker dialog instead
+    public boolean isDisableInputList() {
+        return property instanceof Property && ((Property<?>) property).disableInputList;
+    }
+
     public static <P extends PropertyInterface, V extends PropertyInterface, T extends ActionOrProperty<P>> InputListEntity<P, V, T> create(ActionOrProperty<P> property, ImRevMap<P, V> mapValues) {
         if (property instanceof Property)
             return (InputListEntity<P, V, T>) new InputPropertyListEntity<>((Property<P>)property, mapValues);

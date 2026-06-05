@@ -136,7 +136,9 @@ public class InputAction extends SystemExplicitAction {
 
     @IdentityInstanceLazy
     private InputList getInputList() {
-        return new InputList(isStrict());
+        // the list property disables its inline value list (the dedicated object-id input cast) - editing opens the picker dialog
+        InputContextListEntity<?, ClassPropertyInterface> list = getFullContextList();
+        return new InputList(isStrict(), list != null && list.isDisableInputList());
     }
 
     private boolean isMultipleInput() {

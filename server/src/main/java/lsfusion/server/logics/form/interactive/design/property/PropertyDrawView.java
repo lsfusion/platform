@@ -503,6 +503,16 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return getCustomRenderFunction(context) == null || getExternalChangeType(context) == null;
     }
 
+    // explicit Property flag, else the default: the change input's list property disables its inline value list (the dedicated object-id input cast)
+    // - so editing opens the picker dialog (the INPUT_DIALOG action) while a pushed id still resolves
+    private boolean isDisableInputList(FormInstanceContext context) {
+        ActionOrProperty inherited = entity.getInheritedProperty();
+        if(inherited instanceof Property && ((Property<?>) inherited).disableInputList)
+            return true;
+        AsyncEventExec changeAsync = entity.getAsyncEventExec(context, CHANGE, false);
+        return changeAsync instanceof AsyncInput && ((AsyncInput) changeAsync).inputList != null && ((AsyncInput) changeAsync).inputList.disableInputList;
+    }
+
     public boolean hasAction(FormInstanceContext context, String actionID) {
         ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionID, context);
         if(eventAction != null)
@@ -647,8 +657,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         outStream.writeBoolean(entity.hasDynamicImage());
         outStream.writeBoolean(entity.hasDynamicCaption());
 
-        ActionOrProperty inheritedProperty = entity.getInheritedProperty();
-        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
+        outStream.writeBoolean(isDisableInputList(pool.context));
 
         ActionOrPropertyObjectEntity<?, ?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getReflectionBindingProperty(); // only for tooltip

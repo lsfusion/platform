@@ -24,6 +24,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
@@ -895,6 +896,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     public LP addCastProp(DataClass castClass) {
         return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
+    }
+
+    // a dedicated object -> LONG id cast used as the default value list for a no-LIST object input; marked disableInputList so the inline list is
+    // suppressed (interactive editing opens the picker dialog) while a pushed id still resolves. Distinct from the shared addCastProp(idClass), so an
+    // explicit LIST LONG(x) / a user property = LONG(x) (both use the shared, unmarked cast) keep their inline list.
+    @IdentityStrongLazy
+    public LP addObjectIdInputProp() {
+        LP result = addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("objectIdInput"), 1, new CastFormulaImpl(ObjectType.idClass))));
+        result.property.disableInputList = true;
+        return result;
     }
 
     @Override
