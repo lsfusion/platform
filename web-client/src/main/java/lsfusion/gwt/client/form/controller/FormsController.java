@@ -611,7 +611,7 @@ public abstract class FormsController {
                 asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
-            if(isAutoSized(editContext, windowType))
+            if(isAutoSized(execContext, windowType)) // execContext (always non-null); editContext is null on the controller path
                 asyncFormController.scheduleOpen(() -> {
                     if(formController == null || formController.isVisible()) // form can be hidden before the task will be executed
                         runOpenForm.execute();

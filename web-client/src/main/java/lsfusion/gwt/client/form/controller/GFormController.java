@@ -1297,7 +1297,11 @@ public class GFormController implements EditManager {
         return syncDispatch(action, new ServerResponseCallback());
     }
 
-    public void asyncInput(EventHandler handler, EditContext editContext, String actionSID, GAsyncInput asyncChange, GEventSource eventSource, Consumer<Long> onExec) {
+    public void asyncInput(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GAsyncInput asyncChange, GEventSource eventSource, Consumer<Long> onExec) {
+        if (editContext == null) { // no cell to host the editor on the controller / global change path - run on the server
+            syncExecutePropertyEventAction(null, handler, execContext.getProperty(), execContext.getFullKey(), null, actionSID, eventSource, onExec);
+            return;
+        }
         GInputList inputList = asyncChange.inputList;
         GInputListAction[] inputListActions = asyncChange.inputListActions;
         edit(asyncChange.changeType, handler, false, null, asyncChange.multipleInput, inputList, inputListActions, (value, onRequestExec) ->
@@ -1483,7 +1487,7 @@ public class GFormController implements EditManager {
     public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
-                setLoadingValueAt(getProperty(propertyID), editContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
+                setLoadingValueAt(getProperty(propertyID), execContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
         }, onExec);
     }
 
@@ -1507,7 +1511,7 @@ public class GFormController implements EditManager {
         final int position = controller.getSelectedRow();
 
         if (add) {
-            MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext.getPopupOwner()) {
+            MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext != null ? editContext.getPopupOwner() : getPopupOwner()) { // no cell on the controller path - form popup owner
                 @Override
                 public void onSuccess(GenerateIDResult result) {
                     asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, eventSource, onExec);
