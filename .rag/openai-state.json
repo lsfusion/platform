@@ -2537,8 +2537,8 @@
       "stale": false
     },
     "language/=gt_statement.md": {
-      "file_hash": "sha256:9c850566dc92c2836bf5217d3e9760b3685ad1c9560354029cd45f51c7915db1",
-      "indexed_at": "2026-05-22T21:55:15Z",
+      "file_hash": "sha256:f48a892ba855c313a5651c1a6d16c9c67a986f77016b20dcf22289b112d9fde3",
+      "indexed_at": "2026-06-05T05:40:39Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2560,15 +2560,15 @@
           "source_file": "language/=gt_statement.md"
         },
         "=gt_statement::parameters": {
-          "file_id": "file-65qNV5qgDVTVA5cAW9p3Py",
+          "file_id": "file-Y5RMe66Kd8Y1qHJU6NN6UQ",
           "heading_path": "=> statement > Parameters",
-          "section_payload_hash": "sha256:317e87d2de589c2190eb4945a7f0398b3c716997de29dcd78a30b3fe0ead7774",
+          "section_payload_hash": "sha256:91a4fa915c53741c8a80b3b9a414a2c1d36268c5614415504f948678a5d9c532",
           "source_file": "language/=gt_statement.md"
         },
         "=gt_statement::syntax+description": {
-          "file_id": "file-D74x7SXE55FR1FWVJj3gvi",
+          "file_id": "file-KsmiCLzk5PWULHrNeVRuMD",
           "heading_path": "=> statement > Syntax + Description",
-          "section_payload_hash": "sha256:b8711f02fe8cadb61b65f1e77e2f57e699201097f5705a9ee18385e8bb3382e1",
+          "section_payload_hash": "sha256:87005d2a1b08cc051a1b6eb64ca48bb4b76ef222f3cd35232999b2d73a91cb78",
           "source_file": "language/=gt_statement.md"
         }
       },
@@ -3583,8 +3583,8 @@
       "stale": false
     },
     "language/CONSTRAINT_statement.md": {
-      "file_hash": "sha256:26a4a23c78635237d5a2ccd6d3f8fb9f64ea188e81fd48174be230a22d72b3e5",
-      "indexed_at": "2026-05-22T22:06:05Z",
+      "file_hash": "sha256:b2aff0d2e72f7dcbb50c51426b650e84a6fa20054b78620c8d7e584592b0d9cc",
+      "indexed_at": "2026-06-05T05:40:49Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3606,15 +3606,15 @@
           "source_file": "language/CONSTRAINT_statement.md"
         },
         "CONSTRAINT_statement::parameters": {
-          "file_id": "file-WrrE5MHuFm6nZMQsxvyrs6",
+          "file_id": "file-23Xqf5JjrAfQBNCoK4d5bk",
           "heading_path": "CONSTRAINT statement > Parameters",
-          "section_payload_hash": "sha256:1835eddc981d61a584e59565daf2e990e137fc867881daa6dc38d0ff3bbb6bb6",
+          "section_payload_hash": "sha256:eb4a093746f12cb2727370c10cf499124bbbee73974f45d8bc5eca1e717121d0",
           "source_file": "language/CONSTRAINT_statement.md"
         },
         "CONSTRAINT_statement::syntax+description": {
-          "file_id": "file-32s7JdUGXHMcMrPLxpgXCn",
+          "file_id": "file-VkFM6bSjK7xvYNE85rSMH7",
           "heading_path": "CONSTRAINT statement > Syntax + Description",
-          "section_payload_hash": "sha256:9d2672e07e52494262c5cb97cc0277540e77792a3ca3e9b523b6b2e91b633668",
+          "section_payload_hash": "sha256:5400121b5396f979f88b20d31286610594f08947d460a4e2b3361e75810131b0",
           "source_file": "language/CONSTRAINT_statement.md"
         }
       },
@@ -8460,8 +8460,8 @@
       "stale": false
     },
     "paradigm/Constraints.md": {
-      "file_hash": "sha256:eeb0aa900016a5eb08001af9e151314b7e4ef11d89fc6bdd2ae6e7641a2b5274",
-      "indexed_at": "2026-05-22T23:48:39Z",
+      "file_hash": "sha256:358e125357495aa75c709a923f78553281837f032137957b55cb1c54a1b76bad",
+      "indexed_at": "2026-06-05T05:41:00Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8477,9 +8477,9 @@
           "source_file": "paradigm/Constraints.md"
         },
         "Constraints::language+examples": {
-          "file_id": "file-4PsH9sqMCxDt2y3P69U6MM",
+          "file_id": "file-FfeFtMyZDstefhS1Gy6rUn",
           "heading_path": "Constraints > Language + Examples",
-          "section_payload_hash": "sha256:bf533750a74e86c343214b4b701feec581bdec05590190a70a751ac0c06139f8",
+          "section_payload_hash": "sha256:ee2ffe56843d1ac81b15977b92ec183e3616bbaa3a8874265172bdc40f5adeda",
           "source_file": "paradigm/Constraints.md"
         },
         "Constraints::show-message-message": {
@@ -12193,8 +12193,8 @@
       "stale": false
     },
     "paradigm/Simple_constraints.md": {
-      "file_hash": "sha256:b9a848eb743e5d062556bd5fadaef307f2f457ac8c38b0392626a139e52e63a6",
-      "indexed_at": "2026-05-25T10:08:08Z",
+      "file_hash": "sha256:70085d8af5c9a0d185e8b523bbf66a0a5d290832888d8717c0849512dac7279f",
+      "indexed_at": "2026-06-05T05:41:09Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12209,10 +12209,16 @@
           "section_payload_hash": "sha256:a52eed0b90c299f23b84d315a64da53cc94820a989c25d265c1473665b377a89",
           "source_file": "paradigm/Simple_constraints.md"
         },
+        "Simple_constraints::language": {
+          "file_id": "file-8RCHXZ2Rz5yuCpHVpPTKcz",
+          "heading_path": "Simple constraints > Language",
+          "section_payload_hash": "sha256:d53e89e39f1ec20cd8225f13a5eb2361b3a84c275e301e5a830884cd4d030e9b",
+          "source_file": "paradigm/Simple_constraints.md"
+        },
         "Simple_constraints::simple-constraints": {
-          "file_id": "file-3XpRY6CLsWYakhrap8NrAk",
+          "file_id": "file-2Y6tnTeQrG7yaehg3trcK3",
           "heading_path": "Simple constraints",
-          "section_payload_hash": "sha256:8d4a31f2ecdf4b0c2dfd8b09270355edd5e5fd8f04f3caa2c79bc238b80a2eae",
+          "section_payload_hash": "sha256:4f3ce604b1e962520b74f995a146365d6e4bd0ef84191aeb905420c5aa9521a7",
           "source_file": "paradigm/Simple_constraints.md"
         }
       },
@@ -13244,7 +13250,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "d4e588aa71c7a61f77392debb5d0e7b4087aa95e",
+  "last_indexed_docs_commit": "87e7bd61c6d37936127479d42bfb71200d20eff8",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
