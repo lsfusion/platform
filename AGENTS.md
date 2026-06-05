@@ -120,8 +120,9 @@ EOF
 ## Branches and backports
 
 - `master` is the active development line.
-- `v4`, `v5`, `v6` are LTS maintenance branches.
-- Backport pattern is **merge-up**: cherry-pick or land the fix on the oldest still-supported version branch, then merge that branch forward — `v4 → v5 → v6 → master`. Don't apply the same commit independently to multiple branches; that creates divergent histories that bite during the next merge.
+- The two `vN` branches immediately preceding `master` are the supported LTS maintenance branches; older `vN` branches are end-of-life.
+- **A bugfix is a backport candidate — check it alongside plugin and docs impact.** Just as a change prompts you to ask whether the plugin (`LSF.bnf`/`LSF.flex`) or `docs/` need a parallel update, a fix to a defect prompts you to ask whether it should land on the supported `vN` maintenance branches too, not just `master`. If the bug predates the current development line and is present in one or more maintained releases, name the oldest still-supported branch it affects and **suggest** backporting from there. Surface it as a recommendation, not an action — a backport changes what ships in a maintenance release, so confirm with the user before touching a `vN` branch. New features, syntax additions, and intentional behavior changes normally stay on `master` only.
+- Backport pattern is **merge-up**: cherry-pick or land the fix on the oldest still-supported version branch, then merge that branch forward through each successive `vN` up to `master`. Don't apply the same commit independently to multiple branches; that creates divergent histories that bite during the next merge.
 - Never force-push to `master` or to any `vN` branch.
 
 ## GitHub issues
