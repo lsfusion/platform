@@ -200,7 +200,7 @@ Besides the rendering helpers above, the _controller_ lets the client JS call ba
 - `exec(action, ...params)` — runs a named action; resolves to the action's `RETURN` value, if it has one.
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action, so its parameters can be declared with explicit types.
 - `evalAction(script, ...params)` — runs an action body, wrapped into a `run` action whose parameters are referenced positionally as `$1`, `$2`, ….
-- `change(property, ...keyParams, value)` — changes a property; the last argument is the value, the preceding ones are the keys.
+- `change(property, ...keyParams, value)` — changes a property; the last argument is the value, the preceding ones are the keys. If the property's value is an object, pass the object's id as the value — the platform resolves it to the object and assigns it (the picker dialog is used only for interactive editing).
 
 ```js
 controller.exec('recalc', orderId);
