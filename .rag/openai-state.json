@@ -4327,8 +4327,8 @@
       "stale": false
     },
     "language/EXTERNAL_operator.md": {
-      "file_hash": "sha256:ce3e50d1b411009f862911ff26aa242b7b8000ccc7fcf45a7c813acb9a0678c0",
-      "indexed_at": "2026-05-22T22:12:24Z",
+      "file_hash": "sha256:2f2f67972bb4f945b8087597cc8e86f580ff081d3a77a9d41eca62921bd78054",
+      "indexed_at": "2026-06-05T16:14:05Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4338,9 +4338,9 @@
       },
       "sections": {
         "EXTERNAL_operator::description": {
-          "file_id": "file-Pvrt7avnje69pqUp63HyQ9",
+          "file_id": "file-LVNBPFYk5Tb5dmYy6AvoGa",
           "heading_path": "EXTERNAL operator > Description",
-          "section_payload_hash": "sha256:d52a31bb27a6865279088bb5f5980389bae04149962b3dcc12f80274aab24382",
+          "section_payload_hash": "sha256:de1939e55e81fd0dcda4e00fa925dd4e24a7581de8d929adfc8a2e8a0b8644e3",
           "source_file": "language/EXTERNAL_operator.md"
         },
         "EXTERNAL_operator::examples": {
@@ -7391,8 +7391,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:fab274d62849840291335ddca187d2e43fbb31eba4b03eba8c7f4137fe840d07",
-      "indexed_at": "2026-06-05T10:53:02Z",
+      "file_hash": "sha256:c5a146f3e93e35d01ebd5f26b54b0ec2de963bbff20ceeaed973cab63576761b",
+      "indexed_at": "2026-06-05T16:14:17Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7429,6 +7429,12 @@
           "file_id": "file-UZHkh7826DvpSjjJtAdHkh",
           "heading_path": "Access from an external system > Form API {#form}",
           "section_payload_hash": "sha256:03ab885bec01f8c318a86148dbfcf5ccad0dcb2c9b85ad3cc549ce9baed542fd",
+          "source_file": "paradigm/Access_from_an_external_system.md"
+        },
+        "Access_from_an_external_system::form-api-javascript": {
+          "file_id": "file-MDJGQD73kU1E1CEwvEhGfV",
+          "heading_path": "Access from an external system > Examples > Form API (JavaScript)",
+          "section_payload_hash": "sha256:b99830e2ad10aef73bf09db4ab89b60a11c512d7b11dc43f8e2e48203cf9e40f",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::listing-files": {
@@ -7503,8 +7509,8 @@
       "stale": false
     },
     "paradigm/Access_to_an_external_system_EXTERNAL.md": {
-      "file_hash": "sha256:0847cddecca332c132fc80b1eefdffb868bee90b293e6436d7caf3d3881be61f",
-      "indexed_at": "2026-05-25T10:00:54Z",
+      "file_hash": "sha256:b9b6bb76e73941884731990d4eb9f70de41d75e26e90b31a61cf35b653fbc9c5",
+      "indexed_at": "2026-06-05T16:14:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7532,9 +7538,9 @@
           "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
         },
         "Access_to_an_external_system_EXTERNAL::http---web-server-http-request-http": {
-          "file_id": "file-BGvfwT5QwoSDvt4C3wSvyk",
+          "file_id": "file-PxtezYfUnQeKFJJ4X15hAA",
           "heading_path": "Access to an external system (EXTERNAL) > Types of interactions / protocols > HTTP - web server HTTP request {#http}",
-          "section_payload_hash": "sha256:2fe830fed39ab2607316399ac92abe315ace94868d8b04c13f71e9d0d8750538",
+          "section_payload_hash": "sha256:e1118ce360c19e2ea2b96eaa7d59fed2df85a99a310c548a7c52dbda033afd02",
           "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
         },
         "Access_to_an_external_system_EXTERNAL::language": {
@@ -10138,8 +10144,8 @@
       "stale": false
     },
     "paradigm/Internal_call_INTERNAL.md": {
-      "file_hash": "sha256:f0de95d3ce3efc36b840c2029c19d761474725e467a99baae15660ff865a9bb5",
-      "indexed_at": "2026-05-25T10:05:35Z",
+      "file_hash": "sha256:4b191a85677d326a5a8e1177cc3322f09e92e707f0cb5e9be04c73b073dc4cc8",
+      "indexed_at": "2026-06-05T16:14:36Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10161,9 +10167,9 @@
           "source_file": "paradigm/Internal_call_INTERNAL.md"
         },
         "Internal_call_INTERNAL::examples": {
-          "file_id": "file-5FBxEGfi8ecUdaCoLVwiGF",
+          "file_id": "file-Tk327acGPy4zcFV3sb6PSD",
           "heading_path": "Internal call (INTERNAL) > Examples",
-          "section_payload_hash": "sha256:d6e6589bee301b25946d99beb94e3c4d778c4f1538d4412724389102c2819477",
+          "section_payload_hash": "sha256:0588a0508c4cb82e840abd5ed083bcdbca88714d7561522544702d4105563726",
           "source_file": "paradigm/Internal_call_INTERNAL.md"
         },
         "Internal_call_INTERNAL::internal-call-internal": {
@@ -13250,7 +13256,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "8f4d2e2a36b9ed8f6acadb86dee1ff7592d3a02f",
+  "last_indexed_docs_commit": "eda68d12ad24f79f875b55b0db17f72acec53e30",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
