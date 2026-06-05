@@ -625,8 +625,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:865e23e862280be0b2264634655b7fad3f7409652a9c33ce98e0d0b317abd9a4",
-      "indexed_at": "2026-06-04T14:26:47Z",
+      "file_hash": "sha256:34e3d25168a07ea7511c8ce016c80a087420d8ca4d6bfb4c8a305ff94c67dd9e",
+      "indexed_at": "2026-06-05T19:48:27Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -636,9 +636,9 @@
       },
       "sections": {
         "How-to_Custom_components_objects::calling-the-server": {
-          "file_id": "file-WV6jKepGdHuexEgFcoY2Lu",
+          "file_id": "file-AQRyGmVFeGRqA2uWDYBD2k",
           "heading_path": "How-to: Custom Components (objects) > Calling the server",
-          "section_payload_hash": "sha256:89d7bbf9ff907eec585b32fba141a1bdd8bee5e1eab3b0b394d0e2e39a4a2f20",
+          "section_payload_hash": "sha256:53eaf6b6abe6342b9627cfc095be079133c060f752a58c5ec96bfc6de4da1183",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -5111,8 +5111,8 @@
       "stale": false
     },
     "language/INPUT_operator.md": {
-      "file_hash": "sha256:183a395349ca1a8ecf080e2866cddea73bacf96eb013ed52cc1b56a2d02020a8",
-      "indexed_at": "2026-05-22T22:20:13Z",
+      "file_hash": "sha256:02a9c2f2222e2dbd68e647e673e39c6b85ae1b4f66578e00723b3d0e9621b3c3",
+      "indexed_at": "2026-06-05T19:49:57Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5134,25 +5134,25 @@
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::input-operator": {
-          "file_id": "file-81EyJRi1HCBWdq2SvLE6JK",
+          "file_id": "file-RbLy2UdFyxZCB9MYdp1aZT",
           "heading_path": "INPUT operator",
-          "section_payload_hash": "sha256:0c74c6b5b84eefb585e7480a309f71d41b774cc5f0d8678c5cfe72565af2eef7",
+          "section_payload_hash": "sha256:56b00fa290625e70c23dca570824085b9fa314d9bd1f3b6875480c5560258a6c",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::parameters": {
-          "file_id": "file-VKHUJtwqY1FVPVDL8EpxG3",
+          "file_id": "file-Sv9cj67bhqhB2e94J65Tw5",
           "heading_path": "INPUT operator > Parameters",
-          "section_payload_hash": "sha256:f6c01d20975b9a1d57e5614987e11d4e944757bd10aa9af771c9309dcf0c6efc",
+          "section_payload_hash": "sha256:2ee9f66e14f13b9d69f74ab4a27568620e23fc6d5456cb2087c118349f6ca8ae",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::syntax": {
-          "file_id": "file-XXdL9V1mWaQ5FeBivNYQCn",
+          "file_id": "file-NumEkgJ9o3VepW5uRiHcKT",
           "heading_path": "INPUT operator > Syntax",
-          "section_payload_hash": "sha256:fe7fabb309877bf7a528755297b314bc9e10e748dd39b0410f61c19f143ce113",
+          "section_payload_hash": "sha256:7da363cb1936809bd6c953032a69ca32a30823609192fe335cbd7a040e288080",
           "source_file": "language/INPUT_operator.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "language/INTERNAL_operator.md": {
       "file_hash": "sha256:eac07b8c434c883b7b6c749e1b247f9a6f4bc837986c5958eff32a9a826b34c7",
