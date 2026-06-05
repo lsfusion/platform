@@ -3,12 +3,12 @@ slug: "/INPUT_operator"
 title: 'Оператор INPUT'
 ---
 
-Оператор `INPUT` - создание [действия](../paradigm/Actions.md), осуществляющего [ввод примитива](../paradigm/Primitive_input_INPUT.md).
+Оператор `INPUT` - создание [действия](../paradigm/Actions.md), осуществляющего [ввод примитива](../paradigm/Primitive_input_INPUT.md) или выбор объекта пользовательского класса.
 
 ### Синтаксис
 
 ```
-INPUT inputOptions 
+INPUT inputOptions [LIST listExpr]
 [CHANGE [= changeExpr]]
 [DO actionOperator [ELSE elseActionOperator]]
 ```
@@ -16,7 +16,7 @@ INPUT inputOptions
 `inputOptions` - опции ввода. Задаются одним из следующих синтаксисов:
 
 ```
-[alias =] builtInClassName
+[alias =] className
 [alias] = expr
 ```
 
@@ -24,11 +24,17 @@ INPUT inputOptions
 
 Оператор `INPUT` создает действие, которое позволяет запрашивать у пользователя значение одного из [встроенных классов](../paradigm/Built-in_classes.md).
 
+Если `className` - пользовательский класс, оператор запрашивает объект этого класса. Без явного `LIST` интерактивный ввод открывает форму выбора объектов класса, а программно переданное значение интерпретируется как идентификатор объекта. Явный `LIST` предлагает для выбора значения `listExpr` (например, `LIST name(o)`); класс значения `listExpr` определяет встроенный редактор.
+
 ### Параметры
 
-- `builtInClassName`
+- `className`
 
-    Имя одного из [встроенных классов](../paradigm/Built-in_classes.md). 
+    Имя [встроенного класса](../paradigm/Built-in_classes.md) или пользовательского класса. Для пользовательского класса запрашивается объект этого класса.
+
+- `listExpr`
+
+    [Выражение](Expression.md), значения которого предлагаются для выбора. Используется для ввода пользовательского класса, чтобы перечислить объекты-кандидаты (класс значения `listExpr` определяет встроенный редактор).
 
 - `expr`
 
