@@ -1906,14 +1906,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public static <T extends PropertyInterface, I extends PropertyInterface> Select<T> getSelectProperty(boolean forceSelect, ImSet<T> innerInterfaces, InputPropertyListEntity<?, T> viewListEntity, InputFilterEntity<?, T> where, ImOrderMap<InputOrderEntity<?, T>, Boolean> orders, PropertyInterfaceImplement<T> value, boolean drawnValue) {
         BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
+        ValueClass valueClass = value.mapValueClass(ClassType.editValuePolicy);
         boolean isNotNull;
         CustomClass customClass;
         if(drawnValue) {
+            // the highlight (selected) compares the drawn property's value against the list view (selected = drawnValue == listView(o)); if their
+            // classes are incompatible the EQUALS is class-where-unsound (getCompatible == null) and the option list is meaningless for this property,
+            // so don't build a select - interactive editing falls back to the change action. (e.g. an INPUT whose LIST value type differs from the property)
+            if(!(valueClass instanceof DataClass) || viewListEntity.getDataClass().getCompatible((DataClass) valueClass, false) == null)
+                return null;
+
             isNotNull = value.mapIsDrawNotNull();
             customClass = null;
         } else {
             isNotNull = value.mapIsNotNull();
-            customClass = (CustomClass) value.mapValueClass(ClassType.editValuePolicy);
+            customClass = (CustomClass) valueClass;
         }
 
         // generation this interfaces + object
