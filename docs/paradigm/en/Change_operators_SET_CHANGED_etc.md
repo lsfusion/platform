@@ -3,7 +3,7 @@ slug: "/Change_operators_SET_CHANGED_etc"
 title: 'Change operators (SET, CHANGED, ...)'
 ---
 
-*Change operators* determine whether some types of changes have occurred for a given property in the current session. All these operators are derived from the [previous value operator (`PREV`)](Previous_value_PREV.md), however, it is recommended to use them to improve readability and performance.
+*Change operators* determine whether some types of changes have occurred for a given property in the current session. Each of them creates a property of [class `BOOLEAN`](Built-in_classes.md) that returns `TRUE` when the corresponding change has occurred, and `NULL` otherwise. All these operators are derived from the [previous value operator (`PREV`)](Previous_value_PREV.md), however, it is recommended to use them to improve readability and performance.
 
 In the table below, `f` stands for the property being checked (parameters omitted) and `PREV(f)` for its value at the start of the session.
 

@@ -24,7 +24,7 @@ It's important to understand that `PREV` is not a built-in property with [compos
 
 - `propExpr`
 
-    The [expression](Expression.md) whose previous value is returned.
+    The [expression](Expression.md) whose previous value is returned. It must denote a property; a bare parameter cannot be used as the operand.
 
 ### Examples
 
