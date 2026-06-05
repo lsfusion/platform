@@ -3857,8 +3857,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:16aa7996600cf4696bd62dffd4ad09438df15c4644fe4f8f08e92edda2253135",
-      "indexed_at": "2026-05-22T22:07:54Z",
+      "file_hash": "sha256:2fe5904be303cacdb133114a1beea9398dca95c65556f22d4f69d5179cb9ad1e",
+      "indexed_at": "2026-06-05T10:52:45Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3886,9 +3886,9 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::description": {
-          "file_id": "file-SUpFZGJX4HQH7i7X78SieX",
+          "file_id": "file-28PE58uMkLYrDaPktprZbm",
           "heading_path": "DESIGN statement > Description",
-          "section_payload_hash": "sha256:9869c8d9898e7bb07b7e0e9a5df36b94676a8573281c5507984ef0194f92080e",
+          "section_payload_hash": "sha256:9937b43cf0f2a2403839d7b95bf2ad112b916bc2ee65bd7dd8e67945042d4f1d",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::design-statement": {
@@ -7391,8 +7391,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:f822ffa33985cf73692a571a6be83ef976aace5f54bbbbb50f285be92a914b9f",
-      "indexed_at": "2026-05-25T16:44:10Z",
+      "file_hash": "sha256:fab274d62849840291335ddca187d2e43fbb31eba4b03eba8c7f4137fe840d07",
+      "indexed_at": "2026-06-05T10:53:02Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7438,9 +7438,9 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::dup-1": {
-          "file_id": "file-3Y2YcU3puFzANqJ5xpCmAG",
+          "file_id": "file-1D5vCJ4p5aaQ4vtfc3hYnp",
           "heading_path": "Access from an external system > Form API {#form} > Protocols",
-          "section_payload_hash": "sha256:cbde055e855c140c2cbc3c6691a6af9f826b58b4aaae49ad74d664489a3f2981",
+          "section_payload_hash": "sha256:65262202909418663b6b87e4b638058c1be10c69d643e8d76ec788ed72127e49",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-00": {
@@ -13250,7 +13250,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "87e7bd61c6d37936127479d42bfb71200d20eff8",
+  "last_indexed_docs_commit": "1a3404ebff0995d34fdcad71c3eaa7894d717412",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
