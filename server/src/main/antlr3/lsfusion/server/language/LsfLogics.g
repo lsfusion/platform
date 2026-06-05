@@ -1251,10 +1251,31 @@ mappedPropertyObjectUsage returns [NamedPropertyUsage propUsage, List<String> ma
 	;
 
 mappedPropertyDraw returns [String name, List<String> mapping]
-	:	pDrawName=ID { $name = $pDrawName.text; }
+	:	pDrawName=mappedPropertyDrawName { $name = $pDrawName.name; }
 		'('
 		list=idList { $mapping = $list.ids; }
 		')'
+	;
+
+// a draw is referenced by its SID name, which is either an ordinary ID or a predefined operator (NEW[class]/NEWEDIT[class]/EDIT[class]/VALUE/INTERVAL/DELETE),
+// so that built-in operator draws resolve the same way as ordinary ones
+mappedPropertyDrawName returns [String name]
+	:	id=ID { $name = $id.text; }
+	|	p=predefinedPropertyName { $name = $p.systemName + ($p.signature == null ? "" : "[" + $p.signature + "]"); }
+	;
+
+// the predefined form operators and their optional [class] signature, shared by the declaration side (formPredefinedUsage) and the reference side (mappedPropertyDrawName)
+predefinedPropertyName returns [String systemName, String signature]
+	:	(
+				(	cid='NEW'		{ $systemName = $cid.text; }
+				|	cid='NEWEDIT'	{ $systemName = $cid.text; }
+				|	cid='EDIT'		{ $systemName = $cid.text; }
+				)
+				( '[' clId=compoundID ']' { $signature = $clId.sid; } )?
+			)
+	|	cid='VALUE'		{ $systemName = $cid.text; }
+	|	cid='INTERVAL'	{ $systemName = $cid.text; }
+	|	cid='DELETE'	{ $systemName = $cid.text; }
 	;
 
 formPropertyUList[List<String> mapping, FormPropertyOptions commonOptions] returns [List<PropertyDrawEntity> propertyDraws, List<FormPropertyOptions> options]
@@ -1306,24 +1327,10 @@ formPropertyUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage p
    ;
    
 formPredefinedUsage[List<String> mapping] returns [FormPredefinedUsage propUsage]
-@init {
-   String systemName = null;
-   List<String> signature = null;
-}
-@after {
-	$propUsage = new FormPredefinedUsage(new NamedPropertyUsage(systemName, signature), mapping);
-}
-    :
-        (
-				(	cid='NEW'		{ systemName = $cid.text; }
-				|	cid='NEWEDIT'	{ systemName = $cid.text; }
-				|	cid='EDIT'		{ systemName = $cid.text; }
-				)
-				( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
-			)
-		|	cid='VALUE'		{ systemName = $cid.text; }
-		|	cid='INTERVAL'	{ systemName = $cid.text; }
-		|	cid='DELETE'	{ systemName = $cid.text; }
+    :	p=predefinedPropertyName
+		{
+			$propUsage = new FormPredefinedUsage(new NamedPropertyUsage($p.systemName, $p.signature == null ? null : Collections.singletonList($p.signature)), mapping);
+		}
 ;
 
 formPredefinedOrActionUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage propUsage] // actually FormPredefinedUsage or FormActionUsage

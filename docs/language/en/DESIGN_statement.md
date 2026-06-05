@@ -64,7 +64,7 @@ Each block of design statements enclosed in braces alows to modify a particular 
 
 The component hierarchy described in this statement can have an arbitrary number of nesting levels and describe any number of components and their properties at each level.
 
-To access design components, you can use their names or address property components on the form (`PROPERTY`), the parent component (`PARENT`), property group components (`GROUP`), and other base components/default design components.
+To access design components, you can use their names or address property components on the form (`PROPERTY`), the parent component (`PARENT`), property group components (`GROUP`), and other base components/default design components. A property component created by a predefined [object operator](../paradigm/Interactive_view.md#objectoperators) is addressed by the operator name with its object mapping, for example `PROPERTY(NEW(o))`, `PROPERTY(NEW[Order](o))`, `PROPERTY(EDIT(o))`, or `PROPERTY(DELETE(o))`, unless the property was given an explicit name on the form.
 
 ## Parameters
 

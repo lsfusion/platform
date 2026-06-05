@@ -2000,11 +2000,8 @@ public abstract class LogicsModule {
         action.setImage(AppServerImage.DELETE);
         action.drawOptions.setChangeKey(new InputBindingEvent(new KeyInputEvent(KeyStrokes.getDeleteActionKeyStroke(), null), null));
         action.drawOptions.setShowChangeKey(false);
-        action.drawOptions.addProcessor((entity, form, version) -> {
-            entity.setIntegrationSID("DELETE", version); // for NEW, DELETE will set integration SID for js integration
-
-            form.movePropertyDraw(entity, ComplexLocation.LAST(), version);
-        });
+        action.drawOptions.addProcessor((entity, form, version) ->
+            form.movePropertyDraw(entity, ComplexLocation.LAST(), version)); // no integration-SID stamp: the draw SID DELETE(o) already derives integration SID "DELETE"
     }
 
     // ---------------------- Add Form ---------------------- //
@@ -2073,7 +2070,7 @@ public abstract class LogicsModule {
         action.drawOptions.setShowChangeKey(false);
 
         action.drawOptions.addProcessor((entity, form, version) -> {
-            entity.setIntegrationSID("NEW", version);  // for NEW, DELETE will set integration SID for js integration
+            // no integration-SID stamp: the draw SID derives the integration SID (NEW(o) -> "NEW", NEW[A](o) -> "NEW[A]")
             if(objectEntity != null) {
                 if (entity.getNFToDraw(version) == null)
                     entity.setToDraw(objectEntity.groupTo, form, version);

@@ -338,6 +338,8 @@ public class ScriptingFormEntity {
             ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
             List<String> mapping = prefefUsage.mapping;
             String propertyName = pUsage.name;
+            if (alias == null) // no explicit alias: the draw SID mirrors the source syntax NEW[A](o) / EDIT[A](o) / DELETE(o) / VALUE(o) / INTERVAL(o1,o2)
+                alias = PropertyDrawEntity.createSID(propertyName + (pUsage.classNames != null ? "[" + BaseUtils.single(pUsage.classNames) + "]" : ""), mapping);
             if (propertyName.equals("VALUE")) {
                 ObjectEntity obj = getSingleMappingObject(mapping);
                 property = LM.getObjValueProp(form, obj);
