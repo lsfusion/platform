@@ -32,6 +32,7 @@ import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -1211,6 +1212,14 @@ public abstract class LogicsModule {
     }
 
     public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputPropertyListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, ImList<InputContextAction<?, P>> contextActions, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull, ActionMapImplement<?, P> initAction) {
+        // no explicit value list for a single-object custom-class input (default object-property change, or INPUT MyClass without LIST):
+        // default to the object's LONG id as the (strict) input list, so the input becomes an AsyncInput(LongClass) and a pushed object id resolves
+        // (custom-component changeProperty(prop, obj, id)). interactive editing still opens the picker dialog (the input keeps its FormInteractiveAction
+        // as the INPUT_DIALOG context action); a non-LONG property drawing this input gets no value select (see Property.getSelectProperty's class check).
+        if(list == null && inputObjects.size() == 1 && form.getBaseClass(inputObjects.single()) instanceof CustomClass && form.isSingleGroup(inputObjects.single()))
+            list = new InputPropertyListEntity<>(((LP<?>) addCastProp(ObjectType.idClass)).property, MapFact.EMPTYREV());
+        final InputPropertyListEntity<?, P> fList = list; // effectively-final copy for the lambda below
+
         // objects + contextInterfaces
         Result<InputPropertyListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
         Result<ImList<InputContextAction<?, ClassPropertyInterface>>> mappedContextActions = new Result<>();
@@ -1218,7 +1227,7 @@ public abstract class LogicsModule {
         FormInteractiveAction<O> formAction = new FormInteractiveAction<>(LocalizedString.NONAME, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextFilters,
                 map -> {
                     if (mappedList != null)
-                        mappedList.set(list.mapProperty(map));
+                        mappedList.set(fList.mapProperty(map));
                     mappedContextActions.set(contextActions.mapListValues(action -> action.map(map)));
                     if (initAction != null)
                         mappedInitAction.set(initAction.map(map));
