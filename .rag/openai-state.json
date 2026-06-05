@@ -5112,7 +5112,7 @@
     },
     "language/INPUT_operator.md": {
       "file_hash": "sha256:02a9c2f2222e2dbd68e647e673e39c6b85ae1b4f66578e00723b3d0e9621b3c3",
-      "indexed_at": "2026-06-05T19:49:57Z",
+      "indexed_at": "2026-06-05T20:19:52Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5122,9 +5122,9 @@
       },
       "sections": {
         "INPUT_operator::description": {
-          "file_id": "file-NeX4RZN6TGtFQyDmfMb7Yu",
+          "file_id": "file-4JDAAUHnBTGL2UiLHWqX55",
           "heading_path": "INPUT operator > Description",
-          "section_payload_hash": "sha256:769a93d04bf60c73181b0f1df1ece9ab8e4b134673330766f4e49ec8ac9ccdfd",
+          "section_payload_hash": "sha256:cb2e9d2f52d98258d26cf301990a34dde7e754b3de28e09a7358c02abc87a0f0",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::examples": {
@@ -5152,7 +5152,7 @@
           "source_file": "language/INPUT_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/INTERNAL_operator.md": {
       "file_hash": "sha256:eac07b8c434c883b7b6c749e1b247f9a6f4bc837986c5958eff32a9a826b34c7",
@@ -13256,7 +13256,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "eda68d12ad24f79f875b55b0db17f72acec53e30",
+  "last_indexed_docs_commit": "a974b23116674a2a6b90caa7b20d80427f98cd87",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
