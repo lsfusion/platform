@@ -14,7 +14,7 @@ EVENTS formEventDecl1, ..., formEventDeclN
 Where each `formEventDecli` has the following syntax:
 
 ```
-ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
+ON eventType [replaceMode] eventActionId(param1, ..., paramK) | { eventActionOperator }
 ```
 
 ### Description
@@ -37,13 +37,25 @@ The event block allows to define handlers for [form events](../paradigm/Form_eve
     - `CANCEL`
     - `CLOSE`
     - `DROP`
-    - `CHANGE objName` – specifies that the action will be executed when the object `objName` is changed.
+    - `CHANGE objName`, `[CHANGE] OBJECT objName` – specify that the action will be executed when the current value of the object `objName` changes.
+    - `[CHANGE] FILTER groupObjectName` - specifies that the action will be executed when the filter applied to the object group `groupObjectName` changes.
+    - `[CHANGE] ORDER groupObjectName` - specifies that the action will be executed when the order applied to the object group `groupObjectName` changes.
+    - `[CHANGE] FILTERS groupObjectName` - specifies that the action will be executed when the user changes the custom filters of the object group `groupObjectName`.
+    - `[CHANGE] ORDERS groupObjectName` - specifies that the action will be executed when the user changes the custom orders of the object group `groupObjectName`.
+    - `[CHANGE] FILTERGROUPS filterGroupName` - specifies that the action will be executed when the user changes the filter selected in the filter group `filterGroupName`.
+    - `[CHANGE] FILTERS PROPERTY formPropertyName` - specifies that the action will be executed when the user changes the value of the property filter `formPropertyName`.
+    - `[CHANGE] PROPERTY formPropertyName` - sets the `CHANGE` event handler for the property `formPropertyName` on this form, overriding any previously defined handler for it.
+    - `[CHANGE] PROPERTY BEFORE formPropertyName`, `[CHANGE] PROPERTY AFTER formPropertyName` - specify that the action will be executed immediately before or after the value of the property `formPropertyName` changes on the form.
     - `QUERYOK`
     - `QUERYCLOSE`
     - `EXPAND componentSelector` - specifies that the action will be executed after the `componentSelector` container is expanded.
     - `COLLAPSE componentSelector` - specifies that the action will be executed after the `componentSelector` container is collapsed.
     - `TAB componentSelector` - specifies that the action will be executed after the `componentSelector` tab becomes active.
     - `SCHEDULE PERIOD intPeriod [FIXED]` - creates a scheduler that executes an action every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
+
+- `replaceMode`
+
+    Controls whether the handler replaces previously defined handlers for this event or is added to them. `REPLACE` replaces all handlers previously defined for the event; `NOREPLACE` adds the handler to them. When omitted, the default is `REPLACE` for `QUERYOK` and `QUERYCLOSE` and `NOREPLACE` for all other events. `replaceMode` does not apply to the `[CHANGE] PROPERTY formPropertyName` form (without `BEFORE` / `AFTER`), which always replaces its single handler.
 
 - `eventActionId`
 
