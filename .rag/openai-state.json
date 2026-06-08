@@ -9088,8 +9088,8 @@
       "stale": false
     },
     "paradigm/Execution_auto.md": {
-      "file_hash": "sha256:0bcc1aa188cfa13b0df73327e94e20034a8329a190041007c037951ae70c7ad3",
-      "indexed_at": "2026-05-22T23:11:51Z",
+      "file_hash": "sha256:c32a06e09840295b607d64a7690b646b28c1c6bbe9efeae518afabc536ce3ae4",
+      "indexed_at": "2026-06-08T12:52:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9159,9 +9159,9 @@
           "source_file": "paradigm/Execution_auto.md"
         },
         "Execution_auto::updating-update": {
-          "file_id": "file-MEnxhv6i7HvsbP9hPEzFob",
+          "file_id": "file-1r9V64tHmtjTZ1uXe6rxDs",
           "heading_path": "For production > After Installation > Updating {#update}",
-          "section_payload_hash": "sha256:fa302504715d6b5787cd18688c7f1abc54e0e199e3f3b4c7808a4a2430cbf275",
+          "section_payload_hash": "sha256:3f64716447b19c542191538470d94f8985153d2695a5e09d51f82b2d1601ab84",
           "source_file": "paradigm/Execution_auto.md"
         }
       },
@@ -10401,8 +10401,8 @@
       "stale": false
     },
     "paradigm/Launch_events.md": {
-      "file_hash": "sha256:d89a3dac4d53c28b53655deb18bfae4a3fb27f55fac3c1e01b4236540d020ec3",
-      "indexed_at": "2026-05-22T23:25:44Z",
+      "file_hash": "sha256:f8d92baf064d3758527c0a5f2c91e670945d1e63a236fbb7d8c794c9f9a89c94",
+      "indexed_at": "2026-06-08T12:52:18Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10412,17 +10412,17 @@
       },
       "sections": {
         "Launch_events::launch-events": {
-          "file_id": "file-XHKoJym81dp1rQmPiXHKtw",
+          "file_id": "file-NTAwmdDvh2RcJ9g7ZJfPz9",
           "heading_path": "Launch events",
-          "section_payload_hash": "sha256:b2e2401a77cb107969a102953345ab6204944e8702954c740347ef9d2be68f09",
+          "section_payload_hash": "sha256:423d890cc77598378cc53c320049d9b467669ffaff3f89f500831d5eb6850195",
           "source_file": "paradigm/Launch_events.md"
         }
       },
       "stale": false
     },
     "paradigm/Launch_parameters.md": {
-      "file_hash": "sha256:9dbe1e8f83fe0c2e292087e74541bb6e9696cd523f35fa3be71df8f139835109",
-      "indexed_at": "2026-05-22T23:25:52Z",
+      "file_hash": "sha256:4f562c0b52101fcf7be37c235b592b1be5af39ec154d16f41727de73130f7e04",
+      "indexed_at": "2026-06-08T12:52:27Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10438,9 +10438,9 @@
           "source_file": "paradigm/Launch_parameters.md"
         },
         "Launch_parameters::example-tomcat-configuration-file-section-3weblsfusion-in-context-parameters-filewebsettings": {
-          "file_id": "file-4uh6TxcGYHJPEE6Y42tKLw",
+          "file_id": "file-HcdTDKUDaooJuKKgTfFjM9",
           "heading_path": "Launch parameters > Web server (Client) > Example Tomcat configuration file ([section 3](#weblsfusion) in context parameters): {#filewebsettings}",
-          "section_payload_hash": "sha256:98193b3c2340d4f5f3166aadba7cf7357342916568bb390108a74e5f568e94d6",
+          "section_payload_hash": "sha256:e25e25c9f933afaf5443b4fa9bb0472314c66beb964ded3b6ff7819ea1bf0137",
           "source_file": "paradigm/Launch_parameters.md"
         },
         "Launch_parameters::java-appjava": {
@@ -11827,8 +11827,8 @@
       "stale": false
     },
     "paradigm/Scheduler.md": {
-      "file_hash": "sha256:41fb288db0d31050f2ffaa73e2320ced233c754cc5a65e672fee5574049ebc14",
-      "indexed_at": "2026-05-22T23:35:32Z",
+      "file_hash": "sha256:3fb921fffae67b2e2de412d7fd1f08cdc7a543ce23351cdf6763fe176cebb920",
+      "indexed_at": "2026-06-08T12:52:35Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11838,9 +11838,9 @@
       },
       "sections": {
         "Scheduler::scheduler": {
-          "file_id": "file-YFB56sZy3hTactdfFtfNgT",
+          "file_id": "file-6DjB65UGfpg38spS4h8CMk",
           "heading_path": "Scheduler",
-          "section_payload_hash": "sha256:bc3f08959b4b3d85e26652fb1be089e4d155b3abf1ca6805ddb62ff2b49b7cff",
+          "section_payload_hash": "sha256:74e3e922c0bab75283230e246ce917ed86732b727089381566fc322d7f795891",
           "source_file": "paradigm/Scheduler.md"
         }
       },
@@ -13256,7 +13256,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "a974b23116674a2a6b90caa7b20d80427f98cd87",
+  "last_indexed_docs_commit": "da4923d6e21ae913f1587418fe7f484b5b164ddd",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
