@@ -3,6 +3,8 @@ slug: "/Working_parameters"
 title: 'Working parameters'
 ---
 
+Working parameters are the settings that take effect during the platform's operation (after startup). They tune the behavior of the application server mechanisms that work with an already running system: connection pools, optimizer statistics, thresholds protecting against overly large or overly long queries, retry policy for conflicts and deadlocks, materialization of changes, memory-consumption measurements, form-element display, and so on. Unlike [launch parameters](Launch_parameters.md), a working parameter can be overridden in several layers, including at runtime and per user role.
+
 The platform working parameters can be set in one of the following ways (in the order of their priorities, lower priority at the bottom):
 
 -   In Java code in the `lsfusion.server.physics.admin.Settings.java` file (relevant for platform forks)

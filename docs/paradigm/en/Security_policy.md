@@ -3,6 +3,8 @@ slug: "/Security_policy"
 title: 'Security policy'
 ---
 
+The security policy determines which system elements — forms in the navigator, form properties, and so on — each user has access to. Access is granted not to individual users but to roles; a user is assigned a primary role and, where needed, additional roles. The effective access is combined across all of the user's roles: access is granted if any role explicitly permits it (`Permit`); otherwise, granted unless some role explicitly forbids it (`Forbid`); in the remaining case (every role says `Default`) — granted. For each role, access to navigator forms (`Permit` / `Forbid` / `Default`) and access to form properties (`View` / `Change` / `Follow`) are configured separately.
+
 ### Customizing user roles
 
 The system uses the concept of User. A user is an object that contains information about one person working in the system. 
@@ -30,6 +32,7 @@ For each Role you need to specify a name (`Name`) and a code (`Code`), and you c
 
 Fig. 3. Detailed property description
 - `Single form instance` - when selecting a form already open on the desktop in the navigator, the user will go to it, no additional window will be opened.  If there is a need to open several windows with this form, it is necessary to hold the `Ctrl` key when calling the form. This restriction can also be set for a specific user on the `Users` tab.
+- `Auto-reconnect on connection lost` – when the connection to the application server is dropped, the client reconnects to it automatically, without asking the user for confirmation.
 - `Forms on client’s startup` - for a role it is possible to define the forms that will be opened immediately after the user logs into the program. For this purpose, on the `Navigator` tab, in the `Number on client’s startup` field for the required forms the number in order is specified (see Fig. 2).
 - ` Maximize on client's startup` - on logging in, the program will be opened in the full screen mode ( the navigation menu will be hidden)
 - `Disable role` - access rights configured for the role will not be applicable. 
@@ -96,7 +99,7 @@ By default, there are 4 roles pre-installed in the platform:
 -	Administrator (admin)
 -	Readonly (readonly)
 -	Default (default)
--	Self register (selfregistar)
+-	Self register (selfRegister)
 
 
 :::info
