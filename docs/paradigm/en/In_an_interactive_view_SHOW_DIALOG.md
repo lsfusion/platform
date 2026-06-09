@@ -12,20 +12,23 @@ The operator works in two modes:
 -   *Synchronous* (`WAIT`) - waits for the user to **close** the form, then saves the execution results and passes control to the next action.
 -   *Asynchronous* (`NOWAIT`) - passes control to the next action right after **opening** a form on the client end.
 
-By default, the operator works in the synchronous mode.
+If neither mode is specified, the platform chooses one automatically: the operator works synchronously when the opened form is shown in a modal location, when the form it is opened from is itself modal, or when the current session may still be used after this action; otherwise it works asynchronously.
 
 ### Form location {#location}
 
-A form being opened can be shown in two ways:
+A form being opened can be shown in one of the following ways:
 
--   As a *window* (`FLOAT`)- the form is shown as a floating window.
+-   As a *window* (`FLOAT`) - the form is shown as a floating window.
 -   As a *tab* (`DOCKED`) - the form is opened as a tab in the system [window](Navigator_design.md) `System.forms`.
+-   As an *embedded form* (`EMBEDDED`) - the form is shown inline, embedded into the form it is opened from.
+-   As a *popup* (`POPUP`) - the form is shown in a floating popup attached to the element it is opened from.
+-   In a *container* (`IN`) - the form is docked into a specified container of the form it is opened from.
 
 By default, forms in the synchronous mode are shown as windows, in the asynchronous mode – as tabs.
 
 
 :::info
-In the current implementation of the platform, a form shown as a window is always modal, which means that the "asynchronous window" mode is not supported.
+In the current implementation of the platform, the floating window, the embedded form, and the popup are modal; the tab and the container form are not. This is the modality the platform uses when choosing the mode automatically (see above).
 :::
 
 ### System action management
@@ -51,6 +54,8 @@ The operator dialog form is available in the synchronous mode only.
 ### Extra features {#extra}
 
 When opening a form, you can specify that all of its properties should be available in the "read-only"mode. In this case, the behavior will be identical to the behavior when during form creation, the "read-only" mode is specified for each [property view](Interactive_view.md#property).
+
+You can also specify that, when the form is closed with `System.formOk`, all [constraints](Constraints.md) are checked first; if any of them is violated, the form stays open and is not closed.
 
 Also, when calling the form, you can specify that it will be opened in a [new](New_session_NEWSESSION_NESTEDSESSION.md) (nested) session. In this case, [passing objects](Open_form.md#params) and value input will be performed in the current session (so it makes sense to use this option only if you need to pass objects and/or input a value; otherwise, it makes more sense to use a [new session](New_session_NEWSESSION_NESTEDSESSION.md) operator).
 
