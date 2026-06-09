@@ -4,6 +4,8 @@ title: 'Install'
 sidebar_label: Overview
 ---
 
+The lsFusion platform is installed together with the additional applications it requires at runtime: a Java runtime, PostgreSQL, a web server (Apache Tomcat), and — for development — an IDE (IntelliJ IDEA) with the built-in lsFusion plugin. The platform can be installed in one of three ways — automatically, manually, or with Docker containers.
+
 ### Install automatically
 
 If you want to install the lsFusion platform and all of the additional applications it requires in one click, you can use special installers that will automate the process.

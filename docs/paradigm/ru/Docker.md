@@ -3,6 +3,8 @@ slug: "/Docker"
 title: 'Установка при помощи Docker'
 ---
 
+Установка при помощи Docker запускает платформу lsFusion — сервер базы данных, сервер приложений и веб-клиент — в виде трёх контейнеров, описанных в одном файле `compose.yaml`, без установки компонентов платформы на хост. Проект, наследующий [Maven](Development_manual.md#maven)-модуль платформы, также может собрать собственный Docker-образ приложения и сгенерировать собственный `compose.yaml`.
+
 :::info
 Для работы с Docker-контейнерами необходимо установить [Docker](https://docs.docker.com/get-docker/) и [Docker Compose](https://docs.docker.com/compose/).
 :::
