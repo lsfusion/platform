@@ -5,7 +5,7 @@ title: 'Static view'
 
 In *static* view, all form data is read at the time the form is [opened](Open_form.md), after which the obtained data is converted:
 
--   either to [print](Print_view.md) view - image or excel. Print view is also often referred to as a *report*
+-   either to [print](Print_view.md) view - one of the print formats (e.g. **PDF**, **Excel**). Print view is also often referred to as a *report*
 -   or to [structured](Structured_view.md) view - one of the corresponding data formats (e.g. **XML**, **JSON**, **CSV**, **DBF**)
 
 As a rule, structured view is used to load data into other information systems, while print view is used to view data by a user and print to a printer.
