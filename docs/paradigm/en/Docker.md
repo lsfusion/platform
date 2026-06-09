@@ -3,6 +3,8 @@ slug: "/Docker"
 title: 'Docker installation'
 ---
 
+The Docker installation runs the lsFusion platform — the database server, the application server, and the web client — as three containers described by a single `compose.yaml` file, without installing the platform components on the host. A project that inherits the [Maven](Development_manual.md#maven) module of the platform can also build its own Docker image of the application and generate its own `compose.yaml`.
+
 :::info
 To work with Docker containers, you need to install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/).
 :::
