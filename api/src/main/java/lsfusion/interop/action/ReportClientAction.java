@@ -11,6 +11,7 @@ public class ReportClientAction implements ClientAction {
     // ALL
     public boolean autoPrint;
     public String formCaption;
+    public String printerName;
 
     // WEB
     public Integer autoPrintTimeout;
@@ -23,31 +24,31 @@ public class ReportClientAction implements ClientAction {
     public String formSID;
     public boolean isModal;
     public boolean inDevMode;
-    public String printerName;
     public boolean useDefaultPrinterInPrintIfNotSpecified;
     public String password;
     public String sheetName;
     public boolean jasperReportsIgnorePageMargins;
 
-    public ReportClientAction(boolean autoPrint, String formCaption, Integer autoPrintTimeout, FileData fileData) {
+    public ReportClientAction(boolean autoPrint, String formCaption, String printerName, Integer autoPrintTimeout, FileData fileData) {
         this.autoPrint = autoPrint;
         this.formCaption = formCaption;
+        this.printerName = printerName;
 
         this.autoPrintTimeout = autoPrintTimeout;
         this.fileData = fileData;
     }
 
-    public ReportClientAction(boolean autoPrint, String formCaption, List<String> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
-                              FormPrintType printType, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, boolean inDevMode, String password, String sheetName, boolean jasperReportsIgnorePageMargins) {
+    public ReportClientAction(boolean autoPrint, String formCaption, String printerName, List<String> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
+                              FormPrintType printType, boolean useDefaultPrinterInPrintIfNotSpecified, boolean inDevMode, String password, String sheetName, boolean jasperReportsIgnorePageMargins) {
         this.autoPrint = autoPrint;
         this.formCaption = formCaption;
+        this.printerName = printerName;
 
         this.reportPathList = reportPathList;
         this.formSID = formSID;
         this.isModal = isModal;
         this.generationData = generationData;
         this.printType = printType;
-        this.printerName = printerName;
         this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
         this.inDevMode = inDevMode;
         this.password = password;

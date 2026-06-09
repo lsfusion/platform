@@ -239,6 +239,69 @@ public class GwtClientUtils {
 
     /*--- flutter methods end ---*/
 
+    /*--- web-agent methods ---*/
+    // Local helper process (see github.com/lsfusion/web-agent) that handles
+    // ClientActions which can't run in a plain browser — print, file ops,
+    // sockets, COM ports, etc. Same JSON envelope as the flutter bridge
+    // ({command, arguments, id}), so handlers in GwtActionDispatcher fall
+    // through to it whenever there is no Flutter object on the window.
+
+    public static final String DEFAULT_WEB_AGENT_URL = "http://127.0.0.1:8765";
+
+    public static native JavaScriptObject getWebAgentObject() /*-{
+        return $wnd.lsfWebAgent || null;
+    }-*/;
+
+    // Fire-and-forget GET /ping at startup; if the agent answers, store its
+    // descriptor on $wnd.lsfWebAgent so subsequent getWebAgentObject() succeeds.
+    public static native void probeWebAgent(String url, String token) /*-{
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url + '/ping', true);
+            xhr.timeout = 1500;
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        var info = JSON.parse(xhr.responseText);
+                        $wnd.lsfWebAgent = { url: url, token: token, info: info };
+                    } catch (e) {}
+                }
+            };
+            xhr.send();
+        } catch (e) {}
+    }-*/;
+
+    public static native void executeAgent(JavaScriptObject agent, String command, Object[] arguments,
+                                           AsyncCallback<JavaScriptObject> callback) /*-{
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', agent.url + '/execute', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        if (agent.token) xhr.setRequestHeader('X-WebAgent-Token', agent.token);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4) return;
+            var data;
+            try {
+                data = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+            } catch (e) {
+                data = { error: 'web-agent: invalid response (HTTP ' + xhr.status + ')' };
+            }
+            if (xhr.status === 0) {
+                // Transport failed — agent likely stopped mid-session. Clear the
+                // descriptor so subsequent calls take the no-agent path fast
+                // instead of paying the XHR timeout each time. Probe re-runs on
+                // page reload.
+                $wnd.lsfWebAgent = null;
+                data = { error: 'web-agent: not reachable' };
+            } else if (xhr.status >= 400 && data.error === undefined) {
+                data = { error: 'web-agent: HTTP ' + xhr.status };
+            }
+            callback.@lsfusion.gwt.client.base.GwtClientUtils.AsyncCallback::done(Ljava/lang/Object;)(data);
+        };
+        xhr.send(JSON.stringify({ command: command, arguments: arguments }));
+    }-*/;
+
+    /*--- web-agent methods end ---*/
+
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
     }-*/;

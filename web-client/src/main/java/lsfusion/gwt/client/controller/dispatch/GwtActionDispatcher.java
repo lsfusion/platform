@@ -295,7 +295,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        GwtClientUtils.openFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout);
+        if (action.fileData == null || action.printerName == null) {
+            GwtClientUtils.openFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout);
+        } else {
+            executeNoResultNative("print", new Object[]{action.fileData, null, null, action.printerName},
+                    () -> GwtClientUtils.openFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout));
+        }
     }
 
     @Override
@@ -418,7 +423,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GReadResult execute(GReadAction action) {
-        return executeAsyncResultFlutter("readFile", new String[] {action.sourcePath}, res -> {
+        return executeAsyncResultNative("readFile", new String[] {action.sourcePath}, res -> {
             String errorValue = getJSONError(res);
             return errorValue != null ?
                     new GReadResult(errorValue, null, null, null) :
@@ -428,7 +433,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public String execute(GDeleteFileAction action) {
-        return executeAsyncResultFlutter("deleteFile", new String[] {action.source}, this::getJSONStringResult);
+        return executeAsyncResultNative("deleteFile", new String[] {action.source}, this::getJSONStringResult);
     }
 
     protected <T> T executeAsyncResult(Consumer<BiConsumer<T, Throwable>> run) {
@@ -454,50 +459,80 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             run.accept(throwable -> {});
     }
 
-    private <T> T executeAsyncResultFlutter(String command, Object[] arguments, Function<JavaScriptObject, T> getResult) {
+    private <T> T executeAsyncResultNative(String command, Object[] arguments, Function<JavaScriptObject, T> getResult) {
         JavaScriptObject flutter = getFlutterObject();
         if (flutter != null) {
-            return executeAsyncResult(onResult -> executeFlutter(flutter, command, arguments, res -> onResult.accept(getResult.apply(res), null)));
-        } else {
-            throw new UnsupportedOperationException(command + " is supported only in flutter client");
+            return executeAsyncResult(onResult -> executeFlutter(flutter, command, arguments, res -> deliverNativeResult(res, getResult, onResult)));
         }
+        JavaScriptObject agent = getWebAgentObject();
+        if (agent != null) {
+            return executeAsyncResult(onResult -> executeAgent(agent, command, arguments, res -> deliverNativeResult(res, getResult, onResult)));
+        }
+        throw new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent");
     }
 
-    private static void executeNoResultFlutter(String command, Object[] arguments, Runnable noFlutter) {
+    // Converts an explicit {error: "..."} response from the flutter/agent bridge
+    // into a thrown exception when the caller's getResult callback didn't already
+    // wrap it (i.e. returned null because the expected "result" field was absent).
+    // Without this the server-side action receives a silent null and NPEs.
+    private <T> void deliverNativeResult(JavaScriptObject res, Function<JavaScriptObject, T> getResult, BiConsumer<T, Throwable> onResult) {
+        T value;
+        try {
+            value = getResult.apply(res);
+        } catch (Throwable t) {
+            onResult.accept(null, t);
+            return;
+        }
+        if (value == null) {
+            String error = getJSONError(res);
+            if (error != null) {
+                onResult.accept(null, new RuntimeException(error));
+                return;
+            }
+        }
+        onResult.accept(value, null);
+    }
+
+    private static void executeNoResultNative(String command, Object[] arguments, Runnable noNative) {
         JavaScriptObject flutter = getFlutterObject();
         if (flutter != null) {
             executeFlutter(flutter, command, arguments, res -> {});
-        } else {
-            if(noFlutter == null)
-                throw new UnsupportedOperationException(command + " is supported only in flutter client");
-
-            noFlutter.run();
+            return;
         }
+        JavaScriptObject agent = getWebAgentObject();
+        if (agent != null) {
+            executeAgent(agent, command, arguments, res -> {});
+            return;
+        }
+        if (noNative == null)
+            throw new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent");
+
+        noNative.run();
     }
 
     @Override
     public boolean execute(GFileExistsAction action) {
-        return executeAsyncResultFlutter("fileExists", new String[]{action.source}, this::getJSONBooleanResult);
+        return executeAsyncResultNative("fileExists", new String[]{action.source}, this::getJSONBooleanResult);
     }
 
     @Override
     public String execute(GMkDirAction action) {
-        return executeAsyncResultFlutter("makeDir", new String[] {action.source}, this::getJSONStringResult);
+        return executeAsyncResultNative("makeDir", new String[] {action.source}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GMoveFileAction action) {
-        return executeAsyncResultFlutter("moveFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
+        return executeAsyncResultNative("moveFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GCopyFileAction action) {
-        return executeAsyncResultFlutter("copyFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
+        return executeAsyncResultNative("copyFile", new String[] {action.source, action.destination}, this::getJSONStringResult);
     }
 
     @Override
     public GListFilesResult execute(GListFilesAction action) {
-        return executeAsyncResultFlutter("listFiles", new Object[] {action.source, action.recursive}, res -> getListFilesResult(new JSONObject(res).get("result")));
+        return executeAsyncResultNative("listFiles", new Object[] {action.source, action.recursive}, res -> getListFilesResult(new JSONObject(res).get("result")));
     }
 
     private GListFilesResult getListFilesResult(JSONValue res) {
@@ -526,48 +561,48 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if (action.fileUrl != null) {
             String downloadURL = getAppDownloadURL(action.fileUrl);
             //todo: status 401 from RestAuthenticationEntryPoint
-            executeNoResultFlutter("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath}, () -> fileDownload(downloadURL));
+            executeNoResultNative("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath}, () -> fileDownload(downloadURL));
         }
     }
 
     @Override
     public GRunCommandActionResult execute(GRunCommandAction action) {
-        return executeAsyncResultFlutter("runCommand", new String[]{action.command}, res -> new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
+        return executeAsyncResultNative("runCommand", new String[]{action.command}, res -> new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
     }
 
     @Override
     public String execute(GGetAvailablePrintersAction action) {
-        return executeAsyncResultFlutter("getAvailablePrinters", new String[] {}, this::getJSONStringResult);
+        return executeAsyncResultNative("getAvailablePrinters", new String[] {}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GPrintFileAction action) {
-        return executeAsyncResultFlutter("print", new String[] {action.fileData, action.filePath, null, action.printerName}, this::getJSONStringResult);
+        return executeAsyncResultNative("print", new String[] {action.fileData, action.filePath, null, action.printerName}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GWriteToPrinterAction action) {
-        return executeAsyncResultFlutter("print", new String[] {null, null, action.text, action.printerName}, this::getJSONStringResult);
+        return executeAsyncResultNative("print", new String[] {null, null, action.text, action.printerName}, this::getJSONStringResult);
     }
 
     @Override
     public String execute(GTcpAction action) {
-        return executeAsyncResultFlutter("sendTCP", new Object[] {action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)}, this::getJSONStringResult);
+        return executeAsyncResultNative("sendTCP", new Object[] {action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)}, this::getJSONStringResult);
     }
 
     @Override
     public void execute(GUdpAction action) {
-        executeNoResultFlutter("sendUDP", new Object[]{action.host, action.port, action.fileBytes}, null);
+        executeNoResultNative("sendUDP", new Object[]{action.host, action.port, action.fileBytes}, null);
     }
 
     @Override
     public void execute(GWriteToSocketAction action) {
-        executeNoResultFlutter("writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, null);
+        executeNoResultNative("writeToSocket", new Object[]{action.ip, action.port, action.text, action.charset}, null);
     }
 
     @Override
     public String execute(GPingAction action) {
-        return executeAsyncResultFlutter("ping", new String[] {action.host}, this::getJSONStringResult);
+        return executeAsyncResultNative("ping", new String[] {action.host}, this::getJSONStringResult);
     }
 
     private boolean getJSONBooleanResult(JavaScriptObject res) {
@@ -612,7 +647,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public String execute(GWriteToComPortAction action) {
-        return executeAsyncResultFlutter("writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, this::getJSONStringResult);
+        return executeAsyncResultNative("writeToComPort", new Object[] {action.comPort, action.baudRate, action.file}, this::getJSONStringResult);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
