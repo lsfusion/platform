@@ -46,6 +46,8 @@ imageSetting
 CLASS classExpr
 HEADER headerExpr
 SHOWIF showIfExpr
+CHANGEKEY key [showSetting]
+CHANGEMOUSE key [showSetting]
 ```
 
 ### Description
@@ -167,6 +169,36 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
         Expression whose value determines visibility of the navigator element.
 
+- `CHANGEKEY key [showSetting]`
+
+    Specifying the [key combination](../paradigm/Form_events.md#keyboard) that selects this navigator element when pressed.
+
+    - `key`
+
+        [String literal](Literals.md#strliteral) describing the key combination.
+
+    - `showSetting`
+
+        Display of the combination in the navigator element's caption. Specified by one of the keywords:
+
+        - `SHOW` - the combination is shown in the navigator element's caption.
+        - `HIDE` - the combination is not shown (default value).
+
+- `CHANGEMOUSE key [showSetting]`
+
+    Specifying the mouse key combination that selects this navigator element when pressed.
+
+    - `key`
+
+        String literal describing the mouse key combination.
+
+    - `showSetting`
+
+        Display of the combination in the navigator element's caption. Specified by one of the keywords:
+
+        - `SHOW` - the combination is shown in the navigator element's caption.
+        - `HIDE` - the combination is not shown (default value).
+
 ### Examples
 
 ```lsf
@@ -195,8 +227,8 @@ NAVIGATOR {
     NEW FOLDER documents 'Documents' WINDOW toolbar { 
         // the folders themselves will be displayed in the root window, and when the user selects one of them
         // in a window with a vertical toolbar the descendants of this particular folder will be shown
-        NEW ACTION hi;   // creating an action element
-        NEW ACTION h=hello;   // creating an action element
+        NEW ACTION hi CHANGEKEY 'ctrl I' SHOW;   // an action element with a hot key shown in its caption
+        NEW ACTION h=hello CHANGEMOUSE 'DBLCLK' SHOW;   // an action element triggered by a double mouse click
         // the statement to move the shipments element from the catalogs folder to the document folder
         // before the hello element
         MOVE shipments BEFORE h; 
