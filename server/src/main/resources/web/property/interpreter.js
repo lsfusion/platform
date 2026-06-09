@@ -74,6 +74,13 @@ function interpreter() {
                 }
             });
 
+            function commit(editorValue) {
+                if (element.controller && element.currentValue !== editorValue && !aceEditor.getReadOnly()) {
+                    element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
+                    element.currentValue = editorValue;
+                }
+            }
+
             aceEditor.onBlur = function (e) {
                 // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
                 let completer = aceEditor.completer;
@@ -91,12 +98,24 @@ function interpreter() {
                     editorValue = '';
                     aceEditor.setValue(editorValue, true);
                 }
-                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue && !aceEditor.getReadOnly()) {
-                    element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
-
-                    element.currentValue = editorValue;
-                }
+                if (e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget))
+                    commit(editorValue);
             }
+
+            let commitTimer = null;
+            aceEditor.on("change", function () {
+                if (commitTimer)
+                    clearTimeout(commitTimer);
+
+                commitTimer = setTimeout(function () {
+                    commitTimer = null;
+                    let editorValue = aceEditor.getValue();
+                    if (editorValue === aceEditor.defaultValue)
+                        editorValue = '';
+
+                    commit(editorValue);
+                }, 500);
+            });
 
             element.currentValue = aceEditor.getValue();
         },
@@ -127,7 +146,7 @@ function interpreter() {
                 let editorValue = value.text;
                 let currentEditorValue = aceEditor.getValue();
                 // first check means that there is no editing is done (because we don't have any start / end editing here)
-                if (currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
+                if (!aceEditor.container.contains(document.activeElement) && currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
                     aceEditor.setValue(editorValue, true);
 
                     element.currentValue = editorValue;
