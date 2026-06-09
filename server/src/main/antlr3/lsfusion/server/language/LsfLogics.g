@@ -5478,7 +5478,7 @@ changeKeyNavigatorElement returns [String changeKey, boolean show = false]
 		)?
 	;
 
-changeMouseNavigatorElement returns [String changeMouse, Boolean show]
+changeMouseNavigatorElement returns [String changeMouse, boolean show = false]
 	:	'CHANGEMOUSE' key = stringLiteral {$changeMouse = $key.val;}
 		(	('SHOW' { $show = true; })
 		|	('HIDE' { $show = false; })
