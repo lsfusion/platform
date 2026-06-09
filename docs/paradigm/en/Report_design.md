@@ -23,4 +23,4 @@ The LGPL technology [JasperReports](https://community.jaspersoft.com/project/jas
 
 ### Language
 
-To specify the template of the form and of its individual reports, use the [`FORM` statement](../language/FORM_statement.md).
+Which template (report file) is used for the form and for its individual reports can be specified explicitly through the [`FORM` statement](../language/FORM_statement.md).
