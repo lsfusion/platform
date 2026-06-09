@@ -9,6 +9,7 @@ title: 'Операторы формы'
 -   [Операции с группами объектов](Object_group_operators.md)
 -   [Управление фокусом](Focus_operators.md)
 -   [Снимок](Capture_SCREENSHOT.md)
+-   [Видимость контейнеров](Container_visibility_EXPAND_COLLAPSE.md)
 
  
 

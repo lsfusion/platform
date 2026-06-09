@@ -257,6 +257,8 @@ module.exports = {
                                     'paradigm/Filter_FILTER',
                                     'paradigm/Order_ORDER',
                                     'paradigm/View_VIEW',
+                                    'paradigm/Selection_SELECT',
+                                    'paradigm/View_type_VIEWTYPE',
                                   ]
                                 },
                                 {
@@ -269,6 +271,7 @@ module.exports = {
                                   ]
                                 },
                                 'paradigm/Capture_SCREENSHOT',
+                                'paradigm/Container_visibility_EXPAND_COLLAPSE',
                               ]
                             },
                           ]

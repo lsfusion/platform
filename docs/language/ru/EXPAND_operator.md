@@ -3,16 +3,24 @@ slug: "/EXPAND_operator"
 title: 'Оператор EXPAND'
 ---
 
-Оператор `EXPAND` - создание [действия](../paradigm/Actions.md), реализующего [разворачивание элементов](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree).
+Оператор `EXPAND` создаёт [действие](../paradigm/Actions.md), которое разворачивает либо [элементы](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree) на форме, либо [сворачиваемый контейнер](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) формы.
 
 ### Синтаксис
 ```
 EXPAND [expandType] formObjectGroupId [OBJECTS objName1 = expr1, ..., objNameN = exprN]
 ```
 
+Для разворачивания контейнера формы:
+
+```
+EXPAND CONTAINER formName.componentSelector
+```
+
 ### Описание
 
-Оператор `EXPAND` создает действие, которое позволяет развернуть определенные элементы дерева объектов на форме. Эти элементы могут быть определены с помощью блока `OBJECTS`. Если этот блок не указан, то операция разворачивания будет применена либо к текущему элементу дерева, либо к верхнему уровню элементов указанной [группы объектов](../paradigm/Form_structure.md#objects), в зависимости от типа операции. 
+Первая форма создает действие, которое позволяет развернуть определенные элементы дерева объектов на форме. Эти элементы могут быть определены с помощью блока `OBJECTS`. Если этот блок не указан, то операция разворачивания будет применена либо к текущему элементу дерева, либо к верхнему уровню элементов указанной [группы объектов](../paradigm/Form_structure.md#objects), в зависимости от типа операции.
+
+Форма с ключевым словом `CONTAINER` создаёт действие, которое разворачивает контейнер формы, в контексте которой выполняется действие, показывая его содержимое.
 
 ### Параметры
 
@@ -50,6 +58,14 @@ EXPAND [expandType] formObjectGroupId [OBJECTS objName1 = expr1, ..., objNameN =
 
     [Выражения](Expression.md), значения которых являются искомыми значениями соответствующих объектов в указанной группе объектов.
 
+- `formName`
+
+    Имя формы. [Составной идентификатор](IDs.md#cid).
+
+- `componentSelector`
+
+    [Селектор](DESIGN_statement.md#selector) компонента дизайна. Компонент должен быть сворачиваемым контейнером.
+
 ### Примеры
 
 ```lsf
@@ -72,5 +88,31 @@ expandAllTop {
 
 EXTEND FORM expandCollapseTest
     PROPERTIES() expandDown, expandUp, expandAllTop
+;
+```
+
+```lsf
+CLASS Store;
+name = DATA ISTRING[100] (Store);
+
+FORM dashboard
+    OBJECTS s = Store
+    PROPERTIES(s) name
+;
+
+DESIGN dashboard {
+    NEW detailsBox {
+        collapsible = TRUE;
+        caption = 'Детали';
+        MOVE BOX(s);
+    }
+}
+
+expandDetails {
+    EXPAND CONTAINER dashboard.detailsBox;
+}
+
+EXTEND FORM dashboard
+    PROPERTIES() expandDetails
 ;
 ```
