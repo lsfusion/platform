@@ -36,7 +36,7 @@ Each window occupies a predefined section of the desktop. Graphically, this can 
     }}
 />
 
-The entire desktop is `100 x 100` *pixels* in size. When creating a window, you must specify the window's upper left coordinate, width and height, expressed in *pixels*. It is desirable that windows should "cover" the entire area of the desktop. If this does not happen, then the free area will be given to one of the windows (there is no guarantee as to which one). Two windows are allowed to have absolutely identical coordinates and sizes. In this case they will be displayed in the same place, but switching between them will be possible using tabs.
+The entire desktop is `100 x 100` *points* in size. When creating a window, you must specify the window's upper left coordinate, width and height, expressed in *points*. It is desirable that windows should "cover" the entire area of the desktop. If this does not happen, then the free area will be given to one of the windows (there is no guarantee as to which one). Two windows are allowed to have absolutely identical coordinates and sizes. In this case they will be displayed in the same place, but switching between them will be possible using tabs.
 
 ### Selected folder {#selectedfolder}
 

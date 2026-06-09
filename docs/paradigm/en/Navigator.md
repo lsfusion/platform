@@ -9,9 +9,16 @@ title: 'Navigator'
 -   *action* – executes a specified [action](Actions.md). Only actions that take no arguments can be added to the navigator.
 -   *form* – [opens](In_an_interactive_view_SHOW_DIALOG.md) a specified [form](Forms.md) in the interactive view and the [asynchronous](In_an_interactive_view_SHOW_DIALOG.md#flow) mode.
 
-When an element is added to the navigator, a *parent* element is defined for it. The root element of the navigator is the `System.root` folder. 
+When an element is added to the navigator, a *parent* element is defined for it; among the children of one folder the elements are ordered. The root element of the navigator is the `System.root` folder.
 
 If no navigator elements are displayed in a particular navigator folder, this folder is automatically hidden.
+
+A navigator element can additionally be given:
+
+-   a *caption* shown to the user — a fixed text or the current value of a property, in which case it depends on data;
+-   a *visibility condition* — the element is shown only when the specified condition holds;
+-   an *icon*, chosen or set by the [common icon assignment mechanism](Icons.md);
+-   a *hot key* and a *mouse binding* that trigger the element just as selecting it does.
 
 Just as an [interactive](Interactive_view.md) form view, the navigator is displayed in a 2D space: on the user's device screen. Therefore, it's [design](Navigator_design.md) can/has to be defined, as well as for all other [graphic](Form_views.md#graphic) views.
 
