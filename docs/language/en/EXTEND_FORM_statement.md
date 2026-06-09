@@ -9,27 +9,27 @@ The `EXTEND FORM` statement [extends](../paradigm/Form_extension.md) an existing
 
 ```
 EXTEND FORM formName 
-    formBlock1
+    [formBlock1
     ...
-    formBlockN
+    formBlockN]
 ;
 ```
 
 ### Description
 
-The `EXTEND FORM` statement allows you to extend an existing form with additional [form blocks](FORM_statement.md#blocks).
+The `EXTEND FORM` statement allows you to extend an existing form with additional [form blocks](FORM_statement.md#blocks), written just as in a form declaration. Within these blocks you can refer to the objects, properties, and actions already declared on the form — for example, to place a new element relative to an existing one, or to filter an added object group by an object already on the form.
 
 ### Parameters
 
 - `formName`
 
-    The name of the form being extended. [Composite ID](IDs.md#cid).
+    The name of the form being extended. [Composite ID](IDs.md#cid). It must refer to a form that already exists, declared in this or another [module](../paradigm/Modules.md); a new form is not created. The form keeps the caption and icon set at its declaration; they are not specified here.
 
 - `formBlock1 ... formBlockN`
 
     Form blocks.
 
-### Example
+### Examples
 
 ```lsf
 CLASS ItemGroup;
