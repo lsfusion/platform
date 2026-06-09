@@ -14,8 +14,6 @@ PRINT [executionType]
       [printOptions]
 ```
 
-Где `executionType` - одно из ключевых слов: `CLIENT`, `SERVER`.
-
 `formSpec` принимает один из двух следующих вариантов.
 
 ```
@@ -27,8 +25,6 @@ name [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
 ```
 classFormType className = expr [NULL]
 ```
-
-Где `classFormType` - одно из ключевых слов: `LIST`, `EDIT`.
 
 `printOptions` принимает один из двух следующих вариантов.
 
@@ -47,14 +43,6 @@ MESSAGE [syncType] [messageType]
 [syncType]
 [TO printerExpr]
 ```
-
-Где `format` - одно из ключевых слов: `PDF`, `XLS`, `XLSX`, `DOC`, `DOCX`, `RTF`, `HTML`.
-
-Где `syncType` - одно из ключевых слов: `WAIT`, `NOWAIT`.
-
-Где `previewMode` - одно из ключевых слов: `PREVIEW`, `NOPREVIEW`.
-
-Где `messageType` - одно из ключевых слов: `LOG`, `INFO`, `SUCCESS`, `WARN`, `ERROR`, `DEFAULT`.
 
 Где `topLimit` и `offsetLimit` задаются одним из следующих способов:
 

@@ -14,8 +14,6 @@ PRINT [executionType]
       [printOptions]
 ```
 
-Where `executionType` is one of the keywords: `CLIENT`, `SERVER`.
-
 `formSpec` takes one of the two forms below.
 
 ```
@@ -27,8 +25,6 @@ or:
 ```
 classFormType className = expr [NULL]
 ```
-
-Where `classFormType` is one of the keywords: `LIST`, `EDIT`.
 
 `printOptions` takes one of the two forms below.
 
@@ -47,14 +43,6 @@ Interactive mode:
 [syncType]
 [TO printerExpr]
 ```
-
-Where `format` is one of the keywords: `PDF`, `XLS`, `XLSX`, `DOC`, `DOCX`, `RTF`, `HTML`.
-
-Where `syncType` is one of the keywords: `WAIT`, `NOWAIT`.
-
-Where `previewMode` is one of the keywords: `PREVIEW`, `NOPREVIEW`.
-
-Where `messageType` is one of the keywords: `LOG`, `INFO`, `SUCCESS`, `WARN`, `ERROR`, `DEFAULT`.
 
 Where `topLimit` and `offsetLimit` are each defined as:
 
