@@ -12604,7 +12604,7 @@
     },
     "paradigm/System_Authentication.md": {
       "file_hash": "sha256:c8456ed9559792b0754dd4eada8234ccb78c70507954af8d74034cc2183ede3e",
-      "indexed_at": "2026-06-10T12:36:38Z",
+      "indexed_at": "2026-06-10T12:54:54Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12623,6 +12623,12 @@
           "file_id": "file-Ve93h2Z5zR7Nb8hip692V4",
           "heading_path": "Authentication",
           "section_payload_hash": "sha256:996667bf9815fafbc5f862ef29ffd3d31c5cd96cf6d7d0567f24c8675fc9cf99",
+          "source_file": "paradigm/System_Authentication.md"
+        },
+        "System_Authentication::authentication-providers-and-settings": {
+          "file_id": "file-89xWY5B6z4n2GzBeJzhfTH",
+          "heading_path": "Authentication > Authentication providers and settings",
+          "section_payload_hash": "sha256:7ffe9460c2228b2350ff905e69ea026357d55619d9903e3c7786df8945477ab1",
           "source_file": "paradigm/System_Authentication.md"
         },
         "System_Authentication::computers": {
@@ -12647,6 +12653,12 @@
           "file_id": "file-FGZ7RPPGh2Apd1nPdRXa9P",
           "heading_path": "Authentication > Date-time picker ranges",
           "section_payload_hash": "sha256:ef6b0af3badc9160c842a9e6d6db8485d8cac892a04d364794145420bd8a402d",
+          "source_file": "paradigm/System_Authentication.md"
+        },
+        "System_Authentication::design-environment": {
+          "file_id": "file-CYQX954WFKAnhWQHjbVGs3",
+          "heading_path": "Authentication > Design environment",
+          "section_payload_hash": "sha256:eafbc76e09045c4c6d95d5a9b0109f2bee732c36961ef1b1fc574a736292995e",
           "source_file": "paradigm/System_Authentication.md"
         },
         "System_Authentication::forms-and-navigator": {
@@ -12710,7 +12722,7 @@
           "source_file": "paradigm/System_Authentication.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/System_Email.md": {
       "file_hash": "sha256:308157f529df9fb0426712df5cb7072eb4ec667d51cf2534263b7e3cd8f17fed",
@@ -14065,7 +14077,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3f90bcb5f8e81c7552fc7e691e80eee74d561237",
+  "last_indexed_docs_commit": "c04b2e6b24f6c26eeb64178a2fa2c8e66ebe9def",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
