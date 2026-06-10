@@ -195,8 +195,8 @@
       "stale": false
     },
     "how-to/Examples.md": {
-      "file_hash": "sha256:62ac345be10523875edd2e458b4d77a799e93b616396d379d7502a9afee7218a",
-      "indexed_at": "2026-05-25T10:09:54Z",
+      "file_hash": "sha256:b7f610989b8398ded87158f27447d5a322122ed7bfd1c305fe9aad8786a6b30f",
+      "indexed_at": "2026-06-10T09:15:15Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -212,15 +212,21 @@
           "source_file": "how-to/Examples.md"
         },
         "Examples::materials-management": {
-          "file_id": "file-TrBDzy8GsBz2dBDmZNcM5g",
+          "file_id": "file-We1jcARnFDzdLxUTEejvDH",
           "heading_path": "Examples > Materials management",
-          "section_payload_hash": "sha256:5c31d62fd3664b018a6f37c270b660deb8582b29eeb26f20939a0d5297c2fe7e",
+          "section_payload_hash": "sha256:6b3c91b04cff5233e904c177df3132b6d85df9457d892d7d40d26ca637340679",
           "source_file": "how-to/Examples.md"
         },
         "Examples::score-table": {
-          "file_id": "file-QBBzGFVHDza38oMMiSeK7p",
+          "file_id": "file-6PeEjrBoKvzCnLRhBPubQ5",
           "heading_path": "Examples > Score table",
-          "section_payload_hash": "sha256:63fd2675fd74c5e60af7c640989d4a846b24ad83e85f90603c0e14aa3c8ca417",
+          "section_payload_hash": "sha256:e9647d3cd912a19dc0988cd89dc5258a72745b4def9b9d0132e8d26b4eeb8e89",
+          "source_file": "how-to/Examples.md"
+        },
+        "Examples::uefa-country-coefficient-calculation": {
+          "file_id": "file-T4ENKjHknNcYyhrJHykgjJ",
+          "heading_path": "Examples > UEFA country coefficient calculation",
+          "section_payload_hash": "sha256:1d839c4a44cd1b4c14dd2a60aec558dfcd30c4358bbbf2505c4638dd8073597e",
           "source_file": "how-to/Examples.md"
         }
       },
@@ -2281,8 +2287,8 @@
       "stale": false
     },
     "how-to/Learning_materials.md": {
-      "file_hash": "sha256:4e5cc971da841e9bf2e1b62b9d3f647d9d66d5226ee672d36fbc1a2b4d35cb04",
-      "indexed_at": "2026-05-25T09:59:29Z",
+      "file_hash": "sha256:238dd524718043b917638e488d92d053f8c3019f8c09257a8c37db0c24980315",
+      "indexed_at": "2026-06-10T09:15:31Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2292,9 +2298,9 @@
       },
       "sections": {
         "Learning_materials::beginners-guidehttpslsfusion.orgrued_materials": {
-          "file_id": "file-NXXUNxhUKJsvTTRWmuojfE",
+          "file_id": "file-Kc6yCBaLfMrr4so3ySgtMr",
           "heading_path": "Learning materials > [Beginner's Guide](https://lsfusion.org/ru/ed_materials)",
-          "section_payload_hash": "sha256:aa40705de1fee6d2d4ae340ffa1bbf3b0c11800213ec080cac141229a292eda3",
+          "section_payload_hash": "sha256:634c2495d98ee944eb78b7a007bfa2e234345c57ad2672a0c84d83198054dd25",
           "source_file": "how-to/Learning_materials.md"
         },
         "Learning_materials::learning-materials": {
@@ -2304,9 +2310,9 @@
           "source_file": "how-to/Learning_materials.md"
         },
         "Learning_materials::video-tutorialshttpswww.youtube.complaylistlist=pl8fg-rmfun1oc30vaw1em3deszv5elq43+examplesexamples.md+typical-taskshow-to.md": {
-          "file_id": "file-MnizrEqy6ox3YfGHiefSRq",
+          "file_id": "file-5VPaUCE1ZkNcLXRVARr4xJ",
           "heading_path": "Learning materials > [Video Tutorials](https://www.youtube.com/playlist?list=PL8FG-RmfUn1Oc30Vaw1Em3DeSzV5ElQ43) + [Examples](Examples.md) + [Typical tasks](How-to.md)",
-          "section_payload_hash": "sha256:d525f108637464137efd0a4f850edeb622f460dfe28641f9c4103d3a09ce58f2",
+          "section_payload_hash": "sha256:becbb95a69a57d63f170bd9f7610f3d43473e50a98657d16401afd3aec9b9645",
           "source_file": "how-to/Learning_materials.md"
         }
       },
@@ -2387,8 +2393,8 @@
       "stale": false
     },
     "how-to/Online_demo.md": {
-      "file_hash": "sha256:79fc21cf3286920000f1c95bdd38354c6e17d1d00508a8ee19a9131c6b58bbd8",
-      "indexed_at": "2026-05-25T10:00:22Z",
+      "file_hash": "sha256:f0e9e364b5a1d484a4e18645bda07429a1b612890993d1d1ce69ac17b4047a1b",
+      "indexed_at": "2026-06-10T09:15:49Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2398,21 +2404,21 @@
       },
       "sections": {
         "Online_demo::materials-management-mm-mm": {
-          "file_id": "file-VEgP3GA2xTDLNpnDADPpDb",
+          "file_id": "file-4hk67z3MrdviqQvZzpkHZF",
           "heading_path": "Online demo > Materials management (MM) {#mm}",
-          "section_payload_hash": "sha256:28bcdd7089bf19c07db523174aafa125df80a968a67815789366210890e087a4",
+          "section_payload_hash": "sha256:40776f499f0cea984c4efc2232274be2a7176a2ef9b5ce0dbeec21a689775704",
           "source_file": "how-to/Online_demo.md"
         },
-        "Online_demo::mycompany": {
-          "file_id": "file-1etBBrNXUPt5A2pk9U2rCo",
-          "heading_path": "Online demo > MyCompany",
-          "section_payload_hash": "sha256:f8b891ec3b8b260f43e13caa7e0a59056a36f976f12b7f9b9c51de6e12c4cbe9",
+        "Online_demo::mycompany+erp": {
+          "file_id": "file-KfAfgNWwwJoYDYrWDeiWCp",
+          "heading_path": "Online demo > MyCompany + ERP",
+          "section_payload_hash": "sha256:eb3d9fe0feab270da7b3b6d4f6ce48cd77343da020fc856859c1f841943f2c3b",
           "source_file": "how-to/Online_demo.md"
         },
         "Online_demo::online-demo": {
-          "file_id": "file-3XDoScVRJVC8XtrxmLAE1G",
+          "file_id": "file-Vi4MMd74V6oUFrmyZy6hyc",
           "heading_path": "Online demo",
-          "section_payload_hash": "sha256:81889f02ff1d06284f196b81cdade62328e1e810a7a0fa1201baea598c93b1ae",
+          "section_payload_hash": "sha256:42d4a6bea1b05c07fd3facadaa9f34c704fdd7e0b33dd69b3d1a9df5d4882964",
           "source_file": "how-to/Online_demo.md"
         },
         "Online_demo::score-table": {
@@ -13413,7 +13419,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "8ba6a067e9d0c02c042f3bf8e496d794ee3671f5",
+  "last_indexed_docs_commit": "3f90bcb5f8e81c7552fc7e691e80eee74d561237",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
