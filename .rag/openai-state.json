@@ -3863,8 +3863,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:2fe5904be303cacdb133114a1beea9398dca95c65556f22d4f69d5179cb9ad1e",
-      "indexed_at": "2026-06-05T10:52:45Z",
+      "file_hash": "sha256:13b8b3eb7f9bd2bc9740a7994a4cae44ba1ac024c2db9ad1fc5eebb522b4220b",
+      "indexed_at": "2026-06-10T06:47:12Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3880,15 +3880,15 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::component-properties": {
-          "file_id": "file-WBRUgtACdZB3V9UXirvFdw",
+          "file_id": "file-WxCaX51hoTLpChFWRgk4S9",
           "heading_path": "DESIGN statement > Parameters > Component properties",
-          "section_payload_hash": "sha256:48db587066bbebead9634d1db1b4a7c27eaeb227422df14011092804ed12243d",
+          "section_payload_hash": "sha256:f2bc9fb638a17f02c30091f61beb75aa6eafa0a61e169e774192f03e3f61297d",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::container-properties": {
-          "file_id": "file-St5kZ1whjt641jmfSjKbXW",
+          "file_id": "file-C7Q9nvtoPDiqy4oDK5nLih",
           "heading_path": "DESIGN statement > Parameters > Container properties",
-          "section_payload_hash": "sha256:0c08c6e6eeac5afd9bd5197ae65f75c4404cf79999611b3a2a05e885bef5d77d",
+          "section_payload_hash": "sha256:71268843fa51c50719fe00adc92e53e4fb7a5c34d3cb24c3f89def06341cda8d",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::description": {
@@ -3910,45 +3910,45 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::grid-properties": {
-          "file_id": "file-HmQJharskf6MgT1HiSmZcz",
+          "file_id": "file-5j4P9mq8MHn5ZtrhkN2BhS",
           "heading_path": "DESIGN statement > Parameters > Grid properties",
-          "section_payload_hash": "sha256:e27fce661f3bfd1a4eef2f6a22611e8d5d1d2e36f7aa739dad7b1734634d1c8c",
+          "section_payload_hash": "sha256:3542a6e6c2010d525d4ccb74c2c7cbae750256bde16bc1dddcbbb8a45ffec8ee",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::other-properties": {
-          "file_id": "file-MYw4EAS65bSKQqfGCTFDX1",
+          "file_id": "file-LiGKE9GTht4Jk7GcupFbCA",
           "heading_path": "DESIGN statement > Parameters > Other properties",
-          "section_payload_hash": "sha256:0d58094b577553e24069b9273d6d8c9a4929b3eb600c01efacb7993f1cdf5886",
+          "section_payload_hash": "sha256:98d64a3c3a4b1b320940883c02f4067f947d6467ff0d6bd4fc07c0f9d3d5f2e7",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::properties-of-actions-and-properties-on-the-form::part-00": {
-          "file_id": "file-CVm9RK8dnwSHGFw3R38r8V",
+          "file_id": "file-5yEbtdy1q2wHLXk7zGJkFK",
           "heading_path": "DESIGN statement > Parameters > Properties of actions and properties on the form",
-          "section_payload_hash": "sha256:520a1ff21563bd8dd0cbb3659820daae3d770ff76c84c4b64ce48a9015c316db",
+          "section_payload_hash": "sha256:b6e9b160c65f2e31b5461de0c327c743444f4f73d86540730dd6a605700320d6",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::properties-of-actions-and-properties-on-the-form::part-01": {
-          "file_id": "file-W6XtDrSNs7iWJgnWtcwBbL",
+          "file_id": "file-EWk7CN3veuEPTeuVVqbBTk",
           "heading_path": "DESIGN statement > Parameters > Properties of actions and properties on the form",
-          "section_payload_hash": "sha256:bdc887394e20980a3e7188b3bada0168c73f6b9333a159348a44d29201372ee9",
+          "section_payload_hash": "sha256:51f8d8dffcb27bd902132c5a57805d774bd38fd56a0bf52d79df2cde0d869200",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::selector-parameters": {
-          "file_id": "file-TuFnLYAm7R1NexZmvUXnU1",
+          "file_id": "file-7g3uZjoJ61RCVECSbpkN4F",
           "heading_path": "DESIGN statement > Parameters > `selector` parameters",
-          "section_payload_hash": "sha256:2ad595122c85eb6db9f8ca417092fe408635482e8e9beffc63f5ea2d4faeb247",
+          "section_payload_hash": "sha256:3f4e2ee4a96fcc94868151db1fb3c5c41ffea132f45355c40e3d8f95b41298d5",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::syntax": {
-          "file_id": "file-BPAWbJrsDGdca5dukB7C2Y",
+          "file_id": "file-Ryok834JXUFXEsck7CVsWW",
           "heading_path": "DESIGN statement > Syntax",
-          "section_payload_hash": "sha256:6339f37becec9c11e2262b2f531a1282549be8325da6747b10fa9f706e3bc1a9",
+          "section_payload_hash": "sha256:3e7dcbcc886abde8f15b7d9fa1c05cac07f0416aa9522475d48d0db6761353c6",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::toolbar-properties": {
-          "file_id": "file-6Y2Ktdf8nEKQ4EZXAwFZj9",
+          "file_id": "file-XbrH2avtpi4dYywQTJELVf",
           "heading_path": "DESIGN statement > Parameters > Toolbar properties",
-          "section_payload_hash": "sha256:57056e96fe091cea2c51221cf35797e0e315962d6d1c43397e433743794ebc48",
+          "section_payload_hash": "sha256:ae77f144f63a98d0a33b01c0abe650f003d8ae9c54b5abaf71de974de454eab9",
           "source_file": "language/DESIGN_statement.md"
         }
       },
@@ -6363,8 +6363,8 @@
       "stale": false
     },
     "language/Pivot_block.md": {
-      "file_hash": "sha256:49b9ab23cf4bc36a8ce00cbf73e10f77afcea028302d1ea882074c51defc2b5d",
-      "indexed_at": "2026-05-22T22:40:40Z",
+      "file_hash": "sha256:e9f8b249b04742431bce6d580d9295f2d67682f859423a049b890bad0f99bdf7",
+      "indexed_at": "2026-06-10T06:48:10Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6386,9 +6386,9 @@
           "source_file": "language/Pivot_block.md"
         },
         "Pivot_block::parameters": {
-          "file_id": "file-XF4JbG7DccEUmCXST5UjJZ",
+          "file_id": "file-VfqyeZZyMcAHocLFpUbSdH",
           "heading_path": "Pivot table settings block > Parameters",
-          "section_payload_hash": "sha256:9882ab626899030fd2ff831d9dc1fe6a50aa79fd40aaf60b0edbba89411c9dde",
+          "section_payload_hash": "sha256:bce6665989f571008cf44d907153805d377b616397f8514a2bb524d5061387f4",
           "source_file": "language/Pivot_block.md"
         },
         "Pivot_block::pivot-table-settings-block": {
@@ -6398,9 +6398,9 @@
           "source_file": "language/Pivot_block.md"
         },
         "Pivot_block::syntax": {
-          "file_id": "file-UUJmzmkbxbUKte6DUpujMt",
+          "file_id": "file-LPTo7BdU2LWxzjijVWw19W",
           "heading_path": "Pivot table settings block > Syntax",
-          "section_payload_hash": "sha256:ce5c8b6c24d9751b502e6159fc65bcff60ec0a4fb7f39910d539ea5e1481648a",
+          "section_payload_hash": "sha256:8c6b7ceea88b74c81e8d8a3c14c81d28f0dcc7a6246f4d07d311d1fd3cfdcc31",
           "source_file": "language/Pivot_block.md"
         }
       },
@@ -9426,8 +9426,8 @@
       "stale": false
     },
     "paradigm/Form_design.md": {
-      "file_hash": "sha256:71b6b7c116fd67a4e8b23516f59e354b70fa2bd8d23f0061c92b07e03a4a8487",
-      "indexed_at": "2026-05-22T23:15:40Z",
+      "file_hash": "sha256:96d0fe08244f9d9ae28fdd7cd214e518ddcb447388b3c2bac84dc03728404206",
+      "indexed_at": "2026-06-10T06:48:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9437,21 +9437,21 @@
       },
       "sections": {
         "Form_design::base-components": {
-          "file_id": "file-8wAfbRaGBu8ChAcY3afgkk",
+          "file_id": "file-8TxnQ8pFqURej5ceJCfPhi",
           "heading_path": "Form design > Base components",
-          "section_payload_hash": "sha256:4e187246a7560a383b23ceb8f3ee6af1aa10e6338b3b14e1915a8cbd155fc106",
+          "section_payload_hash": "sha256:7b3c6eee17ba4b1d43dbbd234a0be2c9914a8fdf60c060df56f6bc739782ad16",
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::containers-containers": {
-          "file_id": "file-RmFJYMgZr7BprFVod4LNhb",
+          "file_id": "file-3HkMQvKv7Qk5itJcPY7hn9",
           "heading_path": "Form design > Containers {#containers}",
-          "section_payload_hash": "sha256:ca136ee751481bb340fa293710148b0828c97646e34e324cb7502e8eda04b544",
+          "section_payload_hash": "sha256:42478b8f0b1bcf51496cdd07b8eca5cdeddfc12f8ce6671ae1d7e08bc3246a5f",
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::default-design-defaultdesign": {
-          "file_id": "file-VjVCrZySNPJShWgYKVq1Ex",
+          "file_id": "file-9QxQmt2d1isk5syKeCSgqE",
           "heading_path": "Form design > Default design {#defaultDesign}",
-          "section_payload_hash": "sha256:c27dc1d620fce19a97a700608d555dd1cbc8502896a7a3d0341eda2e538aa933",
+          "section_payload_hash": "sha256:10a02de8c39c553042a338c6e502b0b30d5993f6351cb920578834942bd0b610",
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::default-design-example": {
@@ -9461,9 +9461,9 @@
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::default-dimensions-and-layout": {
-          "file_id": "file-RxAKQTfRB9eJV4uHcStRFq",
+          "file_id": "file-MtgQsPjur48qYCatN1ut84",
           "heading_path": "Form design > Default dimensions and layout",
-          "section_payload_hash": "sha256:9c0f8d1d01d3da32762074c8b3ff7780675ee4a835b25c81a7ceaf833c41f158",
+          "section_payload_hash": "sha256:233fa50c9133ce8297dc20cfdeef4086e56e62319afa72979d5ed9f46fc4b202",
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::dimensions-and-components-layout-components": {
@@ -11831,8 +11831,8 @@
       "stale": false
     },
     "paradigm/Report_design.md": {
-      "file_hash": "sha256:15f85b04f480d0d7bf3c27ab4b40f1bd6e3a104c8bff88b640eb775514092fa7",
-      "indexed_at": "2026-06-02T12:33:31Z",
+      "file_hash": "sha256:126f97312a54f367ca06c74edd93653162b7ed2cf7e69b0f40e232cca73e3a8b",
+      "indexed_at": "2026-06-10T06:48:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11841,10 +11841,34 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Report_design::automatic-design-auto": {
+          "file_id": "file-QQdtcp9iMtLR3hCrztxP2r",
+          "heading_path": "Report design > Automatic design {#auto}",
+          "section_payload_hash": "sha256:1b0fb6846ade4d24a4f0e73f5ee41514560887dba268a5122f651652be54f97b",
+          "source_file": "paradigm/Report_design.md"
+        },
+        "Report_design::language": {
+          "file_id": "file-YC5LdkALMRYvcfLJ19D8My",
+          "heading_path": "Report design > Language",
+          "section_payload_hash": "sha256:26f392f1c601a5a9fd9742951d8c6b702273c726cc34d3d1ccb67b2b2e620586",
+          "source_file": "paradigm/Report_design.md"
+        },
         "Report_design::report-design": {
-          "file_id": "file-TPyvQTX5h2zDzdUpUy54iH",
+          "file_id": "file-JsEHfc1WqtPMczG39Brox4",
           "heading_path": "Report design",
-          "section_payload_hash": "sha256:219136a8af726090a4f989e2d2eb9d47ce521c9ef31c0e36d6abfa9cae7c4e9c",
+          "section_payload_hash": "sha256:388ce1dc94459ed1b5978023fb158c8a9c4b887370313d819a08930658914517",
+          "source_file": "paradigm/Report_design.md"
+        },
+        "Report_design::template-format-format": {
+          "file_id": "file-PVVP7fYzdzkixWYvo6MMY8",
+          "heading_path": "Report design > Template format {#format}",
+          "section_payload_hash": "sha256:2d4669595f2bf91de995ad361e6efc3c8e55c272aa22e0e6736618d29c40daf9",
+          "source_file": "paradigm/Report_design.md"
+        },
+        "Report_design::templates-template": {
+          "file_id": "file-1c6LSSb8Ddm4baPpBho6RT",
+          "heading_path": "Report design > Templates {#template}",
+          "section_payload_hash": "sha256:805932aaf7276bd7fadc3e65cdea088b9da1f5e322c3e8f9caddb229d2473ab9",
           "source_file": "paradigm/Report_design.md"
         }
       },
@@ -13389,7 +13413,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "9f496ef7a35e483932e97318ae6df8975cf5e4e2",
+  "last_indexed_docs_commit": "8ba6a067e9d0c02c042f3bf8e496d794ee3671f5",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
