@@ -350,6 +350,14 @@ module.exports = {
                       items: [
                         'paradigm/System_System',
                         'paradigm/System_Time',
+                        'paradigm/System_Authentication',
+                        'paradigm/System_Security',
+                        'paradigm/System_Service',
+                        'paradigm/System_SystemEvents',
+                        'paradigm/System_UserEvents',
+                        'paradigm/System_Reflection',
+                        'paradigm/System_Email',
+                        'paradigm/System_Icon',
                         'paradigm/System_Utils',
                       ]
                     },
