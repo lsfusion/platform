@@ -14,48 +14,86 @@ EVENTS formEventDecl1, ..., formEventDeclN
 Где каждый `formEventDecli` имеет следующий синтаксис:
 
 ```
-ON eventType [replaceMode] eventActionId(param1, ..., paramK) | { eventActionOperator }
+ON eventType [replaceMode] eventAction
+```
+
+Где `eventType` — одна из следующих форм:
+
+```
+INIT
+OK [eventPhase]
+APPLY [eventPhase]
+CANCEL
+CLOSE
+DROP
+CHANGE objName
+[CHANGE] OBJECT objName
+[CHANGE] groupObjectEvent groupObjectName
+[CHANGE] FILTERGROUPS filterGroupName
+[CHANGE] FILTERS PROPERTY formPropertyName
+[CHANGE] PROPERTY [eventPhase] formPropertyName
+QUERYOK
+QUERYCLOSE
+containerEvent componentSelector
+SCHEDULE PERIOD intPeriod [FIXED]
+```
+
+Где `eventAction` — одна из следующих форм:
+
+```
+eventActionId(param1, ..., paramK)
+{ eventActionOperator }
 ```
 
 ### Описание
 
-Блок событий позволяет задать обработчики [событий формы](../paradigm/Form_events.md), которые возникают в результате определенных действий пользователя. В одном блоке можно через запятую указать произвольное количество обработчиков событий. Если для события указывается несколько обработчиков, то они гарантированно будут выполняться в порядке их задания. 
+Блок событий позволяет задать обработчики событий формы, которые возникают в результате определенных действий пользователя. В одном блоке можно через запятую указать произвольное количество обработчиков событий. Если для события указывается несколько обработчиков, то они гарантированно будут выполняться в порядке их задания. 
 
 ### Параметры 
 
-- `eventType`
+- `objName`
 
-    Тип события формы. Задается одним из следующих ключевых слов:
+    Имя объекта на форме. [Простой идентификатор](IDs.md#id).
 
-    - `INIT` 
-    - `OK`
-    - `OK BEFORE`
-    - `OK AFTER`
-    - `APPLY`
-    - `APPLY BEFORE` 
-    - `APPLY AFTER` 
-    - `CANCEL`
-    - `CLOSE`
-    - `DROP`
-    - `CHANGE objName`, `[CHANGE] OBJECT objName` - указывают, что действие должно быть выполнено при изменении текущего значения объекта с именем `objName`.
-    - `[CHANGE] FILTER groupObjectName` - указывает, что действие должно быть выполнено при изменении фильтра, применённого к группе объектов `groupObjectName`.
-    - `[CHANGE] ORDER groupObjectName` - указывает, что действие должно быть выполнено при изменении сортировки, применённой к группе объектов `groupObjectName`.
-    - `[CHANGE] FILTERS groupObjectName` - указывает, что действие должно быть выполнено, когда пользователь изменяет пользовательские фильтры группы объектов `groupObjectName`.
-    - `[CHANGE] ORDERS groupObjectName` - указывает, что действие должно быть выполнено, когда пользователь изменяет пользовательские сортировки группы объектов `groupObjectName`.
-    - `[CHANGE] FILTERGROUPS filterGroupName` - указывает, что действие должно быть выполнено, когда пользователь изменяет фильтр, выбранный в группе фильтров `filterGroupName`.
-    - `[CHANGE] FILTERS PROPERTY formPropertyName` - указывает, что действие должно быть выполнено, когда пользователь изменяет значение фильтра по свойству `formPropertyName`.
-    - `[CHANGE] PROPERTY formPropertyName` - задаёт обработчик события `CHANGE` для свойства `formPropertyName` на данной форме, замещая ранее заданный обработчик.
-    - `[CHANGE] PROPERTY BEFORE formPropertyName`, `[CHANGE] PROPERTY AFTER formPropertyName` - указывают, что действие должно быть выполнено непосредственно до или после изменения значения свойства `formPropertyName` на форме.
-    - `QUERYOK`
-    - `QUERYCLOSE`
-    - `EXPAND componentSelector` - указывает, что действие должно быть выполнено после разворачивания контейнера `componentSelector`. 
-    - `COLLAPSE componentSelector` - указывает, что действие должно быть выполнено после сворачивания контейнера `componentSelector`.
-    - `TAB componentSelector` - указывает, что действие должно быть выполнено после того, как закладка `componentSelector` стала активна. 
-    - `SCHEDULE PERIOD intPeriod [FIXED]` - создаёт планировщик, выполняющий действие каждые `intPeriod` секунд. Ключевое слово `FIXED` указывает на то, что период до следующего действия отсчитывается от старта текущего действия. По умолчанию период отсчитывается от окончания текущего действия.
+- `groupObjectName`
+
+    Имя группы объектов на форме. Простой идентификатор.
+
+- `filterGroupName`
+
+    Имя группы фильтров на форме. Простой идентификатор.
+
+- `formPropertyName`
+
+    [Имя свойства на форме](Properties_and_actions_block.md#name).
+
+- `componentSelector`
+
+    [Селектор](DESIGN_statement.md#selector) компонента дизайна.
+
+- `groupObjectEvent`
+
+    Одно из `FILTER`, `ORDER`, `FILTERS`, `ORDERS`.
+
+- `containerEvent`
+
+    Одно из `EXPAND`, `COLLAPSE`, `TAB`.
+
+- `eventPhase`
+
+    Одно из `BEFORE`, `AFTER`. Если опущено в `OK` / `APPLY`, обработчик выполняется на самом событии; если опущено в `PROPERTY`, задаётся единственный обработчик события `CHANGE` для свойства (см. `replaceMode`).
+
+- `intPeriod`
+
+    Период планировщика в секундах (целочисленный литерал).
+
+- `FIXED`
+
+    Отсчитывает период до следующего запуска от старта текущего действия, а не от его окончания.
 
 - `replaceMode`
 
-    Управляет тем, замещает ли обработчик ранее заданные обработчики этого события или добавляется к ним. `REPLACE` замещает все ранее заданные для события обработчики; `NOREPLACE` добавляет обработчик к ним. Если не указано, по умолчанию используется `REPLACE` для `QUERYOK` и `QUERYCLOSE` и `NOREPLACE` для всех остальных событий. К форме `[CHANGE] PROPERTY formPropertyName` (без `BEFORE` / `AFTER`) `replaceMode` не применяется — она всегда замещает свой единственный обработчик.
+    Управляет тем, замещает ли обработчик ранее заданные обработчики этого события или добавляется к ним. `REPLACE` замещает все ранее заданные для события обработчики; `NOREPLACE` добавляет обработчик к ним. Если не указано, по умолчанию используется `REPLACE` для `QUERYOK` и `QUERYCLOSE` и `NOREPLACE` для всех остальных событий. `replaceMode` не применяется к простой форме события `PROPERTY` (без `BEFORE` / `AFTER`) — она всегда замещает свой единственный обработчик.
 
 - `eventActionId`
 
@@ -63,11 +101,11 @@ ON eventType [replaceMode] eventActionId(param1, ..., paramK) | { eventActionOpe
 
 - `param1, ..., paramK`
 
-    Список параметров действия. Каждый параметр задается именем объекта формы. Имя объекта, в свою очередь, задается [простым идентификатором](IDs.md#id).
+    Список параметров действия. Каждый параметр задается именем объекта формы. Имя объекта, в свою очередь, задается простым идентификатором.
 
-- `actionOperator`
+- `eventActionOperator`
 
-    [Контекстно-зависимый оператор-действие](Action_operators.md). В качестве параметров этого оператора можно использовать имена уже объявленных объектов на форме.
+    [Контекстно-зависимый оператор-действие](Action_operators.md#contextdependent). В качестве параметров этого оператора можно использовать имена уже объявленных объектов на форме.
 
 
 ### Примеры
