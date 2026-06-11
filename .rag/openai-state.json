@@ -4421,8 +4421,8 @@
       "stale": false
     },
     "language/Event_block.md": {
-      "file_hash": "sha256:d2f4bb175252ab02939389c0d20e38f7cb1a7bdcc8c07e1355b1de40838acd05",
-      "indexed_at": "2026-05-22T23:46:52Z",
+      "file_hash": "sha256:273f0b10f7223ccb8650665f2b5f66058670ffb4885a6177a4e6459ded8f04a0",
+      "indexed_at": "2026-06-11T09:45:21Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4432,9 +4432,9 @@
       },
       "sections": {
         "Event_block::description": {
-          "file_id": "file-BDF4xGUW4jiquPDWHTRTxP",
+          "file_id": "file-4hf5fg4tzuPVFMZAdm12Y2",
           "heading_path": "Event block > Description",
-          "section_payload_hash": "sha256:85dc1742a3f38befb0071b6e2d69da40d29412df3083ad7ca0caaf283ba6b051",
+          "section_payload_hash": "sha256:6ff7a841821cbd19005f84e0e053fad96ded698a0df66048dfa19d16b8ae8828",
           "source_file": "language/Event_block.md"
         },
         "Event_block::event-block": {
@@ -4450,15 +4450,15 @@
           "source_file": "language/Event_block.md"
         },
         "Event_block::parameters": {
-          "file_id": "file-NLCxH7NyAQpXrbCtLUAnvZ",
+          "file_id": "file-GyG1qKZYJFTzcTZYH5hxSG",
           "heading_path": "Event block > Parameters",
-          "section_payload_hash": "sha256:0ec9f112bdacdb3bdfe3e000c254c268cdb6d8182aecd0b3d7687304cb799074",
+          "section_payload_hash": "sha256:3d8b4cccad1e7de0153bacd9027f0ec5382f43de823378351bff7bc6b71ec251",
           "source_file": "language/Event_block.md"
         },
         "Event_block::syntax": {
-          "file_id": "file-7gHRoTK6bt1Ga8FA8EqQdB",
+          "file_id": "file-7HrVGckaQ7TMoad3gTNq7b",
           "heading_path": "Event block > Syntax",
-          "section_payload_hash": "sha256:dbd9a20a8e49b6e8255ca98e0447df266a9b6e4470d1e9adbe80a31942706962",
+          "section_payload_hash": "sha256:f668814d763271c3afd846fe8bbaa96c15245125a855e06904ed1c8e298321a4",
           "source_file": "language/Event_block.md"
         }
       },
@@ -9506,8 +9506,8 @@
       "stale": false
     },
     "paradigm/Form_events.md": {
-      "file_hash": "sha256:79b803d662d194ab16dc1cd009c224a7eae79a3a0bc85f6135deb4700acc5a69",
-      "indexed_at": "2026-05-25T10:05:20Z",
+      "file_hash": "sha256:4a72d7f8d57b96736ba956b904929a683f4f3cc41e70d6b7d6e15825ed3b42ac",
+      "indexed_at": "2026-06-11T09:45:32Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9529,9 +9529,9 @@
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::form-events": {
-          "file_id": "file-TYw5SprnAu3W49h6SB3dDt",
+          "file_id": "file-LYLzm4pmX8RrcNmVB4sukp",
           "heading_path": "Form events",
-          "section_payload_hash": "sha256:eeec60bf0d5121731f297d6492e0832cf72e37c9049c8598b4543fc9fc5a62aa",
+          "section_payload_hash": "sha256:38032d387e6e44ced2ac7e0adb61bc12bad95c2191f4a8749cdffca58c0288b5",
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::language": {
@@ -9541,9 +9541,9 @@
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::standard-handlers-predefined": {
-          "file_id": "file-3sx7v5u64Xzad4NBKivfYy",
+          "file_id": "file-4DZ8Kw7iphiFAMfT5FVjnc",
           "heading_path": "Form events > Standard handlers {#predefined}",
-          "section_payload_hash": "sha256:9c96e345b4a7a185836051d3d4fc71596e26ddbe14d0f25a5f385b3d38859fb7",
+          "section_payload_hash": "sha256:c1a75933b72565d4902b229c8357c90558e3903ad4b54748c756b764bfd25224",
           "source_file": "paradigm/Form_events.md"
         }
       },
@@ -14077,7 +14077,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "c04b2e6b24f6c26eeb64178a2fa2c8e66ebe9def",
+  "last_indexed_docs_commit": "4756e26b4b674c22bf403c7d79038eeed303098a",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
