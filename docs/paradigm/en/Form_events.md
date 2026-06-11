@@ -15,14 +15,30 @@ While the application is running, there is a number of events for each form that
 
 -   `CHANGE` - user [changed](Interactive_view.md#objects) the [current value](Form_structure.md#currentObject) of an object.
 
+#### For object groups on the form
+
+-   `FILTER` - the filter applied to the object group has changed.
+-   `ORDER` - the order applied to the object group has changed.
+-   `FILTERS` - the user changed the custom filters of the object group.
+-   `ORDERS` - the user changed the custom orders of the object group.
+-   `FILTERGROUPS` - the user changed the filter selected in a [filter group](Interactive_view.md#filtergroup).
+-   `FILTERS PROPERTY` - the user changed the value of a property filter.
+
 #### For properties or actions on the form {#property}
 
 -   `CHANGE` - the user initiated a property change or action call.
--   `CHANGEWYS` - the user initiated a WYSIWYG property change using the PASTE operation or a special input mechanism. 
+-   `CHANGE BEFORE` / `CHANGE AFTER` - occurs on the form immediately before or after the value of a specific property changes.
+-   `CHANGEWYS` - the user initiated a WYSIWYG property change using the PASTE operation or a special input mechanism.
 -   `GROUPCHANGE` - the user initiated a property change for all objects in the table.
 -   `EDIT` - the user initiated editing of an object.
 -   `CONTEXTMENU [caption]` - the user selected the specified item in the context menu of a property (action) on the form. If necessary, you can also define the caption of this menu item ([string literal](Constant.md)). If it is not specified, then, by default, it will be the same as the action caption.
--   `KEYPRESS key` - the user has pressed the specified `key` ([string literal](Constant.md)) on keyboard.
+-   `KEYPRESS key` - the user has pressed the specified `key` (string literal) on keyboard.
+
+#### For containers on the form
+
+-   `COLLAPSE` - the user collapsed the container.
+-   `EXPAND` - the user expanded the container.
+-   `TAB` - the tab became active.
 
 There are also several so-called *derivative* events that are nothing more than syntactic sugar, but at the same time allow you more effectively to solve typical problems that arise when working with forms:
 
@@ -56,7 +72,7 @@ If, after the execution of event handlers with the `BEFORE` postfix, the `System
 For the remainder of the section, the behavior of properties and actions is exactly the same and so we will use only the term property (behavior is absolutely identical for actions).
 :::
 
-The developer can execute certain actions (*handlers*) when any of the events described above occurs. In the current implementation there can be several handlers for global events and form object events, but only one for form property events. In the first case, the handler is added to the corresponding list, in the second case, the handler replaces the existing one.
+The developer can execute certain actions (*handlers*) when any of the events described above occurs. In the current implementation there can be several handlers for global events, for events of objects, object groups, and containers on the form, and for events occurring before or after a property's value changes, but only one for the property and action interaction events (`CHANGE`, `GROUPCHANGE`, and similar). In the first case, the handler is added to the corresponding list, in the second case, the handler replaces the existing one.
 
 For property, it is possible to define its event handlers for the whole logics at once. In that case, these handlers will be automatically added to all forms where these properties are displayed.
 
@@ -98,10 +114,10 @@ For an *object request* from the user, depending on the type of class, the follo
 
 ### Standard handlers {#predefined}
 
-For properties and actions on the form, it is also possible to define the following *standard* change event handlers (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`): 
+For properties and actions on the form, it is also possible to define the following *standard* change event handlers (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`):
 
 -   *Read Only* (`READONLY`) - if the property is displayed in the table, the handler will be similar to `CHANGE` default handler when the property is not mutable (that is, the user filter mechanism will be called). If the property is not displayed in the table, nothing will happen. You can also make this option conditional (`READONLYIF`) (that is, change only if the value of some property is not `NULL`).
--   *Selector* (`SELECTOR`) - when you try to make a change, a dialog will be shown in which the user will be asked to change the [current value](Form_structure.md#currentObject) of the object.
+-   *Selector* (`SELECTOR`) - when you try to make a change, a dialog will be shown in which the user will be asked to change the current value of the object.
 
 ### Language
 

@@ -14,36 +14,86 @@ EVENTS formEventDecl1, ..., formEventDeclN
 Where each `formEventDecli` has the following syntax:
 
 ```
-ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
+ON eventType [replaceMode] eventAction
+```
+
+Where `eventType` is one of the following forms:
+
+```
+INIT
+OK [eventPhase]
+APPLY [eventPhase]
+CANCEL
+CLOSE
+DROP
+CHANGE objName
+[CHANGE] OBJECT objName
+[CHANGE] groupObjectEvent groupObjectName
+[CHANGE] FILTERGROUPS filterGroupName
+[CHANGE] FILTERS PROPERTY formPropertyName
+[CHANGE] PROPERTY [eventPhase] formPropertyName
+QUERYOK
+QUERYCLOSE
+containerEvent componentSelector
+SCHEDULE PERIOD intPeriod [FIXED]
+```
+
+Where `eventAction` is one of the following forms:
+
+```
+eventActionId(param1, ..., paramK)
+{ eventActionOperator }
 ```
 
 ### Description
 
-The event block allows to define handlers for [form events](../paradigm/Form_events.md) that occur as the result of certain user actions. Each block can have an arbitrary number of comma-separated event handlers. If several handlers are defined for an event, they are guaranteed to be executed in the order they are defined. 
+The event block allows to define handlers for form events that occur as the result of certain user actions. Each block can have an arbitrary number of comma-separated event handlers. If several handlers are defined for an event, they are guaranteed to be executed in the order they are defined. 
 
 ### Parameters 
 
-- `eventType`
+- `objName`
 
-    Type of form event. It is specified with one of the following keywords:
+    Name of an object on the form. [Simple ID](IDs.md#id).
 
-    - `INIT` 
-    - `OK`
-    - `OK BEFORE`
-    - `OK AFTER`
-    - `APPLY`
-    - `APPLY BEFORE` 
-    - `APPLY AFTER` 
-    - `CANCEL`
-    - `CLOSE`
-    - `DROP`
-    - `CHANGE objName` – specifies that the action will be executed when the object `objName` is changed.
-    - `QUERYOK`
-    - `QUERYCLOSE`
-    - `EXPAND componentSelector` - specifies that the action will be executed after the `componentSelector` container is expanded.
-    - `COLLAPSE componentSelector` - specifies that the action will be executed after the `componentSelector` container is collapsed.
-    - `TAB componentSelector` - specifies that the action will be executed after the `componentSelector` tab becomes active.
-    - `SCHEDULE PERIOD intPeriod [FIXED]` - creates a scheduler that executes an action every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
+- `groupObjectName`
+
+    Name of an object group on the form. Simple ID.
+
+- `filterGroupName`
+
+    Name of a filter group on the form. Simple ID.
+
+- `formPropertyName`
+
+    [Name of the property on a form](Properties_and_actions_block.md#name).
+
+- `componentSelector`
+
+    Design component [selector](DESIGN_statement.md#selector).
+
+- `groupObjectEvent`
+
+    One of `FILTER`, `ORDER`, `FILTERS`, `ORDERS`.
+
+- `containerEvent`
+
+    One of `EXPAND`, `COLLAPSE`, `TAB`.
+
+- `eventPhase`
+
+    One of `BEFORE`, `AFTER`. When omitted from `OK` / `APPLY`, the handler runs on the event itself; when omitted from `PROPERTY`, it sets the single `CHANGE` handler for the property (see `replaceMode`).
+
+- `intPeriod`
+
+    The scheduler period in seconds (an integer literal).
+
+- `FIXED`
+
+    Counts the period to the next run from the start of the current action instead of from its end.
+
+- `replaceMode`
+
+    Controls whether the handler replaces previously defined handlers for this event or is added to them. `REPLACE` replaces all handlers previously defined for the event; `NOREPLACE` adds the handler to them. When omitted, the default is `REPLACE` for `QUERYOK` and `QUERYCLOSE` and `NOREPLACE` for all other events. `replaceMode` does not apply to the plain `PROPERTY` event form (without `BEFORE` / `AFTER`), which always replaces its single handler.
 
 - `eventActionId`
 
@@ -51,9 +101,9 @@ The event block allows to define handlers for [form events](../paradigm/Form_eve
 
 - `param1, ..., paramK`
 
-    List of action parameters. Each parameter is specified with the object name on the form. The object name, in turn, is specified with a [simple ID](IDs.md#id).
+    List of action parameters. Each parameter is specified with the object name on the form. The object name, in turn, is specified with a simple ID.
 
-- `actionOperator`
+- `eventActionOperator`
 
     [Context-dependent action operator](Action_operators.md#contextdependent). You can use the names of already declared objects on the form as parameters.
 
