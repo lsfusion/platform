@@ -13339,8 +13339,8 @@
       "stale": false
     },
     "paradigm/System_Time.md": {
-      "file_hash": "sha256:896767cd4f73a062520082f0bf10804bafea9f6de363e2c95ab292fabef53e3b",
-      "indexed_at": "2026-05-31T16:57:48Z",
+      "file_hash": "sha256:c69312d1c2502f8552ff55e9eb82ef1b5eae7f7ca0d3dbb5a83df1d79d778c76",
+      "indexed_at": "2026-06-12T09:13:49Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13350,9 +13350,9 @@
       },
       "sections": {
         "System_Time::arithmetic": {
-          "file_id": "file-NAi9XqjHsyQRKhSuNgESoM",
+          "file_id": "file-PnxCfhDqckCT12oz2v233y",
           "heading_path": "Time > Arithmetic",
-          "section_payload_hash": "sha256:97f00b7d583e89283d5af4f2219f2e194e07f698f062d6c4db8ba900ecfa69e4",
+          "section_payload_hash": "sha256:350a1c60840fe90df568856386404609d06dbe4dcf495d42f6e4938240674cd8",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::calendar-classes-and-forms": {
@@ -13362,27 +13362,27 @@
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::conversion": {
-          "file_id": "file-CGy2RRMeEzFvkqQJkHVLjd",
+          "file_id": "file-Wrbzk8HjspfFEPmvnuZqs5",
           "heading_path": "Time > Conversion",
-          "section_payload_hash": "sha256:5ad438372a65cf9d78005d068d5b936dff9c6ed386b81919551c7ece8653da5e",
+          "section_payload_hash": "sha256:9176314f9ecab0235adab339e8b0d98cd641cdc6b1cbe02c8c595c882775b405",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::current-value": {
-          "file_id": "file-FZmov5qxCE1deUZHt9EByT",
+          "file_id": "file-2xxkcRhgNRjxPRxKJhftYj",
           "heading_path": "Time > Current value",
-          "section_payload_hash": "sha256:8478b4833c13c75d0d86f4dd0852b2262655eb3c461a305ff57117ce7273334c",
+          "section_payload_hash": "sha256:58b70412130775d8da8f98664e742516775b35dd44a2fd06ff1e674169f13685",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::extracting-parts": {
-          "file_id": "file-JWRfzqmgyNJhoLGeC6SdRc",
+          "file_id": "file-4REmiiKZttBLRftPRVjWSi",
           "heading_path": "Time > Extracting parts",
-          "section_payload_hash": "sha256:ae4cb51494aae03ccc5fd738c059e033cbc3471b833d48fefb30d17eed707585",
+          "section_payload_hash": "sha256:c5757656c4906241ef137487341133432132c69232f05c6185626a41c38c2e9e",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::iteration-and-intervals": {
-          "file_id": "file-DgP3uhMrhNkRoA26eK7CiS",
+          "file_id": "file-7SALHTBn5isDz9NkCwE1nF",
           "heading_path": "Time > Iteration and intervals",
-          "section_payload_hash": "sha256:a48b1f433ef1bc49827809e204dbadb76c49bf09904cae36b5a7e4d9bb114502",
+          "section_payload_hash": "sha256:3b8ddb17dbe74cefeb8920e2cf29a33949e9117493fcf9e90706d40cd53177fd",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::see-also": {
@@ -13392,9 +13392,9 @@
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::time": {
-          "file_id": "file-XNB6Bx5utas3zVujnkjZHd",
+          "file_id": "file-Gkc7Ng9DGMjFwaV12PaDoP",
           "heading_path": "Time",
-          "section_payload_hash": "sha256:ef9df320bb78ccd821e9c28f8d2589220be31689553f7da7d6e4a5df98453b95",
+          "section_payload_hash": "sha256:35e0c6dc94b3cc8ccaacb8e9dfe033d44d7dc013aeb6fd78a6c07f050bdcf6aa",
           "source_file": "paradigm/System_Time.md"
         }
       },
@@ -14077,7 +14077,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4756e26b4b674c22bf403c7d79038eeed303098a",
+  "last_indexed_docs_commit": "6b2b74963d1f2299df42f2ef90b772dfdd6588b9",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
