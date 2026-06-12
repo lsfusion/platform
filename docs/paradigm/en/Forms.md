@@ -3,7 +3,7 @@ slug: "/Forms"
 title: 'Forms'
 ---
 
-Forms let you combine different types of information for one or more objects in a single interface. Logically, aform can be divided into two parts:
+Forms let you combine different types of information for one or more objects in a single interface. Logically, a form can be divided into two parts:
 
 -   [Form structure](Form_structure.md)  - defines what information (**what**) will be shown to the user.
 -   [Form views](Form_views.md) - defines **how** it should be done.
