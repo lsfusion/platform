@@ -30,14 +30,23 @@ TREE ...
 PROPERTIES ...
 FILTERS ...
 [EXTEND] FILTERGROUP ...
-USERFILTERS ...
 ORDERS ...
 PIVOT ...
-EVENTS ...
+[EVENTS] ...
+HINTNOUPDATE LIST propertyId1, ..., propertyIdN
+HINTTABLE LIST propertyId1, ..., propertyIdN
 REPORT propertyExpression
+REPORTFILES reportPath1, ..., reportPathN
 FORMEXTID extID
 EDIT className OBJECT objectName
 LIST className OBJECT objectName 
+```
+
+Где каждый `reportPath` имеет один из следующих синтаксисов:
+
+```
+TOP propertyExpression
+groupObjectName propertyExpression
 ```
 
 ## Описание
@@ -52,7 +61,7 @@ LIST className OBJECT objectName
 
 - `caption`
 
-    Заголовок формы. [Строковый литерал](IDs.md#strliteral). Если заголовок не задан, то заголовком формы будет являться ее имя.
+    Заголовок формы. [Строковый литерал](Literals.md#strliteral). Если заголовок не задан, то заголовком формы будет являться ее имя.
 
 ### Опции формы (`formOptions`)
 
@@ -98,11 +107,6 @@ LIST className OBJECT objectName
 
     Добавляет группу фильтров на форму либо расширяет существующую. [Синтаксис блока группы фильтров](Filters_and_sortings_block.md#filtergroup).
 
-- `USERFILTERS ...`
-
-    **deprecated since version 7**, используйте `FILTERS` с опцией `USER`.
-    Добавляет [пользовательские фильтры](../paradigm/Interactive_view.md#userfilters) на форму. [Синтаксис блока пользовательских фильтров](Filters_and_sortings_block.md#userfilters).
-
 - `ORDERS ...`
 
     Добавляет сортировки на форму. [Синтаксис блока сортировок](Filters_and_sortings_block.md#sort).
@@ -111,9 +115,21 @@ LIST className OBJECT objectName
 
     Устанавливает начальные настройки [вида представления *сводная таблица*](../paradigm/Interactive_view.md#property). [Синтаксис блока сводных таблиц](Pivot_block.md).
 
-- `EVENTS ...`
+- `[EVENTS] ...`
 
     Устанавливает действия, выполняемые при определенных событиях. [Синтаксис блока событий](Event_block.md).
+
+- `HINTNOUPDATE LIST propertyId1, ..., propertyIdN`
+
+    Помечает, что закэшированные значения перечисленных свойств не должны обновляться при изменениях в сессии этой формы.
+
+    - `propertyId1, ..., propertyIdN`
+
+        Список [идентификаторов свойств](IDs.md#propertyid).
+
+- `HINTTABLE LIST propertyId1, ..., propertyIdN`
+
+    Помечает, что изменения перечисленных свойств при чтении данных этой формой должны материализовываться во временную таблицу. Список задается так же, как в блоке `HINTNOUPDATE`.
 
 - `FORMEXTID extID`
 
@@ -131,7 +147,23 @@ LIST className OBJECT objectName
 
         [Выражение](Expression.md).
 
-- `EDIT сlassName OBJECT objectName`
+- `REPORTFILES reportPath1, ..., reportPathN`
+
+    Указание свойств, значения которых будут использоваться в качестве имен файлов отчета для групп объектов формы. Вместо ключевого слова `REPORTFILES` можно использовать его синоним `REPORTS`.
+
+    - `TOP`
+
+        Ключевое слово, при указании которого свойство задается для пустой группы. Полностью аналогично блоку `REPORT`.
+
+    - `groupObjectName`
+
+        Имя группы объектов, для которой задается свойство. Задается [простым идентификатором](IDs.md#id). Группа объектов при этом помечается как отдельный отчет. Полностью аналогично опции `SUBREPORT` [блока объектов](Object_blocks.md).
+
+    - `propertyExpression`
+
+        [Выражение](Expression.md).
+
+- `EDIT className OBJECT objectName`
 
     Устанавливает текущую форму в качестве формы [редактирования](../paradigm/Interactive_view.md#edtClass) объектов указанного класса.
 
@@ -143,7 +175,7 @@ LIST className OBJECT objectName
     
         Имя объекта формы, который будет использоваться для редактирования. Задается [простым идентификатором](IDs.md#id).
 
-- `LIST сlassName OBJECT objectName`
+- `LIST className OBJECT objectName`
 
     Устанавливает текущую форму в качестве формы [выбора](../paradigm/Interactive_view.md#edtClass) объекта указанного класса. 
 
@@ -213,6 +245,9 @@ EXTEND FORM printInvoice
     OBJECTS d = InvoiceDetail 
 
     // ... добавляем свойства и фильтры на форму
+
+    // задаем файл отчета для группы объектов d, помечая ее как отдельный отчет
+    REPORTFILES d 'printInvoiceDetail.jrxml'
 ;
 // объявляем действие , при выполнении которого будет открываться форма печати инвойса
 print (Invoice invoice)  { PRINT printInvoice OBJECTS i = invoice; } 
