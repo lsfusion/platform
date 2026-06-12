@@ -13339,8 +13339,8 @@
       "stale": false
     },
     "paradigm/System_Time.md": {
-      "file_hash": "sha256:c69312d1c2502f8552ff55e9eb82ef1b5eae7f7ca0d3dbb5a83df1d79d778c76",
-      "indexed_at": "2026-06-12T09:13:49Z",
+      "file_hash": "sha256:9a72f35c8e2c587005f913ba0d4d84355bbd0e8280702d6af5539881a84bc31e",
+      "indexed_at": "2026-06-12T14:14:52Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13350,9 +13350,9 @@
       },
       "sections": {
         "System_Time::arithmetic": {
-          "file_id": "file-PnxCfhDqckCT12oz2v233y",
+          "file_id": "file-N51CJ8opzpwXj5n4fv9Ejv",
           "heading_path": "Time > Arithmetic",
-          "section_payload_hash": "sha256:350a1c60840fe90df568856386404609d06dbe4dcf495d42f6e4938240674cd8",
+          "section_payload_hash": "sha256:1d495e4333a1087a40c02c619680e7e4c628acab3ec5641c75b4f017517f6fb4",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::calendar-classes-and-forms": {
@@ -14077,7 +14077,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "6b2b74963d1f2299df42f2ef90b772dfdd6588b9",
+  "last_indexed_docs_commit": "78747808f9c520204802faff230f365a571c2755",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
