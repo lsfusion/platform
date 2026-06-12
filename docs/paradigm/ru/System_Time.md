@@ -74,8 +74,8 @@ title: 'Time'
 | `daysBetweenDates[DATE, DATE]`                            | разность двух дат в днях как `INTEGER`, считается как **первый** аргумент минус **второй** (`daysBetweenDates(a, b) = a - b`, положительно, когда `a` — более поздняя дата); PG `$1 - $2`. Порядок операндов обратен `subtractSeconds` |
 | `daysInclBetweenDates[DATE, DATE]`                        | число дней между двумя датами с учётом обоих концов: **второй** аргумент минус **первый**, плюс 1 (`daysInclBetweenDates(a, b) = b - a + 1`) — порядок операндов обратен `daysBetweenDates[DATE, DATE]`, так как оно вызывается с переставленными аргументами |
 | `secondsBetweenDates[DATETIME, DATETIME]`                 | разность двух моментов в секундах как `INTEGER`, считается как **первый** аргумент минус **второй** (`secondsBetweenDates(a, b) = a - b`, положительно, когда `a` — более поздний момент); PG `extract(epoch from $1) - extract(epoch from $2)` |
-| `dateTimeToDateTime[DATE, TIME]`                          | собирает `DATETIME` из `DATE` и `TIME` через приведение текста; PG `to_timestamp(<дата> || <время>, 'YYYY-MM-DDHH24:MI:SS.MS')::timestamp`                    |
-| `dateFromYearWeekDay[INTEGER, INTEGER, INTEGER]`          | собирает `DATE` по году, номеру недели ISO 8601 и дню недели ISO (1 = понедельник … 7 = воскресенье); PG `to_date($1 || ' ' || $2 || ' ' || $3, 'IYYY IW ID')` |
+| `dateTimeToDateTime[DATE, TIME]`                          | собирает `DATETIME` из `DATE` и `TIME` через приведение текста; PG `to_timestamp(<дата> \|\| <время>, 'YYYY-MM-DDHH24:MI:SS.MS')::timestamp`                    |
+| `dateFromYearWeekDay[INTEGER, INTEGER, INTEGER]`          | собирает `DATE` по году, номеру недели ISO 8601 и дню недели ISO (1 = понедельник … 7 = воскресенье); PG `to_date($1 \|\| ' ' \|\| $2 \|\| ' ' \|\| $3, 'IYYY IW ID')` |
 | `distanceDOWDOW[DOW, DOW]`                                | расстояние вперёд в днях от первого дня недели до второго, с заворотом по неделе 0–6: `number[DOW]` второго минус `number[DOW]` первого, плюс 7, когда результат был бы отрицательным |
 
 ### Итерация и интервалы
