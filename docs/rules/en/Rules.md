@@ -372,6 +372,18 @@ EVENT RULES (`WHEN`)
    forcibly override any explicit change — for example,
    maintained totals, audit stamps, or invariants
    the user is not allowed to bypass.
+
+4. Rules 1-3 describe the event-action form
+   `WHEN <condition> DO <target> <- <expr>`. In the
+   reactive assignment form `<target> <- <expr> WHEN <condition>`
+   the guard MUST NOT test `CHANGED(<target>)`: the target
+   would then depend on its own change, forming a cycle
+   `<target>` -> `CHANGED(<target>)` -> `<target>`.
+
+   To default a value yet still yield to an explicit change,
+   write it as the self-guarded event-action form
+   (`WHEN [LOCAL] <condition> AND NOT CHANGED(<target>)
+   DO <target> <- <expr>`) rather than as a reactive assignment.
 ----------------------------------------------------------------
 CONSTRAINT RULES
 
