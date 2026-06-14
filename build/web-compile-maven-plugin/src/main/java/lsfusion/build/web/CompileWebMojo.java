@@ -170,6 +170,11 @@ public class CompileWebMojo extends AbstractMojo {
                 cmd.add("--format=iife");
                 cmd.add("--jsx=transform");
                 cmd.add("--loader:.js=jsx"); // allow JSX in plain .js (esbuild otherwise rejects it)
+                // url() assets (fonts/images) referenced from imported CSS: INLINE them into the extracted .css as data URLs,
+                // so the compiled stylesheet is self-contained and served as one registered resource (the platform publishes
+                // only registered resources, not arbitrary sibling files; esbuild has no default loader for these binary types)
+                for (String ext : new String[]{"woff", "woff2", "ttf", "eot", "otf", "svg", "png", "jpg", "jpeg", "gif", "webp"})
+                    cmd.add("--loader:." + ext + "=dataurl");
                 if (reactExternal) {
                     cmd.add("--alias:react=" + reactShim.getAbsolutePath());
                     cmd.add("--alias:react-dom/client=" + reactDomShim.getAbsolutePath());
@@ -193,8 +198,8 @@ public class CompileWebMojo extends AbstractMojo {
                 runEsbuild(cmd);
 
                 File cssOut = new File(outputDir, stem + ".css");
-                if (cssOut.exists()) // esbuild extracts imported CSS to a sibling file, but the runtime auto-scan loads only .js
-                    getLog().warn("web-compile: " + srcRoot.relativize(entry) + " imports CSS -> web/.compiled/" + stem + ".css, which is NOT auto-loaded yet (CSS support is a follow-up); link it manually");
+                if (cssOut.exists()) // esbuild extracts imported CSS to a sibling file; the runtime auto-scan (SystemEvents) auto-loads web/.compiled/*.css too
+                    getLog().info("web-compile: " + srcRoot.relativize(entry) + " -> web/.compiled/" + stem + ".css");
 
                 bundleNames.add("web/.compiled/" + stem + ".js");
                 getLog().info("web-compile: " + srcRoot.relativize(entry) + " -> web/.compiled/" + stem + ".js");

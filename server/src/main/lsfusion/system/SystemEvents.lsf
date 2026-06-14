@@ -350,17 +350,19 @@ onWebClientInit() + {
     onWebClientInit('react/react-dom.production.min.js') <- -109;
 }
 
-// JS compile phase: the custom-JS registry shim must load before any compiled bundle (which registers into it),
-// then auto-register every compiled web/.compiled/*.js bundle (so apps write no onWebClientInit for them).
+// JS/CSS compile phase: the custom-JS registry shim must load before any compiled bundle (which registers into it),
+// then auto-register every compiled web/.compiled/* bundle (so apps write no onWebClientInit for them) — a module's
+// extracted CSS just before its JS (99 vs 100), both after the order-1..36 system/app resources.
 onWebClientInit() + {
     onWebClientInit('lsfusion-custom-registry.js') <- -100;
 
     readResourcePaths('/web/\\.compiled/.*\\.js');
+    readResourcePaths('/web/\\.compiled/.*\\.css');
     FOR STRING s = resourcePaths(s) DO {
         // re-filter: readResourcePaths appends to resourcePaths, so earlier scans (e.g. /onStarted/) are still present
-        IF startsWith(resourcePaths(s), '/web/.compiled/') AND endsWith(resourcePaths(s), '.js') THEN {
-            // 100: a band of their own, after the order-1..36 system/app resources (vendor libs etc.) bundles may use
-            onWebClientInit(resourcePaths(s)) <- 100;
+        IF startsWith(resourcePaths(s), '/web/.compiled/') THEN {
+            IF endsWith(resourcePaths(s), '.css') THEN { onWebClientInit(resourcePaths(s)) <- 99; } // a module's CSS just before its bundle
+            IF endsWith(resourcePaths(s), '.js') THEN { onWebClientInit(resourcePaths(s)) <- 100; }
         }
     }
 }

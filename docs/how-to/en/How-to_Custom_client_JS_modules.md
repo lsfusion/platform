@@ -103,8 +103,16 @@ formatOrderSum 'Format' (Order o) {
 
 The build compiles _orderUtil.js_ into _web/.compiled/orderUtil.js_ and registers `formatSum`; when the form opens, the action resolves the name from the registry and calls the function. No `onWebClientInit` entry is written for the module.
 
-### Limitations
+### Styles
 
-CSS bundling from these modules is limited: if a module imports a _.css_ file, the styles are extracted to a sibling _web/.compiled/&lt;name&gt;.css_ file that is **not** loaded automatically, and the build warns about it. For now, apply styling from within the component (inline styles or class names against CSS that is loaded separately) rather than relying on a bundled _.css_; a standalone stylesheet can still be loaded the usual way through the _onWebClientInit_ action (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
+A module can `import` CSS. esbuild gathers all CSS reachable from the module — its own `import "./styles.css"` and the CSS of any third-party library it imports — into a sibling _web/.compiled/&lt;name&gt;.css_, which is loaded automatically together with the bundle (no `onWebClientInit` entry, and no separate registration for a library's CSS). Fonts and images that the CSS references through `url()` are inlined into the compiled stylesheet as data URLs, so it is self-contained; load large images separately (for example through `onWebClientInit`) to keep the stylesheet from growing.
+
+Recommended styling:
+
+- **CSS modules** (`import styles from "./Component.module.css"`, used as `className={styles.root}`) for a component's own styles — the class names are scoped per module, so styles of different components on the same form do not collide.
+- **Inline `style={{ ... }}`** for values computed from data (per-row colors and sizes, conditional styling).
+- A plain `import "./Component.css"` (or a third-party library's CSS) is global; use it for vendor or deliberately global styles, and give the class names a namespace prefix. Do not register the compiled _.css_ manually — it is already auto-loaded.
+
+A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](../language/INTERNAL_operator.md) action, like the CSS of a classic custom component (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
 
 This page covers the generic packaging of any custom browser JavaScript. For the React-specific views and the controller calls a custom view makes back into the server, see [How-to: Custom React views](How-to_Custom_React_views.md) and [How-to: Custom view controller API](How-to_Custom_view_controller.md).
