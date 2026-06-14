@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:430ae006f61ae178430d1e5490bd5821c23da12fe4bde86c65d7b7673bffc297",
-      "indexed_at": "2026-06-14T13:48:21Z",
+      "file_hash": "sha256:bdb463a151eba680bcbfe856c3131c258ed1287b7c0577f501c72cc68ff4b109",
+      "indexed_at": "2026-06-14T14:16:28Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -654,9 +654,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::rendering-rows": {
-          "file_id": "file-3uLzPM3PyvY6BNun4cwKN4",
+          "file_id": "file-Ni7ZUymBfcsgtsYyiJwAer",
           "heading_path": "How-to: Custom React form views > Rendering rows",
-          "section_payload_hash": "sha256:bf88e4c3b48de89d4141d11453a12883d7964736a0beee4ac85a2c5cadbfc136",
+          "section_payload_hash": "sha256:1121edaedbee971b0e8e7d07081ff59a531a21411916f5b1deeb0f46a365ed08",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
@@ -731,8 +731,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:34e3d25168a07ea7511c8ce016c80a087420d8ca4d6bfb4c8a305ff94c67dd9e",
-      "indexed_at": "2026-06-05T19:48:27Z",
+      "file_hash": "sha256:e7ad650f51eccd356426a74446e0bf64457733239a9ed3ca3f5e5707056552da",
+      "indexed_at": "2026-06-14T14:16:41Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -742,9 +742,9 @@
       },
       "sections": {
         "How-to_Custom_components_objects::calling-the-server": {
-          "file_id": "file-AQRyGmVFeGRqA2uWDYBD2k",
+          "file_id": "file-EUhF9dZgy9btwvXHFVNENs",
           "heading_path": "How-to: Custom Components (objects) > Calling the server",
-          "section_payload_hash": "sha256:53eaf6b6abe6342b9627cfc095be079133c060f752a58c5ec96bfc6de4da1183",
+          "section_payload_hash": "sha256:1c6aa75bda7d5e23a6e3a68b341d693e1a380f457a326a84ac52e9e0e9617de5",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -813,8 +813,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:7e8ad3fc999d35b6ebbeda35db92f932bfa731de24d56a05d1bf09fc2d1783ab",
-      "indexed_at": "2026-06-14T14:09:15Z",
+      "file_hash": "sha256:7e0a1c8633bdad4ebb8a1b1b2313c67c99aef5a4002cd25f67c2ee1c93a920dc",
+      "indexed_at": "2026-06-14T14:16:49Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -848,9 +848,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::looking-up-values": {
-          "file_id": "file-7Yo6rs3WgCV6ehiZDrCdSL",
+          "file_id": "file-QCyVb1Mr6NzBgQXdd3J9w9",
           "heading_path": "How-to: Custom view controller API > Looking up values",
-          "section_payload_hash": "sha256:f6596a96464aebd01721ba30ddb9f95bd1a447d280c27a667868e6329c90bab6",
+          "section_payload_hash": "sha256:ad17754d0c442b13e202ad113aea80af0d7564d2afd1585e5f94d214bea9b155",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::row-identity-contract-row-identity-contract": {
@@ -14227,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "e694ec3f8e9c5d340b310d5d85482b7da2f7943d",
+  "last_indexed_docs_commit": "cd4de6b16e3e4a375c733f3d868ff65546037b35",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
