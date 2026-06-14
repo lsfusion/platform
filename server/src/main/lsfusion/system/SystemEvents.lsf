@@ -342,6 +342,28 @@ onWebClientInit() + {
     }
 }
 
+// platform-vendored React (production UMD): CUSTOM REACT components rely on the window.React/window.ReactDOM
+// globals, so they must load BEFORE any custom script; an app may still override with its own build at a later
+// (less negative) before-system order
+onWebClientInit() + {
+    onWebClientInit('react/react.production.min.js') <- -110;
+    onWebClientInit('react/react-dom.production.min.js') <- -109;
+}
+
+// JS compile phase: the custom-JS registry shim must load before any compiled bundle (which registers into it),
+// then auto-register every compiled web/.compiled/*.js bundle (so apps write no onWebClientInit for them).
+onWebClientInit() + {
+    onWebClientInit('lsfusion-custom-registry.js') <- -100;
+
+    readResourcePaths('/web/\\.compiled/.*\\.js');
+    FOR STRING s = resourcePaths(s) DO {
+        // re-filter: readResourcePaths appends to resourcePaths, so earlier scans (e.g. /onStarted/) are still present
+        IF startsWith(resourcePaths(s), '/web/.compiled/') AND endsWith(resourcePaths(s), '.js') THEN {
+            // 100: a band of their own, after the order-1..36 system/app resources (vendor libs etc.) bundles may use
+            onWebClientInit(resourcePaths(s)) <- 100;
+        }
+    }
+}
 CLASS ABSTRACT Exception '{system.events.exception}';
 CLASS ClientException '{system.events.client.exception}' : Exception;
 CLASS WebClientException '{system.events.web.client.exception}' : ClientException;

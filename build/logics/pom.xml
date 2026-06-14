@@ -327,6 +327,21 @@
             </resource>
         </resources>
         <plugins>
+            <!-- compile custom client JS (src/main/web/** -> classpath web/.compiled/*.js); no-ops when the
+                 logics has no src/main/web. React Compiler is opt-in per logics (<reactCompiler>true</...>). -->
+            <plugin>
+                <groupId>lsfusion.platform.build</groupId>
+                <artifactId>web-compile-maven-plugin</artifactId>
+                <version>${lsfusion.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile-web</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- lsfusion project structure : mark source root directories in IDE -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

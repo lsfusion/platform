@@ -35,6 +35,10 @@ public class GwtClientUtils {
     public static boolean isUndefined(JavaScriptObject object) { // can be wrapped, todo: check
         return object == UNDEFINED;
     }
+    // null/undefined test on the RAW JS value: a JS primitive 0 / false / "" carried in a JavaScriptObject reference
+    // reads as null under a Java `== null` (GWT collapses falsy primitives), so any raw-JS value/key that may be a
+    // primitive must be null-checked through here, never with Java `== null`
+    public static native boolean isUndefinedOrNull(JavaScriptObject value) /*-{ return value === undefined || value === null; }-*/;
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
@@ -1725,10 +1729,19 @@ public class GwtClientUtils {
         element.getStyle().setZIndex(0);
     }
 
-    public static native JavaScriptObject getGlobalField(String field)/*-{
-        var jsField = $wnd[field];
+    public static JavaScriptObject getGlobalField(String field) {
+        return getGlobalField(field, null, false);
+    }
+
+    public static native JavaScriptObject getGlobalField(String field, String kind, boolean optional)/*-{
+        var reg = $wnd.lsfusion && $wnd.lsfusion.custom; // compiled web/.compiled bundles register here; legacy globals stay on $wnd
+        var jsField = (reg && reg.get) ? reg.get(field, kind) : null;
+        if (jsField == null)
+            jsField = $wnd[field];
         if (jsField != null)
             return jsField;
+        else if (optional)
+            return null;
         else
             throw new Error("Field " + field + " not found");
     }-*/;
@@ -1762,6 +1775,9 @@ public class GwtClientUtils {
 
     public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
         return $wnd.replaceField(object, field, value);
+    }-*/;
+    public static native JavaScriptObject copyObject(JavaScriptObject object)/*-{ // shallow clone (enumerable own props only; non-enumerable handles are not copied). Object.assign, not {...} — GWT JSNI rejects object spread
+        return Object.assign({}, object);
     }-*/;
 
     public static native JavaScriptObject removeField(JavaScriptObject object, String field)/*-{
