@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:3c6f4fc05dee205e9b6d788e4f5129e044623aa0c477d396b2859474cd2b6537",
-      "indexed_at": "2026-06-14T14:23:35Z",
+      "file_hash": "sha256:ee148c297a18dc6a086ac2125f0a1c6f77b4799e1ad72a6454a2c005dad6579e",
+      "indexed_at": "2026-06-14T17:19:20Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -654,9 +654,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::rendering-rows": {
-          "file_id": "file-XG85bsZqKwzmR3StUVuZWo",
+          "file_id": "file-L3FyWHohADbGMoyJ98DNv2",
           "heading_path": "How-to: Custom React form views > Rendering rows",
-          "section_payload_hash": "sha256:7c553902da7dec6e9bebb10e14693488c3a0f1fff39b10112780a039c65ffdea",
+          "section_payload_hash": "sha256:81b20f6795291ac7f88d6ca5103fd90dc86f9d3cd8c2c6d40a94883a44237143",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
@@ -14227,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "f8894dcf70833b0060558cabd9839b251b3ab90b",
+  "last_indexed_docs_commit": "d22b3988cbce0ed3e3d81800526496b32f2b20d7",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
