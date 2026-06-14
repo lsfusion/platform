@@ -675,8 +675,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:fdb76c1e3af3d6b08ab9cfce15504f7646eb4dae9cb7ae56bd3754e43d10fd07",
-      "indexed_at": "2026-06-14T17:33:48Z",
+      "file_hash": "sha256:0b665ae82a167fa928bf779609b1608e6d1f43d40dd9a63a4181f294cd35924e",
+      "indexed_at": "2026-06-14T19:02:00Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -703,12 +703,6 @@
           "section_payload_hash": "sha256:50041688dea659a5dcd22e8e7044c497f3644e133fd717c4590a149f53b459dd",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
-        "How-to_Custom_client_JS_modules::limitations": {
-          "file_id": "file-J9oFVA1KFXA4JZHw6ggRHn",
-          "heading_path": "How-to: Custom client JS modules > Limitations",
-          "section_payload_hash": "sha256:268a258610625ab2477045c81e30bffded134ee3ceced3055644de48a4fc3142",
-          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
-        },
         "How-to_Custom_client_JS_modules::named-exports-and-auto-registration": {
           "file_id": "file-6WRb6YaL9zhJ8zvwywGC5f",
           "heading_path": "How-to: Custom client JS modules > Named exports and auto-registration",
@@ -719,6 +713,12 @@
           "file_id": "file-6BZRF4kbnJshtgZqB9YvWM",
           "heading_path": "How-to: Custom client JS modules > React Compiler",
           "section_payload_hash": "sha256:e6946c2cd698e845b829e079f5a79f05ad7783a849e381fba5b0140c10130885",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::styles": {
+          "file_id": "file-8RwoWBMUK7dDPJdZTizLxq",
+          "heading_path": "How-to: Custom client JS modules > Styles",
+          "section_payload_hash": "sha256:97b6aea49c5b3a9e00313cf1b454c1d4b42d742897b426699b1beb67bf28f448",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::where-the-files-go": {
@@ -14233,7 +14233,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "356c36172deae7a221877d29f3aa63e79f184b34",
+  "last_indexed_docs_commit": "68ea1224de41e9b58101fd7830a44c9827bf623e",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
