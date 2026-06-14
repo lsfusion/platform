@@ -37,9 +37,11 @@ public class GReactFormData {
     private final NativeSIDMap<GContainer, JavaScriptObject> lastData = new NativeSIDMap<>(); // last built top object per React scope
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastNodes = new NativeSIDMap<>();   // last built node per group
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastLists = new NativeSIDMap<>();   // last built list array per group
+    private final NativeSIDMap<GGroupObject, JavaScriptObject> lastKeys = new NativeSIDMap<>();   // last built STABLE keys array per group (ref changes only on membership/order, never on a value/current change) - the <List> subscription path
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, JavaScriptObject>> lastRows = new NativeSIDMap<>(); // last row obj per (group, key)
     private final NativeSIDMap<GGroupObject, Boolean> dirtyNodes = new NativeSIDMap<>();      // group node must rebuild (current/list/prop changed)
     private final NativeSIDMap<GGroupObject, Boolean> dirtyLists = new NativeSIDMap<>();      // group list (rows/order) changed
+    private final NativeSIDMap<GGroupObject, Boolean> dirtyOrder = new NativeSIDMap<>();      // group membership/order changed (rebuild the stable keys array) - set ONLY by add/remove/reorder, NOT by value/current changes
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> dirtyRowKeys = new NativeSIDMap<>(); // rows whose values changed
     private final NativeSIDMap<GContainer, Boolean> dirtyScopes = new NativeSIDMap<>();       // scopes whose top object must rebuild
 
@@ -57,6 +59,7 @@ public class GReactFormData {
             gridRows.put(group, list);
             markNodeDirty(group);
             dirtyLists.put(group, Boolean.TRUE); // row set / order changed
+            dirtyOrder.put(group, Boolean.TRUE); // membership/order -> the stable keys array must rebuild
         });
 
         fc.properties.foreachEntry((reader, keyValues) -> {
@@ -165,6 +168,7 @@ public class GReactFormData {
                     rows.add(key);
                 markNodeDirty(group);
                 dirtyLists.put(group, Boolean.TRUE);
+                dirtyOrder.put(group, Boolean.TRUE); // optimistic add -> membership changed
                 markRowDirty(group, key);
                 changed = true;
             }
@@ -183,6 +187,7 @@ public class GReactFormData {
             setCurrentObject(group, getNearObject(rows, index));
         markNodeDirty(group);
         dirtyLists.put(group, Boolean.TRUE);
+        dirtyOrder.put(group, Boolean.TRUE); // optimistic remove -> membership changed
         markRowDirty(group, key);
         return true;
     }
@@ -294,6 +299,18 @@ public class GReactFormData {
             }
             setValue(node, "list", list);
             setValue(node, "byKey", lastByKey.get(group));
+            // a referentially-STABLE keys array (rebuilt only on membership/order) + a non-enumerable group SID:
+            // the <List> row-subscription path maps these keys and each row subscribes by byKey[key], so a value/current
+            // change re-renders only the changed row (the keys array ref is unchanged -> the outer map is skipped).
+            JavaScriptObject keys = lastKeys.get(group);
+            if (keys == null || dirtyOrder.get(group) != null) {
+                keys = newArray();
+                for (GGroupObjectValue rowKey : rows)
+                    pushString(keys, rowKey.toKeyString());
+                lastKeys.put(group, keys);
+            }
+            setValue(node, "keys", keys);
+            setGroupSID(node, group.getSID());
         }
         if (current != null) // group panel properties (shown once, for the current object)
             fillProperties(node, group, false, current, null);
@@ -318,6 +335,7 @@ public class GReactFormData {
     public void clearDirty() {
         dirtyNodes.clear();
         dirtyLists.clear();
+        dirtyOrder.clear();
         dirtyRowKeys.clear();
         dirtyScopes.clear();
     }
@@ -368,6 +386,8 @@ public class GReactFormData {
     private static native JavaScriptObject newObject() /*-{ return {}; }-*/;
     private static native JavaScriptObject newArray() /*-{ return []; }-*/;
     private static native void push(JavaScriptObject arr, JavaScriptObject v) /*-{ arr.push(v); }-*/;
+    private static native void pushString(JavaScriptObject arr, String v) /*-{ arr.push(v); }-*/;
+    private static native void setGroupSID(JavaScriptObject obj, String sid) /*-{ Object.defineProperty(obj, "__groupSID", { value: sid }); }-*/; // non-enumerable: stable selector path, not user-visible data
     private static native void setValue(JavaScriptObject obj, String key, Object v) /*-{ obj[key] = v; }-*/;
     private static native void setBoolean(JavaScriptObject obj, String key, boolean v) /*-{ obj[key] = v; }-*/;
 }

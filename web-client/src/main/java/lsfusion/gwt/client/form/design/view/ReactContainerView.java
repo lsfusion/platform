@@ -114,22 +114,64 @@ public class ReactContainerView extends LayoutContainerView {
             return React.useSyncExternalStore(store.subscribe, function() { return select(store.getSnapshot()); });
         };
         ns.useFormController = function() { return React.useContext(Ctx).controller; };
-        // <List> sugar: rows keyed by row.key (React coerces a numeric key) with the row passed as a prop (pure props-down) and
-        // the row component memoized — survivors of a delete keep both element identity and the same row ref,
-        // so they skip entirely (no per-row subscription needed). component ?? children; other props pass through.
-        var listMemo = new $wnd.WeakMap();
-        ns.List = function(props) {
+        // <List>: per-row render economy with NO app-level memo/hooks (the user component just reads props.row).
+        // There is a progression of ways to render a group's rows, from least to most capable:
+        //   data.<g>.list.map(...)  -> a simpler <List simple/>  -> the main <List/> (default).
+        // ns.List is a HOOK-FREE dispatcher that renders one of two internal list components (so the choice swaps a
+        // component TYPE — clean remount — and never makes a hook call conditional). Pick the simpler one via the
+        // per-element prop `simple` or, globally, window.lsfusion.listSimple (prop overrides global; default = main).
+        //
+        // KeysList (the main <List>, default): maps the projection's referentially-STABLE keys array (data.keys; new
+        // ref only on add/remove/reorder) inside useMemo, and renders a module-level memoized RowWrapper per key. Each
+        // wrapper SUBSCRIBES to its own row via useFormData(s => s[groupSID].byKey[rowKey]); a value/current change
+        // re-renders only the changed row and the outer map is skipped (keys ref unchanged) -> O(1) per value update.
+        // SimpleList (<List simple/>): the simpler path — maps the churny data.list and memoizes the row component
+        // (React.memo, cached per component in a WeakMap); economy relies on the projector reusing unchanged row refs.
+        // Both must be used as a component (<List .../> / createElement(List, ...)); component ?? children; other props
+        // pass through with reserved props (row/rowKey/index) applied LAST.
+        var RowWrapper = React.memo(function(p) {
+            var row = ns.useFormData(function(s) { var g = s && s[p.groupSID]; var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
+            if (row == null) return null; // row removed (about to unmount): don't hand a null row to the component
+            var rowProps = {};
+            var pass = p.pass;
+            if (pass) for (var pk in pass) rowProps[pk] = pass[pk];
+            // reserved props LAST so a pass-through prop can't clobber the platform row
+            rowProps.row = row; rowProps.rowKey = p.rowKey; rowProps.index = p.index;
+            return React.createElement(p.component, rowProps);
+        });
+        var KeysList = function(props) {
             var comp = props.component || props.children;
-            var memoComp = listMemo.get(comp);
-            if (!memoComp) { memoComp = React.memo(comp); listMemo.set(comp, memoComp); }
+            var data = props.data || {};
+            var keys = data.keys || [];
+            var groupSID = data.__groupSID;
+            var pass = null, deps = [keys, comp, groupSID], pk = [];
+            for (var k in props) if (k !== 'data' && k !== 'component' && k !== 'children' && k !== 'simple') pk.push(k);
+            pk.sort(); // deterministic, NAME-aware deps (push name + value) so {foo:1}->{bar:1} invalidates; length varies only if the passthrough prop SET changes between renders (rare)
+            for (var pi = 0; pi < pk.length; pi++) { (pass || (pass = {}))[pk[pi]] = props[pk[pi]]; deps.push(pk[pi]); deps.push(props[pk[pi]]); }
+            return React.useMemo(function() {
+                return keys.map(function(rowKey, index) {
+                    return React.createElement(RowWrapper, { key: rowKey, groupSID: groupSID, rowKey: rowKey, index: index, component: comp, pass: pass });
+                });
+            }, deps);
+        };
+        var simpleMemo = new $wnd.WeakMap();
+        var SimpleList = function(props) {
+            var comp = props.component || props.children;
             var rows = (props.data && props.data.list) || [];
+            var memoComp = simpleMemo.get(comp);
+            if (!memoComp) { memoComp = React.memo(comp); simpleMemo.set(comp, memoComp); }
+            var pass = null;
+            for (var k in props) if (k !== 'data' && k !== 'component' && k !== 'children' && k !== 'simple') (pass || (pass = {}))[k] = props[k];
             return rows.map(function(row, index) {
                 var rowProps = {};
-                for (var k in props) if (k !== 'data' && k !== 'component' && k !== 'children') rowProps[k] = props[k];
-                // reserved props LAST so a pass-through prop can't clobber the platform row
+                if (pass) for (var pk in pass) rowProps[pk] = pass[pk];
                 rowProps.key = row.key; rowProps.row = row; rowProps.rowKey = row.key; rowProps.index = index;
                 return React.createElement(memoComp, rowProps);
             });
+        };
+        ns.List = function(props) { // hook-free dispatcher: swaps component type, never a conditional hook
+            var simple = props.simple == null ? !!ns.listSimple : !!props.simple;
+            return React.createElement(simple ? SimpleList : KeysList, props);
         };
     }-*/;
 
