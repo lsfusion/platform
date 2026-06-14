@@ -113,6 +113,10 @@ Recommended styling:
 - **Inline `style={{ ... }}`** for values computed from data (per-row colors and sizes, conditional styling).
 - A plain `import "./Component.css"` (or a third-party library's CSS) is global; use it for vendor or deliberately global styles, and give the class names a namespace prefix. Do not register the compiled _.css_ manually — it is already auto-loaded.
 
+For a full styling system beyond static class names, a **runtime CSS-in-JS** library (such as `styled-components` or `@emotion`) works as an ordinary `org.mvnpm` dependency: it is bundled with the module and injects its styles at runtime. Use the `styled` API or `className={css(...)}`; Emotion's `css` *prop* (`<div css={...} />`) needs a JSX transform that the build does not run, so it is not available.
+
+CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — it runs the esbuild binary only, with no Node or plugin phase. Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for; if you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
+
 A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](../language/INTERNAL_operator.md) action, like the CSS of a classic custom component (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
 
 This page covers the generic packaging of any custom browser JavaScript. For the React-specific views and the controller calls a custom view makes back into the server, see [How-to: Custom React views](How-to_Custom_React_views.md) and [How-to: Custom view controller API](How-to_Custom_view_controller.md).
