@@ -15,9 +15,7 @@ A _src/main/web/lib_ subfolder is treated as shared helper code: its files are n
 
 ### Without the build
 
-A project with no build set up — no `node`, no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file. Place it under _src/main/resources/web_ (not _src/main/web_), register it in the [`onWebClientInit`](../language/INTERNAL_operator.md) action, and the platform serves it from _/web_ and loads it when a page opens. The file is used as written: no bundling, no JSX, no third-party-library resolution. This is also the path `eval` uses.
-
-The file is plain JavaScript, so a React view is written with `React.createElement` against the platform-provided `window.React` instead of JSX, and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
+A project with no build set up — no `node`, no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file under _src/main/resources/web_, used as written: no bundling, no JSX, no third-party-library resolution. (This is also the path `eval` uses.) A React view is therefore written with `React.createElement` against the platform-provided `window.React` instead of JSX, and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
 
 ```js
 function HelloBoard(props) {
@@ -27,25 +25,35 @@ function HelloBoard(props) {
 }
 ```
 
+Such a file is loaded one of two ways — the same split that distinguishes the build path's auto-loaded bundles from anything an application lists in `onWebClientInit`.
+
+**Auto-loaded — put it in _resources/web/init_.** A file under _src/main/resources/web/init_ is registered automatically when a page opens, with no _onWebClientInit_ entry — the no-build counterpart of how _src/main/web_ bundles auto-load after the build. Use it for a self-contained component or stylesheet:
+
 ```lsf
 DESIGN orders {
-    BOX(o) { custom = 'HelloBoard'; }
+    BOX(o) { custom = 'HelloBoard'; }   // from resources/web/init/helloBoard.js — nothing else to wire
 }
+```
 
+Files in _web/init_ must be **load-order-independent**: the scan gives them all one load order, so each must register or define at load and use any other library lazily (at render or on an event), never reach into another script at load time. A _web/init/lib_ subfolder is excluded from auto-loading (as _src/main/web/lib_ is from the build), for helper or vendored files that are referenced explicitly rather than injected.
+
+**Registered explicitly — list it in _onWebClientInit_.** Any other file under _src/main/resources/web_ — outside _web/init_, or inside the excluded _web/init/lib_ — is loaded by naming it in the [`onWebClientInit`](../language/INTERNAL_operator.md) action with an integer order. Use this when load order matters — a third-party library that must load before the component using it — or to load a file conditionally:
+
+```lsf
 onWebClientInit() + {
     onWebClientInit('helloBoard.js') <- 1;
 }
 ```
 
-The two paths differ as follows:
+The build and no-build paths compare as follows:
 
-| | Build path | No-build path |
-| --- | --- | --- |
-| Location | _src/main/web_ | _src/main/resources/web_ |
-| Loading | bundled to _web/.compiled_, loaded automatically | served from _/web_, listed in `onWebClientInit` |
-| Source | _.js_/_.jsx_/_.ts_/_.tsx_, JSX allowed | plain _.js_, `React.createElement` |
-| Registration | named export | name on `window` |
-| Third-party libraries | bundled via `org.mvnpm` | not bundled |
+| | Build (_src/main/web_) | No-build, auto (_resources/web/init_) | No-build, explicit (_resources/web_) |
+| --- | --- | --- | --- |
+| Loading | bundled to _web/.compiled_, auto-loaded | auto-loaded by folder scan | listed in `onWebClientInit` |
+| Source | _.js_/_.jsx_/_.ts_/_.tsx_, JSX allowed | plain _.js_ | plain _.js_ |
+| Registration | named export | name on `window` | name on `window` |
+| Load order | one order (bundles are self-contained) | one order (files must be order-independent) | explicit integer order |
+| Third-party libraries | bundled via `org.mvnpm` | loaded separately, used from `window` | loaded separately, used from `window` |
 
 ### Named exports and auto-registration
 
@@ -77,6 +85,30 @@ A scoped npm package (`@scope/name`) uses the group `org.mvnpm.at.<scope>` and t
 
 ```js
 import ApexCharts from "apexcharts";
+```
+
+### Adding a third-party library without the build
+
+Without the build there is no `org.mvnpm` bundling, so a third-party library is loaded as a separate browser script and used from the global name it defines — a build that assigns itself to `window` (a UMD or plain-script build). The component reads it from there (`window.confetti`, `window.dayjs`, …) instead of importing it. There are two ways to supply that script.
+
+Vendored, for an offline project. Place the library's browser build (the _.js_ that assigns the global) as a static file under _src/main/resources/web/init_ next to the component. Both auto-load, and the component works because it reads the global lazily, at render or on an event — so it does not matter which of the two scripts the scan injects first. Only the committed files are needed — no internet, no `org.mvnpm` dependency, no build:
+
+```js
+function ConfettiBoard(props) {                        // resources/web/init/confettiBoard.js
+    var React = window.React;
+    function celebrate() { window.confetti({ particleCount: 200, spread: 120 }); }
+    return React.createElement("button", { onClick: celebrate }, "Celebrate");
+}
+// resources/web/init/confetti.umd.js sets window.confetti — both files auto-load, no onWebClientInit
+```
+
+From a URL, when the runtime is allowed to reach the internet. A URL is not a file to drop in _web/init_, so it is passed straight to `onWebClientInit`: a value that is not a local _web/_ resource and is an absolute URL is loaded as a `<script src>` on the page (the resolution rule is described under [`INTERNAL`](../language/INTERNAL_operator.md)), before the component that uses it:
+
+```lsf
+onWebClientInit() + {
+    onWebClientInit('https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js') <- 1;
+    onWebClientInit('confettiBoard.js') <- 2;
+}
 ```
 
 ### React Compiler
