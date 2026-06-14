@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:70002cd2fe5333c7b2b592fbea03d91d61c5178532d329b3933c20625b11b5a9",
-      "indexed_at": "2026-06-14T17:33:35Z",
+      "file_hash": "sha256:5b2ba730478f2996652d21e8adfda0adf6b95ab84b157156d1002a2975cc91ce",
+      "indexed_at": "2026-06-14T21:13:09Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -654,9 +654,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::rendering-rows": {
-          "file_id": "file-4Ei1mNiRxWeLp8umDuGGFX",
+          "file_id": "file-5fMyzyUqKY1f3VkyGqF4rD",
           "heading_path": "How-to: Custom React form views > Rendering rows",
-          "section_payload_hash": "sha256:a5ea34b5516ec4a20433c44e46af03194dea33b3a86772ed56a700dffd584888",
+          "section_payload_hash": "sha256:fd872bfc866d2bf0f2d8dba82861d14aaa0ddf077cfe733e7ff4b6992ad05dc4",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
@@ -743,8 +743,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:e7ad650f51eccd356426a74446e0bf64457733239a9ed3ca3f5e5707056552da",
-      "indexed_at": "2026-06-14T14:16:41Z",
+      "file_hash": "sha256:8f7efea9df559aac8bf76b544b417dc49190549225c425e13c08a49014a31791",
+      "indexed_at": "2026-06-14T21:13:19Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -753,10 +753,10 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "How-to_Custom_components_objects::calling-the-server": {
-          "file_id": "file-EUhF9dZgy9btwvXHFVNENs",
-          "heading_path": "How-to: Custom Components (objects) > Calling the server",
-          "section_payload_hash": "sha256:1c6aa75bda7d5e23a6e3a68b341d693e1a380f457a326a84ac52e9e0e9617de5",
+        "How-to_Custom_components_objects::calling-the-server-calling-the-server": {
+          "file_id": "file-W1a8LUB4197TRMBvubzgry",
+          "heading_path": "How-to: Custom Components (objects) > Calling the server {#calling-the-server}",
+          "section_payload_hash": "sha256:016c5b57751731baac320cedf19e91a50e18cfdaa13efa9c6acd59585b576ac6",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -781,8 +781,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_properties.md": {
-      "file_hash": "sha256:09dd7f1b2c68093435969f2f15941414e64303ad69ab72eda871ead7b5f05527",
-      "indexed_at": "2026-05-22T21:41:55Z",
+      "file_hash": "sha256:b1d452a98a6900be4ac966d28d0b1c82b513fa388f232d40bfa8074153ab6826",
+      "indexed_at": "2026-06-14T21:13:29Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -797,10 +797,10 @@
           "section_payload_hash": "sha256:707e83fd64cdf1458533d72b8372fe860da096453c0f21cbdb18814ca63bc4d1",
           "source_file": "how-to/How-to_Custom_components_properties.md"
         },
-        "How-to_Custom_components_properties::handling-user-actions": {
-          "file_id": "file-SkZ6WPo32ChywVvqme6R3o",
-          "heading_path": "How-to: Custom components (properties) > Handling user actions",
-          "section_payload_hash": "sha256:183f273b1a251b04d58183c19fa6552ce28452a4ad5f4063b3182f889cfa54ee",
+        "How-to_Custom_components_properties::handling-user-actions-handling-user-actions": {
+          "file_id": "file-8HweoGqbDwBjkuKphfJHYK",
+          "heading_path": "How-to: Custom components (properties) > Handling user actions {#handling-user-actions}",
+          "section_payload_hash": "sha256:2125adec5935e11d1722b0a6d080f5301d535c12b123edfed31ee7a83be9d3d2",
           "source_file": "how-to/How-to_Custom_components_properties.md"
         },
         "How-to_Custom_components_properties::how-to-custom-components-properties": {
@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:7e0a1c8633bdad4ebb8a1b1b2313c67c99aef5a4002cd25f67c2ee1c93a920dc",
-      "indexed_at": "2026-06-14T14:16:49Z",
+      "file_hash": "sha256:960950c2014c5b3aca4069418c067e9664195d1f980b3e79406e0162019b6e11",
+      "indexed_at": "2026-06-14T21:13:38Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -842,9 +842,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::changing-the-current-object-and-property-values": {
-          "file_id": "file-VfbnRNGMWRrNn85E6KVd43",
+          "file_id": "file-TAgimCXaH3jiaVa7nG4erF",
           "heading_path": "How-to: Custom view controller API > Changing the current object and property values",
-          "section_payload_hash": "sha256:a8e813dcf4637d5bcf4d2922238a274001699b4889d79c4e9e6a4a05adcfe6a9",
+          "section_payload_hash": "sha256:d8a9d738f59333c4b73e55687ac1e9dec61f9cd0a06e1f52aa092ee1a91fc5b1",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::classic-custom-compatibility": {
@@ -865,10 +865,10 @@
           "section_payload_hash": "sha256:ad17754d0c442b13e202ad113aea80af0d7564d2afd1585e5f94d214bea9b155",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
-        "How-to_Custom_view_controller::row-identity-contract-row-identity-contract": {
-          "file_id": "file-2WAuGjXLGEgf4j4MRM2g5N",
-          "heading_path": "How-to: Custom view controller API > Row identity contract {#row-identity-contract}",
-          "section_payload_hash": "sha256:f1bf527b5fdbee089bc5592f21fcf1bd3813731085ed1f32225b02c6c02431d4",
+        "How-to_Custom_view_controller::row-identity-rules-row-identity-contract": {
+          "file_id": "file-KGvxVqMAyyhZgAsTFTdkKs",
+          "heading_path": "How-to: Custom view controller API > Row identity rules {#row-identity-contract}",
+          "section_payload_hash": "sha256:e0034424f55b16de2f9efc990938927e53d1aabe653292726407865879f6fef6",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14239,7 +14239,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ba33aa5e562d623a698c03ae8cdaebb830e9f2d7",
+  "last_indexed_docs_commit": "4253adf3385b73ec53075caa1a308dd996c0079b",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
