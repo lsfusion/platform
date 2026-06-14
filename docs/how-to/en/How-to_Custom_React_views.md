@@ -94,7 +94,7 @@ props.data.o.list.map(r => <MRow key={r.key} row={r} />)
 
 A `React.memo(Row)` created inside the component on each render is a new component type every time, which defeats the memoization and re-renders every row.
 
-A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or globally with `window.lsfusion.listSimple`. It maps the list and memoizes the row component instead, relying on the projection reusing the row reference of an unchanged row; the component contract is the same.
+A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or globally with `window.lsfusion.listSimple`. It maps the list and memoizes the row component instead, relying on the projection reusing the row reference of an unchanged row; the row component receives the same props.
 
 ### Interactivity
 

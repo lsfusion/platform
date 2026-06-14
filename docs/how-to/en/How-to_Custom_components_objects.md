@@ -193,7 +193,7 @@ onWebClientInit() + {
 The resulting form will look like this:
 ![](../images/How-to_Custom_components_objects.png)
 
-### Calling the server
+### Calling the server {#calling-the-server}
 
 Besides the rendering helpers above, the _controller_ lets the client JS call back into the server and get the result as a `Promise`. The same object is passed as the last argument to the JavaScript function bound by an [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action, after the converted call parameters.
 

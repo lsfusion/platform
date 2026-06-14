@@ -251,7 +251,7 @@ The message displayed by the created component will look like this:
 
 ![](../images/How-to_Custom_components_message.png)
 
-### Handling user actions
+### Handling user actions {#handling-user-actions}
 
 In this example, we will handle two user actions for any of the messages: clicking on the quoted message and clicking on the Reply button.
 In the first case, the transition to the original message will be done, and in the second case - storing the message

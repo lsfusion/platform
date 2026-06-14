@@ -9,7 +9,7 @@ Properties and actions are addressed by their integration name — the name on t
 
 ### Changing the current object and property values
 
-`controller.changeObject(groupSID, object)` sets the current object of the group `groupSID`. The `object` is a data row of that group, or a raw `objects` handle (see [the identity contract](#row-identity-contract) below) — not a bare `row.key`.
+`controller.changeObject(groupSID, object)` sets the current object of the group `groupSID`. The `object` is a data row of that group, or a raw `objects` handle (see [the identity rules](#row-identity-contract) below) — not a bare `row.key`.
 
 `controller.changeProperty(property, value)` changes `property` for the group's current object. To target a specific row, pass it in between: `controller.changeProperty(property, object, value)`, where `object` is a data row or a raw handle. When `property` is an action (or any property with no editable value), the value is omitted: `controller.changeProperty('edit')` execs it on the current object, `controller.changeProperty('edit', object)` on the given row.
 
@@ -90,7 +90,7 @@ await controller.change('note', orderId, 'checked');
 
 A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch.
 
-### Row identity contract {#row-identity-contract}
+### Row identity rules {#row-identity-contract}
 
 A method that targets a row accepts one of:
 
