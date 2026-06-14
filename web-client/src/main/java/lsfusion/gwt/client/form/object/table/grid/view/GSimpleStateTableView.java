@@ -5,11 +5,9 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -72,6 +70,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     private NativeHashMap<String, Column> columnMap;
 
+    // a custom view's controller.changeProperty(prop, ...) for a prop that is NOT a column of this grid (e.g. a
+    // PANEL action like edit/delete) is the FORM controller's job (see #1655); the grid path only stamps this grid's
+    // row key. isGridProperty gates that delegation to the form controller (which resolves the property form-wide).
+    private boolean isGridProperty(String key) {
+        return getColumn(key) != null;
+    }
     private Column getColumn(String key) {
         Column column = columnMap.get(key);
         if (column == null) {
@@ -151,13 +155,16 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
     public static PValue convertFromJSValue(GType type, JavaScriptObject value) {
         // have to reverse convertToJSValue as well as convertFileValue (???)
+        // NB: null/undefined MUST be tested on the raw JS value via JSNI (isUndefinedOrNull), never with a Java
+        // `value == null`: a JS primitive 0 / false / "" carried in a JavaScriptObject reference reads as null under
+        // GWT's `== null`, so a pushed 0 (or empty string, or 3-state false) would be silently dropped to NULL
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
                 return PValue.getPValue(toBoolean(value));
 
-            return PValue.getPValue(value != null ? toBoolean(value) : null);
+            return PValue.getPValue(!GwtClientUtils.isUndefinedOrNull(value) ? toBoolean(value) : null);
         }
-        if(value == null)
+        if(GwtClientUtils.isUndefinedOrNull(value))
             return null;
         if(type instanceof GIntegralType)
             return ((GIntegralType) type).fromDoubleValue(toDouble(value));
@@ -176,7 +183,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     // object/array -> JSON String; null/undefined -> null) and the resolved server type projects it. A future V2
     // would swap this body for a type-aware convertFromJSValue(fetchedType, ...) with no change to the callers.
     public static PValue convertFromUnknownJSValue(JavaScriptObject value) {
-        if (isUndefinedOrNull(value))
+        if (GwtClientUtils.isUndefinedOrNull(value))
             return null;
         if (isBoolean(value))
             return PValue.getPValue(toBoolean(value));
@@ -203,7 +210,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
     private static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
     private static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
-    private static native boolean isUndefinedOrNull(JavaScriptObject v) /*-{ return v === undefined || v === null; }-*/;
     private static native boolean isBoolean(JavaScriptObject v) /*-{ return typeof v === 'boolean'; }-*/;
     private static native boolean isNumber(JavaScriptObject v) /*-{ return typeof v === 'number'; }-*/;
     private static native boolean isString(JavaScriptObject v) /*-{ return typeof v === 'string'; }-*/;
@@ -248,13 +254,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         return fromString(PValue.getCustomStringValue(value));
     }
-    private static JavaScriptObject convertToJSKey(Serializable key) {
-        if(key instanceof GGroupObjectValue)
-            return fromObject(key);
-
-        return GwtClientUtils.jsonParse((String)key);
-    }
-
     public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType, boolean imageToHTML) {
         return convertToJSValue(property.getRenderType(rendererType), property, imageToHTML, value);
     }
@@ -278,15 +277,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 columns.push(fromString(columnName));
             }
         }
-        if (filter == null)
-            columns.push(fromString(objectsFieldName));
         return columns;
     }
 
-    protected final static String objectsFieldName = "#__key";
 
     protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
         GGroupObjectValue key = getObjects(object);
+        if(key == null && !GwtClientUtils.isUndefinedOrNull(object)) // an EXPLICIT object that didn't resolve (bare key / clone):
+            return; // no-op like the form controller, rather than clearing the current object via changeGroupObject(null)
 
         long requestIndex;
         if(!GwtClientUtils.nullEquals(this.currentKey, key))
@@ -374,8 +372,19 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             Column column = getColumn(columns[i]);
             if(column == null) // unknown property key passed from the (external) JS API
                 continue;
+            GGroupObjectValue objectsKey;
+            if(GwtClientUtils.isUndefinedOrNull(objects[i]))
+                objectsKey = getSelectedKey(); // null / omitted object -> the current object
+            else {
+                objectsKey = getObjects(objects[i]); // a data row or a raw objects handle
+                if(objectsKey == null) { // an EXPLICIT object that is neither a row nor a handle: reject loudly (mirror the
+                    // form controller's controllerChangeProperties) instead of feeding null into getFullKey -> NPE
+                    GwtClientUtils.consoleError("changeProperty('" + columns[i] + "'): the object argument is not a data row or an objects handle; pass one of those");
+                    continue;
+                }
+            }
             properties.add(column.property);
-            fullKeys.add(GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey));
+            fullKeys.add(GGroupObjectValue.getFullKey(objectsKey, column.columnKey));
             values.add(newValues[i]);
         }
 
@@ -592,26 +601,36 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return isCurrentKey(getJsObjects(object));
     }
 
-    public static boolean isChangeObject(JavaScriptObject object) {
-        return hasKey(object, objectsFieldName) || toObject(object) instanceof GGroupObjectValue;
+    // the 2-arg changeProperty(property, X) guess: the column adapter over the single GFormController.isChangeObject
+    // core (which form is the call — value or object — decided by the property's value slot)
+    public boolean isChangeObject(String property, JavaScriptObject object) {
+        Column column = getColumn(property);
+        return form.isChangeObject(column != null ? column.property : null, object);
     }
 
+    // the subclass/controller-facing resolution: a row of this form, or an opaque getObjects()/async round-trip raw GGV
+    // handle (deployed classic pattern: getObjects(row) kept in JS state, passed back into changeObject/changeProperty
+    // later, even after the row left the list). GGroupObjectValue.resolveObject accepts the raw GGV centrally (via
+    // fromHandle), so no local instanceof is needed here.
+    protected GGroupObjectValue getObjects(JavaScriptObject object) {
+        return GGroupObjectValue.resolveObject(object);
+    }
     // key can be obtained from getAsyncValues for example, and not passed at all
     protected GGroupObjectValue getJsObjects(JavaScriptObject object) {
-        if(object == null)
+        if(GwtClientUtils.isUndefinedOrNull(object)) // raw JS arg: a numeric 0 key would read as null under Java == null (GWT falsy-primitive collapse)
             return getSelectedKey();
-        if(hasKey(object, objectsFieldName))
-            object = getValue(object, objectsFieldName);
-        return toObject(object);
+        return getObjects(object); // a row of this form or a raw GGV handle; null for anything else (no bare-key/clone resolution)
     }
-    protected GGroupObjectValue getObjects(JavaScriptObject object) {
-        return toObject(getValue(object, objectsFieldName));
-    }
-    protected JavaScriptObject createWithObjects(JavaScriptObject object, GGroupObjectValue key) {
-        return GwtClientUtils.replaceField(object, objectsFieldName, fromObject(key));
-    }
-    protected String getObjectsField() {
-        return objectsFieldName;
+    protected JavaScriptObject createWithObjects(JavaScriptObject object, JavaScriptObject objects) {
+        // a raw GGV handle or a row of this form (getObjects accepts both); anything else (e.g. a bare key) stays unkeyed
+        GGroupObjectValue key = getObjects(objects);
+        JavaScriptObject created = GwtClientUtils.copyObject(object); // clone the template (registerRow mutates the row below)
+        if (key != null)
+            GGroupObjectValue.registerRow(created, key); // fabricated rows get the full contract: public key + row-carried `objects` handle
+        else
+            GGroupObjectValue.clearRowObjects(created); // the clone copied the template's enumerable `objects`; drop it so an unresolvable identity stays unkeyed (resolution reads `objects`, not key)
+
+        return created;
     }
 
     protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
@@ -640,53 +659,20 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         setPageSize(pageSize);
     }
 
-    protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount) {
+    protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount, String mode) {
         Column column = getColumn(property);
         if(column == null) { // unknown property key passed from the (external) JS API
             if(failureCallBack != null)
                 GwtClientUtils.call(failureCallBack);
             return;
         }
-        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
-    }
-
-    public static AsyncCallback<GFormController.GAsyncResult> getJSCallback(JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
-        return new AsyncCallback<GFormController.GAsyncResult>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                if (failureCallBack != null)
-                    GwtClientUtils.call(failureCallBack);
-            }
-
-            @Override
-            public void onSuccess(GFormController.GAsyncResult result) {
-                assert !result.needMoreSymbols;
-                ArrayList<GAsync> asyncs = result.asyncs;
-                if (asyncs == null) {
-                    if (!result.moreRequests && failureCallBack != null)
-                        GwtClientUtils.call(failureCallBack);
-                    return;
-                }
-
-                GwtClientUtils.call(successCallBack, convertToJSObject(result));
-            }
-        };
-    }
-
-    private static JavaScriptObject convertToJSObject(GFormController.GAsyncResult result) {
-        JavaScriptObject[] results = new JavaScriptObject[result.asyncs.size()];
-        for (int i = 0; i < result.asyncs.size(); i++) {
-            JavaScriptObject object = GwtClientUtils.newObject();
-            GAsync suggestion = result.asyncs.get(i);
-            GwtClientUtils.setField(object, "displayString", fromString(PValue.getStringValue(suggestion.getDisplayValue())));
-            GwtClientUtils.setField(object, "rawString", fromString(PValue.getStringValue(suggestion.getRawValue())));
-            GwtClientUtils.setField(object, "objects", convertToJSKey(suggestion.key));
-            results[i] = object;
+        String actionSID = GFormController.getAsyncActionSID(mode); // default OBJECTS; values/strictValues/change select the server lookup
+        if(actionSID == null) { // unknown mode (already logged)
+            if(failureCallBack != null)
+                GwtClientUtils.call(failureCallBack);
+            return;
         }
-        JavaScriptObject data = GwtClientUtils.newObject();
-        GwtClientUtils.setField(data, "data", fromObject(results));
-        GwtClientUtils.setField(data, "more", fromBoolean(result.moreRequests));
-        return data;
+        form.getAsyncValues(value, column.property, column.columnKey, actionSID, GFormController.getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
     }
 
     private static class Change<V extends JavaScriptObject> {
@@ -841,10 +827,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue, type, index) {
+                if (!thisObj.@GSimpleStateTableView::isGridProperty(Ljava/lang/String;)(property))
+                    // not a column of THIS grid (e.g. a PANEL action edit/delete): the form controller's job (#1655) -
+                    // forward to it; it resolves the property form-wide (any group, incl. form-level) and guesses/execs
+                    return formController.changeProperty(property, object, newValue);
                 if(object !== undefined) {
                     if(newValue === undefined) { //object passed, newValue not passed
                         //guess if object is object or newValue
-                        if (@GSimpleStateTableView::isChangeObject(*)(object)) {
+                        if (thisObj.@GSimpleStateTableView::isChangeObject(*)(property, object)) {
                             newValue = @GwtClientUtils::UNDEFINED;
                         } else {
                             newValue = object;
@@ -959,24 +949,37 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getValues: function (property, value, successCallback, failureCallback) {
                 return this.getPropertyValues(property, value, successCallback, failureCallback);
             },
-            getPropertyValues: function (property, value, successCallback, failureCallback, increaseValuesNeededCount) {
-                return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback, increaseValuesNeededCount != null ? increaseValuesNeededCount : 0);
+            // getPropertyValues(property, value[, mode], ok, fail[, count]); mode right after value (parameter-guess: ok = first
+            // function arg, mode present iff there are 2 pre-callback args). mode: 'objects' (def, item.objects = handle) | 'values' | 'change'
+            getPropertyValues: function (property) {
+                var okIndex = -1;
+                for (var i = 1; i < arguments.length; i++)
+                    if (typeof arguments[i] === 'function') { okIndex = i; break; }
+                var value = arguments[1];
+                var mode = okIndex === 3 ? arguments[2] : null; // {value, mode, ok, ...} vs {value, ok, ...}
+                var successCallback = arguments[okIndex], failureCallback = arguments[okIndex + 1], count = arguments[okIndex + 2];
+                return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback, count == null ? 0 : count, mode == null ? null : mode);
             },
             getObjects: function (object) {
                 return thisObj.@GSimpleStateTableView::getObjects(*)(object);
             },
             getObjectsField: function () {
-                return thisObj.@GSimpleStateTableView::getObjectsField(*)();
+                return @lsfusion.gwt.client.form.object.GGroupObjectValue::ROW_OBJECTS;
             },
             getObjectsString: function (object) {
-                return this.getObjects(object).toString();
+                // the canonical key string (shared with the CUSTOM REACT contract); used internally for diff EQUALITY
+                // only — null-tolerant: a clone of a since-deleted/fabricated row may no longer resolve to a handle,
+                // but its copied public key is still a perfectly good equality token
+                var k = this.getObjects(object);
+                if (k !== null) return k.@lsfusion.gwt.client.form.object.GGroupObjectValue::toKeyString()();
+                return (object !== null && typeof object === 'object') ? String(object.key) : String(object);
             },
             createObject: function (object, objects) {
                 return thisObj.@GSimpleStateTableView::createWithObjects(*)(object, objects);
             },
             diff: function (newList, fnc, noDiffObjects, removeFirst) {
                 var controller = this;
-                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects, removeFirst);
+                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, controller.getObjectsField(), noDiffObjects, removeFirst); // exclude the `objects` identity handle from content diff (it's identity, not content; === stability is only a twins-cache optimization)
             },
             clearDiff: function () {
                 @GSimpleStateTableView::clearDiff(*)(element);

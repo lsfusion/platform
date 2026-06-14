@@ -245,12 +245,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GControllerResultAction convertAction(ControllerResultClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         GType type = action.type != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.type)) : null;
         Serializable value = action.value != null ? (Serializable) deserializeServerValue(action.value, formSessionObject, servlet) : null;
-        return new GControllerResultAction(action.callbackId, type, value);
+        return new GControllerResultAction(type, value);
     }
 
     @Converter(from = ControllerExceptionClientAction.class)
     public GControllerExceptionAction convertAction(ControllerExceptionClientAction action) {
-        return new GControllerExceptionAction(action.callbackId, action.message, action.cancelled);
+        return new GControllerExceptionAction(action.message, action.cancelled);
     }
 
     @Converter(from = AsyncGetRemoteChangesClientAction.class)

@@ -54,6 +54,8 @@ import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GFormGroupController;
+import lsfusion.gwt.client.form.object.table.controller.GFormPropertyController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
@@ -63,6 +65,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPr
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
@@ -70,6 +73,7 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -84,6 +88,7 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.interop.action.ServerResponse;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
@@ -117,6 +122,8 @@ public class GFormController implements EditManager {
     public final GForm form;
     public GFormLayout formLayout;
 
+    private lsfusion.gwt.client.form.design.view.GReactFormData reactData; // CUSTOM REACT: projected @lsfusion/core data
+
     private final boolean isDialog;
 
     private Event editEvent;
@@ -131,6 +138,7 @@ public class GFormController implements EditManager {
 
     private final LinkedHashMap<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
     private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GGroupObject, GReactController> reactControllers = new LinkedHashMap<>();
     public GPanelController panelController;
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
@@ -183,6 +191,8 @@ public class GFormController implements EditManager {
         dispatcher = new FormDispatchAsync(this, dispatchPriority);
 
         formLayout = new GFormLayout(this, form.mainContainer);
+        if (formLayout.hasReactContainers()) // CUSTOM REACT: keep a projection only for forms that actually have a React container
+            reactData = new lsfusion.gwt.client.form.design.view.GReactFormData(form, this);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
@@ -384,22 +394,16 @@ public class GFormController implements EditManager {
     // shared controller (exec/eval/change) machinery, dispatched in THIS form's session/pipeline
     private final GController gController = new GController() {
         @Override
-        protected void dispatchExec(long callbackId, String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            ControllerExecAction a = new ControllerExecAction(action, params);
-            a.callbackId = callbackId;
-            asyncDispatch(a, callback);
+        protected long dispatchExec(String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            return asyncDispatch(new ControllerExecAction(action, params), callback);
         }
         @Override
-        protected void dispatchEval(long callbackId, String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            ControllerEvalAction a = new ControllerEvalAction(script, evalAction, params);
-            a.callbackId = callbackId;
-            asyncDispatch(a, callback);
+        protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            return asyncDispatch(new ControllerEvalAction(script, evalAction, params), callback);
         }
         @Override
-        protected void dispatchChange(long callbackId, String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {
-            ControllerChangeAction a = new ControllerChangeAction(property, keyParams, value);
-            a.callbackId = callbackId;
-            asyncDispatch(a, callback);
+        protected long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {
+            return asyncDispatch(new ControllerChangeAction(property, keyParams, value), callback);
         }
         @Override
         protected boolean isClosed() {
@@ -411,30 +415,211 @@ public class GFormController implements EditManager {
         }
     };
 
-    // the form controller object adds the form-only changeProperty on top of the shared exec/eval/change
+    // the form controller object: the form-level escape hatch (exec/eval/change + legacy changeProperty) PLUS the
+    // CUSTOM REACT mutation methods. The latter mirror the CUSTOM group-object view controller (GSimpleStateTableView)
+    // but form-level, so each takes a groupSID. a method accepts a data row, or a raw objects handle (from getObjects /
+    // async OBJECTS suggestions) — GGroupObjectValue.resolveObject; a bare key / spread clone does NOT resolve. Mutations go through the SAME classic interactive path as a normal
+    // edit (optimistic reconciliation + async exec); there is no return value (state flows back via the projection).
     public final JavaScriptObject controller = initController();
     private native JavaScriptObject initController() /*-{
         var thisObj = this;
         var base = this.@GFormController::gController.@GController::controller;
+        var UNDEFINED = @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
         return {
-            changeProperty: function (propertyName, value) {
-                if(value === undefined) // not passed, so it's an action
-                    value = @GwtClientUtils::UNDEFINED;
-                return thisObj.@GFormController::changePropertyCustom(*)(propertyName, value);
+            // change a property value, or exec the action/property when the value is omitted — same shape as the CUSTOM
+            // group-view controller's changeProperty(property, object, value); `property` is the integration SID:
+            //   changeProperty(property)                 - exec on the current object
+            //   changeProperty(property, value)          - set value on the current object
+            //   changeProperty(property, object)         - exec on the given row (a `data` row or a raw objects handle)
+            //   changeProperty(property, object, value)  - set value on the given row
+            // optional trailing groupSID scopes the property when its integration SID isn't form-unique (repeats across groups)
+            changeProperty: function (property, object, value, groupSID) {
+                var gsid = groupSID === undefined ? null : groupSID;
+                if (object !== undefined) {
+                    if (value === undefined) { // (property, X): THE SAME guess shape as the classic controller — isChangeObject classifies, the normal explicit path below dispatches
+                        if (thisObj.@GFormController::isChangeObject(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(property, object, gsid))
+                            value = UNDEFINED; // a row -> exec on it
+                        else { value = object; object = null; } // anything else -> set on current
+                    }
+                } else { value = UNDEFINED; object = null; } // (property) -> exec on current
+                return thisObj.@GFormController::controllerChangeProperty(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(property, object === undefined ? null : object, value, gsid);
             },
-            exec: base.exec, // exec(action, ...params) -> Promise
-            eval: base.eval, // eval(script, ...params) -> Promise (script defines its own run)
-            evalAction: base.evalAction, // evalAction(script, ...params) -> Promise (action body, auto-wrapped into run())
-            change: base.change // change(property, ...keyParams, value) -> Promise
+            // batch (parallel arrays); objectsOrKeys / groupSIDs entries may be null (current object / form-wide)
+            changeProperties: function (properties, objectsOrKeys, values, groupSIDs) {
+                return thisObj.@GFormController::controllerChangeProperties(*)(properties, objectsOrKeys, values, groupSIDs === undefined ? null : groupSIDs);
+            },
+            // set a group's current object to a row (a `data` row object, or a raw objects handle)
+            changeObject: function (groupSID, objectOrKey) {
+                return thisObj.@GFormController::controllerChangeObject(*)(groupSID, objectOrKey);
+            },
+            // async value lookup (autocomplete / suggestion list) for a property by integration SID — the form-level twin
+            // of the CUSTOM grid view's getPropertyValues. Mirrors changeProperty's shape:
+            //   getPropertyValues(property,         value[, mode], ok, fail[, count[, groupSID]]) - suggestions for the group's current object
+            //   getPropertyValues(property, object, value[, mode], ok, fail[, count[, groupSID]]) - suggestions scoped to the given row (a data row / raw objects handle)
+            // ok gets {data:[{displayString,rawString,objects}], more}; optional trailing groupSID (needs count) scopes the
+            // property when its integration SID isn't form-unique. mode picks the server lookup (default 'objects'):
+            //   'objects' - matching OBJECTS, each item's `objects` = a raw GGV handle (object picker)
+            //   'values'  - DISTINCT property values (item `objects` is null; just display/rawString)
+            //   'change'  - the edit-time value autocomplete (the property's change/input action; honors custom change logic)
+            // Positional parameter-guess (no options object — that's a future uniform cross-method migration): ok = the first
+            // function arg; the pre-callback args are read by (count, typeof first), unambiguous because object is always a JS
+            // object (row/handle, never a string), value is a string query, and mode is a string enum right after value.
+            getPropertyValues: function (property) {
+                var okIndex = -1;
+                for (var i = 1; i < arguments.length; i++)
+                    if (typeof arguments[i] === 'function') { okIndex = i; break; }
+                var object = null, value, mode = null;
+                var preCount = okIndex - 1; // args between property and ok: {value} | {object,value} | {value,mode} | {object,value,mode}
+                if (preCount === 1) {
+                    value = arguments[1];
+                } else if (preCount === 2) {
+                    if (typeof arguments[1] === 'string') { value = arguments[1]; mode = arguments[2]; } // value, mode
+                    else { object = arguments[1]; value = arguments[2]; } // object, value (object is never a string)
+                } else { // 3: object, value, mode
+                    object = arguments[1]; value = arguments[2]; mode = arguments[3];
+                }
+                var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2], groupSID = arguments[okIndex + 3];
+                thisObj.@GFormController::controllerGetPropertyValues(*)(property, object === undefined ? null : object, value, groupSID == null ? null : groupSID, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
+            },
+            exec: base.exec, // exec(action, ...params) -> Promise (global action by canonical name)
+            eval: base.eval, // eval(script, ...params) -> Promise
+            evalAction: base.evalAction, // evalAction(script, ...params) -> Promise
+            change: base.change // change(property, ...keyParams, value) -> Promise (single global property, canonical name)
         }
     }-*/;
 
-    // terminal GControllerResult/ExceptionAction (delivered through GFormActionDispatcher) -> resolve/reject the promise
-    public void controllerCallbackResult(long callbackId, JavaScriptObject result) {
-        gController.controllerCallbackResult(callbackId, result);
+    // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): resolve the draw by
+    // integration SID (GForm.getPropertyDraw — group-scoped or form-wide); rows/handles resolve via
+    // GGroupObjectValue.resolveObject (the row-carried `objects` handle + raw-GGV accept). Dispatch through the SAME classic path as a normal edit
+    // (executePropertyEventAction / changeGroupObject + setLoadingValueAt) =====
+    public void controllerChangeObject(String groupSID, JavaScriptObject objectOrKey) {
+        GGroupObject group = form.getGroupObject(groupSID);
+        if (group == null) return;
+        GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey); // a row or a raw objects handle
+        if (key != null)
+            changeGroupObject(group, key, null, null);
     }
-    public void controllerCallbackException(long callbackId, String message, boolean cancelled) {
-        gController.controllerCallbackException(callbackId, message, cancelled);
+    // the 2-arg changeProperty(property, X) guess — WHICH form is the call, (property, value) or (property, object)?
+    // Decided by whether there is anywhere to PUT a value (the same predicate shape as the classic isChangeObject):
+    // - the property takes a value (externalChangeType != null): only an unambiguous row carrier (resolveObject — a data
+    //   row or a raw objects handle, never a bare key/clone/primitive: ids collide with values generically) picks the object form
+    // - it doesn't: the value interpretation doesn't exist, so it is ALWAYS the object form — X goes to the object
+    //   slot as is, and the EXPLICIT dispatch path resolves it (resolveObject — a row or raw objects handle),
+    //   rejecting an unresolvable argument loudly
+    // THE single guess core, shared by both surfaces — they differ only in how the draw is found (form-level: by
+    // integration SID + groupSID; classic: by its view column), the policy is one
+    public boolean isChangeObject(GPropertyDraw draw, JavaScriptObject object) {
+        if (draw == null || draw.groupObject == null) // no object slot at all -> the value form is the only one
+            return false;
+        if (draw.externalChangeType == null)
+            return true;
+        return GGroupObjectValue.resolveObject(object) != null;
+    }
+    public boolean isChangeObject(String property, JavaScriptObject object, String groupSID) {
+        return isChangeObject(form.getPropertyDraw(groupSID, property), object);
+    }
+    public void controllerChangeProperty(String property, JavaScriptObject objectOrKey, JavaScriptObject value, String groupSID) {
+        controllerChangeProperties(new String[]{property}, new JavaScriptObject[]{objectOrKey}, new JavaScriptObject[]{value}, groupSID == null ? null : new String[]{groupSID});
+    }
+    public void controllerChangeProperties(String[] properties, JavaScriptObject[] objectsOrKeys, JavaScriptObject[] values, String[] groupSIDs) {
+        ArrayList<GPropertyDraw> props = new ArrayList<>();
+        ArrayList<GGroupObjectValue> keys = new ArrayList<>();
+        ArrayList<PValue> pvalues = new ArrayList<>();
+        if (properties == null || objectsOrKeys == null || values == null
+                || objectsOrKeys.length < properties.length || values.length < properties.length
+                || (groupSIDs != null && groupSIDs.length < properties.length)) { // author-supplied parallel arrays
+            GwtClientUtils.consoleError("changeProperties: objects/values/groupSIDs arrays must cover every property");
+            return;
+        }
+        for (int i = 0; i < properties.length; i++) {
+            GPropertyDraw draw = form.getPropertyDraw(groupSIDs != null ? groupSIDs[i] : null, properties[i]); // null groupSID => form-wide
+            if (draw == null) continue;
+            GGroupObjectValue fullKey = GGroupObjectValue.EMPTY; // null object => the current object
+            if (draw.groupObject != null && !GwtClientUtils.isUndefinedOrNull(objectsOrKeys[i])) { // raw JS key: a numeric 0 key would read as null under Java == null (GWT falsy-primitive collapse)
+                GGroupObjectValue key = GGroupObjectValue.resolveObject(objectsOrKeys[i]); // a row or a raw objects handle (explicit position, so no value ambiguity)
+                if (key == null) { // an EXPLICIT object argument that is neither a row nor a raw handle: reject loudly — silently mutating the current row instead would be the worst outcome
+                    GwtClientUtils.consoleError("changeProperty('" + properties[i] + "'): the object argument is not a data row or an objects handle; pass one of those");
+                    continue;
+                }
+                fullKey = key;
+            }
+            props.add(draw);
+            keys.add(fullKey);
+            pvalues.add(GSimpleStateTableView.convertFromJSUndefValue(draw, values[i]));
+        }
+        changeProperties(props, keys, pvalues);
+    }
+    // the typed core: resolved draws/keys/values -> the same classic batch edit dispatch as a normal user edit
+    private void changeProperties(ArrayList<GPropertyDraw> props, ArrayList<GGroupObjectValue> keys, ArrayList<PValue> pvalues) {
+        if (props.isEmpty()) return;
+        GPropertyDraw[] pa = props.toArray(new GPropertyDraw[0]);
+        GGroupObjectValue[] ka = keys.toArray(new GGroupObjectValue[0]);
+        PValue[] va = pvalues.toArray(new PValue[0]);
+        executePropertyEventAction(pa, ka, va, requestIndex -> {
+            for (int i = 0; i < pa.length; i++)
+                // WYSIWYG guard (like GSimpleStateTableView.changeProperties): only overlay the optimistic value when the
+                // input writes the displayed property value; a non-WYSIWYG change (custom action / unbound input) must wait for the server
+                if (va[i] != PValue.UNDEFINED && pa[i].hasExternalChangeActionForRendering(RendererType.SIMPLE))
+                    setLoadingValueAt(pa[i], ka[i], va[i], requestIndex); // optimistic overlay (+ optimistic react via setLoadingValueAt -> setPropertyValue), reconciled by requestIndex
+        });
+    }
+    // maps the public getPropertyValues `mode` to the server async actionSID (the strings coincide). null/'objects' => OBJECTS
+    // (the only mode that returns object handles); 'values' => DISTINCT property values; 'change' => the property's edit-time
+    // value autocomplete (respects custom INPUT/notNull/custom-change, requires editability). STRICTVALUES is intentionally NOT
+    // exposed: it's only `values` + exact-match UX post-processing the platform derives from the filter operator, not an author
+    // choice (add an `exactMatch` flag later if ever needed). Returns null for an unknown mode (caller rejects loudly).
+    public static String getAsyncActionSID(String mode) {
+        if (mode == null || mode.equals(ServerResponse.OBJECTS))
+            return ServerResponse.OBJECTS;
+        if (mode.equals(ServerResponse.VALUES) || mode.equals(ServerResponse.CHANGE))
+            return mode;
+        GwtClientUtils.consoleError("getPropertyValues: unknown mode '" + mode + "'; expected 'objects' | 'values' | 'change'");
+        return null;
+    }
+    // async value lookup (autocomplete / suggestion list) for a form-level / CUSTOM REACT property — the form-level twin
+    // of the grid custom view's getAsyncValues (GSimpleStateTableView). Resolves the draw by integration SID (+ optional
+    // groupSID) and the optional row exactly like changeProperty (GGroupObjectValue.resolveObject); the resolved row key
+    // becomes the columnKey, which getFullCurrentKey overlays over the current selection -> suggestions scoped to that row
+    // (EMPTY => the property group's current object). The mode picks the server lookup (OBJECTS suggestions vs distinct
+    // VALUES vs the edit-time CHANGE autocomplete; CHANGE here targets THIS draw's own change action — no property:value
+    // concat, that's the JSON-property cell-renderer's special case). Issues through the shared getAsyncValues.
+    public void controllerGetPropertyValues(String property, JavaScriptObject objectOrKey, String value, String groupSID, String mode, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) {
+        String actionSID = getAsyncActionSID(mode);
+        if (actionSID == null) { // unknown mode (already logged)
+            if (failureCallback != null)
+                GwtClientUtils.call(failureCallback);
+            return;
+        }
+        GPropertyDraw draw = form.getPropertyDraw(groupSID, property); // null groupSID => form-wide
+        if (draw == null) {
+            GwtClientUtils.consoleError("getPropertyValues('" + property + "'): property not found");
+            if (failureCallback != null)
+                GwtClientUtils.call(failureCallback);
+            return;
+        }
+        GGroupObjectValue columnKey = GGroupObjectValue.EMPTY; // null/omitted object => the current object
+        if (draw.groupObject != null && !GwtClientUtils.isUndefinedOrNull(objectOrKey)) {
+            GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey); // a row or a raw objects handle (same contract as changeProperty)
+            if (key == null) {
+                GwtClientUtils.consoleError("getPropertyValues('" + property + "'): the object argument is not a data row or an objects handle; pass one of those");
+                if (failureCallback != null)
+                    GwtClientUtils.call(failureCallback);
+                return;
+            }
+            columnKey = key;
+        }
+        getAsyncValues(value, draw, columnKey, actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
+    }
+
+    // (row registration + resolution moved to GGroupObjectValue.registerRow / resolveObject — they use no controller
+    // state: public `key` is the display/diff token, the `objects` handle is resolution identity, raw GGV accepted)
+
+    // terminal GControllerResult/ExceptionAction (delivered through GFormActionDispatcher) -> resolve/reject the promise
+    public void controllerCallbackResult(long requestIndex, JavaScriptObject result) {
+        gController.controllerCallbackResult(requestIndex, result);
+    }
+    public void controllerCallbackException(long requestIndex, String message, boolean cancelled) {
+        gController.controllerCallbackException(requestIndex, message, cancelled);
     }
 
     @Override
@@ -454,17 +639,29 @@ public class GFormController implements EditManager {
     }
 
     private void initializeControllers() {
+        if (reactData != null)
+            initializeReactController(null);
+
         for (GTreeGroup treeGroup : form.treeGroups) {
-            initializeTreeController(treeGroup);
+            if (!isReactOwned(treeGroup)) // react-owned tree (inside a react container) -> no GWT tree controller
+                initializeTreeController(treeGroup);
         }
 
         for (GGroupObject group : form.groupObjects) {
-            if (group.parent == null) {
-                initializeGroupController(group);
+            if (isReactOwned(group)) {
+                initializeReactController(group);
+            } else {
+                if (group.parent == null) {
+                    initializeGroupController(group);
+                }
             }
         }
 
-        panelController = new GPanelController(this);
+        panelController = new GPanelController(this); // kept even for React: getPropertyController/update rely on it; it stays empty when only react-owned property readers are skipped, so no panel views are built
+    }
+
+    private void initializeReactController(GGroupObject group) {
+        reactControllers.put(group, new GReactController(group, reactData, this::refreshReactOptimistic));
     }
 
     public Pair<Widget, Boolean> getCaptionWidget() {
@@ -545,7 +742,9 @@ public class GFormController implements EditManager {
         Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> defaultOrders = groupDefaultOrders();
         for(Map.Entry<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> entry : defaultOrders.entrySet()) {
             GGroupObject groupObject = entry.getKey();
-            getGroupObjectController(groupObject).changeOrders(groupObject, entry.getValue(), true);
+            GAbstractTableController controller = getGroupObjectController(groupObject);
+            if (controller != null) // null for react-owned groups (no base controller)
+                controller.changeOrders(groupObject, entry.getValue(), true);
         }
     }
 
@@ -721,19 +920,26 @@ public class GFormController implements EditManager {
         applyNeedConfirm(fc);
 
         formLayout.update(requestIndex);
+
+        if (reactData != null) { // CUSTOM REACT: project form state and push to the React container(s)
+            reactData.update(fc);
+            formLayout.updateReactContainers(reactData);
+        }
     }
 
     public void applyKeyChanges(GFormChanges fc, int requestIndex) {
-        fc.gridObjects.foreachEntry((key, value) ->
-            getGroupObjectController(key).updateKeys(key, value, fc, requestIndex));
+        fc.gridObjects.foreachEntry((key, value) -> {
+            getGroupController(key).updateKeys(key, value, fc, requestIndex);
+        });
 
-        fc.objects.foreachEntry((key, value) ->
-            getGroupObjectController(key).updateCurrentKey(value));
+        fc.objects.foreachEntry((key, value) -> {
+            getGroupController(key).updateCurrentKey(value);
+        });
     }
 
     private void applyPropertyChanges(GFormChanges fc) {
         fc.dropProperties.forEach(property -> {
-            GPropertyController controller = getPropertyController(property);
+            GFormPropertyController controller = getReactablePropertyController(property);
             if (controller.isPropertyShown(property)) // drop properties sent without checking if it was sent for update at least once, so it's possible when drop is sent for property that has not been added
                 controller.removeProperty(property);
         });
@@ -745,7 +951,8 @@ public class GFormController implements EditManager {
 
     private void updatePropertyChanges(GFormChanges fc, Predicate<GPropertyReader> filter) {
         fc.properties.foreachEntry((key, value) -> {
-            if(filter.test(key))
+            // react-owned readers route to base GWT views we do not build; reactData.update(fc) consumes fc.properties directly.
+            if(filter.test(key) && !isReactOwned(key))
                 key.update(this, value, fc.updateProperties.contains(key));
         });
     }
@@ -805,7 +1012,7 @@ public class GFormController implements EditManager {
                 // возможны скачки и путаница в строках на удалении, если до прихода ответа position утратил свою актуальность
                 // по этой же причине не заморачиваемся запоминанием соседнего объекта
                 if(!fc.gridObjects.containsKey(groupObject)) {
-                    controllers.get(groupObject).modifyGroupObject(modifyObject.value, !modifyObject.add, modifyObject.position);
+                    getGroupController(groupObject).modifyGroupObject(modifyObject.value, !modifyObject.add, modifyObject.position);
                 }
             }
         }
@@ -840,7 +1047,10 @@ public class GFormController implements EditManager {
             if (requestIndex <= currentDispatchingRequestIndex) {
                 removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
-                if(!(property instanceof GPropertyDraw && (!getPropertyController((GPropertyDraw) property).isPropertyShown((GPropertyDraw)property) || fc.dropProperties.contains((GPropertyDraw)property)))) {
+                // react-owned: no controller, the value IS in the projection -> treat as shown (and reconcile)
+                boolean propertyShown = !(property instanceof GPropertyDraw)
+                        || (!fc.dropProperties.contains((GPropertyDraw) property) && getReactablePropertyController((GPropertyDraw) property).isPropertyShown((GPropertyDraw) property));
+                if(propertyShown) {
                     NativeHashMap<GGroupObjectValue, PValue> propertyValues = fc.properties.get(property);
                     if (propertyValues == null) {
                         // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
@@ -872,7 +1082,7 @@ public class GFormController implements EditManager {
 
                 removeFromDoubleMap(pendingLoadingPropertyRequests, property, keys);
 
-                if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
+                if(!fc.dropProperties.contains(property) && getReactablePropertyController(property).isPropertyShown(property)) { // react-owned: no controller -> treat as shown
                     NativeHashMap<GGroupObjectValue, PValue> propertyLoadings = fc.properties.get(property.loadingReader);
                     if (propertyLoadings == null) {
                         propertyLoadings = new NativeHashMap<>();
@@ -912,6 +1122,78 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
+    private GFormGroupController getGroupController(GGroupObject group) {
+        return isReactOwned(group) ? getReactController(group) : (GFormGroupController) getGroupObjectController(group);
+    }
+
+    private GFormPropertyController getReactablePropertyController(GPropertyDraw property) {
+        if (isReactOwned(property)) {
+            GReactController controller = getReactController(property.groupObject);
+            if (controller != null)
+                return controller;
+            // react-owned but no react controller for its group (e.g. a group-less form prop inside a react
+            // container before any react group registered): fall through to the classic controller, never NPE
+        }
+        return getPropertyController(property);
+    }
+
+    private GReactController getReactController(GGroupObject group) {
+        return reactControllers.get(group);
+    }
+
+    public GContainer getReactContainer(GComponent component) {
+        GContainer result = null;
+        // the OUTERMOST react ancestor owns the whole subtree: a customReact container nested inside another react
+        // container is just part of the outer component's DOM — resolving to the innermost one would assign its
+        // groups to a scope that never gets a ReactContainerView, silently producing no data
+        for (GContainer container = component != null ? component.container : null; container != null; container = container.container)
+            if (container.isReact())
+                result = container;
+        return result;
+    }
+
+    public GContainer getOwningReactContainer(GComponent component) {
+        if (reactData == null || component == null)
+            return null;
+        GContainer outer = getReactContainer(component);
+        if (outer != null)
+            return outer;
+        // a react container is itself react-owned (its OWN layout readers — caption/image/classes/showif/custom —
+        // must be skipped too, not only its descendants'; else the root react container would NPE/CCE on those readers)
+        if (component instanceof GContainer && ((GContainer) component).isReact())
+            return (GContainer) component;
+        return null;
+    }
+
+    public boolean isReactOwned(GComponent component) {
+        return getOwningReactContainer(component) != null;
+    }
+
+    public boolean isReactOwned(GGroupObject group) {
+        return group != null && getOwningReactContainer(group.grid != null ? group.grid : group.parent) != null;
+    }
+
+    public boolean isReactOwned(GPropertyDraw property) {
+        // GROUP-based for any grouped draw (consistent with GReactFormData's projection ownership): a panel draw of a
+        // non-react group physically placed inside a react container stays classic — projecting it would require a
+        // react controller its group doesn't have (NPE), and the projection wouldn't pick it up anyway
+        return property != null && (property.groupObject != null ? isReactOwned(property.groupObject) : getOwningReactContainer(property) != null);
+    }
+
+    private boolean isReactOwned(GPropertyReader reader) {
+        if (reactData == null)
+            return false;
+        if (reader instanceof GPropertyDraw)
+            return isReactOwned((GPropertyDraw) reader);
+        if (reader instanceof GExtraPropertyReader)
+            return isReactOwned(getProperty(((GExtraPropertyReader) reader).propertyID));
+        if (reader instanceof GRowPropertyReader)
+            return isReactOwned(getGroupObject(((GRowPropertyReader) reader).groupObjectID));
+        if (reader instanceof GComponentReader)
+            return isReactOwned(((GComponentReader) reader).getReaderComponent());
+        return false;
+    }
+
     public FormDockable getFormDockableContainer(boolean isDockedModal) {
         if (isDockedModal) {
             FormContainer contextContainer = getContextContainer();
@@ -947,6 +1229,8 @@ public class GFormController implements EditManager {
     public long changeGroupObject(final GGroupObject group, GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
         long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key, changeSelection));
         pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
+        if (reactData != null && reactData.setCurrentObject(group, key)) // optimistic: reflect the new current in the projection now (reconciled later by fc.objects)
+            refreshReactOptimistic();
         return requestIndex;
     }
 
@@ -1397,15 +1681,10 @@ public class GFormController implements EditManager {
         // there was a check that if groupObject is list, then currentKey should not be empty, but I'm not sure what for this check was needed
 //        property.groupObject isList isEmpty() ??
 
-        for (GGridController group : controllers.values()) {
-            fullCurrentKey.putAll(group.getSelectedKey());
-        }
-
-        for (GTreeGroupController tree : treeControllers.values()) {
-            GGroupObjectValue currentPath = tree.getSelectedKey();
-            if (currentPath != null) {
-                fullCurrentKey.putAll(currentPath);
-            }
+        for (GGroupObject group : form.groupObjects) {
+            GGroupObjectValue current = getGroupController(group).getSelectedKey();
+            if (current != null)
+                fullCurrentKey.putAll(current);
         }
 
         fullCurrentKey.putAll(fullKey);
@@ -1491,22 +1770,12 @@ public class GFormController implements EditManager {
         }, onExec);
     }
 
-    // for global form custom change in the controller
-    public void changePropertyCustom(String propertyName, JavaScriptObject value) {
-        GGroupObjectValue fullKey = GGroupObjectValue.EMPTY; // we'll read selected keys
-        GPropertyDraw property = getProperty(propertyName);
-        PValue pValue = GSimpleStateTableView.convertFromJSUndefValue(property, value);
-        executePropertyEventAction(new GPropertyDraw[]{property}, new GGroupObjectValue[]{fullKey}, new PValue[] {pValue}, requestIndex -> {
-            if(pValue != PValue.UNDEFINED)
-                setLoadingValueAt(property, fullKey, pValue, requestIndex);
-        });
-    }
 
     public void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
         final GObject object = form.getObject(asyncAddRemove.object);
         final boolean add = asyncAddRemove.add;
 
-        GGridController controller = controllers.get(object.groupObject);
+        GFormGroupController controller = getGroupController(object.groupObject);
 
         final int position = controller.getSelectedRow();
 
@@ -1520,8 +1789,8 @@ public class GFormController implements EditManager {
         } else {
             DeferredRunner.get().commitDelayedGroupObjectChange(object.groupObject);
 
-            final GGroupObjectValue value = controllers.get(object.groupObject).getSelectedKey();
-            if(value.isEmpty())
+            final GGroupObjectValue value = controller.getSelectedKey();
+            if(value == null || value.isEmpty())
                 return;
             asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, position, eventSource, onExec);
         }
@@ -1532,7 +1801,7 @@ public class GFormController implements EditManager {
             pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
             pendingModifyObjectRequests.add(new ModifyObject(requestIndex, object, add, value, position));
 
-            controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
+            getGroupController(object.groupObject).modifyGroupObject(value, add, -1);
         }, onExec);
     }
 
@@ -1552,7 +1821,9 @@ public class GFormController implements EditManager {
                 }
             }
 
-            controllers.get(groupObject).changeOrders(pOrders, false);
+            GGridController controller = controllers.get(groupObject);
+            if (controller != null) // null for react-owned groups
+                controller.changeOrders(pOrders, false);
         }
     }
 
@@ -1560,6 +1831,8 @@ public class GFormController implements EditManager {
         GGroupObject groupObject = form.getGroupObject(goID);
         if (groupObject != null) {
             GGridController gGridController = controllers.get(groupObject);
+            if (gGridController == null) // react-owned groups have no base controller (no grid filter UI)
+                return;
             List<GPropertyFilter> uFilters = new ArrayList<>();
             for (GFilterAction.FilterItem filter : filters) {
                 GPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
@@ -1689,17 +1962,22 @@ public class GFormController implements EditManager {
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        getPropertyController(propertyDraw).focusProperty(propertyDraw);
+        getReactablePropertyController(propertyDraw).focusProperty(propertyDraw); // react-owned -> GReactController no-op; non-react -> the real controller
     }
 
     public void setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullKey, PValue value, long requestIndex) {
         GGroupObjectValue fullCurrentKey = getFullCurrentKey(property, fullKey);
-        Pair<GGroupObjectValue, PValue> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
+        Pair<GGroupObjectValue, PValue> propertyCell = getReactablePropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
 
         if(propertyCell != null) {
             pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
             pendingLoadingProperty(property, propertyCell.first, requestIndex);
         }
+    }
+    // push the react projection to the containers right after an optimistic mutation (current/property); the server
+    // applyRemoteChanges later reconciles through the same reactData.update(fc) + updateReactContainers path
+    private void refreshReactOptimistic() {
+        formLayout.updateReactContainers(reactData);
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -1750,7 +2028,9 @@ public class GFormController implements EditManager {
         asyncDispatch(new CountRecords(groupObject.ID), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Long) result.value);
+                GGridController controller = controllers.get(groupObject);
+                if (controller != null)
+                    controller.showRecordQuantity((Long) result.value);
             }
         });
     }
@@ -1759,7 +2039,9 @@ public class GFormController implements EditManager {
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw);
+                GGridController controller = controllers.get(groupObject);
+                if (controller != null)
+                    controller.showSum(result.value, propertyDraw);
             }
         });
     }
@@ -2006,9 +2288,9 @@ public class GFormController implements EditManager {
             BaseImage.updateImage(container.image, captionWidget);
     }
 
-    public void setContainerCustomDesign(GContainer container, String customDesign) {
+    public void setContainerCustom(GContainer container, String custom) {
         GAbstractContainerView containerView = formLayout.getContainerView(container);
-        ((CustomContainerView)containerView).updateCustomDesign(customDesign);
+        ((CustomContainerView)containerView).updateCustom(custom);
     }
 
     private static final class Change {
@@ -2457,6 +2739,55 @@ public class GFormController implements EditManager {
             });
         else
             runPessimistic.run();
+    }
+
+    // single source of truth for the async-value callback: converts a GAsyncResult to the JS shape custom views consume
+    // ({data:[{displayString,rawString,objects}], more}). Shared by the form/REACT controller, the grid custom view
+    // (GSimpleStateTableView), and the custom cell renderer (CustomCellRenderer) — all route their getValues through here.
+    public static AsyncCallback<GAsyncResult> getJSCallback(JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
+        return new AsyncCallback<GAsyncResult>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                if (failureCallBack != null)
+                    GwtClientUtils.call(failureCallBack);
+            }
+
+            @Override
+            public void onSuccess(GAsyncResult result) {
+                assert !result.needMoreSymbols;
+                ArrayList<GAsync> asyncs = result.asyncs;
+                if (asyncs == null) {
+                    if (!result.moreRequests && failureCallBack != null)
+                        GwtClientUtils.call(failureCallBack);
+                    return;
+                }
+
+                GwtClientUtils.call(successCallBack, convertToJSObject(result));
+            }
+        };
+    }
+
+    private static JavaScriptObject convertToJSObject(GAsyncResult result) {
+        JavaScriptObject[] results = new JavaScriptObject[result.asyncs.size()];
+        for (int i = 0; i < result.asyncs.size(); i++) {
+            JavaScriptObject object = GwtClientUtils.newObject();
+            GAsync suggestion = result.asyncs.get(i);
+            GwtClientUtils.setField(object, "displayString", GStateTableView.fromString(PValue.getStringValue(suggestion.getDisplayValue())));
+            GwtClientUtils.setField(object, "rawString", GStateTableView.fromString(PValue.getStringValue(suggestion.getRawValue())));
+            GwtClientUtils.setField(object, "objects", convertToJSKey(suggestion.key));
+            results[i] = object;
+        }
+        JavaScriptObject data = GwtClientUtils.newObject();
+        GwtClientUtils.setField(data, "data", GStateTableView.fromObject(results));
+        GwtClientUtils.setField(data, "more", GStateTableView.fromBoolean(result.moreRequests));
+        return data;
+    }
+
+    private static JavaScriptObject convertToJSKey(Serializable key) {
+        if (key instanceof GGroupObjectValue)
+            return GStateTableView.fromObject(key);
+
+        return GwtClientUtils.jsonParse((String) key);
     }
 
     private static GAsyncResult convertAsyncResult(ListResult result) {

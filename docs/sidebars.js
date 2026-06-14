@@ -703,6 +703,9 @@ module.exports = {
                     'how-to/How-to_Table_status',
                     'how-to/How-to_Custom_components_properties',
                     'how-to/How-to_Custom_components_objects',
+                    'how-to/How-to_Custom_client_JS_modules',
+                    'how-to/How-to_Custom_React_views',
+                    'how-to/How-to_Custom_view_controller',
                   ]
                 },
                 'how-to/How-to_Reports', 

@@ -163,13 +163,17 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
-        setCurrentKey(currentKey, true);
+        setCurrentKey(currentKey, false); // server-driven (GGridController.updateCurrentKey): the component hasn't rendered it -> re-render
     }
 
     private void setCurrentKey(GGroupObjectValue currentKey, boolean rendered) {
-        this.currentKey = currentKey;
-        if (!rendered)
+        // re-render only for an unrendered (server / non-self-rendered) change whose key ACTUALLY changed. The server
+        // re-sends the (often unchanged) current alongside grid keys, so the keyChanged guard avoids spurious full
+        // re-renders (notably a GPivot rebuild). rendered=true (component self-rendered, like changeProperty's
+        // changeJSDiff) never re-renders.
+        if (!rendered && !Objects.equals(this.currentKey, currentKey))
             dataUpdated = true;
+        this.currentKey = currentKey;
     }
 
     private int pageSize = getDefaultPageSize();
@@ -812,19 +816,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
     // utils
 
-    protected JsArray<JavaScriptObject> convertToObjectsString(JsArray<JsArrayString> array) {
-        JsArrayString columns = array.get(0);
-        JsArray<JavaScriptObject> convert = JavaScriptObject.createArray().cast();
-        for(int i=1;i<array.length();i++) {
-            WrapperObject object = JavaScriptObject.createObject().cast();
-            JsArrayString values = array.get(i);
-            for(int j=0;j<columns.length();j++) {
-                object.putValue(columns.get(j), fromString(values.get(j)));
-            }
-            convert.push(object);
-        }
-        return convert;
-    }
 
     protected JsArray<JavaScriptObject> convertToObjectsMixed(JsArray<JsArray<JavaScriptObject>> array) {
         JsArray<JavaScriptObject> columns = array.get(0); // actually strings
@@ -835,6 +826,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             for(int j=0;j<columns.length();j++) {
                 object.putValue(toString(columns.get(j)), values.get(j));
             }
+            // the marshaled handle travels POSITIONALLY as one extra trailing element (getValues pushes it last,
+            // past the captions) and never reaches the public row
+            GGroupObjectValue rowKey = values.length() > columns.length() ? GStateTableView.<GGroupObjectValue>toObject(values.get(columns.length())) : null;
+            if (rowKey != null)
+                GGroupObjectValue.registerRow(object, rowKey); // the public row.key + the same enumerable `objects` handle as react rows
             convert.push(object);
         }
         return convert;
@@ -852,10 +848,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     static class WrapperObject extends JavaScriptObject {
         protected WrapperObject() {
         }
-
-        protected native final JsArrayString getKeys() /*-{
-            return Object.keys(this);
-        }-*/;
         protected native final JsArrayString getArrayString(String string) /*-{
             return this[string];
         }-*/;
@@ -873,13 +865,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         }-*/;
     }
 
-    protected static native boolean hasKey(JavaScriptObject object, String key) /*-{
-        return object[key] !== undefined;
-    }-*/;
-    protected static native JavaScriptObject getValue(JavaScriptObject object, String key) /*-{
-        return object[key];
-    }-*/;
-
     public static native JavaScriptObject fromString(String string) /*-{
         return string;
     }-*/;
@@ -895,7 +880,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected static native double toDouble(JavaScriptObject d) /*-{
         return d;
     }-*/;
-    protected static native JavaScriptObject fromBoolean(boolean b) /*-{
+    public static native JavaScriptObject fromBoolean(boolean b) /*-{
         return b;
     }-*/;
     protected static native boolean toBoolean(JavaScriptObject b) /*-{

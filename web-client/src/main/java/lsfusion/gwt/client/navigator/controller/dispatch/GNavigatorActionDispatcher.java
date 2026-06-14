@@ -34,22 +34,16 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     // so isClosed() is always false. See NAVIGATOR-CONTROLLER-PLAN.
     private final GController gController = new GController() {
         @Override
-        protected void dispatchExec(long callbackId, String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            NavigatorControllerExecAction a = new NavigatorControllerExecAction(action, params);
-            a.callbackId = callbackId;
-            MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
+        protected long dispatchExec(String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerExecAction(action, params), callback);
         }
         @Override
-        protected void dispatchEval(long callbackId, String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            NavigatorControllerEvalAction a = new NavigatorControllerEvalAction(script, evalAction, params);
-            a.callbackId = callbackId;
-            MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
+        protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
+            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerEvalAction(script, evalAction, params), callback);
         }
         @Override
-        protected void dispatchChange(long callbackId, String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {
-            NavigatorControllerChangeAction a = new NavigatorControllerChangeAction(property, keyParams, value);
-            a.callbackId = callbackId;
-            MainFrame.navigatorDispatchAsync.asyncExecute(a, callback);
+        protected long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {
+            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerChangeAction(property, keyParams, value), callback);
         }
         @Override
         protected boolean isClosed() {
@@ -126,12 +120,12 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GControllerResultAction action) {
-        gController.controllerCallbackResult(action.callbackId, GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
+        gController.controllerCallbackResult(getDispatchingIndex(), GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
     }
 
     @Override
     public void execute(GControllerExceptionAction action) {
-        gController.controllerCallbackException(action.callbackId, action.message, action.cancelled);
+        gController.controllerCallbackException(getDispatchingIndex(), action.message, action.cancelled);
     }
 
     @Override

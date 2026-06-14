@@ -16,14 +16,14 @@ public interface RemoteRequestInterface extends PendingRemoteInterface {
     // object's context (form: persistent form session; navigator: a fresh session per call). params/value are
     // JSON-decoded canonical values (String/Number/Boolean/null/FileData; dates as offset-bearing ISO strings),
     // bound positionally per interface via Type.parseJSON. The result/exception is delivered by a terminal
-    // ControllerCallbackClientAction keyed by callbackId. See GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
+    // ControllerCallbackClientAction keyed by requestIndex. See GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
 
-    ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException;
+    ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params) throws RemoteException;
 
     // evalAction toggles how the script is parsed: true -> the script is an action body, auto-wrapped into a
     // run(...) action (EVAL ACTION / HTTP /eval/action); false -> the script defines its own run action and can
     // declare typed parameters (EVAL / HTTP /eval).
-    ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, boolean evalAction, Object[] params) throws RemoteException;
+    ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params) throws RemoteException;
 
-    ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException;
+    ServerResponse change(long requestIndex, long lastReceivedRequestIndex, String property, Object[] params, Object value) throws RemoteException;
 }

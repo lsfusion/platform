@@ -6,6 +6,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -121,7 +122,7 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     protected static void getAsyncValues(String value, UpdateContext updateContext, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount) {
-        updateContext.getAsyncValues(value, ServerResponse.CHANGE, GSimpleStateTableView.getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
+        updateContext.getAsyncValues(value, ServerResponse.CHANGE, GFormController.getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
     }
 
     protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {

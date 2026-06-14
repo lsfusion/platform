@@ -170,12 +170,12 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GControllerResultAction action) {
-        form.controllerCallbackResult(action.callbackId, GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
+        form.controllerCallbackResult(getDispatchingIndex(), GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
     }
 
     @Override
     public void execute(GControllerExceptionAction action) {
-        form.controllerCallbackException(action.callbackId, action.message, action.cancelled);
+        form.controllerCallbackException(getDispatchingIndex(), action.message, action.cancelled);
     }
 
     @Override

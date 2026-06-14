@@ -41,7 +41,7 @@ function chart(type, options) {
 
                 let datasets = [];
                 for (const [key, value] of Object.entries(list[0])) {
-                    if (!(key === "#__key" || key === "label"))
+                    if (!(key === "key" || key === "label"))
                         datasets.push({ label: controller.getCaption(key),
                                         backgroundColor : Array.from(list, object => (controller.getBackground(key, object) || '')),
                                         borderColor : Array.from(list, object => (controller.getForeground(key, object) || '')),

@@ -8,8 +8,7 @@ public class GControllerExceptionAction extends GControllerCallbackAction {
     @SuppressWarnings("UnusedDeclaration")
     public GControllerExceptionAction() {}
 
-    public GControllerExceptionAction(long callbackId, String message, boolean cancelled) {
-        super(callbackId);
+    public GControllerExceptionAction(String message, boolean cancelled) {
         this.message = message;
         this.cancelled = cancelled;
     }

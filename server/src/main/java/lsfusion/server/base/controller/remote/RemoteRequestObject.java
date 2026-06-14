@@ -323,7 +323,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     // PERSISTENT session with a FormInstanceContext; navigator opens a FRESH session per call with the connection
     // context. See GFORM-CONTROLLER-EXEC-EVAL-PLAN.
 
-    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException {
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
@@ -332,15 +332,15 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                     throw new RuntimeException("Action was not found: " + action);
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
-                terminal = runControllerAction(callbackId, (LA<?>) resolved.lap, params, stack);
+                terminal = runControllerAction((LA<?>) resolved.lap, params, stack);
             } catch (Exception e) { // business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
-                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+                terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
             }
             delayUserInteraction(terminal);
         });
     }
 
-    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, boolean evalAction, Object[] params) throws RemoteException {
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
@@ -348,15 +348,15 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                 LA<?> la = getControllerBL().evaluateRun(script, evalAction); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
                 if(la == null)
                     throw new RuntimeException("Eval 'run' action was not found");
-                terminal = runControllerAction(callbackId, la, params, stack);
+                terminal = runControllerAction(la, params, stack);
             } catch (Exception e) {
-                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+                terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
             }
             delayUserInteraction(terminal);
         });
     }
 
-    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException {
+    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, String property, Object[] params, Object value) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
@@ -365,9 +365,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                     throw new RuntimeException("Property was not found: " + property);
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
-                terminal = runControllerChange(callbackId, (LP<?>) resolved.lap, params, value, stack);
+                terminal = runControllerChange((LP<?>) resolved.lap, params, value, stack);
             } catch (Exception e) {
-                terminal = new ControllerExceptionClientAction(callbackId, controllerMessage(e), false);
+                terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
             }
             delayUserInteraction(terminal);
         });
@@ -396,19 +396,19 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return new ControllerResolved(action ? BL.findActionByName(name) : BL.findPropertyByName(name), false);
     }
 
-    private ClientAction runControllerAction(long callbackId, LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+    private ClientAction runControllerAction(LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
         return runControllerRequest(stack, (env, context) -> {
             dropResult(la.action, env, getControllerBL().LM); // persistent (form) session may carry a stale result; harmless no-op on a fresh (navigator) session
             la.execute(env, stack, bindParams(env, la, params));
-            return controllerResultAction(callbackId, context, readControllerResult(env, la.action));
+            return controllerResultAction(context, readControllerResult(env, la.action));
         });
     }
 
-    private ClientAction runControllerChange(long callbackId, LP<?> lp, Object[] params, Object value, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+    private ClientAction runControllerChange(LP<?> lp, Object[] params, Object value, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
         return runControllerRequest(stack, (env, context) -> {
             DataObject[] keys = bindKeys(env, lp, params);
             lp.change(bindObjectValue(env, lp.property.getValueClass(ClassType.editValuePolicy), value), env, keys);
-            return new ControllerResultClientAction(callbackId, null, null); // change is a pure mutation, no value -> resolve(undefined)
+            return new ControllerResultClientAction(null, null); // change is a pure mutation, no value -> resolve(undefined)
         });
     }
 
@@ -442,9 +442,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return result.second.length > 0 ? result.second[0] : null;
     }
 
-    private ClientAction controllerResultAction(long callbackId, ConnectionContext context, ObjectValue result) throws IOException {
+    private ClientAction controllerResultAction(ConnectionContext context, ObjectValue result) throws IOException {
         if(result == null || result.getValue() == null) // no export value / null value -> JS undefined
-            return new ControllerResultClientAction(callbackId, null, null);
+            return new ControllerResultClientAction(null, null);
         Object value = result.getValue();
         Type<?> type = result.getType();
         // a FILE result -> a download URL (NeedFile registers the file; the client maps the GFileType subtype to
@@ -452,7 +452,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         // string, number, ...) which aren't FileClass and serialize natively (e.g. GJSONType -> JSON.parse'd object).
         FormChanges.ConvertData convertData = type instanceof FileClass ? new FormChanges.NeedFile(type) : null;
         // the web reader ClientActionToGwtConverter.deserializeServerValue + convertToJSValue turn (serialized, type) into the JS value
-        return new ControllerResultClientAction(callbackId, FormChanges.serializeConvertFileValue(convertData, value, context), TypeSerializer.serializeType(type));
+        return new ControllerResultClientAction(FormChanges.serializeConvertFileValue(convertData, value, context), TypeSerializer.serializeType(type));
     }
 
     private static String controllerMessage(Throwable t) {
