@@ -630,6 +630,100 @@
       },
       "stale": false
     },
+    "how-to/How-to_Custom_React_views.md": {
+      "file_hash": "sha256:430ae006f61ae178430d1e5490bd5821c23da12fe4bde86c65d7b7673bffc297",
+      "indexed_at": "2026-06-14T13:48:21Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_Custom_React_views::how-to-custom-react-form-views": {
+          "file_id": "file-DzTmzwGzkM8cXag38ifn4a",
+          "heading_path": "How-to: Custom React form views",
+          "section_payload_hash": "sha256:287608f01fa1ead850487fcd25089509cbe3d1c18dad29d9e8e0619cb8a86a4b",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::interactivity": {
+          "file_id": "file-NHa5d9B8GMQjeGESU7dXiu",
+          "heading_path": "How-to: Custom React form views > Interactivity",
+          "section_payload_hash": "sha256:0055e6f9418643f8fb4d91d6a80c39162727b92f75829ae818ebdefa523a3b99",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::rendering-rows": {
+          "file_id": "file-3uLzPM3PyvY6BNun4cwKN4",
+          "heading_path": "How-to: Custom React form views > Rendering rows",
+          "section_payload_hash": "sha256:bf88e4c3b48de89d4141d11453a12883d7964736a0beee4ac85a2c5cadbfc136",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::selecting-the-component": {
+          "file_id": "file-S898oe3DvY9ormSapbMfEe",
+          "heading_path": "How-to: Custom React form views > Selecting the component",
+          "section_payload_hash": "sha256:320fdd5e2dd9c58eeb30607273b93a74eefc4da40d2d7ffaa80c7a7dcf043eeb",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::the-component": {
+          "file_id": "file-GbWLqnvv3GU4wk4zL1wATA",
+          "heading_path": "How-to: Custom React form views > The component",
+          "section_payload_hash": "sha256:1b0ca083e59134eb7beaa977eaba905622040ffa5a5dbebbc90ef67b54c0b9ea",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        }
+      },
+      "stale": false
+    },
+    "how-to/How-to_Custom_client_JS_modules.md": {
+      "file_hash": "sha256:7afe82684bbdf815437c27c4a5fdb0086115f545e4aa9e880264641d112da287",
+      "indexed_at": "2026-06-14T13:48:37Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_Custom_client_JS_modules::adding-a-third-party-library": {
+          "file_id": "file-LMm7qLBfAwyEMQ1xQiyKKG",
+          "heading_path": "How-to: Custom client JS modules > Adding a third-party library",
+          "section_payload_hash": "sha256:4edc9ad478c07756fccc544a7ddc97394cbb17c47fa510b13eeaa96ba2402574",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::example": {
+          "file_id": "file-SvYAnqe6mWSaVvd8Y9RXYJ",
+          "heading_path": "How-to: Custom client JS modules > Example",
+          "section_payload_hash": "sha256:77886759d9caea28e65705785b711dbe0200144db5d7d1d957726d5df53042e5",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::limitations": {
+          "file_id": "file-J9oFVA1KFXA4JZHw6ggRHn",
+          "heading_path": "How-to: Custom client JS modules > Limitations",
+          "section_payload_hash": "sha256:268a258610625ab2477045c81e30bffded134ee3ceced3055644de48a4fc3142",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::named-exports-and-auto-registration": {
+          "file_id": "file-1Gw1Ce6QE3b7dtpEHE64ND",
+          "heading_path": "How-to: Custom client JS modules > Named exports and auto-registration",
+          "section_payload_hash": "sha256:eeead11a97e3a703503c2059f9376717cf99355721135043df988549e4c1470b",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::react-compiler": {
+          "file_id": "file-6BZRF4kbnJshtgZqB9YvWM",
+          "heading_path": "How-to: Custom client JS modules > React Compiler",
+          "section_payload_hash": "sha256:e6946c2cd698e845b829e079f5a79f05ad7783a849e381fba5b0140c10130885",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::where-the-files-go": {
+          "file_id": "file-Ai2rv6tQQzXkS3neai6huK",
+          "heading_path": "How-to: Custom client JS modules > Where the files go",
+          "section_payload_hash": "sha256:14274e7f96ac9b7e99ec78e05e5c6f333215d9c086028730362ec68cd4c5f5c3",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        }
+      },
+      "stale": true
+    },
     "how-to/How-to_Custom_components_objects.md": {
       "file_hash": "sha256:34e3d25168a07ea7511c8ce016c80a087420d8ca4d6bfb4c8a305ff94c67dd9e",
       "indexed_at": "2026-06-05T19:48:27Z",
@@ -711,6 +805,50 @@
         }
       },
       "stale": false
+    },
+    "how-to/How-to_Custom_view_controller.md": {
+      "file_hash": "sha256:7e8ad3fc999d35b6ebbeda35db92f932bfa731de24d56a05d1bf09fc2d1783ab",
+      "indexed_at": "2026-06-14T13:49:20Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_Custom_view_controller::calling-the-server": {
+          "file_id": "file-KfdH4EiB4bM9NLfdP2q7uB",
+          "heading_path": "How-to: Custom view controller API > Calling the server",
+          "section_payload_hash": "sha256:ab9c918a4fdf46c6bc707f005def60751561e03e3103362a54c185a1549c3bc3",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::changing-the-current-object-and-property-values": {
+          "file_id": "file-VfbnRNGMWRrNn85E6KVd43",
+          "heading_path": "How-to: Custom view controller API > Changing the current object and property values",
+          "section_payload_hash": "sha256:a8e813dcf4637d5bcf4d2922238a274001699b4889d79c4e9e6a4a05adcfe6a9",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::classic-custom-compatibility": {
+          "file_id": "file-FM7rWMcbukTRs3ZWF8S8zn",
+          "heading_path": "How-to: Custom view controller API > Classic CUSTOM compatibility",
+          "section_payload_hash": "sha256:04e0ae67a8f2dbc1c8e625722e242ea4d40904661db69532b3feaccbc8de40af",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::how-to-custom-view-controller-api": {
+          "file_id": "file-Ek39o8UvffxCu9gQ99gA3U",
+          "heading_path": "How-to: Custom view controller API",
+          "section_payload_hash": "sha256:b8093bdc61c20012933196ce91402ecbecb495f0ce8f8891d6dfe8297d29cd47",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::looking-up-values": {
+          "file_id": "file-7Yo6rs3WgCV6ehiZDrCdSL",
+          "heading_path": "How-to: Custom view controller API > Looking up values",
+          "section_payload_hash": "sha256:f6596a96464aebd01721ba30ddb9f95bd1a447d280c27a667868e6329c90bab6",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        }
+      },
+      "stale": true
     },
     "how-to/How-to_DELETE.md": {
       "file_hash": "sha256:37b04796f72fbfeb87c872c9ddfd6ea45f382d7dcc2e7aa8898b986cf83addce",
@@ -3869,8 +4007,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:13b8b3eb7f9bd2bc9740a7994a4cae44ba1ac024c2db9ad1fc5eebb522b4220b",
-      "indexed_at": "2026-06-10T06:47:12Z",
+      "file_hash": "sha256:87100f94ef0abe29f592fea3c67252c5b4b76e1c2055635f90bcfeac93ff1011",
+      "indexed_at": "2026-06-14T13:50:02Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3892,9 +4030,9 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::container-properties": {
-          "file_id": "file-C7Q9nvtoPDiqy4oDK5nLih",
+          "file_id": "file-UdRCrfeGtg3sGeEfLWpZNh",
           "heading_path": "DESIGN statement > Parameters > Container properties",
-          "section_payload_hash": "sha256:71268843fa51c50719fe00adc92e53e4fb7a5c34d3cb24c3f89def06341cda8d",
+          "section_payload_hash": "sha256:f3e1b629cd64f13fbefbce31b0ca7aed8a1a0b1ebd7f2c8dbd237682027b5153",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::description": {
@@ -5179,8 +5317,8 @@
       "stale": false
     },
     "language/INTERNAL_operator.md": {
-      "file_hash": "sha256:eac07b8c434c883b7b6c749e1b247f9a6f4bc837986c5958eff32a9a826b34c7",
-      "indexed_at": "2026-05-22T22:20:21Z",
+      "file_hash": "sha256:2344c77587ab5a482898dad27c98ece46fb73cab8fc79d8285eeb4816980458e",
+      "indexed_at": "2026-06-14T13:50:12Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5208,9 +5346,9 @@
           "source_file": "language/INTERNAL_operator.md"
         },
         "INTERNAL_operator::parameters": {
-          "file_id": "file-FjrhcAPQ2NmSyJXX47qyNJ",
+          "file_id": "file-UrCMRdXxkzcjHSR1bXj4RX",
           "heading_path": "INTERNAL operator > Parameters",
-          "section_payload_hash": "sha256:f9854c9ce078ce482076b7e5480816a8190a481cbcc202c7cd7793cda42879d4",
+          "section_payload_hash": "sha256:465f44ff7e6a66caef22855e53e49446fedf22bab9e69903a524267fb9e44627",
           "source_file": "language/INTERNAL_operator.md"
         },
         "INTERNAL_operator::syntax": {
