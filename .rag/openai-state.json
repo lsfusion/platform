@@ -676,7 +676,7 @@
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
       "file_hash": "sha256:7afe82684bbdf815437c27c4a5fdb0086115f545e4aa9e880264641d112da287",
-      "indexed_at": "2026-06-14T13:48:37Z",
+      "indexed_at": "2026-06-14T14:09:08Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -695,6 +695,12 @@
           "file_id": "file-SvYAnqe6mWSaVvd8Y9RXYJ",
           "heading_path": "How-to: Custom client JS modules > Example",
           "section_payload_hash": "sha256:77886759d9caea28e65705785b711dbe0200144db5d7d1d957726d5df53042e5",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::how-to-custom-client-js-modules": {
+          "file_id": "file-PdcVAGgdQ8KkcXPWmFhVEM",
+          "heading_path": "How-to: Custom client JS modules",
+          "section_payload_hash": "sha256:50041688dea659a5dcd22e8e7044c497f3644e133fd717c4590a149f53b459dd",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::limitations": {
@@ -722,7 +728,7 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
       "file_hash": "sha256:34e3d25168a07ea7511c8ce016c80a087420d8ca4d6bfb4c8a305ff94c67dd9e",
@@ -808,7 +814,7 @@
     },
     "how-to/How-to_Custom_view_controller.md": {
       "file_hash": "sha256:7e8ad3fc999d35b6ebbeda35db92f932bfa731de24d56a05d1bf09fc2d1783ab",
-      "indexed_at": "2026-06-14T13:49:20Z",
+      "indexed_at": "2026-06-14T14:09:15Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -846,9 +852,15 @@
           "heading_path": "How-to: Custom view controller API > Looking up values",
           "section_payload_hash": "sha256:f6596a96464aebd01721ba30ddb9f95bd1a447d280c27a667868e6329c90bab6",
           "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::row-identity-contract-row-identity-contract": {
+          "file_id": "file-2WAuGjXLGEgf4j4MRM2g5N",
+          "heading_path": "How-to: Custom view controller API > Row identity contract {#row-identity-contract}",
+          "section_payload_hash": "sha256:f1bf527b5fdbee089bc5592f21fcf1bd3813731085ed1f32225b02c6c02431d4",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_DELETE.md": {
       "file_hash": "sha256:37b04796f72fbfeb87c872c9ddfd6ea45f382d7dcc2e7aa8898b986cf83addce",
@@ -14215,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "b0296506840525c80fbb45732bf6bdd079ade165",
+  "last_indexed_docs_commit": "e694ec3f8e9c5d340b310d5d85482b7da2f7943d",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
