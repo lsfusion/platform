@@ -38,7 +38,7 @@ controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 
 ### Looking up values
 
-`controller.getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`.
+`controller.getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`. In a classic `GRID` custom view the same lookup is exposed as `getValues(property, value, ok, fail)`, equivalent to `getPropertyValues` in the default `'objects'` mode; the form-level / React controller uses `getPropertyValues`.
 
 ```js
 controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count]);
@@ -52,7 +52,9 @@ controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count
   | --- | --- | --- |
   | `'objects'` (default) | the matching `OBJECTS` for the property — an object picker | a raw `objects` handle for that object |
   | `'values'` | the distinct values of the property | `null` (use `displayString` / `rawString`) |
-  | `'change'` | the property's edit-time autocomplete | depends on the property |
+  | `'change'` | the property's edit-time suggestions | depends on the property |
+
+  `'change'` reflects how the property is *edited* — a custom `INPUT` list, a `notNull` constraint, or a custom change action — rather than the distinct values already present. For a property that cannot be changed in this context (for example, a read-only property, or a computed property without a change action) it returns an empty list, whereas `'values'` still returns its distinct values.
 
 - `ok(result)` / `fail()` — success and failure callbacks.
 - `count` — raises the number of items requested, for paging.

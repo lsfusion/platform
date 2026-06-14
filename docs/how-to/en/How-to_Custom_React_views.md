@@ -76,7 +76,17 @@ React.createElement(window.lsfusion.List, { data: props.data.o, component: Row }
 props.data.o.list.map(r => <Row key={r.key} row={r} />)
 ```
 
-Without a module-level `React.memo` around `Row`, the plain form re-renders every row on any change, whereas `window.lsfusion.List` memoizes each row for you.
+Why per-row economy matters. When any single row changes, `props.data.<g>.list` is rebuilt as a new array reference, but the projection keeps the same object reference for every row that did not change (structural sharing) — only the rows whose contents changed get a new row object. A plain `list.map(r => <Row row={r}/>)` re-creates the `Row` element for every entry on any single-row change, so React re-renders all of them. The React `key` does not change this: it lets React preserve each row's element identity, DOM, and component state across renders, but it is not a render bail-out. The React Compiler (`reactCompiler=true`) does not help either — it memoizes the `.map` as one reactive scope keyed by the array reference, which has just changed, and it does not wrap the row children in `React.memo`, so every row still re-renders.
+
+`window.lsfusion.List` adds the missing per-row bail-out: it renders each row through a stable `React.memo`-wrapped component and passes the reused row reference, so a row re-renders when its row reference (or another prop passed to it) changes. To do the same by hand without `window.lsfusion.List`, declare the memoized row component once at module level and key by `row.key`:
+
+```jsx
+const MRow = React.memo(Row);
+// ...
+props.data.o.list.map(r => <MRow key={r.key} row={r} />)
+```
+
+A `React.memo(Row)` created inside the component on each render is a new component type every time, which defeats the memoization and re-renders every row.
 
 ### Interactivity
 
