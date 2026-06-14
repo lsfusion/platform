@@ -23,8 +23,8 @@ public class ContainerViewInstance extends ComponentViewInstance<ContainerView> 
         propertyImage = extras.get(ContainerViewExtraType.IMAGE);
         imageReader = new ExtraReaderInstance(ContainerViewExtraType.IMAGE, propertyImage);
 
-        propertyCustomDesign = extras.get(ContainerViewExtraType.CUSTOM);
-        customDesignReader = new ExtraReaderInstance(ContainerViewExtraType.CUSTOM, propertyCustomDesign);
+        propertyCustom = extras.get(ContainerViewExtraType.CUSTOM);
+        customReader = new ExtraReaderInstance(ContainerViewExtraType.CUSTOM, propertyCustom);
     }
 
     public final PropertyObjectInstance<?> propertyCaption;
@@ -37,8 +37,8 @@ public class ContainerViewInstance extends ComponentViewInstance<ContainerView> 
     public final PropertyObjectInstance<?> propertyImage;
     public final ExtraReaderInstance imageReader;
 
-    public final PropertyObjectInstance<?> propertyCustomDesign;
-    public final ExtraReaderInstance customDesignReader;
+    public final PropertyObjectInstance<?> propertyCustom;
+    public final ExtraReaderInstance customReader;
 
     public class ExtraReaderInstance implements PropertyReaderInstance {
         private final ContainerViewExtraType type;

@@ -5,6 +5,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
@@ -92,7 +93,7 @@ public class GComponent implements Serializable {
     }
 
     public boolean isInCustom() {
-        return container != null && container.isCustomDesign();
+        return container != null && container.isCustom();
     }
 
     public boolean isFlex() {
@@ -157,7 +158,7 @@ public class GComponent implements Serializable {
         return span;
     }
 
-    private class GShowIfReader implements GPropertyReader {
+    private class GShowIfReader implements GComponentReader {
         private String sID;
 
         public GShowIfReader() {
@@ -166,6 +167,11 @@ public class GComponent implements Serializable {
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             controller.getFormLayout().setShowIfVisible(GComponent.this, !PValue.getBooleanValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public GComponent getReaderComponent() {
+            return GComponent.this;
         }
 
         @Override
@@ -178,7 +184,7 @@ public class GComponent implements Serializable {
     }
     public final GPropertyReader showIfReader = new GShowIfReader();
 
-    private class GElementClassReader implements GPropertyReader {
+    private class GElementClassReader implements GComponentReader {
         private String sID;
 
         public GElementClassReader() {
@@ -187,6 +193,11 @@ public class GComponent implements Serializable {
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public GComponent getReaderComponent() {
+            return GComponent.this;
         }
 
         @Override

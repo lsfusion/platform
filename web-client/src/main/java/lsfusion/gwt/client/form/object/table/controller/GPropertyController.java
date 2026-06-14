@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
 
-public abstract class GPropertyController {
+public abstract class GPropertyController implements GFormPropertyController {
 
     protected final GFormController formController;
 

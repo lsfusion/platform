@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -36,6 +35,7 @@ public class GFormLayout extends SizedFlexPanel {
 
     private final NativeSIDMap<GContainer, GAbstractContainerView> containerViews = new NativeSIDMap<>();
     private final NativeSIDMap<GContainer, Widget> containerCaptions = new NativeSIDMap<>();
+    private final java.util.List<ReactContainerView> reactContainers = new java.util.ArrayList<>(); // CUSTOM REACT containers, collected once at build time
     private final Map<GComponent, ComponentViewWidget> baseComponentViews = new HashMap<>();
 
     private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
@@ -102,9 +102,11 @@ public class GFormLayout extends SizedFlexPanel {
     }
 
     private static GAbstractContainerView createContainerView(GFormController form, GContainer container) {
-        if (container.tabbed)
+        if (container.isReact()) // CUSTOM REACT 'fn': React owns the subtree (children not laid out by GWT)
+            return new ReactContainerView(form, container);
+        else if (container.tabbed)
             return new TabbedContainerView(form, container);
-        else if (container.isCustomDesign())
+        else if (container.isCustom())
             return new CustomContainerView(form, container);
         else
             return new LinearContainerView(form, container);
@@ -158,6 +160,8 @@ public class GFormLayout extends SizedFlexPanel {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
+        if (containerView instanceof ReactContainerView)
+            reactContainers.add((ReactContainerView) containerView);
 
         Widget captionWidget;
         boolean alreadyInitialized = false;
@@ -191,6 +195,9 @@ public class GFormLayout extends SizedFlexPanel {
 
         // debug info
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
+
+        if (container.isReact()) // React owns the subtree: do not build GWT views for descendants
+            return;
 
         for (GComponent child : container.children) {
             if(child instanceof GGrid)
@@ -318,6 +325,16 @@ public class GFormLayout extends SizedFlexPanel {
         return containerViews.get(container);
     }
 
+    public boolean hasReactContainers() {
+        return !reactContainers.isEmpty();
+    }
+
+    public void updateReactContainers(GReactFormData reactData) {
+        for (ReactContainerView reactContainer : reactContainers)
+            reactContainer.updateData(reactData.build(reactContainer.getContainer()));
+        reactData.clearDirty();
+    }
+
     public Widget getContainerCaption(GContainer container) {
         return containerCaptions.get(container);
     }
@@ -360,7 +377,9 @@ public class GFormLayout extends SizedFlexPanel {
             hasVisible = hasVisible || childVisible;
         }
         containerView.updateLayout(requestIndex, childrenVisible);
-        return hasVisible;
+        // a CUSTOM REACT container has no GWT child views (React owns its subtree), so hasVisible is always false
+        // for it; it still renders its own content, so it must not be collapsed to display:none by its parent
+        return hasVisible || container.isReact();
     }
 
     public void initPreferredSize(Widget maxWindow, GSize maxWidth, GSize maxHeight) {

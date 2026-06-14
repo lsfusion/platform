@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 
@@ -59,7 +60,7 @@ public class GTreeGroup extends GGridProperty {
         return fullCurrentKey.filter(groups.subList(0, groups.indexOf(groupObject) + 1));
     }
 
-    private class GHierarchicalCaptionReader implements GPropertyReader {
+    private class GHierarchicalCaptionReader implements GComponentReader {
         private String sID;
 
         public GHierarchicalCaptionReader() {
@@ -68,6 +69,11 @@ public class GTreeGroup extends GGridProperty {
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             controller.getFormLayout().setHierarchicalCaption(GTreeGroup.this, PValue.getStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public GTreeGroup getReaderComponent() {
+            return GTreeGroup.this;
         }
 
         @Override

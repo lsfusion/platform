@@ -1174,44 +1174,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             assert !currentInvocationExternal;
             currentInvocationExternal = true;
             try {
-                // parse json do changes (values should be passed as is, they are parsed inside particular change call)
-                // if group is value (not an object), pass singleton map with group sid
                 JSONObject modify = new JSONObject(json);
 
-                // changing current object (before changing property to have relevant current objects)
-                MExclMap<ObjectInstance, ObjectValue> mCurrentObjects = MapFact.mExclMap();
-                Iterator<String> modifyKeys = modify.keys();
-                while (modifyKeys.hasNext()) {
-                    String modifyKey = modifyKeys.next();
-                    Object modifyValue = modify.get(modifyKey);
-
-                    if (modifyValue instanceof JSONObject) { // group objects
-                        Object value = ((JSONObject) modifyValue).opt("value");
-                        if (value != null) // in current js interface value is passed for all objects, but in theory it will work even when there are not all values
-                            changeGroupObjectExternal(modifyKey, value, stack, mCurrentObjects);
-                    }
-                }
-                ImMap<ObjectInstance, ObjectValue> currentObjects = mCurrentObjects.immutable();
+                // changing current objects (before properties, to have relevant current objects); stays OUTSIDE the log processor
+                ImMap<ObjectInstance, ObjectValue> currentObjects = changeExternalCurrentObjects(modify, stack);
 
                 AbstractContext.ListLogMessageProcessor logProcessor = new AbstractContext.ListLogMessageProcessor();
                 ThreadLocalContext.pushLogMessage(logProcessor);
                 try {
-                    modifyKeys = modify.keys();
-                    while (modifyKeys.hasNext()) {
-                        String groupObjectOrProperty = modifyKeys.next();
-                        Object modifyValue = modify.get(groupObjectOrProperty);
-
-                        if (modifyValue instanceof JSONObject) { // group objects
-                            JSONObject groupObjectModify = (JSONObject) modifyValue;
-                            Iterator<String> propertyKeys = groupObjectModify.keys();
-                            while (propertyKeys.hasNext()) {
-                                String propertyName = propertyKeys.next();
-                                if (!propertyName.equals("value"))
-                                    changePropertyOrExecActionExternal(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack, context);
-                            }
-                        } else // properties without group
-                            changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack, context);
-                    }
+                    changeExternalProperties(modify, currentObjects, stack, context);
                 } finally {
                     ThreadLocalContext.popLogMessage();
                     if(form.dataChanged) // just for optimization purposes (otherwise just any change property / exec action would do)
@@ -1223,6 +1194,42 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 currentInvocationExternal = false;
             }
         });
+    }
+
+    // @lsfusion/core change-object decode used by changeExternal (JSON path).
+    // pass 1: set current objects from each group's "value" (must run before the property pass).
+    private ImMap<ObjectInstance, ObjectValue> changeExternalCurrentObjects(JSONObject modify, ExecutionStack stack) throws ParseException, SQLException, SQLHandledException {
+        MExclMap<ObjectInstance, ObjectValue> mCurrentObjects = MapFact.mExclMap();
+        Iterator<String> modifyKeys = modify.keys();
+        while (modifyKeys.hasNext()) {
+            String modifyKey = modifyKeys.next();
+            Object modifyValue = modify.get(modifyKey);
+            if (modifyValue instanceof JSONObject) { // group objects
+                Object value = ((JSONObject) modifyValue).opt("value");
+                if (value != null) // in current js interface value is passed for all objects, but in theory it will work even when there are not all values
+                    changeGroupObjectValue(modifyKey, value, stack, mCurrentObjects);
+            }
+        }
+        return mCurrentObjects.immutable();
+    }
+
+    // pass 2: apply each property change / action (everything except the group "value").
+    private void changeExternalProperties(JSONObject modify, ImMap<ObjectInstance, ObjectValue> currentObjects, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException, ParseException {
+        Iterator<String> modifyKeys = modify.keys();
+        while (modifyKeys.hasNext()) {
+            String groupObjectOrProperty = modifyKeys.next();
+            Object modifyValue = modify.get(groupObjectOrProperty);
+            if (modifyValue instanceof JSONObject) { // group objects
+                JSONObject groupObjectModify = (JSONObject) modifyValue;
+                Iterator<String> propertyKeys = groupObjectModify.keys();
+                while (propertyKeys.hasNext()) {
+                    String propertyName = propertyKeys.next();
+                    if (!propertyName.equals("value"))
+                        changePropertyOrExecAction(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack, context);
+                }
+            } else // properties without group
+                changePropertyOrExecAction(null, groupObjectOrProperty, modifyValue, currentObjects, stack, context);
+        }
     }
 
     // form controller (CUSTOM / INTERNAL CLIENT) exec/eval/change live in the shared base RemoteRequestObject;
@@ -1324,7 +1331,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return valueToSet;
     }
 
-    private Pair<ObjectInstance, Boolean> getNewDeleteExternal(String groupSID, String propertySID) {
+    private Pair<ObjectInstance, Boolean> getNewDelete(String groupSID, String propertySID) {
         GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
@@ -1335,7 +1342,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return null;
     }
 
-    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack, MExclMap<ObjectInstance, ObjectValue> mCurrentObjects) throws ParseException, SQLException, SQLHandledException {
+    private void changeGroupObjectValue(String groupSID, Object values, ExecutionStack stack, MExclMap<ObjectInstance, ObjectValue> mCurrentObjects) throws ParseException, SQLException, SQLHandledException {
         GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
         DataSession session = form.session;
 
@@ -1351,7 +1358,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             groupObject.change(objectValues, form, stack, null);
     }
 
-    private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException, ParseException {
+    private void changePropertyOrExecAction(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
         PushAsyncResult asyncResult = null;
@@ -1370,7 +1377,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             form.forcePropertyDrawUpdate(propertyDraw);
         } else {
             Pair<ObjectInstance, Boolean> newDelete;
-            if(groupSID != null && (newDelete = getNewDeleteExternal(groupSID, propertySID)) != null) {
+            if(groupSID != null && (newDelete = getNewDelete(groupSID, propertySID)) != null) {
                 if(newDelete.second)
                     asyncResult = new PushAsyncAdd((DataObject) currentObjects.get(newDelete.first));
 

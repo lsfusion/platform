@@ -49,7 +49,8 @@ public class ClientContainer extends ClientComponent {
     public Integer lineSize = null;
     public Integer captionLineSize = null;
     public boolean lineShrink = false;
-    public String customDesign = null;
+    public String custom = null;
+    public boolean react = false; // CUSTOM REACT 'fn': custom holds the React component name
 
     public List<ClientComponent> children = new ArrayList<>();
     
@@ -96,7 +97,9 @@ public class ClientContainer extends ClientComponent {
         lineShrink = inStream.readBoolean();
 
         if (inStream.readBoolean())
-            customDesign = pool.readString(inStream);
+            custom = pool.readString(inStream);
+
+        react = inStream.readBoolean();
     }
 
     @Override
@@ -165,8 +168,8 @@ public class ClientContainer extends ClientComponent {
         return captionLineSize;
     }
 
-    public boolean isCustomDesign() {
-        return customDesign != null;
+    public boolean isCustom() {
+        return custom != null;
     }
 
     public ClientContainer findContainerByID(int id) {

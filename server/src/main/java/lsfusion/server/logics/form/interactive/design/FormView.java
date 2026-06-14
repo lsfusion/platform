@@ -295,6 +295,24 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return components.getOrderSet();
     }
 
+    // a group rendered by a CUSTOM REACT container is drawn by React, not the standard grid, so the server must not
+    // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
+    // into a JSON candidate list). The group is React-owned if ANY container in its box's ancestry is React - a
+    // customReact box around the group, a React wrapper above it, or the whole-form React main container (mirrors
+    // the client GFormController.getReactContainer ancestry walk)
+    public boolean isReactContainerGroup(GroupObjectEntity group) {
+        for (ComponentView component : getComponents())
+            if (component instanceof ContainerView && ((ContainerView) component).groupObjectBox == group)
+                return isReactOwned((ContainerView) component);
+        return false;
+    }
+    private static boolean isReactOwned(ContainerView container) {
+        for (ContainerView c = container; c != null; c = c.getContainer())
+            if (c.isReact())
+                return true;
+        return false;
+    }
+
     public Iterable<ComponentView> getNFComponentsIt(Version version) {
         return components.getNFIt(version);
     }

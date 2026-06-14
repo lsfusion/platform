@@ -171,7 +171,7 @@ To access design components, you can use their names or address property compone
 |`grid`|Lays children out as a grid (using `lines` as the number of tracks and each child's `span`) instead of a plain linear flow|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`wrap`|Allows children to wrap onto several lines when they do not fit in one|Logical literal|depends on the container|`TRUE`<br/>`FALSE`|
 |`resizeOverflow`|Allows the container to grow beyond the available space when its content overflows (acts as a maximum size)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`custom`|Renders the container with a custom client-side view; the value is the custom view (its name, path, or inline definition)|Expression (string value)|`NULL`|`'myView'`|
+|`custom`|Renders the container with a custom client-side view (web client only). The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` (a bare identifier starting with an uppercase letter) names a React component, while an empty string `''`, an HTML template string, or a property gives the classic custom view (its name, path, or inline definition)|Expression (string value)|`NULL`|`'OrderBoard'`<br/>`'myView'`|
 |`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
 |`lineSize`|Base size of each line track in a multi-line or grid container, in pixels|Integer literal|`NULL`|`60`|
 |`captionLineSize`|Base size of the shared caption-column track when captions are aligned, in pixels|Integer literal|`NULL`|`60`|

@@ -113,7 +113,32 @@ public class GForm implements Serializable {
         }
         return null;
     }
-    
+
+    // integration-addressed lookup (the client mirror of server FormInstance.getPropertyDrawIntegration): integration
+    // SIDs are NOT form-unique (name(a) and name(b) both expose "name"), so a draw is identified by (group, integrationSID).
+    // group == null => a form-level (no-group) property. Shared by the integration/Core/REACT/custom controllers.
+    public GPropertyDraw getPropertyDraw(GGroupObject group, String integrationSID) {
+        for (GPropertyDraw property : propertyDraws)
+            if (property.groupObject == group && integrationSID.equals(property.integrationSID))
+                return property;
+        return null;
+    }
+    // form-wide (group not specified): first draw with this integration SID. Integration SIDs aren't form-unique, so
+    // pass a group (the overload above) to disambiguate when the same SID is drawn in several groups.
+    public GPropertyDraw getPropertyDraw(String integrationSID) {
+        for (GPropertyDraw property : propertyDraws)
+            if (integrationSID.equals(property.integrationSID))
+                return property;
+        return null;
+    }
+    // by group SID: null groupSID => form-wide; an unknown groupSID => null (no draw)
+    public GPropertyDraw getPropertyDraw(String groupSID, String integrationSID) {
+        if (groupSID == null)
+            return getPropertyDraw(integrationSID);
+        GGroupObject group = getGroupObject(groupSID);
+        return group == null ? null : getPropertyDraw(group, integrationSID);
+    }
+
     public GContainer findContainerByID(int id) {
         GContainer cache = idContainers.get(id);
         if(cache != null)
