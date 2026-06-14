@@ -1709,8 +1709,8 @@
       "stale": false
     },
     "how-to/How-to_Interactive_forms.md": {
-      "file_hash": "sha256:699cdd1c11f079d4b46814d67a390c4d88827a170bfa5f17722b3446e33229b8",
-      "indexed_at": "2026-05-22T21:50:36Z",
+      "file_hash": "sha256:4e31d4567467d2e59973cbaad238c929c4a8bb5ceffd6ddee9517c48f92de620",
+      "indexed_at": "2026-06-14T18:04:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1720,9 +1720,9 @@
       },
       "sections": {
         "How-to_Interactive_forms::how-to-read-these-sections": {
-          "file_id": "file-MdV84njwa8YM2zxkVBKD8q",
+          "file_id": "file-JmWZbN5b4WXo1QTV2fwbG7",
           "heading_path": "How-to: Interactive forms > How to read these sections",
-          "section_payload_hash": "sha256:5ae7d8ef6f280bcb891921c4518349ad1c22a4bcac79b0d223f0df726aaf5070",
+          "section_payload_hash": "sha256:86afad95ef80688da510be1b48bbda6a16162f9d6af913e5ecfbbbd87348a5ae",
           "source_file": "how-to/How-to_Interactive_forms.md"
         }
       },
@@ -14233,7 +14233,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "271850f5117b242f86a728bf65e08dd11768f4b4",
+  "last_indexed_docs_commit": "356c36172deae7a221877d29f3aa63e79f184b34",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
