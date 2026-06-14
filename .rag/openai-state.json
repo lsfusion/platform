@@ -675,8 +675,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:b75e9bebc5134427a2802523576f6548d1acd7bf476f6f416ac916f77e032246",
-      "indexed_at": "2026-06-14T20:20:52Z",
+      "file_hash": "sha256:02636cab765d544f6d9287aede9cdbec0595502c9fd958dbfb152d12fb3ea966",
+      "indexed_at": "2026-06-14T20:53:14Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -689,6 +689,12 @@
           "file_id": "file-LMm7qLBfAwyEMQ1xQiyKKG",
           "heading_path": "How-to: Custom client JS modules > Adding a third-party library",
           "section_payload_hash": "sha256:4edc9ad478c07756fccc544a7ddc97394cbb17c47fa510b13eeaa96ba2402574",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::adding-a-third-party-library-without-the-build": {
+          "file_id": "file-KSYbuxuMCA5ah9MeHpvPb4",
+          "heading_path": "How-to: Custom client JS modules > Adding a third-party library without the build",
+          "section_payload_hash": "sha256:7410677ad5944c53eb5f27f481e6a305ca50398395db9a19adee594f52a60d45",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::example": {
@@ -728,9 +734,9 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::without-the-build": {
-          "file_id": "file-1kkZpW5f7g8SNnSMdQWfa9",
+          "file_id": "file-VHKfaTu6hohjMd2Fifsrs6",
           "heading_path": "How-to: Custom client JS modules > Without the build",
-          "section_payload_hash": "sha256:2057ba9270c0d8f2cb8545f7bb10fcbc6d6a71bf00d9b85031aa2e5b66895f40",
+          "section_payload_hash": "sha256:b88dfa677dede46f4791ccd98d76cd1fc263f3fcd946eaf683523a60b9917465",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         }
       },
@@ -14233,7 +14239,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "8a486f70812dd0f94de2962c17bc693c9d385ee0",
+  "last_indexed_docs_commit": "ba33aa5e562d623a698c03ae8cdaebb830e9f2d7",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
