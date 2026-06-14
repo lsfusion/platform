@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:ee148c297a18dc6a086ac2125f0a1c6f77b4799e1ad72a6454a2c005dad6579e",
-      "indexed_at": "2026-06-14T17:19:20Z",
+      "file_hash": "sha256:70002cd2fe5333c7b2b592fbea03d91d61c5178532d329b3933c20625b11b5a9",
+      "indexed_at": "2026-06-14T17:33:35Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -654,9 +654,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::rendering-rows": {
-          "file_id": "file-L3FyWHohADbGMoyJ98DNv2",
+          "file_id": "file-4Ei1mNiRxWeLp8umDuGGFX",
           "heading_path": "How-to: Custom React form views > Rendering rows",
-          "section_payload_hash": "sha256:81b20f6795291ac7f88d6ca5103fd90dc86f9d3cd8c2c6d40a94883a44237143",
+          "section_payload_hash": "sha256:a5ea34b5516ec4a20433c44e46af03194dea33b3a86772ed56a700dffd584888",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
@@ -675,8 +675,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:7afe82684bbdf815437c27c4a5fdb0086115f545e4aa9e880264641d112da287",
-      "indexed_at": "2026-06-14T14:09:08Z",
+      "file_hash": "sha256:fdb76c1e3af3d6b08ab9cfce15504f7646eb4dae9cb7ae56bd3754e43d10fd07",
+      "indexed_at": "2026-06-14T17:33:48Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -710,9 +710,9 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::named-exports-and-auto-registration": {
-          "file_id": "file-1Gw1Ce6QE3b7dtpEHE64ND",
+          "file_id": "file-6WRb6YaL9zhJ8zvwywGC5f",
           "heading_path": "How-to: Custom client JS modules > Named exports and auto-registration",
-          "section_payload_hash": "sha256:eeead11a97e3a703503c2059f9376717cf99355721135043df988549e4c1470b",
+          "section_payload_hash": "sha256:e2563209036b6d54693152ed57179a5156504bc93fa0a163e95b7186dba11069",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::react-compiler": {
@@ -725,6 +725,12 @@
           "file_id": "file-Ai2rv6tQQzXkS3neai6huK",
           "heading_path": "How-to: Custom client JS modules > Where the files go",
           "section_payload_hash": "sha256:14274e7f96ac9b7e99ec78e05e5c6f333215d9c086028730362ec68cd4c5f5c3",
+          "source_file": "how-to/How-to_Custom_client_JS_modules.md"
+        },
+        "How-to_Custom_client_JS_modules::without-the-build": {
+          "file_id": "file-1kkZpW5f7g8SNnSMdQWfa9",
+          "heading_path": "How-to: Custom client JS modules > Without the build",
+          "section_payload_hash": "sha256:2057ba9270c0d8f2cb8545f7bb10fcbc6d6a71bf00d9b85031aa2e5b66895f40",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         }
       },
@@ -5329,8 +5335,8 @@
       "stale": false
     },
     "language/INTERNAL_operator.md": {
-      "file_hash": "sha256:2344c77587ab5a482898dad27c98ece46fb73cab8fc79d8285eeb4816980458e",
-      "indexed_at": "2026-06-14T13:50:12Z",
+      "file_hash": "sha256:31d4687bbf0fd6a6efbf63783eaff92746ca1da4b9f35a43b379325f44d0008d",
+      "indexed_at": "2026-06-14T17:33:56Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5358,9 +5364,9 @@
           "source_file": "language/INTERNAL_operator.md"
         },
         "INTERNAL_operator::parameters": {
-          "file_id": "file-UrCMRdXxkzcjHSR1bXj4RX",
+          "file_id": "file-UsLNeq5Mz2TFB2p7mvvHGX",
           "heading_path": "INTERNAL operator > Parameters",
-          "section_payload_hash": "sha256:465f44ff7e6a66caef22855e53e49446fedf22bab9e69903a524267fb9e44627",
+          "section_payload_hash": "sha256:7174303cbbb2991784aadc7d3f576496ccc8dd92d2ffafa324e7789feedcb770",
           "source_file": "language/INTERNAL_operator.md"
         },
         "INTERNAL_operator::syntax": {
@@ -14227,7 +14233,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "d22b3988cbce0ed3e3d81800526496b32f2b20d7",
+  "last_indexed_docs_commit": "271850f5117b242f86a728bf65e08dd11768f4b4",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
