@@ -13,6 +13,40 @@ During the build, each file under _src/main/web_ (outside the _lib_ subfolder) i
 
 A _src/main/web/lib_ subfolder is treated as shared helper code: its files are not compiled into bundles of their own, but they can be imported from the entry files and are bundled in.
 
+### Without the build
+
+A project with no build set up — no `node`, no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file. Place it under _src/main/resources/web_ (not _src/main/web_), register it in the [`onWebClientInit`](../language/INTERNAL_operator.md) action, and the platform serves it from _/web_ and loads it when a page opens. The file is used as written: no bundling, no JSX, no third-party-library resolution. This is also the path `eval` uses.
+
+The file is plain JavaScript, so a React view is written with `React.createElement` against the platform-provided `window.React` instead of JSX, and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
+
+```js
+function HelloBoard(props) {
+    var React = window.React;
+    var rows = (props.data.o || {}).list || [];
+    return React.createElement("div", { className: "hello-board" }, rows.length + " orders");
+}
+```
+
+```lsf
+DESIGN orders {
+    BOX(o) { custom = 'HelloBoard'; }
+}
+
+onWebClientInit() + {
+    onWebClientInit('helloBoard.js') <- 1;
+}
+```
+
+The two paths differ as follows:
+
+| | Build path | No-build path |
+| --- | --- | --- |
+| Location | _src/main/web_ | _src/main/resources/web_ |
+| Loading | bundled to _web/.compiled_, loaded automatically | served from _/web_, listed in `onWebClientInit` |
+| Source | _.js_/_.jsx_/_.ts_/_.tsx_, JSX allowed | plain _.js_, `React.createElement` |
+| Registration | named export | name on `window` |
+| Third-party libraries | bundled via `org.mvnpm` | not bundled |
+
 ### Named exports and auto-registration
 
 Each module exposes its components and functions as **named exports**. At load time every named export is registered into the `window.lsfusion.custom` registry under its export name, and the client resolves a custom name against this registry first. So a `DESIGN` `custom = 'OrderBoard'`, a `CUSTOM 'orderBoard'` object view, or an `INTERNAL CLIENT 'formatSum'` action finds the export with the matching name:
