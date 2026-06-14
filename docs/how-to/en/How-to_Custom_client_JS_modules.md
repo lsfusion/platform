@@ -25,7 +25,7 @@ export function OrderBoard(element, controller, list) {
 
 A name placed directly on the global `window` object still works as a fallback, so existing scripts that define `window.OrderBoard = ...` keep working, but named exports are the preferred form.
 
-React itself is **provided by the platform**: a single vendored production build of React is loaded before any custom script, and `react` / `react-dom` imports in a module resolve to it. An application must not bundle its own copy of React.
+React and ReactDOM are **provided by the platform**: a single vendored production build is loaded before any custom script, and `react`, `react-dom`, and `react-dom/client` imports in a module resolve to it. An application must not bundle its own copy of React or ReactDOM.
 
 ### Adding a third-party library
 

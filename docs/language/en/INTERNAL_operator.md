@@ -37,10 +37,14 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
 
     Keyword. Targets the user's web client instead of the application-server JVM — a JavaScript function already loaded in the client, or a client-side file (resolution rule on `execStrExpr` / `className` below). Without `CLIENT` the call targets the JVM (a Java class extending `InternalAction`, or an inline Java snippet). In the inline statement form `CLIENT` and `DB` are mutually exclusive and one of them is required.
 
-    A `CLIENT` JavaScript function receives the call parameters as its leading arguments and the form *controller* as the last one — the same controller a custom view gets, with which it can set the current object, change properties, look up values, and call actions or scripts back on the server.
+    A `CLIENT` JavaScript function receives the call parameters as its leading arguments, followed by the form *controller* — the same controller a custom view gets, with which it can set the current object, change properties, look up values, and call actions or scripts back on the server. If the function declares parameters beyond those, the call is treated as asynchronous: a success callback is appended after the controller, and a failure callback after it when the function declares one. With no such extra parameter the function's return value is used as the result.
 
     ```js
     function reload(controller) { controller.exec('refreshData'); }
+
+    function chooseValue(name, controller, resolve, reject) {
+        controller.exec('findValue', name).then(resolve, reject);
+    }
     ```
 
 - `syncType`
