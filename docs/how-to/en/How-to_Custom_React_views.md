@@ -74,6 +74,8 @@ const List = window.lsfusion.List;
 React.createElement(window.lsfusion.List, { data: props.data.o, component: Row })
 ```
 
+Render `List` as a component — through JSX or `React.createElement` — never by calling it as a plain function: it renders each row through a component that uses hooks, so it only works when React mounts it.
+
 `List` keys each row by `row.key`, passes the row to the component as `props.row`, and renders each row through a memoized wrapper bound to that row, so on a change only the rows that actually changed re-render. The plain alternative maps the list directly:
 
 ```jsx
