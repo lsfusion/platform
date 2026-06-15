@@ -7,6 +7,23 @@ A custom view written in JavaScript talks back to the form through a *controller
 
 Properties and actions are addressed by their integration name — the name on the form (or the alias / `NEW` / `DELETE` integration name of a button), the same name the [external JSON/REST API](How-to_Integration.md) uses.
 
+### The controller at a glance
+
+The whole surface, with optional arguments bracketed:
+
+| method | what it does | returns |
+| --- | --- | --- |
+| `changeObject(groupSID, object)` | set a group's current object | — |
+| `changeProperty(property[, object][, value])` | set a value, or exec an action — on the current object or a given row | — |
+| `changeProperties(properties, objects, values[, groupSIDs])` | several `changeProperty` calls from parallel arrays | — |
+| `getPropertyValues(property[, object], value[, mode], ok[, fail][, count])` | a capped server suggestion list | — (via `ok`) |
+| `exec(action, ...params)` | run a named action | `Promise` |
+| `eval(script, ...params)` | run an lsf script with a typed `run` | `Promise` |
+| `evalAction(script, ...params)` | run an action body (`$1`, `$2`, … params) | `Promise` |
+| `change(property, ...keyParams, value)` | set a global property | `Promise` |
+
+The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next `props.data` projection; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, scope it with a `groupSID`: a fourth positional argument to `changeProperty` (`changeProperty(property, object, value, groupSID)`), the trailing argument after `count` on `getPropertyValues`, or the `groupSIDs` array on `changeProperties`. Each method is detailed below.
+
 ### Changing the current object and property values
 
 `controller.changeObject(groupSID, object)` sets the current object of the group `groupSID`. The `object` is a data row of that group, or a raw `objects` handle (see [the identity rules](#row-identity-contract) below) — not a bare `row.key`.
@@ -30,6 +47,8 @@ function orderView(props) {
 
 In the two-argument `changeProperty(property, X)` form the platform decides whether `X` is a value or a row: when the property accepts a value and `X` resolves to a row (a data row or a raw handle), it is read as the row and the call execs on it; otherwise `X` is the value and the call changes the current object.
 
+When the property's integration name is not unique across the form, scope it with a fourth positional `groupSID` argument — `controller.changeProperty(property, object, value, groupSID)` (the same disambiguation as the `groupSIDs` array of `changeProperties`).
+
 `controller.changeProperties(properties, objects, values)` applies several changes at once from parallel arrays — `properties[i]` is changed to `values[i]` for `objects[i]` (an entry may be `null` for the current object). An optional fourth array `groupSIDs` scopes each property to a group when its integration name is not unique across the form.
 
 ```js
@@ -41,7 +60,7 @@ controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 `controller.getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`. In a classic `GRID` custom view the same lookup is exposed as `getValues(property, value, ok, fail)`, equivalent to `getPropertyValues` in the default `'objects'` mode; the form-level / React controller uses `getPropertyValues`.
 
 ```js
-controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count]);
+controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count[, groupSID]]);
 ```
 
 - `value` — the typed query to match against.
@@ -58,6 +77,7 @@ controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count
 
 - `ok(result)` / `fail()` — success and failure callbacks.
 - `count` — raises the number of items requested, for paging.
+- `groupSID` — scopes the property to a group when its integration name is not unique across the form (pass it after `count`).
 
 Pass `item.objects` from an `'objects'` result straight back into `changeObject` or `changeProperty` to act on the picked object:
 

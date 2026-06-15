@@ -7,6 +7,23 @@ title: 'How-to: API контроллера пользовательского п
 
 Свойства и действия адресуются по их интеграционному имени — имени на форме (либо псевдониму / интеграционному имени `NEW` / `DELETE` кнопки), тому же имени, что использует [внешний JSON/REST API](How-to_Integration.md).
 
+### Контроллер с высоты птичьего полёта
+
+Вся поверхность сразу, необязательные аргументы — в скобках:
+
+| метод | что делает | возвращает |
+| --- | --- | --- |
+| `changeObject(groupSID, object)` | задаёт текущий объект группы | — |
+| `changeProperty(property[, object][, value])` | задаёт значение либо выполняет действие — на текущем объекте или на переданной строке | — |
+| `changeProperties(properties, objects, values[, groupSIDs])` | несколько вызовов `changeProperty` из параллельных массивов | — |
+| `getPropertyValues(property[, object], value[, mode], ok[, fail][, count])` | ограниченный список подсказок с сервера | — (через `ok`) |
+| `exec(action, ...params)` | выполняет именованное действие | `Promise` |
+| `eval(script, ...params)` | выполняет lsf-скрипт с типизированным `run` | `Promise` |
+| `evalAction(script, ...params)` | выполняет тело действия (параметры `$1`, `$2`, …) | `Promise` |
+| `change(property, ...keyParams, value)` | задаёт глобальное свойство | `Promise` |
+
+Изменяющие методы (`changeObject` / `changeProperty` / `changeProperties`) ничего не возвращают — новое состояние приходит со следующей проекцией `props.data`; вызывающие сервер методы (`exec` / `eval` / `evalAction` / `change`) возвращают `Promise`. Когда интеграционное имя свойства не уникально в пределах формы, его привязывают к группе через `groupSID`: четвёртым позиционным аргументом `changeProperty` (`changeProperty(property, object, value, groupSID)`), завершающим аргументом после `count` в `getPropertyValues` либо массивом `groupSIDs` в `changeProperties`. Каждый метод подробно разобран ниже.
+
 ### Изменение текущего объекта и значений свойств
 
 `controller.changeObject(groupSID, object)` задаёт текущий объект группы `groupSID`. Здесь `object` — это строка данных этой группы либо непосредственный дескриптор `objects` (см. [правила идентификации строки](#row-identity-contract) ниже), но не голый `row.key`.
@@ -30,6 +47,8 @@ function orderView(props) {
 
 В форме `changeProperty(property, X)` с двумя аргументами платформа определяет, значение `X` или строка: если свойство принимает значение и `X` разрешается в строку (строка данных либо непосредственный дескриптор), то `X` читается как строка и вызов выполняется на ней; иначе `X` — это значение, и изменяется текущий объект.
 
+Когда интеграционное имя свойства не уникально в пределах формы, его привязывают к группе четвёртым позиционным аргументом `groupSID` — `controller.changeProperty(property, object, value, groupSID)` (та же привязка, что и у массива `groupSIDs` в `changeProperties`).
+
 `controller.changeProperties(properties, objects, values)` применяет несколько изменений сразу из параллельных массивов — `properties[i]` изменяется на `values[i]` для `objects[i]` (элемент может быть `null` для текущего объекта). Необязательный четвёртый массив `groupSIDs` привязывает каждое свойство к группе, когда его интеграционное имя не уникально в пределах формы.
 
 ```js
@@ -41,7 +60,7 @@ controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 `controller.getPropertyValues` запрашивает у сервера ограниченный список подсказок для свойства. Результат передаётся в обработчик `ok` в виде `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` равно `true`, когда список усечён, поэтому это список подсказок, а не полный `SELECT DISTINCT`. В классическом пользовательском представлении `GRID` тот же запрос доступен как `getValues(property, value, ok, fail)` — это эквивалент `getPropertyValues` в режиме по умолчанию `'objects'`; на уровне формы / в контроллере React используется `getPropertyValues`.
 
 ```js
-controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count]);
+controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count[, groupSID]]);
 ```
 
 - `value` — вводимая строка запроса для сопоставления.
@@ -58,6 +77,7 @@ controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count
 
 - `ok(result)` / `fail()` — обработчики успеха и ошибки.
 - `count` — увеличивает число запрашиваемых элементов, для постраничной загрузки.
+- `groupSID` — привязывает свойство к группе, когда его интеграционное имя не уникально в пределах формы (передаётся после `count`).
 
 `item.objects` из результата режима `'objects'` можно передать напрямую обратно в `changeObject` или `changeProperty`, чтобы действовать с выбранным объектом:
 
