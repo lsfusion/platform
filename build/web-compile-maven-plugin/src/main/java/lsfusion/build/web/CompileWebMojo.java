@@ -183,6 +183,11 @@ public class CompileWebMojo extends AbstractMojo {
                     // automatic JSX runtime (used by many third-party packages) needs its own alias
                     cmd.add("--alias:react/jsx-runtime=" + jsxRuntimeShim.getAbsolutePath());
                     cmd.add("--alias:react/jsx-dev-runtime=" + jsxRuntimeShim.getAbsolutePath());
+                    // preamble: install the CUSTOM REACT hooks (window.lsfusion.List / useForm*) BEFORE this bundle's
+                    // module body runs, so a module-top `const List = window.lsfusion.List` alias resolves. The impl is
+                    // defined by lsfusion-custom-registry.js (loaded earlier); installed here against the now-final
+                    // window.React (any app React override at a less-negative order has already run by bundle order 100).
+                    cmd.add("--banner:js=if(window.lsfusion&&window.lsfusion.__installReactHooks)window.lsfusion.__installReactHooks();");
                 }
                 if (reactCompiler) { // compiled components import { c } from the memo-cache runtime: target 18 emits the
                     // react-compiler-runtime polyfill package name, react 19 style is react/compiler-runtime — alias both to the vendored MIT polyfill

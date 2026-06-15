@@ -99,6 +99,10 @@ public class ReactContainerView extends LayoutContainerView {
     // install the form context + hooks once (window.lsfusion): the canonical Provider + useSelector-style API.
     // public surface = the use* hooks + List; the context itself is internal (non-enumerable __formContext).
     // Runs from createRoot, where window.React presence is already checked.
+    // BEHAVIORAL TWIN of window.lsfusion.__installReactHooks in lsfusion-custom-registry.js (the eager path, run by each
+    // compiled bundle's preamble before its body so a module-top `const List = window.lsfusion.List` resolves). This
+    // self-contained copy is the mount-time installer and keeps the GWT client working without that script (and for
+    // hand-written global components, which get no preamble). Keep the two copies in sync.
     private static native void installHooks()/*-{
         var ns = $wnd.lsfusion || ($wnd.lsfusion = {});
         if (ns.__formContext)
