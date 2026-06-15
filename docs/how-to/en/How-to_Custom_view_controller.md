@@ -74,6 +74,8 @@ In the two-argument `changeProperty(property, X)` form the platform decides whet
 controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 ```
 
+An object group of a built-in primitive class — a `DATE` navigator, for instance — is moved by the data its `FILTERS` depend on, not by writing the object's value. `changeObject` moves to an existing row from `props.data.<g>.list` (which carries the `objects` handle); to move the group to an arbitrary value (a date the user picks), set the filter property through a server action — `controller.exec('setDateFilter', ...)` — so the value is handled on the server and the group follows its `FILTERS`. Passing a raw value to `changeObject`, or writing the object's value with `changeProperty`, does not navigate the group, and a value that cannot be converted is dropped without an error.
+
 #### Looking up values
 
 `getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`.
