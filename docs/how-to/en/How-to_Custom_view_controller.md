@@ -7,9 +7,9 @@ A custom view written in JavaScript talks back to the form through a *controller
 
 Properties and actions are addressed by their integration name — the name on the form (or the alias / `NEW` / `DELETE` integration name of a button), the same name the [external JSON/REST API](How-to_Integration.md) uses.
 
-### The controller at a glance
+### Controller methods
 
-The whole surface, with optional arguments bracketed:
+All controller methods; optional arguments are bracketed:
 
 | method | what it does | returns |
 | --- | --- | --- |
@@ -124,4 +124,6 @@ If an explicit object argument resolves to neither a row nor a raw handle, the p
 
 ### Classic CUSTOM compatibility
 
-The classic [render/update custom components](How-to_Custom_components_objects.md) keep their own `controller` with the `render`/`update`/`isCurrent`/`getDiff` helpers and the [`controller.change`](How-to_Custom_components_properties.md#handling-user-actions) event method. Their rows now also carry the public `key` and the enumerable `objects` handle, so a row from such a view can be passed wherever a row is expected. A `controller.changeProperty(property, ...)` on a property that is *not* a column of that view's own grid is delegated to the form controller, which resolves the property form-wide — so a classic view can change a property it does not display.
+The classic [render/update custom components](How-to_Custom_components_objects.md) keep their own `controller` — with `isCurrent`, `getValue`, the style and metadata getters, `changeProperty` / `changeObject`, and `diff` / `clearDiff` — plus the [`controller.change`](How-to_Custom_components_properties.md#handling-user-actions) event method of property components. Their rows now also carry the public `key` and the enumerable `objects` handle, so a row from such a view can be passed wherever a row is expected. A `controller.changeProperty(property, ...)` on a property that is *not* a column of that view's own grid is delegated to the form controller, which resolves the property form-wide — so a classic view can change a property it does not display.
+
+That form controller — every method listed above — is also reachable from a classic view directly as `controller.form`. A whole-form [React view](How-to_Custom_React_views.md) gets it as `props.controller`; a classic object/grid view gets its own grid controller and reaches the form controller through `controller.form`, calling `controller.form.exec(...)`, `controller.form.changeObject(...)`, `controller.form.getPropertyValues(...)`, and so on when a call should go through the form rather than the view's own grid.
