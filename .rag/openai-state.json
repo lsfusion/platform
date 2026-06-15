@@ -675,8 +675,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:2813db531204d9c765c6d56fc55dc07e7f4e1a9a9d99efd1acee064022604ad9",
-      "indexed_at": "2026-06-15T07:55:46Z",
+      "file_hash": "sha256:204be76379f5ef25f201df7c682a6a980c3537f07e0abcb05d6498b4afe8a82b",
+      "indexed_at": "2026-06-15T08:37:07Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -716,9 +716,9 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::react-compiler": {
-          "file_id": "file-6BZRF4kbnJshtgZqB9YvWM",
+          "file_id": "file-VBc1YbCtkozvZpSXBKdtLa",
           "heading_path": "How-to: Custom client JS modules > React Compiler",
-          "section_payload_hash": "sha256:e6946c2cd698e845b829e079f5a79f05ad7783a849e381fba5b0140c10130885",
+          "section_payload_hash": "sha256:3fc467ff303465e092ecfbe69ae5cf3e433ea47cb0ef5365a2e3a358068eac51",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::styles": {
@@ -14239,7 +14239,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "664abbfbb3b561f9048a3ab7e7d6b23f235f24d8",
+  "last_indexed_docs_commit": "5bfe813d3be6d6fe1e331312f71feccd2574ddc2",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
