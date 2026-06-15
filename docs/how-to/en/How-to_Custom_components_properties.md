@@ -60,7 +60,7 @@ Example value:
 ```
 
 Next, use JavaScript and CSS to create a component that will display messages in the browser.
-The component will be created in the chat.js file, which will be located in the _resources/web_ folder.
+The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling; see [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
 
 Inside the chat.js file, create _chatMessageRender_ function. It will return an object consisting of two functions: _render_ and _update_.
 

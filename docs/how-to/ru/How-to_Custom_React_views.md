@@ -28,7 +28,7 @@ DESIGN orders {
 
 ### Компонент
 
-`OrderBoard` — именованный экспорт из модуля `.jsx` в каталоге `src/main/web`; как этот модуль компилируется и регистрируется, описано в [How-to: Пользовательские клиентские JS-модули](How-to_Custom_client_JS_modules.md).
+`OrderBoard` — именованный экспорт из модуля `.jsx` в каталоге `src/main/web`; как этот модуль компилируется и регистрируется, описано в [How-to: Пользовательские клиентские JS-модули](How-to_Custom_client_JS_modules.md). Примеры здесь используют JSX, для которого нужна сборка. Для проекта [без сборки](How-to_Custom_client_JS_modules.md#without-the-build) пишите тот же компонент через `React.createElement` с предоставляемым платформой `window.React` вместо JSX и поместите его в `src/main/resources/web/init` (автозагрузка) либо в `src/main/resources/web` с регистрацией через `onWebClientInit`.
 
 Компонент — это обычная функция, получающая `props.data` и `props.controller`:
 

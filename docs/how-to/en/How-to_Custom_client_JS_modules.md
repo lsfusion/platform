@@ -25,6 +25,8 @@ function HelloBoard(props) {
 }
 ```
 
+Because it is not bundled, a no-build file cannot `import` other local modules — it shares code only through globals on `window` (the platform provides `window.React` and `window.ReactDOM`). Importing local helpers and npm packages is what the build adds.
+
 Such a file is loaded one of two ways — the same split that distinguishes the build path's auto-loaded bundles from anything an application lists in `onWebClientInit`.
 
 **Auto-loaded — put it in _resources/web/init_.** A file under _src/main/resources/web/init_ is registered automatically when a page opens, with no _onWebClientInit_ entry — the no-build counterpart of how _src/main/web_ bundles auto-load after the build. Use it for a self-contained component or stylesheet:
