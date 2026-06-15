@@ -125,9 +125,9 @@ By default the source is bundled as written. The optional **React Compiler** pas
 </plugin>
 ```
 
-Unlike plain bundling — which uses the esbuild native binary and needs no Node — this pass runs through Node, so **`node` must be available on the build machine**: the local machine and every CI / build server that builds the application. A runtime / deploy box does not need it (it only runs the already-built bundles). With the flag on and Node absent, the build fails at the web-compile step.
+Unlike plain bundling — which uses the esbuild native binary and needs no Node — this pass runs through Node, which the build **acquires automatically**: it uses Node from `PATH` if present, otherwise it downloads a pinned, checksum-verified Node once and caches it (under _~/.m2_, so later builds and a CI _~/.m2_ cache reuse it). So enabling the flag is enough — no manual Node install on developer machines or CI. The exception is an **offline build** (`mvn -o`), which never downloads: if Node is then neither on `PATH` nor cached, it fails with guidance (install Node, or run one online build to seed the cache). Node is a build-time dependency only — a runtime / deploy box never needs it. (The plugin's `nodeVersion`, and `nodeDownloadRoot` for a mirror, are overridable if needed.)
 
-It is **off by default, and most applications do not need it**: the common large-grid performance case — re-rendering only the rows that actually changed — is already handled by [`window.lsfusion.List`](How-to_Custom_React_views.md), independently of this pass, and `List` stays the right tool for it whether or not the compiler is on. Turn `reactCompiler` on when a custom React view itself has enough derived values, callbacks, or nested subtrees to benefit from general auto-memoization — and when the build machines have Node.
+It is **off by default, and most applications do not need it**: the common large-grid performance case — re-rendering only the rows that actually changed — is already handled by [`window.lsfusion.List`](How-to_Custom_React_views.md), independently of this pass, and `List` stays the right tool for it whether or not the compiler is on. Turn `reactCompiler` on when a custom React view itself has enough derived values, callbacks, or nested subtrees to benefit from general auto-memoization.
 
 ### Example
 
@@ -161,7 +161,7 @@ Recommended styling:
 
 For a full styling system beyond static class names, a **runtime CSS-in-JS** library (such as `styled-components` or `@emotion`) works as an ordinary `org.mvnpm` dependency: it is bundled with the module and injects its styles at runtime. Use the `styled` API or `className={css(...)}`; Emotion's `css` *prop* (`<div css={...} />`) needs a JSX transform that the build does not run, so it is not available.
 
-CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — it runs the esbuild binary only, with no Node or plugin phase. Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for; if you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
+CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — plain bundling runs the esbuild binary only, with no Node or plugin phase (the optional React Compiler above is the only step that uses Node). Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for; if you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
 
 A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](../language/INTERNAL_operator.md) action, like the CSS of a classic custom component (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
 
