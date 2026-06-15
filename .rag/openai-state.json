@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:960950c2014c5b3aca4069418c067e9664195d1f980b3e79406e0162019b6e11",
-      "indexed_at": "2026-06-14T21:13:38Z",
+      "file_hash": "sha256:7e87413d38e0cb4b4f193967bb6176461fb2a8dd467024ac10ce78e155376596",
+      "indexed_at": "2026-06-15T08:58:40Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -842,9 +842,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::changing-the-current-object-and-property-values": {
-          "file_id": "file-TAgimCXaH3jiaVa7nG4erF",
+          "file_id": "file-43xki15gXdQyTYPiXiZLKp",
           "heading_path": "How-to: Custom view controller API > Changing the current object and property values",
-          "section_payload_hash": "sha256:d8a9d738f59333c4b73e55687ac1e9dec61f9cd0a06e1f52aa092ee1a91fc5b1",
+          "section_payload_hash": "sha256:6a570aa7c7f6d02130ed70d7e6f4365a6b0b8b4fbe15ab01308a62cac22cf1a6",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::classic-custom-compatibility": {
@@ -860,15 +860,21 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::looking-up-values": {
-          "file_id": "file-QCyVb1Mr6NzBgQXdd3J9w9",
+          "file_id": "file-6vhhjVDzNgha6JMw13QrNn",
           "heading_path": "How-to: Custom view controller API > Looking up values",
-          "section_payload_hash": "sha256:ad17754d0c442b13e202ad113aea80af0d7564d2afd1585e5f94d214bea9b155",
+          "section_payload_hash": "sha256:5f236bb4396f2274197c1faed5717a50e80c4a09e61e972331f07bcdf5d4d545",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::row-identity-rules-row-identity-contract": {
           "file_id": "file-KGvxVqMAyyhZgAsTFTdkKs",
           "heading_path": "How-to: Custom view controller API > Row identity rules {#row-identity-contract}",
           "section_payload_hash": "sha256:e0034424f55b16de2f9efc990938927e53d1aabe653292726407865879f6fef6",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::the-controller-at-a-glance": {
+          "file_id": "file-SMp7Fw9dPQdeKuAefXATvS",
+          "heading_path": "How-to: Custom view controller API > The controller at a glance",
+          "section_payload_hash": "sha256:6b8f2cf8ea312a6b87c7124740bbcef1f2b15f785fe1b18804f09d979d918c58",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14239,7 +14245,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5bfe813d3be6d6fe1e331312f71feccd2574ddc2",
+  "last_indexed_docs_commit": "ff715484069acc978a6fed5c1ff24fc3ac966303",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
