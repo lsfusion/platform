@@ -28,6 +28,9 @@ function interpreter() {
 
                 // ctrl + c fix
                 if (e.ctrlKey && e.keyCode === 67) {
+                    // stop the keydown from bubbling to the platform's copy handler (putIntoClipboard),
+                    // which otherwise selects the whole render element and overwrites the clipboard on http
+                    e.stopPropagation();
                     let textToCopy = aceEditor.getSelectedText();
                     //fix from https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
                     // navigator clipboard api needs a secure context (https)
