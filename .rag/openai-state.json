@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:7e87413d38e0cb4b4f193967bb6176461fb2a8dd467024ac10ce78e155376596",
-      "indexed_at": "2026-06-15T08:58:40Z",
+      "file_hash": "sha256:d7d3eeb015b83e4cad02b94f56203070c39d288335889fdeec20b101d989beb9",
+      "indexed_at": "2026-06-15T09:28:45Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -848,9 +848,15 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::classic-custom-compatibility": {
-          "file_id": "file-FM7rWMcbukTRs3ZWF8S8zn",
+          "file_id": "file-2GZ6rqbim3wogELJwfGMKN",
           "heading_path": "How-to: Custom view controller API > Classic CUSTOM compatibility",
-          "section_payload_hash": "sha256:04e0ae67a8f2dbc1c8e625722e242ea4d40904661db69532b3feaccbc8de40af",
+          "section_payload_hash": "sha256:d194e734f76af77b888ae94774af9622f94121310de0a445dace782665d9ea26",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::controller-methods": {
+          "file_id": "file-PRPma8wvGfFqJwX71Jhs4D",
+          "heading_path": "How-to: Custom view controller API > Controller methods",
+          "section_payload_hash": "sha256:921998cc0a293e6760c3e8c8f7347957f9152fe151e88a451986780671772244",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::how-to-custom-view-controller-api": {
@@ -869,12 +875,6 @@
           "file_id": "file-KGvxVqMAyyhZgAsTFTdkKs",
           "heading_path": "How-to: Custom view controller API > Row identity rules {#row-identity-contract}",
           "section_payload_hash": "sha256:e0034424f55b16de2f9efc990938927e53d1aabe653292726407865879f6fef6",
-          "source_file": "how-to/How-to_Custom_view_controller.md"
-        },
-        "How-to_Custom_view_controller::the-controller-at-a-glance": {
-          "file_id": "file-SMp7Fw9dPQdeKuAefXATvS",
-          "heading_path": "How-to: Custom view controller API > The controller at a glance",
-          "section_payload_hash": "sha256:6b8f2cf8ea312a6b87c7124740bbcef1f2b15f785fe1b18804f09d979d918c58",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14245,7 +14245,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ff715484069acc978a6fed5c1ff24fc3ac966303",
+  "last_indexed_docs_commit": "a9e37015f0fef09939ae1daea8dbfd5fdf37f966",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
