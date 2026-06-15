@@ -675,8 +675,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:02636cab765d544f6d9287aede9cdbec0595502c9fd958dbfb152d12fb3ea966",
-      "indexed_at": "2026-06-14T20:53:14Z",
+      "file_hash": "sha256:2813db531204d9c765c6d56fc55dc07e7f4e1a9a9d99efd1acee064022604ad9",
+      "indexed_at": "2026-06-15T07:55:46Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -734,9 +734,9 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::without-the-build": {
-          "file_id": "file-VHKfaTu6hohjMd2Fifsrs6",
+          "file_id": "file-F2zsS5kUFNdKTmyy8pP1F8",
           "heading_path": "How-to: Custom client JS modules > Without the build",
-          "section_payload_hash": "sha256:b88dfa677dede46f4791ccd98d76cd1fc263f3fcd946eaf683523a60b9917465",
+          "section_payload_hash": "sha256:a91396f52be36645da7b6a3fc170b0abca3c8cbd24deea5ffd1c2d3b5d7c1a35",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         }
       },
@@ -14239,7 +14239,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4253adf3385b73ec53075caa1a308dd996c0079b",
+  "last_indexed_docs_commit": "664abbfbb3b561f9048a3ab7e7d6b23f235f24d8",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
