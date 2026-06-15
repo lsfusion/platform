@@ -40,7 +40,8 @@ import java.util.stream.Stream;
 /**
  * Compiles a logic module's {@code src/main/web/**} (except the {@code web/lib/**} library subfolder) into
  * classpath {@code web/.compiled/*.js} IIFE bundles, one per public-entry file, using the esbuild native
- * binary resolved as an os-matched Maven artifact (no Node; the protoc pattern). Each bundle registers every named export of its entry file into
+ * binary resolved as an os-matched Maven artifact (no Node on this default path; the optional React Compiler
+ * pass acquires Node automatically — see resolveNode). Each bundle registers every named export of its entry file into
  * {@code window.lsfusion.custom} at load time; the lsFusion client resolves CUSTOM / CUSTOM REACT /
  * INTERNAL CLIENT names registry-first (see the runtime registry shim). The generated-resources root is
  * added as a project resource so Maven's process-resources packages it under classpath {@code web/.compiled/}.
@@ -68,7 +69,8 @@ public class CompileWebMojo extends AbstractMojo {
     private boolean skip;
 
     /** opt-in React Compiler (auto-memoization): babel-plugin-react-compiler transforms every source before
-     * bundling. Requires `node` on PATH and a self-contained runner script (see bin/build-rc-runner.sh). */
+     * bundling, run through Node — system Node if it is on PATH, otherwise a pinned Node downloaded and cached
+     * automatically (see resolveNode). Uses a self-contained runner script (see bin/build-rc-runner.sh). */
     @Parameter(defaultValue = "false")
     private boolean reactCompiler;
 
@@ -85,6 +87,17 @@ public class CompileWebMojo extends AbstractMojo {
      * effectively locked to the versions pinned in the plugin's SHA256SUMS — overriding requires a matching entry */
     @Parameter(defaultValue = "0.25.10")
     private String esbuildVersion;
+
+    /** Node version the React Compiler pass uses when Node is not already on PATH: the plugin then downloads this
+     * pinned, checksum-verified version (see node/SHA256SUMS) and caches it. Overriding requires a matching SHA256SUMS entry. */
+    @Parameter(defaultValue = "22.16.0")
+    private String nodeVersion;
+
+    /** base URL the pinned Node is downloaded from when it is not on PATH (point at a mirror if nodejs.org is blocked). */
+    @Parameter(property = "lsfusion.node.downloadRoot", defaultValue = "https://nodejs.org/dist/")
+    private String nodeDownloadRoot;
+
+    private String node; // resolved Node command (PATH "node" or the cached downloaded binary), memoized within a run
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -247,13 +260,15 @@ public class CompileWebMojo extends AbstractMojo {
 
     // transform every compilable source through babel-plugin-react-compiler into a mirror tree (relative
     // imports keep resolving), which then serves as the bundling root. Runner = a self-contained .cjs
-    // (babel core + the compiler plugin bundled by esbuild), executed with the system node.
+    // (babel core + the compiler plugin bundled by esbuild), executed with Node (system if on PATH, else a
+    // pinned Node downloaded and cached by resolveNode).
     private Path runReactCompiler(Path srcRoot) throws MojoExecutionException, IOException, InterruptedException {
         File runner = reactCompilerRunner; // optional override (e.g. testing a rebuilt runner); default = the vendored one
         if (runner == null)
             runner = extractResource("rc/rc-runner.cjs", new File(workDir, "rc-runner.cjs"));
         else if (!runner.isFile())
             throw new MojoExecutionException("reactCompilerRunner not found: " + runner);
+        String nodeExe = resolveNode();
         Path mirror = new File(workDir, "rc-src").toPath();
         if (Files.exists(mirror))
             deleteRecursively(mirror);
@@ -265,14 +280,14 @@ public class CompileWebMojo extends AbstractMojo {
             Path out = mirror.resolve(srcRoot.relativize(src));
             Files.createDirectories(out.getParent());
             if (isCompilable(src)) {
-                ProcessBuilder pb = new ProcessBuilder("node", runner.getAbsolutePath(),
+                ProcessBuilder pb = new ProcessBuilder(nodeExe, runner.getAbsolutePath(),
                         src.toString(), out.toString(), reactCompilerTarget);
                 pb.redirectErrorStream(true);
                 Process p;
                 try {
                     p = pb.start();
                 } catch (IOException e) {
-                    throw new MojoExecutionException("reactCompiler=true requires node on PATH", e);
+                    throw new MojoExecutionException("failed to start Node (" + nodeExe + ") for the React Compiler pass", e);
                 }
                 String output;
                 try (InputStream is = p.getInputStream()) {
@@ -285,6 +300,188 @@ public class CompileWebMojo extends AbstractMojo {
         }
         getLog().info("web-compile: react-compiler transformed " + sources.size() + " sources");
         return mirror;
+    }
+
+    // Node command for the React Compiler pass: system `node` if it is on PATH, otherwise a pinned, checksum-verified
+    // Node downloaded once and cached (so reactCompiler "just works" without a manual install). Honours Maven offline
+    // mode: with -o we never reach the network — if Node is neither on PATH nor already cached, fail with guidance.
+    private String resolveNode() throws MojoExecutionException, IOException {
+        if (node != null)
+            return node;
+        if (nodeOnPath()) {
+            node = "node";
+            getLog().debug("web-compile: using Node from PATH");
+        } else {
+            node = downloadNode().getAbsolutePath();
+        }
+        return node;
+    }
+
+    private boolean nodeOnPath() {
+        try {
+            Process p = new ProcessBuilder("node", "--version").redirectErrorStream(true).start();
+            try (InputStream is = p.getInputStream()) { readAll(is); } // drain so the child can exit
+            return p.waitFor() == 0;
+        } catch (IOException e) {
+            return false; // not on PATH
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    // download the pinned Node distribution for this OS/arch (cached across builds under ~/.m2 so a CI ~/.m2 cache
+    // restore covers it), verify its sha256, and extract just the `node` executable.
+    private File downloadNode() throws MojoExecutionException, IOException {
+        String osArch = nodeOsArch();
+        boolean win = osArch.startsWith("win");
+        String dirName = "node-v" + nodeVersion + "-" + osArch;
+        String archive = dirName + (win ? ".zip" : ".tar.gz");
+        File cacheDir = new File(nodeCacheBase(), nodeVersion + "-" + osArch);
+        File nodeBin = new File(cacheDir, win ? "node.exe" : "node");
+        if (nodeBin.isFile())
+            return nodeBin; // already cached from a previous build
+
+        if (repoSession != null && repoSession.isOffline())
+            throw new MojoExecutionException("reactCompiler=true needs Node, but it is not on PATH and not cached, and the build is offline (mvn -o). "
+                    + "Install Node on PATH, or run one online build to cache the pinned Node " + nodeVersion + ".");
+
+        Files.createDirectories(cacheDir.toPath());
+        Files.createDirectories(workDir.toPath());
+        File archiveFile = new File(workDir, archive);
+        String base = nodeDownloadRoot.endsWith("/") ? nodeDownloadRoot : nodeDownloadRoot + "/";
+        String url = base + "v" + nodeVersion + "/" + archive;
+        getLog().info("web-compile: Node " + nodeVersion + " not on PATH; downloading " + url);
+        download(url, archiveFile);
+        verifyNodeSha256(archiveFile, osArch);
+        extractNodeBinary(archiveFile, dirName, win, nodeBin);
+        getLog().info("web-compile: cached Node at " + nodeBin);
+        return nodeBin;
+    }
+
+    // persistent cache: ~/.m2/lsfusion/node (sibling of the local repository, so a CI ~/.m2 cache restore keeps it);
+    // falls back to ~/.lsfusion/node if the local repository base is unavailable.
+    private File nodeCacheBase() {
+        try {
+            File base = repoSession.getLocalRepository().getBasedir(); // ~/.m2/repository
+            if (base != null && base.getParentFile() != null)
+                return new File(base.getParentFile(), "lsfusion/node");
+        } catch (Exception ignore) { /* fall through */ }
+        return new File(System.getProperty("user.home", "."), ".lsfusion/node");
+    }
+
+    private void download(String url, File target) throws MojoExecutionException, IOException {
+        java.net.URLConnection conn;
+        try {
+            conn = new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(30000);
+            conn.setReadTimeout(120000);
+            Files.createDirectories(target.toPath().getParent());
+            try (InputStream is = conn.getInputStream()) {
+                Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("failed to download Node from " + url
+                    + " (set -Dlsfusion.node.downloadRoot to a reachable mirror, or install Node on PATH)", e);
+        }
+    }
+
+    // supply-chain pin: the downloaded archive must match the sha256 committed in the plugin source (node/SHA256SUMS)
+    private void verifyNodeSha256(File file, String osArch) throws MojoExecutionException, IOException {
+        String key = nodeVersion + "-" + osArch, expected = null;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("node/SHA256SUMS")) {
+            if (is != null)
+                for (String line : new String(readAll(is), StandardCharsets.UTF_8).split("\n")) {
+                    String[] parts = line.trim().split("\\s+");
+                    if (parts.length == 2 && parts[1].equals(key))
+                        expected = parts[0];
+                }
+        }
+        if (expected == null)
+            throw new MojoExecutionException("no sha256 entry for node " + key + " in node/SHA256SUMS (add it when changing nodeVersion)");
+        String actual;
+        try {
+            actual = toHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file.toPath())));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new MojoExecutionException("SHA-256 unavailable", e);
+        }
+        if (!actual.equals(expected))
+            throw new MojoExecutionException("node archive sha256 mismatch for " + key + ": expected " + expected + ", got " + actual);
+    }
+
+    // extract just the node executable from the distribution archive: dirName/node.exe (zip, Windows) or
+    // dirName/bin/node (tar.gz, Linux/macOS). The node binary is self-contained; nothing else from the dist is needed.
+    // Written to a unique temp file then atomically moved into place, so a partial/torn binary is never seen or
+    // executed — an interrupted extraction self-heals, and concurrent modules (mvn -T) can't observe a half-written file.
+    private void extractNodeBinary(File archive, String dirName, boolean win, File nodeBin) throws MojoExecutionException, IOException {
+        Files.createDirectories(nodeBin.toPath().getParent());
+        if (nodeBin.isFile())
+            return; // already published by a concurrent module since downloadNode last checked
+        File tmp = File.createTempFile("node-", win ? ".exe" : ".bin", nodeBin.getParentFile());
+        try {
+            boolean found = false;
+            if (win) {
+                try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive)) {
+                    java.util.zip.ZipEntry e = zip.getEntry(dirName + "/node.exe");
+                    if (e != null) {
+                        try (InputStream is = zip.getInputStream(e)) {
+                            Files.copy(is, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        found = true;
+                    }
+                }
+            } else {
+                String entryName = dirName + "/bin/node";
+                try (GZIPInputStream gz = new GZIPInputStream(Files.newInputStream(archive.toPath()))) {
+                    byte[] header = new byte[512];
+                    while (readFully(gz, header)) {
+                        boolean zero = true;
+                        for (byte b : header) if (b != 0) { zero = false; break; }
+                        if (zero) break; // a zero block terminates the archive
+                        String name = cString(header, 0, 100);
+                        String prefix = cString(header, 345, 155); // ustar long-path prefix
+                        if (!prefix.isEmpty())
+                            name = prefix + "/" + name;
+                        long size = parseOctal(header, 124, 12);
+                        char type = (char) header[156];
+                        long pad = (512 - (size % 512)) % 512;
+                        if ((type == '0' || type == ' ') && name.equals(entryName)) {
+                            try (java.io.OutputStream os = Files.newOutputStream(tmp.toPath())) {
+                                copyN(gz, os, size);
+                            }
+                            found = true;
+                            break;
+                        }
+                        skipN(gz, size + pad);
+                    }
+                }
+            }
+            if (!found)
+                throw new MojoExecutionException("node executable not found in " + archive.getName());
+            if (!win && !tmp.setExecutable(true, false)) // chmod BEFORE publishing, so the visible file is runnable
+                getLog().warn("could not chmod +x " + tmp);
+            try {
+                Files.move(tmp.toPath(), nodeBin.toPath(), StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.FileAlreadyExistsException e) {
+                // a concurrent module published it first; its file is complete (atomic) — keep that one, drop ours
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                Files.move(tmp.toPath(), nodeBin.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tmp.toPath());
+        }
+    }
+
+    // Node's distribution archive naming differs from esbuild's: "darwin"/"win" and .tar.gz/.zip (not .tar.xz: the
+    // JDK has no XZ, but gzip + a small ustar reader suffice for the node binary).
+    private static String nodeOsArch() throws MojoExecutionException {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
+        String a = (arch.contains("aarch64") || arch.contains("arm64")) ? "arm64" : "x64";
+        if (os.contains("linux")) return "linux-" + a;
+        if (os.contains("mac") || os.contains("darwin")) return "darwin-" + a;
+        if (os.contains("win")) return "win-x64"; // Windows-on-ARM runs the x64 build via emulation
+        throw new MojoExecutionException("unsupported OS for node download: " + os + " " + arch);
     }
 
     // ===== mvnpm: materialize the project's org.mvnpm* dependencies (the Maven Central mirror of npm) into

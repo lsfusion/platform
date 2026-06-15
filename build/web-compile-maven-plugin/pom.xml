@@ -14,7 +14,7 @@
     <artifactId>web-compile-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Web Compile Maven Plugin</name>
-    <description>Compiles a logic module's src/main/web/** sources into classpath web/.compiled/*.js bundles via the esbuild native binary, resolved as an os-matched Maven artifact (no Node).</description>
+    <description>Compiles a logic module's src/main/web/** sources into classpath web/.compiled/*.js bundles via the esbuild native binary, resolved as an os-matched Maven artifact (no Node on the default path; the optional React Compiler pass acquires Node automatically).</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
