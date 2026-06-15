@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:5b2ba730478f2996652d21e8adfda0adf6b95ab84b157156d1002a2975cc91ce",
-      "indexed_at": "2026-06-14T21:13:09Z",
+      "file_hash": "sha256:0aa15f84595f0a09dc73981e53e2b79b3ade6976ba3fbf3557d0dda7d41286a1",
+      "indexed_at": "2026-06-15T12:01:25Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -666,17 +666,17 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
-          "file_id": "file-GbWLqnvv3GU4wk4zL1wATA",
+          "file_id": "file-LSnapoCATV4ip1oo92jCbj",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:1b0ca083e59134eb7beaa977eaba905622040ffa5a5dbebbc90ef67b54c0b9ea",
+          "section_payload_hash": "sha256:b2406d167424aae3d4daa37e2d5250d8e9d7bf17b080a1ec6679af8a616b5b17",
           "source_file": "how-to/How-to_Custom_React_views.md"
         }
       },
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:d6de5ee3dc80c63c368cd4799fa2dbe1185a0ddb0a598ca96726c1259260d886",
-      "indexed_at": "2026-06-15T09:38:40Z",
+      "file_hash": "sha256:3229abd328e7da4cdbefe6bccd89ad04b66a8c7d5331a92116da8ca6b09c19a4",
+      "indexed_at": "2026-06-15T12:01:36Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -734,17 +734,17 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::without-the-build": {
-          "file_id": "file-F2zsS5kUFNdKTmyy8pP1F8",
+          "file_id": "file-4LxBXo8WnbWFA6m5Bfmdsj",
           "heading_path": "How-to: Custom client JS modules > Without the build",
-          "section_payload_hash": "sha256:a91396f52be36645da7b6a3fc170b0abca3c8cbd24deea5ffd1c2d3b5d7c1a35",
+          "section_payload_hash": "sha256:22ca3a2ea2ca30d08f79a9b686db7e9e16a8465b97dc34f6ff9d15c0d855e3c4",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         }
       },
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:8f7efea9df559aac8bf76b544b417dc49190549225c425e13c08a49014a31791",
-      "indexed_at": "2026-06-14T21:13:19Z",
+      "file_hash": "sha256:1749bd675db3e438dd35fa7730072c854e09729015d2fc9808d2bc40c8117936",
+      "indexed_at": "2026-06-15T12:01:45Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -754,9 +754,9 @@
       },
       "sections": {
         "How-to_Custom_components_objects::calling-the-server-calling-the-server": {
-          "file_id": "file-W1a8LUB4197TRMBvubzgry",
+          "file_id": "file-Wp5YGUaUX9oSt318gvyKu4",
           "heading_path": "How-to: Custom Components (objects) > Calling the server {#calling-the-server}",
-          "section_payload_hash": "sha256:016c5b57751731baac320cedf19e91a50e18cfdaa13efa9c6acd59585b576ac6",
+          "section_payload_hash": "sha256:69097fe45dec30dfb2dd071cf96bec3eb093dfaac9c0530146c79ff5b52cd6ab",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -772,17 +772,17 @@
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::interface": {
-          "file_id": "file-SKKy6pUYU1uLf8o5uC48xX",
+          "file_id": "file-PVnm7yMFXXAerHQsfUBACd",
           "heading_path": "How-to: Custom Components (objects) > Interface",
-          "section_payload_hash": "sha256:cbde7eb2323cb32973b16757e41076472789cb609b099d14b99bd1a3370de0bb",
+          "section_payload_hash": "sha256:35c22995ba2e6882d24f1fa7a433431ca6e06dc33d36311bd187a6875aee99db",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         }
       },
       "stale": false
     },
     "how-to/How-to_Custom_components_properties.md": {
-      "file_hash": "sha256:b1d452a98a6900be4ac966d28d0b1c82b513fa388f232d40bfa8074153ab6826",
-      "indexed_at": "2026-06-14T21:13:29Z",
+      "file_hash": "sha256:84fde1a27a7d5f1aa185f5b2fc32e321aa4ccfded1d311f2cb9c4c6428448a96",
+      "indexed_at": "2026-06-15T12:01:56Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -810,9 +810,9 @@
           "source_file": "how-to/How-to_Custom_components_properties.md"
         },
         "How-to_Custom_components_properties::message-list-display": {
-          "file_id": "file-QjwLKF44UictmvYw6nWfzx",
+          "file_id": "file-1uv95K3ihShHQ129U7dK6S",
           "heading_path": "How-to: Custom components (properties) > Message list display",
-          "section_payload_hash": "sha256:478d9672e0692bd7369680ec6f2442d39031faa901cf8f42940187df94518502",
+          "section_payload_hash": "sha256:2b8b44f92275151f10ecb6e553b17b49e86f7ccba70ef65b400f575e1f2509fa",
           "source_file": "how-to/How-to_Custom_components_properties.md"
         },
         "How-to_Custom_components_properties::send-a-new-message": {
@@ -14227,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "0d260a9c158f9ef9250a5d0c2480ea7f71e210ba",
+  "last_indexed_docs_commit": "9939b6b484fba25660279fe19c9fc78bcb3ef493",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
