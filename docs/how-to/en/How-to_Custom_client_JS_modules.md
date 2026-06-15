@@ -113,7 +113,21 @@ onWebClientInit() + {
 
 ### React Compiler
 
-By default the source is bundled as written. The optional **React Compiler** pass (automatic memoization of React components) is enabled by setting the module/plugin option `reactCompiler = true`; it runs every source through the compiler before bundling. Unlike plain bundling, this pass needs `node` available on the build machine. Use it when custom React views benefit from the compiler's auto-memoization; leave it off (the default) otherwise, and plain bundling still works.
+By default the source is bundled as written. The optional **React Compiler** pass is general automatic memoization of React components — it stands in for hand-written `useMemo` / `useCallback` / `React.memo`. It is enabled per application by configuring the build plugin:
+
+```xml
+<plugin>
+    <groupId>lsfusion.platform.build</groupId>
+    <artifactId>web-compile-maven-plugin</artifactId>
+    <configuration>
+        <reactCompiler>true</reactCompiler>
+    </configuration>
+</plugin>
+```
+
+Unlike plain bundling — which uses the esbuild native binary and needs no Node — this pass runs through Node, so **`node` must be available on the build machine**: the local machine and every CI / build server that builds the application. A runtime / deploy box does not need it (it only runs the already-built bundles). With the flag on and Node absent, the build fails at the web-compile step.
+
+It is **off by default, and most applications do not need it**: the common large-grid performance case — re-rendering only the rows that actually changed — is already handled by [`window.lsfusion.List`](How-to_Custom_React_views.md), independently of this pass, and `List` stays the right tool for it whether or not the compiler is on. Turn `reactCompiler` on when a custom React view itself has enough derived values, callbacks, or nested subtrees to benefit from general auto-memoization — and when the build machines have Node.
 
 ### Example
 
