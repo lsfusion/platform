@@ -74,7 +74,7 @@ In the two-argument `changeProperty(property, X)` form the platform decides whet
 controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 ```
 
-An object group of a built-in primitive class — a `DATE` navigator, for instance — is moved by the data its `FILTERS` depend on, not by writing the object's value. `changeObject` moves to an existing row from `props.data.<g>.list` (which carries the `objects` handle); to move the group to an arbitrary value (a date the user picks), set the filter property through a server action — `controller.exec('setDateFilter', ...)` — so the value is handled on the server and the group follows its `FILTERS`. Passing a raw value to `changeObject`, or writing the object's value with `changeProperty`, does not navigate the group, and a value that cannot be converted is dropped without an error.
+An object group of a built-in primitive class — a `DATE` navigator, for instance — is moved by the DATA property its `FILTERS` depend on, not by writing the object's value: the object of a primitive class *is* its value, so there is nothing to store on it. To move the group to an arbitrary value, change that filter property — `changeProperty('dateFrom', d)` with a real JS `Date`, or through an action — and the group follows its `FILTERS`; to select a value already shown, `changeObject` to a row from `props.data.<g>.list` (which carries the `objects` handle). Two silent traps: writing the object's own value does not navigate the group (nothing is stored), and `changeProperty` casts a date value with no runtime check — so a non-`Date` argument (a date-input *string*, a timestamp) is silently converted to `null` or garbage, with no error. Pass an actual `Date`.
 
 #### Looking up values
 
