@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:0aa15f84595f0a09dc73981e53e2b79b3ade6976ba3fbf3557d0dda7d41286a1",
-      "indexed_at": "2026-06-15T12:01:25Z",
+      "file_hash": "sha256:bd909a72fdd2881319f3e825ba271355b3b7443e8911ce5526e7da114b7be7cf",
+      "indexed_at": "2026-06-15T19:31:49Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -666,9 +666,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
-          "file_id": "file-LSnapoCATV4ip1oo92jCbj",
+          "file_id": "file-EmY6xBHVbcDHk54y6bvYn3",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:b2406d167424aae3d4daa37e2d5250d8e9d7bf17b080a1ec6679af8a616b5b17",
+          "section_payload_hash": "sha256:10340ac63503e1f2139744600f8311bcff4c49399f1cb3cef4519cbda6c3fc97",
           "source_file": "how-to/How-to_Custom_React_views.md"
         }
       },
@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:22383ac98f703aa83811830230e52db39dc83fd33d83671540983ea12c47706f",
-      "indexed_at": "2026-06-15T11:04:04Z",
+      "file_hash": "sha256:58eab92e8f5f03c65c3d90b19246df26c18fc9b0c1b4f7182d54b5219f00aa30",
+      "indexed_at": "2026-06-15T19:31:59Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -854,9 +854,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller": {
-          "file_id": "file-Jn7Nkft1WGTCiw6XM6w4LA",
+          "file_id": "file-V9v1pCnhtzdgf6bbToT1Yu",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:2d9481c03b4ee526c3167e23093a720fe39b19aceaa78852498a01da220ddd27",
+          "section_payload_hash": "sha256:91b4f9799db1668f95955283e2c87fda3c42a9a32af736dbe89baa043edf30d9",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14227,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "9939b6b484fba25660279fe19c9fc78bcb3ef493",
+  "last_indexed_docs_commit": "044ea77388b0db629a42eab67f2d49a0f50ebffd",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
