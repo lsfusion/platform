@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:cf1f4a6f79fe77a345974b84c8cd193dda82bdbace4c5feffa7b7522cd2fd7e3",
-      "indexed_at": "2026-06-15T10:01:17Z",
+      "file_hash": "sha256:22383ac98f703aa83811830230e52db39dc83fd33d83671540983ea12c47706f",
+      "indexed_at": "2026-06-15T11:04:04Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -835,46 +835,28 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "How-to_Custom_view_controller::calling-the-server": {
-          "file_id": "file-KfdH4EiB4bM9NLfdP2q7uB",
-          "heading_path": "How-to: Custom view controller API > Calling the server",
-          "section_payload_hash": "sha256:ab9c918a4fdf46c6bc707f005def60751561e03e3103362a54c185a1549c3bc3",
-          "source_file": "how-to/How-to_Custom_view_controller.md"
-        },
-        "How-to_Custom_view_controller::changing-the-current-object-and-property-values": {
-          "file_id": "file-43xki15gXdQyTYPiXiZLKp",
-          "heading_path": "How-to: Custom view controller API > Changing the current object and property values",
-          "section_payload_hash": "sha256:6a570aa7c7f6d02130ed70d7e6f4365a6b0b8b4fbe15ab01308a62cac22cf1a6",
-          "source_file": "how-to/How-to_Custom_view_controller.md"
-        },
-        "How-to_Custom_view_controller::classic-custom-compatibility": {
-          "file_id": "file-AHha15qhST6xznyVn22UPS",
-          "heading_path": "How-to: Custom view controller API > Classic CUSTOM compatibility",
-          "section_payload_hash": "sha256:e49f9b152793872ac19cbf3fdb3d40064b0279eb0e0a22ea26c62d68f2038793",
-          "source_file": "how-to/How-to_Custom_view_controller.md"
-        },
-        "How-to_Custom_view_controller::controller-methods": {
-          "file_id": "file-PRPma8wvGfFqJwX71Jhs4D",
-          "heading_path": "How-to: Custom view controller API > Controller methods",
-          "section_payload_hash": "sha256:921998cc0a293e6760c3e8c8f7347957f9152fe151e88a451986780671772244",
+        "How-to_Custom_view_controller::how-a-view-gets-its-controller": {
+          "file_id": "file-7kWi8Jbm9LUpj4dg43CCTS",
+          "heading_path": "How-to: Custom view controller API > How a view gets its controller",
+          "section_payload_hash": "sha256:cc225de8d2f3536dff90ca234623c0d1d4c1077da27bd21f35b56495e091af0f",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::how-to-custom-view-controller-api": {
-          "file_id": "file-Ek39o8UvffxCu9gQ99gA3U",
+          "file_id": "file-KU9GSdPfE1PCXMVBQd6ELN",
           "heading_path": "How-to: Custom view controller API",
-          "section_payload_hash": "sha256:b8093bdc61c20012933196ce91402ecbecb495f0ce8f8891d6dfe8297d29cd47",
+          "section_payload_hash": "sha256:39f471809b375ec3e36f4210673e5f1b98083fc3f621cc31a5a0aab968557781",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
-        "How-to_Custom_view_controller::looking-up-values": {
-          "file_id": "file-6vhhjVDzNgha6JMw13QrNn",
-          "heading_path": "How-to: Custom view controller API > Looking up values",
-          "section_payload_hash": "sha256:5f236bb4396f2274197c1faed5717a50e80c4a09e61e972331f07bcdf5d4d545",
+        "How-to_Custom_view_controller::row-identity-row-identity-contract": {
+          "file_id": "file-34RWxVVVHiiGXk7ioRon8J",
+          "heading_path": "How-to: Custom view controller API > Row identity {#row-identity-contract}",
+          "section_payload_hash": "sha256:7cb234c8ab6873a9dd72f0db94c7e2cb59fb70f1d32afdd6d7fcf3cbbad01e06",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
-        "How-to_Custom_view_controller::row-identity-rules-row-identity-contract": {
-          "file_id": "file-KGvxVqMAyyhZgAsTFTdkKs",
-          "heading_path": "How-to: Custom view controller API > Row identity rules {#row-identity-contract}",
-          "section_payload_hash": "sha256:e0034424f55b16de2f9efc990938927e53d1aabe653292726407865879f6fef6",
+        "How-to_Custom_view_controller::the-form-controller": {
+          "file_id": "file-Jn7Nkft1WGTCiw6XM6w4LA",
+          "heading_path": "How-to: Custom view controller API > The form controller",
+          "section_payload_hash": "sha256:2d9481c03b4ee526c3167e23093a720fe39b19aceaa78852498a01da220ddd27",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14245,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "04c3b69892237a0b877d8cc8b58972b37054a33c",
+  "last_indexed_docs_commit": "0d260a9c158f9ef9250a5d0c2480ea7f71e210ba",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
