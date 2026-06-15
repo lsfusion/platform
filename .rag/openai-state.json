@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:58eab92e8f5f03c65c3d90b19246df26c18fc9b0c1b4f7182d54b5219f00aa30",
-      "indexed_at": "2026-06-15T19:31:59Z",
+      "file_hash": "sha256:cdc677a81f7abf3ab808dcdfb3d54df8321d5643f6c1193dc198d68c49574bbd",
+      "indexed_at": "2026-06-15T20:08:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -854,9 +854,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller": {
-          "file_id": "file-V9v1pCnhtzdgf6bbToT1Yu",
+          "file_id": "file-CmrKMC9dWVTgPhLBWuBqUy",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:91b4f9799db1668f95955283e2c87fda3c42a9a32af736dbe89baa043edf30d9",
+          "section_payload_hash": "sha256:054574e795505f4046c7144ee4cbbed8a0aa987fd995f68685a809c14de0156c",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14227,7 +14227,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "044ea77388b0db629a42eab67f2d49a0f50ebffd",
+  "last_indexed_docs_commit": "8653bd7008d5ffb9d3c2c00bbe2bf9ad1ebe4518",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
