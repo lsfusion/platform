@@ -35,9 +35,9 @@ DESIGN orders {
 }
 ```
 
-Files in _web/init_ must be **load-order-independent**: the scan gives them all one load order, so each must register or define at load and use any other library lazily (at render or on an event), never reach into another script at load time. A _web/init/lib_ subfolder is excluded from auto-loading (as _src/main/web/lib_ is from the build), for helper or vendored files that are referenced explicitly rather than injected.
+Files in _web/init_ must be **load-order-independent**: the scan gives them all one load order, so each must register or define at load and use any other library lazily (at render or on an event), never reach into another script at load time.
 
-**Registered explicitly — list it in _onWebClientInit_.** Any other file under _src/main/resources/web_ — outside _web/init_, or inside the excluded _web/init/lib_ — is loaded by naming it in the [`onWebClientInit`](../language/INTERNAL_operator.md) action with an integer order. Use this when load order matters — a third-party library that must load before the component using it — or to load a file conditionally:
+**Registered explicitly — list it in _onWebClientInit_.** Any file under _src/main/resources/web_ outside _web/init_ is loaded by naming it in the [`onWebClientInit`](../language/INTERNAL_operator.md) action with an integer order. Use this when load order matters — a third-party library that must load before the component using it — or to load a file conditionally:
 
 ```lsf
 onWebClientInit() + {

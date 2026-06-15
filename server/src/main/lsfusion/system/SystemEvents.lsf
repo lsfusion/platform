@@ -352,15 +352,12 @@ onWebClientInit() + {
 
 // JS/CSS load phase: the custom-JS registry shim must load before any auto-registered file (which registers into it).
 // Then auto-register custom JS/CSS so apps write no onWebClientInit for it, from two sources in one pass:
-//   - web/.compiled/* : bundles produced from src/main/web by the build. The build already keeps src/main/web/lib out
-//                       of .compiled (bundled into entries, never emitted standalone), so this source needs no lib filter.
-//   - web/init/*      : plain, un-built files dropped straight into resources/web/init. Here web/init/lib/ IS excluded
-//                       at scan time (no build filtered it) — vendor/helper files placed there are referenced
-//                       explicitly, not auto-injected.
+//   - web/.compiled/* : bundles produced from src/main/web by the build;
+//   - web/init/*      : plain, un-built files dropped straight into resources/web/init.
 // Files MUST be load-order-independent — register/define at load and use any third-party library lazily (at render /
 // event time) — since the scan gives them all one order; a load-time cross-script dependency keeps using explicit
-// onWebClientInit with author-chosen orders. A module's CSS loads at 99, just before its JS at 100, both after the
-// order-1..36 system/app resources.
+// onWebClientInit with author-chosen orders (put such a file anywhere under resources/web outside web/init). A module's
+// CSS loads at 99, just before its JS at 100, both after the order-1..36 system/app resources.
 onWebClientInit() + {
     onWebClientInit('lsfusion-custom-registry.js') <- -100;
 
@@ -370,8 +367,7 @@ onWebClientInit() + {
     readResourcePaths('/web/init/.*\\.css');
     FOR STRING s = resourcePaths(s) DO {
         // re-filter: readResourcePaths appends to resourcePaths, so earlier scans (e.g. /onStarted/) are still present
-        IF startsWith(resourcePaths(s), '/web/.compiled/')
-                OR (startsWith(resourcePaths(s), '/web/init/') AND NOT startsWith(resourcePaths(s), '/web/init/lib/')) THEN {
+        IF startsWith(resourcePaths(s), '/web/.compiled/') OR startsWith(resourcePaths(s), '/web/init/') THEN {
             IF endsWith(resourcePaths(s), '.css') THEN { onWebClientInit(resourcePaths(s)) <- 99; } // a module's CSS just before its bundle
             IF endsWith(resourcePaths(s), '.js') THEN { onWebClientInit(resourcePaths(s)) <- 100; }
         }
