@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:d7d3eeb015b83e4cad02b94f56203070c39d288335889fdeec20b101d989beb9",
-      "indexed_at": "2026-06-15T09:28:45Z",
+      "file_hash": "sha256:cf1f4a6f79fe77a345974b84c8cd193dda82bdbace4c5feffa7b7522cd2fd7e3",
+      "indexed_at": "2026-06-15T10:01:17Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -848,9 +848,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::classic-custom-compatibility": {
-          "file_id": "file-2GZ6rqbim3wogELJwfGMKN",
+          "file_id": "file-AHha15qhST6xznyVn22UPS",
           "heading_path": "How-to: Custom view controller API > Classic CUSTOM compatibility",
-          "section_payload_hash": "sha256:d194e734f76af77b888ae94774af9622f94121310de0a445dace782665d9ea26",
+          "section_payload_hash": "sha256:e49f9b152793872ac19cbf3fdb3d40064b0279eb0e0a22ea26c62d68f2038793",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::controller-methods": {
@@ -14245,7 +14245,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ea06dbcdd2aef3ad4ea4152c2c51a69c6e13d07b",
+  "last_indexed_docs_commit": "04c3b69892237a0b877d8cc8b58972b37054a33c",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
