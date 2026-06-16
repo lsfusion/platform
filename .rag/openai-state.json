@@ -4463,8 +4463,8 @@
       "stale": false
     },
     "language/EXTEND_FORM_statement.md": {
-      "file_hash": "sha256:02033216553b39a7abbd9bfd52e108273b616e917e7890d3a82df3deb73b2464",
-      "indexed_at": "2026-06-09T12:35:19Z",
+      "file_hash": "sha256:667a4a1775ca47f5fffe78dffb16ec740324c41e2f9e19c4a5d5f1c99fcf8fe4",
+      "indexed_at": "2026-06-16T09:36:22Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4473,10 +4473,40 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "EXTEND_FORM_statement::description::dup-2": {
+          "file_id": "file-KDdJWXM5xtYUrBpoMjJabW",
+          "heading_path": "EXTEND FORM statement > Object tree extension block {#tree} > Description",
+          "section_payload_hash": "sha256:bdeb87e54e2a3fe2e2aca835a3aeabbbce0a3a7b5ffd6058db230abb3017ddc1",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::description::dup-3": {
+          "file_id": "file-JKciEWxgQEQJSdq7r1NYaW",
+          "heading_path": "EXTEND FORM statement > Property and action extension block {#properties} > Description",
+          "section_payload_hash": "sha256:e063c463f75255e60cac73880df454acd16ad7196c605a83d8c4fcbb620ea292",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
         "EXTEND_FORM_statement::examples": {
           "file_id": "file-DnNTfPLPDK6jo1KgMofqS5",
           "heading_path": "EXTEND FORM statement > Examples",
           "section_payload_hash": "sha256:7bac62cc7ffbabd867dda89feaac65144579a95ba2310cad336809e6b66aa5ec",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::examples::dup-1": {
+          "file_id": "file-GbufDWkANuLUoaXSHedWBM",
+          "heading_path": "EXTEND FORM statement > Object extension block {#objects} > Examples",
+          "section_payload_hash": "sha256:d6cd726cebc5340e3e27e87b24384205c5b7f78d4a0c6094860e1728f4920492",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::examples::dup-2": {
+          "file_id": "file-NoK3qoTWYi8dKc9zF1c2gV",
+          "heading_path": "EXTEND FORM statement > Object tree extension block {#tree} > Examples",
+          "section_payload_hash": "sha256:d284ea8c3bb9b1eb200d78f5eb3e971943aa2fdc90e84af860fde69024ad8cc1",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::examples::dup-3": {
+          "file_id": "file-WxwdP3WRSE9SejaPG6cJbA",
+          "heading_path": "EXTEND FORM statement > Property and action extension block {#properties} > Examples",
+          "section_payload_hash": "sha256:27c065158927a2b476eccbd27641e41ea63a0bb1c0ec95ae47703052b6bab781",
           "source_file": "language/EXTEND_FORM_statement.md"
         },
         "EXTEND_FORM_statement::extend-form-statement": {
@@ -4491,14 +4521,50 @@
           "section_payload_hash": "sha256:a24a924616293bf2caf13f757e190a65820f7c4c849efc97e6825c1fad326629",
           "source_file": "language/EXTEND_FORM_statement.md"
         },
+        "EXTEND_FORM_statement::parameters::dup-1": {
+          "file_id": "file-DbvidUBfhf892iqNCB1BVb",
+          "heading_path": "EXTEND FORM statement > Object extension block {#objects} > Parameters",
+          "section_payload_hash": "sha256:934110ae4f1f58f5c0005385db1a17b9b403a0ddca4f02fa309044a1873ddd1f",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::parameters::dup-2": {
+          "file_id": "file-EAVdap4g8pEyAQjsUDXCeQ",
+          "heading_path": "EXTEND FORM statement > Object tree extension block {#tree} > Parameters",
+          "section_payload_hash": "sha256:40407f93b342b110e6c3f882004280ff0545d5a86f158b32087e815e7dcd4863",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::parameters::dup-3": {
+          "file_id": "file-Mjv5AeBJpjT1G6u1TRh6am",
+          "heading_path": "EXTEND FORM statement > Property and action extension block {#properties} > Parameters",
+          "section_payload_hash": "sha256:affd602b74cc75eecfb38a7d3555c1c5e3021ffe807bfdbe4d12c792df95e134",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
         "EXTEND_FORM_statement::syntax+description": {
           "file_id": "file-JwPBQF8SF75EZuNSqTqiLw",
           "heading_path": "EXTEND FORM statement > Syntax + Description",
           "section_payload_hash": "sha256:8a0b10df2e63ca23645a6ecba5cb2cd51aeb0578aed448fd3e61d1b612398f2c",
           "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::syntax::dup-1": {
+          "file_id": "file-7gAiDNHKcr8seSzreHhc7h",
+          "heading_path": "EXTEND FORM statement > Object extension block {#objects} > Syntax",
+          "section_payload_hash": "sha256:89d3bc68767aaa21944d5b192da0b9183825c6249466e5e21791b3b17b872431",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::syntax::dup-2": {
+          "file_id": "file-NZsG9c8i9Mn2GT4Bn1Juq2",
+          "heading_path": "EXTEND FORM statement > Object tree extension block {#tree} > Syntax",
+          "section_payload_hash": "sha256:f90550b48cc50cfa67ca1d17820acd8f7ca1ccf8aa61550baefb876f0c2a2eb6",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
+        "EXTEND_FORM_statement::syntax::dup-3": {
+          "file_id": "file-JnYVzvFvRb4WGBXaQK49qB",
+          "heading_path": "EXTEND FORM statement > Property and action extension block {#properties} > Syntax",
+          "section_payload_hash": "sha256:c7c7b8ee7c3e3b5c37c8f9acb1712f79829a939ee18813209e2450ba3ee3867c",
+          "source_file": "language/EXTEND_FORM_statement.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "language/EXTERNAL_operator.md": {
       "file_hash": "sha256:2f2f67972bb4f945b8087597cc8e86f580ff081d3a77a9d41eca62921bd78054",
@@ -4571,8 +4637,8 @@
       "stale": false
     },
     "language/Event_block.md": {
-      "file_hash": "sha256:273f0b10f7223ccb8650665f2b5f66058670ffb4885a6177a4e6459ded8f04a0",
-      "indexed_at": "2026-06-11T09:45:21Z",
+      "file_hash": "sha256:94c78f59196f0f8ed76ba5ea870d93531312f4cd86b7cac8c758837d6fd87740",
+      "indexed_at": "2026-06-16T09:37:07Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4606,9 +4672,9 @@
           "source_file": "language/Event_block.md"
         },
         "Event_block::syntax": {
-          "file_id": "file-7HrVGckaQ7TMoad3gTNq7b",
+          "file_id": "file-7ac7emfKWbgZgfEm2Rb3Dc",
           "heading_path": "Event block > Syntax",
-          "section_payload_hash": "sha256:f668814d763271c3afd846fe8bbaa96c15245125a855e06904ed1c8e298321a4",
+          "section_payload_hash": "sha256:9f7b6b3568e961550eb706116e49cc84fa8ec6145a2bb0e64402fab69dce7254",
           "source_file": "language/Event_block.md"
         }
       },
@@ -4717,8 +4783,8 @@
       "stale": false
     },
     "language/FORM_statement.md": {
-      "file_hash": "sha256:55343c75cd62a9e420adc6bda5458f306076c49e1ef1b14dc174b3fcf94cdaad",
-      "indexed_at": "2026-05-22T22:13:47Z",
+      "file_hash": "sha256:83e492fed8f4c35ee4076378e0846404bc9570ce4d317808dc4cdcaec2e7b6a1",
+      "indexed_at": "2026-06-16T09:37:18Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4734,15 +4800,15 @@
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::examples": {
-          "file_id": "file-MryipxGHnNfu5bBQTMHgRk",
+          "file_id": "file-8QNFzjiNv6nSuLdJizfnDy",
           "heading_path": "FORM statement > Examples",
-          "section_payload_hash": "sha256:fdfb34a31301cfcbb986685e5f9a125a66fb9f2d6cd9bb561bd1c1783a7f1676",
+          "section_payload_hash": "sha256:e3810f928ab58fb99b76de865257185076db54bae847904204a70ad967a9177a",
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::form-blocks-formblock1-...-formblockn-blocks": {
-          "file_id": "file-WZLgK3MqYT2ms2EqfDDL8d",
+          "file_id": "file-RGThwjQa4ZR5FY2hkbR9Af",
           "heading_path": "FORM statement > Parameters > Form blocks (`formBlock1 ... formBlockN`) {#blocks}",
-          "section_payload_hash": "sha256:c7641d5bddd1fe853d83760b4f5aff3e913c61b065a237e4d6abf9c8becfe0f9",
+          "section_payload_hash": "sha256:b4a83845b9903359d00ae6876fd025bc0fdc892959ebd7f9aa3b023a725064d2",
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::form-options-formoptions": {
@@ -4758,15 +4824,15 @@
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::parameters": {
-          "file_id": "file-QWkGVeHdVxwEf63JHoQPuv",
+          "file_id": "file-VCY2PDyW6suLdAzZaKUfNn",
           "heading_path": "FORM statement > Parameters",
-          "section_payload_hash": "sha256:d5d63bfb509d82126a2a22432ef9a4166e1daec78e6220e13f700be0c10d2c0b",
+          "section_payload_hash": "sha256:f41ddfc1fdc294ebd9c2ff769b1651d9026f137c5abaa2aafab9f6e36256ffd5",
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::syntax": {
-          "file_id": "file-PPQxtPwcurantVtTpdRT1t",
+          "file_id": "file-BLLEk6Koz9Hvx8TWV7o5aP",
           "heading_path": "FORM statement > Syntax",
-          "section_payload_hash": "sha256:db99a5a34c42860314b29385a08a273244a95b4180863542267f553dc2864489",
+          "section_payload_hash": "sha256:36b7abf1661f68bb28d2a1ea505ed39c1b9d0db30fc741f0297f748a7da80f1d",
           "source_file": "language/FORM_statement.md"
         }
       },
@@ -4817,8 +4883,8 @@
       "stale": false
     },
     "language/Filters_and_sortings_block.md": {
-      "file_hash": "sha256:b18db9f58ab2581329ce13ee52429a996f174cba2fe7809768ebbda48d0109d9",
-      "indexed_at": "2026-05-22T22:15:35Z",
+      "file_hash": "sha256:0ad2ceff1f1d7ca79264fd3597e69a24893bee9187eb1843e2aee630c1e4ab77",
+      "indexed_at": "2026-06-16T09:37:31Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4828,27 +4894,15 @@
       },
       "sections": {
         "Filters_and_sortings_block::description::dup-1": {
-          "file_id": "file-8gUJbAUsWRrcbGGJmpXuoL",
-          "heading_path": "Filter and sorting blocks > User filters block {#userfilters} > Description",
-          "section_payload_hash": "sha256:df72850feb1419df38a24225776de6b780ccc82d4ae6ecdc4d9e7811db711ca0",
+          "file_id": "file-U5o8Qu15HB9tyx6H4Li5kJ",
+          "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Description",
+          "section_payload_hash": "sha256:53283c45ad2fc6d6e76c60ddea994d256dbd0cc249ef0a73cc27f3fda0892b4b",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::description::dup-2": {
-          "file_id": "file-D9P8WHQXhHNYQ3H9A4Z92s",
-          "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Description",
-          "section_payload_hash": "sha256:69af8cf7d79e0b278a59514ba3e409e0ac9325bacec6cb972cf2be23fdc5aedc",
-          "source_file": "language/Filters_and_sortings_block.md"
-        },
-        "Filters_and_sortings_block::description::dup-3": {
-          "file_id": "file-UCiEae5EpQQ3Exe7XKvvcP",
+          "file_id": "file-Nz2eaeuZkBa9kYdSbAetZk",
           "heading_path": "Filter and sorting blocks > Order block {#sort} > Description",
-          "section_payload_hash": "sha256:4f1afd58792caee49b4f7d9c03fcd1d27f01352f35d7c965c1b9476c9e17eecf",
-          "source_file": "language/Filters_and_sortings_block.md"
-        },
-        "Filters_and_sortings_block::example": {
-          "file_id": "file-SNoDfAhcqjMeHxSo5fuvcr",
-          "heading_path": "Filter and sorting blocks > User filters block {#userfilters} > Example",
-          "section_payload_hash": "sha256:26412ed064f50944ec0bf4cfae76fac12c05430df760690bc831093232e060a3",
+          "section_payload_hash": "sha256:67738f7649e59a7084d634a7714e211a77f24244b95401ebc422a7b9f8d57dea",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::examples": {
@@ -4876,51 +4930,39 @@
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters": {
-          "file_id": "file-GCfFrH3TsqgJA5tr9CUJhL",
+          "file_id": "file-UEVfXbMaex76CxHwtNx3Po",
           "heading_path": "Filter and sorting blocks > Fixed filters block {#fixedfilters} > Parameters",
-          "section_payload_hash": "sha256:709f28b2df8df944c953d062f8fd65fba70d84cd367b8950179de8ea3f9f20c7",
+          "section_payload_hash": "sha256:3ebb4685f2c1a41dd9aafdb7ec221bff85995742ce2147d27eef5fe095d22a56",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters::dup-1": {
-          "file_id": "file-8DZWTtCaWFz34Zf73tGZXN",
-          "heading_path": "Filter and sorting blocks > User filters block {#userfilters} > Parameters",
-          "section_payload_hash": "sha256:8b7e099af7b218a93eba8568bca130106abb22d3309532f4a81dd3fbb346bdd7",
+          "file_id": "file-BV1qg2z1t9muuYwSVaHY21",
+          "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Parameters",
+          "section_payload_hash": "sha256:ff13c749366086e2100d18d4ca0317953019e2b65e9426afab832383516baef6",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters::dup-2": {
-          "file_id": "file-DYxLZLjZUT3n4FdYB4723s",
-          "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Parameters",
-          "section_payload_hash": "sha256:40067524c27b96ebf2a798ef9f3479b92e8440c8fedcea3ad731ffacae88d9ad",
-          "source_file": "language/Filters_and_sortings_block.md"
-        },
-        "Filters_and_sortings_block::parameters::dup-3": {
-          "file_id": "file-Rv5P4RKFEXm3No14apszaq",
+          "file_id": "file-3YBoiy9cx9t3VJ4aTTcaZ4",
           "heading_path": "Filter and sorting blocks > Order block {#sort} > Parameters",
-          "section_payload_hash": "sha256:41321b4dcd798082ce4e7e210fefd537ac37248d0aee4c7db49429d400a922c8",
+          "section_payload_hash": "sha256:efa4485ca4572937cd9a613b2c5233c4208ac79d4db9dbfe7bfa79f2c3de477d",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::syntax+description": {
-          "file_id": "file-YAaA7GwhQjcGtFKD2Um2sU",
+          "file_id": "file-CgEuJpnys1Nn8PF95G6cNx",
           "heading_path": "Filter and sorting blocks > Fixed filters block {#fixedfilters} > Syntax + Description",
-          "section_payload_hash": "sha256:3a516ddb2cf992fe51e68892150099e6e1898966f43b67912e938ee7fdeec357",
+          "section_payload_hash": "sha256:a52bac59e27bcce2012a5437a72a83d06a59f0c515ac6fcc95efd7d258a9ee17",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::syntax::dup-1": {
-          "file_id": "file-4YEF5Ph5bXzPmuN7yU4TVT",
-          "heading_path": "Filter and sorting blocks > User filters block {#userfilters} > Syntax",
-          "section_payload_hash": "sha256:672572524f23cda9786e207f18d9640bfc7053fdcdca24a76144f63e94cea23e",
+          "file_id": "file-QWdiYnPqCAgRaD3foXiqKP",
+          "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Syntax",
+          "section_payload_hash": "sha256:404a1f0b6cfee1f5d17104d3ec546a4f632af4acf7b02f2bd41b9b7e167044e7",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::syntax::dup-2": {
-          "file_id": "file-UscVYhP8SjhfgWgJCdPuBm",
-          "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Syntax",
-          "section_payload_hash": "sha256:404f8100ecc89438dfb67de851a47da2af461b47b125ad9df9d3d0d50aeeef46",
-          "source_file": "language/Filters_and_sortings_block.md"
-        },
-        "Filters_and_sortings_block::syntax::dup-3": {
-          "file_id": "file-F97uSGmCqLixbfFYhbzvYJ",
+          "file_id": "file-PzXzWdCRTc9qMbZx3G7zHm",
           "heading_path": "Filter and sorting blocks > Order block {#sort} > Syntax",
-          "section_payload_hash": "sha256:36f8c541c9b7fadc9fb2920706551577c9e40e308a348f268c5024c1b3edcab5",
+          "section_payload_hash": "sha256:5b3b0fdf3eca883560a7119d5b6570911dabae533e92f87d2737679ea79de679",
           "source_file": "language/Filters_and_sortings_block.md"
         }
       },
@@ -6261,8 +6303,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:c02d3c575742c9d456262968ea69ccab9a945b398ecab8fdc99529f5812a1c3b",
-      "indexed_at": "2026-05-22T22:38:21Z",
+      "file_hash": "sha256:9fd662e85e513b717bd92b1769c0fa35561cfb5c71a55206872150807c9de12e",
+      "indexed_at": "2026-06-16T09:37:45Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6272,15 +6314,15 @@
       },
       "sections": {
         "Object_blocks::description": {
-          "file_id": "file-R9PeASU2EJ9Woazvq3Hcqy",
+          "file_id": "file-AdtvjYkCStxXvQktopasY4",
           "heading_path": "Object blocks > Object block {#objects} > Description",
-          "section_payload_hash": "sha256:39057bdf5022a767097354bf9e7ca61ef6d06b676fc655b5a1afd5ad5d9abb34",
+          "section_payload_hash": "sha256:6e8e6395db7f857211fa7e2874ce36a43ee66ac69f533507addf8e26c86221b5",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::description::dup-1": {
-          "file_id": "file-MDDHvnnQBEoAycdScmrXpv",
+          "file_id": "file-5nMzahWuCMrTeYyaQ8faap",
           "heading_path": "Object blocks > Object tree block {#tree} > Description",
-          "section_payload_hash": "sha256:fcb01a7c4bea09e0e64754e5608716291f884bbc5c7b818bbe214ed82e27df92",
+          "section_payload_hash": "sha256:1bba37bfb89753b2520531ecd4452564d65d7e25c52a3b33dde5dbf0d707308e",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::examples": {
@@ -6302,15 +6344,15 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options": {
-          "file_id": "file-G3gzbuA9jNm9gbAE7EAbMj",
+          "file_id": "file-8YXMPhwa9KVUmH3M694Djd",
           "heading_path": "Object blocks > Object block {#objects} > Object group options",
-          "section_payload_hash": "sha256:98d09df8045c933c992ce9bbd52c9b66032bb14666e267579b4fe16e220a426c",
+          "section_payload_hash": "sha256:46df92bd58d8a6b75e52023b2a1b9a40fa11b7ccbbd5d1a289fda0eaf78e805b",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-options": {
-          "file_id": "file-PrqFkvR7VgaL1jUZaTAPCc",
+          "file_id": "file-S8r9g1gQjsW64MVvi89LKM",
           "heading_path": "Object blocks > Object block {#objects} > Object options",
-          "section_payload_hash": "sha256:b5f94eaab6e82b221a74ecae73a8a6f3003d3f59c0e2b7ee93719c6fe419ddac",
+          "section_payload_hash": "sha256:290ef56d96ee49a4aea70bb9865f066a850058ee5cbecaef94b9d8d7f3995037",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::parameters": {
@@ -6320,21 +6362,21 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::parameters::dup-1": {
-          "file_id": "file-MkF8JUNZ6JkCk9hh3vGRdi",
+          "file_id": "file-WngGVHumCxgS7mKuWbY3Dy",
           "heading_path": "Object blocks > Object tree block {#tree} > Parameters",
-          "section_payload_hash": "sha256:aa8f7cd4b59dbb899197399cac919a757244d6896ba5f1caed225a9302bdcddd",
+          "section_payload_hash": "sha256:42cc2657f164271feacdd9491cb76447678f2dcab7fe418f56aa1cb96bff24cb",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::syntax": {
-          "file_id": "file-EA3BdPPJeK64j4hURr2bvq",
+          "file_id": "file-4WZSWqtvZuuKVtJgmwvwNY",
           "heading_path": "Object blocks > Object block {#objects} > Syntax",
-          "section_payload_hash": "sha256:6a02fa13e2a11e6d44b9ca50742fe5e5e921da41de2d2de9cb12574f92dd3e69",
+          "section_payload_hash": "sha256:480328b4f53e2f91f2818fb1bd21b0fde5eb38fa1273d3ff317481128bb2ef17",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::syntax::dup-1": {
-          "file_id": "file-WFFRtkujmsqErTtqm2GiwW",
+          "file_id": "file-8HEzbXU4ViZGJcRfFJgDTv",
           "heading_path": "Object blocks > Object tree block {#tree} > Syntax",
-          "section_payload_hash": "sha256:c78179f7ed5f2df0f3aab349f5c8834fcea9d33e2ea2a5ebf1c41741180568b5",
+          "section_payload_hash": "sha256:e47fe9c55861a14aed36f9e9948b71e5d3b10def23fcd3ad961c4476bcd5221d",
           "source_file": "language/Object_blocks.md"
         }
       },
@@ -6563,8 +6605,8 @@
       "stale": false
     },
     "language/Properties_and_actions_block.md": {
-      "file_hash": "sha256:db2917c21748b5717c31662471fa9390ef320c046acf8caa116b8801ccc3d05a",
-      "indexed_at": "2026-06-03T21:21:28Z",
+      "file_hash": "sha256:3db225cab0933609093eff5b38906c0cc49644fce0542bdb5db07ea43e85f981",
+      "indexed_at": "2026-06-16T09:38:59Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6586,15 +6628,21 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-00": {
-          "file_id": "file-EWcJ7rZWsJyiajJiYXzAJF",
+          "file_id": "file-4YCskbEv4X4Juz1nB4qjoc",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:de2e2213a45925110b3c7c8e130300b8e6b1ba235b72413e0985877f0a8a8c17",
+          "section_payload_hash": "sha256:08e1f66fc725aaf587e965bcf381f2aeae5e6ae2f95e83dea3642194f2c04b18",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-01": {
-          "file_id": "file-SGjngMFssYzLDLXqJHBPNA",
+          "file_id": "file-H5inmVC4WJHaQXTKDU24xM",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:726d3cb9e8b78c6703c3a2f953c660f9a7fb1e68f63b08cfbc29c891e7ff73ed",
+          "section_payload_hash": "sha256:84b419a8ff74bd6f83b060b927338502b32cd126f921cbb9a835118caed2d84e",
+          "source_file": "language/Properties_and_actions_block.md"
+        },
+        "Properties_and_actions_block::parameters::part-02": {
+          "file_id": "file-8pGkkCUiFVqyHmXh83tzLF",
+          "heading_path": "Properties and actions block > Parameters",
+          "section_payload_hash": "sha256:6c0321a7c52465ed98f62c84f846fa912dc55f46cd292969b5af3adbc1c84bd2",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::properties-and-actions-block": {
@@ -6604,9 +6652,9 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::syntax": {
-          "file_id": "file-W1SLh8dp14W6CwMKYSofqx",
+          "file_id": "file-RNG2Tea8tfvLhXvRLyhxa5",
           "heading_path": "Properties and actions block > Syntax",
-          "section_payload_hash": "sha256:351f8e2b55a40ae97e08eb5cc97e0fd5d7e06365545151b19f67543d3683521a",
+          "section_payload_hash": "sha256:8f83a86623ef00bd9334a075c74a5c288c778fa858857341134440ef9d43cc83",
           "source_file": "language/Properties_and_actions_block.md"
         }
       },
@@ -6645,8 +6693,8 @@
       "stale": false
     },
     "language/Property_options.md": {
-      "file_hash": "sha256:5a6ce1bfa5c293bb87749676fb6a5fb00721b66d61eef2c4e07be4e186fe1439",
-      "indexed_at": "2026-05-31T10:39:17Z",
+      "file_hash": "sha256:5e21770869b6f3e77bb5d567aaabaa5f7cc26bf24065a4394e4c76922556de69",
+      "indexed_at": "2026-06-16T09:39:16Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6662,9 +6710,9 @@
           "source_file": "language/Property_options.md"
         },
         "Property_options::design-statement-default-values-block": {
-          "file_id": "file-RT9EK5JehM8qBWH1QBQmu3",
+          "file_id": "file-YE1rT5B5WUgicKEQPqbYVP",
           "heading_path": "Property options > Description and parameters > `DESIGN` statement default values block",
-          "section_payload_hash": "sha256:28b7c1cd305574c2786c1bb77dc8fc4634b655e8de2b8dd88741de0b4b8714dc",
+          "section_payload_hash": "sha256:5825053ab347be43c259d806c45c3ee5e08b305ba26f18500455b527dcd1a178",
           "source_file": "language/Property_options.md"
         },
         "Property_options::examples": {
@@ -6674,9 +6722,9 @@
           "source_file": "language/Property_options.md"
         },
         "Property_options::interactive-view-block": {
-          "file_id": "file-Hns4GGmDB8ucSdkLPB9Fnf",
+          "file_id": "file-QRXAZJztAnuuo1GKeG1cvM",
           "heading_path": "Property options > Description and parameters > Interactive view block",
-          "section_payload_hash": "sha256:2d7f6b5f9070067939233ed4e0d1f73d3d59151caaf74bbaeeb9c5b6db07ab42",
+          "section_payload_hash": "sha256:b6abcc00801b38b26353bd42c2cccd112267c7122a81d1b662fc03a922349f16",
           "source_file": "language/Property_options.md"
         },
         "Property_options::property-options": {
@@ -6686,9 +6734,9 @@
           "source_file": "language/Property_options.md"
         },
         "Property_options::syntax": {
-          "file_id": "file-FjHAbfMXUQdm3f7EnBmdQp",
+          "file_id": "file-HVx3kHNGhgFGEsoMf47GXV",
           "heading_path": "Property options > Syntax",
-          "section_payload_hash": "sha256:debfe54e883e4efed3e6cee0af83334df53e1b02ac0cf9598ae78fd023467f0c",
+          "section_payload_hash": "sha256:532289f8675565e5af7e1eb2592a6ca209f2c1a7c8b0546c5d3a3b21e823dcd3",
           "source_file": "language/Property_options.md"
         }
       },
@@ -9726,8 +9774,8 @@
       "stale": false
     },
     "paradigm/Form_operators.md": {
-      "file_hash": "sha256:e3eb7d3a599e35af5ef40ae7e3f5865d37d0a7609bb46e9a81e07ad9a61b77f0",
-      "indexed_at": "2026-06-09T12:24:10Z",
+      "file_hash": "sha256:151f26acae9356befa1329e1da19ab9d1dad9a386625152f8bcbb40f2c5918e9",
+      "indexed_at": "2026-06-16T09:39:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9737,17 +9785,17 @@
       },
       "sections": {
         "Form_operators::form-operators": {
-          "file_id": "file-Phy2ptHEjCLgkVyRSrJVKF",
+          "file_id": "file-X4vPQghRgDQJ6UWSN9Qut8",
           "heading_path": "Form operators",
-          "section_payload_hash": "sha256:d43b019c1d7d50154dc12fba96d49120d6f48e18d1d86c5c6c330b70b0cbc30b",
+          "section_payload_hash": "sha256:237a0e647f4fff0b482b35720c45d4a0adc92664879890bdeea9c60fb39c4124",
           "source_file": "paradigm/Form_operators.md"
         }
       },
       "stale": false
     },
     "paradigm/Form_structure.md": {
-      "file_hash": "sha256:c4c81009d211e3e5db3dab182be5c94d92615ee4c86147d003ef402136485b02",
-      "indexed_at": "2026-05-22T23:49:24Z",
+      "file_hash": "sha256:0655e57f4a98d7ad5ec8db2578be16b2f232d70b6ec64bbf7dc64ed5b982f8af",
+      "indexed_at": "2026-06-16T09:39:40Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9793,9 +9841,9 @@
           "source_file": "paradigm/Form_structure.md"
         },
         "Form_structure::properties-and-actions-properties": {
-          "file_id": "file-PrS1ACq5txRYsqfisBAKxR",
+          "file_id": "file-6d24TpphA6R3BpcVZSReAw",
           "heading_path": "Form structure > Properties and actions {#properties}",
-          "section_payload_hash": "sha256:1f90e92d4f44450657e2901d31e50bd9624bfd6a9d6852155dd2d55b47395383",
+          "section_payload_hash": "sha256:5d4df1dfe32767008978fed7777c2262fc3680bfddd72e5dbb65894ecbfffdfe",
           "source_file": "paradigm/Form_structure.md"
         }
       },
@@ -9834,8 +9882,8 @@
       "stale": false
     },
     "paradigm/Forms.md": {
-      "file_hash": "sha256:b710160fd3ae3bc0b015c1f45dde9eef4f6d376cab2fc65b7d6bc00cfb929b14",
-      "indexed_at": "2026-05-23T08:08:59Z",
+      "file_hash": "sha256:2adea349327f7929f8131d7474259b3e96762fddf8a56e22cc1fac91a663d353",
+      "indexed_at": "2026-06-16T09:39:49Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9845,9 +9893,9 @@
       },
       "sections": {
         "Forms::forms": {
-          "file_id": "file-5gQS1fDmNf1dtFvf2Rxvg8",
+          "file_id": "file-7B5AstZwA7xyxcfwZGaxND",
           "heading_path": "Forms",
-          "section_payload_hash": "sha256:4690402b93ebcfc3b7cff43d45c9a73426a912d46d46e3bc734c6d8427e0ad58",
+          "section_payload_hash": "sha256:8d0a172401cb1adc6c2b86eae117c36ea10d59718ff6be7ef588dcff2f6a3952",
           "source_file": "paradigm/Forms.md"
         },
         "Forms::stack": {
