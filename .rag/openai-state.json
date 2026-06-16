@@ -4464,7 +4464,7 @@
     },
     "language/EXTEND_FORM_statement.md": {
       "file_hash": "sha256:667a4a1775ca47f5fffe78dffb16ec740324c41e2f9e19c4a5d5f1c99fcf8fe4",
-      "indexed_at": "2026-06-16T09:36:22Z",
+      "indexed_at": "2026-06-16T09:49:55Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4473,6 +4473,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "EXTEND_FORM_statement::description::dup-1": {
+          "file_id": "file-CRg1ahXYRLpMXRvCuyVaDh",
+          "heading_path": "EXTEND FORM statement > Object extension block {#objects} > Description",
+          "section_payload_hash": "sha256:8c314f6af6bd2d5738704f3f91b96022301790153fbd6da234458564158aa740",
+          "source_file": "language/EXTEND_FORM_statement.md"
+        },
         "EXTEND_FORM_statement::description::dup-2": {
           "file_id": "file-KDdJWXM5xtYUrBpoMjJabW",
           "heading_path": "EXTEND FORM statement > Object tree extension block {#tree} > Description",
@@ -4540,9 +4546,9 @@
           "source_file": "language/EXTEND_FORM_statement.md"
         },
         "EXTEND_FORM_statement::syntax+description": {
-          "file_id": "file-JwPBQF8SF75EZuNSqTqiLw",
+          "file_id": "file-S961WbrscmHagsMAocniUJ",
           "heading_path": "EXTEND FORM statement > Syntax + Description",
-          "section_payload_hash": "sha256:8a0b10df2e63ca23645a6ecba5cb2cd51aeb0578aed448fd3e61d1b612398f2c",
+          "section_payload_hash": "sha256:5ed8d96535c3fc48aa8cf88a454901a8d54b5bbe41a556a7fbd30e8bd83130b6",
           "source_file": "language/EXTEND_FORM_statement.md"
         },
         "EXTEND_FORM_statement::syntax::dup-1": {
@@ -4564,7 +4570,7 @@
           "source_file": "language/EXTEND_FORM_statement.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/EXTERNAL_operator.md": {
       "file_hash": "sha256:2f2f67972bb4f945b8087597cc8e86f580ff081d3a77a9d41eca62921bd78054",
@@ -14275,7 +14281,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "8653bd7008d5ffb9d3c2c00bbe2bf9ad1ebe4518",
+  "last_indexed_docs_commit": "18da81f7524f37b6515e78898e650c5caa77cc87",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
