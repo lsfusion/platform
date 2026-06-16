@@ -12,7 +12,7 @@ This parameter controls access to the program interface through which the MCP cl
 
 | Value | Behavior |
 |---|---|
-| `0` | API is fully disabled |
+| `0` | API is fully disabled (**default**) |
 | `1` | Only authenticated access is allowed |
 | `2` | Anonymous access is allowed — acceptable only on dev / sandbox installations |
 
