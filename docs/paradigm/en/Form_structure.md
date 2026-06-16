@@ -40,7 +40,7 @@ Each property is displayed exactly in one of the object groups on the form (this
 
 By default, a property is displayed in its display group exactly once. In this case, the values of objects which are not in the display group of this property (these objects shall be called *upper*) are used as their current values. However, it is also possible to display one property multiple times so that all object collections are used as the values of certain upper objects (not their current values). With this display of the property, a kind of "matrix" is formed - upper objects x objects of the display group. Thus, to create such a matrix, when adding a property to the form you must specify which *upper* objects (specifically, object groups) must be used to create columns (these object groups shall be called *groups-in-columns*).
 
-When determining a [display group](#drawgroup), properties of the group-to-columns are ignored.
+When determining the [display group](#drawgroup) of a property, its groups-in-columns are ignored.
 
 #### Property groups {#propertygroup}
 
@@ -48,7 +48,7 @@ Properties on the form can be combined into [groups](Groups_of_properties_and_ac
 
 #### Default settings
 
-Properties on the form have a large number of display settings in various [views](Form_views.md), most of which can be set not only directly for the property on the form, but also for the property itself (when creating it). These settings will be the default settings, i.e., if the setting is not explicitly set for a specific property on the form, then the setting of the property itself is used. In addition, these default settings are "inherited" when using [composition](Composition_JOIN.md), [selection](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) and [previous value](Previous_value_PREV.md) operators (i.e., if property `f(a)` has the default width of `10`, then the property `g(a) = f(a) IF h(a)` will also have a width of `10` by default).
+Properties on the form have a large number of display settings in various [views](Form_views.md), most of which can be set not only directly for the property on the form, but also for the property itself (when creating it). These settings will be the default settings, i.e., if the setting is not explicitly set for a specific property on the form, then the setting of the property itself is used. In addition, these default settings are "inherited" when using [composition](Composition_JOIN.md), [single-form selection](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#single) without an alternative result, and [previous value](Previous_value_PREV.md) operators (i.e., if property `f(a)` has the default width of `10`, then the property `g(a) = f(a) IF h(a)` will also have a width of `10` by default).
 
 ### Filters {#filters}
 
