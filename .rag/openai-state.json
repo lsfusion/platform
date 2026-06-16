@@ -7631,8 +7631,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:c5a146f3e93e35d01ebd5f26b54b0ec2de963bbff20ceeaed973cab63576761b",
-      "indexed_at": "2026-06-05T16:14:17Z",
+      "file_hash": "sha256:7309ff1f605d24aa851b9bccdd493aa79a0ffc44e4a3971eea9238591278b4ee",
+      "indexed_at": "2026-06-16T14:35:46Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7696,15 +7696,15 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-01": {
-          "file_id": "file-Q4TuAHjQJWf1w9iS98S6Ys",
+          "file_id": "file-P1nTEeZnwDudxmTiynAZ7c",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:dbe7d7a3914566efe53a6202b9af60107b3270109464a9a51d39f212ef7b558e",
+          "section_payload_hash": "sha256:747d2925c3c2fee3bae0331df03a724ac737cc4d05f2175f7ca8cf1dcce911e5",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
-          "file_id": "file-84TW1ygBrK2dJDyaT8qppa",
+          "file_id": "file-A9ks69MUsHgNczg79nDtCM",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:bf68150ebcb665cb357f60f21a60f99b8c77a19b44a25c5071b1401db2651e62",
+          "section_payload_hash": "sha256:43be9da2f2d75c21109d6e873db3a95bd0728a0c09463097919a31bb9797194d",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::reading-a-file": {
@@ -10847,8 +10847,8 @@
       "stale": false
     },
     "paradigm/MCP_server.md": {
-      "file_hash": "sha256:b15f1b38a34e931cc3395dc3a0a7fdef505ae72818df7892ceb0b92b8670e34f",
-      "indexed_at": "2026-05-23T15:45:16Z",
+      "file_hash": "sha256:d30b1545d0a032b0ed701dacc94561b1fbb3bca348e9b012d70f3c51a209936f",
+      "indexed_at": "2026-06-16T14:35:55Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10858,9 +10858,9 @@
       },
       "sections": {
         "MCP_server::1.-the-enableapi-parameter-enableapi": {
-          "file_id": "file-U7o1pHE3BRCRy2BzwVAQy3",
+          "file_id": "file-M43m7wvuxe3okr4cZMXZ1z",
           "heading_path": "MCP server setup > 1. The `enableAPI` parameter {#enableapi}",
-          "section_payload_hash": "sha256:5217c9d3c6f2cc3f6070d6176d6629145e988e1c706e1e59699dad9b7c784a90",
+          "section_payload_hash": "sha256:4963df36bc8fa451eb09509cff1f39543223a3cc90dbedd806ba029d6be16083",
           "source_file": "paradigm/MCP_server.md"
         },
         "MCP_server::2.-https-is-mandatory-https": {
@@ -14191,8 +14191,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:144979effb90cb414d7c1c8897a6da598d2dadc5f5558b8b496d67cb7a0a2f84",
-      "indexed_at": "2026-05-25T10:08:22Z",
+      "file_hash": "sha256:d6e0e837cd05a29960fc6095b1f5d7fb89f851e9efe6145181f8c782f66196a5",
+      "indexed_at": "2026-06-16T14:36:06Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14202,9 +14202,9 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-CADw8Xo1bxZDG6gZFEqmpn",
+          "file_id": "file-WqaHHDM2vWpXUy9cZ784Xv",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:e79a28ddd52aed1178cc0db6e50d3607e10bf05941cb4f40c489e76e11b4244c",
+          "section_payload_hash": "sha256:493ad2beb8d3fc1983c9b53be2ea21c0d25c6a1bf00a36d5f6143ec0f1f8265f",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
@@ -14281,7 +14281,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "18da81f7524f37b6515e78898e650c5caa77cc87",
+  "last_indexed_docs_commit": "03cfef78d6c59d977b544a7c39186ab9f76cbdbe",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
