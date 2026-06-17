@@ -244,15 +244,34 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     private void migrateNavigatorElements() {
         Map<String, String> nameChanges = dbManager.getNavigatorElementNameChanges();
 
+        Set<String> existingElements = new HashSet<>();
+        for (NavigatorElement element : businessLogics.getNavigatorElements()) {
+            existingElements.add(element.getCanonicalName());
+        }
+
+        Map<String, String> liveChanges = new LinkedHashMap<>();
+        nameChanges.forEach((oldCN, newCN) -> {
+            if (existingElements.contains(newCN)) {
+                liveChanges.put(oldCN, newCN);
+            } else {
+                startLogWarn("Navigator element " + oldCN + " was not migrated to " + newCN + " (target not defined)");
+            }
+        });
+
+        if (liveChanges.isEmpty()) {
+            return;
+        }
+
         ImportField oldNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField newNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
 
         ImportKey<?> keyNE = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(oldNavigatorElementCNField));
+        keyNE.skipKey = true;
 
         try {
             List<List<Object>> data = new ArrayList<>();
-            for (String oldName : nameChanges.keySet()) {
-                data.add(Arrays.asList(oldName, nameChanges.get(oldName)));
+            for (Map.Entry<String, String> entry : liveChanges.entrySet()) {
+                data.add(Arrays.asList(entry.getKey(), entry.getValue()));
             }
 
             List<ImportProperty<?>> properties = new ArrayList<>();
