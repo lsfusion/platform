@@ -210,7 +210,7 @@ public class ExternalUtils {
             isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");            ;
         }
 
-        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), params.toArray(new ExternalRequest.Param[params.size()]),
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[returns.size()]), params.toArray(new ExternalRequest.Param[params.size()]),
                 headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort,
                 contextPath, servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body,
                 signature, returnMultiType, needNotificationId, isInteractiveClient);
