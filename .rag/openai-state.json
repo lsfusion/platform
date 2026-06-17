@@ -1985,8 +1985,8 @@
       "stale": false
     },
     "how-to/How-to_Navigator.md": {
-      "file_hash": "sha256:40ad1f19629865b9374513bbf4a361f9890c72dd10a949e67fe5b88209f9ad1b",
-      "indexed_at": "2026-05-22T21:52:03Z",
+      "file_hash": "sha256:b661097a1489373f81c1e7c08845dd33eac6d49e74c04785a035eadf1fc650ef",
+      "indexed_at": "2026-06-17T08:03:21Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1996,9 +1996,9 @@
       },
       "sections": {
         "How-to_Navigator::task-001": {
-          "file_id": "file-2F6bYgxZhKsv9u89j2x47q",
+          "file_id": "file-VPa84vG7zQ87AxKe7HkH2h",
           "heading_path": "How-to: Navigator > Example 1",
-          "section_payload_hash": "sha256:5b631d21911bbbefd887be27a5374d50bc762ef8f9ed487a4f01f1a1387757c1",
+          "section_payload_hash": "sha256:157d57831a45cf1cb2e4945898be2d3c29a83fd17b25f05907602ba2e2b655c9",
           "source_file": "how-to/How-to_Navigator.md"
         },
         "How-to_Navigator::task-002": {
@@ -11183,8 +11183,8 @@
       "stale": false
     },
     "paradigm/Navigator.md": {
-      "file_hash": "sha256:44c9e4170e7e6c827eec4113138645d9a35c77c9f3d7d1437d725896266dfa00",
-      "indexed_at": "2026-06-09T12:36:17Z",
+      "file_hash": "sha256:ad17d2ce7e80cff11c3b8c1b9eb1a50957d2fd9922645db32845a5146ede1f5d",
+      "indexed_at": "2026-06-17T08:03:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11206,9 +11206,9 @@
           "source_file": "paradigm/Navigator.md"
         },
         "Navigator::navigator": {
-          "file_id": "file-UT4JbNLC1NGoXrX1nSpQKs",
+          "file_id": "file-RoTeYZs1Uj9CRWzEjozmmC",
           "heading_path": "Navigator",
-          "section_payload_hash": "sha256:bfcbe9c329a7ed57dad4a0e643f86488cff952d8d9da291d030d97bec2f0a151",
+          "section_payload_hash": "sha256:932c39372346964674315e852de5b9692faf5c05396a4f278fe9e3dba3306125",
           "source_file": "paradigm/Navigator.md"
         }
       },
@@ -14249,8 +14249,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:02bce83c28863cdb2f777f55c9ec6d8acbd2428c0cf5840183b1b91b67943c76",
-      "indexed_at": "2026-06-13T14:52:43Z",
+      "file_hash": "sha256:cdff378e75a8b0ff67f028414551f2b6d945b6f331f4f59aff471ce50078d5ad",
+      "indexed_at": "2026-06-17T08:03:41Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14272,22 +14272,22 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-FSqnqanYpKFEGYPGt112pP",
+          "file_id": "file-F9P15jD6fx2fhe8teuBMup",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:e4bb21bdecaf9cb0865edeb36c19891a8c06532f912646b7013b737a4cd5fbf9",
+          "section_payload_hash": "sha256:1c75d056b1cdcdc2e249561249cb8cf0605aa5d85546d3760158eae2936c9466",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-PZr4wo4am34DcAgUcVNerL",
+          "file_id": "file-4N9kDLXkzDfuxNsmvXqgKf",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:d55873a10fb1b4312759fa41f080bfd553088f1c3bcd19e5e7402b4b7927daf3",
+          "section_payload_hash": "sha256:debf0d39406369405363cb333cd4e957df29f0ccd06bd213486f79482d5b4759",
           "source_file": "rules/Rules.md"
         }
       },
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "20644f0ec79bb815e49051b5c882f912b77c9212",
+  "last_indexed_docs_commit": "dea981d7ebd318315e1c86966ef4b9fe2b70740d",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
