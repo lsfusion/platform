@@ -5,7 +5,7 @@ title: 'Navigator'
 
 *Navigator* is a hierarchical structure (tree) consisting of *navigator elements*. There are three types of navigator elements:
 
--   *folder* - combines other navigator elements into a group. Selecting this element [affects](Navigator_design.md#selectedfolder) the display of its children if they belong to another [window](Navigator_design.md).
+-   *folder* - combines other navigator elements into a group. Selecting this element [affects](Navigator_design.md#selectedfolder) the display of its children if they belong to another [window](Navigator_design.md). Children placed in the same window as the folder, on the contrary, are shown together with it regardless of selection: a vertical toolbar renders them as a nested group under the folder, while a horizontal toolbar shows them flattened next to it, where selecting the folder switches nothing. So a folder in a horizontal toolbar acts as a selectable group only when its children are placed in a separate window.
 -   *action* – executes a specified [action](Actions.md). Only actions that take no arguments can be added to the navigator.
 -   *form* – [opens](In_an_interactive_view_SHOW_DIALOG.md) a specified [form](Forms.md) in the interactive view and the [asynchronous](In_an_interactive_view_SHOW_DIALOG.md#flow) mode.
 
