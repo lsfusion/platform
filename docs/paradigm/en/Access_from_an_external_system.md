@@ -72,6 +72,22 @@ The platform also fills the following properties with information about the curr
 
 Properties whose values must be returned as the result are passed in the request string by adding strings like `&return=<property name>` to its end. It is assumed that the values of specified properties are returned in the order of their appearance in the request string. By default, if no result properties are specified, the resulting property is the first one with a non-`NULL` value from the following [list](Built-in_classes.md#export). 
 
+Alternatively, an action that has a [result](Actions.md) returns it directly as the response body — the simplest way to get a single value back, and the usual form for [`EVAL` / `EVAL ACTION`](#actiontype):
+
+-   `EVAL ACTION` — the supplied code is the action body; end it with `RETURN`:
+
+    ```lsf
+    RETURN (GROUP SUM 1 IF Sku s IS Sku);
+    ```
+
+-   `EVAL` — the supplied code defines `run`, whose result is returned:
+
+    ```lsf
+    run() { RETURN 2 * 21; }
+    ```
+
+The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). For tabular or multi-field output use [`EXPORT`](Data_export_EXPORT.md) rather than `RETURN`.
+
 If the result of a request is a file (`FILE`, `PDFFILE`, etc.), the response [content type](https://en.wikipedia.org/wiki/Media_type) , depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 
 The file extension in this case is determined automatically, similarly to the [`WRITE` operator](Write_file_WRITE.md).
@@ -85,6 +101,40 @@ The values of the `System.headersTo[TEXT]` property are automatically written to
 The values of the `System.cookiesTo[TEXT]` property are similarly written to the response as [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) (one `Set-Cookie` header per cookie). The cookie name is read from the only parameter of this property, and the cookie value is read from the property value.
 
 The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is read from the `System.statusHttpTo[]` property (`200` by default).
+
+##### Result computed for a created object
+
+A common case is an action that both creates an object and must return, as the [result](#httpresult), a property computed for *that* object (a maintained total, a FIFO cost, and so on). The created object cannot be referenced directly after [`APPLY`](Apply_changes_APPLY.md):
+
+-   the parameter introduced by `NEW alias` is visible only inside its block, so the alias no longer exists where `APPLY` and the result are read;
+-   a `LOCAL` property is reset by `APPLY`, so capturing the object in a plain `LOCAL` inside the block leaves it empty afterwards.
+
+A class-wide aggregate such as `GROUP SUM calcProp(Cls o)` is not a substitute, since it returns the value over all objects and mixes in unrelated data. Two patterns return the value of the specific object.
+
+**Re-find the object by a unique key** after `APPLY`:
+
+```lsf
+NEW o = Cls {
+    keyProp(o) <- 1234;
+    // ...
+}
+APPLY;
+RETURN (GROUP MAX calcProp(Cls o) IF keyProp(o) = 1234);
+```
+
+**Carry the object across `APPLY` in a nested `LOCAL`** — capture it while the `NEW` alias is in scope, then preserve the `LOCAL` with `APPLY NESTED`:
+
+```lsf
+LOCAL created = Cls ();
+NEW o = Cls {
+    // ...
+    created() <- o;
+}
+APPLY NESTED (created);
+RETURN calcProp(created());
+```
+
+Equivalently, declare the property as `LOCAL NESTED created = Cls ();` and use a plain `APPLY;`.
 
 ##### Several results / parameters in BODY
 
