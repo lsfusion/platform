@@ -12439,8 +12439,8 @@
       "stale": false
     },
     "paradigm/Set_operations.md": {
-      "file_hash": "sha256:8fdc7f840d1c592f049d5006de838489dbf7ccca7b93664f3b3b9ea7ab2c58f2",
-      "indexed_at": "2026-05-22T23:37:33Z",
+      "file_hash": "sha256:021e81cf3caf6605dfebc17a388716addc13432b4cf5fe8dd4805c3bfbf0980a",
+      "indexed_at": "2026-06-18T08:45:14Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12450,9 +12450,9 @@
       },
       "sections": {
         "Set_operations::aggregate-functions-func": {
-          "file_id": "file-DtWQ6nr8zhvTQACdr4QSwY",
+          "file_id": "file-HDxmRCgVAuddT6aNFWeR37",
           "heading_path": "Set operations > Aggregate functions {#func}",
-          "section_payload_hash": "sha256:08287b489b466419fbbca7d841a5c77c2045e42a068b62c81a1ddfe1a028f92f",
+          "section_payload_hash": "sha256:bd4a831adc0cdbb5fd3aee1d3ffcc66f1eba2df55883c55241590c68231f00db",
           "source_file": "paradigm/Set_operations.md"
         },
         "Set_operations::examples": {
@@ -14287,7 +14287,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "7e308389cb0152794d01f481f019ed2d98e076e8",
+  "last_indexed_docs_commit": "26915554cbd0cba8eb9b9825810e3132a1f088ed",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
