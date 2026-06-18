@@ -7637,8 +7637,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:7257d08ae97d8c05d9c0956596e05332e4e63ee9e069ff5482049b9d5dad2e90",
-      "indexed_at": "2026-06-17T12:40:52Z",
+      "file_hash": "sha256:b2273a05fdfbf8464c34ca6f78e682f8643a6effa50408dbf8c24331c8ed7521",
+      "indexed_at": "2026-06-18T10:09:58Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7702,15 +7702,15 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-01": {
-          "file_id": "file-7kRqo37oBxwMBkxjtv3Qed",
+          "file_id": "file-6752DZk3ZxKAvrnbPBN8uz",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:1882b712d2289c181a5fa050426069b735e8aa9d9b32d2714a07509cc0acbd1a",
+          "section_payload_hash": "sha256:44b0886a99e4dd2982b5db080edad4fc4fdfffd4dddcf3e81bb87c6a6ce6a297",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
-          "file_id": "file-9ftdnUKXKbnHNVqPab7FdA",
+          "file_id": "file-7dJB3Hv7VVrAAfP27rpgHX",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:ae4c307ab2a6ff9135b0129351272be9197a63fdc4dbeca658b14bbd2dc51809",
+          "section_payload_hash": "sha256:a674c36eda7f381b6c5356bf795cde9e00808f97069c86112d3fced69eba976d",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::reading-a-file": {
@@ -13231,8 +13231,8 @@
       "stale": false
     },
     "paradigm/System_Service.md": {
-      "file_hash": "sha256:1cbe728d907cfe6397b78480789b02e37f6049dd51a1b7cc87df7cc9181a51bb",
-      "indexed_at": "2026-06-10T12:43:26Z",
+      "file_hash": "sha256:8afbd845bd69ac671b6491fafb552055675fefaf7b49ed616fcec0907cd43062",
+      "indexed_at": "2026-06-18T10:10:11Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13266,9 +13266,9 @@
           "source_file": "paradigm/System_Service.md"
         },
         "System_Service::database-service": {
-          "file_id": "file-YAoeDZ52YqCx66pTRwyYND",
+          "file_id": "file-6qWN3fMpELPATkPsUWPTwi",
           "heading_path": "Service > Database service",
-          "section_payload_hash": "sha256:435e6420dd4c3082b5132cc3f9f3f967d21aa6f58bb982a271d302cb33a212f0",
+          "section_payload_hash": "sha256:2fa1d2c10e8897af43a8c8b7072a4ca974882d64337006d4dd5fe1e7a1ecf4f3",
           "source_file": "paradigm/System_Service.md"
         },
         "System_Service::forms-and-navigator": {
@@ -14287,7 +14287,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "26915554cbd0cba8eb9b9825810e3132a1f088ed",
+  "last_indexed_docs_commit": "5d93b7ab2708df7896a19563bf9c8f12e832ee31",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
