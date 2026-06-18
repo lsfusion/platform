@@ -28,6 +28,8 @@ These single-threaded actions run database maintenance and recalculation directl
 | `vacuumDBAction[]`              | runs the database `VACUUM`                                                    |
 | `packAction[]`                  | physically removes rows marked as deleted                                     |
 
+`analyzeDBAction[]` should be run by hand after the first start or a large schema synchronization: until PostgreSQL has collected its own planner statistics, it builds poor query plans and forms run noticeably slower. These are the DBMS's own statistics, not the platform's internal statistics that feed the query optimizer (`recalculateStatsAction[]` / `updateStats[]`, the `Recalculating stats...` line in the startup log).
+
 #### Multi-threaded variants
 
 The heavier service and recalculation actions also come in a multi-threaded family, surfaced in the `multiThread` block of the `maintenance` form: `serviceDBMultiThreadAction`, `checkClassesMultiThreadAction`, `checkMaterializationsMultiThreadAction`, `recalculateClassesMultiThreadAction`, `recalculateMultiThreadAction`, `recalculateFollowsMultiThreadAction`, `recalculateStatsMultiThreadAction`, and `overCalculateStatsMultiThreadAction`. Each does the same work as its single-threaded counterpart but spreads the per-table work over several worker threads.

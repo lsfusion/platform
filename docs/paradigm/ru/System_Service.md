@@ -28,6 +28,8 @@ title: 'Service'
 | `vacuumDBAction[]`              | выполняет `VACUUM` базы данных                                                |
 | `packAction[]`                  | физически удаляет помеченные на удаление строки                               |
 
+`analyzeDBAction[]` стоит вызвать вручную после первого запуска или крупной синхронизации схемы: пока PostgreSQL не собрал собственную статистику планировщика, он строит неоптимальные планы и формы работают заметно медленнее. Это статистика самой СУБД, а не внутренняя статистика платформы, питающая оптимизатор запросов (`recalculateStatsAction[]` / `updateStats[]`, строка `Recalculating stats...` в логе старта).
+
 #### Многопоточные варианты
 
 Более тяжёлые действия обслуживания и пересчёта есть и в многопоточном семействе, вынесенном в блок `multiThread` формы `maintenance`: `serviceDBMultiThreadAction`, `checkClassesMultiThreadAction`, `checkMaterializationsMultiThreadAction`, `recalculateClassesMultiThreadAction`, `recalculateMultiThreadAction`, `recalculateFollowsMultiThreadAction`, `recalculateStatsMultiThreadAction`, `overCalculateStatsMultiThreadAction`. Каждое делает ту же работу, что и его однопоточная пара, но распределяет работу по таблицам между несколькими рабочими потоками.

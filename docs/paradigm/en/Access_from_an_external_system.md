@@ -88,6 +88,8 @@ Alternatively, an action that has a [result](Actions.md) returns it directly as 
 
 The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). For tabular or multi-field output use [`EXPORT`](Data_export_EXPORT.md) rather than `RETURN`.
 
+The `MESSAGE` operator is not suitable for returning a value: showing a message is an [interactive](#interactive) operation, and its text never appears in the response body. Likewise, on a synchronous call a canceled [apply](Apply_changes_APPLY.md) (for example, on a [constraint](Constraints.md) violation) returns no error and shows no message automatically: the request completes as usual and the changes are not saved. To detect this, the action itself must check the `System.canceled[]` property and, if needed, return the error text from the `System.applyMessage[]` property.
+
 If the result of a request is a file (`FILE`, `PDFFILE`, etc.), the response [content type](https://en.wikipedia.org/wiki/Media_type) , depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 
 The file extension in this case is determined automatically, similarly to the [`WRITE` operator](Write_file_WRITE.md).
@@ -109,7 +111,7 @@ A common case is an action that both creates an object and must return, as the [
 -   the parameter introduced by `NEW alias` is visible only inside its block, so the alias no longer exists where `APPLY` and the result are read;
 -   a `LOCAL` property is reset by `APPLY`, so capturing the object in a plain `LOCAL` inside the block leaves it empty afterwards.
 
-A class-wide aggregate such as `GROUP SUM calcProp(Cls o)` is not a substitute, since it returns the value over all objects and mixes in unrelated data. Two patterns return the value of the specific object.
+A class-wide aggregate such as `GROUP SUM calcProp(Cls o)` is not a substitute, since it returns the value over all objects and mixes in unrelated data. Two patterns return the value of the specific object. In both examples the `IF canceled() THEN RETURN applyMessage();` line right after `APPLY` returns the error text instead of the computed result when the apply was canceled.
 
 **Re-find the object by a unique key** after `APPLY`:
 
@@ -119,6 +121,7 @@ NEW o = Cls {
     // ...
 }
 APPLY;
+IF canceled() THEN RETURN applyMessage();
 RETURN (GROUP MAX calcProp(Cls o) IF keyProp(o) = 1234);
 ```
 
@@ -131,6 +134,7 @@ NEW o = Cls {
     created() <- o;
 }
 APPLY NESTED (created);
+IF canceled() THEN RETURN applyMessage();
 RETURN calcProp(created());
 ```
 
