@@ -114,6 +114,15 @@ public class TwoFactorAuthenticationFilter extends AbstractAuthenticationProcess
         @Override
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                             Authentication authentication) throws IOException, ServletException {
+            // Same as the primary success handler: prefer the OAuth `returnTo` request param
+            // (carried through the /login -> /2fa form) over the session cache, so OAuth login
+            // still completes to the consent screen when the container drops session attributes
+            // across the login session rotation.
+            String returnTo = request.getParameter("returnTo");
+            if (LSFAuthenticationSuccessHandler.isValidOAuthReturnTo(returnTo)) {
+                getRedirectStrategy().sendRedirect(request, response, returnTo);
+                return;
+            }
             String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
             if (savedRequest != null) {
                 getRedirectStrategy().sendRedirect(request, response, savedRequest);
