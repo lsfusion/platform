@@ -81,6 +81,12 @@ function interpreter() {
                 }
             }
 
+            // editor shows aceEditor.defaultValue as a placeholder on focus; treat it as empty
+            function getEditorValue() {
+                let editorValue = aceEditor.getValue();
+                return editorValue === aceEditor.defaultValue ? '' : editorValue;
+            }
+
             aceEditor.onBlur = function (e) {
                 // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
                 let completer = aceEditor.completer;
@@ -92,12 +98,10 @@ function interpreter() {
                 //disable text caret cursor blinking
                 aceEditor.renderer.hideCursor();
 
-                let editorValue = aceEditor.getValue();
+                let editorValue = getEditorValue();
                 //reset default text set by aceEditor.on("focus"...
-                if (editorValue === aceEditor.defaultValue) {
-                    editorValue = '';
+                if (editorValue !== aceEditor.getValue())
                     aceEditor.setValue(editorValue, true);
-                }
                 if (e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget))
                     commit(editorValue);
             }
@@ -109,11 +113,7 @@ function interpreter() {
 
                 commitTimer = setTimeout(function () {
                     commitTimer = null;
-                    let editorValue = aceEditor.getValue();
-                    if (editorValue === aceEditor.defaultValue)
-                        editorValue = '';
-
-                    commit(editorValue);
+                    commit(getEditorValue());
                 }, 500);
             });
 
