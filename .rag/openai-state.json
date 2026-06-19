@@ -743,8 +743,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:1749bd675db3e438dd35fa7730072c854e09729015d2fc9808d2bc40c8117936",
-      "indexed_at": "2026-06-15T12:01:45Z",
+      "file_hash": "sha256:dcc96bbd87f7d601947e81b5eb3af2ef69532c257d65518154593b0de9e343b8",
+      "indexed_at": "2026-06-19T09:55:50Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -754,9 +754,9 @@
       },
       "sections": {
         "How-to_Custom_components_objects::calling-the-server-calling-the-server": {
-          "file_id": "file-Wp5YGUaUX9oSt318gvyKu4",
+          "file_id": "file-XsG1TA1Df4xw1BUrXc9Ajd",
           "heading_path": "How-to: Custom Components (objects) > Calling the server {#calling-the-server}",
-          "section_payload_hash": "sha256:69097fe45dec30dfb2dd071cf96bec3eb093dfaac9c0530146c79ff5b52cd6ab",
+          "section_payload_hash": "sha256:d29b361b42b47a782abf7508e7fca4b8859413e2c3076ef0f51b687d5a95589a",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -4795,8 +4795,8 @@
       "stale": false
     },
     "language/FORM_statement.md": {
-      "file_hash": "sha256:83e492fed8f4c35ee4076378e0846404bc9570ce4d317808dc4cdcaec2e7b6a1",
-      "indexed_at": "2026-06-16T09:37:18Z",
+      "file_hash": "sha256:1da1e62eb5a5af6749742c4dcb23504db223e2ae783e2e36c05e3140673597fa",
+      "indexed_at": "2026-06-19T09:56:03Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4818,9 +4818,9 @@
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::form-blocks-formblock1-...-formblockn-blocks": {
-          "file_id": "file-RGThwjQa4ZR5FY2hkbR9Af",
+          "file_id": "file-HDqKBx9wbXurZNL7ypHVFh",
           "heading_path": "FORM statement > Parameters > Form blocks (`formBlock1 ... formBlockN`) {#blocks}",
-          "section_payload_hash": "sha256:b4a83845b9903359d00ae6876fd025bc0fdc892959ebd7f9aa3b023a725064d2",
+          "section_payload_hash": "sha256:1cd59c82bd02603459c01a64a1d1ef2245404a121cae3b354cdb1cb2b1092ba7",
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::form-options-formoptions": {
@@ -4842,9 +4842,9 @@
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::syntax": {
-          "file_id": "file-BLLEk6Koz9Hvx8TWV7o5aP",
+          "file_id": "file-16iyUPZKe4To15GwmyFJts",
           "heading_path": "FORM statement > Syntax",
-          "section_payload_hash": "sha256:36b7abf1661f68bb28d2a1ea505ed39c1b9d0db30fc741f0297f748a7da80f1d",
+          "section_payload_hash": "sha256:30686fcb535e677af0444e5b27cc7b8ebbc277d99dd803d74226d30e538776ba",
           "source_file": "language/FORM_statement.md"
         }
       },
@@ -14287,7 +14287,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "c636733ce84fc5263c5807cc15c7047922f8909c",
+  "last_indexed_docs_commit": "37408370f8ae1d127172ce43423619f5afd2a2be",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
