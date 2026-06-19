@@ -3949,8 +3949,8 @@
       "stale": false
     },
     "language/DATA_operator.md": {
-      "file_hash": "sha256:d3e885fc30725ca737e4182798e6838e6d6ca80865cb62e11c90693ba4c2f304",
-      "indexed_at": "2026-05-22T22:07:25Z",
+      "file_hash": "sha256:89a0a4ab749968137161906ee442ac9a91e566668b6a78d84a20e2df4913f4e0",
+      "indexed_at": "2026-06-19T14:06:28Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3972,9 +3972,9 @@
           "source_file": "language/DATA_operator.md"
         },
         "DATA_operator::parameters": {
-          "file_id": "file-St1R9kmRK4jkHVeqD6BNFU",
+          "file_id": "file-XJ2YcbHLsGAAR1LF6LZCLj",
           "heading_path": "DATA operator > Parameters",
-          "section_payload_hash": "sha256:cfea55b7e2498bbff4ac265c9c8144e3e0fdf550727218532e0f1178ba80562a",
+          "section_payload_hash": "sha256:4615a346f284c383daf9f49ac1828130540596aeb7cb6d5f5daa92b96da468ce",
           "source_file": "language/DATA_operator.md"
         },
         "DATA_operator::syntax+description": {
@@ -14287,7 +14287,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "37408370f8ae1d127172ce43423619f5afd2a2be",
+  "last_indexed_docs_commit": "af2882fb8545f4b7553857f16c0c0a46f47a6878",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
