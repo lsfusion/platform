@@ -211,13 +211,13 @@ Parameters are passed as plain JS values (a number, string, boolean, `Date`, or 
 
 In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.
 
-By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](../language/Action_options.md) (which also exposes it over HTTP), or the user has admin rights. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `API` clause — the authorization becomes "the user can open this form" plus the explicit listing:
+By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](../language/Action_options.md) (which also exposes it over HTTP), or the user has admin rights. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `CUSTOMS` clause — the authorization becomes "the user can open this form" plus the explicit listing:
 
 ```lsf
 FORM order 'Order'
     OBJECTS o = Order
     PROPERTIES(o) number, note
-    API round, format = formatSum, taxRate
+    CUSTOMS round, format = formatSum, taxRate
 ;
 ```
 

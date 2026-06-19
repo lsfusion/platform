@@ -42,7 +42,7 @@ REPORTS reportPath1, ..., reportPathN
 FORMEXTID extID
 EDIT className OBJECT objectName
 LIST className OBJECT objectName 
-API apiItem1, ..., apiItemN
+CUSTOMS apiItem1, ..., apiItemN
 ```
 
 Где каждый `formItem` имеет следующий синтаксис:
@@ -239,7 +239,7 @@ groupObjectName propertyExpression
     
         Имя объекта формы, текущее значение которого будет использоваться в качестве выбираемого объекта. Задается простым идентификатором.
 
-- `API apiItem1, ..., apiItemN`
+- `CUSTOMS apiItem1, ..., apiItemN`
 
     Задает список свойств и действий, которые разрешено вызывать из клиентского JavaScript-кода формы независимо от общих настроек [доступа к API](../paradigm/Access_from_an_external_system.md) (настройка `enableAPI`, аннотация `@@api`). Каждый элемент доступен под именем `apiName`, а если оно не задано - под собственным именем свойства (действия) без пространства имен. Имена элементов должны быть уникальны в пределах формы.
 

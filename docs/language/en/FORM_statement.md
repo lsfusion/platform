@@ -42,7 +42,7 @@ REPORTS reportPath1, ..., reportPathN
 FORMEXTID extID
 EDIT className OBJECT objectName
 LIST className OBJECT objectName 
-API apiItem1, ..., apiItemN
+CUSTOMS apiItem1, ..., apiItemN
 ```
 
 Where each `formItem` has the following syntax:
@@ -239,7 +239,7 @@ The `FORM` statement declares a new form and adds it to the current [module](../
     
         The name of the form object whose current value will be used as the object being selected. Defined with a simple ID.
 
-- `API apiItem1, ..., apiItemN`
+- `CUSTOMS apiItem1, ..., apiItemN`
 
     Defines the list of properties and actions that are allowed to be called from the client JavaScript code of the form regardless of the general [API access](../paradigm/Access_from_an_external_system.md) settings (the `enableAPI` setting, the `@@api` annotation). Each element is available under the `apiName` name or, if it is not specified, under the property's (action's) own name without the namespace. The element names must be unique within the form.
 
