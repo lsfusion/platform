@@ -13661,8 +13661,8 @@
       "stale": false
     },
     "paradigm/System_Utils.md": {
-      "file_hash": "sha256:5e00cf8b798c000c95de50e039c40403f51ca83ef0f772c3e7cd684ff17c5db9",
-      "indexed_at": "2026-05-31T16:47:14Z",
+      "file_hash": "sha256:4eb9317bae292fbf1cd607758f9a2964027b2873a507e958bd304b05b11baf2f",
+      "indexed_at": "2026-06-19T14:12:03Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13677,10 +13677,10 @@
           "section_payload_hash": "sha256:c1c0fdfb58cf46f5ba420ac2fcfb5678fd1387c79b7fb2735d4f5330f5b64bd1",
           "source_file": "paradigm/System_Utils.md"
         },
-        "System_Utils::color+full-text-search": {
-          "file_id": "file-T7pgYj2nEGJVgo68AQVHak",
-          "heading_path": "Utils > Color + Full-text search",
-          "section_payload_hash": "sha256:03bdf5b48ab5b47f6394a5e99795a02d74ad91cfee2cca2dacabded361ed4b2c",
+        "System_Utils::color": {
+          "file_id": "file-NT1Z4Hzfbyot98D9fG53FZ",
+          "heading_path": "Utils > Color",
+          "section_payload_hash": "sha256:7be63d0c90903ac0e01f0ba3c1a8dc435eced175220087d2cb1b62e6c19aa714",
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::console-and-network": {
@@ -13702,15 +13702,21 @@
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::file-contents-and-encoding": {
-          "file_id": "file-AyR6Pt3aZ85bARFbppY9Jg",
+          "file_id": "file-LJdpuoX5YifTsTMWVSgJbS",
           "heading_path": "Utils > File contents and encoding",
-          "section_payload_hash": "sha256:b5122b445a4dcecff02e2ae17f9ef91630205066d99618379a351bf073355393",
+          "section_payload_hash": "sha256:067222f0e4fbeb999ae8a142a712c1d97348d6613e26ac974e1b1a16909ad3a7",
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::file-system": {
           "file_id": "file-3CVadrKpF7ycUE5oNd5ck4",
           "heading_path": "Utils > File system",
           "section_payload_hash": "sha256:8517726e7bd7a30819744f3fad09ae6f4647f04adac7b23ff2226eb6077df0eb",
+          "source_file": "paradigm/System_Utils.md"
+        },
+        "System_Utils::full-text-search": {
+          "file_id": "file-Kk1e8fb3piJqad8gpuqquy",
+          "heading_path": "Utils > Full-text search",
+          "section_payload_hash": "sha256:b06392a7208da4825d83fb57f8949d511986bae111113a0b4f0bee43104aa323",
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::iteration": {
@@ -13720,9 +13726,9 @@
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::json-access-properties-json-access": {
-          "file_id": "file-CHT1k5iG3EMih5ux6qXsK4",
+          "file_id": "file-7SVC9RdxM4XY229rDScddm",
           "heading_path": "Utils > JSON access properties {#json-access}",
-          "section_payload_hash": "sha256:9d457e9422850c78a19d3c659c6700202d6b87ad0c6a631ddd314023bab0113c",
+          "section_payload_hash": "sha256:106b63cee48619ec1b2cea10a7fecf1e32cc07c120730cc7545e0cc7a151a0c4",
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::language": {
@@ -13744,9 +13750,9 @@
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::numbers": {
-          "file_id": "file-Vc6Pc5LTrrw2fcvcGdTD9C",
+          "file_id": "file-VJN3B46k8PN2tYwZ21wzr1",
           "heading_path": "Utils > Numbers",
-          "section_payload_hash": "sha256:2febf59e672e0b0ea176caef216ab65b57a3e24e8a3de6411237117cffd04cc2",
+          "section_payload_hash": "sha256:d3fb1514b4d98d54b723edffaaf73aa01355385f4ac6b6996957f043b33ae3e5",
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::pdf-and-word": {
@@ -13768,9 +13774,9 @@
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::strings": {
-          "file_id": "file-GMFsTtbBsXFWqnaL6RpZnH",
+          "file_id": "file-5n2zMUvaRcGRry3sbNvSCX",
           "heading_path": "Utils > Strings",
-          "section_payload_hash": "sha256:e938d0dc3e8842a46f31a3a797ecb8091a09bd4574e24261717591100f7d9569",
+          "section_payload_hash": "sha256:5430a39c71f60bedd8cb6c2c9a15003b4067133a77ffa284d1a2e590da14f1b8",
           "source_file": "paradigm/System_Utils.md"
         },
         "System_Utils::utils": {
@@ -14287,7 +14293,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "af2882fb8545f4b7553857f16c0c0a46f47a6878",
+  "last_indexed_docs_commit": "f7940c23af5c5e65f890f5f6d9eba241edccf3aa",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
