@@ -439,8 +439,8 @@
       "stale": false
     },
     "how-to/How-to_CASE_IF_OVERRIDE.md": {
-      "file_hash": "sha256:420344ea77e52f8b860e118f76f6fa505afab29fd3af2f831c6524b0605c3810",
-      "indexed_at": "2026-05-22T21:40:21Z",
+      "file_hash": "sha256:8c9d6daf25df90fbc0c45039e1bd4fc76f81161b7a368763b92e48fd66c01dd0",
+      "indexed_at": "2026-06-19T07:22:50Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -450,15 +450,15 @@
       },
       "sections": {
         "How-to_CASE_IF_OVERRIDE::task-001": {
-          "file_id": "file-SpbSFu1tZcpNXuoLot2QhY",
+          "file_id": "file-Aw8RppTBEQ9EJhCoe1TLRG",
           "heading_path": "How-to: CASE/IF/OVERRIDE > Example 1",
-          "section_payload_hash": "sha256:777dee9c1de65fbcb57704cd5d8f231ba827f36c92dc6f3c793a593b7d619fb9",
+          "section_payload_hash": "sha256:389328f18296caaf8f62e9f4c796829cde89fa1c54bdb4571bdba7544056f621",
           "source_file": "how-to/How-to_CASE_IF_OVERRIDE.md"
         },
         "How-to_CASE_IF_OVERRIDE::task-002": {
-          "file_id": "file-UARyD7m8G9e2bSpU81GnNb",
+          "file_id": "file-E8aXUHmp91HyvvvrE6kr3Q",
           "heading_path": "How-to: CASE/IF/OVERRIDE > Example 2",
-          "section_payload_hash": "sha256:ed56391d06b3dcca827aeb00aefbce06e56102710ea4dd81d34268a9f97bbb83",
+          "section_payload_hash": "sha256:0fc8b72a5417030b5986945c66a6c3f33d45666e7390bd0f094fedceb504078c",
           "source_file": "how-to/How-to_CASE_IF_OVERRIDE.md"
         },
         "How-to_CASE_IF_OVERRIDE::task-003": {
@@ -509,8 +509,8 @@
       "stale": false
     },
     "how-to/How-to_CRUD.md": {
-      "file_hash": "sha256:2490db4cad58d2e44bcf7ca025d79aae9cd5e7bd78dd0f03c4fd13fab17619be",
-      "indexed_at": "2026-05-22T21:41:09Z",
+      "file_hash": "sha256:026f2f76dadaac3073fe8f1fc3d45e90cc5f00a4468809f131520f8995c96a4f",
+      "indexed_at": "2026-06-19T07:23:00Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -520,9 +520,9 @@
       },
       "sections": {
         "How-to_CRUD::task-001": {
-          "file_id": "file-FR7gXXD8SPZAnXjJeZRHBa",
+          "file_id": "file-Fsw8G9oYZTx3sAwf1pUPEz",
           "heading_path": "How-to: CRUD > Example 1",
-          "section_payload_hash": "sha256:59d516a98c934db5653c241d7beb43a6145eead3023d14d27556bfcb61cda779",
+          "section_payload_hash": "sha256:021201a57a708e1a36410262a04e03614272fd9181fcf4bc007c233a0288b30c",
           "source_file": "how-to/How-to_CRUD.md"
         },
         "How-to_CRUD::task-002": {
@@ -1607,8 +1607,8 @@
       "stale": false
     },
     "how-to/How-to_Inheritance_and_aggregation.md": {
-      "file_hash": "sha256:24361e4be51aed99f4c9db0a4daf29afec1a0ec777f5ede3269769d45092d058",
-      "indexed_at": "2026-05-22T21:50:11Z",
+      "file_hash": "sha256:17043bd07135ac35f00464b26b3b2647bc0159cf3302e17f406f429d0900c218",
+      "indexed_at": "2026-06-19T07:23:10Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1618,9 +1618,9 @@
       },
       "sections": {
         "How-to_Inheritance_and_aggregation::how-to-inheritance-and-aggregation": {
-          "file_id": "file-4LtkFDbp3N7SRyd2vRLRPH",
+          "file_id": "file-152H2znQBA9w2ntWgBg3Cx",
           "heading_path": "How-to: Inheritance and aggregation",
-          "section_payload_hash": "sha256:876a76713c0ba56a3b0f717346c378916db744fc6d0b6f96320a3afecbd09ba1",
+          "section_payload_hash": "sha256:41f8cdba85d759edbd079a0b9f5d7f6a985ec37cc8061cacc9abcbfd126897b2",
           "source_file": "how-to/How-to_Inheritance_and_aggregation.md"
         }
       },
@@ -2587,8 +2587,8 @@
       "stale": false
     },
     "how-to/Score_table.md": {
-      "file_hash": "sha256:fcc600f67677cbf0be9291e1fe917e6de0cccbef8bbd558264d9c6f3a983e89e",
-      "indexed_at": "2026-06-04T14:46:12Z",
+      "file_hash": "sha256:4706040968f26430c6df9285993a568b1e22dee3ab342ccc1db823225cc564c1",
+      "indexed_at": "2026-06-19T07:23:31Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2610,9 +2610,9 @@
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::determining-game-result": {
-          "file_id": "file-EhDoVFBxrcZN9QpycFQo8T",
+          "file_id": "file-K6jeZg9PAMifLxzFo5vk7Q",
           "heading_path": "Score table > Defining the domain logic > Determining game result",
-          "section_payload_hash": "sha256:20259c941e9cf01333f6b41bc2592ed45858f2a71c5b0fa6b627aa92c337169b",
+          "section_payload_hash": "sha256:655863bb0221dd01ac7f459330698c93a034ea4bc767f4c59fa953340fe29c5d",
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::determining-the-winner-of-the-game": {
@@ -2646,9 +2646,9 @@
           "source_file": "how-to/Score_table.md"
         },
         "Score_table::the-complete-source-code": {
-          "file_id": "file-9t8Y6kLa5mdLu3CBnXGxey",
+          "file_id": "file-FiVJFxWLrFTpsrfs9xbm37",
           "heading_path": "Score table > The complete source code",
-          "section_payload_hash": "sha256:9cbf0da5b80898a0a216ab968e9a424bbc27a95d5e7cd7f3a7c0e560e3f043c0",
+          "section_payload_hash": "sha256:ef348599b890842fac02221d4af224c59ec895b73103ee2621eb8d9c8a50db53",
           "source_file": "how-to/Score_table.md"
         }
       },
@@ -14287,7 +14287,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5d93b7ab2708df7896a19563bf9c8f12e832ee31",
+  "last_indexed_docs_commit": "c636733ce84fc5263c5807cc15c7047922f8909c",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
