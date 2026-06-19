@@ -4117,8 +4117,8 @@
       "stale": false
     },
     "language/DIALOG_operator.md": {
-      "file_hash": "sha256:7ccf0d80ccc1bab480589d9188bec9e583c2871399ff993ebbd1287c752fb1b1",
-      "indexed_at": "2026-06-09T12:11:31Z",
+      "file_hash": "sha256:47699d0425139ce1ad38ee7e9e867531328afdcd8a37db1648ba1e9e66ccc04f",
+      "indexed_at": "2026-06-19T14:48:22Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4158,15 +4158,15 @@
           "source_file": "language/DIALOG_operator.md"
         },
         "DIALOG_operator::parameters": {
-          "file_id": "file-1CKJp1iUe1EdnUdu8sxW13",
+          "file_id": "file-8J4to5iVNeokCu8dcvdPXN",
           "heading_path": "DIALOG operator > Parameters",
-          "section_payload_hash": "sha256:43144a5f52626da09b3573cf312bf1d233466b0f7f559ab9236dd9c61006306c",
+          "section_payload_hash": "sha256:5ec2778425cf0da4ec1bcdfacd85fea5c62b8f7498d55b5480a419192ee4ba20",
           "source_file": "language/DIALOG_operator.md"
         },
         "DIALOG_operator::syntax": {
-          "file_id": "file-2XctLsY4Ldz7SnYjctjoxD",
+          "file_id": "file-8Cc4UxudayA5TQkXeFTMQ3",
           "heading_path": "DIALOG operator > Syntax",
-          "section_payload_hash": "sha256:bee0ea849dc6104e0ebb847eba2bffe6636ffc067eba6170916bd316d09fd8fb",
+          "section_payload_hash": "sha256:3e5f2e3b3d8eb3da8e593da92eac63d772a93195017cccf16b9c9c68bf21b0ff",
           "source_file": "language/DIALOG_operator.md"
         }
       },
@@ -7047,8 +7047,8 @@
       "stale": false
     },
     "language/SHOW_operator.md": {
-      "file_hash": "sha256:a7b2f13d81476bcacc08b2a385896de650cc6dd7a4c8753beee0e8652d53ed13",
-      "indexed_at": "2026-06-09T12:12:46Z",
+      "file_hash": "sha256:d7812cd26e8413d21b0a05f5bb42c9468b01babe7c69c293afa1bb336dbb9065",
+      "indexed_at": "2026-06-19T14:48:34Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7076,9 +7076,9 @@
           "source_file": "language/SHOW_operator.md"
         },
         "SHOW_operator::parameters": {
-          "file_id": "file-S6xje2JwdGnkdsjtkaF81Q",
+          "file_id": "file-B6W7HGACQxwZ7ZxT4LdHfV",
           "heading_path": "SHOW operator > Parameters",
-          "section_payload_hash": "sha256:9daf598bc5f145de1f9673d2a5629f3d54cf14a18e52e4e5e993884066bb35bf",
+          "section_payload_hash": "sha256:891d280e51579e7a372fa8500365d1fca488e8751a5745e356ead78c5503a12b",
           "source_file": "language/SHOW_operator.md"
         },
         "SHOW_operator::show-operator": {
@@ -7088,9 +7088,9 @@
           "source_file": "language/SHOW_operator.md"
         },
         "SHOW_operator::syntax": {
-          "file_id": "file-XaAPiEq7cqQiyRuT5emyeq",
+          "file_id": "file-1s4yst7DUJ6UGeEQ7PUHRm",
           "heading_path": "SHOW operator > Syntax",
-          "section_payload_hash": "sha256:add25c73e36d150f6b5e10b2a2cd00fda90905336e7a8e6f0dea4ce16a329182",
+          "section_payload_hash": "sha256:2117be8e0b2559ccd1acf663a2cf1226375781353b96d47d80933984f9d83f84",
           "source_file": "language/SHOW_operator.md"
         }
       },
@@ -14293,7 +14293,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "f7940c23af5c5e65f890f5f6d9eba241edccf3aa",
+  "last_indexed_docs_commit": "6d2fbaf56ff8dfa4c4b2a3d3a3eeb79f4b59fd79",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
