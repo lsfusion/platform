@@ -50,7 +50,7 @@ public abstract class AutoFormEntity extends FormEntity {
         for(ObjectEntity object : objects)
             addObject(object, version);
 
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID, null, objects, LM, null);
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID, null, false, objects, LM, null);
         addGroupObject(groupObject, version);
         return groupObject;
     }

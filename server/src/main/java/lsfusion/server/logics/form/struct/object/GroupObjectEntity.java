@@ -444,8 +444,13 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return "groupObj";
     }
 
-    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
+    // true when sID was explicitly specified by the user (custom group name), false when it's auto-derived from the objects' sIDs
+    private final boolean customSID;
+
+    public GroupObjectEntity(IDGenerator ID, String sID, boolean customSID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
         super(ID, sID, debugPoint);
+
+        this.customSID = customSID;
 
         ConcreteCustomClass listViewType = LM.listViewType;
         stateProps = MapFact.toMap(GroupObjectStateProp.values(), type -> new FormEntity.ExProperty(
@@ -538,6 +543,7 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         stateProps = null;
         props = null;
         objects = null;
+        customSID = false;
     }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
@@ -584,7 +590,9 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         if (integrationSID != null)
             return integrationSID;
 
-        if(sID != null)
+        // only an explicitly specified group name shadows the objects' integration sIDs;
+        // an auto-derived name must fall through so the objects' EXTID is respected
+        if(customSID && sID != null)
             return sID;
 
         integrationSID = "";
@@ -615,6 +623,8 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     // copy-constructor
     protected GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
         super(src, mapping);
+
+        customSID = src.customSID;
 
         objects = mapping.get(src.objects);
 

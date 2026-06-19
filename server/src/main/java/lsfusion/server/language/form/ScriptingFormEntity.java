@@ -109,6 +109,7 @@ public class ScriptingFormEntity {
     }
 
     public GroupObjectEntity addScriptingGroupObject(String groupName, List<ObjectEntity> lobjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        boolean customSID = groupName != null;
         if (groupName == null) {
             groupName = "";
             for (ObjectEntity obj : lobjects) {
@@ -117,7 +118,7 @@ public class ScriptingFormEntity {
         }
 
         ImOrderSet<ObjectEntity> objects = SetFact.fromJavaOrderSet(lobjects);
-        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID, groupName, objects, LM.baseLM, debugPoint);
+        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID, groupName, customSID, objects, LM.baseLM, debugPoint);
         form.addGroupObject(groupObj, version);
         checkAlreadyDefined(groupObj, version);
         return groupObj;
