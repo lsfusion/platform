@@ -20,10 +20,10 @@ DIALOG target
 formName [OBJECTS objName1 objSpec1, ..., objNameN objSpecN]
 ```
 
-а *классовая форма* открывает [форму выбора или редактирования](../paradigm/Interactive_view.md#edtClass) класса (указывается ровно одно из `LIST` или `EDIT`) с одним неявным объектом, к которому `objSpec` прикрепляется напрямую:
+а *классовая форма* открывает [форму выбора или редактирования](../paradigm/Interactive_view.md#edtClass) класса с одним неявным объектом, к которому `objSpec` прикрепляется напрямую:
 
 ```
-[LIST] [EDIT] className objSpec
+classFormType className objSpec
 ```
 
 Каждый `objSpec`:
@@ -80,9 +80,12 @@ IN containerName
 
     Имя формы. [Составной идентификатор](IDs.md#cid).
 
-- `LIST`, `EDIT`
+- `classFormType`
 
-    Ключевые слова. Определяют, какая именно классовая форма открывается: `LIST` — форма выбора, `EDIT` — форма редактирования. Должно быть указано ровно одно из `LIST` или `EDIT`.
+    Тип открывающейся классовой формы. Задаётся одним из ключевых слов:
+
+    - `LIST` — форма выбора (списка)
+    - `EDIT` — форма редактирования
 
 - `className`
 

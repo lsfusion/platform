@@ -19,10 +19,10 @@ Where `target` is one of two forms — the *named-form* opens a previously decla
 formName [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
 ```
 
-and the *class-form* opens the [list or edit form](../paradigm/Interactive_view.md#edtClass) of a class (specify exactly one of `LIST` or `EDIT`):
+and the *class-form* opens the [list or edit form](../paradigm/Interactive_view.md#edtClass) of a class:
 
 ```
-[LIST] [EDIT] className = expr [NULL]
+classFormType className = expr [NULL]
 ```
 
 And `formActionOptions` is any combination of the following options, in any order:
@@ -62,9 +62,12 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
     Form name. [Composite ID](IDs.md#cid).
 
-- `LIST`, `EDIT`
+- `classFormType`
 
-    Keywords. Determine which class-level form to open: `LIST` for the selection form, `EDIT` for the editing form. Exactly one of `LIST` or `EDIT` must be specified.
+    Type of the class form to open. It is specified by one of the keywords:
+
+    - `LIST` — the selection (list) form
+    - `EDIT` — the editing form
 
 - `className`
 
