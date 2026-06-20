@@ -1284,7 +1284,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     private static boolean isSimpleGroup(GroupObjectInstance groupObject) {
-        return groupObject.objects.size() == 1 && groupObject.getIntegrationSID().equals(groupObject.objects.single().getSID());        
+        return groupObject.objects.size() == 1 && groupObject.getIntegrationSID().equals(groupObject.objects.single().getIntegrationSID());
     }
 
     // we need nulls in external interface to override not null values (while updating)
@@ -1301,7 +1301,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
         JSONObject result = new JSONObject();
         for (ObjectInstance object : group.objects)
-            result.put(object.getSID(), formatJSON(object, gridObjectRow.get(object)));
+            result.put(object.getIntegrationSID(), formatJSON(object, gridObjectRow.get(object)));
         return result;
     }
 
@@ -1315,7 +1315,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ImValueMap<ObjectInstance, Object> mvResult = group.objects.mapItValues();// exception
         for(int i=0,size=group.objects.size();i<size;i++) {
             ObjectInstance object = group.objects.get(i);
-            mvResult.mapValue(i, parseJSON(object, jsonObject.get(object.getSID())));
+            mvResult.mapValue(i, parseJSON(object, jsonObject.get(object.getIntegrationSID())));
         }
         return mvResult.immutableValue();
     }

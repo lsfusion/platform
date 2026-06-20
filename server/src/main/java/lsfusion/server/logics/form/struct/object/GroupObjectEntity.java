@@ -444,13 +444,19 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return "groupObj";
     }
 
-    // true when sID was explicitly specified by the user (custom group name), false when it's auto-derived from the objects' sIDs
-    private final boolean customSID;
+    @Override
+    public String getSID() {
+        if (sID != null || objects == null) // explicitly named group (or the NULL singleton, whose toString uses getSID)
+            return super.getSID();
+        // an unnamed group's default sID is synthesized from its object names
+        String result = "";
+        for (ObjectEntity object : objects)
+            result = (result.isEmpty() ? "" : result + ".") + object.getSID();
+        return result;
+    }
 
-    public GroupObjectEntity(IDGenerator ID, String sID, boolean customSID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
+    public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
         super(ID, sID, debugPoint);
-
-        this.customSID = customSID;
 
         ConcreteCustomClass listViewType = LM.listViewType;
         stateProps = MapFact.toMap(GroupObjectStateProp.values(), type -> new FormEntity.ExProperty(
@@ -543,7 +549,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         stateProps = null;
         props = null;
         objects = null;
-        customSID = false;
     }
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
 
@@ -590,17 +595,16 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         if (integrationSID != null)
             return integrationSID;
 
-        // only an explicitly specified group name shadows the objects' integration sIDs;
-        // an auto-derived name must fall through so the objects' EXTID is respected
-        if(customSID && sID != null)
+        if (sID != null) // explicitly named group
             return sID;
 
-        integrationSID = "";
+        // unnamed group: the integration key (XML tag / JSON name) is built from the objects' own EXTIDs
+        String objectsSID = "";
         for (ObjectEntity obj : getOrderObjects()) {
-            integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+            objectsSID = (objectsSID.isEmpty() ? "" : objectsSID + ".") + obj.getIntegrationSID();
         }
 
-        return integrationSID;
+        return objectsSID;
     }
     public String getIntegrationSID() {
         return integrationSID.get();
@@ -623,8 +627,6 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     // copy-constructor
     protected GroupObjectEntity(GroupObjectEntity src, ObjectMapping mapping) {
         super(src, mapping);
-
-        customSID = src.customSID;
 
         objects = mapping.get(src.objects);
 

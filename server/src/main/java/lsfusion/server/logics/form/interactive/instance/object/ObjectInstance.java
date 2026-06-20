@@ -141,4 +141,8 @@ public abstract class ObjectInstance implements PropertyObjectInterfaceInstance 
     public String getSID() {
         return entity.getSID();
     }
+
+    public String getIntegrationSID() {
+        return entity.getIntegrationSID();
+    }
 }
