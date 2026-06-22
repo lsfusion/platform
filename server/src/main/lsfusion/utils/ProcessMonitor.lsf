@@ -28,7 +28,7 @@ cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.s
 cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelSQLProcessAction' (STRING[10]);
 
 processType '{process.monitor.process.type}'= DATA LOCAL ProcessType();
-nameProcessType '{process.monitor.process.type}' () = caption(processType()) CHARWIDTH 15;
+nameProcessType '{process.monitor.process.type}' () = name(processType()) CHARWIDTH 15;
 captionProcessType '{process.monitor.process.type}' () = caption(processType());
 WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
