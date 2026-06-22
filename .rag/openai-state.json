@@ -2011,8 +2011,8 @@
       "stale": false
     },
     "how-to/How-to_Numbering.md": {
-      "file_hash": "sha256:3db65b3b27d75bbf48743cd4b792cc9a9018c7b352992963b6bc7b9f270c5e41",
-      "indexed_at": "2026-05-22T21:52:12Z",
+      "file_hash": "sha256:9769d04390fb3a5e182c28b12fe1d946581394b86566abd1a06bb12cf2722966",
+      "indexed_at": "2026-06-22T09:26:20Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2021,14 +2021,26 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "How-to_Numbering::how-to-numbering": {
-          "file_id": "file-FgZx9ufMJJfEMNd4jGZh7e",
-          "heading_path": "How-to: Numbering",
-          "section_payload_hash": "sha256:1ea49fbd04510d76d22ad6cd42773d04a5389e06ec18e325ac1dcba366f72db1",
+        "How-to_Numbering::generated-code-as-the-identifier": {
+          "file_id": "file-SmRX4ntPSuUbRGrG1dqRjp",
+          "heading_path": "How-to: Numbering > Generated code as the identifier",
+          "section_payload_hash": "sha256:b296b8a045a44c5d1677fe89b1e3af56d9875441459c8bdcd32dffed77a57efa",
+          "source_file": "how-to/How-to_Numbering.md"
+        },
+        "How-to_Numbering::numbering-by-hand": {
+          "file_id": "file-N8WsSjfJ1tVENW93w1G8mV",
+          "heading_path": "How-to: Numbering > Numbering by hand",
+          "section_payload_hash": "sha256:7b25c8840587f730db982af3943cdac87c4bc7862adb2151a38f05bae8eb63ae",
+          "source_file": "how-to/How-to_Numbering.md"
+        },
+        "How-to_Numbering::separate-sequence-per-document-type": {
+          "file_id": "file-Bx8VfsFfm142iHxEwxCYtq",
+          "heading_path": "How-to: Numbering > Separate sequence per document type",
+          "section_payload_hash": "sha256:8e6698555180a4400cbf40b2d5b3017b400c006e3a5fcda42d9ae8eebbfc6b0e",
           "source_file": "how-to/How-to_Numbering.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "how-to/How-to_Overriding_values.md": {
       "file_hash": "sha256:bf080ff34c2645655e58a757f6d4a72168e426409ad8375d588ad425a407abb7",
@@ -2307,8 +2319,8 @@
       "stale": false
     },
     "how-to/How-to_Use_Cases.md": {
-      "file_hash": "sha256:b446e2cb4decd91c1952562e69dd05f53a1e44c9e438e0064d81fce575746937",
-      "indexed_at": "2026-05-22T21:54:06Z",
+      "file_hash": "sha256:00a6c774a7eb3038564a89b93c37757c7441adba6b783ab6f65f0c1fa4c969e5",
+      "indexed_at": "2026-06-22T09:27:05Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2318,9 +2330,9 @@
       },
       "sections": {
         "How-to_Use_Cases::how-to-read-these-sections": {
-          "file_id": "file-L16xdVtpctDarTd6Qe66ED",
+          "file_id": "file-2ZhrSCb6dX5tHmbXbh7vZM",
           "heading_path": "How-to: Use Cases > How to read these sections",
-          "section_payload_hash": "sha256:e646e366f3b6026dcdce159a560c7aad6cc03952c8f1344891f1f6afe083fa78",
+          "section_payload_hash": "sha256:fb71e3389aba789c235773ca78372a2cdc747e439395f88ffecced5d53d9d48b",
           "source_file": "how-to/How-to_Use_Cases.md"
         }
       },
@@ -13789,8 +13801,8 @@
       "stale": false
     },
     "paradigm/System_modules.md": {
-      "file_hash": "sha256:7ac2124044c0157efff867df3f3369ea670a18f6a2a59881c30dfb19a2a4cbea",
-      "indexed_at": "2026-06-10T12:45:10Z",
+      "file_hash": "sha256:5c082544756fa84ce8134bfb27786ac66d90b6843f6cb288acf262cd78ac9cfc",
+      "indexed_at": "2026-06-22T09:27:15Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13800,9 +13812,9 @@
       },
       "sections": {
         "System_modules::inventory": {
-          "file_id": "file-Dz5rDjC6vH6u5T2DyqPJLF",
+          "file_id": "file-7JrGkCYRi7FFvCJKvJCYB1",
           "heading_path": "System modules > Inventory",
-          "section_payload_hash": "sha256:ce6cb3faef990e44842e2e63d35692e3e3e522591e12f87e2147959c5ff92152",
+          "section_payload_hash": "sha256:a9357b2559cf82595b7b7a882601689b9fb44f31fadcf51d6d89d751c5ec2de1",
           "source_file": "paradigm/System_modules.md"
         },
         "System_modules::language": {
@@ -14050,6 +14062,50 @@
           "heading_path": "User interface",
           "section_payload_hash": "sha256:fdda6510479a46df9a204179cba6493319e03e688596e37541b71e1c11901e57",
           "source_file": "paradigm/User_interface.md"
+        }
+      },
+      "stale": false
+    },
+    "paradigm/Utils_Numerator.md": {
+      "file_hash": "sha256:392d1de6d369c80cd41d9cd797e6a0b784953a77d9ccdc17fc1cc8867f19c48b",
+      "indexed_at": "2026-06-22T09:27:27Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "Utils_Numerator::default-numerators": {
+          "file_id": "file-TrmPrGJeQ7QqwfHC6H6cNR",
+          "heading_path": "Numerator > Default numerators",
+          "section_payload_hash": "sha256:ce02e6e68407683e41d51e2e349ddc626769cbb8f8ac8a0b23f068be0f3c8bd4",
+          "source_file": "paradigm/Utils_Numerator.md"
+        },
+        "Utils_Numerator::numbering-a-class": {
+          "file_id": "file-95zf5EshJKPe39GxsXD3fs",
+          "heading_path": "Numerator > Numbering a class",
+          "section_payload_hash": "sha256:31e4c9ac2da2f43a91767e7634ba7ebfd9f7790971f9e29fe9a24ca02dd8e5ec",
+          "source_file": "paradigm/Utils_Numerator.md"
+        },
+        "Utils_Numerator::numerator": {
+          "file_id": "file-A3uuLwxTczi5gVRnNsCpnf",
+          "heading_path": "Numerator",
+          "section_payload_hash": "sha256:f855b0de614494f1d0b5119029eef422da30fc4cf01cc49a4e6ad61c0649e838",
+          "source_file": "paradigm/Utils_Numerator.md"
+        },
+        "Utils_Numerator::numerator-object": {
+          "file_id": "file-HQQZqxcoFH2y8YcV9QxKKH",
+          "heading_path": "Numerator > Numerator object",
+          "section_payload_hash": "sha256:6334cb1f57f746c74dbe719b88c92bb7ea6112c5b3fb9ad6579c8658ff5ba18b",
+          "source_file": "paradigm/Utils_Numerator.md"
+        },
+        "Utils_Numerator::producing-the-next-value": {
+          "file_id": "file-4KRSSfhd2F5yMcwVkzVBmk",
+          "heading_path": "Numerator > Producing the next value",
+          "section_payload_hash": "sha256:4e9182e3402cddf1da2f20798dc79492a80ad6031f8d0ee79bd75b7bc31e700f",
+          "source_file": "paradigm/Utils_Numerator.md"
         }
       },
       "stale": false
