@@ -3243,8 +3243,8 @@
       "stale": false
     },
     "language/Action_options.md": {
-      "file_hash": "sha256:3daaef799f8a98caeb50c8e7e5a76681aefd2989fe62ecc42e1cc2cf9e110f94",
-      "indexed_at": "2026-05-27T10:09:06Z",
+      "file_hash": "sha256:51b058a1edc86fb7a541de8eba820df2f87d5f092db2baad20e297b931ab7e82",
+      "indexed_at": "2026-06-22T13:19:37Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3266,9 +3266,9 @@
           "source_file": "language/Action_options.md"
         },
         "Action_options::design-statement-default-values-block": {
-          "file_id": "file-NJfh5tzDS6t2DPUmPr3brS",
+          "file_id": "file-EG9h8Ct4rGeLBAe6vJBg9g",
           "heading_path": "Action options > Description and parameters > `DESIGN` statement default values block",
-          "section_payload_hash": "sha256:bbbc561c7d1af10a0bc551581c6fdd05f439f0d5dc5b76ae09fd5f04d3767c96",
+          "section_payload_hash": "sha256:4f4ecaf2764759aafcaf85b990f45fdca19ef8491249003d473ba34526271569",
           "source_file": "language/Action_options.md"
         },
         "Action_options::interactive-view-block": {
@@ -14361,7 +14361,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "a8fd916a9abd57e6b391ea80a495960ee57be890",
+  "last_indexed_docs_commit": "3e6b6380ff516d7a911164b1252dced8dee20f86",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
