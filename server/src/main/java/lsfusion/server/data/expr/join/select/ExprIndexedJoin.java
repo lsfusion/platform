@@ -29,7 +29,7 @@ import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.physics.admin.Settings;
 
-public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
+public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> implements IntervalCompareJoin {
 
     public final Compare compare;
     private final InnerJoins valueJoins;
@@ -144,6 +144,19 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return !not;
     }
 
+    public BaseExpr getIntervalBaseExpr() {
+        return baseExpr;
+    }
+    public Compare getIntervalCompare() {
+        return compare;
+    }
+    public InnerJoins getIntervalValueJoins() {
+        return valueJoins;
+    }
+    public boolean isFoldableInterval() {
+        return isNotNull();
+    }
+
     private static IntervalType getIntervalType(Compare compare) {
         assert !compare.equals(Compare.EQUALS);
         if(compare == Compare.GREATER || compare == Compare.GREATER_EQUALS)
@@ -168,18 +181,18 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return mInnerKeys.immutable();
     }
 
-    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, MList<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
-        ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(key -> key.baseExpr);
+    public static void fillIntervals(ImSet<IntervalCompareJoin> exprs, MList<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
+        ImMap<BaseExpr, ImSet<IntervalCompareJoin>> intervalJoins = exprs.group(IntervalCompareJoin::getIntervalBaseExpr);
 
         MMap<WhereJoin, UpWhere> mUpIntervalWheres = null;
         if(upAdjWheres != null)
-            mUpIntervalWheres = MapFact.mMapMax(exprIndexedJoins.size(), AbstractUpWhere.and());
+            mUpIntervalWheres = MapFact.mMapMax(intervalJoins.size(), AbstractUpWhere.and());
 
         int intStat = Settings.get().getAverageIntervalStat();
         ImSet<KeyExpr> innerKeys = null;
-        for(int i=0,size=exprIndexedJoins.size();i<size;i++) {
-            ImSet<ExprIndexedJoin> joins = exprIndexedJoins.getValue(i);
-            BaseExpr expr = exprIndexedJoins.getKey(i);
+        for(int i=0,size=intervalJoins.size();i<size;i++) {
+            ImSet<IntervalCompareJoin> joins = intervalJoins.getValue(i);
+            BaseExpr expr = intervalJoins.getKey(i);
 
             boolean fixedInterval = true;
             if(intStat <= 0)
@@ -187,8 +200,8 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
             if(fixedInterval) {
                 ExprIndexedJoin.IntervalType result = null;
-                for (ExprIndexedJoin join : joins) {
-                    IntervalType joinType = getIntervalType(join.compare);
+                for (IntervalCompareJoin join : joins) {
+                    IntervalType joinType = getIntervalType(join.getIntervalCompare());
                     if (result == null)
                         result = joinType;
                     else
@@ -207,8 +220,8 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
             }
 
             InnerJoins valueJoins = InnerJoins.EMPTY;
-            for(ExprIndexedJoin join : joins)
-                valueJoins = valueJoins.and(join.valueJoins);
+            for(IntervalCompareJoin join : joins)
+                valueJoins = valueJoins.and(join.getIntervalValueJoins());
             WhereJoin adjJoin;
             if(fixedInterval) // assert что все остальные тоже givesNoKeys
                 adjJoin = new ExprIntervalJoin(expr, new Stat(intStat, true), valueJoins);
@@ -217,8 +230,8 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
             mResult.add(adjJoin);
 
             if(upAdjWheres != null)
-                for(ExprIndexedJoin join : joins)
-                    mUpIntervalWheres.add(adjJoin, upAdjWheres.result.get(join));
+                for(IntervalCompareJoin join : joins)
+                    mUpIntervalWheres.add(adjJoin, upAdjWheres.result.get((WhereJoin) join));
         }
 
         if(upAdjWheres != null)

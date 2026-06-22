@@ -1638,26 +1638,26 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private ImList<WhereJoin> getAdjIntervalWheres(Result<UpWheres<WhereJoin>> upAdjWheres, QueryJoin excludeQueryJoin) {
         // в принципе в cost based это может быть не нужно, просто нужно сделать result cost и stat объединения двух ExprIndexedJoin = AverageIntervalStat и тогда жадняк сам разберется
-        boolean hasExprIndexed = false; // оптимизация
+        boolean hasFoldable = false; // оптимизация
         WhereJoin[] wheres = getAdjWheres();
         for(WhereJoin valueJoin : wheres)
-            if(valueJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin) valueJoin).isNotNull()) {
-                hasExprIndexed = true;
+            if(valueJoin instanceof IntervalCompareJoin && ((IntervalCompareJoin) valueJoin).isFoldableInterval()) {
+                hasFoldable = true;
                 break;
             }
-        if(!hasExprIndexed)
+        if(!hasFoldable)
             return ListFact.toList(wheres);
 
         MList<WhereJoin> mResult = ListFact.mList();
 
-        MExclSet<ExprIndexedJoin> mExprIndexedJoins = SetFact.mExclSet();
+        MExclSet<IntervalCompareJoin> mFoldableJoins = SetFact.mExclSet();
         for(WhereJoin valueJoin : wheres)
-            if(valueJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin) valueJoin).isNotNull())  // нельзя в ExprStatJoin при not преобразовывать, так как ExprStat => notNull, а ExprIndexedJoin, not не => notNull
-                mExprIndexedJoins.exclAdd((ExprIndexedJoin) valueJoin);
+            if(valueJoin instanceof IntervalCompareJoin && ((IntervalCompareJoin) valueJoin).isFoldableInterval())  // ExprIndexedJoin при not оставляем как есть, так как ExprStat => notNull, а ExprIndexedJoin, not не => notNull
+                mFoldableJoins.exclAdd((IntervalCompareJoin) valueJoin);
             else
                 mResult.add(valueJoin);
 
-        ExprIndexedJoin.fillIntervals(mExprIndexedJoins.immutable(), mResult, upAdjWheres, wheres, excludeQueryJoin);
+        ExprIndexedJoin.fillIntervals(mFoldableJoins.immutable(), mResult, upAdjWheres, wheres, excludeQueryJoin);
         return mResult.immutableList();
     }
 
