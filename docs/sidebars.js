@@ -359,6 +359,7 @@ module.exports = {
                         'paradigm/System_Email',
                         'paradigm/System_Icon',
                         'paradigm/System_Utils',
+                        'paradigm/Utils_Numerator',
                       ]
                     },
                     'paradigm/Projects',
@@ -800,8 +801,8 @@ module.exports = {
               items: [
                 'how-to/How-to_Working_with_documents', 
                 'how-to/How-to_Registers', 
-                'how-to/How-to_Numbering', 
-                'how-to/How-to_Using_objects_as_templates', 
+                'how-to/How-to_Numbering',
+                'how-to/How-to_Using_objects_as_templates',
                 'how-to/How-to_Overriding_values', 
                 'how-to/How-to_Binding_properties', 
               ]

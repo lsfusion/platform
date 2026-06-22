@@ -39,7 +39,7 @@ System modules live under `server/src/main/lsfusion/` in the platform repository
 | `I18n`            | Machine translation of strings                                             |
 | `Integration`     | Generic integration actions                                                |
 | `MasterData`      | Base templates for master-data classes                                     |
-| `Numerator`       | Generic number generators                                                  |
+| [`Numerator`](Utils_Numerator.md) | Generic number generators                                            |
 | `Hierarchy`       | Hierarchical properties                                                    |
 | `Historizable`    | Change-history storage                                                     |
 | `Geo`             | Geographic data and operations                                             |

@@ -3,6 +3,8 @@ slug: "/How-to_Numbering"
 title: 'How-to: Numbering'
 ---
 
+### Numbering by hand
+
 Let's suppose we have a set of books. For each of these books, we define a number as an integer.
 
 ```lsf
@@ -70,3 +72,59 @@ defaultNumerator 'Default numerator' = DATA Numerator();
 WHEN SET(Order o IS Order) AND NOT CHANGED(numerator(o)) DO
     numerator(o) <- defaultNumerator();
 ```
+
+The platform ships a ready-to-use implementation of this approach — series, leading zeros, default numerators, and conflict-safe generation — in the [`Numerator`](../paradigm/Utils_Numerator.md) module. The patterns below build on it; in each of them the number is filled only when it has not been set already, so a value typed by the user or loaded by import is never overwritten.
+
+### Sequential number for a class
+
+Let's assume we need to give every object of a class a sequential number with a fixed series prefix.
+
+```lsf
+CLASS Adjustment 'Adjustment';
+@defineNumbered(Adjustment, STRING[3]);
+@defineNumeratedDefault(Adjustment, 'Adjustments', 'INV');
+```
+
+`@defineNumbered` adds the stored `number` and `series` properties (here the series is a three-character string) plus their indexed concatenation. `@defineNumeratedDefault` then seeds an initial numerator named `Adjustments` with series `INV`, makes it the default for the class, and assigns it to every new object. On creation the number is filled from that numerator and its counter is advanced, so the first adjustment becomes `INV00001`, the next `INV00002`, and so on.
+
+### Separate sequence per document type
+
+Let's look at a more complex case, when a document is numbered differently depending on its type, and each type keeps its own counter.
+
+We hold the numerator on the type class and fill the document from the numerator of its type.
+
+```lsf
+CLASS OrderType 'Order type';
+name 'Name' = DATA ISTRING[50] (OrderType);
+numerator 'Numerator' = DATA Numerator (OrderType);
+
+CLASS Order 'Order';
+@defineNumbered(Order, STRING[3]);
+type 'Type' = DATA OrderType (Order);
+```
+
+We then add an event that, as soon as the type is chosen, takes the next value and the series from that type's numerator and advances its counter.
+
+```lsf
+WHEN SETCHANGED(type(Order o)) AND numerator(type(o)) AND NOT number(o) DO {
+    number(o) <- curStringValue(numerator(type(o)));
+    series(o) <- series(numerator(type(o)));
+    incrementValueSession(numerator(type(o)));
+}
+```
+
+Two order types pointing at different numerators produce two independent sequences.
+
+### Generated code as the identifier
+
+Let's assume a master-data object needs a generated code that is also its identifier.
+
+```lsf
+CLASS Partner 'Partner';
+id 'ID' = DATA STRING[20] (Partner) IN id;
+partner (STRING[20] id) = GROUP AGGR Partner p BY id(p);
+
+@defineNumeratedID(Partner, 'Partners');
+```
+
+`@defineNumeratedID` adds a default numerator for the class and an event that, on creation, writes the series and the padded counter value into the object's own `id` and advances the counter. The `id` property and a lookup by it are declared as usual; the generated code keeps that lookup unique. The numerator itself is chosen on the `Master data > Default numerators` form, so an administrator can switch series or starting value without code changes.
