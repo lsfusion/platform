@@ -136,11 +136,11 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 if(exportFile != null)
                     writeResult(exportFile, staticType, context, report, ExternalUtils.resultCharset.toString());
                 else {
-                    context.requestUserInteraction(new ReportClientAction(autoPrint, readFormCaption(formReportManager), autoPrint && staticType != FormPrintType.HTML ? report.getLength() / 15 : null, new FileData(report, staticType.getExtension())));
+                    context.requestUserInteraction(new ReportClientAction(autoPrint, readFormCaption(formReportManager), printer, autoPrint && staticType != FormPrintType.HTML ? report.getLength() / 15 : null, new FileData(report, staticType.getExtension())));
                 }
             } else {
                 List<String> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
-                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(autoPrint, readFormCaption(formReportManager), customReportPathList, form.getSID(), syncType, reportData, staticType, printer, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
+                Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(autoPrint, readFormCaption(formReportManager), printer, customReportPathList, form.getSID(), syncType, reportData, staticType, Settings.get().isuseDefaultPrinterInPrintIfNotSpecified(), SystemProperties.inDevMode, password, sheetName, Settings.get().isJasperReportsIgnorePageMargins()));
                 formPageCount.change(pageCount, context);
             }
         }

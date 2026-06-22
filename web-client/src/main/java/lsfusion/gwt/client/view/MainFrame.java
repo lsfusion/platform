@@ -147,6 +147,12 @@ public class MainFrame implements EntryPoint {
     public void onModuleLoad() {
         GwtClientUtils.init();
 
+        // Async probe for the local web-agent (see github.com/lsfusion/web-agent).
+        // If it responds, ClientActions like print/file ops/sockets get routed
+        // through it on plain browsers instead of failing with
+        // UnsupportedOperationException.
+        GwtClientUtils.probeWebAgent(GwtClientUtils.DEFAULT_WEB_AGENT_URL, null);
+
         firefox = GwtClientUtils.isFirefoxUserAgent();
         chrome = GwtClientUtils.isChromeUserAgent();
         safari = GwtClientUtils.isSafariUserAgent();
