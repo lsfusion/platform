@@ -123,20 +123,17 @@ public class GForm implements Serializable {
                 return property;
         return null;
     }
-    // form-wide (group not specified): first draw with this integration SID. Integration SIDs aren't form-unique, so
-    // pass a group (the overload above) to disambiguate when the same SID is drawn in several groups.
-    public GPropertyDraw getPropertyDraw(String integrationSID) {
+    // form-wide, ambiguity-aware: throws when the integration SID is drawn on more than one object group
+    // (the custom-controller caller must then qualify it as "group.integrationSID" or pass the object)
+    public GPropertyDraw getSinglePropertyDraw(String integrationSID) {
+        GPropertyDraw found = null;
         for (GPropertyDraw property : propertyDraws)
-            if (integrationSID.equals(property.integrationSID))
-                return property;
-        return null;
-    }
-    // by group SID: null groupSID => form-wide; an unknown groupSID => null (no draw)
-    public GPropertyDraw getPropertyDraw(String groupSID, String integrationSID) {
-        if (groupSID == null)
-            return getPropertyDraw(integrationSID);
-        GGroupObject group = getGroupObject(groupSID);
-        return group == null ? null : getPropertyDraw(group, integrationSID);
+            if (integrationSID.equals(property.integrationSID)) {
+                if (found != null)
+                    throw new RuntimeException("property '" + integrationSID + "' is ambiguous (drawn on multiple object groups); qualify it as 'group." + integrationSID + "' or pass the object");
+                found = property;
+            }
+        return found;
     }
 
     public GContainer findContainerByID(int id) {

@@ -36,14 +36,14 @@ These methods are the same wherever the form controller is reached — directly 
 | --- | --- | --- |
 | `changeObject(groupSID, object)` | set a group's current object | — |
 | `changeProperty(property[, object][, value])` | set a value, or exec an action — on the current object or a given row | — |
-| `changeProperties(properties, objects, values[, groupSIDs])` | several `changeProperty` calls from parallel arrays | — |
+| `changeProperties(properties, objects, values)` | several `changeProperty` calls from parallel arrays | — |
 | `getPropertyValues(property[, object], value[, mode], ok[, fail][, count])` | a capped server suggestion list | — (via `ok`) |
 | `exec(action, ...params)` | run a named action | `Promise` |
 | `eval(script, ...params)` | run an lsf script with a typed `run` | `Promise` |
 | `evalAction(script, ...params)` | run an action body (`$1`, `$2`, … params) | `Promise` |
 | `change(property, ...keyParams, value)` | set a global property | `Promise` |
 
-The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, scope it with a `groupSID`: a fourth positional argument to `changeProperty` (`changeProperty(property, object, value, groupSID)`), the trailing argument after `count` on `getPropertyValues`, or the `groupSIDs` array on `changeProperties`.
+The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, qualify the group directly in the name — `'groupSID.property'`; a group named this way has priority. When an object is passed, the property is resolved by that object's own group, so the group needs to be named only for a change with no object (the current object, or the two-argument `changeProperty(property, value)`). A bare, unqualified name drawn on more than one group must not be used — such a call fails with an error instead of silently changing the wrong group.
 
 The same two groups also differ along two more axes — whether they are gated, and how an object is addressed in them:
 
@@ -79,7 +79,7 @@ function orderView(props) {
 
 In the two-argument `changeProperty(property, X)` form the platform decides whether `X` is a value or a row: when the property accepts a value and `X` resolves to a row (a data row or a raw handle), it is read as the row and the call execs on it; otherwise `X` is the value and the call changes the current object.
 
-`changeProperties(properties, objects, values)` applies several changes at once from parallel arrays — `properties[i]` is changed to `values[i]` for `objects[i]` (an entry may be `null` for the current object). The optional fourth array `groupSIDs` scopes each property to a group when its integration name is not unique across the form.
+`changeProperties(properties, objects, values)` applies several changes at once from parallel arrays — `properties[i]` is changed to `values[i]` for `objects[i]` (an entry may be `null` for the current object). Each name is qualified the same way as in a single `changeProperty` — by a `'groupSID.property'` name or the passed object's group.
 
 ```js
 controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
@@ -112,7 +112,7 @@ controller.changeProperties(['parent', 'value'], [item, item], [targetColumn.key
 `getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`.
 
 ```js
-controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count[, groupSID]]);
+controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count]);
 ```
 
 - `value` — the typed query to match against.
@@ -129,7 +129,6 @@ controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count
 
 - `ok(result)` / `fail()` — success and failure callbacks.
 - `count` — raises the number of items requested, for paging.
-- `groupSID` — scopes the property to a group when its integration name is not unique across the form (pass it after `count`).
 
 Pass `item.objects` from an `'objects'` result straight back into `changeObject` or `changeProperty` to act on the picked object:
 
@@ -174,4 +173,4 @@ A method that targets a row accepts one of:
 
 For addressing a row, a bare `row.key` is *not* accepted: `key` is a display / React-key / diff token, not a resolution input. For a single-object group of a custom class, though, the value of `row.key` numerically equals that object's id, so it can be passed as the target object's id to a server call or as an FK value — no separate property for the row's own id is needed. The field names `key`, `isCurrent` and `objects` are reserved on a row — an application property or column with one of these integration names would be overwritten.
 
-If an explicit object argument resolves to neither a row nor a raw handle, the platform does not silently fall back to the current row and does not throw: `changeProperty` logs a console error and skips that change, and `changeObject` is a no-op.
+If an explicit object argument resolves to neither a row nor a raw handle, the platform does not silently fall back to the current row: `changeProperty` and `getPropertyValues` fail with an error rather than acting on another row, while `changeObject` does nothing.

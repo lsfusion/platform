@@ -417,8 +417,8 @@ public class GFormController implements EditManager {
 
     // the form controller object: the form-level escape hatch (exec/eval/change + legacy changeProperty) PLUS the
     // CUSTOM REACT mutation methods. The latter mirror the CUSTOM group-object view controller (GSimpleStateTableView)
-    // but form-level, so each takes a groupSID. a method accepts a data row, or a raw objects handle (from getObjects /
-    // async OBJECTS suggestions) — GGroupObjectValue.resolveObject; a bare key / spread clone does NOT resolve. Mutations go through the SAME classic interactive path as a normal
+    // but form-level. a method accepts a data row, or a raw objects handle (from getObjects / async OBJECTS suggestions)
+    // — GGroupObjectValue.resolveObject; a bare key / spread clone does NOT resolve. Mutations go through the SAME classic interactive path as a normal
     // edit (optimistic reconciliation + async exec); there is no return value (state flows back via the projection).
     public final JavaScriptObject controller = initController();
     private native JavaScriptObject initController() /*-{
@@ -427,37 +427,38 @@ public class GFormController implements EditManager {
         var UNDEFINED = @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
         return {
             // change a property value, or exec the action/property when the value is omitted — same shape as the CUSTOM
-            // group-view controller's changeProperty(property, object, value); `property` is the integration SID:
+            // group-view controller's changeProperty(property, object, value); `property` is "integrationSID" or
+            // "groupSID.integrationSID". An explicit group prefix has priority; with no prefix a passed object's own
+            // group scopes the lookup. An unknown prefix, an ambiguous bare SID, or a missing property throws.
             //   changeProperty(property)                 - exec on the current object
             //   changeProperty(property, value)          - set value on the current object
             //   changeProperty(property, object)         - exec on the given row (a `data` row or a raw objects handle)
             //   changeProperty(property, object, value)  - set value on the given row
-            // optional trailing groupSID scopes the property when its integration SID isn't form-unique (repeats across groups)
-            changeProperty: function (property, object, value, groupSID) {
-                var gsid = groupSID === undefined ? null : groupSID;
+            changeProperty: function (property, object, value) {
                 if (object !== undefined) {
                     if (value === undefined) { // (property, X): THE SAME guess shape as the classic controller — isChangeObject classifies, the normal explicit path below dispatches
-                        if (thisObj.@GFormController::isChangeObject(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(property, object, gsid))
+                        if (thisObj.@GFormController::isChangeObject(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object))
                             value = UNDEFINED; // a row -> exec on it
                         else { value = object; object = null; } // anything else -> set on current
                     }
                 } else { value = UNDEFINED; object = null; } // (property) -> exec on current
-                return thisObj.@GFormController::controllerChangeProperty(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(property, object === undefined ? null : object, value, gsid);
+                return thisObj.@GFormController::controllerChangeProperty(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object === undefined ? null : object, value);
             },
-            // batch (parallel arrays); objectsOrKeys / groupSIDs entries may be null (current object / form-wide)
-            changeProperties: function (properties, objectsOrKeys, values, groupSIDs) {
-                return thisObj.@GFormController::controllerChangeProperties(*)(properties, objectsOrKeys, values, groupSIDs === undefined ? null : groupSIDs);
+            // batch (parallel arrays); objectsOrKeys entries may be null (current object / property-name-scoped lookup)
+            changeProperties: function (properties, objectsOrKeys, values) {
+                return thisObj.@GFormController::controllerChangeProperties(*)(properties, objectsOrKeys, values);
             },
             // set a group's current object to a row (a `data` row object, or a raw objects handle)
             changeObject: function (groupSID, objectOrKey) {
                 return thisObj.@GFormController::controllerChangeObject(*)(groupSID, objectOrKey);
             },
-            // async value lookup (autocomplete / suggestion list) for a property by integration SID — the form-level twin
-            // of the CUSTOM grid view's getPropertyValues. Mirrors changeProperty's shape:
-            //   getPropertyValues(property,         value[, mode], ok, fail[, count[, groupSID]]) - suggestions for the group's current object
-            //   getPropertyValues(property, object, value[, mode], ok, fail[, count[, groupSID]]) - suggestions scoped to the given row (a data row / raw objects handle)
-            // ok gets {data:[{displayString,rawString,objects}], more}; optional trailing groupSID (needs count) scopes the
-            // property when its integration SID isn't form-unique. mode picks the server lookup (default 'objects'):
+            // async value lookup (autocomplete / suggestion list) for a property by "integrationSID" or
+            // "groupSID.integrationSID" — the form-level twin of the CUSTOM grid view's getPropertyValues. Mirrors
+            // changeProperty's object/group resolution: an explicit group prefix has priority over the passed object's
+            // group, and an ambiguous bare SID throws.
+            //   getPropertyValues(property,         value[, mode], ok, fail[, count]) - suggestions for the group's current object
+            //   getPropertyValues(property, object, value[, mode], ok, fail[, count]) - suggestions scoped to the given row (a data row / raw objects handle)
+            // ok gets {data:[{displayString,rawString,objects}], more}; mode picks the server lookup (default 'objects'):
             //   'objects' - matching OBJECTS, each item's `objects` = a raw GGV handle (object picker)
             //   'values'  - DISTINCT property values (item `objects` is null; just display/rawString)
             //   'change'  - the edit-time value autocomplete (the property's change/input action; honors custom change logic)
@@ -478,8 +479,8 @@ public class GFormController implements EditManager {
                 } else { // 3: object, value, mode
                     object = arguments[1]; value = arguments[2]; mode = arguments[3];
                 }
-                var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2], groupSID = arguments[okIndex + 3];
-                thisObj.@GFormController::controllerGetPropertyValues(*)(property, object === undefined ? null : object, value, groupSID == null ? null : groupSID, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
+                var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2];
+                thisObj.@GFormController::controllerGetPropertyValues(*)(property, object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
             },
             exec: base.exec, // exec(action, ...params) -> Promise (global action by canonical name)
             eval: base.eval, // eval(script, ...params) -> Promise
@@ -489,9 +490,9 @@ public class GFormController implements EditManager {
     }-*/;
 
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): resolve the draw by
-    // integration SID (GForm.getPropertyDraw — group-scoped or form-wide); rows/handles resolve via
-    // GGroupObjectValue.resolveObject (the row-carried `objects` handle + raw-GGV accept). Dispatch through the SAME classic path as a normal edit
-    // (executePropertyEventAction / changeGroupObject + setLoadingValueAt) =====
+    // "integrationSID" or "groupSID.integrationSID"; rows/handles resolve via GGroupObjectValue.resolveObject (the
+    // row-carried `objects` handle + raw-GGV accept). An explicit name prefix has priority; with none, the row's group scopes the draw.
+    // Dispatch through the SAME classic path as a normal edit (executePropertyEventAction / changeGroupObject + setLoadingValueAt) =====
     public void controllerChangeObject(String groupSID, JavaScriptObject objectOrKey) {
         GGroupObject group = form.getGroupObject(groupSID);
         if (group == null) return;
@@ -499,6 +500,54 @@ public class GFormController implements EditManager {
         if (key != null)
             changeGroupObject(group, key, null, null);
     }
+    // resolves a controller-call draw. `name` is either "groupSID.integrationSID" (an explicit group prefix) or a
+    // bare integration SID. an explicit prefix in the name has priority: it scopes the lookup directly (the passed
+    // object's own group is not consulted). with no prefix, an explicit object's group scopes it; with neither, a
+    // bare SID must be form-unique. throws a loud (JS-surfaced) RuntimeException on every author mistake: unknown
+    // group, ambiguous bare SID, or missing property. `objectKey` is the already-resolved row key, or null/EMPTY
+    // for the current object.
+    private GPropertyDraw resolveControllerDraw(String name, GGroupObjectValue objectKey) {
+        String errorPrefix = "changeProperty('" + name + "'): ";
+        int dot = name.indexOf('.');
+        String prefixGroupSID = dot >= 0 ? name.substring(0, dot) : null;
+        String integrationSID = dot >= 0 ? name.substring(dot + 1) : name;
+
+        GGroupObject group = null;
+        if (prefixGroupSID != null) { // an explicit group prefix in the name wins over the passed object's group
+            group = form.getGroupObject(prefixGroupSID);
+            if (group == null)
+                throw new RuntimeException(errorPrefix + "unknown object group '" + prefixGroupSID + "'");
+        } else if (objectKey != null && !objectKey.isEmpty()) { // no prefix: the explicit row's own group scopes the lookup
+            group = form.getObject(objectKey.getKey(0)).groupObject; // a resolved row/handle is a same-form object
+        }
+
+        if (group != null) {
+            GPropertyDraw draw = form.getPropertyDraw(group, integrationSID);
+            if (draw == null)
+                throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");
+            return draw;
+        }
+
+        GPropertyDraw draw = form.getSinglePropertyDraw(integrationSID); // throws if ambiguous
+        if (draw == null)
+            throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' not found");
+        return draw;
+    }
+
+    private GGroupObjectValue resolveControllerObject(String methodName, String property, JavaScriptObject objectOrKey) {
+        if (GwtClientUtils.isUndefinedOrNull(objectOrKey)) // raw JS key: a numeric 0 key reads as null under Java == null (GWT falsy-primitive collapse)
+            return null;
+
+        GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
+        if (objectKey == null) // an EXPLICIT object that is neither a row nor a raw handle: fail loudly
+            throw new RuntimeException(methodName + "('" + property + "'): the object argument is not a data row or an objects handle; pass one of those");
+        return objectKey;
+    }
+
+    private static GGroupObjectValue getControllerColumnKey(GGroupObjectValue objectKey) {
+        return objectKey != null ? objectKey : GGroupObjectValue.EMPTY; // null object => the current object
+    }
+
     // the 2-arg changeProperty(property, X) guess — WHICH form is the call, (property, value) or (property, object)?
     // Decided by whether there is anywhere to PUT a value (the same predicate shape as the classic isChangeObject):
     // - the property takes a value (externalChangeType != null): only an unambiguous row carrier (resolveObject — a data
@@ -506,8 +555,8 @@ public class GFormController implements EditManager {
     // - it doesn't: the value interpretation doesn't exist, so it is ALWAYS the object form — X goes to the object
     //   slot as is, and the EXPLICIT dispatch path resolves it (resolveObject — a row or raw objects handle),
     //   rejecting an unresolvable argument loudly
-    // THE single guess core, shared by both surfaces — they differ only in how the draw is found (form-level: by
-    // integration SID + groupSID; classic: by its view column), the policy is one
+    // THE single guess core, shared by both surfaces — they differ only in how the draw is found (form-level: by the
+    // controller name/object resolver; classic: by its view column), the policy is one
     public boolean isChangeObject(GPropertyDraw draw, JavaScriptObject object) {
         if (draw == null || draw.groupObject == null) // no object slot at all -> the value form is the only one
             return false;
@@ -515,36 +564,26 @@ public class GFormController implements EditManager {
             return true;
         return GGroupObjectValue.resolveObject(object) != null;
     }
-    public boolean isChangeObject(String property, JavaScriptObject object, String groupSID) {
-        return isChangeObject(form.getPropertyDraw(groupSID, property), object);
+    public boolean isChangeObject(String property, JavaScriptObject object) {
+        return isChangeObject(resolveControllerDraw(property, GGroupObjectValue.resolveObject(object)), object);
     }
-    public void controllerChangeProperty(String property, JavaScriptObject objectOrKey, JavaScriptObject value, String groupSID) {
-        controllerChangeProperties(new String[]{property}, new JavaScriptObject[]{objectOrKey}, new JavaScriptObject[]{value}, groupSID == null ? null : new String[]{groupSID});
+    public void controllerChangeProperty(String property, JavaScriptObject objectOrKey, JavaScriptObject value) {
+        controllerChangeProperties(new String[]{property}, new JavaScriptObject[]{objectOrKey}, new JavaScriptObject[]{value});
     }
-    public void controllerChangeProperties(String[] properties, JavaScriptObject[] objectsOrKeys, JavaScriptObject[] values, String[] groupSIDs) {
+    public void controllerChangeProperties(String[] properties, JavaScriptObject[] objectsOrKeys, JavaScriptObject[] values) {
         ArrayList<GPropertyDraw> props = new ArrayList<>();
         ArrayList<GGroupObjectValue> keys = new ArrayList<>();
         ArrayList<PValue> pvalues = new ArrayList<>();
         if (properties == null || objectsOrKeys == null || values == null
-                || objectsOrKeys.length < properties.length || values.length < properties.length
-                || (groupSIDs != null && groupSIDs.length < properties.length)) { // author-supplied parallel arrays
-            GwtClientUtils.consoleError("changeProperties: objects/values/groupSIDs arrays must cover every property");
+                || objectsOrKeys.length < properties.length || values.length < properties.length) {
+            GwtClientUtils.consoleError("changeProperties: objects/values arrays must cover every property");
             return;
         }
         for (int i = 0; i < properties.length; i++) {
-            GPropertyDraw draw = form.getPropertyDraw(groupSIDs != null ? groupSIDs[i] : null, properties[i]); // null groupSID => form-wide
-            if (draw == null) continue;
-            GGroupObjectValue fullKey = GGroupObjectValue.EMPTY; // null object => the current object
-            if (draw.groupObject != null && !GwtClientUtils.isUndefinedOrNull(objectsOrKeys[i])) { // raw JS key: a numeric 0 key would read as null under Java == null (GWT falsy-primitive collapse)
-                GGroupObjectValue key = GGroupObjectValue.resolveObject(objectsOrKeys[i]); // a row or a raw objects handle (explicit position, so no value ambiguity)
-                if (key == null) { // an EXPLICIT object argument that is neither a row nor a raw handle: reject loudly — silently mutating the current row instead would be the worst outcome
-                    GwtClientUtils.consoleError("changeProperty('" + properties[i] + "'): the object argument is not a data row or an objects handle; pass one of those");
-                    continue;
-                }
-                fullKey = key;
-            }
+            GGroupObjectValue objectKey = resolveControllerObject("changeProperty", properties[i], objectsOrKeys[i]);
+            GPropertyDraw draw = resolveControllerDraw(properties[i], objectKey); // throws on ambiguity / conflict / not-found
             props.add(draw);
-            keys.add(fullKey);
+            keys.add(getControllerColumnKey(objectKey));
             pvalues.add(GSimpleStateTableView.convertFromJSUndefValue(draw, values[i]));
         }
         changeProperties(props, keys, pvalues);
@@ -577,38 +616,22 @@ public class GFormController implements EditManager {
         return null;
     }
     // async value lookup (autocomplete / suggestion list) for a form-level / CUSTOM REACT property — the form-level twin
-    // of the grid custom view's getAsyncValues (GSimpleStateTableView). Resolves the draw by integration SID (+ optional
-    // groupSID) and the optional row exactly like changeProperty (GGroupObjectValue.resolveObject); the resolved row key
-    // becomes the columnKey, which getFullCurrentKey overlays over the current selection -> suggestions scoped to that row
-    // (EMPTY => the property group's current object). The mode picks the server lookup (OBJECTS suggestions vs distinct
-    // VALUES vs the edit-time CHANGE autocomplete; CHANGE here targets THIS draw's own change action — no property:value
-    // concat, that's the JSON-property cell-renderer's special case). Issues through the shared getAsyncValues.
-    public void controllerGetPropertyValues(String property, JavaScriptObject objectOrKey, String value, String groupSID, String mode, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) {
+    // of the grid custom view's getAsyncValues (GSimpleStateTableView). Resolves the draw and optional row exactly like
+    // changeProperty (GGroupObjectValue.resolveObject); the resolved row key becomes the columnKey, which
+    // getFullCurrentKey overlays over the current selection -> suggestions scoped to that row (EMPTY => the property
+    // group's current object). The mode picks the server lookup (OBJECTS suggestions vs distinct VALUES vs the edit-time
+    // CHANGE autocomplete; CHANGE here targets THIS draw's own change action — no property:value concat, that's the
+    // JSON-property cell-renderer's special case). Issues through the shared getAsyncValues.
+    public void controllerGetPropertyValues(String property, JavaScriptObject objectOrKey, String value, String mode, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) {
         String actionSID = getAsyncActionSID(mode);
         if (actionSID == null) { // unknown mode (already logged)
             if (failureCallback != null)
                 GwtClientUtils.call(failureCallback);
             return;
         }
-        GPropertyDraw draw = form.getPropertyDraw(groupSID, property); // null groupSID => form-wide
-        if (draw == null) {
-            GwtClientUtils.consoleError("getPropertyValues('" + property + "'): property not found");
-            if (failureCallback != null)
-                GwtClientUtils.call(failureCallback);
-            return;
-        }
-        GGroupObjectValue columnKey = GGroupObjectValue.EMPTY; // null/omitted object => the current object
-        if (draw.groupObject != null && !GwtClientUtils.isUndefinedOrNull(objectOrKey)) {
-            GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey); // a row or a raw objects handle (same contract as changeProperty)
-            if (key == null) {
-                GwtClientUtils.consoleError("getPropertyValues('" + property + "'): the object argument is not a data row or an objects handle; pass one of those");
-                if (failureCallback != null)
-                    GwtClientUtils.call(failureCallback);
-                return;
-            }
-            columnKey = key;
-        }
-        getAsyncValues(value, draw, columnKey, actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
+        GGroupObjectValue objectKey = resolveControllerObject("getPropertyValues", property, objectOrKey);
+        GPropertyDraw draw = resolveControllerDraw(property, objectKey); // throws on ambiguity / conflict / not-found
+        getAsyncValues(value, draw, getControllerColumnKey(objectKey), actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
     }
 
     // (row registration + resolution moved to GGroupObjectValue.registerRow / resolveObject — they use no controller
