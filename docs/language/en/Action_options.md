@@ -248,7 +248,7 @@ Action annotation. Begins with `@@`. The following annotations are supported:
 
 - `STICKY` | `NOSTICKY`
 
-    Keywords. `STICKY` indicates that the action in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically.
+    Keywords. `STICKY` indicates that the action in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, an action is not pinned.
 
 - `syncType`
 
