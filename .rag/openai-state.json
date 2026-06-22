@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:bd909a72fdd2881319f3e825ba271355b3b7443e8911ce5526e7da114b7be7cf",
-      "indexed_at": "2026-06-15T19:31:49Z",
+      "file_hash": "sha256:c997a3882dd3e676c2e7af38d2ebddabc05152ffcdc7c3e51a0e756fe7ef01d7",
+      "indexed_at": "2026-06-22T11:58:44Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -666,9 +666,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
-          "file_id": "file-EmY6xBHVbcDHk54y6bvYn3",
+          "file_id": "file-WSzpnfa3TbySe4Deu8tjEg",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:10340ac63503e1f2139744600f8311bcff4c49399f1cb3cef4519cbda6c3fc97",
+          "section_payload_hash": "sha256:74686d33d0d30c6cd068b3abaf5c33598711e8960f1b8ca7da856fdcb285ad7a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         }
       },
@@ -2012,7 +2012,7 @@
     },
     "how-to/How-to_Numbering.md": {
       "file_hash": "sha256:9769d04390fb3a5e182c28b12fe1d946581394b86566abd1a06bb12cf2722966",
-      "indexed_at": "2026-06-22T09:26:20Z",
+      "indexed_at": "2026-06-22T11:58:56Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2038,9 +2038,15 @@
           "heading_path": "How-to: Numbering > Separate sequence per document type",
           "section_payload_hash": "sha256:8e6698555180a4400cbf40b2d5b3017b400c006e3a5fcda42d9ae8eebbfc6b0e",
           "source_file": "how-to/How-to_Numbering.md"
+        },
+        "How-to_Numbering::sequential-number-for-a-class": {
+          "file_id": "file-15P8kcTZiFrwNqMJnr5gjf",
+          "heading_path": "How-to: Numbering > Sequential number for a class",
+          "section_payload_hash": "sha256:3f4ed30d75a41080866705d8da2f85c3e9004726f9ef9037c31a3454fb8ef4cf",
+          "source_file": "how-to/How-to_Numbering.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "how-to/How-to_Overriding_values.md": {
       "file_hash": "sha256:bf080ff34c2645655e58a757f6d4a72168e426409ad8375d588ad425a407abb7",
@@ -14355,7 +14361,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "cbd2aaae647a89a7dace0ba220139c2f4b5bc490",
+  "last_indexed_docs_commit": "a8fd916a9abd57e6b391ea80a495960ee57be890",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
