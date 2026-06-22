@@ -252,11 +252,12 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
     // for that purpose we have to send to client that type to do parsing, rendering, etc.
-    public Type getExternalChangeType(FormInstanceContext context) {
+    public DataClass getExternalChangeType(FormInstanceContext context) {
         return getChangeType(context, true);
     }
 
-    public Type getChangeType(FormInstanceContext context, boolean externalChange) {
+    // the change type is always a data class (it comes from AsyncInput.changeType, a DataClass)
+    public DataClass getChangeType(FormInstanceContext context, boolean externalChange) {
         AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context, CHANGE, externalChange);
         return asyncEventExec instanceof AsyncInput ? ((AsyncInput) asyncEventExec).changeType : null;
     }

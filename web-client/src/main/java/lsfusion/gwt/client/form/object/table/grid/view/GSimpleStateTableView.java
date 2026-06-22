@@ -154,6 +154,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return convertFromJSValue(type, value);
     }
     public static PValue convertFromJSValue(GType type, JavaScriptObject value) {
+        if (type != null) // symmetric with convertToJSValue: an object's value is read back as its long id
+            type = type.getDataType();
         // have to reverse convertToJSValue as well as convertFileValue (???)
         // NB: null/undefined MUST be tested on the raw JS value via JSNI (isUndefinedOrNull), never with a Java
         // `value == null`: a JS primitive 0 / false / "" carried in a JavaScriptObject reference reads as null under
@@ -225,6 +227,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }-*/;
 
     public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, boolean imageToHTML, PValue value) {
+        if (type != null) // an object's value is its long id; getDataType projects it as that long, symmetric with the change-input type
+            type = type.getDataType();
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
                 return fromBoolean(PValue.getBooleanValue(value));

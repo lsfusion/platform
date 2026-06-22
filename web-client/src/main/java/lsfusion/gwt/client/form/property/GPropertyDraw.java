@@ -121,10 +121,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public boolean toolbar;
     public boolean toolbarActions;
 
-    public GType externalChangeType;
+    public GDataType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
 
-    public GType getExternalChangeType() {
+    public GDataType getExternalChangeType() {
         return externalChangeType;
     }
 
@@ -137,7 +137,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         return getDefaultCompare().escapeSeparator() ? filterType.getFilterMatchType() : filterType;
     }
 
-    public GType getChangeType() {
+    public GDataType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).changeType : null;
     }
@@ -658,7 +658,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean canUseChangeValueForRendering(GType type, RendererType rendererType) {
         GType renderType = getRenderType(rendererType);
-        return type != null && renderType.getClass() == type.getClass() && !(renderType instanceof GJSONType) && !(renderType instanceof GFileType);
+        // compare against the render type's data type: an object property is rendered/changed as its LONG id (since
+        // #1657), so getDataType normalizes its GObjectType to that long and the optimistic overlay matches
+        return type != null && renderType.getDataType().getClass() == type.getClass() && !(renderType instanceof GJSONType) && !(renderType instanceof GFileType);
     }
 
     public String getPanelCaption(String caption, GInputBindingEvent changeKey, GInputBindingEvent changeMouse) { //сюды перадаваць dynamicEventCaption
@@ -1039,8 +1041,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     }
 
     public GFormatType getFormatType(RendererType rendererType) {
-        GType renderType = getRenderType(rendererType);
-        return (renderType instanceof GObjectType ? GLongType.instance : ((GFormatType) renderType));
+        return (GFormatType) getRenderType(rendererType).getDataType();
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

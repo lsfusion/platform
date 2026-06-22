@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property.async;
 
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import java.util.function.Consumer;
 
 public class GAsyncInput extends GAsyncFormExec {
-    public GType changeType;
+    public GDataType changeType;
     public boolean multipleInput;
 
     public GInputList inputList;
@@ -22,7 +22,7 @@ public class GAsyncInput extends GAsyncFormExec {
     public GAsyncInput() {
     }
 
-    public GAsyncInput(GType changeType, boolean multipleInput, GInputList inputList, GInputListAction[] inputListActions, String customEditFunction) {
+    public GAsyncInput(GDataType changeType, boolean multipleInput, GInputList inputList, GInputListAction[] inputListActions, String customEditFunction) {
         this.changeType = changeType;
         this.multipleInput = multipleInput;
         this.inputList = inputList;

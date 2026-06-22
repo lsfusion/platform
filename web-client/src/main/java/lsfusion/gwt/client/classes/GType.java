@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -92,6 +93,10 @@ public abstract class GType implements Serializable {
     public boolean isId(){
         return false;
     }
+
+    // the data type a value of this type is stored / rendered / changed as: a data type is its own (GDataType),
+    // an object's value is its long id (GObjectType)
+    public abstract GDataType getDataType();
 
     public GType getFilterMatchType() {
         return this;

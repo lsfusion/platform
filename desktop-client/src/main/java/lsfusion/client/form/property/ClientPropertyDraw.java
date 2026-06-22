@@ -113,7 +113,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean ignoreHasHeaders;
 
-    public ClientType externalChangeType;
+    public ClientDataClass externalChangeType;
     public Map<String, ClientAsyncEventExec> asyncExecMap;
     public boolean askConfirm;
     public String askConfirmMessage;
@@ -625,7 +625,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         toolbarActions = pool.readBoolean(inStream);
 
         if (inStream.readBoolean()) {
-            externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
+            externalChangeType = (ClientDataClass) ClientTypeSerializer.deserializeClientType(inStream);
         }
         asyncExecMap = new HashMap<>();
         int asyncExecSize = inStream.readInt();
@@ -761,7 +761,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return asyncExecMap.get(actionSID);
     }
 
-    public ClientType getChangeType() {
+    public ClientDataClass getChangeType() {
         ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
         ClientAsyncInput changeType = asyncExec instanceof ClientAsyncInput ? (ClientAsyncInput) asyncExec : null;
         return changeType != null ? changeType.changeType : null;

@@ -12,6 +12,11 @@ import static lsfusion.gwt.client.form.filter.user.GCompare.*;
 
 public abstract class GDataType extends GType implements GClass {
     @Override
+    public GDataType getDataType() {
+        return this;
+    }
+
+    @Override
     public boolean hasChildren() {
         return false;
     }

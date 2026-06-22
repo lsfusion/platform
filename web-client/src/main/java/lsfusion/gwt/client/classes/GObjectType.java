@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.classes.data.GDataType;
+import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -23,6 +25,11 @@ public class GObjectType extends GType {
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new IntegralCellRenderer(property);
+    }
+
+    @Override
+    public GDataType getDataType() {
+        return GLongType.instance;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.async;
 
-import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.ClientTypeSerializer;
+import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -11,7 +11,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ClientAsyncInput extends ClientAsyncFormExec {
-    public ClientType changeType;
+    public ClientDataClass changeType;
     public boolean multipleInput;
 
     public ClientInputList inputList;
@@ -26,7 +26,7 @@ public class ClientAsyncInput extends ClientAsyncFormExec {
     public ClientAsyncInput(DataInputStream inStream) throws IOException {
         super(inStream);
 
-        this.changeType = ClientTypeSerializer.deserializeClientType(inStream);
+        this.changeType = (ClientDataClass) ClientTypeSerializer.deserializeClientType(inStream);
         this.multipleInput = inStream.readBoolean();
         if(inStream.readBoolean())
             this.inputList = ClientAsyncSerializer.deserializeInputList(inStream);
