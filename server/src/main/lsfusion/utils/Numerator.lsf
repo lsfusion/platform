@@ -1,6 +1,6 @@
 MODULE Numerator;
 
-REQUIRE System, MasterData, DefaultData;
+REQUIRE System, MasterData, DefaultData, Utils;
 
 DESIGN options {
     commons {
