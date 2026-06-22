@@ -23,4 +23,6 @@
 /server/src/main/java/lsfusion/server/language/MigrationScriptParser.java
 
 /server/logs/
+
+/web-client/logs/
 .idea
