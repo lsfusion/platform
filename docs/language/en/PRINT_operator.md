@@ -3,31 +3,64 @@ slug: "/PRINT_operator"
 title: 'PRINT operator'
 ---
 
-The `PRINT` operator creates an [action](../paradigm/Actions.md) that [opens a form](../paradigm/In_a_print_view_PRINT.md) in print view. 
+The `PRINT` operator creates an [action](../paradigm/Actions.md) that [opens a form](../paradigm/In_a_print_view_PRINT.md) in [print view](../paradigm/Print_view.md).
 
 ### Syntax
 
 ```
-PRINT name
-[CLIENT | SERVER]
-[OBJECTS objName1 = expr1, ..., objNameN = exprN]
-FILTERS ...
-[formActionOptions] 
+PRINT [executionType]
+      formSpec
+      [FILTERS fexpr1, ..., fexprM]
+      [printOptions]
 ```
 
-`formActionOptions` - additional options for this action. There are several possible option syntaxes in this operator:
+`formSpec` takes one of the two forms below.
 
 ```
-printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
-[PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
+name [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
+```
+
+or:
+
+```
+classFormType className = expr [NULL]
+```
+
+`printOptions` takes one of the two forms below.
+
+Message mode:
+
+```
 MESSAGE [syncType] [messageType]
-[TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
-[OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
+        [TOP topLimit] [OFFSET offsetLimit]
+```
+
+Interactive mode:
+
+```
+[format [SHEET sheetExpr] [PASSWORD passwordExpr] [TO filePropertyId]]
+[previewMode]
+[syncType]
+[TO printerExpr]
+```
+
+Where `topLimit` and `offsetLimit` are each defined as:
+
+```
+limitExpr
+```
+
+or:
+
+```
+groupName1 = limitExpr1, ..., groupNameK = limitExprK
 ```
 
 ### Description
 
-The `PRINT` operator creates an action that prints the specified form. When printing a form in the `OBJECTS` block you can add [additional filters](../paradigm/Open_form.md#params) for form objects to check these objects for equality to the values passed.
+The `PRINT` operator creates an action that opens the specified form in print view. In the `OBJECTS` block, [equality filters](../paradigm/Open_form.md#params) on form objects are added; the `FILTERS` clause adds further filter expressions.
+
+The operator has two top-level modes — the *interactive mode* (a preview window, direct printing, or export to a file) and the *message mode* (a popup message).
 
 ### Parameters
 
@@ -35,92 +68,118 @@ The `PRINT` operator creates an action that prints the specified form. When prin
 
     Form name. [Composite ID](IDs.md#cid).
 
-- `CLIENT` | `SERVER`
+- `classFormType`
 
-   Keywords. Specify whether to perform the action on the client (`CLIENT`) or on the server (`SERVER`). By default, the action is performed on the client.
+    Determines which form of the class is printed:
 
-- `objName1 ... objNameN`
+    - `LIST` — the class's list form.
+    - `EDIT` — the class's edit form.
 
-    Names of form objects for which additional filters are specified. [Simple IDs](IDs.md#id).
+- `className`
 
-- `expr1 ... exprN`
+    Name of the user class whose list or edit form is printed. Composite ID.
 
-    [Expressions](Expression.md) whose values determine the filtered (fixed) values for form objects.
+- `executionType`
 
-- `FILTERS ...`
+    Determines where the report is rendered and printed:
 
-    Adds fixed filters to the form. [Syntax of the fixed filters block](Filters_and_sortings_block.md#fixedfilters).
+    - `CLIENT` — on the client. Used by default.
+    - `SERVER` — on the server. Meaningful only for the interactive mode and only when the report should reach a printer attached to the server.
 
-#### Additional options
+- `objName1, ..., objNameN`
 
-- `printFormat`
+    Names of form objects for which equality filter values are specified. [Simple IDs](IDs.md#id).
 
-    The [print format](../paradigm/In_a_print_view_PRINT.md#format) is specified by one of these keywords:
+- `expr, expr1, ..., exprN`
 
-    - `PDF` – the form will be exported to a PDF file.
-    - `XLS`, `XLSX` – the form will be exported to a file in one of the specified EXCEL formats.
-    - `DOC`, `DOCX` – the form will be exported to a file in one of the specified WORD formats.
-    - `RTF` – the form will be exported to an RTF file.
-    - `HTML` – the form will be exported to an HTML file.
+    [Expressions](Expression.md) whose values determine the equality filter values for the corresponding form objects.
 
-- `sheetProperty`
+- `NULL`
 
-    The [ID of the property](IDs.md#propertyid) whose value is used as the name of the sheet in the exported file. The property must not have parameters. It is used for `XLS` and `XLSX` print formats.
+    Specifies that the passed value may be `NULL`.
 
-- `passwordExpr`
+- `fexpr1, ..., fexprM`
 
-    An expression whose value determines the password that sets the read-only mode for the exported file. Used for `XLS` and `XLSX` print formats.
+    Filter expressions added to the form.
 
-- `propertyId`
-
-    [Property ID](IDs.md#propertyid) to which the generated file will be written. The property must not have parameters. If a property is not specified, the generated file is sent to the client and opened by the operating system
-
-- `PREVIEW`
-
-    Keyword. If specified, the form is displayed in [preview](../paradigm/In_a_print_view_PRINT.md#interactive) mode. This mode is used by default if no other modes/formats are specified.
-
-- `NOPREVIEW`
-
-    Keyword. If specified, the form is immediately (without preview) sent for printing.
-
-- `printerExpr`
-
-    An expression whose value determines the name of the printer to which the print job will be sent. If no printer with the specified name is found (or specified), the default printer is selected.
+#### Message mode options
 
 - `MESSAGE`
 
-    Keyword. If specified, the form displays data to the user in [message](../paradigm/In_a_print_view_PRINT.md#interactive) mode.
+    Keyword selecting the message mode.
+
+- `messageType`
+
+    Sets how the message panel is rendered on the client:
+
+    - `LOG` — message in the `System.log` window.
+    - `INFO` — informational message.
+    - `SUCCESS` — success message.
+    - `WARN` — warning message.
+    - `ERROR` — error message.
+    - `DEFAULT` — plain message. Used by default.
+
+- `topLimit`, `offsetLimit`
+
+    Number of leading rows shown/skipped respectively when rendering the message. Each is either a single value applied to every group object on the form, or a per-object-group map giving an individual value for the named group objects.
+
+- `limitExpr`, `limitExpr1, ..., limitExprK`
+
+    Expressions whose values are the integer row limits or offsets.
+
+- `groupName1, ..., groupNameK`
+
+    Names of group objects on the form whose limits or offsets are specified individually. Simple IDs.
+
+#### Interactive mode options
+
+- `format`
+
+    Sets the [export format](../paradigm/In_a_print_view_PRINT.md#format) of the generated file:
+
+    - `PDF` — exported to a PDF file.
+    - `XLS`, `XLSX` — exported to an Excel file.
+    - `DOC`, `DOCX` — exported to a Word file.
+    - `RTF` — exported to an RTF file.
+    - `HTML` — exported to an HTML file.
+
+    If omitted, no file is produced; the report is rendered through the interactive mode (see `previewMode` and `executionType` for the resulting behavior).
+
+- `sheetExpr`
+
+    Expression whose value is the sheet name in the resulting file. Used only with the `XLS` and `XLSX` formats.
+
+- `passwordExpr`
+
+    Expression whose value is the password that sets read-only protection on the resulting file. Used only with the `XLS` and `XLSX` formats.
+
+- `filePropertyId`
+
+    [Property ID](IDs.md#propertyid) to which the generated file is written. The property must have no parameters and its value must be of a file class. When given, the report is built on the server and the file is written to the property without any client interaction; otherwise the file is sent to the client and opened by the operating system. Has no effect with `SERVER` (the report is sent directly to a server-side printer instead). May appear only when `format` is specified.
+
+- `previewMode`
+
+    Selects how the generated report is delivered on the client:
+
+    - `PREVIEW` — the report is shown to the user (in a preview window, or opened in the OS-associated program when `format` is specified). Used by default.
+    - `NOPREVIEW` — the report is sent directly to the printer.
+
+    Has no effect with `SERVER`.
+
+- `printerExpr`
+
+    Expression whose value is the name of the target printer. If not specified, the default printer is used or the printer-selection dialog is offered, depending on the platform configuration.
+
+#### Common options
 
 - `syncType`
 
-    Determines when the created action should be continued:
+    Determines when the surrounding action continues:
 
-    - `WAIT` - after the client completes the action (closes the preview/message form). Used by default.
-    - `NOWAIT` - after preparation of the information for sending to the client (form data is read).
+    - `WAIT` — after the user closes the preview window or message on the client.
+    - `NOWAIT` — immediately after the form data has been prepared on the server. Used by default.
 
-  - `messageType`
-
-    Message type. Specifies how the message will be displayed on the screen. Specified by one of the keywords:
-
-    - `LOG` - message in the `System.log` window.
-
-    - `INFO` - information message.
-
-    - `SUCCESS` - success message.
-
-    - `WARN` - warning message.
-
-    - `ERROR` - error message.
-
-    - `DEFAULT` - plain message. This value is used by default.
-
-- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
-
-    Print only first `n` records, where `n` is value of expression `topExpr` or `topPropertyExprT` for group object `topGroupIdT`.
-
-- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
-
-    Print only records with offset `m`, where `m` is value of expression `offsetExpr` or `offsetPropertyExprF` for group object `offsetGroupIdF`.
+    Has no effect with `SERVER` or with `TO filePropertyId`.
 
 ### Examples
 
@@ -134,19 +193,17 @@ FORM printOrder
     FILTERS order(d) == o
 ;
 
-print (Order o)  {
-    PRINT printOrder OBJECTS o = o; // printing
+print (Order o) {
+    PRINT printOrder OBJECTS o = o;                                       // interactive preview
 
     LOCAL file = FILE ();
-    PRINT printOrder OBJECTS o = o DOCX TO file;
+    PRINT printOrder OBJECTS o = o DOCX TO file;                          // write into a file property
     open(file());
 
-    //v 2.0-2.1 syntax
-    LOCAL sheetName = STRING[255]();
-    sheetName() <- 'encrypted';
-    PRINT printOrder OBJECTS o = o XLS SHEET sheetName PASSWORD 'pass';
+    PRINT printOrder OBJECTS o = o XLS SHEET 'encrypted' PASSWORD 'pass'; // XLS with sheet name and password
 
-    //v 2.2 syntax
-    //PRINT printOrder OBJECTS o = o XLS SHEET 'encrypted' PASSWORD 'pass';
+    PRINT LIST Order = o;                                                 // print the class's list form
+
+    PRINT printOrder OBJECTS o = o FILTERS price(d) > 100 MESSAGE WARN TOP 10; // top-10 high-price details as a warning message
 }
 ```

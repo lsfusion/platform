@@ -257,6 +257,8 @@ module.exports = {
                                     'paradigm/Filter_FILTER',
                                     'paradigm/Order_ORDER',
                                     'paradigm/View_VIEW',
+                                    'paradigm/Selection_SELECT',
+                                    'paradigm/View_type_VIEWTYPE',
                                   ]
                                 },
                                 {
@@ -269,6 +271,7 @@ module.exports = {
                                   ]
                                 },
                                 'paradigm/Capture_SCREENSHOT',
+                                'paradigm/Container_visibility_EXPAND_COLLAPSE',
                               ]
                             },
                           ]
@@ -347,6 +350,14 @@ module.exports = {
                       items: [
                         'paradigm/System_System',
                         'paradigm/System_Time',
+                        'paradigm/System_Authentication',
+                        'paradigm/System_Security',
+                        'paradigm/System_Service',
+                        'paradigm/System_SystemEvents',
+                        'paradigm/System_UserEvents',
+                        'paradigm/System_Reflection',
+                        'paradigm/System_Email',
+                        'paradigm/System_Icon',
                         'paradigm/System_Utils',
                       ]
                     },
@@ -692,6 +703,9 @@ module.exports = {
                     'how-to/How-to_Table_status',
                     'how-to/How-to_Custom_components_properties',
                     'how-to/How-to_Custom_components_objects',
+                    'how-to/How-to_Custom_client_JS_modules',
+                    'how-to/How-to_Custom_React_views',
+                    'how-to/How-to_Custom_view_controller',
                   ]
                 },
                 'how-to/How-to_Reports', 

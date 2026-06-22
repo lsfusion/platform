@@ -138,10 +138,13 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     @SuppressWarnings("unused")
     public void setCustom(Object caption) {
+        // a CUSTOM container: the value IS the design. React vs plain custom is inferred from this string in
+        // ContainerView.isReact() (a component identifier -> React; '' / HTML template / property -> plain custom),
+        // so nothing else is set here. (Replaces the former separate customReact attribute.)
         if(caption instanceof LocalizedString)
-            target.setCustomDesign(caption.toString(), getVersion());
+            target.setCustom(caption.toString(), getVersion());
         else
-            target.setPropertyCustomDesign((PropertyObjectEntity<?>) caption, getVersion());
+            target.setPropertyCustom((PropertyObjectEntity<?>) caption, getVersion());
     }
     
     // should not be here. added for USERFILTER component backward compatibility

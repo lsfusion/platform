@@ -1153,7 +1153,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
                     return null;
             }
 
-            if(!forceSelect && isGroupCustom(context))
+            if(!forceSelect && (isGroupCustom(context) || isGroupReact(context)))
                 return null;
 
             PropertyObjectEntity<?> property = (PropertyObjectEntity<?>) actionOrProperty;
@@ -1364,6 +1364,13 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     public boolean isGroupCustom(FormInstanceContext context) {
         GroupObjectEntity toDraw;
         return isList(context) && (toDraw = getToDraw(context.entity)) != null && toDraw.isCustom();
+    }
+
+    // a list group rendered by a CUSTOM REACT container is custom for grid-only purposes too (the container holds
+    // the React-ness, not the group's view type), so autoselect must be skipped just like for a classic custom group
+    public boolean isGroupReact(FormInstanceContext context) {
+        GroupObjectEntity toDraw;
+        return context.view != null && isList(context) && (toDraw = getToDraw(context.entity)) != null && context.view.isReactContainerGroup(toDraw);
     }
 
     public boolean isGroupSimpleState(FormInstanceContext context) {

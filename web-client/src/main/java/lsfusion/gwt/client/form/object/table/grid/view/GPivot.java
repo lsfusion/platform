@@ -1960,8 +1960,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return aggr;
     }
 
-    public native JavaScriptObject getRendererOptions(String configFunction, JavaScriptObject params) /*-{
-        return configFunction ? $wnd[configFunction](params) : {}
+    public JavaScriptObject getRendererOptions(String configFunction, JavaScriptObject params) {
+        configFunction = nullEmpty(configFunction);
+        JavaScriptObject fn = configFunction != null ? GwtClientUtils.getGlobalField(configFunction) : null;
+        return getRendererOptions(fn, params);
+    }
+
+    private native JavaScriptObject getRendererOptions(JavaScriptObject fn, JavaScriptObject params) /*-{
+        return fn ? fn(params) : {};
     }-*/;
 
     public native JavaScriptObject getCallbacks() /*-{

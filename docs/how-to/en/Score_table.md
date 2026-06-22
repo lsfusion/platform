@@ -143,12 +143,12 @@ CLASS GameResult 'G/R' {
 }
 ```
 
-For this purpose we create a `GameResult` class and add three [static objects](../paradigm/Static_objects.md) to it that are specified using expressions specified in braces `{ }`. In this case, the values `win`, `winOT`, `winSO` and `W`, `OW`, `SW` will be stored in the system properties `staticName` and `staticCaption`, respectively.
+For this purpose we create a `GameResult` class and add three [static objects](../paradigm/Static_objects.md) to it that are specified using expressions specified in braces `{ }`. In this case, the values `win`, `winOT`, `winSO` and `W`, `OW`, `SW` will be available through the system properties `name` and `caption`, respectively.
 
-We create the `resultName` property, which will return the caption of the game result (`W`, `OW`, or `SW`). To do this, we take the system property `staticCaption`, which is supported for all objects in the system, and constrain its signature using the `IF` operator, indicating that the object must be of the `GameResult` class. This property is added to the `base` property group so that it appears in the automatic dialog for selecting an object of the `GameResult` class.
+We create the `resultName` property, which will return the caption of the game result (`W`, `OW`, or `SW`). To do this, we take the system property `caption`, which is supported for all objects in the system, and constrain its signature using the `IF` operator, indicating that the object must be of the `GameResult` class. This property is added to the `base` property group so that it appears in the automatic dialog for selecting an object of the `GameResult` class.
 
 ```lsf
-resultName 'Name' (GameResult game) = staticCaption(game) IF game IS GameResult IN base;
+resultName 'Name' (GameResult game) = caption(game) IF game IS GameResult IN base;
 ```
 
 We determine the result of a particular game. In case when one of the teams won by 2 or more goals, the game result is considered a regular-time win. If not, and only if not, the game result (the type of win for a given score) will be set by the user. However, the user cannot set a regular-time win as the game result.
@@ -364,7 +364,7 @@ CLASS GameResult 'G/R' {
     winSO 'SW'
 }
 
-resultName 'Name' (GameResult game) = staticCaption(game) IF game IS GameResult IN base;
+resultName 'Name' (GameResult game) = caption(game) IF game IS GameResult IN base;
 
 userResult = DATA GameResult (Game);
 result (Game game) = OVERRIDE userResult(game),

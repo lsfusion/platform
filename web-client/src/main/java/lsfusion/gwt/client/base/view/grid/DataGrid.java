@@ -33,6 +33,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.EmbeddedForm;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableComponent;
@@ -2069,7 +2070,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 }
             }
 
-            if (changeEvent) // should be after changeRowCell to not enable accidentally ChangeSelection.MOVE_END (maybe later move to onCellAfter)
+            // not in link mode, since there a click is a navigation action (edit object / open form), not a drag-selection gesture
+            // otherwise a micro mouse move (or a reflow when the form opens) would be interpreted as a drag and switch the selection to MOVE_END
+            if (changeEvent && !FormsController.isLinkMode())
                 dragSelectionHelper.start();
         }
 

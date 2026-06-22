@@ -3,12 +3,12 @@ slug: "/WINDOW_statement"
 title: 'WINDOW statement'
 ---
 
-The `WINDOW` statement - creating a new [window](../paradigm/Navigator_design.md).
+The `WINDOW` statement - creating a new [window](../paradigm/Navigator_design.md), the `HIDE WINDOW` statement - hiding an existing window.
 
 ### Syntax
 
 ```
-WINDOW name [caption] [options];
+WINDOW name [caption] [NATIVE] [options];
 ```
 
 The `options` that appear at the end of the statement can be specified one after another in any order:
@@ -20,15 +20,25 @@ orientationType
 POSITION(x, y, width, height)
 fixedPositionType
 HALIGN(alignType)
-VALING(alignType) 
+VALIGN(alignType)
 TEXTHALIGN(alignType)
 TEXTVALIGN(alignType)
 CLASS cssClassExpr
 ```
 
+An existing window can be hidden with a separate statement:
+
+```
+HIDE WINDOW windowName;
+```
+
 ### Description
 
 The `WINDOW` statement declares a new window and adds it to the current [module](../paradigm/Modules.md).
+
+By default a window is created that displays [navigator elements](../paradigm/Navigator.md).
+
+The `HIDE WINDOW` statement hides the specified window, making it invisible. For example, hiding the `System.log` window causes messages to the user to be shown as system dialog forms.
 
 ### Parameters
 
@@ -39,6 +49,14 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 - `caption`
 
     Window caption. [String literal](Literals.md#strliteral). If caption is not specified, the window's name will be used as the caption.  
+
+- `NATIVE`
+
+    Keyword specifying that the window is filled by the client rather than by the navigator: navigator elements cannot be placed into it. This is how the predefined `System.forms` window, where forms open, and `System.log` window, where user messages appear, are defined. For such a window only the `POSITION`, `CLASS`, `HIDETITLE`, and `HIDESCROLLBARS` options apply, while orientation and alignment are ignored.
+
+- `windowName`
+
+    Name of the window to hide. [Composite ID](IDs.md#cid) of an existing window.
 
 ### Options
 
@@ -152,8 +170,15 @@ WINDOW system HORIZONTAL POSITION(80, 0, 20, 6) VALIGN(CENTER) HALIGN(END) HIDET
 
 WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClass();
 
+// forms open in forms, messages are shown in log
+WINDOW forms NATIVE POSITION(20, 6, 80, 94) CLASS formsWindowClass();
+WINDOW log NATIVE POSITION(80, 6, 20, 93) HIDETITLE CLASS logsWindowClass();
+
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening
 WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
+
+// hiding the predefined message window (then messages are shown as dialog forms)
+HIDE WINDOW System.log;
 ```
 

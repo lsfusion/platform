@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 // Shared JS controller machinery for INTERNAL CLIENT / CUSTOM views: builds the `controller` object exposing
 // exec(action,...params) / eval(script,...params) / change(property,...keyParams,value) as Promises, keeps the
-// callbackId -> {resolve,reject} registry, and resolves/rejects on the terminal GControllerResultAction /
+// requestIndex -> {resolve,reject} registry, and resolves/rejects on the terminal GControllerResultAction /
 // GControllerExceptionAction. The transport differs by context (form session vs navigator session): the dispatch*
 // hooks build and send the context-specific request action; isClosed() lets a closed context reject pending
 // promises. See GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
@@ -19,11 +19,9 @@ public abstract class GController {
 
     public final JavaScriptObject controller = initController();
 
-    // pending JS promise callbacks keyed by callbackId; the call stores {resolve, reject} here and the terminal
-    // GControllerResult/ExceptionAction resolves/rejects it.
+    // pending JS promise callbacks keyed by requestIndex; the call stores {resolve, reject} here and the terminal
+    // GControllerResult/ExceptionAction (carrying the same requestIndex) resolves/rejects it.
     private final JavaScriptObject controllerCallbacks = JavaScriptObject.createObject();
-
-    private long nextControllerCallbackId = 0;
 
     private native JavaScriptObject initController() /*-{
         var thisObj = this;
@@ -47,50 +45,52 @@ public abstract class GController {
     }-*/;
 
     public JavaScriptObject controllerExec(String action, JavaScriptObject params) {
-        long callbackId = nextControllerCallbackId++;
+        if (isClosed()) // reject BEFORE dispatch: a dispatched action on a closed context enqueues but never executes, leaking the queue entry / busy state
+            return rejectedControllerPromise();
         ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
-        return createControllerPromise(callbackId, () -> dispatchExec(callbackId, action, encoded, new ControllerServerResponseCallback(callbackId)));
+        return createControllerPromise(dispatchExec(action, encoded, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerEval(String script, boolean evalAction, JavaScriptObject params) {
-        long callbackId = nextControllerCallbackId++;
+        if (isClosed())
+            return rejectedControllerPromise();
         ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
-        return createControllerPromise(callbackId, () -> dispatchEval(callbackId, script, evalAction, encoded, new ControllerServerResponseCallback(callbackId)));
+        return createControllerPromise(dispatchEval(script, evalAction, encoded, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerChange(String property, JavaScriptObject keyParams, JavaScriptObject value) {
-        long callbackId = nextControllerCallbackId++;
+        if (isClosed())
+            return rejectedControllerPromise();
         ArrayList<Serializable> encodedKeys = GSimpleStateTableView.encodeUnknownJSValues(keyParams);
         Serializable encodedValue = GSimpleStateTableView.encodeUnknownJSValue(value);
-        return createControllerPromise(callbackId, () -> dispatchChange(callbackId, property, encodedKeys, encodedValue, new ControllerServerResponseCallback(callbackId)));
+        return createControllerPromise(dispatchChange(property, encodedKeys, encodedValue, new ControllerServerResponseCallback()));
     }
+    private native JavaScriptObject rejectedControllerPromise() /*-{
+        return $wnd.Promise.reject(new $wnd.Error("Form is closed"));
+    }-*/;
 
-    // context-specific transport: build the request action (set its callbackId) and dispatch it with the callback
-    protected abstract void dispatchExec(long callbackId, String action, ArrayList<Serializable> params, ServerResponseCallback callback);
-    protected abstract void dispatchEval(long callbackId, String script, boolean evalAction, ArrayList<Serializable> params, ServerResponseCallback callback);
-    protected abstract void dispatchChange(long callbackId, String property, ArrayList<Serializable> keyParams, Serializable value, ServerResponseCallback callback);
+    // context-specific transport: build the request action and dispatch it; returns the assigned requestIndex (the promise key)
+    protected abstract long dispatchExec(String action, ArrayList<Serializable> params, ServerResponseCallback callback);
+    protected abstract long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, ServerResponseCallback callback);
+    protected abstract long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, ServerResponseCallback callback);
     protected abstract boolean isClosed();
     // the GwtActionDispatcher that processes the response actions (form: the form action dispatcher; navigator: the navigator dispatcher)
     protected abstract GwtActionDispatcher getControllerDispatcher();
 
-    // register {resolve, reject} under callbackId BEFORE kicking off the (async) dispatch, so the entry exists when
-    // the terminal action is processed (single JS turn; the response is a later macrotask). If the context is
-    // already closed the dispatch is skipped silently (no callback ever fires) -> reject so the Promise can't hang.
-    private native JavaScriptObject createControllerPromise(double callbackId, Runnable dispatch) /*-{
+    // dispatch already ran and assigned the requestIndex; register {resolve, reject} under it (synchronously, before the
+    // response macrotask). If the context is already closed the dispatch was skipped -> reject so the Promise can't hang.
+    private native JavaScriptObject createControllerPromise(double requestIndex) /*-{
         var self = this;
         var callbacks = this.@GController::controllerCallbacks;
         return new $wnd.Promise(function (resolve, reject) {
-            callbacks[callbackId] = { resolve: resolve, reject: reject };
-            dispatch.@java.lang.Runnable::run()();
+            callbacks[requestIndex] = { resolve: resolve, reject: reject };
             if(self.@GController::isClosed()())
-                @GController::rejectControllerCallback(*)(callbacks, callbackId, "Form is closed", false);
+                @GController::rejectControllerCallback(*)(callbacks, requestIndex, "Form is closed", false);
         });
     }-*/;
 
     // rejects the pending controller promise on transport/RPC failure (the terminal action would never arrive)
     protected class ControllerServerResponseCallback extends ServerResponseCallback {
-        private final long callbackId;
-        public ControllerServerResponseCallback(long callbackId) {
+        public ControllerServerResponseCallback() {
             super(false);
-            this.callbackId = callbackId;
         }
         @Override
         protected GwtActionDispatcher getDispatcher() {
@@ -99,27 +99,27 @@ public abstract class GController {
         @Override
         public void onFailure(ExceptionResult exceptionResult) {
             super.onFailure(exceptionResult);
-            controllerCallbackException(callbackId, "Request failed", false);
+            controllerCallbackException(exceptionResult.requestIndex, "Request failed", false);
         }
     }
 
-    public void controllerCallbackResult(long callbackId, JavaScriptObject result) {
-        resolveControllerCallback(controllerCallbacks, callbackId, result);
+    public void controllerCallbackResult(long requestIndex, JavaScriptObject result) {
+        resolveControllerCallback(controllerCallbacks, requestIndex, result);
     }
-    public void controllerCallbackException(long callbackId, String message, boolean cancelled) {
-        rejectControllerCallback(controllerCallbacks, callbackId, message, cancelled);
+    public void controllerCallbackException(long requestIndex, String message, boolean cancelled) {
+        rejectControllerCallback(controllerCallbacks, requestIndex, message, cancelled);
     }
-    private static native void resolveControllerCallback(JavaScriptObject callbacks, double callbackId, JavaScriptObject result) /*-{
-        var cb = callbacks[callbackId];
+    private static native void resolveControllerCallback(JavaScriptObject callbacks, double requestIndex, JavaScriptObject result) /*-{
+        var cb = callbacks[requestIndex];
         if(cb) {
-            delete callbacks[callbackId];
+            delete callbacks[requestIndex];
             cb.resolve(result == null ? undefined : result); // no/null server value -> JS undefined
         }
     }-*/;
-    private static native void rejectControllerCallback(JavaScriptObject callbacks, double callbackId, String message, boolean cancelled) /*-{
-        var cb = callbacks[callbackId];
+    private static native void rejectControllerCallback(JavaScriptObject callbacks, double requestIndex, String message, boolean cancelled) /*-{
+        var cb = callbacks[requestIndex];
         if(cb) {
-            delete callbacks[callbackId];
+            delete callbacks[requestIndex];
             var error = new Error(message || "Cancelled");
             error.cancelled = cancelled;
             cb.reject(error);

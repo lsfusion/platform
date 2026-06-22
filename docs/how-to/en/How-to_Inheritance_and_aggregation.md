@@ -68,7 +68,7 @@ type 'Type' = ABSTRACT STRING[30] (Batch);
 
 FORM batches 'Batches'
     OBJECTS b = Batch
-    PROPERTIES(b) READONLY date, nameItem, type, objectClassName
+    PROPERTIES(b) READONLY date, nameItem, type, className
 ;
 NAVIGATOR {
     NEW batches;

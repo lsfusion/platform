@@ -51,7 +51,7 @@ NAVIGATOR {
 }
 ```
 The keyword **CUSTOM** specifies that not the standard tabular interface should be used to draw the list of items,
-but the components created by the function _itemCards_. Let's declare this function in the file _itemcards.js_, which we'll place in the folder _resources/web_.
+but the components created by the function _itemCards_. Let's declare this function in the file _itemcards.js_, which we'll place in the folder _resources/web_. This is the no-build path — a plain `.js` file, no JSX or bundling; see [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative.
 It will return an object consisting of two functions: _render_ and _update_.
 
 The function _render_ takes as input the controller and the element inside which the new elements necessary to display the data are to be created:
@@ -193,21 +193,9 @@ onWebClientInit() + {
 The resulting form will look like this:
 ![](../images/How-to_Custom_components_objects.png)
 
-### Calling the server
+### Calling the server {#calling-the-server}
 
-Besides the rendering helpers above, the _controller_ lets the client JS call back into the server and get the result as a `Promise`. The same object is passed as the first argument to the JavaScript function bound by an [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action.
-
-- `exec(action, ...params)` — runs a named action; resolves to the action's `RETURN` value, if it has one.
-- `eval(script, ...params)` — runs an lsf script that defines its own `run` action, so its parameters can be declared with explicit types.
-- `evalAction(script, ...params)` — runs an action body, wrapped into a `run` action whose parameters are referenced positionally as `$1`, `$2`, ….
-- `change(property, ...keyParams, value)` — changes a property; the last argument is the value, the preceding ones are the keys. If the property's value is an object, pass the object's id as the value — the platform resolves it to the object and assigns it (the picker dialog is used only for interactive editing).
-
-```js
-controller.exec('recalc', orderId);
-controller.eval('run(INTEGER a) { RETURN a * 2; }', 21).then(v => console.log(v)); // 42
-controller.evalAction('RETURN 2 + 3;').then(v => console.log(v));                   // 5
-controller.change('note', orderId, 'checked');
-```
+A custom object view calls back into the server through the [form controller](How-to_Custom_view_controller.md): reached as `controller.form` from the view's local controller, as `props.controller` in a [React view](How-to_Custom_React_views.md), or as the controller passed to an [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) function (the last argument, after the converted call parameters). Its `exec` / `eval` / `evalAction` / `change` methods each run on the server and return a `Promise`; their signatures are in [Calling the server](How-to_Custom_view_controller.md#calling-the-server). The rest of this section covers how those server calls behave — result conversion, sessions, and the authorization gate.
 
 The result is converted to a JS value:
 
@@ -223,14 +211,14 @@ Parameters are passed as plain JS values (a number, string, boolean, `Date`, or 
 
 In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.
 
-By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](../language/Action_options.md) (which also exposes it over HTTP), or the user has admin rights. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `API` clause — the authorization becomes "the user can open this form" plus the explicit listing:
+By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](../language/Action_options.md) (which also exposes it over HTTP), or the user has admin rights. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `CUSTOMS` clause — the authorization becomes "the user can open this form" plus the explicit listing:
 
 ```lsf
 FORM order 'Order'
     OBJECTS o = Order
     PROPERTIES(o) number, note
-    API round, format = formatSum, taxRate
+    CUSTOMS round, format = formatSum, taxRate
 ;
 ```
 
-Now `controller.exec("round", 3.14159)`, `controller.exec("format", 1990, "USD")` and `controller.change("taxRate", 0.2)` work on this form without `@@api` or `enableAPI`. Each entry may be renamed with an alias (`format = formatSum`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`round[NUMERIC]`) to pick an overload; `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values — phase 1 entries are mostly primitive calls like these. The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument (forcing a parameter to the form's own object is phase 2). `eval`/`evalAction` run arbitrary script and stay under the gate.
+Now `controller.form.exec("round", 3.14159)`, `controller.form.exec("format", 1990, "USD")` and `controller.form.change("taxRate", 0.2)` work on this form without `@@api` or `enableAPI` (a React view calls the same on `props.controller`). Each entry may be renamed with an alias (`format = formatSum`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`round[NUMERIC]`) to pick an overload; `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values — phase 1 entries are mostly primitive calls like these. The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument (forcing a parameter to the form's own object is phase 2). `eval`/`evalAction` run arbitrary script and stay under the gate.

@@ -36,25 +36,25 @@ public abstract class RemoteRequestObjectProxy<T extends RemoteRequestInterface>
     }
 
     @Override
-    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, long callbackId, String action, Object[] params) throws RemoteException {
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params) throws RemoteException {
         logRemoteMethodStartVoidCall("exec");
-        ServerResponse result = target.exec(requestIndex, lastReceivedRequestIndex, callbackId, action, params);
+        ServerResponse result = target.exec(requestIndex, lastReceivedRequestIndex, action, params);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
 
     @Override
-    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, long callbackId, String script, boolean evalAction, Object[] params) throws RemoteException {
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params) throws RemoteException {
         logRemoteMethodStartVoidCall("eval");
-        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, callbackId, script, evalAction, params);
+        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, script, evalAction, params);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }
 
     @Override
-    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, long callbackId, String property, Object[] params, Object value) throws RemoteException {
+    public ServerResponse change(long requestIndex, long lastReceivedRequestIndex, String property, Object[] params, Object value) throws RemoteException {
         logRemoteMethodStartVoidCall("change");
-        ServerResponse result = target.change(requestIndex, lastReceivedRequestIndex, callbackId, property, params, value);
+        ServerResponse result = target.change(requestIndex, lastReceivedRequestIndex, property, params, value);
         logRemoteMethodEndVoidCall("change");
         return result;
     }

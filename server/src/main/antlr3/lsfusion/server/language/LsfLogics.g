@@ -984,7 +984,7 @@ formPropertiesList
 // form controller API allow-list (issue #1650): actions/properties callable via the form controller exec/change,
 // bypassing the @@api/enableAPI gate, optionally under an alias. Phase 1 is access + aliasing only (no parameter mapping).
 formAPIList
-	:	'API' formAPIItem (',' formAPIItem)*
+	:	'CUSTOMS' formAPIItem (',' formAPIItem)*
 	;
 
 formAPIItem
@@ -5478,7 +5478,7 @@ changeKeyNavigatorElement returns [String changeKey, boolean show = false]
 		)?
 	;
 
-changeMouseNavigatorElement returns [String changeMouse, Boolean show]
+changeMouseNavigatorElement returns [String changeMouse, boolean show = false]
 	:	'CHANGEMOUSE' key = stringLiteral {$changeMouse = $key.val;}
 		(	('SHOW' { $show = true; })
 		|	('HIDE' { $show = false; })

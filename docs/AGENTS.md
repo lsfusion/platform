@@ -362,6 +362,31 @@ without the rule
 that produces the result,
 is insufficient.
 
+When a higher-level,
+overview,
+or summary description
+restates behavior
+that a more detailed
+section or article
+documents as conditional —
+holding only
+under a particular mode,
+default,
+or other qualifier,
+or only approximately —
+it MUST preserve
+that bounding qualifier
+or stay general enough
+not to assert
+the stronger,
+unconditional claim;
+presenting qualified
+or approximate behavior
+as an unconditional
+guarantee
+misstates
+the detailed source.
+
 Tabular presentation:
 
 When information

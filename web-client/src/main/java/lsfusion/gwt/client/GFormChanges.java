@@ -147,7 +147,7 @@ public class GFormChanges {
             case GPropertyReadType.CONTAINER_VALUECLASS:
                 return form.findContainerByID(readerId).valueClassReader;
             case GPropertyReadType.CUSTOM:
-                return form.findContainerByID(readerId).customDesignReader;
+                return form.findContainerByID(readerId).customReader;
             case GPropertyReadType.COMPONENT_SHOWIF:
                 return form.findComponentByID(readerId).showIfReader;
             case GPropertyReadType.COMPONENT_ELEMENTCLASS:

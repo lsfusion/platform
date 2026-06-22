@@ -116,3 +116,23 @@ currentBalance 'Current balance' (Book b) = GROUP SUM currentBalance(b, Stock s)
   
 
 Unlike the current balance for all the warehouses, it is not reasonable to mark this property as `MATERIALIZED` if you have only few warehouses — otherwise, UPDATE CONFLICT may occur when several users try to write the movement of the same book at different warehouses simultaneously.
+
+## Example 6
+
+### Task
+
+Similar to [**Example 3**](#example-3), except that we need to calculate the total value of the stock at a warehouse — the sum, across all the books, of each book's balance multiplied by its price.
+
+```lsf
+price 'Price' = DATA NUMERIC[14,2] (Book);
+```
+
+### Solution
+
+```lsf
+stockValue 'Stock value' (Stock s) = GROUP SUM currentBalance(Book b, s) * price(b);
+```
+
+  
+
+Here the `GROUP SUM` has no `BY` block: the parameters of the created property are taken from the outer (context) parameters used in the source — `s` — while the parameter declared inside the source — `b` — is summed over. Written this way, without `BY`, the grouping can also be used directly inside other expressions (with a `BY` block it cannot).

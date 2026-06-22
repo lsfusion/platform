@@ -65,13 +65,13 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     private NFProperty<Integer> lineSize = NFFact.property();
     private NFProperty<Integer> captionLineSize = NFFact.property();
     private NFProperty<Boolean> lineShrink = NFFact.property();
-    private NFProperty<String> customDesign = NFFact.property();
+    private NFProperty<String> custom = NFFact.property(); // CUSTOM 'fn': the component name (React) or design (HTML template / '' simple); react is INFERRED from it, see isReact()
 
     private NFProperty<PropertyObjectEntity> propertyCaption = NFFact.property();
     private NFProperty<PropertyObjectEntity> propertyCaptionClass = NFFact.property();
     private NFProperty<PropertyObjectEntity> propertyValueClass = NFFact.property();
     private NFProperty<PropertyObjectEntity> propertyImage = NFFact.property();
-    private NFProperty<PropertyObjectEntity> propertyCustomDesign = NFFact.property();
+    private NFProperty<PropertyObjectEntity> propertyCustom = NFFact.property();
 
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
@@ -187,7 +187,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
             case IMAGE:
                 return getPropertyImage();
             case CUSTOM:
-                return getPropertyCustomDesign();
+                return getPropertyCustom();
         }
         throw new UnsupportedOperationException();
     }
@@ -292,8 +292,16 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         return false;
     }
 
-    public boolean isCustomDesign() {
-        return getCustomDesign() != null;
+    public boolean isCustom() {
+        return getCustom() != null;
+    }
+
+    public boolean isReact() {
+        // React is INFERRED from the custom value (not stored): a bare component identifier (UpperCamel) names a React
+        // component; '', an HTML template ('<div>[child]</div>'), or a lower-case/path string is a plain custom design.
+        // The SINGLE point of determination — computed here and serialized to the client, so the client just reads it.
+        String cd = getCustom();
+        return cd != null && cd.matches("[A-Z][A-Za-z0-9_$]*");
     }
 
     @Override
@@ -328,7 +336,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     protected boolean hasPropertyComponent() {
-        return super.hasPropertyComponent() || getPropertyCaption() != null || getPropertyCaptionClass() != null || getPropertyValueClass() != null || getPropertyImage() != null || getPropertyCustomDesign() != null;
+        return super.hasPropertyComponent() || getPropertyCaption() != null || getPropertyCaptionClass() != null || getPropertyValueClass() != null || getPropertyImage() != null || getPropertyCustom() != null;
     }
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
         super.fillPropertyComponents(mComponents);
@@ -424,9 +432,11 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         pool.writeInt(outStream, getCaptionLineSize());
         outStream.writeBoolean(isLineShrink(pool.context));
 
-        outStream.writeBoolean(isCustomDesign());
-        if (isCustomDesign())
-            pool.writeString(outStream, getCustomDesign());
+        outStream.writeBoolean(isCustom());
+        if (isCustom())
+            pool.writeString(outStream, getCustom());
+
+        outStream.writeBoolean(isReact());
     }
 
     public LocalizedString getCaption() {
@@ -627,11 +637,11 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         lineShrink.set(value, version);
     }
 
-    public String getCustomDesign() {
-        return customDesign.get();
+    public String getCustom() {
+        return custom.get();
     }
-    public void setCustomDesign(String value, Version version) {
-        customDesign.set(value, version);
+    public void setCustom(String value, Version version) {
+        custom.set(value, version);
     }
 
     public PropertyObjectEntity getPropertyCaption() {
@@ -665,12 +675,12 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         propertyImage.set(value, version);
     }
 
-    public PropertyObjectEntity getPropertyCustomDesign() {
-        return propertyCustomDesign.get();
+    public PropertyObjectEntity getPropertyCustom() {
+        return propertyCustom.get();
     }
-    public void setPropertyCustomDesign(PropertyObjectEntity value, Version version) {
-        propertyCustomDesign.set(value, version);
-        setCustomDesign("<div/>", version); // now empty means "simple"
+    public void setPropertyCustom(PropertyObjectEntity value, Version version) {
+        propertyCustom.set(value, version);
+        setCustom("<div/>", version); // now empty means "simple"
     }
 
     @Override
@@ -701,12 +711,12 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         lineSize.finalizeChanges();
         captionLineSize.finalizeChanges();
         lineShrink.finalizeChanges();
-        customDesign.finalizeChanges();
+        custom.finalizeChanges();
         propertyCaption.finalizeChanges();
         propertyCaptionClass.finalizeChanges();
         propertyValueClass.finalizeChanges();
         propertyImage.finalizeChanges();
-        propertyCustomDesign.finalizeChanges();
+        propertyCustom.finalizeChanges();
         children.finalizeChanges();
     }
 
@@ -782,13 +792,13 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         mapping.sets(lineSize, src.lineSize);
         mapping.sets(captionLineSize, src.captionLineSize);
         mapping.sets(lineShrink, src.lineShrink);
-        mapping.sets(customDesign, src.customDesign);
+        mapping.sets(custom, src.custom);
 
         mapping.set(propertyCaption, src.propertyCaption);
         mapping.set(propertyCaptionClass, src.propertyCaptionClass);
         mapping.set(propertyValueClass, src.propertyValueClass);
         mapping.set(propertyImage, src.propertyImage);
-        mapping.set(propertyCustomDesign, src.propertyCustomDesign);
+        mapping.set(propertyCustom, src.propertyCustom);
     }
 
     @Override

@@ -10,13 +10,13 @@ import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 public class CustomContainerView extends LayoutContainerView {
 
     private final ResizableComplexPanel panel;
-    private String currentCustomDesign = "";
+    private String currentCustom = "";
 
     private final boolean simpleCustom;
 
     public CustomContainerView(GFormController formController, GContainer container) {
         super(container, formController);
-        simpleCustom = "".equals(container.getCustomDesign());
+        simpleCustom = "".equals(container.getCustom());
         panel = new ResizableComplexPanel();
         GwtClientUtils.addClassName(panel, "panel-custom");
     }
@@ -31,33 +31,33 @@ public class CustomContainerView extends LayoutContainerView {
 
     @Override
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
-        if (!simpleCustom && !currentCustomDesign.equals(container.getCustomDesign())) {
-            currentCustomDesign = container.getCustomDesign();
+        if (!simpleCustom && !currentCustom.equals(container.getCustom())) {
+            currentCustom = container.getCustom();
 
-            panel.getElement().setInnerHTML(getTagCustomDesign(container.getCustomDesign()));
+            panel.getElement().setInnerHTML(getTagCustom(container.getCustom()));
             for (int i = 0, childrenSize = children.size(); i < childrenSize; i++)
                 getCustomChildView(i).replace(panel, children.get(i).sID);
         }
         super.updateLayout(requestIndex, childrenVisible);
     }
 
-    public void updateCustomDesign(String customDesign) {
-        this.container.setCustomDesign(customDesign);
+    public void updateCustom(String custom) {
+        this.container.setCustom(custom);
     }
 
-    private String getTagCustomDesign(String rawCustomDesign) {
+    private String getTagCustom(String rawCustom) {
         while (true) {
-            int openBracket = rawCustomDesign.indexOf("[");
-            int closeBracket = rawCustomDesign.indexOf("]");
+            int openBracket = rawCustom.indexOf("[");
+            int closeBracket = rawCustom.indexOf("]");
             if (openBracket == -1 || closeBracket == -1) {
                 break;
             } else {
-                String tagName = rawCustomDesign.substring(openBracket + 1, closeBracket);
-                rawCustomDesign = rawCustomDesign.replace("[" + tagName + "]", "<" + tagName + "></" + tagName + ">");
+                String tagName = rawCustom.substring(openBracket + 1, closeBracket);
+                rawCustom = rawCustom.replace("[" + tagName + "]", "<" + tagName + "></" + tagName + ">");
             }
         }
 
-        return rawCustomDesign;
+        return rawCustom;
     }
 
     @Override

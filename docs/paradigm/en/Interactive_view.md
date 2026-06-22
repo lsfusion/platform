@@ -34,6 +34,7 @@ Any property or action can be displayed on a form in one of the following *views
 
 -   *Panel* (`PANEL`): a separate component that displays a property caption and this property value for the current values of the form objects.
 -   *Toolbar* (`TOOLBAR`): similar to a panel, but this component has a different default location (immediately below the table), and if the table to which a toolbar belongs is hidden then the toolbar is hidden with it.
+-   *Popup* (`POPUP`): similar to a panel, but placed inside a collapsed popup that the user opens with a separate button; suitable for properties that only need to be shown on demand.
 -   *table column* (`GRID`): a separate column in the table that displays the property values for all object collections (rows) in the table.
 
 For each object group, you can specify which *default view* the properties of this group will be displayed in (by default, this view is a table column). If the property has no parameters (that is, it does not have a display group), it is displayed in a panel. Actions are always displayed in a panel by default.
@@ -94,6 +95,7 @@ Search direction is determined by the object's default type (`PREV` here is equi
 When adding properties to a form, you can use a predefined set of operators that implement the most common scenarios for working with objects instead of using specific properties (thus avoiding the need to create and name these properties outside the form each time):
 
 -   Object value (`VALUE`) – for a form object of [built-in class](Built-in_classes.md) , a special property with one argument will be added which displays the current object value and allows the user to change it. For [custom classes](User_classes.md), a property will be added which displays the object ID in the database; when you try to change it, it shows a dialog with a list of objects of that class. The selected value will be used as the current value of the object on the form.
+-   Object interval (`INTERVAL`) – for a pair of form objects of the same [date or time class](Built-in_classes.md), a single property is added which displays the interval between them and, when both objects are displayed in a panel, lets the user edit it; when the interval is changed, the first object becomes its lower bound and the second object its upper bound.
 -   Create object (`NEW`) – adds an action without arguments, which [creates](New_object_NEW.md) an object of the class of the passed form object (or the class explicitly specified by the developer), after which it automatically makes this object current. If the class has descendants, the user will be shown a dialog where he can select specific child class. If any filters are applied to the form object, for which the object is created, the system will try to [change](Property_change_CHANGE.md) the newly created object's properties so that it meets these filter conditions (as a rule, for created objects, a default value of the class of each filter's value is written to that filter)
 -   Edit object (`EDIT`) – adds an action with one argument, which calls the `System.formEdit` action (which, in turn, open the default [edit form](#edtClass) for the edited object class). 
 -   Create and edit an object (`NEWEDIT`) – adds an action without arguments which creates an object of the form object class, calls the edit object action (`EDIT`), and if the input is not [canceled](Value_input.md#result), sets the added object as current.
@@ -149,7 +151,7 @@ If necessary, all these actions can be shown/hidden by removing the correspondin
 
 You can specify an image file which will be displayed as the form's icon.
 
-Also, if necessary, you can enable *automatic update* mode for a form: the `System.formRefresh` action will then be executed for the form at a specified interval.
+Also, the form can refresh itself automatically at a specified interval, by scheduling the `System.formRefresh` action to run periodically as a [form event](Form_events.md).
 
 ### Language
 

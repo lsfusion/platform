@@ -50,17 +50,17 @@ Parameters that change ranking thresholds:
 | Parameter                                 | Scope                           | Default threshold |
 |-------------------------------------------|---------------------------------|-------------------|
 | `defaultAutoImageRankingThreshold`        | All auto-icons                  | `0.0`             |
-| `defaultNavigatorImageRankingThreshold`   | Navigator elements              | `0.1`             |
-| `defaultContainerImageRankingThreshold`   | Containers and forms            | `0.6`             |
+| `defaultNavigatorImageRankingThreshold`   | Navigator elements and forms    | `0.1`             |
+| `defaultContainerImageRankingThreshold`   | Containers                      | `0.6`             |
 | `defaultPropertyImageRankingThreshold`    | Properties and actions          | `0.8`             |
 
 Parameters to enable/disable default icons:
 
 | Parameter                | Element type             | Default value |
 |--------------------------|--------------------------|---------------|
-| `defaultNavigatorImage`  | Navigator elements       | `true`        |
-| `defaultContainerImage`  | Containers and forms     | `false`       |
+| `defaultNavigatorImage`  | Navigator elements and forms | `true`    |
+| `defaultContainerImage`  | Containers               | `false`       |
 | `defaultPropertyImage`   | Properties and actions   | `false`       |
 
-By default, automatic icon assignment is enabled only for navigator elements.
+The default icon is substituted when no suitable match is found; with the standard settings it is enabled only for navigator elements and forms.
 

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object;
 
-import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.io.Serializable;
 

@@ -9,8 +9,7 @@ public class ControllerExceptionClientAction extends ControllerCallbackClientAct
     public final String message;
     public final boolean cancelled;
 
-    public ControllerExceptionClientAction(long callbackId, String message, boolean cancelled) {
-        super(callbackId);
+    public ControllerExceptionClientAction(String message, boolean cancelled) {
         this.message = message;
         this.cancelled = cancelled;
     }

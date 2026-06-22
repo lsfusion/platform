@@ -2714,7 +2714,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(containerInstance.captionClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(containerInstance.valueClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(containerInstance.imageReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(containerInstance.customReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
 
                 componentInstance = containerInstance;
             } else {

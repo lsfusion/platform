@@ -15,6 +15,6 @@ public class NavigatorControllerChangeActionHandler extends NavigatorServerRespo
 
     @Override
     public ServerResponseResult executeEx(NavigatorControllerChangeAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, getRemoteNavigator(action).change(action.requestIndex, action.lastReceivedRequestIndex, action.callbackId, action.property, action.params.toArray(), action.value));
+        return getServerResponseResult(action, getRemoteNavigator(action).change(action.requestIndex, action.lastReceivedRequestIndex, action.property, action.params.toArray(), action.value));
     }
 }

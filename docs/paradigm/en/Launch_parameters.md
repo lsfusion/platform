@@ -95,5 +95,5 @@ lsFusion startup parameters for the web server can be set in one of the followin
 ```
 
 :::info
-In addition to the launch parameters, the platform also has [system parameters](Working_parameters.md) which are set a little differently and are relevant mainly for processes of various components of the platform (that is, processes that occur after they are launched).
+In addition to the launch parameters, the platform also has [system parameters](Working_parameters.md) which are set a little differently and are relevant mainly for processes of various components of the platform (that is, processes that occur after they are launched), and [launch events](Launch_events.md) that occur once when each of its components starts and let a developer plug in initialization logic.
 :::

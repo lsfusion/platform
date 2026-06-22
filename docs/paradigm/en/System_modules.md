@@ -15,15 +15,15 @@ System modules live under `server/src/main/lsfusion/` in the platform repository
 |-----------------|---------|
 | [`System`](System_System.md) | Root types, base classes, infrastructure. Pulled in automatically by every module |
 | [`Time`](System_Time.md) | Date and time properties and operations |
-| `Authentication`| Users, contacts, sign-in |
-| `Security`      | Access policies |
-| `Service`       | Service actions, database monitoring, aggregation recalculation |
-| `SystemEvents`  | Server-lifecycle events |
-| `UserEvents`    | User-action lifecycle events |
-| `Reflection`    | Metadata about the navigator, forms, properties |
-| `Scheduler`     | Scheduled actions (see [Scheduler](Scheduler.md)) |
-| `Email`         | Outbound email |
-| `Icon`          | Standard UI icons |
+| [`Authentication`](System_Authentication.md) | Users, contacts, sign-in, locale, passwords |
+| [`Security`](System_Security.md) | Roles and access policies |
+| [`Service`](System_Service.md) | Service actions, database monitoring, aggregation recalculation, settings |
+| [`SystemEvents`](System_SystemEvents.md) | Server-lifecycle events, connections, exceptions, appearance |
+| [`UserEvents`](System_UserEvents.md) | Programmatic access to a form's filters and orders |
+| [`Reflection`](System_Reflection.md) | Metadata about the navigator, forms, properties, tables |
+| [`Scheduler`](Scheduler.md) | Scheduled actions |
+| [`Email`](System_Email.md) | Email accounts, sending, and receiving |
+| [`Icon`](System_Icon.md) | UI icon catalogue and search |
 | [`Utils`](System_Utils.md) | A collection of helper properties and actions: file system, encoding, strings, numbers, JSON, full-text search, and so on |
 
 #### Auxiliary (`utils/`)

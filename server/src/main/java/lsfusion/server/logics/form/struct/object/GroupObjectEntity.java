@@ -444,6 +444,17 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return "groupObj";
     }
 
+    @Override
+    public String getSID() {
+        if (sID != null || objects == null) // explicitly named group (or the NULL singleton, whose toString uses getSID)
+            return super.getSID();
+        // an unnamed group's default sID is synthesized from its object names
+        String result = "";
+        for (ObjectEntity object : objects)
+            result = (result.isEmpty() ? "" : result + ".") + object.getSID();
+        return result;
+    }
+
     public GroupObjectEntity(IDGenerator ID, String sID, ImOrderSet<ObjectEntity> objects, BaseLogicsModule LM, DebugInfo.DebugPoint debugPoint) {
         super(ID, sID, debugPoint);
 
@@ -584,15 +595,16 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         if (integrationSID != null)
             return integrationSID;
 
-        if(sID != null)
+        if (sID != null) // explicitly named group
             return sID;
 
-        integrationSID = "";
+        // unnamed group: the integration key (XML tag / JSON name) is built from the objects' own EXTIDs
+        String objectsSID = "";
         for (ObjectEntity obj : getOrderObjects()) {
-            integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+            objectsSID = (objectsSID.isEmpty() ? "" : objectsSID + ".") + obj.getIntegrationSID();
         }
 
-        return integrationSID;
+        return objectsSID;
     }
     public String getIntegrationSID() {
         return integrationSID.get();

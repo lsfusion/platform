@@ -161,13 +161,23 @@ public class OAuthAuthorizeHandler extends OAuthRequestHandlerBase {
             return;
         }
 
-        // Step 3: authenticate the user via session cookie. Anonymous ⇒ save the request
-        // and redirect to /login; LSFAuthenticationSuccessHandler will land us back here.
+        // Step 3: authenticate the user via session cookie. Anonymous ⇒ redirect to /login;
+        // LSFAuthenticationSuccessHandler lands us back here after a successful login.
+        //
+        // The return target travels as a `returnTo` request param (the login form carries the
+        // /login query string into /login_check), NOT only via the session-backed requestCache:
+        // on some servlet containers the login authentication rotates the HttpSession and the
+        // session-stored saved request does not survive into the new session, which would
+        // silently drop the user on the app's main page with no consent. The URL param survives
+        // that rotation; saveRequest stays as a fallback for environments that strip the param.
         AuthenticationToken token = LSFAuthenticationToken.getAppServerToken();
         if (token.isAnonymous()) {
             LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
             String contextPath = request.getContextPath() == null ? "" : request.getContextPath();
-            response.sendRedirect(contextPath + "/login");
+            String returnTo = request.getServletPath()
+                    + (request.getPathInfo() != null ? request.getPathInfo() : "")
+                    + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+            response.sendRedirect(contextPath + "/login?returnTo=" + urlEncode(returnTo));
             return;
         }
 

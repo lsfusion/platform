@@ -15,6 +15,6 @@ public class ControllerChangeActionHandler extends ControllerActionHandler<Contr
 
     @Override
     protected ServerResponse call(RemoteFormInterface remoteForm, ControllerChangeAction action) throws RemoteException {
-        return remoteForm.change(action.requestIndex, action.lastReceivedRequestIndex, action.callbackId, action.property, action.params.toArray(), action.value);
+        return remoteForm.change(action.requestIndex, action.lastReceivedRequestIndex, action.property, action.params.toArray(), action.value);
     }
 }

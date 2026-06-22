@@ -26,7 +26,7 @@ color 'Цвет' = DATA Color (Book);
 
 ```lsf
 // Вариант 1
-nameColor1 'Цвет' (Book b) = staticCaption(color(b));
+nameColor1 'Цвет' (Book b) = caption(color(b));
 
 // Вариант 2
 nameColor2 'Цвет' (Book b) = IF color(b) == Color.white THEN 'Белый' ELSE 'Черный';
@@ -71,7 +71,7 @@ status 'Статус' (Order o) = CASE WHEN accepted(o) THEN Status.accepted
                                  WHEN agreed(o) THEN Status.agreed
                                  WHEN sent(o) THEN Status.sent
                             ELSE Status.new;
-nameStatus2 'Статус' (Order o) = staticCaption(status(o));
+nameStatus2 'Статус' (Order o) = caption(status(o));
 ```
 
 ## Пример 3

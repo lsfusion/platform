@@ -19,5 +19,6 @@
         <module>logics</module>
         <module>platform-base</module>
         <module>platform-assemble</module>
+        <module>web-compile-maven-plugin</module>
     </modules>
 </project>

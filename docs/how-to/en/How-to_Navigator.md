@@ -27,7 +27,7 @@ NAVIGATOR {
 }
 ```
 
-By specifying `WINDOW` for the `application` element, we indicated that all its child objects must be displayed in the system [window](../paradigm/Navigator_design.md) called `toolbar`. This will look like this:
+By specifying `WINDOW` for the `application` element, we indicated that all its child objects must be displayed in the system [window](../paradigm/Navigator_design.md) called `toolbar`. This is also what makes the folder act as a button: because the forms now live in a separate window, selecting `Application` in the top toolbar reveals them there. Without `WINDOW` the forms would stay in the folder's own window and be shown next to it permanently, so selecting the folder would do nothing. This will look like this:
 
 ![](../images/How-to_Navigator_ex1.png)
 

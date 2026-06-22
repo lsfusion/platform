@@ -10,8 +10,7 @@ public class ControllerResultClientAction extends ControllerCallbackClientAction
     public final byte[] value;
     public final byte[] type;
 
-    public ControllerResultClientAction(long callbackId, byte[] value, byte[] type) {
-        super(callbackId);
+    public ControllerResultClientAction(byte[] value, byte[] type) {
         this.value = value;
         this.type = type;
     }

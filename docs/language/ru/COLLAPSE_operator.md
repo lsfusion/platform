@@ -3,7 +3,7 @@ slug: "/COLLAPSE_operator"
 title: 'Оператор COLLAPSE'
 ---
 
-Оператор `COLLAPSE` - создание [действия](../paradigm/Actions.md), реализующего [сворачивание элементов](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree).
+Оператор `COLLAPSE` создаёт [действие](../paradigm/Actions.md), которое сворачивает либо [элементы](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) [дерева объектов](../paradigm/Interactive_view.md#tree) на форме, либо [сворачиваемый контейнер](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) формы.
 
 ### Синтаксис
 
@@ -11,9 +11,17 @@ title: 'Оператор COLLAPSE'
 COLLAPSE [collapseType] formObjectGroupId [OBJECTS objName1 = expr1, ..., objNameN = exprN]
 ```
 
+Для сворачивания контейнера формы:
+
+```
+COLLAPSE CONTAINER formName.componentSelector
+```
+
 ### Описание
 
-Оператор `COLLAPSE` создает действие, которое позволяет свернуть определенные элементы дерева объектов на форме. Эти элементы могут быть определены с помощью блока `OBJECTS`. Если этот блок не указан, то операция сворачивания будет применена либо к текущему элементу дерева, либо к верхнему уровню элементов указанной [группы объектов](../paradigm/Form_structure.md#objects), в зависимости от типа операции.
+Первая форма создает действие, которое позволяет свернуть определенные элементы дерева объектов на форме. Эти элементы могут быть определены с помощью блока `OBJECTS`. Если этот блок не указан, то операция сворачивания будет применена либо к текущему элементу дерева, либо к верхнему уровню элементов указанной [группы объектов](../paradigm/Form_structure.md#objects), в зависимости от типа операции.
+
+Форма с ключевым словом `CONTAINER` создаёт действие, которое сворачивает контейнер формы, в контексте которой выполняется действие, скрывая его содержимое.
 
 ### Параметры
 
@@ -47,6 +55,14 @@ COLLAPSE [collapseType] formObjectGroupId [OBJECTS objName1 = expr1, ..., objNam
 
     [Выражения](Expression.md), значения которых являются искомыми значениями соответствующих объектов в указанной группе объектов.
 
+- `formName`
+
+    Имя формы. [Составной идентификатор](IDs.md#cid).
+
+- `componentSelector`
+
+    [Селектор](DESIGN_statement.md#selector) компонента дизайна. Компонент должен быть сворачиваемым контейнером.
+
 ### Примеры
 
 ```lsf
@@ -65,5 +81,31 @@ collapseAllTop {
 
 EXTEND FORM expandCollapseTest
     PROPERTIES() collapseDown, collapseAllTop
+;
+```
+
+```lsf
+CLASS Store;
+name = DATA ISTRING[100] (Store);
+
+FORM dashboard
+    OBJECTS s = Store
+    PROPERTIES(s) name
+;
+
+DESIGN dashboard {
+    NEW detailsBox {
+        collapsible = TRUE;
+        caption = 'Детали';
+        MOVE BOX(s);
+    }
+}
+
+collapseDetails {
+    COLLAPSE CONTAINER dashboard.detailsBox;
+}
+
+EXTEND FORM dashboard
+    PROPERTIES() collapseDetails
 ;
 ```

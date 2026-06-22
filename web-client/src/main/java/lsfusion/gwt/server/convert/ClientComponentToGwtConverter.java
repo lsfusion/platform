@@ -1,6 +1,8 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.client.classes.ClientActionClass;
+import lsfusion.client.classes.ClientObjectClass;
+import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.classes.data.ClientFileClass;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.design.ClientComponent;
@@ -25,6 +27,8 @@ import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GInputType;
+import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
@@ -157,7 +161,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         container.lineSize = clientContainer.lineSize;
         container.captionLineSize = clientContainer.captionLineSize;
         container.lineShrink = clientContainer.lineShrink;
-        container.customDesign = clientContainer.customDesign;
+        container.custom = clientContainer.custom;
+        container.react = clientContainer.react;
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
@@ -658,7 +663,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     @Cached
     @Converter(from = ClientObject.class)
     public GObject convertObject(ClientObject clientObject) {
-        return new GObject(convertOrCast(clientObject.groupObject), clientObject.getCaption(), clientObject.ID, clientObject.getSID());
+        GType type = clientObject.baseClass instanceof ClientObjectClass ? GLongType.instance : typeConverter.convertOrCast((ClientDataClass) clientObject.baseClass);
+        return new GObject(convertOrCast(clientObject.groupObject), clientObject.getCaption(), clientObject.ID, clientObject.getSID(), type);
     }
 
     @Cached

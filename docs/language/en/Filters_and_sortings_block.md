@@ -23,7 +23,9 @@ USER | FIXED
 
 The fixed filters block adds filters that will be automatically applied when any form data is read. One block can list an arbitrary number of filters separated by a comma.
 
-Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions and context-dependent action operators you can use the names of the objects already declared on the form as parameters.
+Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions you can use the names of the objects already declared on the form as parameters.
+
+A filter for a property being added to the form can also be defined with the `FILTER` option in the [property and action block](Properties_and_actions_block.md).
 
 ### Parameters
 
@@ -39,7 +41,7 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 
     Keywords defining the filter type:
     `FIXED` is a fixed filter (default);
-    `USER` is a user filter.
+    `USER` is a user filter. Property must be added to the form in advance.
 
 ### Examples
 
@@ -76,56 +78,28 @@ FORM onStock 'Balances' // creating a form in which the balances of products can
 ;
 ```
 
-## User filters block {#userfilters}
-
-### Syntax
-
-```
-USERFILTERS formProperty1, ..., formPropertyN
-```
-
-### Description
-
-**deprecated since version 7**, use `FILTERS` with `USER` option.
-The user filters block adds custom filters to the form. These are similar to those that the user can add themselves by pressing `F3`, however they cannot be removed.
-
-Each filter is specified by a [property on a form](Properties_and_actions_block.md#name), which must already have been added to the form previously.
-
-### Parameters
-
-- `formProperty1, ..., formPropertyN`
-
-    List of names of properties on a form for which filters are created.
-
-### Example
-
-```lsf
-CLASS Stock;
-name = DATA ISTRING[100] (Stock);
-
-FORM stocks 'Stocks'
-    OBJECTS st = Stock // add the 'Stock' object group
-    PROPERTIES name(st) // add the 'name' property 
-    FILTERS name(st) USER // add a user filter for the 'name' property
-;
-```
-
 ## Filter group block {#filtergroup}
 
 ### Syntax
 
 ```
-[EXTEND] FILTERGROUP groupName [NONULL]
-    FILTER caption1 expression1 [keystroke1] [DEFAULT]
+[EXTEND] FILTERGROUP groupName [nullType]
+    FILTER caption1 expression1 [binding1 ... bindingK] [DEFAULT]
     ...
-    FILTER captionN expressionN [keystrokeN] [DEFAULT]
+    FILTER captionN expressionN [binding1 ... bindingK] [DEFAULT]
+```
+
+Where each `binding` has the following syntax:
+
+```
+[bindingType] bindingLiteral [showType]
 ```
 
 ### Description
 
-The filter group block adds a set of filters to the form. A special UI component is then created for them, making it possible to apply one filter at a time. If the keyword `EXTEND` is specified , the component is not created, but used for extension. In one block, you can define a single group of filters consisting of an arbitrary number of filters that will be shown to the user in the order of listing. 
+The filter group block adds a set of filters to the form. A special UI component is then created for them, making it possible to apply one filter at a time. If the keyword `EXTEND` is specified, the component is not created, but used for extension. In one block, you can define a single group of filters consisting of an arbitrary number of filters that will be shown to the user in the order of listing.
 
-Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions and context-dependent action operators you can use the names of the objects already declared on the form as parameters.
+Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions you can use the names of the objects already declared on the form as parameters.
 
 ### Parameters
 
@@ -135,25 +109,46 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 
     Internal name of a filter group. [Simple ID](IDs.md#id). If the `EXTEND` keyword is specified, the platform will search the form for the created filter group with the specified name — otherwise a new filter group with the specified name will be created.
 
-- `NONULL`
+- `nullType`
 
-    When the `NONULL` keyword is specified, the `(All)` filter is not added to the group. The `(All)` filter allows no filters to be applied. This option can only be set when declaring `FILTERGROUP` (not in `EXTEND`).
+    Whether the group contains the `(All)` filter, which allows no filters to be applied. One of:
+
+    - `NULL` - the `(All)` filter is added to the group (default value)
+    - `NONULL` - the `(All)` filter is not added to the group; when the group is declared, the first filter becomes selected by default (unless the `DEFAULT` option specifies another one)
 
 - `caption1, ..., captionN`
 
-    Captions that will be shown in the user interface for the corresponding filter being added. Each caption is defined with a [string literal](IDs.md#strliteral).
+    Captions that will be shown in the user interface for the corresponding filter being added. Each caption is defined with a [string literal](Literals.md#strliteral).
 
 - `expression1, ..., expressionN`
 
     Expressions describing filters.
 
-- `keystroke1, ..., keystrokeN`
+- `binding1 ... bindingK`
 
-    Keyboard shortcuts that, when pressed by the user, will select a corresponding filter in the group. Each keyboard shortcut is defined with a string literal and the definition method is similar to that for a parameter in the Java class method [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+    Bindings whose triggering by the user selects the corresponding filter in the group. Bindings can be specified in any number and order.
+
+    - `bindingType`
+
+        Binding kind. One of:
+
+        - `KEY` - a keyboard shortcut (default value)
+        - `MOUSE` - a mouse event
+
+    - `bindingLiteral`
+
+        String literal defining the binding. For a keyboard shortcut the definition method is similar to that for a parameter in the Java class method [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)). The string format and additional options are the same as for the `CHANGEKEY` and `CHANGEMOUSE` options in [action options](Action_options.md).
+
+    - `showType`
+
+        Whether the binding is shown in the filter caption in the user interface. One of:
+
+        - `SHOW` - shown (default value)
+        - `HIDE` - not shown
 
 - `DEFAULT`
 
-    A keyword specifying that the filter being added must be selected automatically when the form is added. Can be specified for one filter in the group only.
+    A keyword specifying that the filter being added must be selected automatically when the form is opened. Can be specified for one filter in the group only.
 
 
 ### Examples
@@ -188,10 +183,7 @@ EXTEND FORM onStock
 ### Syntax
 
 ```
-ORDERS [FIRST]
-    formPropertyName1 [orderType1] [DESC]
-    ...
-    formPropertyNameN [orderTypeN] [DESC]
+ORDERS [FIRST] expression1 [orderType1] [DESC], ..., expressionN [orderTypeN] [DESC]
 ```
 
 Options `orderType` can be listed after each expression. The following set of options is supported:
@@ -204,19 +196,21 @@ USER | FIXED
 
 An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence.
 
+An ordering for a property being added to the form can also be defined with the `ORDER` option in the [property and action block](Properties_and_actions_block.md).
+
 ### Parameters
 
 - `FIRST`
 
     Keyword. Specifies that these sorts will be applied first, before all others.
 
-- `formPropertyName1, ..., formPropertyNameN`
+- `expression1, ..., expressionN`
 
-    Names of properties or form actions specifying the order.
+    List of order expressions. As a rule, the [name of a property or action on the form](Properties_and_actions_block.md#name) specifying the order is used as the expression. An arbitrary [expression](Expression.md) can only define a fixed order.
 
-- `orderOptions1, ..., orderOptionsN`
+- `orderType1, ..., orderTypeN`
 
-    Sort options for the corresponding property.
+    Sort options for the corresponding expression.
 
 - `DESC`
 
@@ -225,8 +219,8 @@ An order block adds orderings to the form that will be automatically applied whe
 - `USER | FIXED`
 
     Keywords that define the sort type:
-    `USER` is a user sort (default) that can be overridden from the UI. Property must be added to the form in advance.
-    `FIXED` is a fixed sort defined only in form code.
+    `USER` is a user sort (default for names of properties on the form) that can be overridden from the UI. Property must be added to the form in advance.
+    `FIXED` is a fixed sort defined only in form code (default for other expressions).
 
 ### Examples
 

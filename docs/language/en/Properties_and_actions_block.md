@@ -39,25 +39,43 @@ Each `formPropertyOptions` specifies options for the property or action being ad
 ```
 changeType
 SHOWIF propertyExpression
+DISABLEIF propertyExpression
 READONLYIF propertyExpression
+CLASS propertyExpression
 BACKGROUND propertyExpression
 FOREGROUND propertyExpression
 HEADER propertyExpression
 FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
 viewType
-NEWSESSION | NESTEDSESSION
+customView
+OPTIONS propertyExpression
+sessionScopeType
 APPLY
+OPTIMISTICASYNC
 DRAW groupObjectName 
-insertPosition 
+insertPosition
 ORDER [USER | FIXED] [DESC]
 FILTER [USER | FIXED]
 QUICKFILTER formPropertyName
+PIVOT calcType
+PIVOT LAST [DESC] (propertyExpression1, ..., propertyExpressionZ)
+COLUMN
+ROW
+MEASURE
 ON eventType actionId(param1, ..., paramZ) | { actionOperator }
+EVENTID eventId
 ATTR
 EXTID extID
+NOEXTID
+EXTNULL
 IN propertyGroup
 imageSetting
+STICKY
+NOSTICKY
+syncType
+HINTNOUPDATE
+HINTTABLE
 ```
 
 ### Description
@@ -106,6 +124,7 @@ In the current platform implementation, if the name and caption are not specifie
     Alternatively, you may use [object operators](../paradigm/Interactive_view.md#objectoperators) instead of the property/action IDs:
 
     - `VALUE` displays the object value (or the object ID for custom classes).
+    - `INTERVAL` displays the interval between the values of a pair of objects of the same date or time class.
     - `NEW` creates a new object.
     - `EDIT` edits the object.
     - `DELETE` deletes the object.
@@ -148,9 +167,25 @@ In the current platform implementation, if the name and caption are not specifie
 
         [Expression](Expression.md).
 
+- `DISABLEIF propertyExpression`
+
+    Specifies a property that determines unavailability of the property (action) being added. If the value of this property is not `NULL`, then the property (action) being added will be unavailable. The behavior is similar to the `DISABLE` option, but with an additional data-dependent condition.
+
+    - `propertyExpression`
+
+        [Expression](Expression.md).
+
 - `READONLYIF propertyExpression`
 
-    Specifies a property that allows or prohibits changing the property being added (or execution of the action being added). If the value of this property is `NULL`, then the property being added will not be changeable, and the action being added will not be executable. The behavior is similar to the `READONLY` option, but with an additional data-dependant condition.
+    Specifies a property that allows or prohibits changing the property being added (or execution of the action being added). If the value of this property is not `NULL`, then the property being added will not be changeable, and the action being added will not be executable. The behavior is similar to the `READONLY` option, but with an additional data-dependent condition.
+
+    - `propertyExpression`
+
+        [Expression](Expression.md).
+
+- `CLASS propertyExpression`
+
+    Specifies a property whose value determines the CSS classes (separated by spaces) of the value element of the property being added. Similar to the `valueClass` property in the [`DESIGN` statement](DESIGN_statement.md).
 
     - `propertyExpression`
 
@@ -215,16 +250,54 @@ In the current platform implementation, if the name and caption are not specifie
     - `GRID` — table column
     - `TOOLBAR` — toolbar
     - `PANEL` — panel
+    - `POPUP` — popup
 
   If not specified, the corresponding option from the [property options](Property_options.md) is used. If it is also not specified, then the [default view type](../paradigm/Interactive_view.md#property) is used for the display group of this property or action.
 
-- `NEWSESSION` | `NESTEDSESSION`
+- `customView`
 
-    Modifiers specifying that object operators (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) must be executed in a new (nested) session.
+    Specifying a custom view of the value of the property being added. It can have one of the following forms:
+
+    - `CUSTOM renderFunction [CHANGE [editFunction]]`
+    - `CUSTOM CHANGE [editFunction]`
+
+        Specifying the JavaScript functions responsible for displaying (`renderFunction`) and editing (`editFunction`) the property value. Each function is specified with a [string literal](Literals.md#strliteral) containing its name. If no function is specified after the `CHANGE` keyword, the default editing mechanism is used.
+
+    - `SELECT selectType`
+
+        Specifying that the property value should be displayed and edited as a selection from the list of possible values. The select element type `selectType` is specified with a string literal (for example `'dropdown'`, `'buttonGroup'`).
+
+    - `SELECT [AUTO]`
+
+        Specifying that the select element type is determined automatically. The `AUTO` keyword is optional and can be used for disambiguation.
+
+    - `NOSELECT`
+
+        Keyword prohibiting the automatic selection of the view as a list of possible values.
+
+- `OPTIONS propertyExpression`
+
+    Specifying a property whose value must be an object of the JSON class. The value is passed to the settings of the view of the value of the property being added.
+
+    - `propertyExpression`
+
+        [Expression](Expression.md).
+
+- `sessionScopeType`
+
+    The session in which object operators (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) must be executed. One of:
+
+    - `NEWSESSION` - a new session
+    - `NESTEDSESSION` - a nested session
+    - `THISSESSION` - the current form session (default value). It makes sense to use it explicitly to cancel the modifier specified for the entire block.
 
 - `APPLY`
 
     Modifier specifying that a change of the property being added (or execution of the action being added) is immediately applied (committed) to the database, instead of remaining in the current form session until it is applied explicitly. It can be combined with `NEWSESSION` / `NESTEDSESSION` (the session scope determines the session in which the change is executed, after which `APPLY` commits it) or used on its own.
+
+- `OPTIMISTICASYNC`
+
+    Modifier for the action being added. Similar to the same option in the [`ACTION` statement](ACTION_plus_statement.md).
 
 - `insertPosition`
 
@@ -253,7 +326,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `ORDER [USER | FIXED] [DESC]`
 
-    Specifies the ordering option for the added property.
+    Specifies the ordering option for the added property. Similar to specifying the property in the [order block](Filters_and_sortings_block.md#sort).
 
     - `USER`
 
@@ -269,7 +342,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `FILTER [USER | FIXED]`
 
-    Specifies the filtering option for the added property.
+    Specifies the filtering option for the added property. Similar to specifying the property in the [fixed filters block](Filters_and_sortings_block.md#fixedfilters).
 
     - `USER`
 
@@ -287,6 +360,18 @@ In the current platform implementation, if the name and caption are not specifie
 
         [Property name/actions on the form](#name).
 
+- `PIVOT calcType`
+
+    Specifying the aggregation function that will be used for the values of the property being added when grouping rows (including the [*pivot table* view type](Pivot_block.md)). `calcType` is specified with one of the keywords `SUM`, `MAX`, `MIN`.
+
+- `PIVOT LAST [DESC] (propertyExpression1, ..., propertyExpressionZ)`
+
+    Specifying that when grouping rows, the value of the property being added is taken from the row that is the last in the order of the values of the listed expressions (`DESC` - in reverse order).
+
+- `COLUMN`, `ROW`, `MEASURE`
+
+    Keywords specifying the initial placement of the property being added in the [*pivot table* view type](Pivot_block.md): in columns (`COLUMN`), rows (`ROW`), or measures (`MEASURE`). The per-element equivalent of the `COLUMNS`, `ROWS` and `MEASURES` lists of the pivot block.
+
 - `ON eventType actionId(param1, ..., paramZ) | { actionOperator }`
 
     Specifying the action that will be executed when the specified [form event](../paradigm/Form_events.md) occurs.
@@ -296,9 +381,11 @@ In the current platform implementation, if the name and caption are not specifie
         Type of form event. It is specified by one of the following keywords:
 
         - `CHANGE` — the user tries to change the value of the property being added (call the added action). 
+        - `CHANGE BEFORE` / `CHANGE AFTER` — occurs directly before (`BEFORE`) or after (`AFTER`) the value of the property being added is changed.
         - `CHANGEWYS` — the user tries to change the displayed value of the property. It is triggered when the user inserts a text into the added property (by pressing Ctrl + V or similarly). 
         - `GROUPCHANGE` — the user tries to change the property value for all objects in the table (group change).
-        - `EDIT` — the user tries to edit the object that represents the property value.
+        - `EDIT` — editing of the object passed to the property as input.
+        - `KEYPRESS key` — the user presses the `key` key, specified with a string literal.
         - `CONTEXTMENU [caption]` is the event type which adds a menu item executing the specified action to the context menu of the property (action) on the form. You can also specify the caption for this menu item (as string literal). If it is not specified, then, by default, it will be the same as the action caption.
 
             - `caption`
@@ -317,6 +404,14 @@ In the current platform implementation, if the name and caption are not specifie
 
         [Context-dependent action operator](Action_operators.md#contextdependent).
 
+- `EVENTID eventId`
+
+    Specifying the event ID for the property (action) being added. Similar to the same option in the [property options](Property_options.md).
+
+    - `eventId`
+
+        [String literal](Literals.md#strliteral).
+
 - `ATTR`
 
     Keyword. Used only in the [hierarchical](../paradigm/Structured_view.md#hierarchy) view. Indicates that:
@@ -331,6 +426,10 @@ In the current platform implementation, if the name and caption are not specifie
     - `extId`
 
         String literal.
+
+- `NOEXTID`
+
+    Keyword excluding the property from export/import in the structured view.
 
 - `EXTNULL`
 
@@ -363,9 +462,29 @@ In the current platform implementation, if the name and caption are not specifie
   
         Indicates that the [automatic assignment](../paradigm/Icons.md#auto) mode will be used. The `AUTO` keyword is optional and can be used for disambiguation.
 
+    - `IMAGE propertyExpression`
+
+        Specifying a property whose value defines the icon. Allows setting the icon dynamically, depending on the data.
+
     - `NOIMAGE`
 
         Keyword indicating that the property (action) should have no icon on the form.
+
+- `STICKY` | `NOSTICKY`
+
+    Keywords controlling whether the property (action) is pinned in the table. Similar to the same option in the [property options](Property_options.md).
+
+- `syncType`
+
+    Defines whether the action is executed synchronously (`WAIT`) or asynchronously (`NOWAIT`). If not specified, the corresponding option from the [property options](Property_options.md) is used.
+
+- `HINTNOUPDATE`
+
+    Keyword. Marks that the cached values of the property being added should not be updated on changes in the session of this form. Similar to the [`HINTNOUPDATE` block](FORM_statement.md#blocks) of the `FORM` statement.
+
+- `HINTTABLE`
+
+    Keyword. Marks that the changes of the property being added should be materialized into a temporary table when the form reads its data. Similar to the [`HINTTABLE` block](FORM_statement.md#blocks) of the `FORM` statement.
 
 ### Examples
 

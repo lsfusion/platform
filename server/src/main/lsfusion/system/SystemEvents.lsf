@@ -342,6 +342,37 @@ onWebClientInit() + {
     }
 }
 
+// platform-vendored React (production UMD): CUSTOM REACT components rely on the window.React/window.ReactDOM
+// globals, so they must load BEFORE any custom script; an app may still override with its own build at a later
+// (less negative) before-system order
+onWebClientInit() + {
+    onWebClientInit('react/react.production.min.js') <- -110;
+    onWebClientInit('react/react-dom.production.min.js') <- -109;
+}
+
+// JS/CSS load phase: the custom-JS registry shim must load before any auto-registered file (which registers into it).
+// Then auto-register custom JS/CSS so apps write no onWebClientInit for it, from two sources in one pass:
+//   - web/.compiled/* : bundles produced from src/main/web by the build;
+//   - web/init/*      : plain, un-built files dropped straight into resources/web/init.
+// Files MUST be load-order-independent — register/define at load and use any third-party library lazily (at render /
+// event time) — since the scan gives them all one order; a load-time cross-script dependency keeps using explicit
+// onWebClientInit with author-chosen orders (put such a file anywhere under resources/web outside web/init). A module's
+// CSS loads at 99, just before its JS at 100, both after the order-1..36 system/app resources.
+onWebClientInit() + {
+    onWebClientInit('lsfusion-custom-registry.js') <- -100;
+
+    readResourcePaths('/web/\\.compiled/.*\\.js');
+    readResourcePaths('/web/\\.compiled/.*\\.css');
+    readResourcePaths('/web/init/.*\\.js');
+    readResourcePaths('/web/init/.*\\.css');
+    FOR STRING s = resourcePaths(s) DO {
+        // re-filter: readResourcePaths appends to resourcePaths, so earlier scans (e.g. /onStarted/) are still present
+        IF startsWith(resourcePaths(s), '/web/.compiled/') OR startsWith(resourcePaths(s), '/web/init/') THEN {
+            IF endsWith(resourcePaths(s), '.css') THEN { onWebClientInit(resourcePaths(s)) <- 99; } // a module's CSS just before its bundle
+            IF endsWith(resourcePaths(s), '.js') THEN { onWebClientInit(resourcePaths(s)) <- 100; }
+        }
+    }
+}
 CLASS ABSTRACT Exception '{system.events.exception}';
 CLASS ClientException '{system.events.client.exception}' : Exception;
 CLASS WebClientException '{system.events.web.client.exception}' : ClientException;

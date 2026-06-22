@@ -78,11 +78,41 @@ public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
             }
         }
 
+        // Prefer the `returnTo` request param (set by OAuthAuthorizeHandler and carried through
+        // the login form into /login_check) over the session-backed saved request: the param
+        // survives a login session rotation that can drop the session attribute on some servlet
+        // containers, which would otherwise bounce the user to the app instead of OAuth consent.
+        // Restricted to a local /oauth/authorize path to avoid an open redirect.
+        String returnTo = request.getParameter("returnTo");
+        if (isValidOAuthReturnTo(returnTo)) {
+            getRedirectStrategy().sendRedirect(request, response, returnTo);
+            return;
+        }
+
         String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
         if (savedRequest != null) {
             getRedirectStrategy().sendRedirect(request, response, savedRequest);
         } else {
             super.onAuthenticationSuccess(request, response, authentication);
         }
+    }
+
+    // Only a local path to the OAuth authorize endpoint may be used as a post-login redirect
+    // target — prevents /login?returnTo=//evil.example (or a scheme-bearing URL) from turning
+    // login success into an open redirect. Shared with TwoFactorAuthenticationFilter so the 2FA
+    // success path applies the same guard (package-visible).
+    static boolean isValidOAuthReturnTo(String returnTo) {
+        if (returnTo == null || returnTo.isEmpty())
+            return false;
+        if (!returnTo.startsWith("/") || returnTo.startsWith("//"))
+            return false;
+        for (int i = 0; i < returnTo.length(); i++) {
+            char c = returnTo.charAt(i);
+            if (c < 0x20 || c == 0x7f) // reject control chars (response-splitting guard)
+                return false;
+        }
+        int q = returnTo.indexOf('?');
+        String path = q >= 0 ? returnTo.substring(0, q) : returnTo;
+        return path.equals("/oauth/authorize");
     }
 }

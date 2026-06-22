@@ -28,6 +28,9 @@ function interpreter() {
 
                 // ctrl + c fix
                 if (e.ctrlKey && e.keyCode === 67) {
+                    // stop the keydown from bubbling to the platform's copy handler (putIntoClipboard),
+                    // which otherwise selects the whole render element and overwrites the clipboard on http
+                    e.stopPropagation();
                     let textToCopy = aceEditor.getSelectedText();
                     //fix from https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
                     // navigator clipboard api needs a secure context (https)
@@ -74,6 +77,19 @@ function interpreter() {
                 }
             });
 
+            function commit(editorValue) {
+                if (element.controller && element.currentValue !== editorValue && !aceEditor.getReadOnly()) {
+                    element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
+                    element.currentValue = editorValue;
+                }
+            }
+
+            // editor shows aceEditor.defaultValue as a placeholder on focus; treat it as empty
+            function getEditorValue() {
+                let editorValue = aceEditor.getValue();
+                return editorValue === aceEditor.defaultValue ? '' : editorValue;
+            }
+
             aceEditor.onBlur = function (e) {
                 // when autocomplete popup is shown, it is stays in the DOM after the editor is closed or when another form is opened.
                 let completer = aceEditor.completer;
@@ -85,18 +101,24 @@ function interpreter() {
                 //disable text caret cursor blinking
                 aceEditor.renderer.hideCursor();
 
-                let editorValue = aceEditor.getValue();
+                let editorValue = getEditorValue();
                 //reset default text set by aceEditor.on("focus"...
-                if (editorValue === aceEditor.defaultValue) {
-                    editorValue = '';
+                if (editorValue !== aceEditor.getValue())
                     aceEditor.setValue(editorValue, true);
-                }
-                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue && !aceEditor.getReadOnly()) {
-                    element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
-
-                    element.currentValue = editorValue;
-                }
+                if (e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget))
+                    commit(editorValue);
             }
+
+            let commitTimer = null;
+            aceEditor.on("change", function () {
+                if (commitTimer)
+                    clearTimeout(commitTimer);
+
+                commitTimer = setTimeout(function () {
+                    commitTimer = null;
+                    commit(getEditorValue());
+                }, 500);
+            });
 
             element.currentValue = aceEditor.getValue();
         },
@@ -127,7 +149,7 @@ function interpreter() {
                 let editorValue = value.text;
                 let currentEditorValue = aceEditor.getValue();
                 // first check means that there is no editing is done (because we don't have any start / end editing here)
-                if (currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
+                if (!aceEditor.container.contains(document.activeElement) && currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
                     aceEditor.setValue(editorValue, true);
 
                     element.currentValue = editorValue;

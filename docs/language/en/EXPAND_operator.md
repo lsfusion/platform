@@ -3,16 +3,24 @@ slug: "/EXPAND_operator"
 title: 'EXPAND operator'
 ---
 
-The `EXPAND` operator is the creation of an [action](../paradigm/Actions.md), that implements the [expansion of elements](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) in the [object tree](../paradigm/Interactive_view.md#tree).
+The `EXPAND` operator creates an [action](../paradigm/Actions.md) that expands either [elements](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md) of an [object tree](../paradigm/Interactive_view.md#tree) on a form, or a [collapsible container](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) of a form.
 
 ### Syntax
 ```
 EXPAND [expandType] formObjectGroupId [OBJECTS objName1 = expr1, ..., objNameN = exprN]
 ```
 
+To expand a form container:
+
+```
+EXPAND CONTAINER formName.componentSelector
+```
+
 ### Description
 
-The `EXPAND` operator creates an action that is used to expand specific elements of the object tree on a form. These elements can be determined using the `OBJECTS` block. If this block is not specified, the expansion operation will be applied either to the current element of the tree or to the top-level elements of the specified [object group](../paradigm/Form_structure.md#objects), depending on the type of operation. 
+The first form creates an action that is used to expand specific elements of the object tree on a form. These elements can be determined using the `OBJECTS` block. If this block is not specified, the expansion operation will be applied either to the current element of the tree or to the top-level elements of the specified [object group](../paradigm/Form_structure.md#objects), depending on the type of operation.
+
+The form with the `CONTAINER` keyword creates an action that expands a container of the form in whose context the action is executing, revealing its contents.
 
 ### Parameters
 
@@ -50,6 +58,14 @@ The `EXPAND` operator creates an action that is used to expand specific elements
 
     [Expressions](Expression.md) whose values are the target values of the corresponding objects in the specified object group.
 
+- `formName`
+
+    Form name. [Composite ID](IDs.md#cid).
+
+- `componentSelector`
+
+    Design component [selector](DESIGN_statement.md#selector). The component must be a collapsible container.
+
 ### Examples
 
 ```lsf
@@ -72,5 +88,31 @@ expandAllTop {
 
 EXTEND FORM expandCollapseTest
     PROPERTIES() expandDown, expandUp, expandAllTop
+;
+```
+
+```lsf
+CLASS Store;
+name = DATA ISTRING[100] (Store);
+
+FORM dashboard
+    OBJECTS s = Store
+    PROPERTIES(s) name
+;
+
+DESIGN dashboard {
+    NEW detailsBox {
+        collapsible = TRUE;
+        caption = 'Details';
+        MOVE BOX(s);
+    }
+}
+
+expandDetails {
+    EXPAND CONTAINER dashboard.detailsBox;
+}
+
+EXTEND FORM dashboard
+    PROPERTIES() expandDetails
 ;
 ```

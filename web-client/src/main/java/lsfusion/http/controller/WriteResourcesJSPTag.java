@@ -27,13 +27,13 @@ public class WriteResourcesJSPTag extends TagSupport {
                 for (MainController.WebAction webAction : resources) {
                     String s = webAction.resource;
                     String extension = webAction.extension;
-                    if (extension.equals("js")) {
+                    if ("js".equals(extension)) {
                         out.print("<script type='text/javascript' src='" + s + "'></script>");
-                    } else if (extension.equals("css")) {
+                    } else if ("css".equals(extension)) {
                         out.print("<link rel='stylesheet' type='text/css' href='" + s + "' />");
-                    } else if (extension.equals("html")) { //to add tags to header.
+                    } else if ("html".equals(extension)) { //to add tags to header.
                         out.print(s);
-                    } else if (SystemUtils.isFont(extension)) {
+                    } else if (extension != null && SystemUtils.isFont(extension)) {
                         out.print("<script>"
                                 + "var fontFace = new FontFace('" + webAction.resourceName + "', 'url(" + s + ")');"
                                 + "fontFace.load().then(function(loadedFace) {"

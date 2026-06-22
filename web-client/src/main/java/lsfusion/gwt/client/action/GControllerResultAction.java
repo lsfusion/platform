@@ -12,8 +12,7 @@ public class GControllerResultAction extends GControllerCallbackAction {
     @SuppressWarnings("UnusedDeclaration")
     public GControllerResultAction() {}
 
-    public GControllerResultAction(long callbackId, GType type, Serializable value) {
-        super(callbackId);
+    public GControllerResultAction(GType type, Serializable value) {
         this.type = type;
         this.value = value;
     }

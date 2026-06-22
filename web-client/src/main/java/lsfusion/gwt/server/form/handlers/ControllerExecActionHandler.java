@@ -15,6 +15,6 @@ public class ControllerExecActionHandler extends ControllerActionHandler<Control
 
     @Override
     protected ServerResponse call(RemoteFormInterface remoteForm, ControllerExecAction action) throws RemoteException {
-        return remoteForm.exec(action.requestIndex, action.lastReceivedRequestIndex, action.callbackId, action.action, action.params.toArray());
+        return remoteForm.exec(action.requestIndex, action.lastReceivedRequestIndex, action.action, action.params.toArray());
     }
 }

@@ -207,6 +207,16 @@ PROPERTY RULES
    for property expressions:
    if any parameter is `NULL`, the result is `NULL`.
 
+   Exceptions that do NOT nullify on a single `NULL` operand:
+   `MIN` / `MAX`, the `NULL`-tolerant arithmetic `(+)` / `(-)`,
+   and `GROUP` aggregates (`GROUP SUM`, `GROUP MAX`, etc.) —
+   a `NULL` operand or value is skipped instead of propagating.
+
+   These exceptions still yield `NULL` when:
+   - every operand or aggregated value is `NULL`;
+   - `(+)` / `(-)` or `GROUP SUM` produces `0`
+     (a zero result is returned as `NULL`).
+
 4. The assistant MUST NOT use `GROUP AGGR`
    inside arbitrary expressions.
 
@@ -372,6 +382,18 @@ EVENT RULES (`WHEN`)
    forcibly override any explicit change — for example,
    maintained totals, audit stamps, or invariants
    the user is not allowed to bypass.
+
+4. Rules 1-3 describe the event-action form
+   `WHEN <condition> DO <target> <- <expr>`. In the
+   reactive assignment form `<target> <- <expr> WHEN <condition>`
+   the guard MUST NOT test `CHANGED(<target>)`: the target
+   would then depend on its own change, forming a cycle
+   `<target>` -> `CHANGED(<target>)` -> `<target>`.
+
+   To default a value yet still yield to an explicit change,
+   write it as the self-guarded event-action form
+   (`WHEN [LOCAL] <condition> AND NOT CHANGED(<target>)
+   DO <target> <- <expr>`) rather than as a reactive assignment.
 ----------------------------------------------------------------
 CONSTRAINT RULES
 
@@ -565,6 +587,18 @@ FORM RULES
     `BACKGROUND expr`, etc. are regular action calls /
     expressions and ALWAYS use explicit parameters,
     regardless of the block header.
+----------------------------------------------------------------
+NAVIGATOR RULES
+
+1. A folder whose children should appear only when the folder
+   is selected MUST place those children in a different window
+   than the folder itself (typically `WINDOW toolbar`). In a
+   horizontal toolbar such as `System.root`, a folder that keeps
+   its children in its own window cannot switch anything — they
+   are shown flattened next to it and selecting the folder does
+   nothing. A vertical toolbar instead renders same-window
+   children as a nested group under the folder, so there the
+   separate window is not required.
 ----------------------------------------------------------------
 MODULE DESIGN RULES
 

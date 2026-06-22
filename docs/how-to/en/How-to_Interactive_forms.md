@@ -16,3 +16,6 @@ title: 'How-to: Interactive forms'
 9. [Table state](How-to_Table_status.md). Accessing current selections and orderings on a form.  
 10. [Custom components (properties)](How-to_Custom_components_properties.md). Using your own visual components for properties written in JavaScript.
 11. [Custom components (objects)](How-to_Custom_components_objects.md). Using your own visual components for objects written in JavaScript.
+12. [Custom client JS modules](How-to_Custom_client_JS_modules.md). Bundling and auto-registering your own browser JavaScript (and React) kept under `src/main/web`.
+13. [Custom React form views](How-to_Custom_React_views.md). Rendering a form container with a React component via `DESIGN custom`.
+14. [Custom view controller API](How-to_Custom_view_controller.md). Reading and changing form state from a custom view (and `INTERNAL CLIENT`) through the controller.

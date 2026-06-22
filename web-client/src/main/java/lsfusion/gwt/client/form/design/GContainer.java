@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
@@ -68,7 +69,8 @@ public class GContainer extends GComponent implements HasNativeSID {
     public Integer lineSize;
     public Integer captionLineSize;
     public boolean lineShrink;
-    public String customDesign = null;
+    public String custom = null;
+    public boolean react = false; // CUSTOM REACT 'fn': custom holds the React component name
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -250,19 +252,23 @@ public class GContainer extends GComponent implements HasNativeSID {
         return lineShrink;
     }
 
-    public String getCustomDesign() {
-        return customDesign;
+    public String getCustom() {
+        return custom;
     }
 
-    public void setCustomDesign(String customDesign) {
-        this.customDesign = customDesign;
+    public void setCustom(String custom) {
+        this.custom = custom;
     }
 
-    public boolean isCustomDesign() {
-        return customDesign != null;
+    public boolean isCustom() {
+        return custom != null;
     }
 
-    private class GCaptionReader implements GPropertyReader {
+    public boolean isReact() {
+        return react; // custom holds the React component name
+    }
+
+    private class GCaptionReader implements GComponentReader {
 
         public GCaptionReader() {
         }
@@ -271,6 +277,11 @@ public class GContainer extends GComponent implements HasNativeSID {
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
             controller.setContainerCaption(GContainer.this, PValue.getCaptionStringValue(values.firstValue()));
+        }
+
+        @Override
+        public GComponent getReaderComponent() {
+            return GContainer.this;
         }
 
         private String sID;
@@ -284,7 +295,7 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
-    private class GImageReader implements GPropertyReader {
+    private class GImageReader implements GComponentReader {
 
         public GImageReader() {
         }
@@ -293,6 +304,11 @@ public class GContainer extends GComponent implements HasNativeSID {
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
             controller.setContainerImage(GContainer.this, PValue.getImageValue(values.firstValue()));
+        }
+
+        @Override
+        public GComponent getReaderComponent() {
+            return GContainer.this;
         }
 
         private String sID;
@@ -306,7 +322,7 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
     public final GPropertyReader imageReader = new GImageReader();
 
-    private class GCaptionClassReader implements GPropertyReader {
+    private class GCaptionClassReader implements GComponentReader {
         private String sID;
 
         public GCaptionClassReader() {
@@ -318,6 +334,11 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
+        public GComponent getReaderComponent() {
+            return GContainer.this;
+        }
+
+        @Override
         public String getNativeSID() {
             if(sID == null) {
                 sID = "_COMPONENT_" + "CAPTIONCLASS" + "_" + GContainer.this.sID;
@@ -326,7 +347,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
     }
     public final GPropertyReader captionClassReader = new GCaptionClassReader();
-    private class GValueClassReader implements GPropertyReader {
+    private class GValueClassReader implements GComponentReader {
         private String sID;
 
         public GValueClassReader() {
@@ -335,6 +356,11 @@ public class GContainer extends GComponent implements HasNativeSID {
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             controller.getFormLayout().setValueClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public GComponent getReaderComponent() {
+            return GContainer.this;
         }
 
         @Override
@@ -347,16 +373,21 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
     public final GPropertyReader valueClassReader = new GValueClassReader();
 
-    private class GCustomDesignReader implements GPropertyReader {
+    private class GCustomReader implements GComponentReader {
         private String sID;
 
-        public GCustomDesignReader() {
+        public GCustomReader() {
         }
 
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
-            controller.setContainerCustomDesign(GContainer.this, PValue.getCustomStringValue(values.firstValue()));
+            controller.setContainerCustom(GContainer.this, PValue.getCustomStringValue(values.firstValue()));
+        }
+
+        @Override
+        public GComponent getReaderComponent() {
+            return GContainer.this;
         }
 
         @Override
@@ -367,7 +398,7 @@ public class GContainer extends GComponent implements HasNativeSID {
             return sID;
         }
     }
-    public final GPropertyReader customDesignReader = new GCustomDesignReader();
+    public final GPropertyReader customReader = new GCustomReader();
 
     public String getPath() {
         return path;

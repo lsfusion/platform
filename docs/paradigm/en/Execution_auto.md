@@ -125,7 +125,7 @@ Platform components are also updated separately from each other. To do this, you
 |Component|Files|
 |-|-|
 |Application Server (Server)|File on the central server: `lsfusion-server-6.<new version>.jar`<br/>File to replace: `$INSTALL_DIR$/Server/server.jar`|
-|Web server (Client)|File on the central server: `lsfusion-server-5.<new version>.jar`<br/>File to replace: `$INSTALL_DIR$/Client/webapps/ROOT.war`<br/>To update Tomcat, you need to download the archive with the new version of Tomcat and unzip it to the `$INSTALL_DIR$/Client` folder without the `webapps` directory and the [startup parameters](#settings) file|
+|Web server (Client)|File on the central server: `lsfusion-client-6.<new version>.war`<br/>File to replace: `$INSTALL_DIR$/Client/webapps/ROOT.war`<br/>To update Tomcat, you need to download the archive with the new version of Tomcat and unzip it to the `$INSTALL_DIR$/Client` folder without the `webapps` directory and the [startup parameters](#settings) file|
 </TabItem>
 <TabItem value="linux">
 

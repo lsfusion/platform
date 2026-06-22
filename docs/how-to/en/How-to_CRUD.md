@@ -15,7 +15,7 @@ CLASS Type 'Type' {
     thriller 'Thriller',
     fiction 'Fiction'
 }
-name 'Name' (Type g) = staticCaption(g) IF g IS Type;
+name 'Name' (Type g) = caption(g) IF g IS Type;
 ```
 
 We need to create a form to select a type from the list.

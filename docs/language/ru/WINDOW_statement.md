@@ -3,12 +3,12 @@ slug: "/WINDOW_statement"
 title: 'Инструкция WINDOW'
 ---
 
-Инструкция `WINDOW` - создание нового [окна](../paradigm/Navigator_design.md).
+Инструкция `WINDOW` - создание нового [окна](../paradigm/Navigator_design.md), инструкция `HIDE WINDOW` - скрытие существующего окна.
 
 ### Синтаксис
 
 ```
-WINDOW name [caption] [options];
+WINDOW name [caption] [NATIVE] [options];
 ```
 
 Опции `options`, которые идут в конце инструкции, могут быть указаны друг за другом в произвольном порядке:
@@ -20,15 +20,25 @@ orientationType
 POSITION(x, y, width, height)
 fixedPositionType
 HALIGN(alignType)
-VALING(alignType) 
+VALIGN(alignType)
 TEXTHALIGN(alignType)
 TEXTVALIGN(alignType)
 CLASS cssClassExpr
 ```
 
+Существующее окно можно скрыть отдельной инструкцией:
+
+```
+HIDE WINDOW windowName;
+```
+
 ### Описание
 
 Инструкция `WINDOW` объявляет новое окно и добавляет его в текущий [модуль](../paradigm/Modules.md). 
+
+По умолчанию создаётся окно, в котором отображаются [элементы навигатора](../paradigm/Navigator.md).
+
+Инструкция `HIDE WINDOW` скрывает указанное окно, делая его невидимым. Например, скрытие окна `System.log` приводит к тому, что сообщения пользователю выдаются в виде системных диалоговых форм.
 
 ### Параметры
 
@@ -39,6 +49,14 @@ CLASS cssClassExpr
 - `caption`
 
     Заголовок окна. [Строковый литерал](Literals.md#strliteral). Если заголовок не задан, то заголовком окна будет являться его имя.  
+
+- `NATIVE`
+
+    Ключевое слово, указывающее, что окно наполняет клиент, а не навигатор: поместить в него элементы навигатора нельзя. Так заданы предопределённые окна `System.forms`, в котором открываются формы, и `System.log`, в котором выводятся сообщения пользователю. Для такого окна применяются только опции `POSITION`, `CLASS`, `HIDETITLE` и `HIDESCROLLBARS`, а ориентация и выравнивание не учитываются.
+
+- `windowName`
+
+    Имя скрываемого окна. [Составной идентификатор](IDs.md#cid) существующего окна.
 
 ### Опции инструкции
 
@@ -152,7 +170,14 @@ WINDOW system HORIZONTAL POSITION(80, 0, 20, 6) VALIGN(CENTER) HALIGN(END) HIDET
 
 WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClass();
 
+// в forms открываются формы, в log выводятся сообщения
+WINDOW forms NATIVE POSITION(20, 6, 80, 94) CLASS formsWindowClass();
+WINDOW log NATIVE POSITION(80, 6, 20, 93) HIDETITLE CLASS logsWindowClass();
+
 // горизонтальное окно внизу рабочего стола, в котором все кнопки будут выравниваться по центру, а текст - выравниваться вверх
 // в это окно можно, например, помещать формы для быстрого открытия
 WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
+
+// скрытие предопределённого окна сообщений (тогда сообщения выдаются диалоговыми формами)
+HIDE WINDOW System.log;
 ```

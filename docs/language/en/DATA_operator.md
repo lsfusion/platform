@@ -42,7 +42,7 @@ This operator cannot be used in the [`JOIN` operator](JOIN_operator.md) (inside 
 
 - `argumentClass1, ..., argumentClassN`
 
-    A list of class IDs for property arguments. It can be empty; in this case, `()` is usually used.
+    A list of class IDs for property arguments. An empty list (`()`) means the property has no arguments. Without the list at all, the argument classes are taken from the property declaration's typed parameters.
 
 ### Examples
 

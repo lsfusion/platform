@@ -6,7 +6,7 @@ title: 'Structured view'
 All structured views (*formats*) can be divided into two types:
 
 -   *Hierarchical* (XML, JSON) - single text file; the information for [object groups](Form_structure.md#objects) is put as a list inside the information for [parent](Static_view.md#hierarchy) groups.
--   *Flat* (DBF, CSV, XLS, TABLE) - one table file for each object group, and each object group with more than one level of [nesting](Static_view.md#hierarchy) should have a column in its table named `parent` which should contain the "upper" row number in the parent group table.
+-   *Flat* (DBF, CSV, XLS, XLSX, TABLE) - one table file for each object group, and each object group with more than one level of nesting should have a column in its table named `parent` which should contain the "upper" row number in the parent group table.
 
 
 :::info
@@ -15,14 +15,14 @@ Working with flat formats with a hierarchy depth greater than one is not very co
 
 Formats are also divided into:
 
--   human-readable (text) and binary. All hierarchical formats are human-readable, flat can be either binary (DBF, TABLE, XLS), or human-readable (CSV). You can and should specify the encoding for human-readable formats (UTF-8 is used by default).
+-   human-readable (text) and binary. All hierarchical formats are human-readable, flat can be either binary (DBF, TABLE, XLS, XLSX), or human-readable (CSV). You can and should specify the encoding for human-readable formats (UTF-8 is used by default).
 -   standardized and internal. At the moment, only one internal format is supported: TABLE (a table of values). All the other formats are standardized. Internal format files are processed in a special way in some [integration](Integration.md) operations (e.g., in [SQL calls](Access_to_an_external_system_EXTERNAL.md#table)). In addition, internal formats can be used to communicate lsFusion systems with each other.
 
-In the current implementation the [group-in-columns](Form_structure.md#groupcolumns) platforms are ignored in a structured view.
+In the current platform implementation, [group-in-columns](Form_structure.md#groupcolumns) are ignored in a structured view.
 
 <a className="lsdoc-anchor" id="objects"/>
 
-When building an object group [hierarchy](Static_view.md#hierarchy) in a structured view, the object groups that have all their objects [passed](Open_form.md#params) on the form opening are ignored (as if these object groups did not exist).
+When building an object group hierarchy in a structured view, the object groups that have all their objects [passed](Open_form.md#params) on the form opening are ignored (as if these object groups did not exist).
 
 <a className="lsdoc-anchor" id="drawgroup"/>
 
@@ -59,7 +59,7 @@ Unlike property names on the form, property export/import names (`EXTID`) of dif
 
 Before directly proceeding with the form export/import, the platform builds a hierarchy of properties, groups of objects/properties as follows:
 
--   The hierarchy of objects/properties groups is built in accordance with the [hierarchy](Static_view.md) of object groups and property [display groups](Form_structure.md#drawgroup): a property display group is considered the parent of this property, the hierarchy of object groups is preserved.
+-   The hierarchy of objects/properties groups is built in accordance with the [hierarchy](Static_view.md) of object groups and property display groups: a property display group is considered the parent of this property, the hierarchy of object groups is preserved.
 -   Then for each `X` object group:
     -   [property groups](Groups_of_properties_and_actions.md) that all `X` descendants belong to are determined, then these property groups and their ancestors are automatically included in the hierarchy. Also:
         -   property groups become the parents of `X` descendants that belong to those groups
@@ -121,10 +121,10 @@ XML of the property group ::=
     <property group name> XML with child properties, groups of properties/objects </property group name>
 
 XML of the object group ::=
-    <object group name> XML with child properties, groups of properties/objects 1 </property group name>
-    <object group name> XML with child properties, groups of properties/objects 2 </property group name>
+    <object group name> XML with child properties, groups of properties/objects 1 </object group name>
+    <object group name> XML with child properties, groups of properties/objects 2 </object group name>
     ...
-    <object group name> XML with child properties, groups of properties/objects N </property group name>
+    <object group name> XML with child properties, groups of properties/objects N </object group name>
 ```
 
 When exporting/importing to XML, the special `ATTR` option can be specified for a property on the form. Thus, when exporting/importing that property, its value will be stored not in a separate tag, but in the attribute of the parent tag:
@@ -139,7 +139,7 @@ Properties with `NULL` values, as well as property groups that do not have any t
 
 ### Predefined value {#value}
 
-When importing JSON, if for an object group an array ( `[ ]` ) of values contains not an object ( `{ }` ), but a specific value (for example, a number or a string), then this value is automatically converted to an object `{ "value" : value }`. A similar conversion is performed when exporting an object group to JSON: if the object contains exactly one `value` key (i.e., it has the form `{ "value" : value}`), then instead of it, the value for this `value` key is substituted to the resulting JSON. In addition to "ordinary" object groups, the same conversions are also performed for the [empty](Static_view.md#empty) root object group, i.e., for example JSON `["ab","vv"]` is processed as JSON `{ "value" : ["ab","vv"] }`.
+When importing JSON, if for an object group an array ( `[ ]` ) of values contains not an object ( `{ }` ), but a specific value (for example, a number or a string), then this value is automatically converted to an object `{ "value" : value }`. A similar conversion is performed when exporting an object group to JSON: if the object contains exactly one `value` key (i.e., it has the form `{ "value" : value}`), then instead of it, the value for this `value` key is substituted to the resulting JSON. In addition to "ordinary" object groups, the same conversions are also performed for the empty root object group, i.e., for example JSON `["ab","vv"]` is processed as JSON `{ "value" : ["ab","vv"] }`.
 
 When importing/exporting XML, if the property is named `value`, then the value of this property will be stored not in a separate tag, but inside (in the text) the parent tag (i.e., as if the parent tag itself was a property view). This behavior is usually used if the parent tag has other tags/attributes in it (XML specification allows this).
 
@@ -171,7 +171,7 @@ Working with namespaces is similar when importing properties, as well as when wo
 Each file for an object group in flat view is a table in which:
 
 -   Rows are object collections of this object group.
--   Columns are properties, which [display groups](Form_structure.md#drawgroup) are equal to this object group.
+-   Columns are properties, which display groups are equal to this object group.
 
 In CSV format (when there is no first header line), the columns are named similarly to XLS (i.e., `A` is the first, `B` is the second, etc.)
 
@@ -196,7 +196,7 @@ FORM exportSku
     FILTERS in(st, s)
 ;
 
-exportSku (Store store)  {
+exportSku (Store store) {
     // uploading to DBF all Sku for which in (Store, Sku) is specified for the desired warehouse
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866';
     EXPORT exportSku XML;
@@ -219,7 +219,7 @@ FORM import
 
 ;
 
-importForm()  {
+importForm() {
     INPUT f = FILE DO {
         IMPORT import JSON FROM f;
         SHOW import; // showing what was imported
