@@ -39,7 +39,7 @@ export function OrderBoard(props) {
 }
 ```
 
-`props.data` is the form projection. It contains a group only when that group's box is nested inside the custom container the view renders: `props.data.<g>` is `{ list, byKey }` for each such group object SID `g`, where `list` is the array of rows in display order and `byKey` maps a row's key string to the same row object. A group whose box is outside the container — or `REMOVE`'d from the design — is **absent** from `props.data` (`props.data.<g>` is `undefined`), so to feed a group's data to the view keep its box inside the custom container. Each row carries:
+`props.data` is the form projection. It contains a group only when that group's box is nested inside the custom container the view renders: `props.data.<g>` is `{ list, byKey }` for each such group object SID `g`, where `list` is the array of rows in display order and `byKey` maps a row's key string to the same row object. Both are always present: `list` is an empty array and `byKey` an empty object when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A group whose box is outside the container — or `REMOVE`'d from the design — is **absent** from `props.data` (`props.data.<g>` is `undefined`), so to feed a group's data to the view keep its box inside the custom container. Each row carries:
 
 | Field | Meaning |
 | --- | --- |

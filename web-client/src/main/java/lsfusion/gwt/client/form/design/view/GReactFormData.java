@@ -265,8 +265,9 @@ public class GReactFormData {
         GGroupObjectValue current = currentObjects.get(group);
 
         ArrayList<GGroupObjectValue> rows = gridRows.get(group);
+        JavaScriptObject list = lastLists.get(group);
+        JavaScriptObject byKey = lastByKey.get(group);
         if (rows != null) {
-            JavaScriptObject list = lastLists.get(group);
             if (list == null || dirtyLists.get(group) != null) { // rebuild the list only if its rows/order/values changed
                 NativeHashMap<GGroupObjectValue, JavaScriptObject> prevRows = lastRows.get(group);
                 NativeHashMap<GGroupObjectValue, Boolean> dirtyKeys = dirtyRowKeys.get(group);
@@ -276,7 +277,7 @@ public class GReactFormData {
                 // by STABLE key (s.i.byKey[row.key] — property lookup coerces a numeric key to the same string) so
                 // surviving rows after a delete keep their selected identity; cached like the list, so a node-only
                 // change (panel prop) keeps byKey identity too
-                JavaScriptObject byKey = newObject();
+                byKey = newObject();
                 list = newArray();
                 for (GGroupObjectValue rowKey : rows) {
                     JavaScriptObject prev = reuseRows && prevRows != null ? prevRows.get(rowKey) : null;
@@ -297,21 +298,28 @@ public class GReactFormData {
                 lastLists.put(group, list);
                 lastByKey.put(group, byKey);
             }
-            setValue(node, "list", list);
-            setValue(node, "byKey", lastByKey.get(group));
-            // a referentially-STABLE keys array (rebuilt only on membership/order) + a non-enumerable group SID:
-            // the <List> row-subscription path maps these keys and each row subscribes by byKey[key], so a value/current
-            // change re-renders only the changed row (the keys array ref is unchanged -> the outer map is skipped).
-            JavaScriptObject keys = lastKeys.get(group);
-            if (keys == null || dirtyOrder.get(group) != null) {
-                keys = newArray();
+        } else if (list == null) { // never had rows: materialize stable empty defaults once (list/byKey are always cached together)
+            list = newArray();
+            byKey = newObject();
+            lastLists.put(group, list);
+            lastByKey.put(group, byKey);
+        }
+        setValue(node, "list", list);
+        setValue(node, "byKey", byKey);
+        // a referentially-STABLE keys array (rebuilt only on membership/order) + a non-enumerable group SID:
+        // the <List> row-subscription path maps these keys and each row subscribes by byKey[key], so a value/current
+        // change re-renders only the changed row (the keys array ref is unchanged -> the outer map is skipped).
+        JavaScriptObject keys = lastKeys.get(group);
+        if (keys == null || dirtyOrder.get(group) != null) {
+            keys = newArray();
+            if (rows != null) {
                 for (GGroupObjectValue rowKey : rows)
                     pushString(keys, rowKey.toKeyString());
-                lastKeys.put(group, keys);
             }
-            setValue(node, "keys", keys);
-            setGroupSID(node, group.getSID());
+            lastKeys.put(group, keys);
         }
+        setValue(node, "keys", keys);
+        setGroupSID(node, group.getSID());
         if (current != null) // group panel properties (shown once, for the current object)
             fillProperties(node, group, false, current, null);
         return node;
