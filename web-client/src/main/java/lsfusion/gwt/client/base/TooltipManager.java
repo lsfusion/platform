@@ -30,7 +30,10 @@ public class TooltipManager {
     }
 
     public static JavaScriptObject initTooltip(PopupOwner popupOwner, final TooltipHelper tooltipHelper, Supplier<Element> referenceElementSupplier) {
-        if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
+        // don't attach hover tooltips under browser automation (Playwright / Selenium, incl. headless): the tippy popup
+        // intercepts pointer events and pollutes auto-screenshots (esp. in dev mode). Click-triggered result popups
+        // (sum/count via GwtClientUtils.showTippyPopup) use a different path and are not affected.
+        if (!MainFrame.mobile && !GwtClientUtils.isAutomated() && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
             // assert that element is "new" and have no tippy (two mouseenter tippies will look odd, however manual tippy can be added)
             assert !GwtClientUtils.hasProperty(popupOwner.element, "_tippy");
             JavaScriptObject tippy = GwtClientUtils.initTippy(popupOwner, MainFrame.showDetailedInfoDelay, "mouseenter",

@@ -590,6 +590,11 @@ public class GwtClientUtils {
         return Window.Navigator.getUserAgent().toLowerCase();
     }
 
+    // true when the page is driven by a browser automation tool (Playwright / Selenium / WebDriver, incl. headless)
+    public static native boolean isAutomated() /*-{
+        return !!($wnd.navigator && $wnd.navigator.webdriver);
+    }-*/;
+
     public static boolean isIEUserAgent() {
         String userAgent = getUserAgent();
         // надо бы как-то покрасивее определять браузер
