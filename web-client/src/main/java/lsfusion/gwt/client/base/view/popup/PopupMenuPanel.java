@@ -38,10 +38,18 @@ public class PopupMenuPanel extends ComplexPanel {
     private int topPosition = -1;
 
     private final boolean hideOnClick;
+    // The popup is a rounded <ul> (getElement()). The scrollable item list lives in this inner
+    // element, so when the list is too tall and gets a scrollbar (see position()), the outer <ul>'s
+    // overflow:hidden + border-radius clip that scrollbar to the rounded corners, and the fixed
+    // bottom panel (added straight to the <ul>) stays below the scroll area.
+    private final Element scrollElement;
     public PopupMenuPanel(boolean hideOnClick) {
         this.hideOnClick = hideOnClick;
 
         setElement(createULElement());
+        scrollElement = Document.get().createDivElement();
+        scrollElement.addClassName("lsf-dropdown-scroll");
+        getElement().appendChild(scrollElement);
         sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEMOVE | Event.ONMOUSEOUT | Event.ONFOCUS | Event.ONKEYDOWN);
 
         // Default position of popup should be in the upper-left corner of the
@@ -104,6 +112,14 @@ public class PopupMenuPanel extends ComplexPanel {
         Element parent = null; // GwtClientUtils.getTippyParent(target);
         show(parent);
         GwtClientUtils.addDropDownPartner(target, getElement());
+        // On narrow (e.g. mobile) screens the popup can be wider or taller than the viewport. Cap the
+        // width here so it never adds a horizontal scrollbar to the page; clear any height cap left
+        // from a previous show so getOffsetHeight() below measures the full content height (position()
+        // re-applies a height cap when the popup doesn't fit). position() also clamps the left edge.
+        getElement().getStyle().setProperty("maxWidth", Window.getClientWidth() + "px");
+        // reset the list cap from a previous show so getOffsetHeight() below measures the full content
+        scrollElement.getStyle().clearProperty("maxHeight");
+        scrollElement.getStyle().clearProperty("overflowY");
         position(target, parent, getOffsetWidth(), getOffsetHeight());
         getElement().getStyle().setVisibility(Style.Visibility.VISIBLE);
     }
@@ -264,19 +280,46 @@ public class PopupMenuPanel extends ComplexPanel {
         // the text box
         int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
 
-        // If there is not enough space for the popup's height below the text
-        // box and there IS enough space for the popup's height above the text
-        // box, then position the popup above the text box. However, if there
-        // is not enough space on either side, then stick with displaying the
-        // popup below the text box.
-        if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
-            top -= offsetHeight;
+        // Choose the side with room for the popup: prefer below the text box, flip above if it fits
+        // there instead. When the popup fits neither side (typical on mobile once the soft keyboard
+        // shrinks the viewport) cap its height to the larger side and let it scroll internally, so it
+        // neither overlaps the field nor slides off behind the keyboard.
+        boolean above;
+        int placedHeight = offsetHeight;
+        if (offsetHeight <= distanceToWindowBottom) {
+            above = false;
+        } else if (offsetHeight <= distanceFromWindowTop) {
+            above = true;
+        } else {
+            above = distanceFromWindowTop > distanceToWindowBottom;
+            placedHeight = Math.max(0, Math.max(distanceFromWindowTop, distanceToWindowBottom) - 4);
+            // Cap only the scrollable list (keeping the fixed bottom panel below it), and clip the
+            // popup to its rounded border so the inner scrollbar doesn't poke past the corners.
+            int fixedExtra = getElement().getOffsetHeight() - scrollElement.getOffsetHeight();
+            scrollElement.getStyle().setProperty("maxHeight", Math.max(0, placedHeight - fixedExtra) + "px");
+            scrollElement.getStyle().setProperty("overflowY", "auto");
+            getElement().getStyle().setProperty("overflow", "hidden");
+        }
+        if (above) {
+            top -= placedHeight;
             popupIsAbove = true;
         } else {
-            // Position above the text box
+            // Position below the text box
             top += relativeObject.getOffsetHeight();
             popupIsAbove = false;
         }
+
+        // Keep the popup inside the window's horizontal bounds so it doesn't extend past the right
+        // edge and add a spurious horizontal scrollbar (very noticeable on narrow mobile screens).
+        int windowLeftEdge = Window.getScrollLeft();
+        int windowRightEdge = windowLeftEdge + Window.getClientWidth();
+        if (left + offsetWidth > windowRightEdge) {
+            left = windowRightEdge - offsetWidth;
+        }
+        if (left < windowLeftEdge) {
+            left = windowLeftEdge;
+        }
+
         setPopupPosition(left, top);
     }
 
@@ -375,10 +418,12 @@ public class PopupMenuPanel extends ComplexPanel {
     }
 
     public void addBottomPanelItem(Widget bottomPanel) {
-        addItem(new PopupMenuItem()); // separator
+        // separator + bottom panel go straight into the popup (getElement()), after scrollElement,
+        // so they stay fixed below the scrollable list instead of scrolling with it
+        add(new PopupMenuItem(), getElement()); // separator
         bottomPanel.removeFromParent();
         add(bottomPanel, getElement()); // need this to register bottompanel widget (otherwise events won't work)
-        addItem(new PopupMenuItem(null, null, bottomPanel, false));
+        add(new PopupMenuItem(null, null, bottomPanel, false), getElement());
     }
 
     public void addItem(PopupMenuItemValue itemValue, PopupMenuCallback callback) throws IndexOutOfBoundsException {
@@ -391,7 +436,7 @@ public class PopupMenuPanel extends ComplexPanel {
         if (menuItem.isInteractive()) {
             items.add(menuItem);
         }
-        add(menuItem, getElement());
+        add(menuItem, scrollElement);
     }
 
     public void moveSelectionDown() {
