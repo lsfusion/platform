@@ -28,6 +28,12 @@ public class RecentlyEventClassHandler {
     };
 
     public void onEvent() {
+        // under browser automation (Playwright / Selenium / headless) skip the transient "recently selected" highlight:
+        // it keeps slide-out navigators (navbar-popup-*-selected-hover) popped out over the form for a second or two
+        // after a programmatic click, which is exactly what pollutes auto-screenshots
+        if (GwtClientUtils.isAutomated())
+            return;
+
         updateCss(true);
         if (timer.isRunning())
             timer.cancel();

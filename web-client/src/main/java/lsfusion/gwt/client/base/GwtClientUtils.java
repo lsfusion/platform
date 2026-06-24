@@ -591,8 +591,12 @@ public class GwtClientUtils {
     }
 
     // true when the page is driven by a browser automation tool (Playwright / Selenium / WebDriver, incl. headless)
+    // navigator.webdriver covers WebDriver-based drivers and Chrome launched with --enable-automation, but plain
+    // headless Chrome driven over raw CDP leaves it false while still reporting a "HeadlessChrome" user agent, so
+    // we also match that - otherwise headless auto-screenshots wouldn't get the artifact suppression in RecentlyEventClassHandler / TooltipManager
     public static native boolean isAutomated() /*-{
-        return !!($wnd.navigator && $wnd.navigator.webdriver);
+        var nav = $wnd.navigator;
+        return !!(nav && (nav.webdriver || (nav.userAgent && nav.userAgent.indexOf("HeadlessChrome") !== -1)));
     }-*/;
 
     public static boolean isIEUserAgent() {
