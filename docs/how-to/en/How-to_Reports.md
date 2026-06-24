@@ -205,7 +205,9 @@ Let's move the invoice data from the group header (**Group Header**) to the invo
 
   
 
-**Template** `Sample_invoice_i.jrxml`:
+Since the `i` and `d` object groups depend on each other, a single flat report is generated, so there is only one template, named by the [form's canonical name](../paradigm/Report_design.md#template) without a postfix (as in [**Example 1**](#example-1)).
+
+**Template** `Sample_invoice.jrxml`:
  
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

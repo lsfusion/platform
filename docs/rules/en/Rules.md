@@ -605,6 +605,29 @@ FORM RULES
     system toolbar itself). The property / action views are
     `GRID`, `TOOLBAR`, `PANEL`, and `POPUP`.
 ----------------------------------------------------------------
+REPORT RULES
+
+1. Before designing or editing jrxml report templates, or reasoning
+   about report structure or template naming, the assistant MUST
+   retrieve the `Report_design` documentation; it MUST NOT rely on
+   these rules as a template-format or layout reference.
+
+2. When a form has no object groups independent of each other
+   (all groups form a single dependency chain), only ONE jrxml
+   template is created, named by the form's canonical name
+   (namespace + form name, each `.` replaced by `_`) WITHOUT a
+   postfix. The `_<group>` postfix and separate subreport templates
+   appear only for object groups that are independent of each other.
+
+3. The assistant MUST name every template exactly: the top report
+   by the canonical form name without a postfix, and each subreport
+   by the canonical form name plus the `_<group>` postfix of its
+   first non-empty object group. If even one template name is wrong
+   (not found from the platform's point of view), the platform
+   silently falls back to a fully automatic design for the WHOLE
+   report, with no error in the logs — so a single mismatch silently
+   discards all custom templates.
+----------------------------------------------------------------
 NAVIGATOR RULES
 
 1. A folder whose children should appear only when the folder
