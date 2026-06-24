@@ -594,6 +594,16 @@ FORM RULES
     `BACKGROUND expr`, etc. are regular action calls /
     expressions and ALWAYS use explicit parameters,
     regardless of the block header.
+
+13. Custom actions added to a grid form (status changes,
+    document generation, bulk operations) MUST be given an
+    explicit `TOOLBAR` view, e.g. `PROPERTIES(o) confirmDoc TOOLBAR`.
+    Actions default to the `PANEL` view, so without `TOOLBAR` the
+    custom button is drawn as a separate group below the table
+    instead of in the grid toolbar next to the predefined
+    `NEW` / `EDIT` / `DELETE` (which the platform places in the
+    system toolbar itself). The property / action views are
+    `GRID`, `TOOLBAR`, `PANEL`, and `POPUP`.
 ----------------------------------------------------------------
 NAVIGATOR RULES
 
