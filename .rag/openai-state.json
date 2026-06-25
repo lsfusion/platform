@@ -12623,8 +12623,8 @@
       "stale": false
     },
     "paradigm/Static_objects.md": {
-      "file_hash": "sha256:ac7e7e6dc636a554fe20ba738c43798b67cfbd01ce99f57c3d7a39f55226566f",
-      "indexed_at": "2026-05-27T09:54:36Z",
+      "file_hash": "sha256:fc0301a1cd81a5027c7912588017d9e1ab76dabbf78f2ddc4429295beebed7e5",
+      "indexed_at": "2026-06-25T09:46:24Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12640,9 +12640,9 @@
           "source_file": "paradigm/Static_objects.md"
         },
         "Static_objects::static-objects": {
-          "file_id": "file-2bKkgGiQ5PLVFMfKoePFQ2",
+          "file_id": "file-LBChjoAhR9XHsgASkPgkcE",
           "heading_path": "Static objects",
-          "section_payload_hash": "sha256:4bae8e66a7dc20c805e4df3228641b3643474c1b4783919900e2a41a70647fc4",
+          "section_payload_hash": "sha256:5928448637e877387dff2c8111fe3780a21c41c70e767bd3cb2f4ec29e9b5ad7",
           "source_file": "paradigm/Static_objects.md"
         }
       },
@@ -13567,8 +13567,8 @@
       "stale": false
     },
     "paradigm/System_Time.md": {
-      "file_hash": "sha256:9a72f35c8e2c587005f913ba0d4d84355bbd0e8280702d6af5539881a84bc31e",
-      "indexed_at": "2026-06-12T14:14:52Z",
+      "file_hash": "sha256:a23c7aafce8e629240b5c6b75535bd2509f766ead76beb9e0b53ec7b11210969",
+      "indexed_at": "2026-06-25T09:46:35Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13578,15 +13578,15 @@
       },
       "sections": {
         "System_Time::arithmetic": {
-          "file_id": "file-N51CJ8opzpwXj5n4fv9Ejv",
+          "file_id": "file-BVeZp2eLiRSmHhcLxyAMNu",
           "heading_path": "Time > Arithmetic",
-          "section_payload_hash": "sha256:1d495e4333a1087a40c02c619680e7e4c628acab3ec5641c75b4f017517f6fb4",
+          "section_payload_hash": "sha256:545a08c8934dc776d749431ee68b9c191dfc1f273a724b03f7b08ed66bc87586",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::calendar-classes-and-forms": {
-          "file_id": "file-MdKru4qbPWqMsKpK2Gixxc",
+          "file_id": "file-5J8fUxBqPu1pPTwbFgEWqV",
           "heading_path": "Time > Calendar classes and forms",
-          "section_payload_hash": "sha256:51a4fbbd1a164dcd213c30b007b48765ce66ebb434eb8e6e8eea158724fdacd1",
+          "section_payload_hash": "sha256:606754eb210277542adbc7a1f4bdbd1d23c671c48a97a014c96014a2744c69af",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::conversion": {
@@ -13611,6 +13611,12 @@
           "file_id": "file-7SALHTBn5isDz9NkCwE1nF",
           "heading_path": "Time > Iteration and intervals",
           "section_payload_hash": "sha256:3b8ddb17dbe74cefeb8920e2cf29a33949e9117493fcf9e90706d40cd53177fd",
+          "source_file": "paradigm/System_Time.md"
+        },
+        "System_Time::recipes": {
+          "file_id": "file-SMJAHTdmB1iVZGrNkPvtQk",
+          "heading_path": "Time > Recipes",
+          "section_payload_hash": "sha256:04eb686f668475e97277172410dccfe6bd2fb9a5a8f7d8e530ebfbba7eec5937",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::see-also": {
@@ -14361,7 +14367,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "8a79afd3b4f7f6faea5cd7983736da883cf0cb84",
+  "last_indexed_docs_commit": "418b86f6bbed0de271b62e4e542a00c195664937",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
