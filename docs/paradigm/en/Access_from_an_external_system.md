@@ -94,7 +94,7 @@ If the result of a request is a file (`FILE`, `PDFFILE`, etc.), the response [co
 
 The file extension in this case is determined automatically, similarly to the [`WRITE` operator](Write_file_WRITE.md).
 
-In all of the three cases above, if the result value is `NULL`, a `null` string (for example, `application/null`) is substituted for the file extension in the content type, and an empty string is returned as the response itself.
+In all of the three cases above, if the result value is `NULL`, a `null` string (for example, `application/null`) is substituted for the file extension in the content type, and an empty string is returned as the response itself. A frequent cause of an unexpectedly empty body (with both `RETURN` and `EXPORT FROM`) is `NULL` propagation — a single `NULL` operand makes the whole value `NULL` (for example, concatenating text with `STRING` of an empty `GROUP SUM` yields `NULL`); guard such an expression with [`OVERRIDE`](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) to fall back to a default.
 
 Request results different from files are converted into strings and are passed as a `text/plain` content type. `NULL` values are returned as empty strings.
 
@@ -199,6 +199,8 @@ How the caller obtains the notification:
 -   **Notification ID (when the request has the `Need-Notification-Id` header)** - HTTP `200` with the notification ID (as `INTEGER`) in the response body. Intended for non-browser callers that need to deliver the ID to a running lsFusion client through some other channel.
 
 Interactive actions additionally require the [`enableUI`](Working_parameters.md) setting to permit the call, on top of the regular [`enableAPI`](Working_parameters.md) check.
+
+Routing to a client is the only way an interactive action can open a form: the interactive operation runs on the client that hosts the form, and there is no server-side equivalent. If the action instead runs synchronously on the server — which is what happens for a headless caller when the action carries neither `@@ui` nor the `Need-Notification-Id` header and the request is not a browser navigation — then as soon as it reaches an operation that opens a form ([`SHOW` / `DIALOG`](In_an_interactive_view_SHOW_DIALOG.md), [value input](Value_input.md), a default edit or dialog form, and so on) the call fails with a `createFormInstance is not supported` error and the action does not complete. Such an action can therefore be triggered only from a running client (in practice, through the browser), not through a plain headless `/exec` / `/eval` / `/eval/action` request.
 
 ##### Errors
 
