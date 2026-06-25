@@ -23,6 +23,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -34,12 +35,14 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 
     protected final FormInstance form;
     protected final Integer groupId;
+    protected final TreeGroupEntity treeGroup; // for tree export, to restrict the hierarchy to the tree's group objects only
 
     protected final FormUserPreferences preferences; // now it is not stored on the server, so we need to pass it from the client 
 
-    public InteractiveFormDataInterface(FormInstance form, Integer groupId, FormUserPreferences preferences) {
+    public InteractiveFormDataInterface(FormInstance form, Integer groupId, TreeGroupEntity treeGroup, FormUserPreferences preferences) {
         this.form = form;
         this.groupId = groupId;
+        this.treeGroup = treeGroup;
         this.preferences = preferences;
     }
 
@@ -128,6 +131,12 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
             GroupObjectEntity groupObject = formEntity.getGroupObject(groupId);
             groupObjectHierarchy = formEntity.getSingleGroupObjectHierarchy(groupObject);
             return new StaticDataGenerator.Hierarchy(groupObjectHierarchy, MapFact.singleton(groupObject, form.getPropertyEntitiesShownInGroup(getInstance(groupObject, form))), formEntity.getGroupsList().getSet().filterFn(element -> groupObject.getID() != element.getID()));
+        }
+        if(treeGroup != null) {
+            // tree export: keep only the tree's group objects in the hierarchy, all other (sibling) group objects become value groups, so they are not queried (same idea as the single groupId branch above, but for the set of the tree's groups)
+            ImSet<GroupObjectEntity> treeGroups = treeGroup.getGroups().getSet();
+            ImSet<GroupObjectEntity> valueGroups = formEntity.getGroupsList().getSet().filterFn(element -> !treeGroups.contains(element));
+            return formEntity.getStaticHierarchy(isReport, valueGroups, getUserVisible());
         }
         return super.getHierarchy(isReport);
     }

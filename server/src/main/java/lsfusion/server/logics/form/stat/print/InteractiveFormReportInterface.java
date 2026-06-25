@@ -9,6 +9,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.stat.InteractiveFormDataInterface;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
@@ -16,8 +17,8 @@ import java.sql.SQLException;
 
 public class InteractiveFormReportInterface extends InteractiveFormDataInterface implements FormReportInterface {
 
-    public InteractiveFormReportInterface(FormInstance form, Integer groupId, FormUserPreferences preferences) {
-        super(form, groupId, preferences);
+    public InteractiveFormReportInterface(FormInstance form, Integer groupId, TreeGroupEntity treeGroup, FormUserPreferences preferences) {
+        super(form, groupId, treeGroup, preferences);
     }
 
     @Override

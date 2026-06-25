@@ -177,7 +177,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if (groupEntity == null || groupEntity.treeGroup == null)
                 throw new IllegalStateException("Group object " + groupId + " is not in a tree group");
 
-            InteractiveFormReportManager formReportManager = new InteractiveFormReportManager(form, null, userPreferences);
+            InteractiveFormReportManager formReportManager = new InteractiveFormReportManager(form, null, groupEntity.treeGroup, userPreferences);
             FormDataManager.ExportResult exportData = formReportManager.getExportData();
             RawFileData file = TreeReportGenerator.generate(groupEntity.treeGroup, exportData, form);
             return new FileData(file, FormPrintType.XLSX.getExtension());

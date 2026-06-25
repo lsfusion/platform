@@ -2131,7 +2131,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private GroupObjectUserPreferences getGroupPreferences(GroupObjectInstance group, FormUserPreferences preferences) {
-        if (group == null || preferences == null) return null;
+        if (group == null || preferences == null || group.getSID() == null) return null; // getSID() is null for GroupObjectEntity.NULL (properties not belonging to any group object, i.e. the tree export hierarchy)
 
         GroupObjectUserPreferences groupPreferences = preferences.getUsedPreferences(group.getSID());
         if (groupPreferences == null) 
