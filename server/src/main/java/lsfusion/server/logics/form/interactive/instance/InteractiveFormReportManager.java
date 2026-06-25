@@ -6,6 +6,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.InteractiveFormReportInterface;
+import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 
 import java.sql.SQLException;
 
@@ -17,7 +18,11 @@ public class InteractiveFormReportManager extends FormReportManager {
     }
 
     public InteractiveFormReportManager(FormInstance form, Integer groupId, FormUserPreferences preferences) {
-        super(new InteractiveFormReportInterface(form, groupId, preferences));
+        this(form, groupId, null, preferences);
+    }
+
+    public InteractiveFormReportManager(FormInstance form, Integer groupId, TreeGroupEntity treeGroup, FormUserPreferences preferences) {
+        super(new InteractiveFormReportInterface(form, groupId, treeGroup, preferences));
     }
 
     // backward compatibility, removed in 7.0
