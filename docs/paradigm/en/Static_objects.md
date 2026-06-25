@@ -7,7 +7,7 @@ title: 'Static objects'
 
 When declaring a [custom class](User_classes.md), you can declare objects of this class which will be static objects. If you do this, this custom class automatically [inherits](User_classes.md#inheritance) from class `System.StaticObject`.
 
-For each static object of a custom class name and title must be specified, and an image can also be specified. Later this name, title, and image can be accessed using the [properties](Properties.md) `name[StaticObject]`, `caption[StaticObject]`, and `image[StaticObject]` respectively. 
+For each static object of a custom class name and title must be specified, and an image can also be specified. Later this name, title, and image can be accessed using the [properties](Properties.md) `name[StaticObject]`, `caption[StaticObject]`, and `image[StaticObject]` respectively. `name[StaticObject]` returns the object's *canonical* name — its identifier qualified with the module namespace and class, in the form `<namespace>_<Class>.<object>` (for the `Direction.north` object below, `name[StaticObject]` yields `<namespace>_Direction.north`, not the bare `north`) — while `caption[StaticObject]` returns the title shown to the user. 
 
 Static objects of [built-in classes](Built-in_classes.md) are numbers, strings, date values, etc., used by the user in describing the logic.
 

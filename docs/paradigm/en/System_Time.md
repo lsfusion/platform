@@ -65,7 +65,7 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 | `subtract[DATE, LONG]`                                    | subtracts the given number of days from a `DATE`, returns a `DATE`; PG `$1 - $2`                                                                             |
 | `sumMonth[DATE, INTEGER]` / `sumYear[DATE, INTEGER]`      | add the given number of months / years to a `DATE`, return a `DATE`; PG `($1 + $2 * interval '1 month')::date` / `($1 + $2 * interval '1 year')::date`       |
 | `firstDayOfMonth[DATE]` / `lastDayOfMonth[DATE]`          | first / last day of the month of a `DATE`, returns a `DATE`; PG `date_trunc('month', $1)::date` / `(date_trunc('month', $1) + interval '1 month - 1 day')::date` |
-| `sumWeekFrom[DATE, INTEGER]` / `sumWeekTo[DATE, INTEGER]` | shift a `DATE` by the given number of whole weeks, landing on the start (`sum[DATE, INTEGER]` of `n*7` days) / end (`n*7 + 6` days) of that week              |
+| `sumWeekFrom[DATE, INTEGER]` / `sumWeekTo[DATE, INTEGER]` | shift a `DATE` by `n` whole weeks, **without snapping to the start or end of a week**: `sumWeekFrom` adds `n*7` days (`sum[DATE, INTEGER]` of `n*7`), `sumWeekTo` adds `n*7 + 6` days. Both keep the original weekday — `sumWeekFrom(d, 0) = d` and `sumWeekTo(d, 0) = d + 6` — and always differ by exactly 6 days, so neither returns the Monday or Sunday of the week. For the actual start or end of a week, see the recipes below |
 | `sumDay[DATETIME, LONG]` / `subtractDay[DATETIME, LONG]`  | add / subtract whole days on a `DATETIME` or `ZDATETIME` (overloaded for both), return the same class; PG `$1 + $2 * interval '1 day'` / `$1 - $2 * interval '1 day'` |
 | `sumMinutes[…]`                                           | adds the given number of minutes; overloaded for `TIME`, `DATETIME`, `ZDATETIME`, returns the same class; PG `$1 + $2 * interval '1 minute'`. On `TIME` the result runs over a 24-hour clock and wraps past midnight (e.g. `23:30` + 60 → `00:30`, a negative count moves back past `00:00`); on `DATETIME` / `ZDATETIME` it rolls into the neighbouring day, moving the date part |
 | `sumSeconds[…]`                                           | adds the given number of seconds; same overloads, and the same 24-hour wrap on `TIME` as `sumMinutes[…]`; PG `$1 + $2 * interval '1 second'`                 |
@@ -90,9 +90,43 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 
 ### Calendar classes and forms
 
-`Month` and `DOW` are built-in static [classes](User_classes.md#static) describing months (12 objects) and days of the week (7 objects). They carry the properties `number[Month]`, `name[Month]`, `number[DOW]`, `numberM[DOW]` (numbering from Monday), `name[DOW]`. Lookup by number: `month[INTEGER]`, `DOW[INTEGER]`. The forms `months` and `DOWs` show these classes as directories.
+`Month` and `DOW` are built-in static [classes](User_classes.md#static) describing months (12 objects) and days of the week (7 objects). They carry these properties:
+
+| Property        | What it returns                                                                                              |
+|-----------------|-------------------------------------------------------------------------------------------------------------|
+| `number[Month]` | month number 1–12 (January = 1 … December = 12)                                                             |
+| `name[Month]`   | the month's name as text                                                                                    |
+| `number[DOW]`   | day-of-week number 0–6, PostgreSQL style with Sunday = 0 (Sunday = 0, Monday = 1, … Saturday = 6) — the same numbering as `extractDOWNumber[DATE]` |
+| `numberM[DOW]`  | day-of-week number 0–6 counting from Monday (Monday = 0, Tuesday = 1, … Sunday = 6)                          |
+| `name[DOW]`     | the day's name as text                                                                                      |
+
+Lookup by number runs the other way: `month[INTEGER]`, `DOW[INTEGER]`. The forms `months` and `DOWs` show these classes as directories.
 
 `DateTimePickerRanges` and `DateTimeIntervalPickerRanges` are static [classes](User_classes.md#static) with ready-made shortcut sets (`rangeToday`, `rangeYesterday`, `rangeLast7Days`, and so on) for picking a single date or a date interval in the UI.
+
+### Recipes
+
+The most common date calculations in schedules are compositions of the properties above. Day counts are whole days; `d` is any `DATE`.
+
+```lsf
+// today plus N days (N may be negative)
+sum(currentDate(), N)
+
+// Monday — the start of the week containing d
+sum(d, -numberM(extractDOW(d)))
+
+// Sunday — the end of that week
+sum(d, 6 - numberM(extractDOW(d)))
+
+// weekday of d: as a DOW object, as text, as a Monday-based number 0–6
+extractDOW(d)
+extractDOWName(d)
+numberM(extractDOW(d))
+
+// first and last day of d's month
+firstDayOfMonth(d)
+lastDayOfMonth(d)
+```
 
 ### See also
 
