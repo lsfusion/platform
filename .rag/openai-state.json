@@ -7655,8 +7655,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:b2273a05fdfbf8464c34ca6f78e682f8643a6effa50408dbf8c24331c8ed7521",
-      "indexed_at": "2026-06-18T10:09:58Z",
+      "file_hash": "sha256:2299c2aab27f147e5ec24414f6342d19fa3fc6242c0a48b237586f6d6a76c46d",
+      "indexed_at": "2026-06-25T14:24:58Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7726,9 +7726,9 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
-          "file_id": "file-7dJB3Hv7VVrAAfP27rpgHX",
+          "file_id": "file-NXUoz1MS8QkhYgAsDaYNj9",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:a674c36eda7f381b6c5356bf795cde9e00808f97069c86112d3fced69eba976d",
+          "section_payload_hash": "sha256:2790f02fe0db17e544fd57aa679df5f5d6341739821b1cd2587175bd2d80e799",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::reading-a-file": {
@@ -7744,7 +7744,7 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "paradigm/Access_from_an_internal_system.md": {
       "file_hash": "sha256:e672478aa6d9c418103e04ef5bfbb2a776613da4d365af42fab013c98f7d3063",
