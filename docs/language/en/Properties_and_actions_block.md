@@ -60,6 +60,7 @@ FILTER [USER | FIXED]
 QUICKFILTER formPropertyName
 PIVOT calcType
 PIVOT LAST [DESC] (propertyExpression1, ..., propertyExpressionZ)
+PIVOT FORMULA formulaStr (operand1, ..., operandM)
 COLUMN
 ROW
 MEASURE
@@ -362,11 +363,39 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `PIVOT calcType`
 
-    Specifying the aggregation function that will be used for the values of the property being added when grouping rows (including the [*pivot table* view type](Pivot_block.md)). `calcType` is specified with one of the keywords `SUM`, `MAX`, `MIN`.
+    Specifying the aggregation function for the values of the property being added when grouping rows (including the [*pivot table* view type](Pivot_block.md)).
+
+    - `calcType`
+
+        Specified with one of the keywords:
+
+        - `SUM` - sum of values
+        - `MAX` - maximum of values
+        - `MIN` - minimum of values
 
 - `PIVOT LAST [DESC] (propertyExpression1, ..., propertyExpressionZ)`
 
-    Specifying that when grouping rows, the value of the property being added is taken from the row that is the last in the order of the values of the listed expressions (`DESC` - in reverse order).
+    Specifying that when grouping rows, the value of the property being added is taken from the row that is the last in the order of the values of the listed expressions.
+
+    - `DESC`
+
+        Keyword. When specified, reverse order is used.
+
+    - `propertyExpression1, ..., propertyExpressionZ`
+
+        Non-empty list of expressions defining the row order.
+
+- `PIVOT FORMULA formulaStr (operand1, ..., operandM)`
+
+    Specifying that when grouping rows, the value of the property being added is computed by a formula from the aggregated values of the property itself and the listed operand properties.
+
+    - `formulaStr`
+
+        String literal with an arithmetic expression ([math.js](https://mathjs.org/) syntax) in which `$1` is the aggregated value of the property being added, and `$2, ..., $(M+1)` are the aggregated values of the properties `operand1, ..., operandM`, respectively.
+
+    - `operand1, ..., operandM`
+
+        List of property/action names on the form whose aggregated values are available in the formula as `$2, ..., $(M+1)`.
 
 - `COLUMN`, `ROW`, `MEASURE`
 
