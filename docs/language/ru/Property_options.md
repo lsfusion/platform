@@ -33,7 +33,7 @@ HINT | NOHINT
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
-PATTERN patternExpr
+PATTERN patternStr
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE compare
@@ -210,13 +210,13 @@ annotationSetting
 
         Ключевое слово. Если указано, коэффициент расширения значения свойства автоматически устанавливается равным нулю.
 
-- `PATTERN patternExpr`
+- `PATTERN patternStr`
 
     Указание шаблона форматирования значения свойства. Синтаксис задания шаблона аналогичен синтаксису [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) либо [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) в зависимости от типа значения.
     
-    - `patternExpr`
+    - `patternStr`
 
-      [Выражение](Expression.md), значение которого задает шаблон форматирования.
+      Строковый литерал, задающий шаблон форматирования. Может быть [локализуемым](../paradigm/Internationalization.md).
 
 - `REGEXP rexpr [message]`
 
@@ -224,11 +224,11 @@ annotationSetting
 
     - `rexpr`
 
-        Строковый литерал, описывающий регулярное выражение. Правила задания аналогичны [принятым в языке Java](http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html).
+        Строковый литерал, описывающий регулярное выражение. Правила задания аналогичны [принятым в языке Java](http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html). Может быть локализуемым.
 
     - `message`
 
-        Строковый литерал, описывающий сообщение, которое будет показано пользователю в случае, если он введет значение, не соответствующее регулярному выражению. Если не указывается, то будет показано сообщение по умолчанию.
+        Строковый литерал, описывающий сообщение, которое будет показано пользователю в случае, если он введет значение, не соответствующее регулярному выражению. Может быть локализуемым. Если не указывается, то будет показано сообщение по умолчанию.
 
 - `ECHO`
 

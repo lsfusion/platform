@@ -23,8 +23,8 @@ EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat]
 JSON [CHARSET charsetStr]
 XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetStr]
 CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-XLS [SHEET sheetProperty] [HEADER | NOHEADER]
-XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
+XLS [SHEET sheetExpr] [HEADER | NOHEADER]
+XLSX [SHEET sheetExpr] [HEADER | NOHEADER]
 DBF [CHARSET charsetStr]
 TABLE
 ```
@@ -133,9 +133,9 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
      
         String literal that defines the encoding. Default value for `JSON`, `XML`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.
 
-- `sheetProperty`
+- `sheetExpr`
 
-  The [ID of the property](IDs.md#propertyid) whose value is used as the name of the sheet in the exported file. The property must not have parameters. It is used for `XLS` and `XLSX` export formats.
+  Expression whose value is used as the name of the sheet in the exported file. It is used for `XLS` and `XLSX` export formats.
 
 ### Export destination
 

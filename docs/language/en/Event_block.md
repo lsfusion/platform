@@ -89,7 +89,7 @@ The event block allows to define handlers for form events that occur as the resu
 
 - `FIXED`
 
-    Counts the period to the next run from the start of the current action instead of from its end.
+    Keyword. When specified, the period to the next run is counted from the start of the current action instead of from its end.
 
 - `replaceMode`
 

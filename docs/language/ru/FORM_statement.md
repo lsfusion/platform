@@ -37,7 +37,6 @@ PIVOT ...
 HINTNOUPDATE LIST propertyId1, ..., propertyIdN
 HINTTABLE LIST propertyId1, ..., propertyIdN
 REPORT propertyExpression
-REPORTFILES reportPath1, ..., reportPathN
 REPORTS reportPath1, ..., reportPathN
 FORMEXTID extID
 EDIT className OBJECT objectName
@@ -199,9 +198,9 @@ groupObjectName propertyExpression
 
         [Выражение](Expression.md).
 
-- `REPORTFILES reportPath1, ..., reportPathN`
+- `REPORTS reportPath1, ..., reportPathN`
 
-    Указание свойств, значения которых будут использоваться в качестве имен файлов отчета для групп объектов формы. Вместо ключевого слова `REPORTFILES` можно использовать его синоним `REPORTS`.
+    Указание свойств, значения которых будут использоваться в качестве имен файлов отчета для групп объектов формы. Вместо ключевого слова `REPORTS` можно использовать его синоним `REPORTFILES`.
 
     - `TOP`
 
@@ -315,7 +314,7 @@ EXTEND FORM printInvoice
     // ... добавляем свойства и фильтры на форму
 
     // задаем файл отчета для группы объектов d, помечая ее как отдельный отчет
-    REPORTFILES d 'printInvoiceDetail.jrxml'
+    REPORTS d 'printInvoiceDetail.jrxml'
 ;
 // объявляем действие , при выполнении которого будет открываться форма печати инвойса
 print (Invoice invoice)  { PRINT printInvoice OBJECTS i = invoice; } 

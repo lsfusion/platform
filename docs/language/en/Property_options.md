@@ -33,7 +33,7 @@ HINT | NOHINT
 NONULL [DELETE] eventClause
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
-PATTERN patternExpr
+PATTERN patternStr
 REGEXP rexpr [message] 
 ECHO
 DEFAULTCOMPARE compare
@@ -209,13 +209,13 @@ Property annotation. Begins with `@@`. The following annotations are supported:
 
         Keyword. If specified, the extension coefficient of the property value is automatically set equal to zero.
 
-- `PATTERN patternExpr`
+- `PATTERN patternStr`
 
     Specifies the formatting pattern for the property value. The syntax for defining the pattern is similar to [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) or [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) depending on the value type.
 
-    - `patternExpr`
+    - `patternStr`
 
-      [Expression](Expression.md), whose value defines the formatting pattern.
+      String literal defining the formatting pattern. May be a [localizable](../paradigm/Internationalization.md) string.
 
 - `REGEXP rexpr [message]`
 
@@ -223,11 +223,11 @@ Property annotation. Begins with `@@`. The following annotations are supported:
 
     - `rexpr`
 
-        A string literal that describes the regular expression. Rules are similar to the rules [accepted in Java](http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) .
+        String literal that describes the regular expression. Rules are similar to the rules [accepted in Java](http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html). May be a localizable string.
 
     - `message`
 
-        String literal describing the message that will be shown to the user if they enter a value that does not match the regular expression. If not specified, a default message will be displayed.
+        String literal describing the message that will be shown to the user if they enter a value that does not match the regular expression. May be a localizable string. If not specified, a default message will be displayed.
 
 - `ECHO`
 
