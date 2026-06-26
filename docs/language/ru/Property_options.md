@@ -24,7 +24,7 @@ CHANGEKEY key [SHOW | HIDE]
 CHANGEMOUSE key [SHOW | HIDE]
 STICKY | NOSTICKY
 syncType
-MATERIALIZED
+MATERIALIZED [dbName]
 TABLE tableName
 INDEXED [dbName] [indexType]
 COMPLEX | NOCOMPLEX
@@ -56,9 +56,13 @@ annotationSetting
 
 <a className="lsdoc-anchor" id="persistent"/>
 
-- `MATERIALIZED`
+- `MATERIALIZED [dbName]`
 
     Ключевое слово, помечающее свойство как [материализованное](../paradigm/Materializations.md). Такие свойства будут храниться в полях [таблицы](../paradigm/Tables.md) базы данных.
+
+    - `dbName`
+
+        [Строковый литерал](Literals.md#strliteral), задающий физическое имя поля (колонки) в базе данных. Если не указан, имя генерируется автоматически.
 
 - `TABLE tableName`
 
@@ -76,7 +80,7 @@ annotationSetting
 
     - `dbName`
 
-        [Строковый литерал](Literals.md#strliteral), задающий физическое имя индекса в базе данных. Если не указан, имя генерируется автоматически.
+        Строковый литерал, задающий физическое имя индекса в базе данных. Если не указан, имя генерируется автоматически.
 
     - `indexType`
 

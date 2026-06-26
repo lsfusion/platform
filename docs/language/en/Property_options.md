@@ -24,7 +24,7 @@ CHANGEKEY key [SHOW | HIDE]
 CHANGEMOUSE key [SHOW | HIDE]
 STICKY | NOSTICKY
 syncType
-MATERIALIZED
+MATERIALIZED [dbName]
 TABLE tableName
 INDEXED [dbName] [indexType]
 COMPLEX | NOCOMPLEX
@@ -56,9 +56,13 @@ annotationSetting
 
 <a className="lsdoc-anchor" id="persistent"/>
 
-- `MATERIALIZED`
+- `MATERIALIZED [dbName]`
 
     Keyword marking the property as [materialized](../paradigm/Materializations.md). These properties will be stored in the database's [table](../paradigm/Tables.md) fields.
+
+    - `dbName`
+
+        [String literal](Literals.md#strliteral) that specifies the physical field (column) name in the database. If omitted, the name is generated automatically.
 
 - `TABLE tableName`
 
@@ -76,7 +80,7 @@ annotationSetting
 
     - `dbName`
 
-        [String literal](Literals.md#strliteral) that specifies the physical index name in the database. If omitted, the name is generated automatically.
+        String literal that specifies the physical index name in the database. If omitted, the name is generated automatically.
 
     - `indexType`
 
