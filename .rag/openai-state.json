@@ -743,8 +743,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:dcc96bbd87f7d601947e81b5eb3af2ef69532c257d65518154593b0de9e343b8",
-      "indexed_at": "2026-06-19T09:55:50Z",
+      "file_hash": "sha256:5b6cee0aff9231b306fa29ef7eab34504bdeff707553f3728597869beaf65b15",
+      "indexed_at": "2026-06-26T14:27:56Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -754,9 +754,9 @@
       },
       "sections": {
         "How-to_Custom_components_objects::calling-the-server-calling-the-server": {
-          "file_id": "file-XsG1TA1Df4xw1BUrXc9Ajd",
+          "file_id": "file-FqwQDuhw8TyMKGApW8mJ5Y",
           "heading_path": "How-to: Custom Components (objects) > Calling the server {#calling-the-server}",
-          "section_payload_hash": "sha256:d29b361b42b47a782abf7508e7fca4b8859413e2c3076ef0f51b687d5a95589a",
+          "section_payload_hash": "sha256:cfc4d7c09b42a8d6541f768021bc93ee32e522647d857f1e1172ecf4a25820a4",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:cdc677a81f7abf3ab808dcdfb3d54df8321d5643f6c1193dc198d68c49574bbd",
-      "indexed_at": "2026-06-15T20:08:51Z",
+      "file_hash": "sha256:e454e513673820bf306cc2c43b47fc5981d8fc65f5fdea7c10e2d401b257be89",
+      "indexed_at": "2026-06-26T14:28:09Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -848,15 +848,27 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::row-identity-row-identity-contract": {
-          "file_id": "file-34RWxVVVHiiGXk7ioRon8J",
+          "file_id": "file-G1bLTZ41P6pCEKCUDhMGbJ",
           "heading_path": "How-to: Custom view controller API > Row identity {#row-identity-contract}",
-          "section_payload_hash": "sha256:7cb234c8ab6873a9dd72f0db94c7e2cb59fb70f1d32afdd6d7fcf3cbbad01e06",
+          "section_payload_hash": "sha256:35daa1f4f02eeb88aaeecbf0346a18af3bd5dc3a075ff9b83bceee762e18a9e5",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
-        "How-to_Custom_view_controller::the-form-controller": {
-          "file_id": "file-CmrKMC9dWVTgPhLBWuBqUy",
+        "How-to_Custom_view_controller::the-form-controller::part-00": {
+          "file_id": "file-DnhgZAsDXb4wYfiMhkEsoY",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:054574e795505f4046c7144ee4cbbed8a0aa987fd995f68685a809c14de0156c",
+          "section_payload_hash": "sha256:f653a4e5903a35b5d4f4b51b23dcae491ceebe841b360b61649ec09111f0e748",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::the-form-controller::part-01": {
+          "file_id": "file-8ES1uHcZZSTPU69PzdBxSS",
+          "heading_path": "How-to: Custom view controller API > The form controller",
+          "section_payload_hash": "sha256:cea4422516c4fc9accdb74d76dbec574f95cae87da2c424fecf8e2cb2b45cfe9",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::the-form-controller::part-02": {
+          "file_id": "file-GcGQARWtzDJ3jg6t9GaNQ8",
+          "heading_path": "How-to: Custom view controller API > The form controller",
+          "section_payload_hash": "sha256:3944f755c6f7a4a82d11958a5a5be2dac30bdcafba96a2f07cbc5b03bddfb15d",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14367,7 +14379,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "6dce7084b3778ea85ad9c8620cd738222fe84a7e",
+  "last_indexed_docs_commit": "e85ffdf779921ef8dcded037cb03be129cac78b5",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
