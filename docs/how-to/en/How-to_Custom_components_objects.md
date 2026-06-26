@@ -207,7 +207,7 @@ The result is converted to a JS value:
 | a file — an `EXPORT`, an image, or a file-typed property | a download URL string |
 | a missing or `NULL` result | `undefined` |
 
-Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter) and bound positionally. An error — a missing action or property, a script error, or a runtime exception — rejects the promise with its message.
+Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter) and bound positionally. An lsFusion object cannot be passed — its numeric id is passed instead; when the parameter is typed by a class, the platform resolves the id to the object of that class. A row handle (`row.objects`) is not an object reference: for a class-typed parameter the call fails. An error — a missing action or property, a script error, or a runtime exception — rejects the promise with its message.
 
 In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.
 
@@ -222,3 +222,5 @@ FORM order 'Order'
 ```
 
 Now `controller.form.exec("round", 3.14159)`, `controller.form.exec("format", 1990, "USD")` and `controller.form.change("taxRate", 0.2)` work on this form without `@@api` or `enableAPI` (a React view calls the same on `props.controller`). Each entry may be renamed with an alias (`format = formatSum`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`round[NUMERIC]`) to pick an overload; `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values — phase 1 entries are mostly primitive calls like these. The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument (forcing a parameter to the form's own object is phase 2). `eval`/`evalAction` run arbitrary script and stay under the gate.
+
+Prefer `CUSTOMS` over `@@api` for a call a custom view needs: `CUSTOMS` scopes access to this form, while `@@api` also exposes the action or property over the external HTTP API. Mark something `@@api` only when it is genuinely part of that API.

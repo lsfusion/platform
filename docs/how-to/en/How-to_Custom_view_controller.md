@@ -45,6 +45,17 @@ These methods are the same wherever the form controller is reached — directly 
 
 The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, scope it with a `groupSID`: a fourth positional argument to `changeProperty` (`changeProperty(property, object, value, groupSID)`), the trailing argument after `count` on `getPropertyValues`, or the `groupSIDs` array on `changeProperties`.
 
+The same two groups also differ along two more axes — whether they are gated, and how an object is addressed in them:
+
+| group | methods | gate | how an object is passed |
+| --- | --- | --- | --- |
+| editing the form | `changeObject` / `changeProperty` / `changeProperties` | none | the target row — a data row (`row`) or a raw handle (`row.objects`); an object as a value (FK) — its id |
+| calling the server | `exec` / `eval` / `evalAction` / `change` | `@@api` / admin rights / the form's `CUSTOMS` | an object — its id |
+
+A custom view normally reads state from `props.data` and changes it through the form-edit methods — including running an action drawn on the form with `changeProperty('action')`. The server-call methods (`exec` / `eval` / `evalAction` / `change`) are an escape hatch, used only for what the form does not express — ad-hoc server computation, a global write, or creating an object.
+
+Editing the form goes through the ordinary edit channel and is not gated; the server calls are (see [Calling the server](How-to_Custom_components_objects.md#calling-the-server)). The edited row is addressed by a handle; any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
+
 #### Changing the current object and property values
 
 `changeObject(groupSID, object)` sets the current object of the group `groupSID`. The `object` is a data row of that group, or a raw `objects` handle (see [the identity rules](#row-identity-contract) below) — not a bare `row.key`.
@@ -75,6 +86,26 @@ controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 ```
 
 An object group of a built-in primitive class — a `DATE` navigator, for instance — is moved by the DATA property its `FILTERS` depend on, not by writing the object's value: the object of a primitive class *is* its value, so there is nothing to store on it. To move the group to an arbitrary value, change that filter property — `changeProperty('dateFrom', d)` with a real JS `Date`, or through an action — and the group follows its `FILTERS`; to select a value already shown, `changeObject` to a row from `props.data.<g>.list` (which carries the `objects` handle). Two silent traps: writing the object's own value does not navigate the group (nothing is stored), and `changeProperty` casts a date value with no runtime check — so a non-`Date` argument (a date-input *string*, a timestamp) is silently converted to `null` or garbage, with no error. Pass an actual `Date`.
+
+`changeProperty` and `changeProperties` behave the same way; the format depends on what is set as the value:
+
+| value | how it is passed |
+| --- | --- |
+| a primitive | directly: a number for numeric types, a string, a JS `Date` for `DATE` / `TIME` / `DATETIME` / `ZDATETIME`, a boolean, `null` to clear |
+| `JSON` | a JS object or array, serialized as JSON |
+| an object (FK value) | the target object's id — `row.key` of its row (for a single-object group it already is its numeric id), or an id-valued property on the form (e.g. `LONG(obj)`) — not a handle |
+
+:::info
+Passing a handle (`otherRow.objects`) as an FK value silently sets it to `NULL`, with no error. A handle is only for the `object` argument (the edited row) and for `changeObject`; to set an FK, pass the target object's id.
+:::
+
+If the edited property is marked `APPLY` on the form (the edit is applied at once), `changeProperty` commits the change immediately. For a simple edit from a view — a move, a resize, an in-place value edit — this is preferable to a separate server action; the server action (`exec`) stays for what a property change cannot express: creating an object (`NEW`), multi-step logic, opening a form.
+
+```js
+// move an object to another parent and edit a primitive in one call:
+// the FK value is the target object's id (row.key of the target row), the primitive value is passed directly
+controller.changeProperties(['parent', 'value'], [item, item], [targetColumn.key, 5]);
+```
 
 #### Looking up values
 
@@ -116,17 +147,19 @@ controller.getPropertyValues('customer', text, 'objects', result => {
 
 #### Calling the server
 
-`exec`, `eval`, `evalAction` and `change` each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls — see [Calling the server](How-to_Custom_components_objects.md#calling-the-server) for the gate and the result-to-JS conversion table.
+`exec`, `eval`, `evalAction` and `change` each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls — see [Calling the server](How-to_Custom_components_objects.md#calling-the-server) for the gate, parameter binding, and the result-to-JS conversion table.
 
 - `exec(action, ...params)` — runs a named action; resolves to its `RETURN` value.
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
 - `change(property, ...keyParams, value)` — changes a global property; the last argument is the value, the preceding ones are the keys.
 
+Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter). An lsFusion object is passed as its numeric id; when an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
+
 ```js
 const total = await controller.exec('recalc', orderId);
 const doubled = await controller.eval('run(INTEGER a) { RETURN a * 2; }', 21); // 42
-await controller.change('note', orderId, 'checked');
+await controller.change('archived', orderId, true);
 ```
 
 A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch.
@@ -139,6 +172,6 @@ A method that targets a row accepts one of:
 - a spread or `Object.assign` clone of such a row — the enumerable `objects` handle is copied with it, so the clone resolves to the same object;
 - a raw `objects` handle — `row.objects`, or `item.objects` from a `getPropertyValues` `'objects'` result.
 
-A bare `row.key` is *not* accepted: `key` is a display / React-key / diff token, not a resolution input. The field names `key`, `isCurrent` and `objects` are reserved on a row — an application property or column with one of these integration names would be overwritten.
+For addressing a row, a bare `row.key` is *not* accepted: `key` is a display / React-key / diff token, not a resolution input. For a single-object group of a custom class, though, the value of `row.key` numerically equals that object's id, so it can be passed as the target object's id to a server call or as an FK value — no separate property for the row's own id is needed. The field names `key`, `isCurrent` and `objects` are reserved on a row — an application property or column with one of these integration names would be overwritten.
 
 If an explicit object argument resolves to neither a row nor a raw handle, the platform does not silently fall back to the current row and does not throw: `changeProperty` logs a console error and skips that change, and `changeObject` is a no-op.
