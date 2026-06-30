@@ -105,9 +105,20 @@ function selectMultiInput() {
                     // setting auto hide partner to avoid fake blurs
                     this.setCaret(this.items.length);
                     _setIsEditing(element, this.$control[0], true);
+                    // dropdown is appended to <body>, so follow the field on scroll; capture phase since scroll
+                    // doesn't bubble (a nested form-scroll container is only seen capturing). rAF-coalesced; the
+                    // _scrollReposition null check no-ops a queued frame if the dropdown closed/was destroyed.
+                    let self = this, pending = false;
+                    this._scrollReposition = function () {
+                        if (pending) return;
+                        pending = true;
+                        requestAnimationFrame(function () { pending = false; if (self._scrollReposition && self.isOpen) self.positionDropdown(); });
+                    };
+                    document.addEventListener('scroll', this._scrollReposition, true);
                 },
                 onDropdownClose: function () {
                     _setIsEditing(element, this.$control[0], false);
+                    if (this._scrollReposition) { document.removeEventListener('scroll', this._scrollReposition, true); this._scrollReposition = null; }
                 },
                 openOnFocus: function () {
                     return !lsfUtils.isSuppressOnFocusChange(element);
@@ -126,6 +137,9 @@ function selectMultiInput() {
                         for (let dataElement of data.data)
                             options.push(toOption(controller.createObject({selected : false, name : dataElement.rawString}, dataElement.objects), controller, true));
                         callback(options);
+                        // auto_position picks up/down while the dropdown is still empty (options load async here),
+                        // so it can choose "down" and then overflow off-screen once they render; reposition after.
+                        setTimeout(function () { if (self.isOpen) self.positionDropdown(); });
                     }, null, this.items.length);
                 },
                 plugins: ['remove_button', 'auto_position', 'lsf_events'],
@@ -215,7 +229,10 @@ function selectMultiInput() {
             if(!controller.isList())
                 lsfUtils.removeOnFocusOut(element);
 
-            element.selectizeInstance[0].selectize.destroy();
+            let selectizeInstance = element.selectizeInstance[0].selectize;
+            // destroy() doesn't fire onDropdownClose, so drop the scroll listener here too if still open
+            if (selectizeInstance._scrollReposition) { document.removeEventListener('scroll', selectizeInstance._scrollReposition, true); selectizeInstance._scrollReposition = null; }
+            selectizeInstance.destroy();
         }
     }
 }

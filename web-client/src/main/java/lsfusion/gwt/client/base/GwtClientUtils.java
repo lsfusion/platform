@@ -896,6 +896,56 @@ public class GwtClientUtils {
         addClassName(dropdown, "dropdown-partner");
         FocusUtils.addFocusPartner(owner, dropdown);
     }
+
+    // Make a <body>-portaled popup follow its anchor. capture=true because scroll doesn't bubble: a nested overflow
+    // container's scroll is only seen capturing. onScroll re-glues (translate); onResize re-runs full placement.
+    // Scrolls inside the popup itself are ignored. rAF-coalesced. Returns the fns so they can be detached.
+    public static native JavaScriptObject addScrollFollowListener(Element popup, Runnable onScroll, Runnable onResize) /*-{
+        var scrollPending = false, resizePending = false;
+        var scrollFn = function (e) {
+            if (e && e.target && e.target.nodeType && popup.contains(e.target)) return;
+            if (scrollPending) return;
+            scrollPending = true;
+            $wnd.requestAnimationFrame(function () {
+                scrollPending = false;
+                onScroll.@java.lang.Runnable::run()();
+            });
+        };
+        var resizeFn = function () {
+            if (resizePending) return;
+            resizePending = true;
+            $wnd.requestAnimationFrame(function () {
+                resizePending = false;
+                onResize.@java.lang.Runnable::run()();
+            });
+        };
+        $wnd.addEventListener('scroll', scrollFn, true);
+        $wnd.addEventListener('resize', resizeFn, true);
+        $wnd.addEventListener('orientationchange', resizeFn, true);
+        return { scrollFn: scrollFn, resizeFn: resizeFn };
+    }-*/;
+
+    public static native void removeScrollFollowListener(JavaScriptObject handle) /*-{
+        $wnd.removeEventListener('scroll', handle.scrollFn, true);
+        $wnd.removeEventListener('resize', handle.resizeFn, true);
+        $wnd.removeEventListener('orientationchange', handle.resizeFn, true);
+    }-*/;
+
+    // The field's form pane (lsFusion GFormLayout, class 'form-shrink-padded-container'): the box that vertically
+    // bounds/clips a <body>-portaled popup so it hides behind the form's tab bar(s) — its edges sit at the chrome
+    // whether or not the form scrolls. A class lookup, not an overflow walk: the real scroll container varies (an
+    // inner grid / caption-panel scroller, or none for a short form), so walking overflow picks the wrong box.
+    // null if the field isn't in a form (toolbar/login) -> popup falls back to window bounds.
+    public static native Element getFormViewport(Element element) /*-{
+        var el = element.parentElement;
+        while (el && el !== $doc.body && el !== $doc.documentElement) {
+            if (el.classList && el.classList.contains('form-shrink-padded-container')) {
+                return el;
+            }
+            el = el.parentElement;
+        }
+        return null;
+    }-*/;
     public static void removePopupPartner(PopupOwner owner, Element popup, boolean blurred) {
         if(!blurred)
             FocusUtils.focusInOut(owner.element, FocusUtils.Reason.RESTOREFOCUS);

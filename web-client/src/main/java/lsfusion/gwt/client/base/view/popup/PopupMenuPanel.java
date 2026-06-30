@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view.popup;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -33,6 +34,15 @@ public class PopupMenuPanel extends ComplexPanel {
     private int leftPosition = -1;
 
     private HandlerRegistration nativePreviewHandlerRegistration;
+
+    // Anchor + its form pane (GwtClientUtils.getFormViewport), cached while shown to bound/clip the popup and
+    // re-position it on scroll without re-doing the lookup.
+    private Element positionTarget;
+    private Element positionParent;
+    private Element positionFormPane;
+    private JavaScriptObject scrollFollowHandle; // capture-phase scroll/resize listener, live while shown
+    private int anchorOffsetLeft; // popup-to-anchor offset at placement, so a scroll re-glues by translation
+    private int anchorOffsetTop;
 
     // The top style attribute in pixels
     private int topPosition = -1;
@@ -110,18 +120,59 @@ public class PopupMenuPanel extends ComplexPanel {
     public void setPopupPositionAndShow(final Element target) {
         getElement().getStyle().setVisibility(Style.Visibility.HIDDEN);
         Element parent = null; // GwtClientUtils.getTippyParent(target);
+        positionTarget = target;
+        positionParent = parent;
+        positionFormPane = GwtClientUtils.getFormViewport(target);
         show(parent);
         GwtClientUtils.addDropDownPartner(target, getElement());
-        // On narrow (e.g. mobile) screens the popup can be wider or taller than the viewport. Cap the
-        // width here so it never adds a horizontal scrollbar to the page; clear any height cap left
-        // from a previous show so getOffsetHeight() below measures the full content height (position()
-        // re-applies a height cap when the popup doesn't fit). position() also clamps the left edge.
+        resetAndPosition();
+        getElement().getStyle().setVisibility(Style.Visibility.VISIBLE);
+    }
+
+    // Undo styles a previous position() set (width cap, list height cap, <ul> overflow) so getOffsetWidth/Height
+    // measure full content, then re-run position(). Shared by the initial show and the resize reposition. The
+    // overflow reset matters on the reposition path, which (unlike setState) wouldn't otherwise clear it.
+    private void resetAndPosition() {
+        if (!showing) { // a queued resize rAF can fire just after hide()
+            return;
+        }
         getElement().getStyle().setProperty("maxWidth", Window.getClientWidth() + "px");
-        // reset the list cap from a previous show so getOffsetHeight() below measures the full content
         scrollElement.getStyle().clearProperty("maxHeight");
         scrollElement.getStyle().clearProperty("overflowY");
-        position(target, parent, getOffsetWidth(), getOffsetHeight());
-        getElement().getStyle().setVisibility(Style.Visibility.VISIBLE);
+        getElement().getStyle().setProperty("overflow", "visible");
+        position(positionTarget, positionParent, getOffsetWidth(), getOffsetHeight());
+    }
+
+    // Scroll handler: re-glue the <body>-portaled popup to the (moved) anchor by translation only, keeping the
+    // side/size from open, then re-clip. Translating (not re-placing) avoids jumping sides or resizing mid-scroll.
+    private void translateToAnchor() {
+        if (!showing) { // a queued scroll rAF can fire just after hide()
+            return;
+        }
+        int newTop = positionTarget.getAbsoluteTop() + anchorOffsetTop;
+        setPopupPosition(positionTarget.getAbsoluteLeft() + anchorOffsetLeft, newTop);
+        clipToBounds(newTop);
+    }
+
+    // Clip the popup to its form viewport (intersected with the window) so the part outside it hides behind the
+    // form's tab bar(s) instead of drawing over them. Negative side insets keep the box-shadow on unclipped edges.
+    private void clipToBounds(int popupTop) {
+        int boundsTop = Window.getScrollTop();
+        int boundsBottom = boundsTop + Window.getClientHeight();
+        if (positionFormPane != null) {
+            int paneTop = positionFormPane.getAbsoluteTop();
+            boundsTop = Math.max(boundsTop, paneTop);
+            boundsBottom = Math.min(boundsBottom, paneTop + positionFormPane.getClientHeight());
+        }
+        int topClip = boundsTop - popupTop;
+        int bottomClip = (popupTop + getElement().getOffsetHeight()) - boundsBottom;
+        if (topClip <= 0 && bottomClip <= 0) {
+            getElement().getStyle().clearProperty("clipPath");
+        } else {
+            String t = topClip > 0 ? topClip + "px" : "-9999px";
+            String b = bottomClip > 0 ? bottomClip + "px" : "-9999px";
+            getElement().getStyle().setProperty("clipPath", "inset(" + t + " -9999px " + b + " -9999px)");
+        }
     }
 
     /**
@@ -267,18 +318,21 @@ public class PopupMenuPanel extends ComplexPanel {
 
         int top = parent != null ? (relativeObject.getAbsoluteTop() - parent.getAbsoluteTop()) : relativeObject.getAbsoluteTop();
 
-        // Make sure scrolling is taken into account, since
-        // box.getAbsoluteTop() takes scrolling into account.
-        int windowTop = Window.getScrollTop();
-        int windowBottom = Window.getScrollTop() + Window.getClientHeight();
+        // Bound the flip/cap by the field's form viewport (intersected with the window), not the whole browser,
+        // so the popup opens within the form and never over its tab bar(s); falls back to the window if none.
+        int boundsTop = Window.getScrollTop();
+        int boundsBottom = boundsTop + Window.getClientHeight();
+        if (positionFormPane != null) {
+            int paneTop = positionFormPane.getAbsoluteTop();
+            boundsTop = Math.max(boundsTop, paneTop);
+            boundsBottom = Math.min(boundsBottom, paneTop + positionFormPane.getClientHeight());
+        }
 
-        // Distance from the top edge of the window to the top edge of the
-        // text box
-        int distanceFromWindowTop = top - windowTop;
+        // Distance from the top edge of the bounds to the top edge of the text box
+        int distanceFromWindowTop = top - boundsTop;
 
-        // Distance from the bottom edge of the window to the bottom edge of
-        // the text box
-        int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
+        // Distance from the bottom edge of the bounds to the bottom edge of the text box
+        int distanceToWindowBottom = boundsBottom - (top + relativeObject.getOffsetHeight());
 
         // Choose the side with room for the popup: prefer below the text box, flip above if it fits
         // there instead. When the popup fits neither side (typical on mobile once the soft keyboard
@@ -321,6 +375,12 @@ public class PopupMenuPanel extends ComplexPanel {
         }
 
         setPopupPosition(left, top);
+
+        // Cache the popup-to-anchor offset so a scroll can re-glue by translation (see translateToAnchor()).
+        anchorOffsetLeft = left - relativeObject.getAbsoluteLeft();
+        anchorOffsetTop = top - relativeObject.getAbsoluteTop();
+
+        clipToBounds(top);
     }
 
     private void previewNativeEvent(NativePreviewEvent event) {
@@ -621,6 +681,7 @@ public class PopupMenuPanel extends ComplexPanel {
         // Update the logical state.
         this.showing = showing;
         updateHandlers();
+        updateScrollFollow();
 
         if (showing) {
             // Set the position attribute, and then attach to the DOM. Otherwise,
@@ -645,9 +706,24 @@ public class PopupMenuPanel extends ComplexPanel {
             // !!! PATCHED we need to append child somewhere anyway to attach widget
             RootPanel.get().remove(this);
             shownParent = null;
+            positionTarget = null;
+            positionParent = null;
+            positionFormPane = null;
         }
         getElement().getStyle().setProperty("overflow", "visible");
 
+    }
+
+    // Like updateHandlers(): remove-then-maybe-re-add, so the listener stays 1:1 with show/hide on this reused
+    // instance (no leak / double-register).
+    private void updateScrollFollow() {
+        if (scrollFollowHandle != null) {
+            GwtClientUtils.removeScrollFollowListener(scrollFollowHandle);
+            scrollFollowHandle = null;
+        }
+        if (showing) {
+            scrollFollowHandle = GwtClientUtils.addScrollFollowListener(getElement(), this::translateToAnchor, this::resetAndPosition);
+        }
     }
 
     private UListElement createULElement() {

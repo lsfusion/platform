@@ -1179,6 +1179,19 @@
             // Reposition the picker if the window is resized while it's open
             $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
 
+            //PATCHED: follow the field on scroll too (the picker is appended to <body>). Capture phase since
+            // scroll doesn't bubble, so a nested container's scroll is only seen capturing; rAF-coalesced.
+            var drp = this;
+            this._scrollMoveProxy = function() {
+                if (drp._scrollMovePending) return;
+                drp._scrollMovePending = true;
+                window.requestAnimationFrame(function() {
+                    drp._scrollMovePending = false;
+                    if (drp.isShowing) drp.move();
+                });
+            };
+            document.addEventListener('scroll', this._scrollMoveProxy, true);
+
             this.oldStartDate = this.startDate.clone();
             this.oldEndDate = this.endDate.clone();
             this.previousRightTime = this.endDate.clone();
@@ -1210,6 +1223,8 @@
 
             $(document).off('.daterangepicker');
             $(window).off('.daterangepicker');
+            //PATCHED: remove the native capture-phase scroll listener added in show()
+            if (this._scrollMoveProxy) { document.removeEventListener('scroll', this._scrollMoveProxy, true); this._scrollMoveProxy = null; }
             this.container.hide();
             this.element.trigger('hide.daterangepicker', this);
             this.isShowing = false;
@@ -1631,6 +1646,10 @@
         },
 
         remove: function() {
+            //PATCHED: drop the scroll listener even if destroyed while open (remove() doesn't call hide()), and
+            // clear isShowing so a scroll rAF queued just before this no-ops instead of move()ing removed DOM.
+            this.isShowing = false;
+            if (this._scrollMoveProxy) { document.removeEventListener('scroll', this._scrollMoveProxy, true); this._scrollMoveProxy = null; }
             this.container.remove();
             this.element.off('.daterangepicker');
             this.element.removeData();
