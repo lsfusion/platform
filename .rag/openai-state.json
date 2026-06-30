@@ -3255,8 +3255,8 @@
       "stale": false
     },
     "language/Action_options.md": {
-      "file_hash": "sha256:51b058a1edc86fb7a541de8eba820df2f87d5f092db2baad20e297b931ab7e82",
-      "indexed_at": "2026-06-22T13:19:37Z",
+      "file_hash": "sha256:ceda3c6442684121abaa779d305538c2fb7dee2bb92ceddf4dfdb97bd987e9ee",
+      "indexed_at": "2026-06-30T14:55:18Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3284,9 +3284,9 @@
           "source_file": "language/Action_options.md"
         },
         "Action_options::interactive-view-block": {
-          "file_id": "file-CX26AXdXVsNC24uySq4JAi",
+          "file_id": "file-BBgC4SVz6GgbJrtpVw6wGY",
           "heading_path": "Action options > Description and parameters > Interactive view block",
-          "section_payload_hash": "sha256:9d2731ecb7e00cde1353bf7f46820edb3d05632546d847d4cab43cd919fdd7b8",
+          "section_payload_hash": "sha256:0e4128e4a27f4065268d1e79e6947c346a3d086b827fb1303e671f9d84bc022f",
           "source_file": "language/Action_options.md"
         },
         "Action_options::syntax": {
@@ -4679,8 +4679,8 @@
       "stale": false
     },
     "language/Event_block.md": {
-      "file_hash": "sha256:491e8c227ca6904068c1d88aa8b1752384d08e1f6619ac68d3c8007356e5b50e",
-      "indexed_at": "2026-06-26T11:46:02Z",
+      "file_hash": "sha256:2cf1e2c9097356a21a86091b67603d04d4713624bb7eea9944a14e17e5991aa0",
+      "indexed_at": "2026-06-30T14:55:29Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4708,9 +4708,9 @@
           "source_file": "language/Event_block.md"
         },
         "Event_block::parameters": {
-          "file_id": "file-Wh9EMUPEtpXbwrZp179SrB",
+          "file_id": "file-65k1CHFExA2gnHhGQS5hGy",
           "heading_path": "Event block > Parameters",
-          "section_payload_hash": "sha256:ac20c8fb695e6d70fbd4d0e4987ad6a99db5d6a9e2b40fba7a2637eb631d65d6",
+          "section_payload_hash": "sha256:9ee7799ac0eb84290ffaaa48b0cd0b8404ccc54ba8e07cd358baf376eb8cb4d2",
           "source_file": "language/Event_block.md"
         },
         "Event_block::syntax": {
@@ -4925,8 +4925,8 @@
       "stale": false
     },
     "language/Filters_and_sortings_block.md": {
-      "file_hash": "sha256:0ad2ceff1f1d7ca79264fd3597e69a24893bee9187eb1843e2aee630c1e4ab77",
-      "indexed_at": "2026-06-16T09:37:31Z",
+      "file_hash": "sha256:7d87bf2c7032dbef0d96dc35eb7ff2a5f39e4d924204d02e6034ca3f11a9dd8c",
+      "indexed_at": "2026-06-30T14:55:39Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4978,9 +4978,9 @@
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters::dup-1": {
-          "file_id": "file-BV1qg2z1t9muuYwSVaHY21",
+          "file_id": "file-TmRvzCLxH1TmMy1pw1jq1m",
           "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Parameters",
-          "section_payload_hash": "sha256:ff13c749366086e2100d18d4ca0317953019e2b65e9426afab832383516baef6",
+          "section_payload_hash": "sha256:dbbb9b5da03cf7dfddc3292116ff55b6c3e21e68a1c719716b995ae928cce8d7",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters::dup-2": {
@@ -6647,8 +6647,8 @@
       "stale": false
     },
     "language/Properties_and_actions_block.md": {
-      "file_hash": "sha256:b1a6122d06c1b7e2f30bafe3b61392a40be0a1d1c5ca048b47ff7c0d0a390092",
-      "indexed_at": "2026-06-26T11:46:23Z",
+      "file_hash": "sha256:b15f0883ddc40ae447134a79adb64b6a1bb2df8ac3f9b1385e5bcbd4432c02b2",
+      "indexed_at": "2026-06-30T14:56:49Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6670,15 +6670,15 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-00": {
-          "file_id": "file-4YCskbEv4X4Juz1nB4qjoc",
+          "file_id": "file-HqrWEYFpUgaEYtmXzaDkWm",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:08e1f66fc725aaf587e965bcf381f2aeae5e6ae2f95e83dea3642194f2c04b18",
+          "section_payload_hash": "sha256:0cf5ebe19190447ae29f3bcb1391f44876a2978a2d66588ccab02215049e4789",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-01": {
-          "file_id": "file-Cr4FV3ZezGf5wGvVx8cfqw",
+          "file_id": "file-EcfmTQP4WsQDS6vjQbzYqd",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:dec3865d86092e46364a31c021a470d30a812c843a28bd794a515eb40c166e9a",
+          "section_payload_hash": "sha256:aceff87b2c44bf27ce927e5541b92f33be9e3fbbee4bac97f7459fcfe67492dc",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-02": {
@@ -14379,7 +14379,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "e85ffdf779921ef8dcded037cb03be129cac78b5",
+  "last_indexed_docs_commit": "1d9dbf9dc86d517d90a7442c97b2551d900e686c",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
