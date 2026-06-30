@@ -153,7 +153,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `changeType`
 
-    Specifying [standard handlers](../paradigm/Form_events.md#predefined) for property/action change events. It is specified with one of the keywords:
+    Specifying [standard handlers](../paradigm/Form_events.md#predefined) for property/action change events. It is specified by one of the keywords:
 
     - `CHANGEABLE` calls the corresponding handler of the triggered event. Default value. It makes sense to use it explicitly only when another modifier is defined for the entire block but should not be applied to a specific property.
     - `READONLY` will either turn on the filtering mechanism or simply ignore the event when the user tries to change the property.
@@ -246,7 +246,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `viewType`
 
-    Specifying the [view type](../paradigm/Interactive_view.md#property) of the property or action being added:
+    Specifying the [view type](../paradigm/Interactive_view.md#property) of the property or action being added. It is specified by one of the keywords:
 
     - `GRID` — table column
     - `TOOLBAR` — toolbar
@@ -286,7 +286,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `sessionScopeType`
 
-    The session in which object operators (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) must be executed. One of:
+    The session in which object operators (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) must be executed. It is specified by one of the keywords:
 
     - `NEWSESSION` - a new session
     - `NESTEDSESSION` - a nested session

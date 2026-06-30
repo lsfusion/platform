@@ -73,11 +73,20 @@ The event block allows to define handlers for form events that occur as the resu
 
 - `groupObjectEvent`
 
-    One of `FILTER`, `ORDER`, `FILTERS`, `ORDERS`.
+    A group object event type. It is specified by one of the keywords:
+
+    - `FILTER` - occurs when the filter applied to the group object changes, for any reason (a change to data affecting the filter condition, a programmatic change, or a user action).
+    - `ORDER` - occurs when the order applied to the group object changes, for any reason.
+    - `FILTERS` - occurs when the user interactively changes the group object's filters.
+    - `ORDERS` - occurs when the user interactively changes the group object's orders.
 
 - `containerEvent`
 
-    One of `EXPAND`, `COLLAPSE`, `TAB`.
+    Container event type. It is specified by one of the keywords:
+
+    - `COLLAPSE` - occurs when the user collapses the container.
+    - `EXPAND` - occurs when the user expands the container.
+    - `TAB` - occurs when the user selects the container as a tab in a tabbed container.
 
 - `eventPhase`
 
