@@ -58,14 +58,33 @@ EXTID extID
 
     - `eventType`
 
-        A [form event](../paradigm/Form_events.md) type. It is specified by one of the keywords:
+        A [form event](../paradigm/Form_events.md) type. It is specified in one of the following forms:
 
-        - `CHANGE` - occurs when the user tries to change the value of the specified property.
+        - `CHANGE [eventPhase]` - occurs when the user tries to change the value of the specified property.
+
+            - `eventPhase`
+
+                The moment the handler runs relative to the change of the property value. It is specified by one of the keywords:
+
+                - `BEFORE` - the handler runs immediately before the actual change of the property value.
+                - `AFTER` - the handler runs immediately after the actual change of the property value.
+
+                If not specified, the handler runs on the change attempt itself and replaces the default handler.
+
         - `CHANGEWYS` - occurs when the user tries to change the value of the specified property using a special input mechanism. You can read more in the description of the [form events](../paradigm/Form_events.md).
         - `GROUPCHANGE` - occurs when the user tries to change the property value for all objects in the table (group editing).
         - `EDIT` - occurs when the user tries to edit the object that is the value of the specified property.
-        - `CONTEXTMENU [caption]` - the user has selected the specified item in the property context menu on the form. If necessary, you can also define the caption of this menu item ([string literal](Literals.md#strliteral)). If it is not specified, then, by default, it will be the same as the action caption.
-        - `KEYPRESS key` - the user has pressed the specified `key` ([string literal](Literals.md#strliteral)) on keyboard.
+        - `CONTEXTMENU [caption]` - the user has selected the specified item in the property context menu on the form.
+
+            - `caption`
+
+                [String literal](Literals.md#strliteral) that specifies the caption of the context menu item. If not specified, it defaults to the action caption.
+
+        - `KEYPRESS key` - the user has pressed the specified key on the keyboard.
+
+            - `key`
+
+                String literal that specifies the keyboard key.
 
     - `actionOperator`
 
