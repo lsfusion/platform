@@ -295,7 +295,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
             else
                 where = propCase.where;
-            mActionCases.add(new ActionCase<>(where, eventAction));
+            mActionCases.add(new ActionCase<>(where, eventAction, true));
         }
         ImList<ActionCase<Interface>> actionCases = mActionCases.immutableList();
         
