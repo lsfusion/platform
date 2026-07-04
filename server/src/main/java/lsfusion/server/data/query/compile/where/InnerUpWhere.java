@@ -3,6 +3,7 @@ package lsfusion.server.data.query.compile.where;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.inner.InnerExpr;
+import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
@@ -25,5 +26,13 @@ public class InnerUpWhere extends AbstractUpWhere<InnerUpWhere> {
     @Override
     public Where getWhere(JoinExprTranslator translator) {
         return JoinExprTranslator.translateExpr(expr, translator).getWhere();
+    }
+
+    @Override
+    public UpWhere translateExpr(ExprTranslator translator) {
+        Expr translated = expr.translateExpr(translator);
+        if(!(translated instanceof InnerExpr))
+            return null; // returning this would resurrect the original expression
+        return new InnerUpWhere((InnerExpr) translated);
     }
 }

@@ -4,8 +4,10 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.SourceJoin;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 
 import java.util.function.Function;
@@ -26,6 +28,18 @@ public abstract class ExprTranslator extends TwinImmutableObject {
 
     public <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map) {
         return ((ImMap<K, Expr>)map).mapValues(this.TRANS());
+    }
+
+    // translates the map values requiring them to stay BaseExprs, returns null otherwise (see WhereJoin.translateExprJoin)
+    public <K> ImMap<K, BaseExpr> translateBaseExprs(ImMap<K, BaseExpr> map) {
+        ImValueMap<K, BaseExpr> mvMap = map.mapItValues();
+        for(int i=0,size=map.size();i<size;i++) {
+            Expr translated = map.getValue(i).translateExpr(this);
+            if(!(translated instanceof BaseExpr))
+                return null;
+            mvMap.mapValue(i, (BaseExpr) translated);
+        }
+        return mvMap.immutableValue();
     }
 
     public <K> ImOrderMap<Expr, K> translate(ImOrderMap<? extends Expr, K> map) {

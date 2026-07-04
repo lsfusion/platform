@@ -1,7 +1,6 @@
 package lsfusion.server.data.expr.join.inner;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.dnf.AddSet;
 import lsfusion.server.data.caches.hash.HashCodeKeys;
@@ -52,10 +51,6 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
     public WhereJoins getWhereJoins() {
         return new WhereJoins(wheres);        
     }
-    public WhereJoins removeJoin(QueryJoin removeJoin, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
-        return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
-    }
-
     // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
     public void fillInnerJoinOrder(MOrderSet<InnerJoin> mInnerJoinOrder) {
         for (InnerJoin where : wheres)

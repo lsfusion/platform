@@ -27,6 +27,7 @@ import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.stat.*;
+import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
@@ -367,6 +368,16 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     }
 
     protected abstract T createThis(ImSet<KeyExpr> keys, ImSet<Value> values, I query, ImMap<K, BaseExpr> group);
+
+    // rebuilds this join with the group values translated (see WhereJoins.removeJoin) : the inner query is not translated since it cannot reference the join that is being replaced (contexts are isolated)
+    // returns null if a translated value is not a BaseExpr anymore (the caller should fall back)
+    @Override
+    public T translateExprJoin(ExprTranslator translator) {
+        ImMap<K, BaseExpr> translatedGroup = translator.translateBaseExprs(group);
+        if(translatedGroup == null)
+            return null;
+        return createThis(keys, values, query, translatedGroup);
+    }
 
     protected T translate(MapTranslate translator) {
         return createThis(translator.translateDirect(keys), translator.translateValues(values), query.translateOuter(translator), translator.translateExprKeys(group));

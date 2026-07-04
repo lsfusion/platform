@@ -1823,17 +1823,36 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return getStatKeys(groups, keyStat, type, (Result<CompileInfo>)null, debugInfoWriter);
     }
 
+    // virtualizes every join argument that references the removed join : the argument is replaced AS A WHOLE with a fresh key ("iterate over any value", one key per distinct argument), so the introduced key always stands at a join argument position - the only position that sources a key and gives it a class (see InnerSelect.JoinSelect); the join still sources its keys through the remaining arguments, while the removeJoin dependency (and with it the push recursion) is severed
+    // the matching up where is translated with the same translator, otherwise its getWhere would resurrect the original removeJoin-dependent argument inside the pushed predicate
+    // returns null if the join cannot be rebuilt (the caller falls back to the cut)
+    private static Pair<WhereJoins, UpWheres<WhereJoin>> translateRemoveJoin(WhereJoin whereJoin, QueryJoin removeJoin, UpWheres<WhereJoin> upWheres) {
+        ImMap<?, BaseExpr> joins = whereJoin.getJoins();
+        ImSet<BaseExpr> dependValues = joins.values().toSet().filterFn(value -> UnionJoin.depends(value, removeJoin));
+        assert !dependValues.isEmpty(); // the follows the removal detected are derived from the argument values, so the dependency has to be here
+        if(dependValues.isEmpty()) // fail-soft : better the cut (the old behavior) than an identity rebuild silently undoing the demote
+            return null;
+        JoinExprTranslator translator = new JoinExprTranslator(KeyExpr.getMapKeys(dependValues), SetFact.EMPTY());
+        WhereJoin translatedWhereJoin = whereJoin.translateExprJoin(translator); // null for the join types that cannot be rebuilt
+        if(translatedWhereJoin == null)
+            return null;
+        UpWhere translatedUpWhere = upWheres.get(whereJoin).translateExpr(translator); // the up where has to be translated with the same translator, otherwise its getWhere resurrects the original removeJoin-dependent expression inside the pushed predicate
+        if(translatedUpWhere == null)
+            return null; // the up where cannot be rebuilt consistently
+        return new Pair<>(new WhereJoins(translatedWhereJoin), new UpWheres<>(translatedWhereJoin, translatedUpWhere));
+    }
+
+    // устраняет сам join чтобы при проталкивании не было рекурсии
     // there is an optimization if nothing was removed return null
-    public static <T extends WhereJoin, K extends Expr> WhereJoins removeJoin(QueryJoin<K, ?, ?, ?> removeJoin, WhereJoin[] wheres, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
+    public <K extends Expr> WhereJoins removeJoin(QueryJoin<K, ?, ?, ?> removeJoin, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
         WhereJoins result = null;
         UpWheres<WhereJoin> resultUpWheres = null;
         MExclSet<WhereJoin> mKeepWheres = SetFact.mExclSetMax(wheres.length); // массивы
         for(WhereJoin<?, ?> whereJoin : wheres) {
-            WhereJoins removeJoins;
+            WhereJoins removeJoins = null;
             Result<UpWheres<WhereJoin>> removeUpWheres = new Result<>();
 
             boolean remove = BaseUtils.hashEquals(removeJoin, whereJoin);
-            InnerJoins joinFollows = null;
             if (!remove && whereJoin instanceof ExprStatJoin && ((ExprStatJoin) whereJoin).depends(removeJoin)) // без этой проверки может бесконечно проталкивать
                 remove = true;
 
@@ -1844,41 +1863,48 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 if(givesNoKeys(removeJoin, keyExpr))
                     remove = true;
             }
-            // all lower checks should match calculateOrWhere 
-            if(!remove && whereJoin instanceof PartitionJoin) { // we don't need to check it in joinFollows, since PartitionExpr is InnerExpr
-                if(UnionJoin.depends(((PartitionJoin) whereJoin).getOrWhere(), removeJoin))
-                    remove = true;
-            }
+            // should match calculateOrWhere; we don't need to check it in joinFollows, since PartitionExpr is InnerExpr
+            if(!remove && whereJoin instanceof PartitionJoin && UnionJoin.depends(((PartitionJoin) whereJoin).getOrWhere(), removeJoin))
+                remove = true;
             if(!remove) {
                 Result<UpWheres<InnerJoin>> rJoinUpWheres = new Result<>();
                 Result<Boolean> unionRemoved = new Result<>(false); // need this because of null optimization
-                joinFollows = whereJoin.getJoinFollows(rJoinUpWheres, unionJoin -> {
+                WhereJoins followWhereJoins = whereJoin.getJoinFollows(rJoinUpWheres, unionJoin -> {
                     if (unionJoin.depends(removeJoin)) { // without this check there can be infinite push down, so we just eliminate union join branches that depends on removeJoin (but only branches, to avoid removing significant branches)
                         unionRemoved.set(true);
                         return true;
                     }
                     return false;
-                });
+                }).getWhereJoins();
                 UpWheres<WhereJoin> joinUpWheres = BaseUtils.immutableCast(rJoinUpWheres.result);
-                removeJoins = joinFollows.removeJoin(removeJoin, joinUpWheres, removeUpWheres);
+                removeJoins = followWhereJoins.removeJoin(removeJoin, joinUpWheres, removeUpWheres);
                 if(removeJoins == null && unionRemoved.result) {
-                    removeJoins = joinFollows.getWhereJoins();
+                    removeJoins = followWhereJoins;
                     removeUpWheres.set(joinUpWheres);
                 }
-            } else {
+            }
+            if(remove) { // the unified sanction for all the checks above : the join is cut as a whole (which can lose other siblings reductions - the getReducePushedStatKeys heuristics compensates for that)
                 removeJoins = WhereJoins.EMPTY;
                 removeUpWheres.set(UpWheres.EMPTY());
             }
 
-            // cut, we need to throw away the whole join
-            // it's not good, because we can loose other siblings reductions (to prevent that there is a heuristics in the getReducePushedStatKeys)
             if(removeJoins != null) {
+                WhereJoins addJoins = removeJoins;
+                UpWheres<WhereJoin> addUpWheres = removeUpWheres.result;
+                // instead of cutting the whole dependent join (which loses its key sources for the pushed predicate), REPLACE it : the arguments referencing the removed join are virtualized (see translateRemoveJoin), so the join still sources its keys through the remaining arguments while the removeJoin dependency (and with it the push recursion) is severed; the pushed predicate is an optimization copy of the condition (the original is retained outside), so this only loosens it
+                if(!remove) { // the join itself is kept semantically, so it is rebuilt rather than cut
+                    Pair<WhereJoins, UpWheres<WhereJoin>> translated = translateRemoveJoin(whereJoin, removeJoin, upWheres);
+                    if(translated != null) {
+                        addJoins = translated.first;
+                        addUpWheres = translated.second;
+                    }
+                }
                 if(result==null) {
-                    result = removeJoins;
-                    resultUpWheres = removeUpWheres.result;
+                    result = addJoins;
+                    resultUpWheres = addUpWheres;
                 } else {
-                    result = result.and(removeJoins);
-                    resultUpWheres = result.andUpWheres(resultUpWheres, removeUpWheres.result);
+                    result = result.and(addJoins);
+                    resultUpWheres = result.andUpWheres(resultUpWheres, addUpWheres);
                 }
             } else
                 mKeepWheres.exclAdd(whereJoin);
@@ -1902,11 +1928,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     return false;
         }
         return true;
-    }
-
-    // устраняет сам join чтобы при проталкивании не было рекурсии
-    public WhereJoins removeJoin(QueryJoin join, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
-        return removeJoin(join, wheres, upWheres, resultWheres); // не надо Bet
     }
 
     public <K extends BaseExpr> WhereJoins pushStatKeys(StatKeys<K> statKeys) {

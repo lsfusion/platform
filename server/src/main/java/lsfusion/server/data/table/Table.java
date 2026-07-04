@@ -456,6 +456,16 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return join(translator.translate(joins));
         }
 
+        // rebuilds this join with the argument values translated (see WhereJoins.removeJoin)
+        // returns null if a translated value is not a BaseExpr anymore (the caller should fall back)
+        @Override
+        public Join translateExprJoin(ExprTranslator translator) {
+            ImMap<KeyField, BaseExpr> translatedJoins = translator.translateBaseExprs(joins);
+            if(translatedJoins == null)
+                return null;
+            return joinAnd(translatedJoins);
+        }
+
         public lsfusion.server.data.query.build.Join<PropertyField> packFollowFalse(Where falseWhere) {
             ImMap<KeyField, lsfusion.server.data.expr.Expr> packJoins = BaseExpr.packPushFollowFalse(joins, falseWhere);
             if(!BaseUtils.hashEquals(packJoins, joins))
