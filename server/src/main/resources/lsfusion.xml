@@ -27,6 +27,7 @@
                 <entry key="packOnCacheComplexity" value="${settings.packOnCacheComplexity:}"/>
                 <entry key="backwardCompatibilityVersion" value="${settings.backwardCompatibilityVersion:}"/>
                 <entry key="removeJoinCutBackwardCompatibility" value="${settings.removeJoinCutBackwardCompatibility:}"/>
+                <entry key="keyExprCompareJoinBackwardCompatibility" value="${settings.keyExprCompareJoinBackwardCompatibility:}"/>
                 <entry key="LRUOftenCleanPeriod" value="${settings.LRUOftenCleanPeriod:}"/>
                 <entry key="LRUOftenExpireSecond" value="${settings.LRUOftenExpireSecond:}"/>
                 <entry key="LRUOftenProceedBucket" value="${settings.LRUOftenProceedBucket:}"/>

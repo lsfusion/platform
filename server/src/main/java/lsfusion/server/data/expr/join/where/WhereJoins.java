@@ -1061,18 +1061,20 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             // соответственно ищем ExprIndexedJoin с KeyExpr и без giveNoKeys (по аналогии с removeJoin, именно с ним могут быть проблемы) и если эти KeyExpr в других keepJoins не учавствуют (по аналогии с ExprIndexedJoin.getInnerKeys)
             // теоретически можно и на ExprIndexedJoin с BaseExpr (а не KeyExpr) которые translate'ся проверять, но этот случай при самом проталкивании не учитывается (то есть [=GROUP BY key](f(x)) WHERE Z<=f(x)<=Y )
             ImSet<KeyExpr> innerKeys = null;
-            for(BaseJoin keep : keepJoins)
-                if(keep instanceof ExprIntervalJoin && ((ExprIntervalJoin)keep).givesNoKeys()) {
-                    KeyExpr keyExpr = ((ExprIntervalJoin) keep).getKeyExpr();
-                    if(!givesNoKeys(queryJoin, keyExpr)) {
-                        if(innerKeys == null)
-                            innerKeys = ExprIndexedJoin.getInnerKeys(keepJoins.toArray(new BaseJoin[keepJoins.size()]), (WhereJoin)keep);
-                        if(!innerKeys.contains(keyExpr)) {
-                            hasExprIndexedNoKeys = keyExpr;
-                            break;
-                        }                            
-                    }                        
-                }                
+            if(Settings.get().isKeyExprCompareJoinBackwardCompatibility()) { // NOT needed anymore : the interval machinery (KeyExprCompareJoin / iterate) sources such keys now, the hack is kept only for the backward compatibility mode
+                for (BaseJoin keep : keepJoins)
+                    if (keep instanceof ExprIntervalJoin && ((ExprIntervalJoin) keep).givesNoKeys()) {
+                        KeyExpr keyExpr = ((ExprIntervalJoin) keep).getKeyExpr();
+                        if (!givesNoKeys(queryJoin, keyExpr)) {
+                            if (innerKeys == null)
+                                innerKeys = ExprIndexedJoin.getInnerKeys(keepJoins.toArray(new BaseJoin[keepJoins.size()]), (WhereJoin) keep);
+                            if (!innerKeys.contains(keyExpr)) {
+                                hasExprIndexedNoKeys = keyExpr;
+                                break;
+                            }
+                        }
+                    }
+            }
 
             if(hasExprIndexedNoKeys == null) {
                 ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
@@ -1857,8 +1859,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 remove = true;
 
             // жесткий хак, вообще нужно проталкивать все предикаты, но в случае (GROUP BY d) WHERE f(d) AND a=<d<=b, может протолкнутся a<=d<=b без f(d) и получится висячий ключ
-            // собственно нужно сделать чтобы предикат a<=d<=b - при отсутствии ключа добавлял сам join на iterate(a,d,b), но пока этого не сделано, такой хак: 
-            if (!remove && whereJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin)whereJoin).givesNoKeys()) {
+            // NOT needed anymore : the interval machinery (KeyExprCompareJoin / iterate) sources such keys now, so the hack is kept only for the backward compatibility mode
+            if (!remove && whereJoin instanceof ExprIndexedJoin && Settings.get().isKeyExprCompareJoinBackwardCompatibility() && ((ExprIndexedJoin)whereJoin).givesNoKeys()) {
                 KeyExpr keyExpr = ((ExprIndexedJoin) whereJoin).getKeyExpr();
                 if(givesNoKeys(removeJoin, keyExpr))
                     remove = true;

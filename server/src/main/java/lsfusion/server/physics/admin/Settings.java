@@ -1945,18 +1945,14 @@ public class Settings implements Cloneable {
         this.removeJoinCutBackwardCompatibility = removeJoinCutBackwardCompatibility;
     }
 
+    private boolean keyExprCompareJoinBackwardCompatibility = false; // fall back to not creating KeyExprCompareJoin's and to the hanging interval key hacks (givesNoKeys) they replace
+
+    public boolean isKeyExprCompareJoinBackwardCompatibility() {
+        return keyExprCompareJoinBackwardCompatibility;
+    }
+
     public void setKeyExprCompareJoinBackwardCompatibility(boolean keyExprCompareJoinBackwardCompatibility) {
         this.keyExprCompareJoinBackwardCompatibility = keyExprCompareJoinBackwardCompatibility;
-    }
-
-    private boolean compileKeyIntervalBackwardCompatibility = false;
-
-    public boolean isCompileKeyIntervalBackwardCompatibility() {
-        return compileKeyIntervalBackwardCompatibility;
-    }
-
-    public void setCompileKeyIntervalBackwardCompatibility(boolean compileKeyIntervalBackwardCompatibility) {
-        this.compileKeyIntervalBackwardCompatibility = compileKeyIntervalBackwardCompatibility;
     }
 
     private boolean noTransSyncDB = false;

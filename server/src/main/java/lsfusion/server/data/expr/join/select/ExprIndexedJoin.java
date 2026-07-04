@@ -210,7 +210,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> implements Interv
                 fixedInterval = result == IntervalType.FULL;
             }
 
-            if(Settings.get().isCompileKeyIntervalBackwardCompatibility() && fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+            if(Settings.get().isKeyExprCompareJoinBackwardCompatibility() && fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
                 if(excludeQueryJoin == null || WhereJoins.givesNoKeys(excludeQueryJoin, (KeyExpr)expr) || Settings.get().isDisableExperimentalFeatures()) {
                     if(innerKeys == null)
                         innerKeys = getInnerKeys(wheres, excludeQueryJoin);

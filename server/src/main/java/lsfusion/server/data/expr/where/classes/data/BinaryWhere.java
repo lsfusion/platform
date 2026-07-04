@@ -23,6 +23,7 @@ import lsfusion.server.data.expr.join.select.KeyExprCompareJoin;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.value.StaticExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.query.compile.CompileSource;
@@ -103,7 +104,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     }
 
     public static boolean needKeyCompareJoin(BaseExpr expr, Compare compare, BaseExpr valueExpr) {
-        return expr instanceof KeyExpr && KeyExprCompareJoin.isInterval((KeyExpr) expr, compare, valueExpr);
+        return !Settings.get().isKeyExprCompareJoinBackwardCompatibility() && expr instanceof KeyExpr && KeyExprCompareJoin.isInterval((KeyExpr) expr, compare, valueExpr); // the setting also disables all the KeyExprCompareJoin-aware behaviors of the consumers (needIndexedJoin, GreaterWhere, CompareWhere, ExprIndexedJoin valueExpr)
     }
     public static boolean needIndexedJoin(BaseExpr expr, Compare compare, BaseExpr valueExpr, ImOrderSet<Expr> orderTop, Result<Boolean> resultIsOrderTop) {
         if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed(compare)) { // this indexed check is not that good here (at least for "greater" compares), see Property.getSelectStat comment
