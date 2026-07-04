@@ -204,7 +204,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                         Where prevWhere = Where.FALSE();
                         for (GroupJoinsWhere whereJoin : sortedWhereJoins) {
                             exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not()), orderTop));
-                            prevWhere.or(whereJoin.getFullWhere());
+                            prevWhere = prevWhere.or(whereJoin.getFullWhere());
                         }
                         return new Pair<>(exclJoins.immutableCol(), true);
                     } else { // иначе запускаем рекурсию
