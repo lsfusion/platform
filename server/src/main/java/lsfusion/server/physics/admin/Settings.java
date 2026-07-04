@@ -1935,6 +1935,20 @@ public class Settings implements Cloneable {
         this.packStatBackwardCompatibility = packStatBackwardCompatibility;
     }
 
+    private boolean removeJoinCutBackwardCompatibility = false; // fall back to cutting the whole dependent join in the push down recursion guard (instead of virtualizing its arguments) + the compensating getReducePushedStatKeys heuristics
+
+    public boolean isRemoveJoinCutBackwardCompatibility() {
+        return removeJoinCutBackwardCompatibility;
+    }
+
+    public void setRemoveJoinCutBackwardCompatibility(boolean removeJoinCutBackwardCompatibility) {
+        this.removeJoinCutBackwardCompatibility = removeJoinCutBackwardCompatibility;
+    }
+
+    public void setKeyExprCompareJoinBackwardCompatibility(boolean keyExprCompareJoinBackwardCompatibility) {
+        this.keyExprCompareJoinBackwardCompatibility = keyExprCompareJoinBackwardCompatibility;
+    }
+
     private boolean compileKeyIntervalBackwardCompatibility = false;
 
     public boolean isCompileKeyIntervalBackwardCompatibility() {

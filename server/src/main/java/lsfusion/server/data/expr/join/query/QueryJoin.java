@@ -28,6 +28,7 @@ import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translate.ExprTranslator;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
@@ -240,7 +241,8 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
 
             boolean remove = WhereJoins.pushCompareTo(reducedStatKeys, pushedStatKeys) <= 0;
 
-            if(!remove && needPredicatePushDown && WhereJoins.pushCompareCost(reducedStatKeys, pushedStatKeys) <= 0) {
+            if(!remove && Settings.get().isRemoveJoinCutBackwardCompatibility() && needPredicatePushDown && WhereJoins.pushCompareCost(reducedStatKeys, pushedStatKeys) <= 0) {
+                // needed only in the backward compatibility mode, when removeJoin CUTS the dependent joins wholesale : with the argument virtualization the problematic pushed key sources (Table.Join / QueryJoin - the rebuildable types) are kept in the pushed predicate
                 // here it's tricky, the problem is that removeJoin removes join completely (not only the branch with the subQuery)
                 // so if the query itself has not enough keys, and the subQuery also has not enough keys
                 // then there is a risk that the "pushed join" will be removed for the subQuery and the subQuery will get the incorrect operation exception

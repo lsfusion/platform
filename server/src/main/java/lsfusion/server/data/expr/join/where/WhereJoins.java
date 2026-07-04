@@ -1073,7 +1073,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                         }                            
                     }                        
                 }                
-            
+
             if(hasExprIndexedNoKeys == null) {
                 ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
                 pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
@@ -1892,7 +1892,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 WhereJoins addJoins = removeJoins;
                 UpWheres<WhereJoin> addUpWheres = removeUpWheres.result;
                 // instead of cutting the whole dependent join (which loses its key sources for the pushed predicate), REPLACE it : the arguments referencing the removed join are virtualized (see translateRemoveJoin), so the join still sources its keys through the remaining arguments while the removeJoin dependency (and with it the push recursion) is severed; the pushed predicate is an optimization copy of the condition (the original is retained outside), so this only loosens it
-                if(!remove) { // the join itself is kept semantically, so it is rebuilt rather than cut
+                if(!remove && !Settings.get().isRemoveJoinCutBackwardCompatibility()) { // the join itself is kept semantically, so it is rebuilt rather than cut
                     Pair<WhereJoins, UpWheres<WhereJoin>> translated = translateRemoveJoin(whereJoin, removeJoin, upWheres);
                     if(translated != null) {
                         addJoins = translated.first;
