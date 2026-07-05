@@ -133,9 +133,21 @@ export function Board(props) {
 
 `useBucket(cellKey)` returns the array of row keys currently in that cell, in the group's display order, and subscribes the component to only that cell. Call it once per cell component, with that cell's fixed key (the usual hook rules). An empty cell always returns the same frozen empty array. The cell component resolves each row key to a row component that subscribes to its own row via `useFormData(d => d.<g>.byKey[rowKey])`, as above.
 
-The view keeps the layout: it supplies the cell keys — so empty cells exist and render too, e.g. as drop targets — and the cell markup. The platform keeps the index and the render economy: moving a row between cells re-renders only the old and the new cell; editing a value that does not change the row's cell re-renders only that row's own component; every other cell keeps its previous array reference and its `React.memo` skips.
+The view keeps the layout: it supplies the cell keys — so empty cells exist and render too, e.g. as drop targets — and the cell markup. The platform keeps the index and the render economy: moving a row between cells re-renders only the old and the new cell; editing a value that does not change the row's cell re-renders only that row's own component; every other cell keeps its previous array reference and its `React.memo` skips. The plain alternative — grouping `data.<g>.list` into cells by hand on each render — rebuilds every cell's array every time, so any change re-renders the whole board.
 
-For a flat set of cells, the `<Buckets group cells bucketOf component/>` form renders one memoized wrapper per key in `cells`; the cell component receives `cellKey`, `rowKeys`, `index`, and the pass-through props.
+When the cells form a flat list and each cell's markup lives in one component, the `<Buckets group cells bucketOf component/>` form does the mapping itself, the way `List` does for rows: one memoized wrapper per key in `cells`, and the cell component receives `cellKey`, `rowKeys`, `index`, and the pass-through props. Keep the explicit `<BucketScope>` + `useBucket` markup when the view itself lays out the grid — a two-axis matrix, axis headers, pinned columns:
+
+```jsx
+const { Buckets } = window.lsfusion;
+const STATUSES = ['new', 'inProgress', 'done'];
+
+// Card subscribes to its own row, like Shift above
+const Column = ({ cellKey, rowKeys }) => (
+    <div className="column">{rowKeys.map(k => <Card key={k} rowKey={k} />)}</div>
+);
+
+<Buckets group="t" cells={STATUSES} bucketOf={t => t.status} component={Column} />
+```
 
 Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
 
