@@ -184,6 +184,7 @@ public class GFormController implements EditManager {
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
+        attachControllerSugar(); // needs `form` (just assigned) — must not run in the controller field initializer
 
         this.formId = formId;
         this.globalID = "" + (idCounter++);
@@ -487,14 +488,22 @@ public class GFormController implements EditManager {
             evalAction: base.evalAction, // evalAction(script, ...params) -> Promise
             change: base.change // change(property, ...keyParams, value) -> Promise (single global property, canonical name)
         };
-        // structured WYSIWYG sugar that mirrors props.data: a form property is a member of the controller —
-        //   controller.<groupSID>.<propIntegrationSID>.change(...) / .getValues(...)   a property drawn on a group
-        //   controller.<propIntegrationSID>.change(...) / .getValues(...)              a form-level (no-group) property
-        //   controller.<groupSID>.change(row)                                          set the group's current object
-        // so an author writes controller.orders.sum.change(v) instead of the stringly-typed changeProperty('orders.sum', v).
-        // Pure forwarding over the flat methods above (same object/value/exec guess and the same async parsing); additive —
-        // the flat methods and the global exec/eval/change set above always win, so a group/property SID that collides with
-        // one of those keeps the method and the colliding accessor is skipped + logged.
+        return controller;
+    }-*/;
+
+    // structured WYSIWYG sugar that mirrors props.data: a form property is a member of the controller —
+    //   controller.<groupSID>.<propIntegrationSID>.change(...) / .getValues(...)   a property drawn on a group
+    //   controller.<propIntegrationSID>.change(...) / .getValues(...)              a form-level (no-group) property
+    //   controller.<groupSID>.change(row)                                          set the group's current object
+    // so an author writes controller.orders.sum.change(v) instead of the stringly-typed changeProperty('orders.sum', v).
+    // Pure forwarding over the flat methods above (same object/value/exec guess and the same async parsing); additive —
+    // the flat methods and the global exec/eval/change set above always win, so a group/property SID that collides with
+    // one of those keeps the method and the colliding accessor is skipped + logged.
+    // Attached from the constructor (NOT the controller field initializer): getControllerStructure reads `form`,
+    // which is assigned in the constructor body, after the field initializers have already run.
+    private native void attachControllerSugar() /*-{
+        var thisObj = this;
+        var controller = this.@GFormController::controller;
         function makeProperty(qualified) { // a property accessor: .change([object,] [value]) and .getValues(...) forwarding the flat methods
             return {
                 change: function () {
@@ -538,7 +547,6 @@ public class GFormController implements EditManager {
             }
             controller[formPropSID] = makeProperty(formPropSID);
         }
-        return controller;
     }-*/;
 
     // the schema backing the structured controller sugar above: { groups: [[groupSID, [propIntegrationSID, ...]], ...],
