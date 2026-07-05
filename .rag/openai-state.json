@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:f6e5d2ed1b58be8ec4bc06c5162117f3317dd34e61152b2ee251d4246770270c",
-      "indexed_at": "2026-07-05T16:30:31Z",
+      "file_hash": "sha256:435c53511739f2e3cdaee0ffbfea9538cce5715dfc1a3dbd703b75f66bb1bafa",
+      "indexed_at": "2026-07-05T19:02:15Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -642,9 +642,9 @@
       },
       "sections": {
         "How-to_Custom_React_views::bucketing-rows-into-cells": {
-          "file_id": "file-JtncrpUUKPXsrEhQGxRjq7",
+          "file_id": "file-QHVwEsL2eyqescyx8zUfUP",
           "heading_path": "How-to: Custom React form views > Bucketing rows into cells",
-          "section_payload_hash": "sha256:59c2e2d9d26f4c6a713ab142c9251db4799182b1570d6313f3b66764b54173ba",
+          "section_payload_hash": "sha256:1634b0ca167babb86b6fb33492f4d4aadeb09ce7793b5348291f5b9b924898d2",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::how-to-custom-react-form-views": {
@@ -14385,7 +14385,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "a198f0216e3642068df73bf65e039453c3475432",
+  "last_indexed_docs_commit": "9ffe1118b4b40159b08c34c5ad4b3af5f0966b1a",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
