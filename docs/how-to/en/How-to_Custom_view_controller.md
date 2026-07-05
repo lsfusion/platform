@@ -56,6 +56,28 @@ A custom view normally reads state from `props.data` and changes it through the 
 
 Editing the form goes through the ordinary edit channel and is not gated; the server calls are (see [Calling the server](How-to_Custom_components_objects.md#calling-the-server)). The edited row is addressed by a handle; any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
 
+#### Using the structured shorthand {#structured-shorthand}
+
+The form controller also mirrors the shape of `props.data`: each object group is a member of the controller under its group SID, each property drawn on that group is a member of the group under its integration name, and each form-level (no-group) property is a member of the controller directly. This is an alternative to the string-addressed methods — the group and property are written as a path instead of packed into a `'group.property'` string:
+
+| shorthand | equivalent |
+| --- | --- |
+| `controller.<group>.<property>.change([object,] [value])` | `changeProperty('<group>.<property>', [object,] [value])` |
+| `controller.<group>.<property>.getValues(value[, mode], ok[, fail][, count])` | `getPropertyValues('<group>.<property>', value[, mode], ok[, fail][, count])` |
+| `controller.<group>.change(object)` | `changeObject('<group>', object)` — set the group's current object |
+| `controller.<property>.change(value)` / `.getValues(...)` | `changeProperty('<property>', value)` / `getPropertyValues('<property>', …)` — a form-level property |
+
+```js
+controller.o.note.change('checked');   // changeProperty('o.note', 'checked')
+controller.o.sum.change(row, 100);     // changeProperty('o.sum', row, 100) — on a given row
+controller.o.edit.change(row);         // exec the action 'edit' on a given row
+controller.o.change(row);              // changeObject('o', row) — set the group's current object
+controller.o.customer.getValues(text, 'objects', ok, fail);
+controller.total.change(500);          // a form-level property: changeProperty('total', 500)
+```
+
+At each node `.change(...)` mutates that node — a property's value, or a group's current object; a property's `.change(...)` reuses `changeProperty`'s value-or-row guess and `.getValues(...)` reuses `getPropertyValues`'s lookup modes, since each is a plain forward to the flat method. The shorthand is form-wide — every object group and every drawn property carrying an integration name; `props.data` carries the subset inside the view's own container. A name that would shadow an existing member is kept as that member, not the accessor: a group SID or form-level property coinciding with a controller method (`changeProperty`, `exec`, `change`, …), a form-level property coinciding with a group SID, or a group property named `change`. Address it with the string form instead.
+
 #### Changing the current object and property values
 
 `changeObject(groupSID, object)` sets the current object of the group `groupSID`. The `object` is a data row of that group, or a raw `objects` handle (see [the identity rules](#row-identity-contract) below) — not a bare `row.key`.

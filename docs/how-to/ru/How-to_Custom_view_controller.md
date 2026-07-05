@@ -56,6 +56,28 @@ const total = await controller.form.exec('recalc', orderId);
 
 Правка формы идёт обычным каналом правки и не требует проверки доступа; вызовы сервера её проходят (см. [Вызов сервера](How-to_Custom_components_objects.md#calling-the-server)). Редактируемая строка адресуется дескриптором; любой другой объект — значение FK или параметр действия — передаётся своим числовым id (объект lsFusion из JS передать нельзя).
 
+#### Использование структурного сокращения {#structured-shorthand}
+
+Контроллер формы также повторяет форму `props.data`: каждая группа объектов — член контроллера под её SID группы, каждое свойство, выведенное на этой группе, — член группы под его интеграционным именем, а каждое форменное свойство (без группы) — член контроллера напрямую. Это альтернатива методам со строковой адресацией — группа и свойство записываются как путь, а не упаковываются в строку `'group.property'`:
+
+| сокращение | эквивалент |
+| --- | --- |
+| `controller.<group>.<property>.change([object,] [value])` | `changeProperty('<group>.<property>', [object,] [value])` |
+| `controller.<group>.<property>.getValues(value[, mode], ok[, fail][, count])` | `getPropertyValues('<group>.<property>', value[, mode], ok[, fail][, count])` |
+| `controller.<group>.change(object)` | `changeObject('<group>', object)` — задать текущий объект группы |
+| `controller.<property>.change(value)` / `.getValues(...)` | `changeProperty('<property>', value)` / `getPropertyValues('<property>', …)` — форменное свойство |
+
+```js
+controller.o.note.change('checked');   // changeProperty('o.note', 'checked')
+controller.o.sum.change(row, 100);     // changeProperty('o.sum', row, 100) — на переданной строке
+controller.o.edit.change(row);         // выполнить действие 'edit' на переданной строке
+controller.o.change(row);              // changeObject('o', row) — задать текущий объект группы
+controller.o.customer.getValues(text, 'objects', ok, fail);
+controller.total.change(500);          // форменное свойство: changeProperty('total', 500)
+```
+
+В каждом узле `.change(...)` меняет этот узел — значение свойства либо текущий объект группы; `.change(...)` свойства использует определение «значение или строка» из `changeProperty`, а `.getValues(...)` — режимы запроса из `getPropertyValues`, поскольку каждый вызов просто перенаправляется в плоский метод. Сокращение действует в пределах всей формы — каждая группа объектов и каждое выведенное свойство с интеграционным именем; `props.data` несёт подмножество внутри контейнера самого представления. Имя, которое перекрыло бы существующий член, остаётся этим членом, а не аксессором: SID группы или форменное свойство, совпадающее с методом контроллера (`changeProperty`, `exec`, `change`, …), форменное свойство, совпадающее с SID группы, либо свойство группы с именем `change`. Адресуйте его строковой формой.
+
 #### Изменение текущего объекта и значений свойств
 
 `changeObject(groupSID, object)` задаёт текущий объект группы `groupSID`. Здесь `object` — строка данных этой группы либо непосредственный дескриптор `objects` (см. [правила идентификации](#row-identity-contract) ниже), но не голый `row.key`.

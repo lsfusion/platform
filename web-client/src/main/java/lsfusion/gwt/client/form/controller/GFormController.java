@@ -425,7 +425,7 @@ public class GFormController implements EditManager {
         var thisObj = this;
         var base = this.@GFormController::gController.@GController::controller;
         var UNDEFINED = @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
-        return {
+        var controller = {
             // change a property value, or exec the action/property when the value is omitted — same shape as the CUSTOM
             // group-view controller's changeProperty(property, object, value); `property` is "integrationSID" or
             // "groupSID.integrationSID". An explicit group prefix has priority; with no prefix a passed object's own
@@ -486,8 +486,89 @@ public class GFormController implements EditManager {
             eval: base.eval, // eval(script, ...params) -> Promise
             evalAction: base.evalAction, // evalAction(script, ...params) -> Promise
             change: base.change // change(property, ...keyParams, value) -> Promise (single global property, canonical name)
+        };
+        // structured WYSIWYG sugar that mirrors props.data: a form property is a member of the controller —
+        //   controller.<groupSID>.<propIntegrationSID>.change(...) / .getValues(...)   a property drawn on a group
+        //   controller.<propIntegrationSID>.change(...) / .getValues(...)              a form-level (no-group) property
+        //   controller.<groupSID>.change(row)                                          set the group's current object
+        // so an author writes controller.orders.sum.change(v) instead of the stringly-typed changeProperty('orders.sum', v).
+        // Pure forwarding over the flat methods above (same object/value/exec guess and the same async parsing); additive —
+        // the flat methods and the global exec/eval/change set above always win, so a group/property SID that collides with
+        // one of those keeps the method and the colliding accessor is skipped + logged.
+        function makeProperty(qualified) { // a property accessor: .change([object,] [value]) and .getValues(...) forwarding the flat methods
+            return {
+                change: function () {
+                    var args = [qualified];
+                    for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
+                    return controller.changeProperty.apply(controller, args);
+                },
+                getValues: function () {
+                    var args = [qualified];
+                    for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
+                    return controller.getPropertyValues.apply(controller, args);
+                }
+            };
         }
+        var structure = thisObj.@GFormController::getControllerStructure()();
+        var groups = structure.groups;
+        for (var gi = 0; gi < groups.length; gi++) {
+            var groupSID = groups[gi][0];
+            if (controller[groupSID] !== undefined) { // group SID equal to a controller method name -> keep the method
+                @lsfusion.gwt.client.base.GwtClientUtils::consoleError(Ljava/lang/String;)("controller['" + groupSID + "']: object group SID collides with a controller method; address this group via changeProperty('" + groupSID + ".<property>', ...)");
+                continue;
+            }
+            var group = { change: (function (g) { return function (row) { return controller.changeObject(g, row); }; })(groupSID) }; // controller.<group>.change(row) -> set current object
+            var props = groups[gi][1];
+            for (var pi = 0; pi < props.length; pi++) {
+                var propSID = props[pi];
+                if (group[propSID] !== undefined) { // property SID equal to the group method 'change' -> keep the method
+                    @lsfusion.gwt.client.base.GwtClientUtils::consoleError(Ljava/lang/String;)("controller['" + groupSID + "']['" + propSID + "']: property SID collides with the group method 'change'; use changeProperty('" + groupSID + "." + propSID + "', ...)");
+                    continue;
+                }
+                group[propSID] = makeProperty(groupSID + "." + propSID);
+            }
+            controller[groupSID] = group;
+        }
+        var formProps = structure.props; // form-level (no-group) properties sit directly on the controller
+        for (var fi = 0; fi < formProps.length; fi++) {
+            var formPropSID = formProps[fi];
+            if (controller[formPropSID] !== undefined) { // collides with a controller method or an object group SID -> keep that
+                @lsfusion.gwt.client.base.GwtClientUtils::consoleError(Ljava/lang/String;)("controller['" + formPropSID + "']: form property SID collides with a controller method or an object group; use changeProperty('" + formPropSID + "', ...)");
+                continue;
+            }
+            controller[formPropSID] = makeProperty(formPropSID);
+        }
+        return controller;
     }-*/;
+
+    // the schema backing the structured controller sugar above: { groups: [[groupSID, [propIntegrationSID, ...]], ...],
+    // props: [formPropIntegrationSID, ...] } — the same predicate as the React projection (a drawn property carrying an
+    // integration SID), so controller[group][prop] lines up with the rows in data[group]. Panel and list properties are both
+    // addressable; the top-level `props` are the form-level (no-group) properties, exposed directly as controller[prop].
+    private JavaScriptObject getControllerStructure() {
+        JavaScriptObject groups = newJSArray();
+        for (GGroupObject group : form.groupObjects) {
+            JavaScriptObject props = newJSArray();
+            for (GPropertyDraw draw : form.propertyDraws)
+                if (draw.groupObject == group && draw.integrationSID != null)
+                    pushJSString(props, draw.integrationSID);
+            JavaScriptObject entry = newJSArray();
+            pushJSString(entry, group.getSID());
+            pushJSObject(entry, props);
+            pushJSObject(groups, entry);
+        }
+        JavaScriptObject formProps = newJSArray();
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == null && draw.integrationSID != null)
+                pushJSString(formProps, draw.integrationSID);
+        JavaScriptObject result = GwtClientUtils.newObject();
+        GwtClientUtils.setField(result, "groups", groups);
+        GwtClientUtils.setField(result, "props", formProps);
+        return result;
+    }
+    private static native JavaScriptObject newJSArray() /*-{ return []; }-*/;
+    private static native void pushJSObject(JavaScriptObject array, JavaScriptObject value) /*-{ array.push(value); }-*/;
+    private static native void pushJSString(JavaScriptObject array, String value) /*-{ array.push(value); }-*/;
 
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): resolve the draw by
     // "integrationSID" or "groupSID.integrationSID"; rows/handles resolve via GGroupObjectValue.resolveObject (the
