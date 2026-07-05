@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:32481a6ad0b3e5f08cae135694735f97d006da5ba2f0583e6a3fcf08107a8884",
-      "indexed_at": "2026-07-05T12:35:11Z",
+      "file_hash": "sha256:788241ce0ab5221d7d4ce6f6fe02074a61eac8810de4da91c042c4c0ef5f7013",
+      "indexed_at": "2026-07-05T14:08:24Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -848,21 +848,21 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::row-identity-row-identity-contract": {
-          "file_id": "file-G1bLTZ41P6pCEKCUDhMGbJ",
+          "file_id": "file-B27bvLtfi7z2Vgow85WBpj",
           "heading_path": "How-to: Custom view controller API > Row identity {#row-identity-contract}",
-          "section_payload_hash": "sha256:35daa1f4f02eeb88aaeecbf0346a18af3bd5dc3a075ff9b83bceee762e18a9e5",
+          "section_payload_hash": "sha256:03ba2e439ce0b0e841509969e8b3a06d52cc1c339b83ce524ba6e6594d9f96a6",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-00": {
-          "file_id": "file-NYaBWLLbF6JUWD63W7zX9v",
+          "file_id": "file-8SpvX9cocNgTij2bDoPUdN",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:46e52205a317534b9937a53f3c63b8ab580f69a37d4e49cd0962e95401badd24",
+          "section_payload_hash": "sha256:f07df477860b6173dc44e704190421d3d53d4cec1339a1ba5f997b9deb722e33",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-01": {
-          "file_id": "file-FJzPKTPLfDApzoBWMYYkm9",
+          "file_id": "file-KCr5cAbkRw6KZdhjgXUpcF",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:d9579f13de8e5858a5015ed003ad3316e46f963382c2a29150f23e0ef2c4d0a5",
+          "section_payload_hash": "sha256:0f6f854ca5be22022f9673ddad0c65f95bf0388401fc1b9f0c8c304302ba67a0",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
@@ -14379,7 +14379,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "a8d22d550b3f4b4d0aeac036d9edbd8cabd32b9e",
+  "last_indexed_docs_commit": "b761b10567c41576260f82b09a7c3897011fc3c8",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
