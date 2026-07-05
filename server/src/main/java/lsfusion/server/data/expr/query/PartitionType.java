@@ -49,6 +49,7 @@ public abstract class PartitionType implements AggrType {
         return DISTR_CUM_PROPORTION;
     }
 
+    // needsOrderTiebreak is false : SUM is peer-safe, the default RANGE frame gives all the peers the same cumulative value
     private final static PartitionType SUM = new PartitionType() {
         protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             return new PartitionCalc(new PartitionCalc.Aggr("SUM", exprs, orders, partitions));
@@ -67,6 +68,9 @@ public abstract class PartitionType implements AggrType {
     public final static PartitionType PREVIOUS = new PartitionType() {
         protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             return new PartitionCalc(new PartitionCalc.Aggr("lag", exprs, orders, partitions));
+        }
+        public boolean needsOrderTiebreak() {
+            return true;
         }
         public boolean canBeNull() {
             return true;
@@ -92,6 +96,9 @@ public abstract class PartitionType implements AggrType {
         @Override
         protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             return new PartitionCalc(new PartitionCalc.Aggr(aggrFunc, exprs, orders, partitions));
+        }
+        public boolean needsOrderTiebreak() { // the custom function is a black box, assuming order-sensitive
+            return true;
         }
 
         public Type getType(Type exprType) {
@@ -184,6 +191,10 @@ public abstract class PartitionType implements AggrType {
             PartitionCalc.Aggr totRound = new PartitionCalc.Aggr("SUM", ListFact.<PartitionToken>singleton(round), partitions);
             return new PartitionCalc("prm1 + (CASE WHEN prm2=1 THEN (prm3-prm4) ELSE 0 END)", totRound, round, number, exprs.get(1));
         }
+
+        public boolean needsOrderTiebreak() { // ROW_NUMBER=1 absorbs the rounding remainder
+            return true;
+        }
     }
 
     private static class DistrRestrPartitionType extends PartitionType {
@@ -222,6 +233,9 @@ public abstract class PartitionType implements AggrType {
         }
         public boolean canBeNull() {
             return true;
+        }
+        public boolean needsOrderTiebreak() { // the over variant absorbs the remainder in the ROW_NUMBER=1 row (over the reversed order)
+            return over;
         }
 
         public final static PartitionType DISTR_RESTRICT = new DistrRestrPartitionType(false);

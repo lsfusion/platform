@@ -62,6 +62,11 @@ public interface AggrType {
     default Expr getMainExpr(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
         return getMain(exprs, orders);
     }
+
+    // whether the result for a row / group depends on the exact position of the rows among their order peers (last / string concatenation / lag / row_number-based remainders / order-sensitive custom functions), so a non-total order has to be totalized with a key tiebreak (see GroupProperty.fixOrders)
+    default boolean needsOrderTiebreak() {
+        return false;
+    }
     default ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
         return falseWhere.followFalse(exprs, pack);
     }

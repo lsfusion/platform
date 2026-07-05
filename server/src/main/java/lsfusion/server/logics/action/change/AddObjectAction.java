@@ -33,6 +33,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.set.GroupProperty;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -65,7 +66,8 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
         this.where = where;
         this.result = result;
         
-        this.orders = orders;
+        // the numbering of the added objects requires a total order (the cumulative SUM window gives the order peers equal numbers, see PropertyOrderSet.getAddQuery), so the inner interfaces are appended as the order tiebreak (uniformly with the group / partition properties)
+        this.orders = GroupProperty.fixOrders(orders, innerInterfaces, SetFact.EMPTY());
         this.ordersNotNull = ordersNotNull;
         
         assert where==null || !needDialog();

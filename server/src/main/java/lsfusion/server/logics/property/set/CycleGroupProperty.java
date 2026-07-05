@@ -25,6 +25,8 @@ import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -32,7 +34,11 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 
     @Override
     public GroupType getGroupType() {
-        return GroupType.ASSERTSINGLE();
+        // the group is asserted to contain a single row, but when the assertion is broken (transiently for AGGR / EQUAL, and NAGGR has no constraint at all), the scan-order ANY can pick different rows in different union branches / evaluations of the same query, breaking the key uniqueness when the change is materialized (see OrderGroupProperty); MAX picks deterministically, ANY is kept only for the non-comparable (file / link) types
+        ValueClass valueClass = groupProperty.mapValueClass(ClassType.typePolicy);
+        if(valueClass == null)
+            return GroupType.ASSERTSINGLE();
+        return GroupType.MAXCHECK(valueClass.getType());
     }
 
     final Property<P> toChange;

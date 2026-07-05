@@ -44,6 +44,11 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     protected final ImSet<I> innerInterfaces;
 
+    // appends the inner interfaces as the order tiebreak, making an order-dependent result deterministic for a non-total order (the interfaces the result is grouped / partitioned by are excluded as constant within a group; the interfaces already ordered are kept with their user direction, see MapFact.keep); the form reads totalize their orders with the group objects the same way
+    public static <I extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<I>, Boolean> fixOrders(ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, ImSet<I> innerInterfaces, ImSet<? extends PropertyInterfaceImplement<I>> group) {
+        return orders.mergeOrder(BaseUtils.<ImOrderMap<PropertyInterfaceImplement<I>, Boolean>>immutableCast(innerInterfaces.remove(BaseUtils.<ImSet<I>>immutableCast(group)).toOrderSet().toOrderMap(false)));
+    }
+
     private GroupProperty(LocalizedString caption, ImOrderSet<Interface<I>> interfaces, ImSet<I> innerInterfaces) {
         super(caption, interfaces);
         this.innerInterfaces = innerInterfaces;

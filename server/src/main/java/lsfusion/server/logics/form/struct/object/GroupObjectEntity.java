@@ -435,6 +435,11 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return objects.getSet();
     }
     @LongMutable
+    // the reads of the group have to be totally ordered (stable / paginatable results), so the group objects are appended as the order tiebreak (mirrors GroupProperty.fixOrders; the interactive analog is GroupObjectInstance.getSetOrders)
+    public <O> ImOrderMap<O, Boolean> fixOrders(ImOrderMap<O, Boolean> orders) {
+        return orders.mergeOrder(BaseUtils.<ImOrderMap<O, Boolean>>immutableCast(getOrderObjects().toOrderMap(false)));
+    }
+
     public ImOrderSet<ObjectEntity> getOrderObjects() {
         return objects;
     }

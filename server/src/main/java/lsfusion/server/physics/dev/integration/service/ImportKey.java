@@ -6,6 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -91,7 +93,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         Where where = GroupExpr.create(getImplementExprs(importTable.getExprs()), Where.TRUE(), mapKeys).getWhere().and( // в импортируемой таблице
                 implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
-        return session.addObjects(debugInfo, (ConcreteCustomClass)keyClass, new PropertyOrderSet<>(mapKeys, where, MapFact.EMPTYORDER(), false));
+        return session.addObjects(debugInfo, (ConcreteCustomClass)keyClass, new PropertyOrderSet<>(mapKeys, where, BaseUtils.<ImOrderMap<Expr, Boolean>>immutableCast(mapKeys.valuesSet().toOrderSet().toOrderMap(false)), false)); // the numbering requires a total order (see PropertyOrderSet.getAddQuery)
     }
 
     @Override

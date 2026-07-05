@@ -120,10 +120,6 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             return Where.TRUE();
     }
 
-    public static ImOrderMap<Expr, Boolean> fixOrders(ImOrderMap<Expr, Boolean> orders, ImRevMap<?, KeyExpr> mapKeys) {
-        return orders.mergeOrder(mapKeys.valuesSet().toOrderSet().toOrderMap(false));
-    }
-
     public abstract static class QueryInnerContext<K extends Expr,G extends AggrType, I extends AggrExpr.Query<G, I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends AggrExpr<K, G, I, J, T, IC>, IC extends QueryInnerContext<K, G, I, J, T, IC>> extends QueryExpr.QueryInnerContext<K, I, J, T, IC> {
 

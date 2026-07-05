@@ -75,7 +75,8 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         super(caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;
-        this.orders = orders;
+        // the result of an order-dependent group (or a TOP row pick) has to be deterministic : with a non-total order it could otherwise differ between the union branches / evaluations of the same query (for example, breaking the key uniqueness when an (incremental) change is materialized into a table)
+        this.orders = groupType.needsOrderTiebreak() || !selectTop.isEmpty() ? fixOrders(orders, innerInterfaces, groupInterfaces.toSet()) : orders;
         this.ordersNotNull = ordersNotNull;
 
         this.nameProp = nameProp;

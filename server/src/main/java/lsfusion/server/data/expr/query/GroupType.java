@@ -138,6 +138,9 @@ public abstract class GroupType implements AggrType {
     };
 
     public static final GroupType CONCAT = new GroupType() {
+        public boolean needsOrderTiebreak() {
+            return true;
+        }
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
             return type.getCast(getAggrSource("STRING_AGG" ,castToVarStrings(exprs, exprReaders, type, syntax, typeEnv).toString(","), orders, syntax), syntax, typeEnv);
         }
@@ -153,6 +156,9 @@ public abstract class GroupType implements AggrType {
     };
 
     public static final GroupType AGGAR_SETADD = new GroupType() {
+        public boolean needsOrderTiebreak() { // the element order in the resulting array
+            return true;
+        }
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
             return getAggrSource("AGGAR_SETADD", exprs.get(0), orders, syntax);
         }
@@ -162,6 +168,9 @@ public abstract class GroupType implements AggrType {
     };
 
     public static final GroupType LAST = new GroupType() {
+        public boolean needsOrderTiebreak() {
+            return true;
+        }
         public boolean isSelect() {
             return true;
         }
@@ -237,6 +246,10 @@ public abstract class GroupType implements AggrType {
 
             this.dataClass = dataClass;
             this.valueNull = valueNull;
+        }
+
+        public boolean needsOrderTiebreak() { // the custom function is a black box
+            return setOrdered;
         }
 
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -337,6 +350,7 @@ public abstract class GroupType implements AggrType {
     public boolean isMaxMin() {
         return false;
     }
+
 
     // if not comutative and not invariant to the occurrence of nulls in the selection
     public boolean nullsNotAllowed() {

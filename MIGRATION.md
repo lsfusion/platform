@@ -2,6 +2,21 @@
 
 ## 7.0
 
+### Deterministic order-dependent aggregations
+
+Order-dependent aggregations and row picks (`GROUP LAST` / `CONCAT` / ordered `CUSTOM`,
+`TOP` picks, the order-sensitive `PARTITION` types, `GROUP AGGR` / `NAGGR` / `EQUAL` on
+duplicate `BY` keys, assignments with extra `WHERE` parameters, the `FOR ... NEW`
+numbering) now implicitly append the object order as the `ORDER` tiebreak
+(see [issue #1700](https://github.com/lsfusion/platform/issues/1700)). Results that
+previously depended on the SQL scan order become stable; queries with a total explicit
+`ORDER` are unaffected. The compiled plans change slightly (longer aggregate / window
+`ORDER BY`), and where the order was not total the picked row / concatenation order may
+differ from what a particular database happened to return before - if a specific pick is
+required, specify a total `ORDER` explicitly. There is no fallback setting: the previous
+behavior was nondeterministic.
+
+
 ### Predicate push down planning changes
 
 7.0 reworks two aspects of predicate push down planning:

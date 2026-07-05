@@ -139,7 +139,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         return formInterface.getWhere(group, valueGroups, mapExprs).and(formInterface.getValueWhere(group, valueGroups, mapExprs));
     }
     protected ImOrderMap<CompareEntity, Boolean> getOrders(GroupObjectEntity group, ImSet<GroupObjectEntity> valueGroups) {
-        return formInterface.getOrders(group, valueGroups).mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(value -> {
+        return group.fixOrders(formInterface.getOrders(group, valueGroups)).mapOrderKeys(value -> {
             if(value instanceof ObjectEntity) // hack, need this because in Query keys and values should not intersect (because of ClassWhere), but CompareEntity and ObjectEntity have common class ObjectEntity
                 return new CompareEntity() {
                     public Type getType() {

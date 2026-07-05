@@ -413,7 +413,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     // обертку потому как сложный assertion
     private ImOrderMap<OrderInstance,Boolean> setOrders = null;
     public ImOrderMap<OrderInstance,Boolean> getSetOrders() {
-        if(setOrders==null)
+        if(setOrders==null) // the reads of the group have to be totally ordered (stable / paginatable results), so the group objects are appended as the order tiebreak (the static analog is GroupObjectEntity.fixOrders, the property analog is GroupProperty.fixOrders)
             setOrders = userOrders.mergeOrder(fixedOrders).mergeOrder(getOrderObjects().toOrderMap(false));
 
         return setOrders;

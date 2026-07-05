@@ -60,9 +60,10 @@ public class PropertyOrderSet<T extends PropertyInterface> {
     }
 
     public Query<T, String> getAddQuery(BaseClass baseClass) {
+        // the callers are responsible for the total order (AddObjectAction totalizes its orders at construction, ImportKey passes the keys), otherwise the cumulative SUM window would give the order peers equal numbers
         Expr exprNum = PartitionExpr.create(PartitionType.sum(),
                 ListFact.singleton(new ValueExpr(1L, ObjectType.idClass).and(getFullWhere())),
-                AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
+                orders, ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 
         QueryBuilder<T, String> query = new QueryBuilder<>(mapKeys, exprNum.getWhere());
         query.addProperty("value", FormulaExpr.createCustomFormula("prm1", baseClass.unknown, exprNum));

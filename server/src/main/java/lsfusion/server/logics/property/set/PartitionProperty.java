@@ -45,7 +45,8 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         super(caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;
-        this.orders = orders;
+        // the window has to be deterministic for the order-sensitive partition types (and the LIMIT / OFFSET row picks) : with a non-total order the result could otherwise differ between the union branches / evaluations of the same query (see OrderGroupProperty)
+        this.orders = partitionType.needsOrderTiebreak() || !selectTop.isEmpty() ? GroupProperty.fixOrders(orders, innerInterfaces, partitions) : orders;
         this.ordersNotNull = ordersNotNull;
         this.partitionType = partitionType;
         this.partitions = partitions;
