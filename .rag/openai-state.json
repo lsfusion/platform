@@ -825,8 +825,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:e454e513673820bf306cc2c43b47fc5981d8fc65f5fdea7c10e2d401b257be89",
-      "indexed_at": "2026-06-26T14:28:09Z",
+      "file_hash": "sha256:32481a6ad0b3e5f08cae135694735f97d006da5ba2f0583e6a3fcf08107a8884",
+      "indexed_at": "2026-07-05T12:35:11Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -854,15 +854,15 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-00": {
-          "file_id": "file-DnhgZAsDXb4wYfiMhkEsoY",
+          "file_id": "file-NYaBWLLbF6JUWD63W7zX9v",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:f653a4e5903a35b5d4f4b51b23dcae491ceebe841b360b61649ec09111f0e748",
+          "section_payload_hash": "sha256:46e52205a317534b9937a53f3c63b8ab580f69a37d4e49cd0962e95401badd24",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-01": {
-          "file_id": "file-8ES1uHcZZSTPU69PzdBxSS",
+          "file_id": "file-FJzPKTPLfDApzoBWMYYkm9",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:cea4422516c4fc9accdb74d76dbec574f95cae87da2c424fecf8e2cb2b45cfe9",
+          "section_payload_hash": "sha256:d9579f13de8e5858a5015ed003ad3316e46f963382c2a29150f23e0ef2c4d0a5",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
@@ -14379,7 +14379,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "b71e019ddad436adea5f14e7405ad47ac9c185ee",
+  "last_indexed_docs_commit": "a8d22d550b3f4b4d0aeac036d9edbd8cabd32b9e",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
