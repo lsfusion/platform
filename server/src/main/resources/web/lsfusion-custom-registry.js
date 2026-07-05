@@ -108,5 +108,113 @@
             var simple = props.simple == null ? !!ns.listSimple : !!props.simple;
             return React.createElement(simple ? SimpleList : KeysList, props);
         };
+        // <BucketScope>/useBucket/<Buckets>: the pivot/matrix analogue of <List> (bucketKey -> rowKey[] index with
+        // per-cell subscription); the canonical narrative lives on the GWT side (ReactContainerView.installHooks).
+        var EMPTY = Object.freeze([]);
+        var BucketCtx = React.createContext(null);
+        var makeBucketStore = function (formStore, groupSID, bucketOf) {
+            // ref-diff index: O(rows) ref-compares per form change, re-bucketing only the changed rows (see the JSNI twin)
+            var listeners = new Set(), buckets = Object.create(null), rowCache = Object.create(null), lastNode, lastKeys = EMPTY, formUnsub = null, pending = false;
+            var norm = function (bk) { // bucketOf result -> deduped string[] | null (null = the row lands nowhere)
+                if (bk == null) return null;
+                if (!Array.isArray(bk)) return ['' + bk];
+                var r = [];
+                for (var i = 0; i < bk.length; i++) if (bk[i] != null) { var c = '' + bk[i]; if (r.indexOf(c) < 0) r.push(c); }
+                return r.length ? r : null;
+            };
+            var same = function (a, b) { // element-wise INCLUDING order: cell arrays follow the group order
+                if (a === b) return true;
+                if (!a || !b || a.length !== b.length) return false;
+                for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+                return true;
+            };
+            var ensure = function () { // sync the index to the current snapshot
+                var s = formStore.getSnapshot();
+                var g = s ? s[groupSID] : null;
+                if (g === lastNode) return;
+                var keys = (g && g.keys) || EMPTY, byKey = (g && g.byKey) || null;
+                var all = keys !== lastKeys, dirty = all ? null : Object.create(null), any = all;
+                var mark = function (b) { if (b && !all) { any = true; for (var i = 0; i < b.length; i++) dirty[b[i]] = true; } };
+                var next = Object.create(null), rk, i;
+                for (i = 0; i < keys.length; i++) {
+                    rk = keys[i];
+                    var row = byKey ? byKey[rk] : null;
+                    var prev = rowCache[rk];
+                    if (prev && prev.ref === row) { next[rk] = prev; continue; } // unchanged ref -> same bucket, skip
+                    var nb = row == null ? null : norm(bucketOf(row, rk));
+                    if (!prev || !same(prev.b, nb)) { mark(prev && prev.b); mark(nb); }
+                    next[rk] = { ref: row, b: nb };
+                }
+                for (rk in rowCache) if (!(rk in next)) mark(rowCache[rk].b); // removed rows leave their old cells
+                // commit only below the last bucketOf call: a throw above leaves the whole index at the previous
+                // snapshot, so the next ensure RETRIES instead of early-returning over a half-advanced state.
+                // pending: a render-time ensure (getBucket) may consume the change BEFORE the form listener runs; the flag survives to it
+                lastNode = g; lastKeys = keys; rowCache = next; pending = true;
+                if (any) { // rebuild ONLY the dirty cells' arrays, membership in group (keys) order
+                    var acc = Object.create(null);
+                    for (i = 0; i < keys.length; i++) {
+                        var e = next[keys[i]], b = e && e.b;
+                        if (b) for (var j = 0; j < b.length; j++) { var c = b[j]; if (all || dirty[c]) (acc[c] || (acc[c] = [])).push(keys[i]); }
+                    }
+                    if (all) {
+                        for (var c2 in acc) if (same(buckets[c2], acc[c2])) acc[c2] = buckets[c2]; // keep unchanged refs
+                        buckets = acc;
+                    } else
+                        for (var c3 in dirty) {
+                            var arr = acc[c3];
+                            if (!arr) delete buckets[c3]; // emptied cell -> back to the stable EMPTY
+                            else if (!same(buckets[c3], arr)) buckets[c3] = arr;
+                        }
+                }
+            };
+            return {
+                subscribe: function (l) {
+                    listeners.add(l);
+                    if (listeners.size === 1) formUnsub = formStore.subscribe(function () { ensure(); if (pending) { pending = false; listeners.forEach(function (x) { x(); }); } }); // unchanged cells then skip by Object.is on their array
+                    return function () { listeners['delete'](l); if (!listeners.size && formUnsub) { formUnsub(); formUnsub = null; } };
+                },
+                getBucket: function (k) { ensure(); return buckets[k] || EMPTY; } // ensure: a cell renders before its effect subscribes
+            };
+        };
+        ns.BucketScope = function (props) { // props: group (SID), bucketOf(row, rowKey) -> bucketKey | bucketKey[] | null, bucketDeps
+            var formStore = React.useContext(Ctx).store;
+            // bucketOf is CAPTURED at store creation (see the JSNI twin for the full narrative)
+            var bucketOf = props.bucketOf;
+            var store = React.useMemo(function () {
+                return makeBucketStore(formStore, props.group, bucketOf);
+            }, [formStore, props.group].concat(props.bucketDeps || EMPTY));
+            return React.createElement(BucketCtx.Provider, { value: store }, props.children);
+        };
+        ns.useBucket = function (bucketKey) { // one call per cell component, for its FIXED key (hook rules)
+            var store = React.useContext(BucketCtx);
+            if (!store) throw new Error("lsfusion.useBucket: no enclosing BucketScope");
+            var key = '' + bucketKey;
+            return React.useSyncExternalStore(store.subscribe, function () { return store.getBucket(key); });
+        };
+        var CellWrapper = React.memo(function (p) {
+            var rowKeys = ns.useBucket(p.cellKey);
+            var cellProps = {};
+            var pass = p.pass;
+            if (pass) for (var pk in pass) cellProps[pk] = pass[pk];
+            cellProps.cellKey = p.cellKey; cellProps.rowKeys = rowKeys; cellProps.index = p.index;
+            return React.createElement(p.component, cellProps);
+        });
+        var BucketCells = function (props) {
+            var comp = props.component || props.children;
+            var cells = props.cells || EMPTY;
+            var pass = null, deps = [cells, comp], pk = [];
+            for (var k in props) if (k !== 'cells' && k !== 'component' && k !== 'children' && k !== 'group' && k !== 'bucketOf' && k !== 'bucketDeps') pk.push(k);
+            pk.sort();
+            for (var pi = 0; pi < pk.length; pi++) { (pass || (pass = {}))[pk[pi]] = props[pk[pi]]; deps.push(pk[pi]); deps.push(props[pk[pi]]); }
+            return React.useMemo(function () {
+                return cells.map(function (cellKey, index) {
+                    return React.createElement(CellWrapper, { key: '' + cellKey, cellKey: '' + cellKey, index: index, component: comp, pass: pass });
+                });
+            }, deps);
+        };
+        ns.Buckets = function (props) {
+            return React.createElement(ns.BucketScope, { group: props.group, bucketOf: props.bucketOf, bucketDeps: props.bucketDeps },
+                React.createElement(BucketCells, props));
+        };
     };
 })();

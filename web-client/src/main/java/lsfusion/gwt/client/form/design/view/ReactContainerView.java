@@ -177,6 +177,129 @@ public class ReactContainerView extends LayoutContainerView {
             var simple = props.simple == null ? !!ns.listSimple : !!props.simple;
             return React.createElement(simple ? SimpleList : KeysList, props);
         };
+        // <BucketScope>/useBucket: the pivot/matrix analogue of <List> — re-buckets ONE group's rows into derived
+        // cells (bucketKey -> rowKey[]) with per-CELL render economy. The app owns the layout (it supplies the cell
+        // keys, so empty cells render too) and the cell markup; the platform owns keying, subscription and economy:
+        // a move re-renders only the old + new cell, an in-place edit only the row (its useFormData), an empty cell
+        // returns the one frozen EMPTY. Membership only, NOT per-cell aggregates (those are GPivot's job).
+        var EMPTY = Object.freeze([]);
+        var BucketCtx = React.createContext(null);
+        var makeBucketStore = function(formStore, groupSID, bucketOf) {
+            // ref-diff index (the <List>-parity engine): rowCache maps rowKey -> { ref: row, b: bucketKey[]|null }.
+            // An unchanged row REF can't change its bucket (rows are structurally shared), so a form change costs
+            // O(rows) ref-compares, re-bucketing only the changed rows (when some cell DID change, one more
+            // rescan of the rows rebuilds the dirty cells' arrays); unrelated-group changes cost ONE compare.
+            // All dictionaries are null-prototype: row/bucket keys come from app data ('__proto__' must be plain).
+            var listeners = new $wnd.Set(), buckets = Object.create(null), rowCache = Object.create(null), lastNode, lastKeys = EMPTY, formUnsub = null, pending = false;
+            var norm = function(bk) { // bucketOf result -> deduped string[] | null (null = the row lands nowhere)
+                if (bk == null) return null;
+                if (!Array.isArray(bk)) return ['' + bk];
+                var r = [];
+                for (var i = 0; i < bk.length; i++) if (bk[i] != null) { var c = '' + bk[i]; if (r.indexOf(c) < 0) r.push(c); }
+                return r.length ? r : null;
+            };
+            var same = function(a, b) { // element-wise INCLUDING order: cell arrays follow the group order
+                if (a === b) return true;
+                if (!a || !b || a.length !== b.length) return false;
+                for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+                return true;
+            };
+            var ensure = function() { // sync the index to the current snapshot
+                var s = formStore.getSnapshot();
+                var g = s ? s[groupSID] : null;
+                if (g === lastNode) return;
+                var keys = (g && g.keys) || EMPTY, byKey = (g && g.byKey) || null;
+                // a reorder keeps every row ref (only the keys array ref betrays it) but changes the order INSIDE
+                // cells -> rebuild all cells (`same` still keeps the refs of the untouched ones)
+                var all = keys !== lastKeys, dirty = all ? null : Object.create(null), any = all;
+                var mark = function(b) { if (b && !all) { any = true; for (var i = 0; i < b.length; i++) dirty[b[i]] = true; } };
+                var next = Object.create(null), rk, i;
+                for (i = 0; i < keys.length; i++) {
+                    rk = keys[i];
+                    var row = byKey ? byKey[rk] : null;
+                    var prev = rowCache[rk];
+                    if (prev && prev.ref === row) { next[rk] = prev; continue; } // unchanged ref -> same bucket, skip
+                    var nb = row == null ? null : norm(bucketOf(row, rk));
+                    if (!prev || !same(prev.b, nb)) { mark(prev && prev.b); mark(nb); }
+                    next[rk] = { ref: row, b: nb };
+                }
+                for (rk in rowCache) if (!(rk in next)) mark(rowCache[rk].b); // removed rows leave their old cells
+                // commit only below the last bucketOf call: a throw above leaves the whole index at the previous
+                // snapshot, so the next ensure RETRIES instead of early-returning over a half-advanced state.
+                // pending: a render-time ensure (getBucket) may consume the change BEFORE the form listener runs; the flag survives to it
+                lastNode = g; lastKeys = keys; rowCache = next; pending = true;
+                if (any) { // rebuild ONLY the dirty cells' arrays, membership in group (keys) order
+                    var acc = Object.create(null);
+                    for (i = 0; i < keys.length; i++) {
+                        var e = next[keys[i]], b = e && e.b;
+                        if (b) for (var j = 0; j < b.length; j++) { var c = b[j]; if (all || dirty[c]) (acc[c] || (acc[c] = [])).push(keys[i]); }
+                    }
+                    if (all) {
+                        for (var c2 in acc) if (same(buckets[c2], acc[c2])) acc[c2] = buckets[c2]; // keep unchanged refs
+                        buckets = acc;
+                    } else
+                        for (var c3 in dirty) {
+                            var arr = acc[c3];
+                            if (!arr) delete buckets[c3]; // emptied cell -> back to the stable EMPTY
+                            else if (!same(buckets[c3], arr)) buckets[c3] = arr;
+                        }
+                }
+            };
+            return {
+                subscribe: function(l) {
+                    listeners.add(l);
+                    if (listeners.size === 1) formUnsub = formStore.subscribe(function() { ensure(); if (pending) { pending = false; listeners.forEach(function(x) { x(); }); } }); // unchanged cells then skip by Object.is on their array
+                    return function() { listeners['delete'](l); if (!listeners.size && formUnsub) { formUnsub(); formUnsub = null; } };
+                },
+                getBucket: function(k) { ensure(); return buckets[k] || EMPTY; } // ensure: a cell renders before its effect subscribes
+            };
+        };
+        ns.BucketScope = function(props) { // props: group (SID), bucketOf(row, rowKey) -> bucketKey | bucketKey[] | null, bucketDeps
+            var formStore = React.useContext(Ctx).store;
+            // bucketOf is CAPTURED at store creation: bucketDeps must list the outside values it closes over (the
+            // hook-deps contract; omitting one = the usual stale closure) and keep a stable length; the store swaps
+            // when they change. No render-time ref mutation, so an interrupted render can't leak an uncommitted
+            // bucketOf into the live store.
+            var bucketOf = props.bucketOf;
+            var store = React.useMemo(function() {
+                return makeBucketStore(formStore, props.group, bucketOf);
+            }, [formStore, props.group].concat(props.bucketDeps || EMPTY));
+            return React.createElement(BucketCtx.Provider, { value: store }, props.children);
+        };
+        ns.useBucket = function(bucketKey) { // one call per cell component, for its FIXED key (hook rules)
+            var store = React.useContext(BucketCtx);
+            if (!store) throw new Error("lsfusion.useBucket: no enclosing BucketScope");
+            var key = '' + bucketKey;
+            return React.useSyncExternalStore(store.subscribe, function() { return store.getBucket(key); });
+        };
+        // <Buckets group cells bucketOf [bucketDeps] component/>: the flat sugar — a BucketScope whose body maps
+        // `cells` to memoized wrappers, each subscribing to its own cell; mirrors KeysList's name-aware pass deps.
+        // The cell component receives { cellKey, rowKeys, index, ...pass } (reserved props applied LAST).
+        var CellWrapper = React.memo(function(p) {
+            var rowKeys = ns.useBucket(p.cellKey);
+            var cellProps = {};
+            var pass = p.pass;
+            if (pass) for (var pk in pass) cellProps[pk] = pass[pk];
+            cellProps.cellKey = p.cellKey; cellProps.rowKeys = rowKeys; cellProps.index = p.index;
+            return React.createElement(p.component, cellProps);
+        });
+        var BucketCells = function(props) {
+            var comp = props.component || props.children;
+            var cells = props.cells || EMPTY;
+            var pass = null, deps = [cells, comp], pk = [];
+            for (var k in props) if (k !== 'cells' && k !== 'component' && k !== 'children' && k !== 'group' && k !== 'bucketOf' && k !== 'bucketDeps') pk.push(k);
+            pk.sort(); // deterministic, NAME-aware deps (same scheme as KeysList)
+            for (var pi = 0; pi < pk.length; pi++) { (pass || (pass = {}))[pk[pi]] = props[pk[pi]]; deps.push(pk[pi]); deps.push(props[pk[pi]]); }
+            return React.useMemo(function() {
+                return cells.map(function(cellKey, index) {
+                    return React.createElement(CellWrapper, { key: '' + cellKey, cellKey: '' + cellKey, index: index, component: comp, pass: pass });
+                });
+            }, deps);
+        };
+        ns.Buckets = function(props) {
+            return React.createElement(ns.BucketScope, { group: props.group, bucketOf: props.bucketOf, bucketDeps: props.bucketDeps },
+                React.createElement(BucketCells, props));
+        };
     }-*/;
 
     // the hook snapshot IS the projected data object itself: lastData only changes ref when the data changed, and
