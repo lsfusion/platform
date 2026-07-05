@@ -85,7 +85,7 @@ In the two-argument `changeProperty(property, X)` form the platform decides whet
 controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 ```
 
-An object group of a built-in primitive class — a `DATE` navigator, for instance — is moved by the DATA property its `FILTERS` depend on, not by writing the object's value: the object of a primitive class *is* its value, so there is nothing to store on it. To move the group to an arbitrary value, change that filter property — `changeProperty('dateFrom', d)` with a real JS `Date`, or through an action — and the group follows its `FILTERS`; to select a value already shown, `changeObject` to a row from `props.data.<g>.list` (which carries the `objects` handle). Two silent traps: writing the object's own value does not navigate the group (nothing is stored), and `changeProperty` casts a date value with no runtime check — so a non-`Date` argument (a date-input *string*, a timestamp) is silently converted to `null` or garbage, with no error. Pass an actual `Date`.
+A built-in primitive-class object group — a `DATE` navigator, for instance — is moved to a value by writing the object's value (`changeProperty('VALUE', d)` with a real JS `Date`), by `changeObject` to a row from `props.data.<g>.list` (which carries the `objects` handle), or, when the group is filtered by a data property, by changing that filter property. `changeProperty` runs a date value through a conversion that assumes a JS `Date` (an unchecked cast): a non-`Date` argument — a date-input *string*, a timestamp — throws `getFullYear is not a function`, so pass an actual `Date`, e.g. `new Date(year, month - 1, day)`.
 
 `changeProperty` and `changeProperties` behave the same way; the format depends on what is set as the value:
 
