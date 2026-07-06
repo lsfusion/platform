@@ -33,7 +33,6 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.EmbeddedForm;
-import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableComponent;
@@ -1970,15 +1969,21 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             private HandlerRegistration dragSelectionReg;
             private Timer dragSelectionTimer;
             private int lastDragX, lastDragY;
+            private int startDragX, startDragY;
+            // whether the pointer actually moved since the drag started; without a real move a grid reflow (e.g. a
+            // form opening on a change action, or link-mode edit-object) shrinks the table under a stationary pointer,
+            // which must not be read as dragging past the edge (that would move the selection to the next row)
+            private boolean dragMoved;
 
             public void start() {
                 if (dragSelectionReg != null)
                     return;
 
+                dragMoved = false;
                 Event currentEvent = Event.getCurrentEvent();
                 if (currentEvent != null) {
-                    lastDragX = currentEvent.getClientX();
-                    lastDragY = currentEvent.getClientY();
+                    startDragX = lastDragX = currentEvent.getClientX();
+                    startDragY = lastDragY = currentEvent.getClientY();
                 }
 
                 dragSelectionReg = Event.addNativePreviewHandler(preview -> {
@@ -1989,6 +1994,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     } else if (typeInt == Event.ONMOUSEMOVE) {
                         lastDragX = nativeEvent.getClientX();
                         lastDragY = nativeEvent.getClientY();
+                        if (lastDragX != startDragX || lastDragY != startDragY)
+                            dragMoved = true;
                     }
                 });
 
@@ -1996,6 +2003,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     dragSelectionTimer = new Timer() {
                         @Override
                         public void run() {
+                            if (!dragMoved)
+                                return;
                             Element element = display.tableContainer.getElement();
                             int left = element.getAbsoluteLeft();
                             int right = left + element.getOffsetWidth();
@@ -2070,9 +2079,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 }
             }
 
-            // not in link mode, since there a click is a navigation action (edit object / open form), not a drag-selection gesture
-            // otherwise a micro mouse move (or a reflow when the form opens) would be interpreted as a drag and switch the selection to MOVE_END
-            if (changeEvent && !FormsController.isLinkMode())
+            if (changeEvent) // should be after changeRowCell to not enable accidentally ChangeSelection.MOVE_END (maybe later move to onCellAfter)
                 dragSelectionHelper.start();
         }
 
