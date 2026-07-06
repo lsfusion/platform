@@ -2,8 +2,10 @@ package lsfusion.server.logics.property.set;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
@@ -76,6 +78,15 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     public ImRevMap<PropertyInterfaceImplement<I>, Interface<I>> getMapRevInterfaces() {
         return getRevMapInterfaces().reverse();
+    }
+
+    // the tolerant reverse of getMapInterfaces : unlike getMapRevInterfaces it supports duplicate (equal) group keys - e.g. GROUP SUM ... BY expr, expr - where several distinct interfaces share one key implement; equal keys read equal group exprs, so any of the corresponding interfaces works
+    public ImMap<PropertyInterfaceImplement<I>, Interface<I>> getMergeMapRevInterfaces() {
+        ImMap<Interface<I>, PropertyInterfaceImplement<I>> mapInterfaces = getMapInterfaces();
+        MMap<PropertyInterfaceImplement<I>, Interface<I>> mResult = MapFact.mMap(MapFact.override());
+        for(int i = 0, size = mapInterfaces.size(); i < size; i++)
+            mResult.add(mapInterfaces.getValue(i), mapInterfaces.getKey(i));
+        return mResult.immutable();
     }
 
     public ImMap<Interface<I>, PropertyInterfaceImplement<I>> getMapInterfaces() {

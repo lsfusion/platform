@@ -84,7 +84,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         assert groupType == GroupType.CONCAT || (whereProp == null && nameProp == null);
 
         this.selectTop = selectTop;
-        this.mapSelectTop = selectTop.mapValues(BaseUtils.<ImRevMap<I, Interface<I>>>immutableCast(getMapRevInterfaces()));
+        this.mapSelectTop = selectTop.mapValues(BaseUtils.<ImMap<I, Interface<I>>>immutableCast(getMergeMapRevInterfaces())::get);
 
         finalizeInit();
     }
@@ -175,7 +175,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
 
     protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
-        return MapFact.override(getMapKeys(innerInterfaces, selectTop), BaseUtils.immutableCast(getMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface && !selectTop.contains((I) key))));
+        return MapFact.override(getMapKeys(innerInterfaces, selectTop), BaseUtils.immutableCast(getMergeMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface && !selectTop.contains((I) key))));
     }
 
     protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {

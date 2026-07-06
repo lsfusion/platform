@@ -48,7 +48,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
 
     // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
     protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
-        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface));
+        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMergeMapRevInterfaces().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn((key, value) -> value.isValue() && key instanceof PropertyInterface));
         return MapFact.override(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
     }
 

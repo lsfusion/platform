@@ -10,6 +10,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -1418,7 +1419,23 @@ public abstract class LogicsModule {
     }
 
     private <P extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, PropertyImplement<?, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
-        return addProperty(group, new LP(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
+        return addProperty(group, new LP(implement.property, orderGroupInterfaces(implement.mapping, listImplements)));
+    }
+
+    // orders the group-property interfaces to match listImplements; unlike a plain reverse mapping it tolerates
+    // duplicate (equal) group keys - e.g. GROUP SUM ... BY expr, expr - where several distinct interfaces share one key implement
+    private static <Q extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Q> orderGroupInterfaces(ImMap<Q, PropertyInterfaceImplement<P>> mapping, ImList<PropertyInterfaceImplement<P>> listImplements) {
+        if(mapping.size() == listImplements.size() && listImplements.size() != listImplements.toOrderSet().size()) { // duplicate (equal) group keys - match the (equal and therefore interchangeable) interfaces to the list positionally
+            Map<PropertyInterfaceImplement<P>, Queue<Q>> interfacesByKey = new HashMap<>();
+            for(Q q : mapping.keys())
+                interfacesByKey.computeIfAbsent(mapping.get(q), k -> new LinkedList<>()).add(q);
+
+            MOrderExclSet<Q> mResult = SetFact.mOrderExclSet(listImplements.size());
+            for(int i = 0, size = listImplements.size(); i < size; i++)
+                mResult.exclAdd(interfacesByKey.get(listImplements.get(i)).poll());
+            return mResult.immutableOrder();
+        }
+        return listImplements.toOrderExclSet().mapOrder(mapping.toRevExclMap().reverse());
     }
 
     private <P extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, GroupProperty property, ImList<PropertyInterfaceImplement<P>> listImplements) {
