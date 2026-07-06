@@ -36,7 +36,10 @@ public abstract class FilesChangeWatcher {
             WatchKey key;
             while ((key = watchService.take()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
-                    String fileName = event.context().toString();
+                    Object context = event.context();
+                    if (context == null) // OVERFLOW carries no context; an NPE here would kill the watch loop for the rest of the server run
+                        continue;
+                    String fileName = context.toString();
                     if (excludeFile(fileName, excludedFileExtensions))
                         continue;
 
