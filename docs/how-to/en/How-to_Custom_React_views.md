@@ -50,6 +50,24 @@ export function OrderBoard(props) {
 
 `key`, `isCurrent`, and `objects` are reserved row field names, so a form property's integration SID must not be one of them.
 
+A property value in a row is converted to a JS value depending on the property's class:
+
+| Property class | JS value |
+| --- | --- |
+| `BOOLEAN` | `true` / `false` (`false` instead of `NULL`) |
+| `TBOOLEAN` | `true` / `false` / `null` |
+| numeric classes | number |
+| user classes | number — the object's internal id |
+| date and time classes | `Date` |
+| `JSON` | parsed JSON value |
+| file classes | string with a download link |
+| images | string with the image address or HTML |
+| other classes | string |
+
+Except for `BOOLEAN`, a `NULL` value is converted to `null`.
+
+`list` contains only the read page, not all rows of the group. The view type of a group rendered by a React container remains the table, and the group is read page by page, but since the table itself is not displayed, the page size is not adjusted to the visible rows — the server default page size (50 objects) applies. For a view that shows all rows of the group — a calendar, a board, a map — specify the `PAGESIZE 0` option (read all objects) or an explicit page size in the [`OBJECTS`](../language/Object_blocks.md) block.
+
 ```jsx
 function Row(props) {
     const r = props.row;

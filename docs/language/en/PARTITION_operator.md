@@ -57,7 +57,7 @@ The `TOP` and `OFFSET` blocks restrict the subset of records selected inside eac
     Distribution strategy. One of:
 
     - `PROPORTION` — proportional distribution: the value of `propertyId` is split among the object collections of the group in proportion to the main expression and rounded to `digits` decimal places.
-    - `LIMIT` — limit-based distribution: the value of `propertyId` is assigned to the first object collection up to the limit given by the main expression; the remainder is then assigned to the next collection, and so on.
+    - `LIMIT` — limit-based distribution: the value of `propertyId` is assigned to the first (in the `ORDER`) object collection up to the limit given by the main expression; the remainder is then assigned to the next collection, and so on. The limits are given in the same units as the distributed value.
 
 - `STRICT`
 
@@ -127,12 +127,15 @@ CLASS OrderDetail;
 order = DATA Order (OrderDetail) NONULL DELETE;
 sum = DATA NUMERIC[14,2] (OrderDetail);
 
+// with transportSum equal to 100 and three lines with sum 1, 1, 1 the lines get 33.34, 33.33 and 33.33
 transportSum 'Freight costs by line' (OrderDetail d) = PARTITION UNGROUP transportSum
                                     PROPORTION STRICT ROUND(2) sum(d)
                                     ORDER d
                                     BY order(d);
 
 // example of distribution with limits
+// with discountSum equal to 60 and lines with sum 100 and 300 the first line in the ORDER gets 60, the second — NULL;
+// with discountSum equal to 500 the lines get 100 and 400 (300 up to the limit plus the remainder of 100 due to STRICT)
 discountSum 'Discount' = DATA NUMERIC[10,2] (Order);
 discountSum 'Discount by line' (OrderDetail d) =
     PARTITION UNGROUP discountSum

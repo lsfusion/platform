@@ -20,7 +20,7 @@ Based on the report hierarchy restrictions, only "chains" of object groups can b
 
 
 :::info
-Using this option comes down to whether to display data for a parent object group when the child object group has no data.
+Using this option comes down to whether to display data for a parent object group when the child object group has no data. A merged report is filled with a join of the object groups: an object collection of the parent group with no matching object collection of the child group does not appear in the document. For such object collections to be displayed, the child group is given the `SUBREPORT` option — then the child is built as a separate report, and the parent group displays all its object collections.
 :::
 
 ### Report hierarchy example

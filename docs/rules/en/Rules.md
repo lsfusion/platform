@@ -257,6 +257,12 @@ PROPERTY RULES
 
     The assistant MUST use `caption` and `name` instead.
 
+    This applies to reads: `caption` and `name` are calculated
+    (materialized) properties and do not allow writes.
+    At assignment sites (for example, when programmatically
+    filling a static object's caption) the DATA properties
+    `staticCaption` / `staticName` remain.
+
 12. Property names SHOULD be concise
     and avoid unnecessary words.
 
@@ -281,6 +287,14 @@ PROPERTY RULES
 
     A property SHOULD NOT be placed in `id` or `base`
     when it is not the object's own primary attribute.
+
+16. When dividing values of integer classes, the assistant MUST
+    cast one of the operands to `NUMERIC`, not the result.
+
+    The ratio of two integers is integer division,
+    so an outer cast like `NUMERIC[16,4](a * b / c)`
+    silently drops the fractional part;
+    the correct form is `NUMERIC[16,4](a) * b / c`.
 ----------------------------------------------------------------
 ACTION RULES
 
@@ -360,6 +374,15 @@ ACTION RULES
    (e.g. import staging, nested-session carry-over)
    remain valid; the assistant SHOULD still keep such
    `LOCAL`s minimal in count and scope.
+
+7. The parameters of the top-level statements of an action
+   body share one parameter context: identical names denote
+   the same parameter, and a parameter's class is declared
+   only at its first use.
+
+   In generated scripts (`eval`, data seeding) the assistant
+   SHOULD give the parameters of top-level statements unique
+   names, so as not to depend on the statement order.
 ----------------------------------------------------------------
 EVENT RULES (`WHEN`)
 

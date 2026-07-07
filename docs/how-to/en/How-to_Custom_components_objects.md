@@ -52,7 +52,7 @@ NAVIGATOR {
 ```
 The keyword **CUSTOM** specifies that not the standard tabular interface should be used to draw the list of items,
 but the components created by the function _itemCards_. Let's declare this function in the file _itemcards.js_, which we'll place in the folder _resources/web_. This is the no-build path — a plain `.js` file, no JSX or bundling; see [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative.
-It will return an object consisting of two functions: _render_ and _update_.
+It will return an object consisting of two functions: _render_ and _update_. It is the function that is registered: the platform itself calls _itemCards()_ and takes _render_ and _update_ from the result, so the object with these functions cannot be registered without the wrapping function.
 
 The function _render_ takes as input the controller and the element inside which the new elements necessary to display the data are to be created:
 ```js
@@ -109,6 +109,8 @@ update: (element, controller, list) => {
 ```
 Because the _update_ function is called whenever the data changes, the first thing that happens is that all previously created elements (namely, item cards) are deleted.
 
+_list_ receives only the read page, not the whole set of objects: for an object group with the `CUSTOM` view type its default size is 1000 objects. For the view to receive all objects of the group, specify the `PAGESIZE 0` option (read all objects) in the [`OBJECTS`](../language/Object_blocks.md) block.
+
 This example uses the simplest update scheme, but if necessary, it can be optimized by updating the DOM only for changed values.
 To do that, the _controller_ has _getDiff_ method, where you pass a new _list_ of objects as a parameter.
 This method will return as a result an object with arrays _add_, _update_, _remove_, which store added, changed and deleted objects respectively.
@@ -121,7 +123,7 @@ for (let object of diff.remove) { ... }
 ```
 
 After removing the old elements, for each object in the _list_ array a _div_ _card_ is created, in which the desired display elements of each property are placed.
-The names of the object fields correspond to the names of the properties on the form. The _isCurrent_ method determines which object from the list is current.
+The names of the object fields correspond to the names of the properties on the form. The property values are converted to JS values in the same way as in the rows of a [React view](How-to_Custom_React_views.md): for example, values of the date and time classes are passed as `Date`, and `JSON` — as a parsed object. The _isCurrent_ method determines which object from the list is current.
 
 At the very end of the function, mouse click handlers are added to the item card. 
 
