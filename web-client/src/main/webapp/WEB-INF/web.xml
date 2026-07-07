@@ -284,6 +284,21 @@
     <filter>
         <filter-name>CORS</filter-name>
         <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+        <!-- Without init-params, cors-filter defaults to cors.allowOrigin=* AND
+             cors.supportsCredentials=true. With credentials on, the filter can't send a
+             literal "*", so it echoes the caller's Origin and adds
+             Access-Control-Allow-Credentials: true for ANY origin. Since the API chain
+             (exec/eval/form) reuses an existing UI session cookie, that let any website run
+             fetch('/exec/...', {credentials:'include'}) against a logged-in user and read
+             the response. Turning credentials off keeps Access-Control-Allow-Origin: *
+             (fine for a token-authenticated API) but drops the Allow-Credentials header, so
+             browsers block credentialed cross-origin reads. The API's own consumers
+             authenticate with a Bearer token or URL param, never a cookie, so they are
+             unaffected; the same-origin UI never goes through CORS. -->
+        <init-param>
+            <param-name>cors.supportsCredentials</param-name>
+            <param-value>false</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
         <filter-name>CORS</filter-name>
