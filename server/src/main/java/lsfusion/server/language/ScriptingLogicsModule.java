@@ -3383,7 +3383,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> whereProps = whereProp != null ? singletonList(whereProp) : Collections.emptyList();
 
-        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, whereProps);
+        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, whereProps, selectTop.getParams());
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
 
         List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
@@ -3405,15 +3405,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if(!selectTop.isEmpty()) { // optimization
             List<LPWithParams> mapping = new ArrayList<>();
-            for(int resultInterface : resultInterfaces)
-                mapping.add(new LPWithParams(resultInterface));
+            for (LPWithParams groupProp : allGroupProps) // the group (BY) keys stay free params at their positions, so the joined property keeps the group interfaces
+                mapping.add(groupProps.contains(groupProp) ? new LPWithParams(mapping.size()) : groupProp);
 
             mapping.addAll(selectTop.getParams());
 
-            LPWithParams lgp = addScriptedJProp(gProp, mapping);
-
-            gProp = lgp.getLP();
-            resultInterfaces = lgp.usedParams;
+            gProp = addScriptedJProp(gProp, mapping).getLP();
         }
 
         return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
