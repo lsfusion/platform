@@ -339,6 +339,20 @@
             <artifactId>urlrewritefilter</artifactId>
         </dependency>
 
+        <!-- GraalJS engine for the server-side lightweight .jsx transformation (JsxTransformer);
+             its transitive icu4j is overridden to the platform-wide version by dependencyManagement -->
+        <dependency>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+            <version>23.0.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>

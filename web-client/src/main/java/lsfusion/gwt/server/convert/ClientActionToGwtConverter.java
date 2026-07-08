@@ -478,7 +478,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         String resourceName = action.resourceName;
         if(action.isFile) {
             if(resource instanceof RawFileData) {
-                resourcePath = FileUtils.saveWebFile(resourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
+                // saveWebFile transforms a .jsx to plain js and renames it, so downstream (GwtActionDispatcher,
+                // browser) sees an ordinary .js; the extension is derived from the served name
+                Result<String> rResourceName = new Result<>(resourceName);
+                resourcePath = FileUtils.saveWebFile(rResourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
+                resourceName = rResourceName.result;
                 extension = BaseUtils.getFileExtension(resourceName);
             } else {
                 Result<String> rFileExtension = new Result<>();

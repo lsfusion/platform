@@ -264,6 +264,20 @@ public class FileUtils {
         return saveImageFile(iconSaver, ID, false, getStaticPath(settings), imagePath, null);
     }
 
+    // resource-serving variant of saveWebFile: a .jsx is transformed to plain js and renamed to .js (name updated
+    // in place) before saving, so the caller and the browser see an ordinary script — the single home of the
+    // lightweight .jsx serving hook, used by the two resource paths (page resources, dynamic web actions). Any
+    // other resource passes through unchanged; arbitrary file values (a property's downloadable file) call the
+    // String overload below and are never transformed, even when named .jsx.
+    public static String saveWebFile(Result<String> resourceName, RawFileData fileData, ServerSettings settings, boolean noAuth) {
+        String name = resourceName.result;
+        if (JsxTransformer.isJsx(name)) {
+            fileData = JsxTransformer.transform(name, fileData);
+            resourceName.set(JsxTransformer.toJs(name));
+        }
+        return saveWebFile(resourceName.result, fileData, settings, noAuth);
+    }
+
     private final static boolean useDownloadForAppResources = true;
     // static image (app) with the fullpath (with the extension inside)
     public static String saveWebFile(String fullPath, RawFileData fileData, ServerSettings settings, boolean noAuth) {

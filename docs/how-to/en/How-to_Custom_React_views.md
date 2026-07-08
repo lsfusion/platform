@@ -28,7 +28,7 @@ The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_
 
 ### The component
 
-`OrderBoard` is a named export from a `.jsx` module under `src/main/web`; how the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX, which needs the build. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), write the same component with `React.createElement` against the platform-provided `window.React` instead of JSX, and place it under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and register it with `onWebClientInit`.
+`OrderBoard` is a named export from a `.jsx` module under `src/main/web`; how the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served; `import` is not available there, so the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
 
 The component is a plain function that receives `props.data` and `props.controller`:
 

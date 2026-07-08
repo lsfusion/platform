@@ -348,6 +348,10 @@ onWebClientInit() + {
 onWebClientInit() + {
     onWebClientInit('react/react.production.min.js') <- -110;
     onWebClientInit('react/react-dom.production.min.js') <- -109;
+    // React Compiler memo-cache runtime for server-transformed .jsx: reads window.React, so after react;
+    // immediately after it, before anything else, so any explicitly ordered .jsx (contract: order > -108)
+    // finds the shim at eval time
+    onWebClientInit('lsfusion-rc-runtime.js') <- -108;
 }
 
 // JS/CSS load phase: the custom-JS registry shim must load before any auto-registered file (which registers into it).
@@ -358,6 +362,9 @@ onWebClientInit() + {
 // event time) — since the scan gives them all one order; a load-time cross-script dependency keeps using explicit
 // onWebClientInit with author-chosen orders (put such a file anywhere under resources/web outside web/init). A module's
 // CSS loads at 99, just before its JS at 100, both after the order-1..36 system/app resources.
+// A .jsx file is registered by its own name; the web client transforms it to plain js (JSX lowering plus
+// React Compiler memoization against lsfusion-rc-runtime.js above, and renames it to .js) on the server
+// when the resource is saved for serving, so the browser sees an ordinary script.
 onWebClientInit() + {
     onWebClientInit('lsfusion-custom-registry.js') <- -100;
 
@@ -365,11 +372,13 @@ onWebClientInit() + {
     readResourcePaths('/web/\\.compiled/.*\\.css');
     readResourcePaths('/web/init/.*\\.js');
     readResourcePaths('/web/init/.*\\.css');
+    readResourcePaths('/web/init/.*\\.jsx');
     FOR STRING s = resourcePaths(s) DO {
         // re-filter: readResourcePaths appends to resourcePaths, so earlier scans (e.g. /onStarted/) are still present
         IF startsWith(resourcePaths(s), '/web/.compiled/') OR startsWith(resourcePaths(s), '/web/init/') THEN {
             IF endsWith(resourcePaths(s), '.css') THEN { onWebClientInit(resourcePaths(s)) <- 99; } // a module's CSS just before its bundle
             IF endsWith(resourcePaths(s), '.js') THEN { onWebClientInit(resourcePaths(s)) <- 100; }
+            IF endsWith(resourcePaths(s), '.jsx') THEN { onWebClientInit(resourcePaths(s)) <- 100; }
         }
     }
 }

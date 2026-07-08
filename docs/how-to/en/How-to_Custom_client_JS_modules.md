@@ -15,7 +15,7 @@ A _src/main/web/lib_ subfolder is treated as shared helper code: its files are n
 
 ### Without the build
 
-A project with no build set up — no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file under _src/main/resources/web_, used as written: no bundling, no JSX, no third-party-library resolution. (This is also the path `eval` uses.) A React view is therefore written with `React.createElement` against the platform-provided `window.React` instead of JSX, and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
+A project with no build set up — no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file under _src/main/resources/web_, used as written: no bundling, no third-party-library resolution. (This is also the path `eval` uses.) A React view in a _.js_ file is therefore written with `React.createElement` against the platform-provided `window.React` instead of JSX (a _.jsx_ file keeps the JSX syntax — see the lightweight _.jsx_ section below), and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
 
 ```js
 function HelloBoard(props) {
@@ -52,10 +52,32 @@ The build and no-build paths compare as follows:
 | | Build (_src/main/web_) | No-build, auto (_resources/web/init_) | No-build, explicit (_resources/web_) |
 | --- | --- | --- | --- |
 | Loading | bundled to _web/.compiled_, auto-loaded | auto-loaded by folder scan | listed in `onWebClientInit` |
-| Source | _.js_/_.jsx_/_.ts_/_.tsx_, JSX allowed | plain _.js_ | plain _.js_ |
+| Source | _.js_/_.jsx_/_.ts_/_.tsx_, JSX allowed | _.js_ or _.jsx_ (transformed when served) | _.js_ or _.jsx_ (transformed when served) |
 | Registration | named export | name on `window` | name on `window` |
 | Load order | one order (bundles are self-contained) | one order (files must be order-independent) | explicit integer order |
 | Third-party libraries | bundled via `org.mvnpm` | loaded separately, used from `window` | loaded separately, used from `window` |
+
+### Lightweight .jsx (no build)
+
+A no-build file can also be written in JSX: a _.jsx_ file under _src/main/resources/web_ is transformed on the server when it is served, so the JSX syntax works with no `node`, no esbuild, and no build step, and the browser receives a plain script. Only the syntax changes — the file is still a no-build file: the JSX compiles to `React.createElement` calls against the platform-provided `window.React`, and the file runs as a classic top-level script, so a top-level `function` declaration is already a name on `window` — nothing else is needed. An `import` or `export` in a _.jsx_ file is an error, reported in the browser console with the file skipped — importing modules is what the build (_src/main/web_) adds. Eligible components are also memoized automatically (React Compiler) during the same server-side transformation, so a no-build component re-renders only when its inputs change — no annotations, no build step. Because that transformation runs on the server, the application server must run on Java 17 or newer; on an older JVM a served _.jsx_ reports the requirement to the browser console instead of rendering (a plain _.js_ resource is unaffected).
+
+A _.jsx_ file is loaded the same two ways as a plain _.js_: dropped into _resources/web/init_ it auto-loads with no wiring, and anywhere else under _resources/web_ it is listed in `onWebClientInit`:
+
+```jsx
+// resources/web/init/helloBoard.jsx — auto-loads, nothing else to wire
+function HelloBoard(props) {
+    const rows = (props.data.o || {}).list || [];
+    return <div className="hello-board">{rows.length} orders</div>;
+}
+```
+
+```lsf
+DESIGN orders {
+    BOX(o) { custom = 'HelloBoard'; }
+}
+```
+
+Load order: a _.jsx_ file loads and runs at its resource slot, exactly like a plain _.js_ — the `onWebClientInit` order holds verbatim across _.js_ and _.jsx_ files in both directions, so at load time either kind may read a global defined by any earlier resource; the one reserved range is the platform's own — a _.jsx_ registered at an order of -108 or below runs before the platform-provided memoization runtime and is out of contract.
 
 ### Named exports and auto-registration
 

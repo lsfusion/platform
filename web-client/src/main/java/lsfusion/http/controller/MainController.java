@@ -303,10 +303,19 @@ public class MainController {
             if (resourceData != null) { // resource file
                 extension = BaseUtils.getFileExtension(resourceName);
 
-                if (SystemUtils.isFont(extension))
-                    resourceName = SystemUtils.registerFont(resourceData);
-
-                url = extension.equals("html") ? resourceData.convertString() : FileUtils.saveWebFile(resourceName, resourceData, serverSettings, noAuth);
+                if (extension.equals("html")) { // header markup is inlined, not served as a file
+                    url = resourceData.convertString();
+                } else { // js / css / .jsx / font: saveWebFile transforms a .jsx to plain js and renames it, so the
+                    // WebAction and browser see an ordinary script
+                    boolean font = SystemUtils.isFont(extension);
+                    if (font)
+                        resourceName = SystemUtils.registerFont(resourceData);
+                    Result<String> rResourceName = new Result<>(resourceName);
+                    url = FileUtils.saveWebFile(rResourceName, resourceData, serverSettings, noAuth);
+                    resourceName = rResourceName.result;
+                    if (!font) // a .jsx became .js; a font's registered family name carries no extension, keep the original
+                        extension = BaseUtils.getFileExtension(resourceName);
+                }
             } else { // url
                 Result<String> rExtension = new Result<>();
                 url = ClientActionToGwtConverter.convertUrl(resourceName, rExtension);
