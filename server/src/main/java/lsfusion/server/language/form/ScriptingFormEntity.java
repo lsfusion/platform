@@ -919,7 +919,10 @@ public class ScriptingFormEntity {
                                                   ScriptingLogicsModule.LPCompoundID compoundID, Version version) throws ScriptingErrorLog.SemanticErrorException {
 
         if (trivialLA != null) {
-            return form.getNFPropertyDraw(trivialLA.action.usage.property.name, trivialLA.action.mapping, version);
+            PropertyDrawEntity propertyDraw = form.getNFPropertyDraw(trivialLA.action.usage.property.name, trivialLA.action.mapping, version);
+            if (propertyDraw == null && trivialLA.error != null) // the usage didn't resolve globally either (e.g. an ambiguous name) - throwing that deferred error
+                throw trivialLA.error;
+            return propertyDraw;
         }
         if (compoundID != null) {
             return form.getNFPropertyDraw(compoundID.name, version);

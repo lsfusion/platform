@@ -1161,10 +1161,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static class LPTrivialLA extends LPNotExpr {
         public final FormActionOrPropertyUsage action;
         public final List<TypedParameter> mapParams;
+        public final ScriptingErrorLog.SemanticErrorException error;
 
         public LPTrivialLA(FormActionOrPropertyUsage action, List<TypedParameter> mapParams) {
+            this(action, mapParams, null);
+        }
+        public LPTrivialLA(FormActionOrPropertyUsage action, List<TypedParameter> mapParams, ScriptingErrorLog.SemanticErrorException error) {
             this.action = action;
             this.mapParams = mapParams;
+            this.error = error;
         }
     }
     public static class LPContextIndependent extends LPNotExpr {
@@ -1700,13 +1705,21 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public Pair<LPWithParams, LPTrivialLA> addScriptedJProp(boolean user, NamedPropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params, ScriptingLogicsModule.ActionStatementContext actions) throws ScriptingErrorLog.SemanticErrorException {
-        LP mainProp = findLPByPropertyUsage(pUsage, paramProps, params, true);
+        LP mainProp = null;
+        ScriptingErrorLog.SemanticErrorException deferredError = null;
+        try {
+            mainProp = findLPByPropertyUsage(pUsage, paramProps, params, true);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            if (pUsage.classNames != null) // an explicit signature is definitely a property usage
+                throw e;
+            deferredError = e;
+        }
 
         LPWithParams result = null;
 
         if(mainProp != null) {
             result = addScriptedJProp(user, mainProp, paramProps);
-        } else {
+        } else if (deferredError == null) {
 //            splitting paramProps to using extend params, and not using (if there is a explicit classes, move from not extend params to extend
             List<LPWithParams> extendParamProps = null;
             if(actions != null) {
@@ -1737,17 +1750,22 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (jParams != null) {
                 List<String> paramNames = getParamNamesFromTypedParams(jParams);
                 FormActionOrPropertyUsage formUsage;
-                if (mainProp == null) { // action hack
+                if (mainProp == null && deferredError == null) { // action hack
                     formUsage = new FormActionUsage(pUsage, paramNames);
                 } else {
                     formUsage = new FormPropertyUsage(pUsage, paramNames);
                 }
-                la = new LPTrivialLA(formUsage, jParams);
+                la = new LPTrivialLA(formUsage, jParams, deferredError);
             } else if (result == null ) {
+                if (deferredError != null)
+                    throw deferredError;
                 errLog.emitPropertyNotFoundError(parser, pUsage.getSourceName());
             }
         }
-        
+
+        if (result == null && deferredError != null) // to keep the callers from failing on the null property (the deferred error will be thrown when the la is dropped / the form property draw is not found)
+            result = new LPWithParams((LP<?>) null);
+
         return new Pair<>(result, la);
     }
 

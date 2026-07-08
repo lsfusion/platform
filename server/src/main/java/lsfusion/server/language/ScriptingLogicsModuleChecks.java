@@ -245,8 +245,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
     public void checkNotTLAInExpr(LPWithParams lp, ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
-        if (lcp instanceof ScriptingLogicsModule.LPTrivialLA && lp == null) {
-            errLog.emitLAInExprError(parser);
+        if (lcp instanceof ScriptingLogicsModule.LPTrivialLA) {
+            ScriptingErrorLog.SemanticErrorException error = ((ScriptingLogicsModule.LPTrivialLA) lcp).error;
+            if (error != null)
+                throw error;
+            if (lp == null)
+                errLog.emitLAInExprError(parser);
         }
     }
     public void checkNotCIDInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
