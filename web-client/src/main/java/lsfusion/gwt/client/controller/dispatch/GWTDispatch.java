@@ -59,6 +59,13 @@ public class GWTDispatch {
 
 //    private int idCounter;
 
+    // exponential growth 1s, 2s, 4s, ... capped at 30s, jittered to [base/2, base] to desynchronize
+    // retries of multiple tabs / requests after a server restart (thundering herd)
+    private static int getRetryDelay(int attempt) {
+        int base = Math.min(30000, 1000 << Math.min(attempt - 1, 5));
+        return base / 2 + (int) (Math.random() * (base / 2 + 1));
+    }
+
     private class ExecutingAction<A extends BaseAction<R>, R extends Result> {
         public final A action;
         public final Supplier<Integer> priority;
@@ -126,7 +133,7 @@ public class GWTDispatch {
                                 execute();
                             }
                         };
-                        timer.schedule(1000);
+                        timer.schedule(getRetryDelay(attemptIndex));
                     } else {
                         GWTDispatch.this.onExecuted(ExecutingAction.this);
 
