@@ -1,0 +1,22 @@
+rc-graal.cjs — React Compiler bundle evaluated in-process by GraalJS (CompileWebMojo.rcTransform).
+Rebuilt only by bin/build-rc-graal.mjs; this file pins what the committed bundle was built from.
+
+npm inputs (exact versions):
+  @babel/standalone@7.29.7
+  babel-plugin-react-compiler@1.0.0
+  esbuild@0.25.10 (bundler only, not part of the output)
+transitive graph: pinned by bin/rc-graal.package-lock.json (committed; the script reuses it on rebuild,
+  delete it when bumping the versions above)
+
+licenses of the bundled packages (from their package.json; esbuild excluded — bundler only):
+  @babel/helper-string-parser@7.29.7: MIT
+  @babel/helper-validator-identifier@7.29.7: MIT
+  @babel/standalone@7.29.7: MIT
+  @babel/types@7.29.7: MIT
+  babel-plugin-react-compiler@1.0.0: MIT
+
+build: bin/build-rc-graal.mjs (esbuild --bundle --minify --format=iife --platform=browser,
+  node builtins stubbed, require.resolve defined away — see the script for the full recipe)
+
+size(rc-graal.cjs) = 5338606 bytes
+sha256(rc-graal.cjs) = 239681ab197e5a32246a8786fef39af1b639885291ed2aea016b5c79a7a2c91e

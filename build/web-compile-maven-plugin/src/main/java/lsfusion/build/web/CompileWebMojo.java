@@ -27,24 +27,29 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Compiles a logic module's {@code src/main/web/**} (except the {@code web/lib/**} library subfolder) into
  * classpath {@code web/.compiled/*.js} IIFE bundles, one per public-entry file, using the esbuild native
- * binary resolved as an os-matched Maven artifact (no Node on this default path; the optional React Compiler
- * pass acquires Node automatically — see resolveNode). Each bundle registers every named export of its entry file into
- * {@code window.lsfusion.custom} at load time; the lsFusion client resolves CUSTOM / CUSTOM REACT /
- * INTERNAL CLIENT names registry-first (see the runtime registry shim). The generated-resources root is
- * added as a project resource so Maven's process-resources packages it under classpath {@code web/.compiled/}.
+ * binary (no Node anywhere — the optional React Compiler pass runs in-process on GraalJS, see rcTransform).
+ * Each bundle registers every named export of its entry file into {@code window.lsfusion.custom}
+ * at load time; the lsFusion client resolves CUSTOM / CUSTOM REACT / INTERNAL CLIENT names registry-first
+ * (see the runtime registry shim).
+ *
+ * <p>Maven adapter concerns and the compile engine both live here: the mojo binds its parameters, resolves the
+ * os-matched esbuild binary jar via Aether, collects the project's org.mvnpm* dependency jars, drives esbuild,
+ * and registers the generated-resources root as a project resource so Maven's process-resources packages the
+ * bundles under classpath {@code web/.compiled/}. The only piece kept separate is {@link RcEngine} (all
+ * org.graalvm types), so {@link #checkRcJavaVersion} can run before any Graal class loads.
  */
 @Mojo(name = "compile-web", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class CompileWebMojo extends AbstractMojo {
@@ -68,36 +73,14 @@ public class CompileWebMojo extends AbstractMojo {
     @Parameter(property = "lsfusion.web.skip", defaultValue = "false")
     private boolean skip;
 
-    /** opt-in React Compiler (auto-memoization): babel-plugin-react-compiler transforms every source before
-     * bundling, run through Node — system Node if it is on PATH, otherwise a pinned Node downloaded and cached
-     * automatically (see resolveNode). Uses a self-contained runner script (see bin/build-rc-runner.sh). */
-    @Parameter(defaultValue = "false")
-    private boolean reactCompiler;
-
-    /** optional override of the React Compiler runner (single .cjs); by default the runner vendored inside the
-     * plugin jar (src/main/resources/rc/rc-runner.cjs, rebuilt via bin/build-rc-runner.sh) is extracted and used */
-    @Parameter
-    private File reactCompilerRunner;
-
     /** react major the compiled output targets ('18' emits the react-compiler-runtime polyfill import) */
     @Parameter(defaultValue = "18")
     private String reactCompilerTarget;
 
     /** version of the esbuild binary artifact {@code org.mvnpm.at.esbuild:<os-arch>} (Maven Central mirror of npm);
-     * effectively locked to the versions pinned in the plugin's SHA256SUMS — overriding requires a matching entry */
+     * effectively locked to the versions pinned in the vendored SHA256SUMS — overriding requires a matching entry */
     @Parameter(defaultValue = "0.25.10")
     private String esbuildVersion;
-
-    /** Node version the React Compiler pass uses when Node is not already on PATH: the plugin then downloads this
-     * pinned, checksum-verified version (see node/SHA256SUMS) and caches it. Overriding requires a matching SHA256SUMS entry. */
-    @Parameter(defaultValue = "22.16.0")
-    private String nodeVersion;
-
-    /** base URL the pinned Node is downloaded from when it is not on PATH (point at a mirror if nodejs.org is blocked). */
-    @Parameter(property = "lsfusion.node.downloadRoot", defaultValue = "https://nodejs.org/dist/")
-    private String nodeDownloadRoot;
-
-    private String node; // resolved Node command (PATH "node" or the cached downloaded binary), memoized within a run
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -116,117 +99,17 @@ public class CompileWebMojo extends AbstractMojo {
             getLog().info("web-compile: skipped (lsfusion.web.skip)");
             return;
         }
-        File outputDir = new File(generatedRoot, "web/.compiled");
         try {
-            // clean BOTH the generated-resources output and its already-copied counterpart in target/classes:
+            // clean the already-copied counterpart of the generated-resources output in target/classes:
             // maven-resources-plugin only copies, never deletes, so a renamed/deleted source would otherwise leave a
             // stale bundle on the classpath that the runtime auto-scan keeps loading (duplicate-name page failure).
-            if (outputDir.exists())
-                deleteRecursively(outputDir.toPath());
+            // (the generated-resources output itself is cleaned by compile())
             File copiedDir = new File(project.getBuild().getOutputDirectory(), "web/.compiled");
             if (copiedDir.exists())
                 deleteRecursively(copiedDir.toPath());
-            if (sourceDir == null || !sourceDir.isDirectory()) {
-                getLog().debug("web-compile: no " + sourceDir + ", nothing to compile");
-                return;
-            }
-            Files.createDirectories(workDir.toPath());
-            Files.createDirectories(outputDir.toPath());
 
-            File esbuild = resolveEsbuild();
-            File reactShim = extractResource("shims/react.js", new File(workDir, "react.js"));
-            File reactDomShim = extractResource("shims/react-dom-client.js", new File(workDir, "react-dom-client.js"));
-            File reactDomBareShim = extractResource("shims/react-dom.js", new File(workDir, "react-dom.js"));
-            File jsxRuntimeShim = extractResource("shims/react-jsx-runtime.js", new File(workDir, "react-jsx-runtime.js"));
-            Map<String, File> mvnpmPackages = extractMvnpmNodeModules(new File(workDir, "node_modules")); // org.mvnpm:* deps -> bundlable packages
-
-            Path srcRoot = sourceDir.toPath().toAbsolutePath();
-            if (reactCompiler)
-                srcRoot = runReactCompiler(srcRoot); // transformed mirror: ALL sources (incl. lib/) pass through the compiler
-            Path libDir = srcRoot.resolve("lib");
-            List<Path> entries;
-            try (Stream<Path> walk = Files.walk(srcRoot)) {
-                entries = walk.filter(Files::isRegularFile)
-                        .filter(CompileWebMojo::isCompilable)
-                        .filter(p -> !p.startsWith(libDir))
-                        .sorted()
-                        .collect(Collectors.toList());
-            }
-            if (entries.isEmpty()) {
-                getLog().info("web-compile: no entry files under " + srcRoot);
-                addGeneratedResource();
-                return;
-            }
-
-            List<String> bundleNames = new ArrayList<>();
-            java.util.Map<String, Path> stems = new java.util.HashMap<>();
-            for (Path entry : entries) {
-                String stem = stemOf(srcRoot.relativize(entry));
-                // case-insensitive clash key: Order.jsx vs order.jsx would silently overwrite on win/mac filesystems
-                Path clash = stems.put(stem.toLowerCase(Locale.ROOT), entry);
-                if (clash != null)
-                    throw new MojoExecutionException("output name collision: '" + stem + ".js' from both "
-                            + srcRoot.relativize(clash) + " and " + srcRoot.relativize(entry));
-                File wrapper = new File(workDir, "entry_" + stem + ".js");
-                // register every named export (except default) of the entry at load time; the entry's own
-                // imports (react -> shim, helpers from js/lib) are bundled in. esbuild keeps namespace keys.
-                // per-name catch: one duplicate must not silently abort the bundle's remaining registrations
-                String wrapperJs = "import * as __m from " + jsString(entry.toString()) + ";\n"
-                        + "Object.keys(__m).forEach(function (k) { if (k === 'default') return; try { window.lsfusion.custom.register(k, __m[k]); } catch (e) { console.error(e); } });\n";
-                Files.write(wrapper.toPath(), wrapperJs.getBytes(StandardCharsets.UTF_8));
-
-                File out = new File(outputDir, stem + ".js");
-                List<String> cmd = new ArrayList<>();
-                cmd.add(esbuild.getAbsolutePath());
-                cmd.add(wrapper.getAbsolutePath());
-                cmd.add("--bundle");
-                cmd.add("--format=iife");
-                cmd.add("--jsx=transform");
-                cmd.add("--loader:.js=jsx"); // allow JSX in plain .js (esbuild otherwise rejects it)
-                // url() assets (fonts/images) referenced from imported CSS: INLINE them into the extracted .css as data URLs,
-                // so the compiled stylesheet is self-contained and served as one registered resource (the platform publishes
-                // only registered resources, not arbitrary sibling files; esbuild has no default loader for these binary types)
-                for (String ext : new String[]{"woff", "woff2", "ttf", "eot", "otf", "svg", "png", "jpg", "jpeg", "gif", "webp"})
-                    cmd.add("--loader:." + ext + "=dataurl");
-                if (reactExternal) {
-                    cmd.add("--alias:react=" + reactShim.getAbsolutePath());
-                    cmd.add("--alias:react-dom/client=" + reactDomShim.getAbsolutePath());
-                    cmd.add("--alias:react-dom=" + reactDomBareShim.getAbsolutePath());
-                    // a 'react' alias rewrites the subpath react/jsx-runtime -> react.js/jsx-runtime, so the
-                    // automatic JSX runtime (used by many third-party packages) needs its own alias
-                    cmd.add("--alias:react/jsx-runtime=" + jsxRuntimeShim.getAbsolutePath());
-                    cmd.add("--alias:react/jsx-dev-runtime=" + jsxRuntimeShim.getAbsolutePath());
-                    // preamble: install the CUSTOM REACT hooks (window.lsfusion.List / useForm*) BEFORE this bundle's
-                    // module body runs, so a module-top `const List = window.lsfusion.List` alias resolves. The impl is
-                    // defined by lsfusion-custom-registry.js (loaded earlier); installed here against the now-final
-                    // window.React (any app React override at a less-negative order has already run by bundle order 100).
-                    cmd.add("--banner:js=if(window.lsfusion&&window.lsfusion.__installReactHooks)window.lsfusion.__installReactHooks();");
-                }
-                if (reactCompiler) { // compiled components import { c } from the memo-cache runtime: target 18 emits the
-                    // react-compiler-runtime polyfill package name, react 19 style is react/compiler-runtime — alias both to the vendored MIT polyfill
-                    String rcRuntime = extractResource("shims/react-compiler-runtime.js", new File(workDir, "react-compiler-runtime.js")).getAbsolutePath();
-                    cmd.add("--alias:react-compiler-runtime=" + rcRuntime);
-                    cmd.add("--alias:react/compiler-runtime=" + rcRuntime);
-                }
-                for (Map.Entry<String, File> pkg : mvnpmPackages.entrySet()) // bare imports declared as org.mvnpm Maven deps
-                    cmd.add("--alias:" + pkg.getKey() + "=" + pkg.getValue().getAbsolutePath());
-                if (minify)
-                    cmd.add("--minify");
-                cmd.add("--outfile=" + out.getAbsolutePath());
-                runEsbuild(cmd);
-
-                File cssOut = new File(outputDir, stem + ".css");
-                if (cssOut.exists()) // esbuild extracts imported CSS to a sibling file; the runtime auto-scan (SystemEvents) auto-loads web/.compiled/*.css too
-                    getLog().info("web-compile: " + srcRoot.relativize(entry) + " -> web/.compiled/" + stem + ".css");
-
-                bundleNames.add("web/.compiled/" + stem + ".js");
-                getLog().info("web-compile: " + srcRoot.relativize(entry) + " -> web/.compiled/" + stem + ".js");
-            }
-
-            String manifest = "{\"bundles\":["
-                    + bundleNames.stream().map(CompileWebMojo::jsString).collect(Collectors.joining(","))
-                    + "]}";
-            Files.write(new File(outputDir, "manifest.json").toPath(), manifest.getBytes(StandardCharsets.UTF_8));
+            if (compile() == null)
+                return; // no src/main/web — nothing on the classpath, no resource to register
 
             addGeneratedResource();
         } catch (IOException | InterruptedException e) {
@@ -234,13 +117,147 @@ public class CompileWebMojo extends AbstractMojo {
         }
     }
 
-    private void addGeneratedResource() {
-        for (Resource r : project.getResources())
-            if (generatedRoot.getAbsolutePath().equals(new File(r.getDirectory()).getAbsolutePath()))
-                return;
-        Resource resource = new Resource();
-        resource.setDirectory(generatedRoot.getAbsolutePath());
-        project.addResource(resource);
+    // ===== compile engine =====
+
+    /** returns the compiled bundle classpath names ({@code web/.compiled/<stem>.js}), or null when there is no
+     * source directory at all (the output directory is cleaned in both cases) */
+    private List<String> compile() throws MojoExecutionException, IOException, InterruptedException {
+        File outputDir = new File(generatedRoot, "web/.compiled");
+        // clean the output first: a renamed/deleted source must not leave a stale bundle that the runtime
+        // auto-scan keeps loading (duplicate-name page failure)
+        if (outputDir.exists())
+            deleteRecursively(outputDir.toPath());
+        if (sourceDir == null || !sourceDir.isDirectory()) {
+            getLog().debug("web-compile: no " + sourceDir + ", nothing to compile");
+            return null;
+        }
+        Files.createDirectories(workDir.toPath());
+        Files.createDirectories(outputDir.toPath());
+
+        File esbuild = resolveEsbuildBinary();
+        File reactShim = extractResource("shims/react.js", new File(workDir, "react.js"));
+        File reactDomShim = extractResource("shims/react-dom-client.js", new File(workDir, "react-dom-client.js"));
+        File reactDomBareShim = extractResource("shims/react-dom.js", new File(workDir, "react-dom.js"));
+        File jsxRuntimeShim = extractResource("shims/react-jsx-runtime.js", new File(workDir, "react-jsx-runtime.js"));
+        Map<String, File> mvnpmPackages = extractMvnpmNodeModules(new File(workDir, "node_modules")); // org.mvnpm:* deps -> bundlable packages
+
+        Path originalRoot = sourceDir.toPath().toAbsolutePath();
+        List<String> bundleNames = new ArrayList<>();
+        if (!hasEntries(originalRoot)) {
+            getLog().info("web-compile: no entry files under " + originalRoot);
+            return bundleNames;
+        }
+
+        // React Compiler (auto-memoization) runs — like the no-build in-browser .jsx tier — whenever the module
+        // has JSX (a .jsx/.tsx source); a component that violates the rules of React bails out untouched, so it
+        // is always safe. A module with only plain .js/.ts (JSX only reaches the build tier through a .jsx/.tsx
+        // extension) skips it, and with it GraalJS and the Java-17 build-JVM requirement.
+        Path srcRoot = hasJsx(originalRoot)
+                ? runReactCompiler(originalRoot) // transformed mirror: ALL sources (incl. lib/) pass through the compiler
+                : originalRoot;
+        Path libDir = srcRoot.resolve("lib");
+        List<Path> entries;
+        try (Stream<Path> walk = Files.walk(srcRoot)) {
+            entries = walk.filter(Files::isRegularFile)
+                    .filter(CompileWebMojo::isCompilable)
+                    .filter(p -> !p.startsWith(libDir))
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+
+        Map<String, Path> stems = new java.util.HashMap<>();
+        for (Path entry : entries) {
+            String stem = stemOf(srcRoot.relativize(entry));
+            // case-insensitive clash key: Order.jsx vs order.jsx would silently overwrite on win/mac filesystems
+            Path clash = stems.put(stem.toLowerCase(Locale.ROOT), entry);
+            if (clash != null)
+                throw new MojoExecutionException("output name collision: '" + stem + ".js' from both "
+                        + srcRoot.relativize(clash) + " and " + srcRoot.relativize(entry));
+            File wrapper = new File(workDir, "entry_" + stem + ".js");
+            // register every named export (except default) of the entry at load time; the entry's own
+            // imports (react -> shim, helpers from js/lib) are bundled in. esbuild keeps namespace keys.
+            // per-name catch: one duplicate must not silently abort the bundle's remaining registrations
+            String wrapperJs = "import * as __m from " + jsString(entry.toString()) + ";\n"
+                    + "Object.keys(__m).forEach(function (k) { if (k === 'default') return; try { window.lsfusion.custom.register(k, __m[k]); } catch (e) { console.error(e); } });\n";
+            Files.write(wrapper.toPath(), wrapperJs.getBytes(StandardCharsets.UTF_8));
+
+            File out = new File(outputDir, stem + ".js");
+            List<String> cmd = new ArrayList<>();
+            cmd.add(esbuild.getAbsolutePath());
+            cmd.add(wrapper.getAbsolutePath());
+            cmd.add("--bundle");
+            cmd.add("--format=iife");
+            cmd.add("--jsx=transform");
+            cmd.add("--loader:.js=jsx"); // allow JSX in plain .js (esbuild otherwise rejects it)
+            // url() assets (fonts/images) referenced from imported CSS: INLINE them into the extracted .css as data URLs,
+            // so the compiled stylesheet is self-contained and served as one registered resource (the platform publishes
+            // only registered resources, not arbitrary sibling files; esbuild has no default loader for these binary types)
+            for (String ext : new String[]{"woff", "woff2", "ttf", "eot", "otf", "svg", "png", "jpg", "jpeg", "gif", "webp"})
+                cmd.add("--loader:." + ext + "=dataurl");
+            if (reactExternal) {
+                cmd.add("--alias:react=" + reactShim.getAbsolutePath());
+                cmd.add("--alias:react-dom/client=" + reactDomShim.getAbsolutePath());
+                cmd.add("--alias:react-dom=" + reactDomBareShim.getAbsolutePath());
+                // a 'react' alias rewrites the subpath react/jsx-runtime -> react.js/jsx-runtime, so the
+                // automatic JSX runtime (used by many third-party packages) needs its own alias
+                cmd.add("--alias:react/jsx-runtime=" + jsxRuntimeShim.getAbsolutePath());
+                cmd.add("--alias:react/jsx-dev-runtime=" + jsxRuntimeShim.getAbsolutePath());
+                // preamble: install the CUSTOM REACT hooks (window.lsfusion.List / useForm*) BEFORE this bundle's
+                // module body runs, so a module-top `const List = window.lsfusion.List` alias resolves. The impl is
+                // defined by lsfusion-custom-registry.js (loaded earlier); installed here against the now-final
+                // window.React (any app React override at a less-negative order has already run by bundle order 100).
+                cmd.add("--banner:js=if(window.lsfusion&&window.lsfusion.__installReactHooks)window.lsfusion.__installReactHooks();");
+            }
+            // compiled components import { c } from the memo-cache runtime: target 18 emits the
+            // react-compiler-runtime polyfill package name, react 19 style is react/compiler-runtime — alias both to the vendored MIT polyfill
+            String rcRuntime = extractResource("shims/react-compiler-runtime.js", new File(workDir, "react-compiler-runtime.js")).getAbsolutePath();
+            cmd.add("--alias:react-compiler-runtime=" + rcRuntime);
+            cmd.add("--alias:react/compiler-runtime=" + rcRuntime);
+            for (Map.Entry<String, File> pkg : mvnpmPackages.entrySet()) // bare imports declared as org.mvnpm Maven deps
+                cmd.add("--alias:" + pkg.getKey() + "=" + pkg.getValue().getAbsolutePath());
+            if (minify)
+                cmd.add("--minify");
+            cmd.add("--outfile=" + out.getAbsolutePath());
+            runEsbuild(cmd);
+
+            File cssOut = new File(outputDir, stem + ".css");
+            if (cssOut.exists()) // esbuild extracts imported CSS to a sibling file; the runtime auto-scan (SystemEvents) auto-loads web/.compiled/*.css too
+                getLog().info("web-compile: " + srcRoot.relativize(entry) + " -> web/.compiled/" + stem + ".css");
+
+            bundleNames.add("web/.compiled/" + stem + ".js");
+            getLog().info("web-compile: " + srcRoot.relativize(entry) + " -> web/.compiled/" + stem + ".js");
+        }
+
+        String manifest = "{\"bundles\":["
+                + bundleNames.stream().map(CompileWebMojo::jsString).collect(Collectors.joining(","))
+                + "]}";
+        Files.write(new File(outputDir, "manifest.json").toPath(), manifest.getBytes(StandardCharsets.UTF_8));
+
+        return bundleNames;
+    }
+
+    private static final String ESBUILD_GROUP = "org.mvnpm.at.esbuild";
+
+    // the esbuild binary ships inside the org.mvnpm.at.esbuild:<platform> jar on Maven Central (the mvnpm
+    // mirror of the npm @esbuild packages), so nothing is hosted in our repos: resolve the os-matched jar into
+    // ~/.m2 (offline -o works once cached), pin its sha256 and extract the executable into workDir.
+    private File resolveEsbuildBinary() throws MojoExecutionException, IOException {
+        String platform = osArch();
+        File jar = resolveEsbuildJar(platform);
+        verifyEsbuildSha256(jar, esbuildVersion, platform);
+        return extractEsbuildExecutable(jar, new File(workDir, platform.startsWith("win32") ? "esbuild.exe" : "esbuild"));
+    }
+
+    private File resolveEsbuildJar(String platform) throws MojoExecutionException {
+        try {
+            ArtifactRequest request = new ArtifactRequest(
+                    new DefaultArtifact(ESBUILD_GROUP, platform, null, "jar", esbuildVersion),
+                    remoteRepos, null);
+            return repoSystem.resolveArtifact(repoSession, request).getArtifact().getFile();
+        } catch (ArtifactResolutionException e) {
+            throw new MojoExecutionException("cannot resolve the esbuild binary " + ESBUILD_GROUP + ":" + platform
+                    + ":" + esbuildVersion + " from Maven Central (in offline mode, prefetch it once online)", e);
+        }
     }
 
     private void runEsbuild(List<String> cmd) throws MojoExecutionException, IOException, InterruptedException {
@@ -259,16 +276,11 @@ public class CompileWebMojo extends AbstractMojo {
     }
 
     // transform every compilable source through babel-plugin-react-compiler into a mirror tree (relative
-    // imports keep resolving), which then serves as the bundling root. Runner = a self-contained .cjs
-    // (babel core + the compiler plugin bundled by esbuild), executed with Node (system if on PATH, else a
-    // pinned Node downloaded and cached by resolveNode).
+    // imports keep resolving), which then serves as the bundling root. The transform runs IN-PROCESS on GraalJS
+    // (a vendored babel-standalone + compiler-plugin + autoMemo bundle, see bin/build-rc-graal.mjs) — no Node,
+    // no external toolchain beyond the esbuild binary.
     private Path runReactCompiler(Path srcRoot) throws MojoExecutionException, IOException, InterruptedException {
-        File runner = reactCompilerRunner; // optional override (e.g. testing a rebuilt runner); default = the vendored one
-        if (runner == null)
-            runner = extractResource("rc/rc-runner.cjs", new File(workDir, "rc-runner.cjs"));
-        else if (!runner.isFile())
-            throw new MojoExecutionException("reactCompilerRunner not found: " + runner);
-        String nodeExe = resolveNode();
+        checkRcJavaVersion(); // BEFORE any org.graalvm class is touched, so an old JVM gets guidance, not an UnsupportedClassVersionError
         Path mirror = new File(workDir, "rc-src").toPath();
         if (Files.exists(mirror))
             deleteRecursively(mirror);
@@ -280,21 +292,9 @@ public class CompileWebMojo extends AbstractMojo {
             Path out = mirror.resolve(srcRoot.relativize(src));
             Files.createDirectories(out.getParent());
             if (isCompilable(src)) {
-                ProcessBuilder pb = new ProcessBuilder(nodeExe, runner.getAbsolutePath(),
-                        src.toString(), out.toString(), reactCompilerTarget);
-                pb.redirectErrorStream(true);
-                Process p;
-                try {
-                    p = pb.start();
-                } catch (IOException e) {
-                    throw new MojoExecutionException("failed to start Node (" + nodeExe + ") for the React Compiler pass", e);
-                }
-                String output;
-                try (InputStream is = p.getInputStream()) {
-                    output = new String(readAll(is), StandardCharsets.UTF_8);
-                }
-                if (p.waitFor() != 0)
-                    throw new MojoExecutionException("react-compiler failed on " + srcRoot.relativize(src) + ":\n" + output);
+                String transformed = rcTransform(new String(Files.readAllBytes(src), StandardCharsets.UTF_8),
+                        src.getFileName().toString(), srcRoot.relativize(src).toString());
+                Files.write(out, transformed.getBytes(StandardCharsets.UTF_8));
             } else
                 Files.copy(src, out, StandardCopyOption.REPLACE_EXISTING);
         }
@@ -302,189 +302,49 @@ public class CompileWebMojo extends AbstractMojo {
         return mirror;
     }
 
-    // Node command for the React Compiler pass: system `node` if it is on PATH, otherwise a pinned, checksum-verified
-    // Node downloaded once and cached (so reactCompiler "just works" without a manual install). Honours Maven offline
-    // mode: with -o we never reach the network — if Node is neither on PATH nor already cached, fail with guidance.
-    private String resolveNode() throws MojoExecutionException, IOException {
-        if (node != null)
-            return node;
-        if (nodeOnPath()) {
-            node = "node";
-            getLog().debug("web-compile: using Node from PATH");
-        } else {
-            node = downloadNode().getAbsolutePath();
+    // any compilable public entry under the source root (outside lib/)? — nothing to compile at all otherwise
+    private boolean hasEntries(Path root) throws IOException {
+        Path libDir = root.resolve("lib");
+        try (Stream<Path> walk = Files.walk(root)) {
+            return walk.filter(Files::isRegularFile)
+                    .filter(CompileWebMojo::isCompilable)
+                    .anyMatch(p -> !p.startsWith(libDir));
         }
-        return node;
     }
 
-    private boolean nodeOnPath() {
+    // any JSX source (.jsx/.tsx) anywhere under the root, lib/ included? — checked on the ORIGINAL tree (the
+    // React Compiler mirror has the same structure), before that compiler and its Java-17 requirement engage
+    private static boolean hasJsx(Path root) throws IOException {
+        try (Stream<Path> walk = Files.walk(root)) {
+            return walk.filter(Files::isRegularFile).anyMatch(p -> {
+                String n = p.getFileName().toString();
+                return n.endsWith(".jsx") || n.endsWith(".tsx");
+            });
+        }
+    }
+
+    // The React Compiler runs on GraalJS, whose 23.x classfiles need Java 17; the guard turns what would be a
+    // bare UnsupportedClassVersionError on an older Maven JVM into actionable guidance. Uses only java.lang so
+    // the check itself cannot trip over the Graal classes it is guarding.
+    private static void checkRcJavaVersion() throws MojoExecutionException {
+        String spec = System.getProperty("java.specification.version", "");
+        int major;
         try {
-            Process p = new ProcessBuilder("node", "--version").redirectErrorStream(true).start();
-            try (InputStream is = p.getInputStream()) { readAll(is); } // drain so the child can exit
-            return p.waitFor() == 0;
-        } catch (IOException e) {
-            return false; // not on PATH
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return false;
+            major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec); // "1.8" -> 8, "17" -> 17
+        } catch (NumberFormatException e) {
+            return; // unrecognized scheme: don't block, let class loading decide
         }
+        if (major < 17)
+            throw new MojoExecutionException("compiling src/main/web requires the build to run on Java 17+ (the React Compiler runs on GraalJS); current JVM is "
+                    + System.getProperty("java.version") + " — build on Java 17+, or set -Dlsfusion.web.skip=true to skip the web compile");
     }
 
-    // download the pinned Node distribution for this OS/arch (cached across builds under ~/.m2 so a CI ~/.m2 cache
-    // restore covers it), verify its sha256, and extract just the `node` executable.
-    private File downloadNode() throws MojoExecutionException, IOException {
-        String osArch = nodeOsArch();
-        boolean win = osArch.startsWith("win");
-        String dirName = "node-v" + nodeVersion + "-" + osArch;
-        String archive = dirName + (win ? ".zip" : ".tar.gz");
-        File cacheDir = new File(nodeCacheBase(), nodeVersion + "-" + osArch);
-        File nodeBin = new File(cacheDir, win ? "node.exe" : "node");
-        if (nodeBin.isFile())
-            return nodeBin; // already cached from a previous build
-
-        if (repoSession != null && repoSession.isOffline())
-            throw new MojoExecutionException("reactCompiler=true needs Node, but it is not on PATH and not cached, and the build is offline (mvn -o). "
-                    + "Install Node on PATH, or run one online build to cache the pinned Node " + nodeVersion + ".");
-
-        Files.createDirectories(cacheDir.toPath());
-        Files.createDirectories(workDir.toPath());
-        File archiveFile = new File(workDir, archive);
-        String base = nodeDownloadRoot.endsWith("/") ? nodeDownloadRoot : nodeDownloadRoot + "/";
-        String url = base + "v" + nodeVersion + "/" + archive;
-        getLog().info("web-compile: Node " + nodeVersion + " not on PATH; downloading " + url);
-        download(url, archiveFile);
-        verifyNodeSha256(archiveFile, osArch);
-        extractNodeBinary(archiveFile, dirName, win, nodeBin);
-        getLog().info("web-compile: cached Node at " + nodeBin);
-        return nodeBin;
+    private String rcTransform(String source, String fileName, String displayName) throws MojoExecutionException, InterruptedException {
+        // all Graal-typed machinery lives in RcEngine, loaded only here — after checkRcJavaVersion has passed
+        return RcEngine.transform(source, fileName, reactCompilerTarget, displayName);
     }
 
-    // persistent cache: ~/.m2/lsfusion/node (sibling of the local repository, so a CI ~/.m2 cache restore keeps it);
-    // falls back to ~/.lsfusion/node if the local repository base is unavailable.
-    private File nodeCacheBase() {
-        try {
-            File base = repoSession.getLocalRepository().getBasedir(); // ~/.m2/repository
-            if (base != null && base.getParentFile() != null)
-                return new File(base.getParentFile(), "lsfusion/node");
-        } catch (Exception ignore) { /* fall through */ }
-        return new File(System.getProperty("user.home", "."), ".lsfusion/node");
-    }
-
-    private void download(String url, File target) throws MojoExecutionException, IOException {
-        java.net.URLConnection conn;
-        try {
-            conn = new java.net.URL(url).openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(120000);
-            Files.createDirectories(target.toPath().getParent());
-            try (InputStream is = conn.getInputStream()) {
-                Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException e) {
-            throw new MojoExecutionException("failed to download Node from " + url
-                    + " (set -Dlsfusion.node.downloadRoot to a reachable mirror, or install Node on PATH)", e);
-        }
-    }
-
-    // supply-chain pin: the downloaded archive must match the sha256 committed in the plugin source (node/SHA256SUMS)
-    private void verifyNodeSha256(File file, String osArch) throws MojoExecutionException, IOException {
-        String key = nodeVersion + "-" + osArch, expected = null;
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("node/SHA256SUMS")) {
-            if (is != null)
-                for (String line : new String(readAll(is), StandardCharsets.UTF_8).split("\n")) {
-                    String[] parts = line.trim().split("\\s+");
-                    if (parts.length == 2 && parts[1].equals(key))
-                        expected = parts[0];
-                }
-        }
-        if (expected == null)
-            throw new MojoExecutionException("no sha256 entry for node " + key + " in node/SHA256SUMS (add it when changing nodeVersion)");
-        String actual;
-        try {
-            actual = toHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file.toPath())));
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new MojoExecutionException("SHA-256 unavailable", e);
-        }
-        if (!actual.equals(expected))
-            throw new MojoExecutionException("node archive sha256 mismatch for " + key + ": expected " + expected + ", got " + actual);
-    }
-
-    // extract just the node executable from the distribution archive: dirName/node.exe (zip, Windows) or
-    // dirName/bin/node (tar.gz, Linux/macOS). The node binary is self-contained; nothing else from the dist is needed.
-    // Written to a unique temp file then atomically moved into place, so a partial/torn binary is never seen or
-    // executed — an interrupted extraction self-heals, and concurrent modules (mvn -T) can't observe a half-written file.
-    private void extractNodeBinary(File archive, String dirName, boolean win, File nodeBin) throws MojoExecutionException, IOException {
-        Files.createDirectories(nodeBin.toPath().getParent());
-        if (nodeBin.isFile())
-            return; // already published by a concurrent module since downloadNode last checked
-        File tmp = File.createTempFile("node-", win ? ".exe" : ".bin", nodeBin.getParentFile());
-        try {
-            boolean found = false;
-            if (win) {
-                try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive)) {
-                    java.util.zip.ZipEntry e = zip.getEntry(dirName + "/node.exe");
-                    if (e != null) {
-                        try (InputStream is = zip.getInputStream(e)) {
-                            Files.copy(is, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        found = true;
-                    }
-                }
-            } else {
-                String entryName = dirName + "/bin/node";
-                try (GZIPInputStream gz = new GZIPInputStream(Files.newInputStream(archive.toPath()))) {
-                    byte[] header = new byte[512];
-                    while (readFully(gz, header)) {
-                        boolean zero = true;
-                        for (byte b : header) if (b != 0) { zero = false; break; }
-                        if (zero) break; // a zero block terminates the archive
-                        String name = cString(header, 0, 100);
-                        String prefix = cString(header, 345, 155); // ustar long-path prefix
-                        if (!prefix.isEmpty())
-                            name = prefix + "/" + name;
-                        long size = parseOctal(header, 124, 12);
-                        char type = (char) header[156];
-                        long pad = (512 - (size % 512)) % 512;
-                        if ((type == '0' || type == ' ') && name.equals(entryName)) {
-                            try (java.io.OutputStream os = Files.newOutputStream(tmp.toPath())) {
-                                copyN(gz, os, size);
-                            }
-                            found = true;
-                            break;
-                        }
-                        skipN(gz, size + pad);
-                    }
-                }
-            }
-            if (!found)
-                throw new MojoExecutionException("node executable not found in " + archive.getName());
-            if (!win && !tmp.setExecutable(true, false)) // chmod BEFORE publishing, so the visible file is runnable
-                getLog().warn("could not chmod +x " + tmp);
-            try {
-                Files.move(tmp.toPath(), nodeBin.toPath(), StandardCopyOption.ATOMIC_MOVE);
-            } catch (java.nio.file.FileAlreadyExistsException e) {
-                // a concurrent module published it first; its file is complete (atomic) — keep that one, drop ours
-            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
-                Files.move(tmp.toPath(), nodeBin.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            }
-        } finally {
-            Files.deleteIfExists(tmp.toPath());
-        }
-    }
-
-    // Node's distribution archive naming differs from esbuild's: "darwin"/"win" and .tar.gz/.zip (not .tar.xz: the
-    // JDK has no XZ, but gzip + a small ustar reader suffice for the node binary).
-    private static String nodeOsArch() throws MojoExecutionException {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
-        String a = (arch.contains("aarch64") || arch.contains("arm64")) ? "arm64" : "x64";
-        if (os.contains("linux")) return "linux-" + a;
-        if (os.contains("mac") || os.contains("darwin")) return "darwin-" + a;
-        if (os.contains("win")) return "win-x64"; // Windows-on-ARM runs the x64 build via emulation
-        throw new MojoExecutionException("unsupported OS for node download: " + os + " " + arch);
-    }
-
-    // ===== mvnpm: materialize the project's org.mvnpm* dependencies (the Maven Central mirror of npm) into
+    // ===== mvnpm: materialize the supplied org.mvnpm* dependency jars (the Maven Central mirror of npm) into
     // workDir/node_modules, so a third-party library is added by ONE Maven coordinate (org.mvnpm:<pkg> or
     // org.mvnpm.at.<scope>:<name>) + an import - resolved offline from ~/.m2 by Maven (incl. the transitive npm
     // graph the mvnpm poms declare), no npm / no live npm registry. esbuild then bundles the bare imports.
@@ -494,6 +354,16 @@ public class CompileWebMojo extends AbstractMojo {
         Map<String, File> packages = new LinkedHashMap<>();
         if (nodeModules.exists())
             deleteRecursively(nodeModules.toPath()); // a package removed from the pom must not linger
+        for (File jar : getMvnpmJars()) {
+            String name = extractMvnpmJar(jar, nodeModules);
+            if (name != null)
+                packages.put(name, new File(nodeModules, name));
+        }
+        return packages;
+    }
+
+    private List<File> getMvnpmJars() throws MojoExecutionException {
+        List<File> jars = new ArrayList<>();
         for (Artifact artifact : project.getArtifacts()) {
             String gid = artifact.getGroupId();
             if (!gid.equals("org.mvnpm") && !gid.startsWith("org.mvnpm."))
@@ -501,11 +371,9 @@ public class CompileWebMojo extends AbstractMojo {
             File jar = artifact.getFile();
             if (jar == null || !jar.isFile())
                 throw new MojoExecutionException("unresolved mvnpm artifact: " + artifact);
-            String name = extractMvnpmJar(jar, nodeModules);
-            if (name != null)
-                packages.put(name, new File(nodeModules, name));
+            jars.add(jar);
         }
-        return packages;
+        return jars;
     }
 
     // an mvnpm jar holds one npm package under META-INF/resources/_static/<path>/<version>/ (package.json at that
@@ -630,25 +498,26 @@ public class CompileWebMojo extends AbstractMojo {
         }
     }
 
-    private static final String ESBUILD_GROUP = "org.mvnpm.at.esbuild";
-
-    // the esbuild binary ships inside the org.mvnpm.at.esbuild:<platform> jar on Maven Central (the mvnpm
-    // mirror of the npm @esbuild packages), so nothing is hosted in our repos: the Mojo resolves the
-    // os-matched jar into ~/.m2 (offline -o works once cached), pins its sha256, and extracts the executable.
-    private File resolveEsbuild() throws MojoExecutionException, IOException {
-        String platform = osArch();
-        File jar;
-        try {
-            ArtifactRequest request = new ArtifactRequest(
-                    new DefaultArtifact(ESBUILD_GROUP, platform, null, "jar", esbuildVersion),
-                    remoteRepos, null);
-            jar = repoSystem.resolveArtifact(repoSession, request).getArtifact().getFile();
-        } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("cannot resolve the esbuild binary " + ESBUILD_GROUP + ":" + platform
-                    + ":" + esbuildVersion + " from Maven Central (in offline mode, prefetch it once online)", e);
+    // supply-chain pin: the esbuild binary jar must match the sha256 committed in the vendored resource (esbuild/SHA256SUMS)
+    private static void verifyEsbuildSha256(File file, String esbuildVersion, String classifier) throws MojoExecutionException, IOException {
+        String key = esbuildVersion + "-" + classifier, expected = null;
+        try (InputStream is = CompileWebMojo.class.getClassLoader().getResourceAsStream("esbuild/SHA256SUMS")) {
+            if (is != null)
+                for (String line : new String(readAll(is), StandardCharsets.UTF_8).split("\n")) {
+                    String[] parts = line.trim().split("\\s+");
+                    if (parts.length == 2 && parts[1].equals(key))
+                        expected = parts[0];
+                }
         }
-        verifySha256(jar, platform);
-        File target = new File(workDir, platform.startsWith("win32") ? "esbuild.exe" : "esbuild");
+        if (expected == null)
+            throw new MojoExecutionException("no sha256 entry for esbuild " + key + " in SHA256SUMS (add it when deploying the binary artifact)");
+        String actual = sha256Hex(file);
+        if (!actual.equals(expected))
+            throw new MojoExecutionException("esbuild binary sha256 mismatch for " + key + ": expected " + expected + ", got " + actual);
+    }
+
+    /** find the esbuild executable inside the org.mvnpm.at.esbuild jar, extract it to target and chmod +x */
+    private File extractEsbuildExecutable(File jar, File target) throws MojoExecutionException, IOException {
         Files.createDirectories(target.toPath().getParent());
         try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar)) {
             java.util.zip.ZipEntry bin = null;
@@ -667,27 +536,12 @@ public class CompileWebMojo extends AbstractMojo {
         return target;
     }
 
-    // supply-chain pin: the resolved binary must match the sha256 committed in the plugin source (SHA256SUMS)
-    private void verifySha256(File file, String classifier) throws MojoExecutionException, IOException {
-        String key = esbuildVersion + "-" + classifier, expected = null;
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("esbuild/SHA256SUMS")) {
-            if (is != null)
-                for (String line : new String(readAll(is), StandardCharsets.UTF_8).split("\n")) {
-                    String[] parts = line.trim().split("\\s+");
-                    if (parts.length == 2 && parts[1].equals(key))
-                        expected = parts[0];
-                }
-        }
-        if (expected == null)
-            throw new MojoExecutionException("no sha256 entry for esbuild " + key + " in SHA256SUMS (add it when deploying the binary artifact)");
-        String actual;
+    private static String sha256Hex(File file) throws IOException {
         try {
-            actual = toHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file.toPath())));
+            return toHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file.toPath())));
         } catch (java.security.NoSuchAlgorithmException e) {
-            throw new MojoExecutionException("SHA-256 unavailable", e);
+            throw new RuntimeException("SHA-256 unavailable", e);
         }
-        if (!actual.equals(expected))
-            throw new MojoExecutionException("esbuild binary sha256 mismatch for " + key + ": expected " + expected + ", got " + actual);
     }
 
     private static String toHex(byte[] bytes) {
@@ -697,7 +551,7 @@ public class CompileWebMojo extends AbstractMojo {
     }
 
     private File extractResource(String resource, File target) throws MojoExecutionException, IOException {
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(resource)) {
+        try (InputStream is = CompileWebMojo.class.getClassLoader().getResourceAsStream(resource)) {
             if (is == null)
                 throw new MojoExecutionException("bundled resource not found: " + resource);
             Files.createDirectories(target.toPath().getParent());
@@ -742,7 +596,8 @@ public class CompileWebMojo extends AbstractMojo {
         throw new MojoExecutionException("unsupported OS for esbuild: " + os + " " + arch);
     }
 
-    private static byte[] readAll(InputStream is) throws IOException {
+    // read the whole stream into a byte[]; also used by RcEngine to slurp the vendored rc-graal.cjs bundle
+    static byte[] readAll(InputStream is) throws IOException {
         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
         byte[] buf = new byte[8192];
         int n;
@@ -755,5 +610,14 @@ public class CompileWebMojo extends AbstractMojo {
             for (Path p : walk.sorted(Comparator.reverseOrder()).collect(Collectors.toList()))
                 Files.delete(p); // propagate: a silently-undeleted file means stale output on the classpath
         }
+    }
+
+    private void addGeneratedResource() {
+        for (Resource r : project.getResources())
+            if (generatedRoot.getAbsolutePath().equals(new File(r.getDirectory()).getAbsolutePath()))
+                return;
+        Resource resource = new Resource();
+        resource.setDirectory(generatedRoot.getAbsolutePath());
+        project.addResource(resource);
     }
 }

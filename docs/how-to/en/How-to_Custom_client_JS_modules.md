@@ -15,7 +15,7 @@ A _src/main/web/lib_ subfolder is treated as shared helper code: its files are n
 
 ### Without the build
 
-A project with no build set up — no `node`, no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file under _src/main/resources/web_, used as written: no bundling, no JSX, no third-party-library resolution. (This is also the path `eval` uses.) A React view is therefore written with `React.createElement` against the platform-provided `window.React` instead of JSX, and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
+A project with no build set up — no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file under _src/main/resources/web_, used as written: no bundling, no JSX, no third-party-library resolution. (This is also the path `eval` uses.) A React view is therefore written with `React.createElement` against the platform-provided `window.React` instead of JSX, and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
 
 ```js
 function HelloBoard(props) {
@@ -115,21 +115,11 @@ onWebClientInit() + {
 
 ### React Compiler
 
-By default the source is bundled as written. The optional **React Compiler** pass is general automatic memoization of React components — it stands in for hand-written `useMemo` / `useCallback` / `React.memo`. It is enabled per application by configuring the build plugin:
+A module's JSX (any _.jsx_ or _.tsx_ source) is run through the **React Compiler**, general automatic memoization of React components that stands in for hand-written `useMemo` / `useCallback` / `React.memo`. It runs whenever the module has JSX — the same as the no-build _.jsx_ tier — and a component that violates the rules of React is left untouched, so it needs no configuration. A module with only plain _.js_/_.ts_ sources is bundled without it.
 
-```xml
-<plugin>
-    <groupId>lsfusion.platform.build</groupId>
-    <artifactId>web-compile-maven-plugin</artifactId>
-    <configuration>
-        <reactCompiler>true</reactCompiler>
-    </configuration>
-</plugin>
-```
+Like plain bundling, this pass needs no Node and no other external toolchain: the compiler (Babel with `babel-plugin-react-compiler`) is vendored with the build plugin and runs in-process on the JVM. It is a build-time step only — a runtime / deploy box is unaffected. A module with JSX does require the build JVM to be Java 17 or newer; on an older JVM it fails with that guidance — a _.js_/_.ts_-only module builds regardless, or set `-Dlsfusion.web.skip=true` to skip the web compile entirely. An offline build (`mvn -o`) works as usual.
 
-Unlike plain bundling — which uses the esbuild native binary and needs no Node — this pass runs through Node, which the build **acquires automatically**: it uses Node from `PATH` if present, otherwise it downloads a pinned, checksum-verified Node once and caches it (under _~/.m2_, so later builds and a CI _~/.m2_ cache reuse it). So enabling the flag is enough — no manual Node install on developer machines or CI. The exception is an **offline build** (`mvn -o`), which never downloads: if Node is then neither on `PATH` nor cached, it fails with guidance (install Node, or run one online build to seed the cache). Node is a build-time dependency only — a runtime / deploy box never needs it. (The plugin's `nodeVersion`, and `nodeDownloadRoot` for a mirror, are overridable if needed.)
-
-It is **off by default, and most applications do not need it**: the common large-grid performance case — re-rendering only the rows that actually changed — is already handled by [`window.lsfusion.List`](How-to_Custom_React_views.md), independently of this pass, and `List` stays the right tool for it whether or not the compiler is on. Turn `reactCompiler` on when a custom React view itself has enough derived values, callbacks, or nested subtrees to benefit from general auto-memoization.
+The pass is not a substitute for [`window.lsfusion.List`](How-to_Custom_React_views.md): the common large-grid performance case — re-rendering only the rows that actually changed — is handled by `List` independently.
 
 ### Example
 
@@ -163,7 +153,7 @@ Recommended styling:
 
 For a full styling system beyond static class names, a **runtime CSS-in-JS** library (such as `styled-components` or `@emotion`) works as an ordinary `org.mvnpm` dependency: it is bundled with the module and injects its styles at runtime. Use the `styled` API or `className={css(...)}`; Emotion's `css` *prop* (`<div css={...} />`) needs a JSX transform that the build does not run, so it is not available.
 
-CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — plain bundling runs the esbuild binary only, with no Node or plugin phase (the optional React Compiler above is the only step that uses Node). Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for; if you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
+CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — plain bundling runs the esbuild binary only, with no Node or plugin phase. Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for; if you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
 
 A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](../language/INTERNAL_operator.md) action, like the CSS of a classic custom component (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
 

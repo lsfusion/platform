@@ -14,7 +14,7 @@
     <artifactId>web-compile-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Web Compile Maven Plugin</name>
-    <description>Compiles a logic module's src/main/web/** sources into classpath web/.compiled/*.js bundles via the esbuild native binary, resolved as an os-matched Maven artifact (no Node on the default path; the optional React Compiler pass acquires Node automatically).</description>
+    <description>Compiles a logic module's src/main/web/** sources into classpath web/.compiled/*.js bundles via the esbuild native binary, resolved as an os-matched Maven artifact (no Node anywhere; the optional React Compiler pass runs in-process on GraalJS).</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -24,6 +24,13 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <!-- in-process JS engine for the optional React Compiler pass (evaluates the vendored
+                 rc/rc-graal.cjs bundle, see RcEngine) - works on any stock JDK (interpreted Truffle) -->
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+            <version>23.0.6</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
