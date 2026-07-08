@@ -63,9 +63,15 @@ function pushNotification(client, actionResult) {
                 'Need-Notification-Id' : 'TRUE'
             }
         }).then(response => {
+            if(!response.ok)
+                return Promise.reject(new Error('notification-id http ' + response.status));
             return response.text();
         }).then(text => {
-            pushNotificationId(client, parseInt(text), actionResult.result);
+            let id = parseInt(text, 10);
+            if(Number.isInteger(id)) // don't execute a garbage id if the body is not a number (e.g. an error / login page)
+                pushNotificationId(client, id, actionResult.result);
+        }).catch(error => {
+            console.error('pushNotification failed', error);
         });
 }
 function pushNotificationId(client, actionId, actionResult) {
