@@ -224,10 +224,6 @@
             <artifactId>jackcess</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.github.spyhunter99</groupId>
             <artifactId>jdbf</artifactId>
         </dependency>

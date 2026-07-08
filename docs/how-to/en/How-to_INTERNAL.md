@@ -76,7 +76,7 @@ EXTEND FORM info
 ;
 ```
 
-The platform will generate the target class, insert the specified code into it and then compile it using the Janino [compiler](https://janino-compiler.github.io/janino/). The advantage of this approach is that building the project does not require a dedicated step for compiling the Java code. However, the approach has a number of significant limitations and can be used only in the simplest cases.
+The platform will generate the target class, insert the specified code into it and then compile it with the Eclipse compiler shipped with the platform. The advantage of this approach is that building the project does not require a dedicated step for compiling the Java code. However, the approach has a number of significant limitations and can be used only in the simplest cases.
 
 ## Example 2
 
@@ -138,6 +138,8 @@ public class CalculateGCD extends InternalAction {
 ```
 
 Values of input properties are read using the `getParam` method, in which the first parameter passed is a 0-based index of the property to be read. This method returns an object of class `Object`, so explicit type casting is required.
+
+The class does not have to be compiled when the project is built: if no compiled `CalculateGCD` is found on the classpath, it is enough to place `CalculateGCD.java` in the application resources — the platform will find the source file and compile it itself when the module is loaded.
 
 ## Example 3
 

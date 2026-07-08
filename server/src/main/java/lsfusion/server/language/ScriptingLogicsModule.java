@@ -154,6 +154,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 import lsfusion.server.physics.dev.integration.external.to.*;
+import lsfusion.server.physics.dev.integration.internal.to.InternalCompiler;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
@@ -164,7 +165,6 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.codehaus.janino.SimpleCompiler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.mail.Message;
@@ -1947,9 +1947,22 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LA addScriptedInternalAction(String javaClassName, ImList<ValueClass> paramClasses, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+        Class<?> javaClass = null;
+        try {
+            javaClass = Class.forName(javaClassName);
+        } catch (ClassNotFoundException e) {
+            String source = findJavaSource(javaClassName);
+            if (source == null)
+                errLog.emitClassSourceNotFoundError(parser, javaClassName);
+            try {
+                javaClass = InternalCompiler.compileCached(javaClassName, source);
+            } catch (Exception ce) {
+                errLog.emitCreatingClassInstanceError(parser, ce.getMessage(), javaClassName);
+            }
+        }
+
         try {
             Object instanceObject = null;
-            Class<?> javaClass = Class.forName(javaClassName);
 
             ValueClass[] params = getParams(paramClasses, false);
 
@@ -1968,12 +1981,17 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ((ExplicitAction) instance).allowNullValue = true;
             }
             return baseLM.addAProp(null, instance);
-        } catch (ClassNotFoundException e) {
-            errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {
             errLog.emitCreatingClassInstanceError(parser, e.getMessage(), javaClassName);
         }
         return null;
+    }
+
+    private static String findJavaSource(String javaClassName) {
+        String source = ResourceUtils.findResourceAsString("/" + javaClassName.replace('.', '/') + ".java", true, false, null, null);
+        if (source == null)
+            source = ResourceUtils.findResourceAsString(javaClassName.substring(javaClassName.lastIndexOf('.') + 1) + ".java", true, false, null, null);
+        return source;
     }
 
     public LA addScriptedInternalAction(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -2006,9 +2024,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     "    }\n" +
                     "}";
 
-            SimpleCompiler sc = new SimpleCompiler();
-            sc.cook(javaClass);
-            Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteAction");
+            Class<?> executeClass = InternalCompiler.compile("ExecuteAction", javaClass);
 
             Action instance = (Action) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
             if (instance instanceof ExplicitAction && allowNullValue) {

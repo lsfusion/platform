@@ -58,7 +58,7 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
 
 - `className`
 
-    [String literal](Literals.md#strliteral). Without `CLIENT` — fully qualified name of a Java class reachable from the application-server classpath; the class must extend `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. With `CLIENT` — name of a client-side resource (resolution rule identical to `execStrExpr` below).
+    [String literal](Literals.md#strliteral). Without `CLIENT` — fully qualified name of a Java class reachable from the application-server classpath; the class must extend `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. If no compiled class with this name is found, the platform looks for a `<ClassName>.java` resource on the classpath — first at the path matching the fully qualified name, then anywhere by file name — and compiles it when the module is loaded. This way custom actions can be shipped as plain source files in the application's resources, without a Java build step in the project. The `package` declared in the source file must match the fully qualified name, and the source is compiled at the Java 8 language level. With `CLIENT` — name of a client-side resource (resolution rule identical to `execStrExpr` below).
 
 - `classId1, ..., classIdN`
 

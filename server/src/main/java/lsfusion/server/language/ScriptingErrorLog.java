@@ -94,6 +94,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "class", name);
     }
 
+    public void emitClassSourceNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("class '%s' is not found (neither compiled on the classpath, nor as a '%s.java' resource)", name, name.substring(name.lastIndexOf('.') + 1)));
+    }
+
     public void emitGroupNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "group", name);
     }
