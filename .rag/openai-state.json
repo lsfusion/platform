@@ -6659,8 +6659,8 @@
       "stale": false
     },
     "language/Properties_and_actions_block.md": {
-      "file_hash": "sha256:850e91a04ddc709dde443e5ca8a7500242010282724ef8824e7b49afde4f582c",
-      "indexed_at": "2026-07-08T10:48:06Z",
+      "file_hash": "sha256:54850d7b5790904987d3c42b79b3120a37a4af8211b3378153d79ada1255c957",
+      "indexed_at": "2026-07-08T14:24:02Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6700,21 +6700,21 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-00": {
-          "file_id": "file-HqrWEYFpUgaEYtmXzaDkWm",
+          "file_id": "file-8mhP2BmRoABTJHz5pZsXmo",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:0cf5ebe19190447ae29f3bcb1391f44876a2978a2d66588ccab02215049e4789",
+          "section_payload_hash": "sha256:c1eb57a29a613c4c0a6f4581d77cbba63286c277460261b71a85dbcb94041956",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-01": {
-          "file_id": "file-EcfmTQP4WsQDS6vjQbzYqd",
+          "file_id": "file-JkyjCkmqeUzinxYGFbD7pM",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:aceff87b2c44bf27ce927e5541b92f33be9e3fbbee4bac97f7459fcfe67492dc",
+          "section_payload_hash": "sha256:b7b43bb24d66ff64970352fb2e41fdf104d7efe2d27e26253c42418be4b66e4e",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-02": {
-          "file_id": "file-LsixYVv9z5ZinBwWj7Qgvd",
+          "file_id": "file-Cfta9sx6rZn3Fi4qBMTKRt",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:cec7f07b012bbf05b2cd8877614d76fbf822bb485c6355783d9117d8cc71de6e",
+          "section_payload_hash": "sha256:8cee7737f4573afc85fbe8ed283c9edf3b18a154ed6104618ffd78a91aa16c66",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::properties-and-actions-block": {
@@ -14415,7 +14415,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "188e41f433bf40910590733c4e37e5ef92089a45",
+  "last_indexed_docs_commit": "81135393d528550a7e4b48d1f8a25492f531c54f",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
