@@ -3,7 +3,6 @@ package lsfusion.gwt.server.convert;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.com.WriteToComPortClientAction;
 import lsfusion.base.file.*;
 import lsfusion.base.net.PingClientAction;
@@ -58,9 +57,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 
@@ -422,7 +419,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GResetWindowsLayoutAction();
     }
 
-    private Map<String, String> fontFamilyMap = new HashMap<>();
 
     public static String convertUrl(String url, Result<String> rFileExtension) {
         int lastDot = url.lastIndexOf(";");
@@ -496,14 +492,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         } else
             resourcePath = (String) resource;
 
-        if(action.isFile && (BaseUtils.equalsIgnoreCase(extension, "ttf") || BaseUtils.equalsIgnoreCase(extension, "otf"))) {
-            String fontFamily = fontFamilyMap.get(resourceName);
-            if(fontFamily == null) {
-                fontFamily = SystemUtils.registerFont(action);
-                fontFamilyMap.put(resourceName, fontFamily);
-            }
-            originalResourceName = fontFamily;
-        }
+        if(action.isFile && (BaseUtils.equalsIgnoreCase(extension, "ttf") || BaseUtils.equalsIgnoreCase(extension, "otf")))
+            originalResourceName = FileUtils.registerWebFont((RawFileData) resource);
 
         return new GClientWebAction(resourcePath, originalResourceName, extension, action.isFile, isFileUrl, values, types, returnType,
                 action.syncType, action.remove);

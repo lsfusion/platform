@@ -12,6 +12,7 @@ import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.client.base.view.ClientColorUtils;
@@ -276,6 +277,16 @@ public class FileUtils {
             resourceName.set(JsxTransformer.toJs(name));
         }
         return saveWebFile(resourceName.result, fileData, settings, noAuth);
+    }
+
+    private static final Map<String, String> fontFamilyMap = new java.util.concurrent.ConcurrentHashMap<>();
+    // register a served font (.ttf/.otf) in the server JVM's graphics environment and return its family name for
+    // the browser's FontFace, caching by the content-addressed id so the same bytes register once but a changed
+    // font (new id, new ?version=) re-registers and reports the new family. The family is the client-facing name
+    // of a font resource on both serving paths; where it flows differs (a page resource's name vs an INTERNAL
+    // CLIENT's original argument), so only this registration is shared, not the surrounding naming.
+    public static String registerWebFont(RawFileData fileData) {
+        return fontFamilyMap.computeIfAbsent(fileData.getID(), k -> SystemUtils.registerFont(fileData));
     }
 
     private final static boolean useDownloadForAppResources = true;

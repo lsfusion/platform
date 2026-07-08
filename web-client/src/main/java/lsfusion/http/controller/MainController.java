@@ -306,15 +306,15 @@ public class MainController {
                 if (extension.equals("html")) { // header markup is inlined, not served as a file
                     url = resourceData.convertString();
                 } else { // js / css / .jsx / font: saveWebFile transforms a .jsx to plain js and renames it, so the
-                    // WebAction and browser see an ordinary script
-                    boolean font = SystemUtils.isFont(extension);
-                    if (font)
-                        resourceName = SystemUtils.registerFont(resourceData);
+                    // WebAction and browser see an ordinary script (WebAction.resource is the served url, resourceName
+                    // the client-facing name — same split as GClientWebAction, so fonts are handled as there:
+                    // serve under the file name, then set resourceName to the registered family for the FontFace)
                     Result<String> rResourceName = new Result<>(resourceName);
                     url = FileUtils.saveWebFile(rResourceName, resourceData, serverSettings, noAuth);
                     resourceName = rResourceName.result;
-                    if (!font) // a .jsx became .js; a font's registered family name carries no extension, keep the original
-                        extension = BaseUtils.getFileExtension(resourceName);
+                    extension = BaseUtils.getFileExtension(resourceName);
+                    if (SystemUtils.isFont(extension))
+                        resourceName = FileUtils.registerWebFont(resourceData);
                 }
             } else { // url
                 Result<String> rExtension = new Result<>();
