@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.set;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -57,7 +58,6 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
 
     // groups should (and only them) contain window interfaces
     private final SelectTop<I> selectTop;
-    private final SelectTop<Interface<I>> mapSelectTop;
 
     public boolean getOrdersNotNull() {
         return ordersNotNull;
@@ -84,7 +84,6 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         assert groupType == GroupType.CONCAT || (whereProp == null && nameProp == null);
 
         this.selectTop = selectTop;
-        this.mapSelectTop = selectTop.mapValues(BaseUtils.<ImMap<I, Interface<I>>>immutableCast(getMergeMapRevInterfaces())::get);
 
         finalizeInit();
     }
@@ -194,7 +193,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         // we do this to make map in all group maps reversable
         if(!selectTop.isEmpty()) {
             joinImplement = joinImplement.mapValues((anInterface, expr) -> {
-                FormulaJoinImpl formula = mapSelectTop.getParamFormula(anInterface);
+                FormulaJoinImpl formula = selectTop.getParamFormula(BaseUtils.<I>immutableCast(anInterface.implement));
                 return (formula != null ? FormulaExpr.create(formula, ListFact.singleton(expr)) : expr);
             });
         }
@@ -217,8 +216,9 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
 
     protected Where getPartitionWhere(Where where, GroupType groupType, ImMap<Interface<I>, Expr> groups, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<Interface<I>, ? extends Expr> joinImplement) {
         if(!selectTop.isEmpty()) {
-            groups = groups.remove(mapSelectTop.getParamsSet());
-            joinImplement = joinImplement.remove(mapSelectTop.getParamsSet());
+            ImSet<Interface<I>> windowInterfaces = getMapInterfaces().filterFnValues(BaseUtils.<FunctionSet<PropertyInterfaceImplement<I>>>immutableCast(selectTop.getParamsSet())).keys();
+            groups = groups.remove(windowInterfaces);
+            joinImplement = joinImplement.remove(windowInterfaces);
         }
         return GroupExpr.create(groups, where.and(groupType.getWhere(exprs).and(AggrExpr.getOrderWhere(orders, ordersNotNull))), joinImplement).getWhere();
     }
