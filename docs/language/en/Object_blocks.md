@@ -352,6 +352,45 @@ FORM printLabel 'Price tag printing'
 ```
   
 
+## Object extension block {#extendobjects}
+
+### Syntax
+
+```
+EXTEND OBJECTS extObjectDecl1, ..., extObjectDeclN
+```
+
+Where each `extObjectDecl` has the following syntax:
+
+```
+[caption =] name objectOptions groupOptions
+```
+
+The object options `objectOptions` and the object group options `groupOptions` are the same as in the [object block](#objects) and are written in the same way.
+
+### Description
+
+The object extension block changes [object groups](../paradigm/Form_structure.md#objects) already added to the form. The specified options are applied to the existing object group in the same way as if they were specified when it was added. In particular, the [`insertPosition`](#insertPosition) option can be used to move an object group within the list of object groups of the form.
+
+### Parameters
+
+- `caption`
+
+    The new caption of the object. [String literal](Literals.md#strliteral). The caption and the object options `objectOptions` are applied only if the object group consists of a single object.
+
+- `name`
+
+    The name of an object or the name of an object group already added to the form. [Simple ID](IDs.md#id).
+
+### Examples
+
+```lsf
+EXTEND FORM items
+    // changing the caption of the object g and moving its group after the products
+    EXTEND OBJECTS 'Product group' = g AFTER i
+;
+```
+
 ## Object tree block {#tree}
 
 ### Syntax
@@ -428,5 +467,35 @@ FORM groups
     TREE groups g1 = Group1, g2 = Group2, g3 = Group3
     PROPERTIES READONLY name(g1), name(g2), name(g3)
     FILTERS in(g1, g2), in(g2, g3)
+;
+```
+
+## Object tree extension block {#extendtree}
+
+### Syntax
+
+```
+EXTEND TREE name [insertPosition]
+```
+
+### Description
+
+The object tree extension block moves an [object tree](../paradigm/Interactive_view.md#tree) already added to the form within the list of object groups of the form. New object groups cannot be added to an existing tree.
+
+### Parameters
+
+- `name`
+
+    The name of the object tree [specified at its declaration](#treeName). [Simple ID](IDs.md#id).
+
+- `insertPosition`
+
+    Specifying the position of the tree in the list of object groups. It has syntax fully analogous to the [same option in the object block](#insertPosition).
+
+### Examples
+
+```lsf
+EXTEND FORM skus
+    EXTEND TREE groupTree LAST // moving the groupTree tree to the end of the object group list
 ;
 ```

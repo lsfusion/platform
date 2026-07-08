@@ -678,3 +678,56 @@ FORM orderReport 'Sales by warehouse'
         HEADER name(c) // setting that the name of the customer will be used as the column heading
 ;
 ```
+
+## Property and action extension block {#extendproperties}
+
+### Syntax
+
+```
+EXTEND PROPERTIES [formPropertyOptions] extPropertyDecl1, ..., extPropertyDeclM
+```
+
+Where each `extPropertyDecl` has the following syntax:
+
+```
+[caption =] formPropertyName [formPropertyOptions]
+```
+
+Where `formPropertyName` is the [name of a property (action) on the form](#name), specified in one of the following ways:
+
+```
+alias
+propertyName(objectName1, ..., objectNameK)
+```
+
+The options `formPropertyOptions` are the same as when adding a property (action) to the form and are written in the same way.
+
+### Description
+
+The property and action extension block changes properties and actions already added to the form structure. The specified options are applied to the existing property (action) in the same way as if they were specified when it was added. The options specified right after the `EXTEND PROPERTIES` keywords are applied to all the properties (actions) listed in the block; if an option is specified both for the entire block and for a specific element, the option value for the element is used.
+
+### Parameters
+
+- `caption`
+
+    The new caption of the property (action) on the form. [String literal](Literals.md#strliteral).
+
+- `alias`
+
+    The name of the property (action) on the form specified explicitly when it was added. [Simple ID](IDs.md#id).
+
+- `propertyName(objectName1, ..., objectNameK)`
+
+    The name of the property (action) on the form formed from the property name and the names of the objects passed to it as parameters. An [object operator](../paradigm/Interactive_view.md#objectoperators) (`NEW`, `EDIT`, `DELETE` and others) can be used instead of the property name.
+
+### Examples
+
+```lsf
+EXTEND FORM items
+    // changing the caption of the property name(g) and prohibiting its editing
+    EXTEND PROPERTIES 'Group name' = name(g) READONLY
+
+    // removing the icons of the buttons added to the form earlier
+    EXTEND PROPERTIES NOIMAGE NEW(i), DELETE(i)
+;
+```

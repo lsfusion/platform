@@ -27,8 +27,11 @@ After the form options, the blocks of the form `formBlock1 ... formBlockN` are d
 ```
 [EXTEND] FORMS formItem1, ..., formItemN
 OBJECTS ... 
+EXTEND OBJECTS ...
 TREE ...
+EXTEND TREE ...
 PROPERTIES ...
+EXTEND PROPERTIES ...
 FILTERS ...
 [EXTEND] FILTERGROUP ...
 ORDERS ...
@@ -142,13 +145,25 @@ The `FORM` statement declares a new form and adds it to the current [module](../
 
     Adds objects to the form. [Object block syntax](Object_blocks.md) .
 
+- `EXTEND OBJECTS ...`
+
+    Modifies the object groups already added to the form (in particular, moves them in the list of object groups). [Syntax of the object extension block](Object_blocks.md#extendobjects).
+
 - `TREE ...`
 
     Adds an object tree to the form. [Syntax of the object tree block](Object_blocks.md#tree).
 
+- `EXTEND TREE ...`
+
+    Moves an object tree already added to the form in the list of object groups. [Syntax of the object tree extension block](Object_blocks.md#extendtree).
+
 - `PROPERTIES ...`
 
     Adds [properties](../paradigm/Properties.md) and [actions](../paradigm/Actions.md) to the form. [Syntax of the property and action block](Properties_and_actions_block.md).
+
+- `EXTEND PROPERTIES ...`
+
+    Modifies the properties and actions already added to the form. [Syntax of the property and action extension block](Properties_and_actions_block.md#extendproperties).
 
 - `FILTERS ...`
 
