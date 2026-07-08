@@ -26,7 +26,7 @@ const total = await controller.form.exec('recalc', orderId);
 
 Rows a classic view receives carry the same `key` and `objects` as React rows (see [Row identity](#row-identity-contract)), so they are accepted by the form-controller methods unchanged. An object group's local `changeProperty` also *delegates*: for a property that is not one of its own columns it is passed to the form controller and resolved form-wide, so the view can change a property it does not display.
 
-An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action is a fourth entry point: its bound JavaScript function receives the form controller as the argument after the call parameters.
+An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action is a fourth entry point: its bound JavaScript function receives the form controller as the argument after the call parameters. The [custom value editor](How-to_Custom_components_properties.md#custom-editor)'s controller (`CHANGE`) also exposes the form controller as its `form` field.
 
 ### The form controller
 

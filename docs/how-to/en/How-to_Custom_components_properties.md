@@ -516,3 +516,72 @@ By setting the _autoSize_ and _width_ attributes, the input component will stret
 The final form will look like this:
 
 ![](../images/How-to_Custom_components_form.png)
+
+### Controller methods {#controller-methods}
+
+The methods of the controller passed to the _update_ function, internal helpers aside (optional arguments are bracketed):
+
+| method | what it does |
+| --- | --- |
+| `change([value])` | pass a value change (see above); with no argument the change action is called without a value |
+| `getValues(value, ok[, fail][, count])` | a server suggestion list for the typed `value` — the same suggestions as when the property is edited normally |
+| `isReadOnly()` | whether the property can be edited: `null` — editable, `false` — read-only, `true` — disabled |
+| `diff(list, fnc[, noDiffObjects][, removeFirst])` | compute the changes of a value array — like the `diff` method in [Custom components (objects)](How-to_Custom_components_objects.md); the items are matched by their `objects` field |
+| `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
+| `form` | the [form controller](How-to_Custom_view_controller.md) |
+
+The `ok` handler of `getValues` receives the result in the same format as the form controller's `getPropertyValues`. The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
+
+### Custom editor {#custom-editor}
+
+By default the value is edited by the property's standard mechanism — a text input, for instance. The `CHANGE` keyword of the [`CUSTOM` value view](../language/Properties_and_actions_block.md) replaces or extends that mechanism with an editor of your own, written in JavaScript:
+
+```lsf
+PROPERTIES(o) address CUSTOM CHANGE 'googleAutocomplete'
+```
+
+The editor function, like the display function, is registered as a wrapper and returns an object of several functions. The editor kind is determined by which rendering function that object contains:
+
+| function | editor |
+| --- | --- |
+| `renderInput(element, controller, value)` | extends the standard text input; `element` is that input itself |
+| `renderDialog(element, controller, value)` | a window editor |
+| `render(element, controller, value)` | an editor replacing the cell content |
+
+`value` is the current property value converted to a JS value. Besides the rendering function, the object may contain:
+
+- `getValue(element)` — returns the value to commit; the string `'canceled'` cancels the edit. For an input editor, when this function is absent, the text of the input itself is taken.
+- `clear(element, cancel)` — cleanup when the edit finishes; `cancel` is true on cancellation.
+- `onBrowserEvent(event, element)` — handling browser events during the edit.
+
+The editor controller provides:
+
+| method | what it does |
+| --- | --- |
+| `commit([value])` | commit the edit: the passed value or, with no argument, the current one (from `getValue` or the input) |
+| `cancel()` | cancel the edit |
+| `setDeferredCommitOnBlur(true)` | defer the commit on focus loss — for picking from a suggestion list rendered outside `element` |
+| `getColorThemeName()` | the current color theme name |
+| `form` | the [form controller](How-to_Custom_view_controller.md) |
+
+The committed value goes through the property's ordinary change channel — the same way as a value entered by the standard editor.
+
+For example, the built-in `googleAutocomplete` editor extends an address input with Google Maps suggestions:
+
+```js
+function googleAutocomplete() {
+    return {
+        renderInput: (element, controller) => {
+            // the suggestion list is rendered outside element, and picking from it ends with a focus loss,
+            // so the commit on focus loss is deferred until the value is set
+            controller.setDeferredCommitOnBlur(true);
+
+            new google.maps.places.Autocomplete(element, { types: ['address'] });
+        },
+        clear: (element, cancel) => {
+            // remove the suggestion list elements added to <body>
+            $(".pac-container").remove();
+        }
+    };
+}
+```

@@ -204,7 +204,7 @@ FOREGROUND foregroundExpr
             Строковый литерал, определяющий имя JavaScript функции, которая отвечает за отображение данных. Эта функция должна находиться в .js файле, включенном в ресурсы проекта и загруженном для использования на клиенте. Она должна возвращать JavaScript объект, который содержит три функции: 
             - `render(element, controller)`
             - `update(element, controller, list, options)`
-            - `clear(element)` (опциональна)
+            - `clear(element, controller)` (опциональна)
           
             Более подробное описание механизма можно прочитать в статье [How-to: Пользовательские компоненты (объекты)](../how-to/How-to_Custom_components_objects.md). 
 

@@ -407,16 +407,22 @@ EVENT RULES (`WHEN`)
    the user is not allowed to bypass.
 
 4. Rules 1-3 describe the event-action form
-   `WHEN <condition> DO <target> <- <expr>`. In the
-   reactive assignment form `<target> <- <expr> WHEN <condition>`
-   the guard MUST NOT test `CHANGED(<target>)`: the target
-   would then depend on its own change, forming a cycle
+   `WHEN <condition> DO <target> <- <expr>`. The calculated
+   event form `<target> <- <expr> WHEN <condition>` behaves
+   differently: its change is calculated when the target
+   property is accessed, and an explicit change of that
+   property in the session takes priority over the event's
+   change.
+
+   So to default a value while yielding to an explicit
+   change, the calculated event form alone is enough —
+   no guard is needed. Testing `CHANGED(<target>)` in its
+   condition is not possible in any case: the target would
+   then depend on its own change, forming a cycle
    `<target>` -> `CHANGED(<target>)` -> `<target>`.
 
-   To default a value yet still yield to an explicit change,
-   write it as the self-guarded event-action form
-   (`WHEN [LOCAL] <condition> AND NOT CHANGED(<target>)
-   DO <target> <- <expr>`) rather than as a reactive assignment.
+   In the absence of an explicit change the event writes
+   the value of the expression even when it is `NULL`.
 ----------------------------------------------------------------
 CONSTRAINT RULES
 

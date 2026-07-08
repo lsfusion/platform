@@ -206,7 +206,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
       
             - `render(element, controller)`
             - `update(element, controller, list, options)`
-            - `clear(element)` (optional)
+            - `clear(element, controller)` (optional)
 
             A more detailed description of the mechanism can be found in the article [How-to: Custom Components (Objects)](../how-to/How-to_Custom_components_objects.md).
 

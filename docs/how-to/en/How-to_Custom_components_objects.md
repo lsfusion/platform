@@ -112,15 +112,18 @@ Because the _update_ function is called whenever the data changes, the first thi
 _list_ receives only the read page, not the whole set of objects: for an object group with the `CUSTOM` view type its default size is 1000 objects. For the view to receive all objects of the group, specify the `PAGESIZE 0` option (read all objects) in the [`OBJECTS`](../language/Object_blocks.md) block.
 
 This example uses the simplest update scheme, but if necessary, it can be optimized by updating the DOM only for changed values.
-To do that, the _controller_ has _getDiff_ method, where you pass a new _list_ of objects as a parameter.
-This method will return as a result an object with arrays _add_, _update_, _remove_, which store added, changed and deleted objects respectively.
+To do that, the _controller_ has a _diff_ method, which takes the new _list_ of objects and a handler function. The method compares the passed list with the list from the previous call (the first call compares with an empty one) and delivers the changes as a sequential script transforming the old list into the new one: the handler is called for every change and receives its type (`'add'`, `'update'` or `'remove'`), the change position in the list being transformed (for `'add'` and `'update'` it coincides with the object's position in the new list), and the object itself (the removed one for `'remove'`, the new one for the other types); the passed list is then remembered. Two optional flags refine the comparison: with `noDiffObjects` one object's row is never turned into another's — such a pair yields `'remove'` and `'add'` instead of `'update'`; with `removeFirst` the handler receives all removals first — with positions in the previous list — and only then the additions and updates.
 Example:
 ```js
-let diff = controller.getDiff(list);
-for (let object of diff.add) { ... }
-for (let object of diff.update) { ... }
-for (let object of diff.remove) { ... }
+controller.diff(list, (type, index, object) => {
+    switch (type) {
+        case 'add': ...; break;
+        case 'update': ...; break;
+        case 'remove': ...; break;
+    }
+}, true, true);
 ```
+The _clearDiff_ method resets the remembered list — it is called in the component's optional _clear_ function, invoked when the view is cleared with the same _element_ and _controller_, so that the next rendering starts from an empty state.
 
 After removing the old elements, for each object in the _list_ array a _div_ _card_ is created, in which the desired display elements of each property are placed.
 The names of the object fields correspond to the names of the properties on the form. The property values are converted to JS values in the same way as in the rows of a [React view](How-to_Custom_React_views.md): for example, values of the date and time classes are passed as `Date`, and `JSON` — as a parsed object. The _isCurrent_ method determines which object from the list is current.
@@ -194,6 +197,48 @@ onWebClientInit() + {
 
 The resulting form will look like this:
 ![](../images/How-to_Custom_components_objects.png)
+
+### Controller methods {#controller-methods}
+
+The methods of the local controller passed to _render_ and _update_, internal helpers aside (optional arguments are bracketed). Here `property` is the integration name of a property added to the form in this object group, and `object` is an object from the _list_:
+
+| method | what it does |
+| --- | --- |
+| `isCurrent(object)` | whether the object is the group's current one |
+| `changeObject(object[, rendered])` | set the group's current object (see above) |
+| `changeProperty(property[, object][, value])` | set a property value, or exec an action — on the current object or a given one (see above) |
+| `changeProperties(properties, objects, values)` | several `changeProperty` calls in one request from parallel arrays |
+| `getValue(property, object)` | the current property value for the object |
+| `getCaption(property)` | the property caption |
+| `isPropertyReadOnly(property, object)` | whether the property can be edited: `null` — editable, `false` — read-only |
+| `getBackground(property, object)` / `getForeground(property, object)` | the cell background / text color |
+| `getFont(property, object)` | the cell font |
+| `getPlaceholder(property, object)`, `getPattern(property, object)`, `getRegexp(property, object)`, `getRegexpMessage(property, object)`, `getTooltip(property, object)`, `getValueTooltip(property, object)` | the values of the property's design attributes of the same name |
+| `getCaptionClass(property)`, `getGridClass(property, object)`, `getValueClass(property, object)` | the CSS classes set by the design attributes of the same name |
+| `getChangeKey(property, object)` / `getChangeMouse(property, object)` | the key combination / mouse event set on the form to change the property |
+| `getPropertyCustomOptions(property, object)` | the value of the property's `OPTIONS` option (a parsed JSON) |
+| `getPropertyValues(property, value[, mode], ok[, fail][, count])` | a server suggestion list for the property's values |
+| `diff(list, fnc[, noDiffObjects][, removeFirst])` / `clearDiff()` | compute the list changes (see above) |
+| `setBooleanViewFilter(property, pageSize)` | filter the view by the condition "the property value is true" |
+| `setDateIntervalViewFilter(startProperty, endProperty, pageSize, start, end)` | filter the view by a date interval |
+| `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
+| `form` | the [form controller](How-to_Custom_view_controller.md) |
+
+The value-or-row guess in `changeProperty`, the value formats, and the name qualification rules are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, the built-in Gantt chart view changes both dates at once when a task bar is dragged:
+
+```js
+controller.changeProperties(['start', 'end'], [task, task], [newStart, newEnd]);
+```
+
+`getPropertyValues` uses the same `mode` values and result format as the form controller's method of the same name, but the property is resolved among this group's columns, and the lookup runs for its current object:
+
+```js
+controller.getPropertyValues('name', query, result => { ... });
+```
+
+`setBooleanViewFilter` and `setDateIntervalViewFilter` set a server view filter and the page size `pageSize`: the next _update_ call receives an already filtered list. `setBooleanViewFilter` keeps the objects whose `property` value is true. `setDateIntervalViewFilter` keeps the objects whose period from the `startProperty` value to the `endProperty` value intersects the interval from `start` to `end` (the values are JS `Date`s; when `endProperty` is `null`, both ends of the period are taken from `startProperty`); this is how the built-in calendar view reads only the events of the visible date range.
+
+The display getters let the component use the design attributes set on the form: for example, the built-in chart view builds its datasets taking the column captions and colors from `getCaption`, `getBackground` and `getForeground`.
 
 ### Calling the server {#calling-the-server}
 
