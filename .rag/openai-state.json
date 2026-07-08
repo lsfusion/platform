@@ -1579,8 +1579,8 @@
       "stale": false
     },
     "how-to/How-to_INTERNAL.md": {
-      "file_hash": "sha256:f13ba3be73f77958dab999a3cde657540292db97e39378078fda89eabe4e3132",
-      "indexed_at": "2026-05-22T21:49:54Z",
+      "file_hash": "sha256:72a1a453e2fab8c022d82c60c789e6b474a1ecedbe3ef85d3dca1ecdd6c72ba7",
+      "indexed_at": "2026-07-08T09:58:22Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1590,15 +1590,15 @@
       },
       "sections": {
         "How-to_INTERNAL::task-001": {
-          "file_id": "file-FPa5Pei71YBuW8R34uJiSf",
+          "file_id": "file-MXjSxMXtDF2jx9GHUtenNK",
           "heading_path": "How-to: INTERNAL > Example 1",
-          "section_payload_hash": "sha256:daca8b5f25f8ddbf01a9b39a3e4278a984dba3e5cc8333cd1df093dbecb549a5",
+          "section_payload_hash": "sha256:84b184176f4c44f3e9b9c6eced3f72d22ba0ef0590378b088da77dd6c8cc81c4",
           "source_file": "how-to/How-to_INTERNAL.md"
         },
         "How-to_INTERNAL::task-002": {
-          "file_id": "file-6kp8TaK1JrZQ25VjN4b3S6",
+          "file_id": "file-Da469sZZK2VGqK7XBAf5Zr",
           "heading_path": "How-to: INTERNAL > Example 2",
-          "section_payload_hash": "sha256:199065a527d7ddaa7205e4d01d97f3124378e569a633fc7e6c5d9dc7b630a258",
+          "section_payload_hash": "sha256:3f6dc233b28e918074df9f3a36c9429ea35e3d42435c874fff0e845c432a26fb",
           "source_file": "how-to/How-to_INTERNAL.md"
         },
         "How-to_INTERNAL::task-003": {
@@ -5437,8 +5437,8 @@
       "stale": false
     },
     "language/INTERNAL_operator.md": {
-      "file_hash": "sha256:31d4687bbf0fd6a6efbf63783eaff92746ca1da4b9f35a43b379325f44d0008d",
-      "indexed_at": "2026-06-14T17:33:56Z",
+      "file_hash": "sha256:356fd4fb20dca8efc6240794ca56df706698f6f6c4e056b0502df730f6443726",
+      "indexed_at": "2026-07-08T09:58:47Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5466,9 +5466,9 @@
           "source_file": "language/INTERNAL_operator.md"
         },
         "INTERNAL_operator::parameters": {
-          "file_id": "file-UsLNeq5Mz2TFB2p7mvvHGX",
+          "file_id": "file-Hsc1dYawBq7fe5jGf4nNrP",
           "heading_path": "INTERNAL operator > Parameters",
-          "section_payload_hash": "sha256:7174303cbbb2991784aadc7d3f576496ccc8dd92d2ffafa324e7789feedcb770",
+          "section_payload_hash": "sha256:2610b8cea874f7436c3dfbb9790437c70f4a12b52c3972129fe1d2f447faa58b",
           "source_file": "language/INTERNAL_operator.md"
         },
         "INTERNAL_operator::syntax": {
@@ -14409,7 +14409,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "25244acd7e8e1572749e174f7eb235cdde501a8e",
+  "last_indexed_docs_commit": "2d7579dcbf811e3c2bf561a7bf65c8f66dfc2a37",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
