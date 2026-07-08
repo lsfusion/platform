@@ -133,6 +133,8 @@ In the current platform implementation, if the name and caption are not specifie
 
   In addition, you may use brackets to explicitly specify a class whose object will be added/edited (e. g. `NEW[A]`) for operators `NEW`, `EDIT`, and `NEWEDIT` or for property/action IDs.
 
+  If such a property (action) is added without an explicit name, its name on the form is formed from the operator itself and the objects passed to it, and for `NEW`, `EDIT`, `NEWEDIT` with a specified class — together with it: for example `VALUE(o)`, `DELETE(o)`, `NEW(o)`, `NEW[A](o)`, `INTERVAL(o1, o2)`. This name can be used to reference it wherever a property name on the form is required, without giving it a separate name.
+
 - `ACTION`
 
     Keyword. When specified, it is considered that the action is specified in formPropertyId. When not specified, it is initially considered that a property is specified in formPropertyId; otherwise, if property is not found, it is considered that an action is specified in formPropertyId.
