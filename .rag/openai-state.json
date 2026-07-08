@@ -749,8 +749,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:ed44379f02c086307112c452ea3d0edc8c87eccf571238ea4ddb12811b485326",
-      "indexed_at": "2026-07-07T08:50:09Z",
+      "file_hash": "sha256:aa4c2d574d72f0de76b7003aba5ba69381af4cb46909be6343e2850038316f5f",
+      "indexed_at": "2026-07-08T07:46:12Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -763,6 +763,12 @@
           "file_id": "file-FqwQDuhw8TyMKGApW8mJ5Y",
           "heading_path": "How-to: Custom Components (objects) > Calling the server {#calling-the-server}",
           "section_payload_hash": "sha256:cfc4d7c09b42a8d6541f768021bc93ee32e522647d857f1e1172ecf4a25820a4",
+          "source_file": "how-to/How-to_Custom_components_objects.md"
+        },
+        "How-to_Custom_components_objects::controller-methods-controller-methods": {
+          "file_id": "file-PLemAbeD6saxbZ4vuKhiqq",
+          "heading_path": "How-to: Custom Components (objects) > Controller methods {#controller-methods}",
+          "section_payload_hash": "sha256:1949743f3eba7cb2c09fa3fdf443450e25c4004d014868175ad91ff910aef373",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::domain-logic": {
@@ -778,17 +784,17 @@
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::interface": {
-          "file_id": "file-QRtwyNdRHRjBSWYGHS5SLo",
+          "file_id": "file-5NCDvFpieLCBSMAZcJZTFZ",
           "heading_path": "How-to: Custom Components (objects) > Interface",
-          "section_payload_hash": "sha256:df0f83217f6eb5dd66818a19fcdd8431eb8a1fe14901f515df8fee63ee6bbc19",
+          "section_payload_hash": "sha256:6698e9a0cbb12276c99372f6cea854bda0f66cbbf349e825ebfa4cdf2583f065",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         }
       },
       "stale": false
     },
     "how-to/How-to_Custom_components_properties.md": {
-      "file_hash": "sha256:84fde1a27a7d5f1aa185f5b2fc32e321aa4ccfded1d311f2cb9c4c6428448a96",
-      "indexed_at": "2026-06-15T12:01:56Z",
+      "file_hash": "sha256:e8e59b7c5cef9e9b159a9c421c555b5056a4dc1502e9e5477e3bf10f894d4e03",
+      "indexed_at": "2026-07-08T07:46:22Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -797,6 +803,18 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "How-to_Custom_components_properties::controller-methods-controller-methods": {
+          "file_id": "file-GokaKJ7K73gKabm31nLZbT",
+          "heading_path": "How-to: Custom components (properties) > Controller methods {#controller-methods}",
+          "section_payload_hash": "sha256:23f83b30c81133aa92ac90d812d3feda49032746619314866e81985effd9e11e",
+          "source_file": "how-to/How-to_Custom_components_properties.md"
+        },
+        "How-to_Custom_components_properties::custom-editor-custom-editor": {
+          "file_id": "file-39hXKe2izsk61no8xim9Ac",
+          "heading_path": "How-to: Custom components (properties) > Custom editor {#custom-editor}",
+          "section_payload_hash": "sha256:9c2d3b537f0be6dbb284bcfefb09946cbd9e22fec638bf3ff3769f486ce4512a",
+          "source_file": "how-to/How-to_Custom_components_properties.md"
+        },
         "How-to_Custom_components_properties::domain-logic": {
           "file_id": "file-XpF8PcTUk9V1At66P7wMDB",
           "heading_path": "How-to: Custom components (properties) > Domain logic",
@@ -831,8 +849,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:93c89e714228588defabd0dfed0657e9022d941cd65a924e3e5408d3c8da4de0",
-      "indexed_at": "2026-07-05T15:20:58Z",
+      "file_hash": "sha256:9e6d62202e274e66e217fbd338ff9ba0440f39c95efb95548763e04b17eee6ca",
+      "indexed_at": "2026-07-08T07:46:30Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -842,9 +860,9 @@
       },
       "sections": {
         "How-to_Custom_view_controller::how-a-view-gets-its-controller": {
-          "file_id": "file-7kWi8Jbm9LUpj4dg43CCTS",
+          "file_id": "file-Fm15LEPnCVDXAwEwy9DGCy",
           "heading_path": "How-to: Custom view controller API > How a view gets its controller",
-          "section_payload_hash": "sha256:cc225de8d2f3536dff90ca234623c0d1d4c1077da27bd21f35b56495e091af0f",
+          "section_payload_hash": "sha256:58399ffac114af89dafa15bee96967e081f3aad0c3beed54e1d9d0acecab1fbf",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::how-to-custom-view-controller-api": {
@@ -6351,8 +6369,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:d6d82a555414e77ec472641359e0619ceb5dbf0831bb73acde9380b5741f64aa",
-      "indexed_at": "2026-07-07T08:50:21Z",
+      "file_hash": "sha256:dd714a6a31172e4aa8eb4a67e403a15b5f23f69dc197a08d7440b08329cf94a9",
+      "indexed_at": "2026-07-08T07:46:40Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6392,9 +6410,9 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-00": {
-          "file_id": "file-TGCeQydSi3CkygdU9J98a9",
+          "file_id": "file-VDKa6Jdp7SahEfdLh4YYqL",
           "heading_path": "Object blocks > Object block {#objects} > Object group options",
-          "section_payload_hash": "sha256:e4a32b77d4ad9330a8ca27e2710308661e77ace8ae38a72bd27cd93d3fd45fe3",
+          "section_payload_hash": "sha256:e101630069ece00abd8599067d9ae476e71c04c4da43a87a32c0ef6dd4419243",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-01": {
@@ -8359,8 +8377,8 @@
       "stale": false
     },
     "paradigm/Calculated_events.md": {
-      "file_hash": "sha256:974418a4cf1174fdbe89f753be757a911d078354692aa63bdd921754707f7df6",
-      "indexed_at": "2026-06-04T07:59:05Z",
+      "file_hash": "sha256:6a1aa4691c3d0f93a5bbf91d7135c47e8969a877dc74573a5e408b58bf576e19",
+      "indexed_at": "2026-07-08T07:46:48Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8370,9 +8388,9 @@
       },
       "sections": {
         "Calculated_events::calculated-events": {
-          "file_id": "file-M5xzzfv93ZoFEM75ptoDp1",
+          "file_id": "file-1MKjn6iQnmTNJC4CUhY81J",
           "heading_path": "Calculated events",
-          "section_payload_hash": "sha256:4a169054f4f60e115b1839a96375b1e3125efdb6f58e802d9ab05683141849db",
+          "section_payload_hash": "sha256:230a21e180a5fec4325a915a2728dfeb6920bfa4f191737b978fe650746db20c",
           "source_file": "paradigm/Calculated_events.md"
         },
         "Calculated_events::language+examples": {
@@ -14347,8 +14365,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:8ec7a47f9e56b91a07d3f07f0a4582f87eec36eec611b3a97a05e15c398b5600",
-      "indexed_at": "2026-07-07T08:51:30Z",
+      "file_hash": "sha256:c56840c9f7d66fe144485e86ac00df8f638ef593fd823debd078b2fc75682408",
+      "indexed_at": "2026-07-08T07:46:54Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14364,34 +14382,34 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
-          "file_id": "file-UfTyW1q8FXW2vbTQNS2K8Y",
+          "file_id": "file-Frrapanf8znvTC3kH8Bg19",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:21bc88758b4b5902b7b1e969c60785de70a25e25643dc4e9e9d58f0e9ec0767b",
+          "section_payload_hash": "sha256:c0c487dc6fe4ca927cc3cc16c3bcbf0c0a364d0693d3a3b154a5f17071bd8865",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-RhP6Qk8xgxaRmX7AionsBq",
+          "file_id": "file-FtCX3bRRtFSwH9rJM7d93B",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:3f3b6ba311c8c919b85070626352d554a9dfc165d5cdd72d82ba93f3efd5c7dc",
+          "section_payload_hash": "sha256:210e6ea694fe4a562bc96f12e638c3acab6311ecd76b3c335a2973222e9f1f78",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-AgV9AmEAzihrjTwMj5iwbD",
+          "file_id": "file-XQTMxoSqKjurFktqmDbVxd",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:5e659ed0b6c09bc06d23d249c0256da41d02bb87abe14cb085a987403f255f1a",
+          "section_payload_hash": "sha256:cdc1532ff160635c36dd50ee0f4a085ede78f02ecbcabe47834110aa5d301221",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-04": {
-          "file_id": "file-KhAanLCe1WgmEzcLvJpecr",
+          "file_id": "file-PGt1vdNEi1wGymgQQTbfy2",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:875d8003886de369abe8ee971ce0e2644f41e7a06572f369049b8edbca987b22",
+          "section_payload_hash": "sha256:9fcb2204f6165c7cb4d9bb8748cd8b062cfecad4dd0138600adcbf64f1b079a2",
           "source_file": "rules/Rules.md"
         }
       },
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "cbc1cd884cf9a1aed37e7b675daf3cf486f6c4b3",
+  "last_indexed_docs_commit": "25244acd7e8e1572749e174f7eb235cdde501a8e",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
