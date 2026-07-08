@@ -95,7 +95,7 @@ The `EXTERNAL` operator creates an action that performs a single call to an exte
 
 - `NOENCODE`
 
-    Keyword. Skips URL pre-encoding of the literal text of the connection string and `BODYURL` string (parameter values substituted via `$N` are still URL-encoded separately). Without `NOENCODE` the literal text is URL-encoded before sending.
+    Keyword. Disables URL pre-encoding of the text of the connection string and the `BODYURL` string itself (parameter values substituted via `$N` are still URL-encoded separately). Without `NOENCODE` this text is URL-encoded before sending.
 
 - `lsfExecType`
 

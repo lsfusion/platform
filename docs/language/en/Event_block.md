@@ -49,6 +49,8 @@ eventActionId(param1, ..., paramK)
 
 The event block allows to define handlers for form events that occur as the result of certain user actions. Each block can have an arbitrary number of comma-separated event handlers. If several handlers are defined for an event, they are guaranteed to be executed in the order they are defined. 
 
+The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filtering: `FILTERGROUPS` — when the user changes the active filter in the specified filter group; `FILTERS PROPERTY` — when the user sets or changes a user filter on the specified form property.
+
 ### Parameters 
 
 - `objName`

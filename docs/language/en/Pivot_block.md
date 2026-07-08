@@ -57,7 +57,7 @@ Pivot table settings block allows you to set the initial settings for the form's
 
 - `MEASURES(groupObject)`
 
-  Keyword `MEASURES` with parenthesised group object id means special property on form `(column)`.
+  Keyword `MEASURES` with a parenthesised group object id denotes the special pivot column `(column)` that holds its measures. By default this column is placed first; specifying `MEASURES(groupObject)` in the `COLUMNS` or `ROWS` list lets you put it at an arbitrary position among the columns or move it to the rows.
 
 - `measureFormPropertyName1, ..., measureFormPropertyNameL`
 
