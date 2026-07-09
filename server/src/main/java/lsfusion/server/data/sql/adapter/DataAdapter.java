@@ -182,6 +182,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.dataBase = dataBase;
 
         this.connectTimeout = connectTimeout;
+
+        ServerLoggers.startLog("Database connection: server: " + server + "; database: " + dataBase);
     }
 
     public void startEnsureConnection(Server server) throws SQLException {
