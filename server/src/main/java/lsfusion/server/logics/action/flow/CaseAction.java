@@ -244,7 +244,7 @@ public class CaseAction extends ListCaseAction {
         super.finalizeAbstractInit();
         
         FinalizeResult<ActionCase<PropertyInterface>> finalize = AbstractCase.finalizeActionCases(
-                interfaces, (NFList<AbstractActionCase<PropertyInterface>>) cases, type == AbstractType.MULTI, checkExclusiveImplementations);
+                this, interfaces, (NFList<AbstractActionCase<PropertyInterface>>) cases, type == AbstractType.MULTI, checkExclusiveImplementations);
         cases = finalize.cases;
         isExclusive = finalize.isExclusive;
         abstractGraph = finalize.graph;

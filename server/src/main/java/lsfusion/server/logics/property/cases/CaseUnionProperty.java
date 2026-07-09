@@ -419,7 +419,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
         if(isAbstract()) {
             FinalizeResult<CalcCase<Interface>> finalize = AbstractCase.finalizeCalcCases(
-                    interfaces, (NFList<AbstractCalcCase<Interface>>) cases, abs.type == Type.MULTI, abs.checkExclusiveImplementations);
+                    this, interfaces, (NFList<AbstractCalcCase<Interface>>) cases, abs.type == Type.MULTI, abs.checkExclusiveImplementations);
             cases = finalize.cases;
             isExclusive = finalize.isExclusive;
             abstractGraph = finalize.graph;

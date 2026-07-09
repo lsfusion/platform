@@ -30,6 +30,8 @@ import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 import java.util.*;
 import java.util.function.Function;
 
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLogError;
+
 public abstract class AbstractCase<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends ActionOrPropertyInterfaceImplement> {
     
     public final W where;    
@@ -76,7 +78,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
     
     public static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, 
-            M extends ActionOrPropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, Function<A, F> translator, final AbstractWrapper<P, W, M, F> wrapper, final Function<M, Graph<F>> abstractReader, boolean areClassCases, boolean explicitExclusive) {
+            M extends ActionOrPropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(ActionOrProperty<?> abstractActionOrProperty, NFList<A> cases, Function<A, F> translator, final AbstractWrapper<P, W, M, F> wrapper, final Function<M, Graph<F>> abstractReader, boolean areClassCases, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
         if(!areClassCases || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
@@ -218,7 +220,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
                                 }
                             }
                         if(!classesAB.meansCompatible(priorityWhere))
-                            System.out.println("Ambiguous implementation"); //throw new RuntimeException("Ambiguous implementation");
+                            startLogError("Ambiguous implementation in " + abstractActionOrProperty + " : " + a.implement + " and " + b.implement);
                     }
                 }
             }
@@ -289,8 +291,8 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         return new CalcCase<>(createUnionWhere(interfaces, cases, isExclusive), PropertyFact.createUnion(interfaces, isExclusive, cases));
     }
     
-    public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
-        return finalizeCases(cases, ActionCase::new, new AbstractWrapper<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>, ActionCase<P>>() {
+    public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(ActionOrProperty<?> abstractAction, final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
+        return finalizeCases(abstractAction, cases, ActionCase::new, new AbstractWrapper<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>, ActionCase<P>>() {
             public ActionCase<P> proceedSet(ImSet<ActionCase<P>> elements) {
                 return createInnerActionCase(interfaces, elements.toList(), true);
             }
@@ -301,8 +303,8 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         }, ActionMapImplement::mapAbstractGraph, areClassCases, explicitExclusiveness);
     }
 
-    public static <P extends PropertyInterface> FinalizeResult<CalcCase<P>> finalizeCalcCases(final ImSet<P> interfaces, NFList<AbstractCalcCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
-        return finalizeCases(cases, CalcCase::new, new AbstractWrapper<P, PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>, CalcCase<P>>() {
+    public static <P extends PropertyInterface> FinalizeResult<CalcCase<P>> finalizeCalcCases(ActionOrProperty<?> abstractProperty, final ImSet<P> interfaces, NFList<AbstractCalcCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
+        return finalizeCases(abstractProperty, cases, CalcCase::new, new AbstractWrapper<P, PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>, CalcCase<P>>() {
             public CalcCase<P> proceedSet(ImSet<CalcCase<P>> elements) {
                 return createInnerCalcCase(interfaces, elements.toList(), true);
             }
