@@ -707,6 +707,7 @@ module.exports = {
                     'how-to/How-to_Custom_client_JS_modules',
                     'how-to/How-to_Custom_React_views',
                     'how-to/How-to_Custom_view_controller',
+                    'how-to/How-to_Custom_components_server_calls',
                   ]
                 },
                 'how-to/How-to_Reports', 

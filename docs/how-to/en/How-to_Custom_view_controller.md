@@ -168,7 +168,7 @@ controller.getPropertyValues('customer', text, 'objects', result => {
 
 #### Calling the server
 
-`exec`, `eval`, `evalAction` and `change` each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls — see [Calling the server](How-to_Custom_components_objects.md#calling-the-server) for the gate, parameter binding, and the result-to-JS conversion table.
+`exec`, `eval`, `evalAction` and `change` each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls — see [Calling the server](How-to_Custom_components_objects.md#calling-the-server) for the gate, parameter binding, and the result-to-JS conversion table. An end-to-end example of these calls from a CUSTOM view is in [How-to: Custom Components (server calls)](How-to_Custom_components_server_calls.md).
 
 - `exec(action, ...params)` — runs a named action; resolves to its `RETURN` value.
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
