@@ -28,7 +28,7 @@ import java.util.concurrent.ThreadFactory;
  * shutdown hook releases both on JVM exit so nothing outlives the process by design, not by leak.
  *
  * This class is the ONLY place Graal types appear: CompileWebMojo's own declared-member surface stays free of
- * Java-17-only classes, so on an old JVM nothing (including reflective member enumeration) can trip over
+ * Java-11-only classes, so on an old JVM nothing (including reflective member enumeration) can trip over
  * them before CompileWebMojo.checkRcJavaVersion has run — this class is loaded only when a transform executes.
  */
 class RcEngine {

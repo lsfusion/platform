@@ -26,10 +26,10 @@
     <dependencies>
         <dependency>
             <!-- in-process JS engine for the optional React Compiler pass (evaluates the vendored
-                 rc/rc-graal.cjs bundle, see RcEngine) - works on any stock JDK (interpreted Truffle) -->
+                 rc/rc-graal.cjs bundle, see RcEngine) - works on any stock JDK 11+ (interpreted Truffle) -->
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
-            <version>23.0.6</version>
+            <version>22.3.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>

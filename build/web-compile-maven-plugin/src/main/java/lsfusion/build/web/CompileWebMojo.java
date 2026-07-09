@@ -151,7 +151,7 @@ public class CompileWebMojo extends AbstractMojo {
         // React Compiler (auto-memoization) runs — like the no-build in-browser .jsx tier — whenever the module
         // has JSX (a .jsx/.tsx source); a component that violates the rules of React bails out untouched, so it
         // is always safe. A module with only plain .js/.ts (JSX only reaches the build tier through a .jsx/.tsx
-        // extension) skips it, and with it GraalJS and the Java-17 build-JVM requirement.
+        // extension) skips it, and with it GraalJS and the Java-11 build-JVM requirement.
         Path srcRoot = hasJsx(originalRoot)
                 ? runReactCompiler(originalRoot) // transformed mirror: ALL sources (incl. lib/) pass through the compiler
                 : originalRoot;
@@ -313,7 +313,7 @@ public class CompileWebMojo extends AbstractMojo {
     }
 
     // any JSX source (.jsx/.tsx) anywhere under the root, lib/ included? — checked on the ORIGINAL tree (the
-    // React Compiler mirror has the same structure), before that compiler and its Java-17 requirement engage
+    // React Compiler mirror has the same structure), before that compiler and its Java-11 requirement engage
     private static boolean hasJsx(Path root) throws IOException {
         try (Stream<Path> walk = Files.walk(root)) {
             return walk.filter(Files::isRegularFile).anyMatch(p -> {
@@ -323,20 +323,20 @@ public class CompileWebMojo extends AbstractMojo {
         }
     }
 
-    // The React Compiler runs on GraalJS, whose 23.x classfiles need Java 17; the guard turns what would be a
+    // The React Compiler runs on GraalJS, whose 22.3.x classfiles need Java 11; the guard turns what would be a
     // bare UnsupportedClassVersionError on an older Maven JVM into actionable guidance. Uses only java.lang so
     // the check itself cannot trip over the Graal classes it is guarding.
     private static void checkRcJavaVersion() throws MojoExecutionException {
         String spec = System.getProperty("java.specification.version", "");
         int major;
         try {
-            major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec); // "1.8" -> 8, "17" -> 17
+            major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec); // "1.8" -> 8, "11" -> 11
         } catch (NumberFormatException e) {
             return; // unrecognized scheme: don't block, let class loading decide
         }
-        if (major < 17)
-            throw new MojoExecutionException("compiling src/main/web requires the build to run on Java 17+ (the React Compiler runs on GraalJS); current JVM is "
-                    + System.getProperty("java.version") + " — build on Java 17+, or set -Dlsfusion.web.skip=true to skip the web compile");
+        if (major < 11)
+            throw new MojoExecutionException("compiling src/main/web requires the build to run on Java 11+ (the React Compiler runs on GraalJS); current JVM is "
+                    + System.getProperty("java.version") + " — build on Java 11+, or set -Dlsfusion.web.skip=true to skip the web compile");
     }
 
     private String rcTransform(String source, String fileName, String displayName) throws MojoExecutionException, InterruptedException {

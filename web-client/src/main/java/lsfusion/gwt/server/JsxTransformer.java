@@ -78,7 +78,7 @@ public class JsxTransformer {
 
     private static final Pattern MODULE_SYNTAX = Pattern.compile("\\b(import|export|module)\\b", Pattern.CASE_INSENSITIVE);
 
-    // The Babel/GraalJS engine (org.graalvm.js 23.x) is compiled for Java 17; on an older server JVM
+    // The Babel/GraalJS engine (org.graalvm.js 22.3.x) is compiled for Java 11; on an older server JVM
     // touching a Graal class throws an opaque UnsupportedClassVersionError. transform()'s catch already
     // degrades a failed .jsx to a console.error stub rather than breaking the page, so this only makes
     // the stub's message actionable instead of cryptic. Checked without loading any Graal class.
@@ -86,13 +86,13 @@ public class JsxTransformer {
         String spec = System.getProperty("java.specification.version", "");
         int major;
         try {
-            major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec); // "1.8" -> 8, "17" -> 17
+            major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec); // "1.8" -> 8, "11" -> 11
         } catch (NumberFormatException e) {
             return; // unrecognized scheme: don't block, let class loading decide
         }
-        if (major < 17)
-            throw new RuntimeException("the lightweight .jsx tier requires the server to run on Java 17+ (its JS engine); current JVM is "
-                    + System.getProperty("java.version") + " — use a plain .js resource or run the server on Java 17+");
+        if (major < 11)
+            throw new RuntimeException("the lightweight .jsx tier requires the server to run on Java 11+ (its JS engine); current JVM is "
+                    + System.getProperty("java.version") + " — use a plain .js resource or run the server on Java 11+");
     }
 
     // synchronized: serializing transforms is fine for this tier (rare, cached by content)
