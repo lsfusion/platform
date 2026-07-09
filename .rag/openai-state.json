@@ -755,8 +755,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_components_objects.md": {
-      "file_hash": "sha256:aa4c2d574d72f0de76b7003aba5ba69381af4cb46909be6343e2850038316f5f",
-      "indexed_at": "2026-07-08T07:46:12Z",
+      "file_hash": "sha256:d5195b4bccdae69b907ac8b06205447d0389bf95d4141c45b6114d6894c7b7dc",
+      "indexed_at": "2026-07-09T10:39:01Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -766,9 +766,9 @@
       },
       "sections": {
         "How-to_Custom_components_objects::calling-the-server-calling-the-server": {
-          "file_id": "file-FqwQDuhw8TyMKGApW8mJ5Y",
+          "file_id": "file-WqBF31r77tj1AXcgnkZs8K",
           "heading_path": "How-to: Custom Components (objects) > Calling the server {#calling-the-server}",
-          "section_payload_hash": "sha256:cfc4d7c09b42a8d6541f768021bc93ee32e522647d857f1e1172ecf4a25820a4",
+          "section_payload_hash": "sha256:423466924971202e797702ec70467db8430de75dfd648224d1066e3b85c0cd62",
           "source_file": "how-to/How-to_Custom_components_objects.md"
         },
         "How-to_Custom_components_objects::controller-methods-controller-methods": {
@@ -854,9 +854,65 @@
       },
       "stale": false
     },
+    "how-to/How-to_Custom_components_server_calls.md": {
+      "file_hash": "sha256:a8ac67d3f075d78ee62193b0ca2770a3f9b695584955dff52554ad7963f257ce",
+      "indexed_at": "2026-07-09T10:39:09Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_Custom_components_server_calls::domain-logic": {
+          "file_id": "file-NvdHk8pfiJT9EZM2QpA9HY",
+          "heading_path": "How-to: Custom Components (server calls) > Domain Logic",
+          "section_payload_hash": "sha256:90045eeaa2516c3f84b45273b293efe7d1e4d465d94099d073c37a48fdc7c2b9",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        },
+        "How-to_Custom_components_server_calls::how-to-custom-components-server-calls": {
+          "file_id": "file-WwhVzGd3rqB3c6anqE5ivN",
+          "heading_path": "How-to: Custom Components (server calls)",
+          "section_payload_hash": "sha256:b9a93a417953382134ba9988c58b251c719a1d18b92ae88e98da1356adfa5f04",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        },
+        "How-to_Custom_components_server_calls::parameters-and-the-result": {
+          "file_id": "file-CuCtLJSnYzRTffUCfPR6mc",
+          "heading_path": "How-to: Custom Components (server calls) > Parameters and the result",
+          "section_payload_hash": "sha256:5cb95b7d35d3db45534eafc0805d69bf8c50460c8b77039167779a3c0f034105",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        },
+        "How-to_Custom_components_server_calls::sessions": {
+          "file_id": "file-9S8F6QjwoDtDpkpERQcA77",
+          "heading_path": "How-to: Custom Components (server calls) > Sessions",
+          "section_payload_hash": "sha256:c86be9fbb1dbf497d22060132b69853b4fda4bc162bbb33595ac07280c41cce6",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        },
+        "How-to_Custom_components_server_calls::task": {
+          "file_id": "file-B3q6xDMX9SSCDGxYqsds7m",
+          "heading_path": "How-to: Custom Components (server calls) > Task",
+          "section_payload_hash": "sha256:e1005c8bdbe0190b18cea8beed46ff20f08dbc74bebde342fafe67f25b10a5a1",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        },
+        "How-to_Custom_components_server_calls::the-component": {
+          "file_id": "file-1HSanxbiZHjPcTjitqc3jr",
+          "heading_path": "How-to: Custom Components (server calls) > The component",
+          "section_payload_hash": "sha256:cca28483ac5a87e90102ec48990fa27ce8e43678bf6a593b0da449c8d466a6c6",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        },
+        "How-to_Custom_components_server_calls::the-gate": {
+          "file_id": "file-Tk7kVkg8wenn2mdibiizEC",
+          "heading_path": "How-to: Custom Components (server calls) > The gate",
+          "section_payload_hash": "sha256:62eb4354c56d9a1943ee2211c1c8fc6b8f5d28a7faa246e73639ecc3bcb0e3f2",
+          "source_file": "how-to/How-to_Custom_components_server_calls.md"
+        }
+      },
+      "stale": false
+    },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:9e6d62202e274e66e217fbd338ff9ba0440f39c95efb95548763e04b17eee6ca",
-      "indexed_at": "2026-07-08T07:46:30Z",
+      "file_hash": "sha256:55cd69c24660e1a3f6f756417d9a056e57c9e76786ca08eccbde4480b3f72b37",
+      "indexed_at": "2026-07-09T10:39:26Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -896,9 +952,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
-          "file_id": "file-GcGQARWtzDJ3jg6t9GaNQ8",
+          "file_id": "file-3TBAFahuAsoTec3UsqiyUZ",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:3944f755c6f7a4a82d11958a5a5be2dac30bdcafba96a2f07cbc5b03bddfb15d",
+          "section_payload_hash": "sha256:498586b33468fb5dfb4f1602afb89e9b81d8f70d83cb64c47b1f4e2d6d398341",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -14421,7 +14477,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "7f736a53c5fd6bde1f29e42d953943840a1ea6cd",
+  "last_indexed_docs_commit": "1ebc0c5eda393b3cece7dd2a7d6f23c4ed7d2313",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
