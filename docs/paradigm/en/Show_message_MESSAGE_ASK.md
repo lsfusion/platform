@@ -11,7 +11,7 @@ By default, the created action stops the thread until the user closes the messag
 
 ### Message type {#type}
 
-Besides its text, a message has a *type*. The type carries a severity — informational, success, warning, or error — and determines how the message reaches the user: as a dialog box that the user closes, as a transient notification, and (or) as an entry in the `System.log` system window. By default the message is shown as a plain dialog box, without a severity mark.
+Besides its text, a message can be of several *types*. They differ in how the message reaches the user — as a dialog box the user closes, as a transient notification, and (or) as an entry in the `System.log` system window — and in whether it carries a severity mark: informational, success, warning, or error. By default the message is a plain dialog box without a severity mark.
 
 ### Dialog form {#dialog}
 
