@@ -22,6 +22,7 @@ package lsfusion.client.form.property.cell.classes.view.link;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import org.fit.cssbox.swingbox.SwingBoxDocument;
 import org.fit.cssbox.swingbox.SwingBoxEditorKit;
 import org.fit.cssbox.swingbox.SwingBoxViewFactory;
@@ -276,7 +277,7 @@ public class BrowserPane extends JEditorPane {
 
         if (conn instanceof HttpsURLConnection) {
             // XXX toto moc nefunguje
-            System.out.println("$ Connection is HTTPS !!");
+            ClientLoggers.systemLogger.info("$ Connection is HTTPS !!");
         } else if (conn instanceof HttpURLConnection) {
             HttpURLConnection hconn = (HttpURLConnection) conn;
             hconn.setInstanceFollowRedirects(false);
@@ -470,9 +471,9 @@ public class BrowserPane extends JEditorPane {
             }
         }
 
-        System.out.println("# pageProperties #");
+        ClientLoggers.systemLogger.info("# pageProperties #");
         for (String k : pageProperties.keySet()) {
-            System.out.println(k + " : " + pageProperties.get(k));
+            ClientLoggers.systemLogger.info(k + " : " + pageProperties.get(k));
         }
 
     }

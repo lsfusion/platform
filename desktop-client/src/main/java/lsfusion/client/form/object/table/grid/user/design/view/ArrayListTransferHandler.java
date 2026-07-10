@@ -1,5 +1,7 @@
 package lsfusion.client.form.object.table.grid.user.design.view;
 
+import lsfusion.client.base.log.ClientLoggers;
+
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -26,7 +28,7 @@ public class ArrayListTransferHandler extends TransferHandler {
         try {
             localArrayListFlavor = new DataFlavor(localArrayListType);
         } catch (ClassNotFoundException e) {
-            System.out.println("ArrayListTransferHandler: unable to create data flavor");
+            ClientLoggers.systemLogger.error("ArrayListTransferHandler: unable to create data flavor", e);
         }
         serialArrayListFlavor = new DataFlavor(ArrayList.class, "ArrayList");
     }
@@ -47,10 +49,10 @@ public class ArrayListTransferHandler extends TransferHandler {
                 return false;
             }
         } catch (UnsupportedFlavorException ufe) {
-            System.out.println("importData: unsupported data flavor");
+            ClientLoggers.systemLogger.error("importData: unsupported data flavor", ufe);
             return false;
         } catch (IOException ioe) {
-            System.out.println("importData: I/O exception");
+            ClientLoggers.systemLogger.error("importData: I/O exception", ioe);
             return false;
         }
 
