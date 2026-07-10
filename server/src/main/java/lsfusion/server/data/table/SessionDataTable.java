@@ -34,6 +34,7 @@ import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.sql.SQLException;
 
@@ -196,8 +197,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
     @Override
     public void out(SQLSession session) throws SQLException, SQLHandledException {
-        System.out.println("Key Values : " + keyValues);
-        System.out.println("Prop Values : " + propertyValues);
+        ServerLoggers.systemLogger.info("Key Values : " + keyValues);
+        ServerLoggers.systemLogger.info("Prop Values : " + propertyValues);
         table.out(session);
     }
 

@@ -6,6 +6,7 @@ package lsfusion.server.physics.dev.integration.external.to; /**
 
 //заявлено, что в последней версии NumField2 уже не нужен, но на деле NumField вместо дробного числа записывает только целую часть
 
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
 import org.xBaseJ.fields.FloatField;
@@ -131,13 +132,13 @@ public class NumField2 extends NumField
 			db.addField(numField);
 			db.addField(floatField);
 			db.addField(numField2);
-			System.out.println("intial value before write               = "+floatValue);
+			ServerLoggers.systemLogger.info("intial value before write               = "+floatValue);
 			numField.put(floatValue);
 			floatField.put(floatValue);
 			numField2.put(floatValue);
-			System.out.println("database-value (NumField) after write   = "+numField.get());
-			System.out.println("database-value (FloatField) after write = "+floatField.get());
-			System.out.println("database-value (NumField2) after write  = "+numField2.get());
+			ServerLoggers.systemLogger.info("database-value (NumField) after write   = "+numField.get());
+			ServerLoggers.systemLogger.info("database-value (FloatField) after write = "+floatField.get());
+			ServerLoggers.systemLogger.info("database-value (NumField2) after write  = "+numField2.get());
 			db.write();
 			db.close();
 		}

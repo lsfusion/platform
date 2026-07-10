@@ -121,6 +121,7 @@ import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -1413,7 +1414,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 //                !(calc.getAnds().length > 1 && inferred.getAnds().length==1)
                 ) {
             if(!BaseUtils.hashEquals(calc.getCommonParent(fullInterfaces), cinferred.getCommonParent(fullInterfaces))) {
-                System.out.println(this + ", CALC : " + calc + ", INF : " + cinferred);
+                ServerLoggers.systemLogger.info(this + ", CALC : " + calc + ", INF : " + cinferred);
                 return false;
             }
         }
@@ -1425,7 +1426,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         boolean calcNotNull = calcNotNull(checkInterfaces, CalcClassType.prevBase());
         boolean inferNotNull = inferNotNull(checkInterfaces, InferType.prevBase());
         if(calcNotNull != inferNotNull) {
-            System.out.println(this + " NOTNULL, CALC : " + calcNotNull + ", INF : " + inferNotNull);
+            ServerLoggers.systemLogger.info(this + " NOTNULL, CALC : " + calcNotNull + ", INF : " + inferNotNull);
             return false;
         }
         return true;
@@ -1436,7 +1437,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         boolean calcEmpty = calcEmpty(CalcClassType.prevBase());
         boolean inferEmpty = inferEmpty(InferType.prevBase());
         if(calcEmpty != inferEmpty) {
-            System.out.println(this + " EMPTY, CALC : " + calcEmpty + ", INF : " + inferEmpty);
+            ServerLoggers.systemLogger.info(this + " EMPTY, CALC : " + calcEmpty + ", INF : " + inferEmpty);
             return false;
         }
         return true;
@@ -1447,7 +1448,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         boolean calcFull = calcFull(checkInterfaces, CalcClassType.prevBase());
         boolean inferFull = inferFull(checkInterfaces, InferType.prevBase());
         if(calcFull != inferFull) {
-            System.out.println(this + " FULL, CALC : " + calcFull + ", INF : " + inferFull);
+            ServerLoggers.systemLogger.info(this + " FULL, CALC : " + calcFull + ", INF : " + inferFull);
             return false;
         }
         return true;
@@ -2684,7 +2685,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public void printDepends(boolean events, String tab) {
-        System.out.println(tab + this);
+        ServerLoggers.systemLogger.info(tab + this);
         for(Property prop : getDepends(events)) {
             prop.printDepends(events, tab + '\t');
         }

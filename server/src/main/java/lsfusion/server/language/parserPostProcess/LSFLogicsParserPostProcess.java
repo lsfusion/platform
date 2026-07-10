@@ -1,5 +1,7 @@
 package lsfusion.server.language.parserPostProcess;
 
+import lsfusion.server.physics.admin.log.ServerLoggers;
+
 import java.io.*;
 
 public class LSFLogicsParserPostProcess {
@@ -129,7 +131,7 @@ public class LSFLogicsParserPostProcess {
             }
 
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            ServerLoggers.systemLogger.error(e.getMessage(), e);
         }
 
     }

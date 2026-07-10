@@ -42,6 +42,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -109,48 +110,48 @@ public class FormChanges {
     }
 
     void out(FormInstance bv) {
-        System.out.println(" ------- GROUPOBJECTS ---------------");
+        ServerLoggers.systemLogger.info(" ------- GROUPOBJECTS ---------------");
         for (GroupObjectInstance group : bv.getGroups()) {
             ImList<ImMap<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if (groupGridObjects != null) {
-                System.out.println(group.getID() + " - GRID Changes");
+                ServerLoggers.systemLogger.info(group.getID() + " - GRID Changes");
                 for (ImMap<ObjectInstance, DataObject> value : groupGridObjects)
-                    System.out.println(value);
+                    ServerLoggers.systemLogger.info(value);
             }
 
             ImMap<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
             if (value != null)
-                System.out.println(group.getID() + " - Object Changes " + value);
+                ServerLoggers.systemLogger.info(group.getID() + " - Object Changes " + value);
         }
 
-        System.out.println(" ------- PROPERTIES ---------------");
-        System.out.println(" ------- Group ---------------");
+        ServerLoggers.systemLogger.info(" ------- PROPERTIES ---------------");
+        ServerLoggers.systemLogger.info(" ------- Group ---------------");
         for (PropertyReaderInstance property : properties.keyIt()) {
             ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> propertyValues = properties.get(property);
-            System.out.println(property + " ---- property");
+            ServerLoggers.systemLogger.info(property + " ---- property");
             for (ImMap<ObjectInstance, DataObject> gov : propertyValues.keyIt())
-                System.out.println(gov + " - " + propertyValues.get(gov));
+                ServerLoggers.systemLogger.info(gov + " - " + propertyValues.get(gov));
         }
 
-        System.out.println(" ------- Drop ---------------");
+        ServerLoggers.systemLogger.info(" ------- Drop ---------------");
         for (PropertyDrawInstance property : dropProperties)
-            System.out.println(property);
+            ServerLoggers.systemLogger.info(property);
 
-        System.out.println(" ------- Activate tab ---------------");
+        ServerLoggers.systemLogger.info(" ------- Activate tab ---------------");
         for (ComponentView tab : activateTabs)
-            System.out.println(tab);
+            ServerLoggers.systemLogger.info(tab);
 
-        System.out.println(" ------- Activate property ---------------");
+        ServerLoggers.systemLogger.info(" ------- Activate property ---------------");
         for (PropertyDrawInstance prop : activateProps)
-            System.out.println(prop);
+            ServerLoggers.systemLogger.info(prop);
 
-        System.out.println(" ------- Collapse containers ---------------");
+        ServerLoggers.systemLogger.info(" ------- Collapse containers ---------------");
         for (ContainerView container : collapseContainers)
-            System.out.println(container);
+            ServerLoggers.systemLogger.info(container);
 
-        System.out.println(" ------- Expand containers ---------------");
+        ServerLoggers.systemLogger.info(" ------- Expand containers ---------------");
         for (ContainerView container : expandContainers)
-            System.out.println(container);
+            ServerLoggers.systemLogger.info(container);
     }
 
     public void serialize(DataOutputStream outStream, FormInstanceContext context) throws IOException {

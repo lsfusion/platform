@@ -54,6 +54,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -653,7 +654,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             return;
         if(resCalc == null || calc.orAny) {
             if(!(onlyObjects && resExpl instanceof DataClass)) {
-                System.out.println(typeCheck + " MISSING " + (resExpl instanceof DataClass ? "DATA " : "OBJECT ") + object + ", CALC : " + calc + ", INF : " + expl);
+                ServerLoggers.systemLogger.info(typeCheck + " MISSING " + (resExpl instanceof DataClass ? "DATA " : "OBJECT ") + object + ", CALC : " + calc + ", INF : " + expl);
             }
 
             return;
@@ -665,7 +666,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             return;
 
         if(!(onlyObjects && resExpl instanceof DataClass && resCalc instanceof DataClass))
-            System.out.println(typeCheck + " INCORRECT " + (resExpl instanceof DataClass && resCalc instanceof DataClass ? "DATA " : "OBJECT ") + object + ", CALC : " + calc + ", INF : " + expl);
+            ServerLoggers.systemLogger.info(typeCheck + " INCORRECT " + (resExpl instanceof DataClass && resCalc instanceof DataClass ? "DATA " : "OBJECT ") + object + ", CALC : " + calc + ", INF : " + expl);
     }
 
     public String getChangeExtSID() {

@@ -344,7 +344,7 @@ public class AutoHintsAspect {
                                 throw new HintException(new IncrementHint(property, true));
                             }
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {
-                                System.out.println("AUTO HINT NOUPDATE" + property);
+                                ServerLoggers.systemLogger.info("AUTO HINT NOUPDATE" + property);
                                 throw new HintException(new IncrementHint(property, false));
                             }
                         }

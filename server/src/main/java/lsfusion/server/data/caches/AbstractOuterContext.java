@@ -12,6 +12,7 @@ import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.value.Value;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -266,7 +267,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
             orderedHashes.put(new ContextHash(where).getInnerComponents(true).hash, where);
         for(Map.Entry<Integer, OuterContext> entry : orderedHashes.entrySet()) {
             OuterContext outerContext = entry.getValue();
-            System.out.println(tab + entry.getKey() + " " + outerContext.toString());
+            ServerLoggers.systemLogger.info(tab + entry.getKey() + " " + outerContext.toString());
             printHashes(tab + '\t', outerContext);
         }
     }

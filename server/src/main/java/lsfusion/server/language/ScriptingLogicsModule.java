@@ -6122,7 +6122,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(allCreationParams.size() <= 1) // optimization
             return allCreationParams.isEmpty() ? null : allCreationParams.get(0);
 
-        System.out.println("WARNING !!! PATCHING PARAMS : " + debugPoint + " " + (lpNotNull == null ? "NO WHERE" : patchReasons.toString()));
+        systemLogger.warn("WARNING !!! PATCHING PARAMS : " + debugPoint + " " + (lpNotNull == null ? "NO WHERE" : patchReasons.toString()));
 
         List<Object> resultParams = getParamsPlainList(allCreationParams);
         LP wrappedLCP = addJProp(and(allCreationParams.size()), resultParams.toArray());

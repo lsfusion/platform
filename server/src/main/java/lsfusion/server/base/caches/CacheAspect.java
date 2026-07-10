@@ -96,7 +96,7 @@ public class CacheAspect {
                 checkResult = null;
             }
             if(!BaseUtils.nullHashEquals(result, checkResult))
-                System.out.println("WRONG CACHE : object - " + object + ", method - " + method + ", args - " + Arrays.toString(args) + "\n\tACTUAL RESULT :" + result + "\n\tCACHED RESULT :" + checkResult);
+                ServerLoggers.systemLogger.error("WRONG CACHE : object - " + object + ", method - " + method + ", args - " + Arrays.toString(args) + "\n\tACTUAL RESULT :" + result + "\n\tCACHED RESULT :" + checkResult);
         }
         
         return result;

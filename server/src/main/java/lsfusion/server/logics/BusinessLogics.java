@@ -2007,7 +2007,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         result += ThreadLocalContext.localize("\n{logics.info.by.properties}\n\n");
         for (Property property : storedProperties)
             result += property.outputStored(true) + '\n';
-        System.out.println(result);
+        logger.info(result);
     }
 
     public ImSet<FormEntity> getFormEntities(){

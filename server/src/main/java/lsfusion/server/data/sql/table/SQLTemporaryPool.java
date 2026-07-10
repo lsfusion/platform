@@ -73,14 +73,14 @@ public class SQLTemporaryPool {
     
     public void checkAliveTables(SQLSession session, Map<String, WeakReference<TableOwner>> used) {
         try {
-            System.out.println("START " + SQLSession.getCurrentTimeStamp() + " " + session);
+            ServerLoggers.sqlLogger.info("START " + SQLSession.getCurrentTimeStamp() + " " + session);
             for(Map.Entry<FieldStruct, Set<String>> table : tables.entrySet())
                 for(String tab : table.getValue()) {
 //                    if(!used.containsKey(tab)) {
-                        System.out.println("CHECK "  + SQLSession.getCurrentTimeStamp() + " " + tab + " " + session);
+                        ServerLoggers.sqlLogger.info("CHECK "  + SQLSession.getCurrentTimeStamp() + " " + tab + " " + session);
                         session.debugExecute("INSERT INTO " + session.syntax.getSessionTableName(tab) + " SELECT * FROM " + session.syntax.getSessionTableName(tab) + " WHERE 1 > 2");
                     }
-            System.out.println("FINISHED " + SQLSession.getCurrentTimeStamp() + " " + session);
+            ServerLoggers.sqlLogger.info("FINISHED " + SQLSession.getCurrentTimeStamp() + " " + session);
         } catch (SQLException e) {
             e = e;
         }

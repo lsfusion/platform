@@ -43,6 +43,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.sql.SQLException;
 
@@ -153,7 +154,7 @@ public class SessionRows extends SessionData<SessionRows> {
 
     @Override
     public void out(SQLSession session) {
-        System.out.println("Rows :" + rows);
+        ServerLoggers.systemLogger.info("Rows :" + rows);
     }
 
     public void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) {
