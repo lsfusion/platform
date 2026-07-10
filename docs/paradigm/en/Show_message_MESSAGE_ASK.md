@@ -9,6 +9,10 @@ The *show message* operators create [actions](Actions.md) that show a text messa
 
 By default, the created action stops the thread until the user closes the message. However, this behavior can be changed using the corresponding option – in this case, the created action is completed immediately and the message is shown to the user as soon as possible (that is, the next user interaction). The first mode is called *synchronous* and the second *asynchronous*.
 
+### Message type {#type}
+
+Besides its text, a message has a *type*. The type carries a severity — informational, success, warning, or error — and determines how the message reaches the user: as a dialog box that the user closes, as a transient notification, and (or) as an entry in the `System.log` system window. By default the message is shown as a plain dialog box, without a severity mark.
+
 ### Dialog form {#dialog}
 
 It is also often necessary not only to inform the user about something, but also, for example, to request confirmation to continue an action. For such cases, the operator allows, instead of simply displaying the message (with a single `OK` button), to ask a question with positive and negative answers and thereby implement [a value input](Value_input.md). In this case, a positive answer means that the input is completed successfully, and a negative answer is treated as [input cancellation](Value_input.md#result).
