@@ -136,3 +136,24 @@ stockValue 'Stock value' (Stock s) = GROUP SUM currentBalance(Book b, s) * price
   
 
 Here the `GROUP SUM` has no `BY` block: the parameters of the created property are taken from the outer (context) parameters used in the source — `s` — while the parameter declared inside the source — `b` — is summed over. Written this way, without `BY`, the grouping can also be used directly inside other expressions (with a `BY` block it cannot).
+
+## Example 7
+
+### Task
+
+Books are marked with tags (a many-to-many relation).
+
+```lsf
+CLASS Tag 'Tag';
+in 'In' = DATA BOOLEAN (Book, Tag);
+```
+
+We need to count the number of tags of each book.
+
+### Solution
+
+```lsf
+tagCount 'Number of tags' (Book b) = GROUP SUM 1 IF in(b, Tag t);
+```
+
+This is the standard way to count objects linked through a two-parameter relation: as in [**Example 6**](#example-6), the context parameter `b` becomes the parameter of the created property, and the parameter `t` declared inside the condition is counted. A `BY` block is needed when a parameter of the created property is given by an expression over the parameters declared inside the grouping (as in [**Example 1**](#example-1)) rather than by an outer parameter.

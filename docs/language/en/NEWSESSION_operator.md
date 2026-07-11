@@ -34,15 +34,15 @@ The `NEWSESSION` operator creates an action that executes the other action in a 
 
 - `NESTED`
 
-    Optional keyword after which you can specify which [local properties](../paradigm/Data_properties_DATA.md#local) of the current session are migrated into the new session. By itself, with neither `LOCAL` nor a property list, it has no effect.
+    Optional keyword after which you can specify which [local properties](../paradigm/Data_properties_DATA.md#local) of the current session are considered [nested](../paradigm/Session_management.md#nested) for this operator: when the new session is created, their current values are copied into it, and when the executed action finishes, their values from the new session are copied back into the current session. Of the covered properties, only those that the executed action uses or changes are migrated; if the action opens interactive forms, all the covered properties are. An [`APPLY`](APPLY_operator.md) inside the new session clears the changes of these properties just like those of all other local properties (it is the cleared values that will then be copied back) — to keep the values, mark the properties as nested in the `APPLY` operator as well, or declare them `NESTED` in the [`DATA` operator](DATA_operator.md), which covers both cases. Properties declared `NESTED` in the `DATA` operator are migrated even without being listed here. By itself, with neither `LOCAL` nor a property list, the keyword has no effect.
 
 - `LOCAL`
 
-    Keyword. If specified after `NESTED`, changes to all the local properties will be visible in the new session.
+    Keyword. If specified after `NESTED`, all the local properties of the current session are migrated.
 
 - `propertyId1, ..., propertyIdN`
 
-    Non-empty list of local properties, specified after `NESTED` in parentheses, whose changes will be visible in the new session. Each list element must be a [property ID](IDs.md#propertyid).
+    Non-empty list of local properties, specified after `NESTED` in parentheses, that are migrated. Each list element must be a [property ID](IDs.md#propertyid).
 
 - `CLASSES`
 
@@ -98,6 +98,15 @@ markSelected ()  {
         // both the newly created Sku and selected[Sku] are visible here
         MESSAGE (GROUP SUM 1 IF selected(Sku s));
     }
+}
+
+// compute a value in the new session and read it after the block finishes
+currencyCount = DATA LOCAL INTEGER ();
+countCurrencies ()  {
+    NEWSESSION NESTED (currencyCount) {
+        currencyCount() <- GROUP SUM 1 IF Currency c IS Currency;
+    }
+    MESSAGE currencyCount(); // the value computed in the new session
 }
 
 // fix the new session to a specific form

@@ -15,6 +15,8 @@ Compared to implementation via simple events, constraints have a set of addition
 
 Note that in some cases, instead of showing a message to the user and canceling the transaction, it is necessary, for example, to automatically resolve the violated constraint. In that case, it is recommended to use [simple constraints](Simple_constraints.md), or, if it is impossible, simple events.
 
+Like any event condition, the constrained property is computed incrementally over the changes being applied. If it contains heavy aggregations over large tables (especially nested non-[materialized](Materializations.md) ones), the query built by this incremental computation can grow impractically large — even with computation hints on the properties involved. For such expensive checks, use a simple event instead: make its condition a cheap detector of the relevant changes, and in its handler read the heavy values into [local properties](Data_properties_DATA.md#local), check them, and show the message and [cancel](Cancel_changes_CANCEL.md) the changes explicitly.
+
 ### Show message {#message}
 
 For any non-`NULL` value [output](In_a_print_view_PRINT.md) the platform uses an automatically generated [form](Forms.md), consisting of:

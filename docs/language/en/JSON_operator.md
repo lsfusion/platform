@@ -49,6 +49,8 @@ The `JSON` and `JSONTEXT` operators create a property that builds JSON either fr
 
 The difference between the two keywords is the class of the returned value. `JSON` returns a value of the `JSON` class (a file holding the JSON document), while `JSONTEXT` returns a value of the `JSONTEXT` class (the JSON document as text).
 
+A property value of the `JSON` or `JSONTEXT` class (for example, one built by another property with this operator) is embedded into the resulting JSON as a nested object or array rather than as a string. This allows assembling a document with nested structures from separate JSON properties.
+
 When building JSON from a form, the `OBJECTS` block fixes form objects to given values: each such object is constrained to equal [the value passed](../paradigm/Open_form.md#params) and [does not participate](../paradigm/Structured_view.md#objects) in building the object group hierarchy. The `FILTERS` block adds further filter conditions to the form before the build.
 
 ### Parameters
@@ -122,6 +124,13 @@ When building JSON from a form, the `OBJECTS` block fixes form objects to given 
 ```lsf
 // builds JSON from a list of properties
 MESSAGE JSON FROM code = '1', message = 'OK';
+```
+
+```lsf
+// the itemsJson property value is embedded into the result as a nested array:
+// {"count":3,"items":[{"id":1,"name":"Item 1"},{"id":2,"name":"Item 2"},{"id":3,"name":"Item 3"}]}
+itemsJson () = JSON FROM id = i, name = 'Item ' + i WHERE iterate(i, 1, 3) ORDER i;
+MESSAGE JSON FROM count = 3, items = itemsJson();
 ```
 
 ```lsf

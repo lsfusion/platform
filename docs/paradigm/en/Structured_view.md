@@ -44,7 +44,7 @@ Unlike property names on the form, property export/import names (`EXTID`) of dif
 
 `EXTID` can have specialized postfixes:
 -   ':escapeInnerJSON'
-    This postfix means that if the value contains JSON or something resembling JSON (starts and ends with square or curly brackets), we will treat it as a string instead of as JSON.
+    This postfix disables the [embedding of JSON values](#innerjson): the property value is exported as a string even if it is itself JSON.
     Example:
     ```lsf
     regexpPattern 'Mask' () = '[0-9]';
@@ -127,6 +127,10 @@ XML of the object group ::=
     <object group name> XML with child properties, groups of properties/objects N </object group name>
 ```
 
+<a className="lsdoc-anchor" id="innerjson"/>
+
+When exporting to JSON, a string property value that is itself JSON (starts and ends with a square or curly bracket), for example a value of the `JSON` or `JSONTEXT` class, is embedded into the result as a nested object or array rather than as a string. If such a value cannot be parsed as JSON, it is exported as a plain string. The embedding can be disabled for an individual property with the ':escapeInnerJSON' postfix in the [export name](#extid). When importing from JSON, conversely, if a nested object or array corresponds to a property in the imported document, its text representation is written to the property.
+
 When exporting/importing to XML, the special `ATTR` option can be specified for a property on the form. Thus, when exporting/importing that property, its value will be stored not in a separate tag, but in the attribute of the parent tag:
 
 ```
@@ -134,6 +138,8 @@ When exporting/importing to XML, the special `ATTR` option can be specified for 
 ```
 
 When importing from XML, the name of the uppermost tag (in the rule) is ignored (according to the XML specification, there should be only one such tag).
+
+On import, the file is matched against this hierarchy by names: the value of each property, property group, or object group is read from the element under its [export/import name](#extid). Elements of the file that do not correspond to any name in the hierarchy are ignored. The reverse situation raises no error either: an object group or property group with no matching element imports nothing (its entire subtree is skipped), while a property whose own element is missing from an imported record — with its parent element present — is imported as `NULL`. In particular, when importing from JSON, the records of an object group are read only from an array under a key equal to that group's export/import name; a root-level array is converted to `{ "value" : [ ... ] }` (see [Predefined value](#value)) and is therefore read only by an object group with the export/import name `value`.
 
 Properties with `NULL` values, as well as property groups that do not have any tags inside as a result of export, are not exported (ignored).
 

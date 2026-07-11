@@ -17,7 +17,7 @@ The `PREV` operator creates a property that returns the value of the given expre
 
 
 :::info
-It's important to understand that `PREV` is not a built-in property with [composition](../paradigm/Composition_JOIN.md) but an operator. Thus, in particular `PREV(f(a))` is not equal to `[PREV(a)](f(a))`.
+It's important to understand that `PREV` is not a built-in property with [composition](../paradigm/Composition_JOIN.md) but an operator. Thus, in particular `PREV(f(a))` is not equal to `[PREV(a)](f(a))`: the session-start scope applies to the entire operand expression, including its argument sub-expressions. For example, in `PREV(f(g(a)))` the value of `g(a)` is also taken at the start of the session; if `g` is a [local property](../paradigm/Data_properties_DATA.md#local) filled in the current session, inside `PREV` it returns `NULL`, and the whole expression returns `NULL` as well. To read the previous value of a property for arguments computed in the current session, wrap `PREV` in a separate property: with `prevF(x) = PREV(f(x))` the call `prevF(g(a))` evaluates `g(a)` in the current session, and only `f` is read in the session-start state.
 :::
 
 ### Parameters

@@ -13,7 +13,19 @@ An action being called can be defined in one of the three ways:
 
 -   `EXEC` – the name of the action is specified.
 -   `EVAL` – code in the lsFusion language is specified. It is assumed that this code contains a declaration of an action named `run`. This is the action that will be called.
--   `EVAL ACTION` – action code in the lsFusion language is specified. To access a parameter, the special character `$` and the parameter number (starting from `1`) are used.
+-   `EVAL ACTION` – action code in the lsFusion language is specified. The supplied code is the body of the implicitly declared `run` action, so, unlike `EVAL`, it must not be wrapped in a `run(...) { ... }` declaration. To access a parameter, the special character `$` and the parameter number (starting from `1`) are used.
+
+For example, the same call in the two forms:
+
+```lsf
+// EVAL: a whole declaration of the run action
+run(DATE date) { MESSAGE 'Date: ' + date; }
+```
+
+```lsf
+// EVAL ACTION: only the body of the action; $1 is the first parameter
+MESSAGE 'Date: ' + $1;
+```
 
 ### Protocols
 
@@ -28,6 +40,8 @@ The URL format, depending on the method of [action definition](#actiontype), loo
 -   `EXEC` - `http://server address:port/exec?action=<action name>` or `http://server address:port/exec/<action name>`. Either the `action` parameter or the action name in the URL path must be specified.
 -   `EVAL` - `http://server address:port/eval?script=<code>`. If the `script` parameter is not specified, it is assumed that the code is passed in the first BODY parameter.
 -   `EVAL ACTION` – `http://server address:port/eval/action?script=<action code>`. If the `script` parameter is not specified, it is assumed that the code is passed in the first BODY parameter.
+
+For `EVAL` / `EVAL ACTION`, the code can thus be passed in the query string (`script=`), as the value of the `script` key of an `application/x-www-form-urlencoded` body, or as the entire request body with any other content type (for example, `text/plain; charset=UTF-8`). The raw code cannot be the whole body of an `application/x-www-form-urlencoded` request: such a body is parsed into named parameters, not treated as a single BODY parameter. Keep in mind that HTTP clients often use this content type by default (for example, `curl --data`), so an explicit `Content-Type` header is required when passing the code as the whole body.
 
 For `EXEC`, the action name can be either the action's [compound name](Element_identification.md) or its `EXTID` (the compound name is tried first). In the path form, the platform looks up the action greedily: it first tries the full path as an action name (with any `/` replaced by `_` for the compound name lookup), and if no such action exists, drops the last path segment and retries, until a match is found or `404` is returned. The part of the path left after the matched action name is passed to the `System.actionPathInfo[]` property. For example, for `/exec/df/fdf/dffd` the platform tries actions `df_fdf_dffd`, then `df_fdf`, then `df`; if only `df` matches, `fdf/dffd` is written to `System.actionPathInfo[]`.
 
@@ -71,6 +85,8 @@ The platform also fills the following properties with information about the curr
 ##### Results {#httpresult}
 
 Properties whose values must be returned as the result are passed in the request string by adding strings like `&return=<property name>` to its end. It is assumed that the values of specified properties are returned in the order of their appearance in the request string. By default, if no result properties are specified, the resulting property is the first one with a non-`NULL` value from the following [list](Built-in_classes.md#export). 
+
+The result properties from the default list above are [local](Data_properties_DATA.md#local) (`EXPORT` fills one of them), so they must be filled in the session in which the called action itself runs: for example, a value exported with [`EXPORT`](Data_export_EXPORT.md) inside a [new session](New_session_NEWSESSION_NESTEDSESSION.md) block stays in that session and does not reach the response, unless it is migrated back as a [nested](Session_management.md#nested) local property. Perform the export in the action's own session — the called action already runs in a separate session, so there is normally no need to open a new one.
 
 Alternatively, an action that has a [result](Actions.md) returns it directly as the response body — the simplest way to get a single value back, and the usual form for [`EVAL` / `EVAL ACTION`](#actiontype):
 

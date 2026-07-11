@@ -295,6 +295,18 @@ PROPERTY RULES
     so an outer cast like `NUMERIC[16,4](a * b / c)`
     silently drops the fractional part;
     the correct form is `NUMERIC[16,4](a) * b / c`.
+
+17. A parameter's class annotation (`prop(SubClass x)`) is a
+    signature, not a runtime filter: it resolves same-named
+    properties and sets the signature, but the computed set is
+    determined by the properties used in the expression.
+    Reading a parent-class property with a subclass-annotated
+    parameter still ranges over ALL objects of the parent class
+    (e.g. in a `GROUP SUM` — silently wrong totals).
+
+    To restrict the set to a class, the assistant MUST add
+    an explicit `x IS SubClass` condition (or use a property
+    declared on that subclass).
 ----------------------------------------------------------------
 ACTION RULES
 
@@ -383,6 +395,16 @@ ACTION RULES
    In generated scripts (`eval`, data seeding) the assistant
    SHOULD give the parameters of top-level statements unique
    names, so as not to depend on the statement order.
+
+8. Many system utility actions return their result through
+   a same-named parameterless `LOCAL` property (for example,
+   in `Utils`: the action `fileExists[ISTRING[500]]` writes
+   into the property `fileExists[]`). Such an element is an ACTION,
+   not a boolean property: the assistant MUST call the action
+   first and then read the parameterless property
+   (`fileExists(path); IF fileExists() THEN ...`), and MUST
+   NOT use the parameterized form inside an expression
+   (`IF fileExists(path)` is wrong).
 ----------------------------------------------------------------
 EVENT RULES (`WHEN`)
 
@@ -423,6 +445,18 @@ EVENT RULES (`WHEN`)
 
    In the absence of an explicit change the event writes
    the value of the expression even when it is `NULL`.
+
+5. Inline in an action or event body, `PREV(<expr>)` takes
+   the WHOLE wrapped expression to the session-start state,
+   including its argument sub-expressions: an argument
+   computed in the current session (a `LOCAL`, a property
+   of an object created in the session) reads as `NULL`
+   inside `PREV`, silently nulling the result.
+
+   To read previous data with current arguments, the
+   assistant MUST wrap `PREV` in a separate property —
+   `prevF(x) = PREV(f(x));` — and call it instead of
+   writing `PREV(f(<session-computed arg>))` inline.
 ----------------------------------------------------------------
 CONSTRAINT RULES
 
@@ -443,6 +477,17 @@ CONSTRAINT RULES
    express the restriction (e.g. the filter depends on
    transient UI state not modeled as a property, or the
    rule is advisory rather than enforced).
+
+3. The assistant SHOULD NOT put heavy aggregates over large
+   tables (especially nested non-materialized ones) into a
+   `CONSTRAINT` condition: the incremental check at apply
+   can expand into an impractically large query, even with
+   computation hints on the properties.
+
+   For such expensive checks, use a `WHEN` event instead:
+   a cheap change-detector condition, reads of the heavy
+   values into `LOCAL`s in the handler, then `MESSAGE` +
+   `CANCEL` on violation.
 ----------------------------------------------------------------
 PROPERTY NAMING POLICY
 

@@ -49,6 +49,8 @@ offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF
 
 Разница между двумя ключевыми словами заключается в классе возвращаемого значения. `JSON` возвращает значение класса `JSON` (файл, содержащий JSON-документ), а `JSONTEXT` возвращает значение класса `JSONTEXT` (JSON-документ в виде текста).
 
+Значение свойства, имеющее класс `JSON` или `JSONTEXT` (например, сформированное другим свойством с этим оператором), встраивается в результирующий JSON как вложенный объект или массив, а не как строка. Это позволяет собирать документ с вложенными структурами из отдельных JSON-свойств.
+
 При формировании JSON из формы блок `OBJECTS` фиксирует объекты формы заданными значениями: каждый такой объект ограничивается равенством [переданному значению](../paradigm/Open_form.md#params) и [не участвует](../paradigm/Structured_view.md#objects) в построении иерархии групп объектов. Блок `FILTERS` добавляет к форме дополнительные условия фильтрации перед формированием.
 
 ### Параметры
@@ -122,6 +124,13 @@ offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF
 ```lsf
 // формирует JSON из списка свойств
 MESSAGE JSON FROM code = '1', message = 'OK';
+```
+
+```lsf
+// значение свойства itemsJson встраивается в результат как вложенный массив:
+// {"count":3,"items":[{"id":1,"name":"Item 1"},{"id":2,"name":"Item 2"},{"id":3,"name":"Item 3"}]}
+itemsJson () = JSON FROM id = i, name = 'Item ' + i WHERE iterate(i, 1, 3) ORDER i;
+MESSAGE JSON FROM count = 3, items = itemsJson();
 ```
 
 ```lsf

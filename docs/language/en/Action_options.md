@@ -279,4 +279,4 @@ Action annotation. Begins with `@@`. The following annotations are supported:
 
 - `CONFIRM`
 
-    Keyword. If specified, the user will be asked to confirm the action when it is executed. Sets the value for the default design and can be overridden in the `DESIGN` statement.
+    Keyword. If specified, the user will be asked to confirm the action when executing it interactively on a form. The confirmation is requested by the client only on interactive activation (for example, a button click); when the action is invoked from another action or through the [external API](../paradigm/Access_from_an_external_system.md), no confirmation is requested. Sets the value for the default design ([`askConfirm` attribute](DESIGN_statement.md)) and can be overridden in the `DESIGN` statement.

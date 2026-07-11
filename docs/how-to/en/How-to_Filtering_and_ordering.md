@@ -74,6 +74,8 @@ FORM onStockLocal 'Balances'
 
 In this case a warehouse cannot be declared via the `OBJECTS` block, because then not specifying a warehouse for filtering will not be an option.
 
+The condition `s == filterStock() OR NOT filterStock()` is the standard *optional filter* pattern: while the filter value is empty (`filterStock()` is `NULL`), the `OR NOT` branch is true for every row and the form shows all records; once a warehouse is selected, only its rows remain.
+
 ## Example 3
 
 ### Task

@@ -81,7 +81,7 @@ The `TOP` and `OFFSET` blocks restrict the subset of records selected inside eac
 
 - `expr1, ..., exprN`
 
-    Main expressions. For `SUM`, `PREV`, `LAST`, and `UNGROUP` the list contains exactly one expression: for `SUM` it is summed cumulatively over the partition window; for `PREV` and `LAST` it is taken from the previous-row and current-row respectively (`NULL` for the first row in the case of `PREV`); for `UNGROUP` it defines the proportion (with `PROPORTION`) or the limit (with `LIMIT`). For `CUSTOM`, the list contains the operands passed to `aggrFunc`; it may be empty, but then the `ORDER` block is mandatory.
+    Main expressions. For `SUM`, `PREV`, `LAST`, and `UNGROUP` the list contains exactly one expression: for `SUM` it is summed cumulatively over the partition window; for `PREV` and `LAST` it is taken from the previous-row and current-row respectively (`NULL` for the first row in the case of `PREV`); for `UNGROUP` it defines the proportion (with `PROPORTION`) or the limit (with `LIMIT`). With `UNGROUP`, an object collection whose value of this expression is `NULL` is excluded from the distribution — the created property returns `NULL` for it — unlike a collection with the value `0`, which participates in the distribution. The `STRICT` remainder is likewise assigned only among the participating collections. If every collection must participate, convert the possible `NULL` of this expression to `0` (for example, with the [`OVERRIDE` operator](OVERRIDE_operator.md)). For `CUSTOM`, the list contains the operands passed to `aggrFunc`; it may be empty, but then the `ORDER` block is mandatory.
 
 - `groupExpr1, ..., groupExprM`
 
