@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
+import org.apache.commons.io.input.BOMInputStream;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -39,7 +40,8 @@ public class ReadPropertiesAction extends InternalAction {
             RawFileData fileData = (RawFileData) context.getKeyValue(fileInterface).getValue();
 
             Properties properties = new Properties();
-            properties.load(fileData.getInputStream());
+            // BOMInputStream strips a leading UTF-8 BOM; Properties.load would otherwise decode it (ISO-8859-1) into the first key and silently drop it
+            properties.load(new BOMInputStream(fileData.getInputStream()));
 
             LP<?> property = findProperty("properties[STRING]");
 

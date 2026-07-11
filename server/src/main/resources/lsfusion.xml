@@ -10,7 +10,17 @@
        default-lazy-init="true">
 
     <!-- 1. Loading values from settings.properties and lsfusion.properties with low priority -->
-    <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" order="1"/>
+    <!-- files are read via BOMPropertiesFactoryBean (UTF-8 + BOM strip) instead of location=, so a UTF-8 BOM or non-ASCII value doesn't silently corrupt the first key / value -->
+    <bean id="lsfFileProperties" class="lsfusion.server.base.controller.lifecycle.BOMPropertiesFactoryBean">
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:lsfusion.properties</value>
+                <value>file:conf/settings.properties</value>
+            </list>
+        </property>
+    </bean>
+    <context:property-placeholder ignore-resource-not-found="true" properties-ref="lsfFileProperties" order="1"/>
 
     <!-- 2. Loading values from Environment variables, higher priority than files -->
     <!--  Spring automatically converts property names by replacing "." with "_" and converting them to uppercase.

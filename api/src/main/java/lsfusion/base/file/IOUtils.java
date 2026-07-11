@@ -100,7 +100,12 @@ public class IOUtils {
                                                             : new InputStreamReader(newInStream, charsetName))) {
             result = reader.lines().collect(Collectors.joining(lineSeparator));
         }
-        
+
+        // strip a leading UTF-8 BOM: decoded as U+FEFF it would glue to the first token (module name, first key, ...) and silently corrupt it
+        if (!result.isEmpty() && result.charAt(0) == '\uFEFF') {
+            result = result.substring(1);
+        }
+
         if (endsWithNewLine) {
             result += lineSeparator;
         }
