@@ -2,6 +2,8 @@ package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -97,6 +99,11 @@ public abstract class StringFileBasedClass extends FileBasedClass<String> implem
     @Override
     protected FileData formatHTTPNotNull(String value, Charset charset, Result<String> fileName) {
         return ExternalUtils.decodeFileData(value, charset.name(), extension);
+    }
+
+    @Override
+    public NamedFileData readPropNotNull(String value, String charset) {
+        return new NamedFileData(new FileData(new RawFileData(formatString(value), charset), extension));
     }
 
     @Override
