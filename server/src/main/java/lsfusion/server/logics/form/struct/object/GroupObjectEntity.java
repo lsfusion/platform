@@ -13,6 +13,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -274,15 +275,18 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return new PropertyObjectEntity(fullSelectImpl.property, fullSelectImpl.mapping.join(mapObjects.reverse()));
     }
 
-    public static PropertyObjectEntity<?> getGroupChangeSelectProperty(Property<?> isSelectProperty, PropertyObjectEntity<ClassPropertyInterface> selectProp, PropertyObjectEntity<ClassPropertyInterface> filterProp) {
+    // FILTER AND (NOT ISSELECT OR SELECT) - used by the group change (Action.getGroupChange) and the toolbar sum / record count
+    // STRONG (not @IdentityLazy) to keep a stable identity: it keys the never-evicted per-form InstanceFactory cache, which an LRU-evicted rebuild would grow
+    @IdentityStrongLazy
+    public PropertyObjectEntity<?> getGroupChangeSelectProperty() {
+        PropertyObjectEntity<ClassPropertyInterface> selectProp = getGroupProp(GroupObjectRowProp.SELECT);
         ImRevMap<ObjectEntity, PropertyInterface> mapObjects = BaseUtils.immutableCast(selectProp.mapping.reverse());
 
-        // FILTER AND (NOT ISSELECT OR SELECT)
         PropertyMapImplement<?, PropertyInterface> groupChangeSelectImpl = PropertyFact.createAnd(
-                filterProp.getImplement(mapObjects),
+                getGroupProp(GroupObjectRowProp.FILTER).getImplement(mapObjects),
                 PropertyFact.createUnion(
                         mapObjects.valuesSet(),
-                        PropertyFact.createNot(isSelectProperty.getImplement(SetFact.EMPTYORDER())),
+                        PropertyFact.createNot(getIsSelectProperty().getImplement(SetFact.EMPTYORDER())),
                         selectProp.getImplement(mapObjects)
                 )
         );

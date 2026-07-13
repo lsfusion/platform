@@ -256,8 +256,8 @@ To access design components, you can use their names or address property compone
 |`showViews`|Show the view buttons|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showFilters`|Show the filters setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showSettings`|Show the table setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showCountQuantity`|Show the row quantity calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showCalculateSum`|Show the column sum calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showCountQuantity`|Show the row quantity calculation button. If the user has marked rows, only they are counted|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showCalculateSum`|Show the column sum calculation button. If the user has marked rows, the sum is calculated only for them|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showPrintGroupXls`|Show the XLS export button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showManualUpdate`|Show the manual update button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 

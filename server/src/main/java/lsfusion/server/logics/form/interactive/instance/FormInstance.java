@@ -1188,9 +1188,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
+    // aggregate over the same rows a group change would target - the marked rows if any, all filtered otherwise (see Action.getGroupChange)
+    private Where getSelectionWhere(GroupObjectInstance group, ImRevMap<ObjectInstance, KeyExpr> mapKeys) throws SQLException, SQLHandledException {
+        return instanceFactory.getInstance(group.entity.getGroupChangeSelectProperty()).getExpr(mapKeys, getModifier()).getWhere();
+    }
+
     public long countRecords(int groupObjectID) throws SQLException, SQLHandledException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
-        Expr expr = GroupExpr.create(MapFact.EMPTY(), ValueExpr.COUNT, group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.EMPTY());
+        Expr expr = GroupExpr.create(MapFact.EMPTY(), ValueExpr.COUNT, getSelectionWhere(group, group.getMapKeys()), GroupType.SUM, MapFact.EMPTY());
         QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("quant", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(this);
@@ -1210,7 +1215,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
 
-        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getSumProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.EMPTY());
+        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getSumProperty().getExpr(keys, getModifier()), getSelectionWhere(groupObject, mapKeys), GroupType.SUM, MapFact.EMPTY());
 
         QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("sum", expr);

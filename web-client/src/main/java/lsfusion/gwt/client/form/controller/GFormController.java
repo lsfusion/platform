@@ -1743,6 +1743,7 @@ public class GFormController implements EditManager {
     }
 
     public void countRecords(final GGroupObject groupObject) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(groupObject); // flush the pending selection so the server aggregates the marked rows
         asyncDispatch(new CountRecords(groupObject.ID), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
@@ -1752,6 +1753,7 @@ public class GFormController implements EditManager {
     }
 
     public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(groupObject); // flush the pending selection so the server aggregates the marked rows
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
