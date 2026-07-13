@@ -763,11 +763,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
 
         // Use FILTER AND (NOT ISSELECT OR SELECT) instead of just FILTER for group change
-        PropertyObjectEntity<?> groupChangeSelectProperty = GroupObjectEntity.getGroupChangeSelectProperty(
-                entity.getIsSelectProperty(),
-                entity.getGroupProp(GroupObjectRowProp.SELECT),
-                entity.getGroupProp(GroupObjectRowProp.FILTER)
-        );
+        PropertyObjectEntity<?> groupChangeSelectProperty = entity.getGroupChangeSelectProperty();
 
         return getGroupChange(groupChangeSelectProperty.getImplement(reversedMapping),
                               entity.getGroupProp(GroupObjectRowProp.ORDER).getImplement(reversedMapping),
