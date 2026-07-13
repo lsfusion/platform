@@ -295,10 +295,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        if (action.fileData == null || action.printerName == null) {
+        if (action.fileData == null && action.printerName == null) {
             GwtClientUtils.openFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout);
         } else {
-            executeNoResultNative("print", new Object[]{action.fileData, null, null, action.printerName},
+            executeNoResultNative("print", new Object[]{action.fileData, null, null, action.printerName, !action.autoPrint},
                     () -> GwtClientUtils.openFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout));
         }
     }
