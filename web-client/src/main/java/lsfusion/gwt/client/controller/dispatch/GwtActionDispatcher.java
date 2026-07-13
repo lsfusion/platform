@@ -493,15 +493,20 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         onResult.accept(value, null);
     }
 
-    private static void executeNoResultNative(String command, Object[] arguments, Runnable noNative) {
+    private void executeNoResultNative(String command, Object[] arguments, Runnable noNative) {
+        GwtClientUtils.AsyncCallback<JavaScriptObject> callback = res -> {
+            String error = getJSONError(res);
+            if (error != null)
+                showErrorMessage(new RuntimeException(command + ": " + error), PopupOwner.GLOBAL);
+        };
         JavaScriptObject flutter = getFlutterObject();
         if (flutter != null) {
-            executeFlutter(flutter, command, arguments, res -> {});
+            executeFlutter(flutter, command, arguments, callback);
             return;
         }
         JavaScriptObject agent = getWebAgentObject();
         if (agent != null) {
-            executeAgent(agent, command, arguments, res -> {});
+            executeAgent(agent, command, arguments, callback);
             return;
         }
         if (noNative == null)
