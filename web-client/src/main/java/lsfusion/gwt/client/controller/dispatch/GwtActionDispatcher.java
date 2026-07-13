@@ -582,7 +582,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public String execute(GWriteToPrinterAction action) {
-        return executeAsyncResultNative("print", new String[] {null, null, action.text, action.printerName}, this::getJSONStringResult);
+        return executeAsyncResultNative("print", new Object[] {null, null, action.text, action.printerName, false, action.charset}, this::getJSONStringResult);
     }
 
     @Override
