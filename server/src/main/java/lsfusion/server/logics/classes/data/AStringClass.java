@@ -199,6 +199,13 @@ public abstract class AStringClass extends TextBasedClass<String> {
         statement.setString(num, (String) value);
     }
 
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        if(blankPadded && !length.isUnlimited()) // should correspond read / formatString, which rtrim blank-padded values
+            return "RTRIM(" + valueSource + ")";
+        return super.formatStringSource(valueSource, syntax);
+    }
+
     public String parseString(String s) {
         return s.replace("\u0000", "");
     }
