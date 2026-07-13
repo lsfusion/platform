@@ -7778,7 +7778,7 @@
     },
     "paradigm/Access_from_an_external_system.md": {
       "file_hash": "sha256:a2592af09cc237e560bc99b958dbe73fba58e2142de11e996bb1ba070ed88c94",
-      "indexed_at": "2026-07-11T11:54:27Z",
+      "indexed_at": "2026-07-13T11:21:53Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7842,9 +7842,9 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-01": {
-          "file_id": "file-UswEMAC9sYxBSZAojukjPS",
+          "file_id": "file-5t6s2i6Y3J8Pstsv4bXs5Z",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:db8a810920a6c91b43dbd152042b05710a4e50cb5023eb6a1be258cc2ada758c",
+          "section_payload_hash": "sha256:37e9bcfa214f58948f0105a6e1341f97ea7d361c7d7949e112846c3461c1d57a",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
@@ -7866,7 +7866,7 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "paradigm/Access_from_an_internal_system.md": {
       "file_hash": "sha256:e672478aa6d9c418103e04ef5bfbb2a776613da4d365af42fab013c98f7d3063",
@@ -14489,7 +14489,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "1ebc0c5eda393b3cece7dd2a7d6f23c4ed7d2313",
+  "last_indexed_docs_commit": "3e4f8bf74950cbf4ccb43d13877e0e95f392f24a",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
