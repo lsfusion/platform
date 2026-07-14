@@ -233,8 +233,8 @@
       "stale": false
     },
     "how-to/How-to.md": {
-      "file_hash": "sha256:d205f660baee47eaf1372fb7d1980a656dd2f12d5814ee28e0f21de3858938a2",
-      "indexed_at": "2026-05-22T21:38:19Z",
+      "file_hash": "sha256:a0750e8b38f4f1c1e8de4dc9a2e3711ff84934391207db44581b9f693f37b697",
+      "indexed_at": "2026-07-14T07:44:04Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -244,9 +244,9 @@
       },
       "sections": {
         "How-to::how-to-read-these-sections": {
-          "file_id": "file-7XJLGPkRU7AN8RhKJdZdbM",
+          "file_id": "file-Xs36HjCtnpjdxdbvMKwnCz",
           "heading_path": "How-to > How to read these sections",
-          "section_payload_hash": "sha256:f130d56cba079c917b779f69adeea0490256ea3a0b904749370f932918948dd1",
+          "section_payload_hash": "sha256:564eb5d92abe23819a9057f95366fd5c53388ec19e842af5905d94c86ad20f97",
           "source_file": "how-to/How-to.md"
         }
       },
@@ -1948,6 +1948,56 @@
           "heading_path": "How-to: JSON parsing > Example 5",
           "section_payload_hash": "sha256:e883ff0169afd70f67ea49ec66b02aac9473dcae3a027945ad4d712366e708ae",
           "source_file": "how-to/How-to_JSON_parsing.md"
+        }
+      },
+      "stale": false
+    },
+    "how-to/How-to_Logging.md": {
+      "file_hash": "sha256:3deaaddc999692cc306fecf01dc2ac26c13756db56f7e7f014677fb76ff44d4a",
+      "indexed_at": "2026-07-14T07:44:16Z",
+      "indexed_sourceType": "how-to",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "How-to_Logging::how-to-logging": {
+          "file_id": "file-1xayjYkPnnfYHJmcn1vxsw",
+          "heading_path": "How-to: Logging",
+          "section_payload_hash": "sha256:e0976cf8efde7e95d5e9f8a34c7921fefd7ea870cccdfaba6339c6439d7a0336",
+          "source_file": "how-to/How-to_Logging.md"
+        },
+        "How-to_Logging::see-also": {
+          "file_id": "file-5Tuj6Qh7MvLcKnA9cXFuC3",
+          "heading_path": "How-to: Logging > See also",
+          "section_payload_hash": "sha256:c932d1f79fb65a11c7d1d81b75a63ff9b7f00d1d1cf8137a7d6fe883b041c368",
+          "source_file": "how-to/How-to_Logging.md"
+        },
+        "How-to_Logging::task-001": {
+          "file_id": "file-PvFDN6U2HE5p7eiToekbv7",
+          "heading_path": "How-to: Logging > Example 1",
+          "section_payload_hash": "sha256:f7ee34a7b2292e7d408d3984191984572d7d9621ca5f7bbe76b8de9d60df2766",
+          "source_file": "how-to/How-to_Logging.md"
+        },
+        "How-to_Logging::task-002": {
+          "file_id": "file-1Upz18f9BfF1cPYZg83KCC",
+          "heading_path": "How-to: Logging > Example 2",
+          "section_payload_hash": "sha256:0e36648e891cce0c009cd1a8f0999d0c6cc6a958c70229787625f59e3e59b143",
+          "source_file": "how-to/How-to_Logging.md"
+        },
+        "How-to_Logging::task-003": {
+          "file_id": "file-RvLVwKAL41afVthgT2HQdM",
+          "heading_path": "How-to: Logging > Example 3",
+          "section_payload_hash": "sha256:40422e9b62cf5ebd5d402434ad6d486ca7759596a5019f674c583e017079d3f5",
+          "source_file": "how-to/How-to_Logging.md"
+        },
+        "How-to_Logging::task-004": {
+          "file_id": "file-1cYKAdA7yPw4HyfpXT77Go",
+          "heading_path": "How-to: Logging > Example 4",
+          "section_payload_hash": "sha256:ad12d5470629f6dc499c238a185c9092bdf7b13538b54e0ecd091ad9b617efa9",
+          "source_file": "how-to/How-to_Logging.md"
         }
       },
       "stale": false
@@ -14489,7 +14539,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3e4f8bf74950cbf4ccb43d13877e0e95f392f24a",
+  "last_indexed_docs_commit": "3a4f9f43e47d705d0f0faed5d4b0ed6863c56281",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
