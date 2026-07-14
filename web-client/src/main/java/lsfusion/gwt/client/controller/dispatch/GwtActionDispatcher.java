@@ -565,8 +565,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GWriteAction action) {
         if (action.fileUrl != null) {
             String downloadURL = getAppDownloadURL(action.fileUrl);
-            //todo: status 401 from RestAuthenticationEntryPoint
-            executeNoResultNative("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath}, () -> fileDownload(downloadURL));
+            // the agent writes fileData and ignores the url (it can't download it - no
+            // session cookie, 401); flutter still downloads the url and ignores fileData
+            executeNoResultNative("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath, action.fileData}, () -> fileDownload(downloadURL));
         }
     }
 

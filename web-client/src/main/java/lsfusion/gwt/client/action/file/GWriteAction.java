@@ -6,13 +6,15 @@ import lsfusion.gwt.client.action.GExecuteAction;
 public class GWriteAction extends GExecuteAction {
     public String fileUrl;
     public String filePath;
+    public String fileData;
 
     @SuppressWarnings("UnusedDeclaration")
     public GWriteAction() {}
 
-    public GWriteAction(String fileUrl, String filePath) {
+    public GWriteAction(String fileUrl, String filePath, String fileData) {
         this.fileUrl = fileUrl;
         this.filePath = filePath;
+        this.fileData = fileData;
     }
 
     @Override
