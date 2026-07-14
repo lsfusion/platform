@@ -169,6 +169,12 @@ serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
+useClientLogsPinMode '{system.events.logs.pin.use.client}' = DATA BOOLEAN (DesignEnv);
+designEnvLogsPinMode '{logs.pin.mode}' = DATA BOOLEAN (DesignEnv);
+serverLogsPinMode '{logs.pin.mode}' = DATA BOOLEAN ();
+logsPinMode '{logs.pin.mode}' (DesignEnv d) = IF useClientLogsPinMode(d) THEN designEnvLogsPinMode(d) ELSE serverLogsPinMode();
+logsPinMode() = logsPinMode(currentDesignEnv());
+
 mobileMode '{service.mobile.mode}' = DATA TBOOLEAN(DesignEnv);
 mobileMode() = mobileMode(currentDesignEnv());
 suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
@@ -194,6 +200,12 @@ toggleNavigatorPinMode '{system.events.navigator.pin.toggle}' () {
     apply();
 }
 navigatorPinModeClass = ABSTRACT STRING();
+
+toggleLogsPinMode '{system.events.logs.pin.toggle}' () {
+    designEnvLogsPinMode(currentDesignEnv()) <- NOT logsPinMode();
+    useClientLogsPinMode(currentDesignEnv()) <- TRUE;
+    apply();
+}
 
 needReload = DATA LOCAL BOOLEAN();
 WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionNavbar(de)) OR CHANGED (mobileMode(de))
@@ -694,7 +706,7 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
     (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
 toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-over-selected-hover' ELSE '');
-logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
+logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT logsPinMode() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session)) IN id;

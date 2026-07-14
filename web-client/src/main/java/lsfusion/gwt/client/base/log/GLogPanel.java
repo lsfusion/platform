@@ -1,12 +1,16 @@
 package lsfusion.gwt.client.base.log;
 
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.navigator.view.NavigatorPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -18,13 +22,22 @@ public class GLogPanel extends NavigatorPanel {
 
     private RecentlyEventClassHandler recentlySelected;
 
-    public GLogPanel() {
+    public GLogPanel(Runnable togglePinMode) {
         super(true);
 
         logPanel = new FlexPanel(true);
         GwtClientUtils.addClassName(logPanel, "nav-log-panel");
 
         panel.add(logPanel);
+
+        GToolbarButton pinButton = new GToolbarButton(StaticImage.PIN, ClientMessages.Instance.get().logPanelPinModeToggle()) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> togglePinMode.run();
+            }
+        };
+        GwtClientUtils.addClassName(pinButton, "nav-log-pin");
+        panel.add(pinButton);
 
         recentlySelected = new RecentlyEventClassHandler(panel, true, "parent-was-selected-recently", 2000);
     }

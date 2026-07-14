@@ -13,8 +13,8 @@ public final class GLog {
     private static GLogPanel logPanel;
     public static boolean isLogPanelVisible;
 
-    public static Widget createLogPanel(boolean visible) {
-        logPanel = new GLogPanel();
+    public static Widget createLogPanel(boolean visible, Runnable togglePinMode) {
+        logPanel = new GLogPanel(togglePinMode);
         isLogPanelVisible = visible;
         return logPanel;
     }

@@ -73,6 +73,13 @@ public class StaticImage extends BaseStaticImage {
 
     public static final StaticImage HAMBURGER = new StaticImage("fa-solid fa-bars", "hamburger.png");
 
+    public static final StaticImage PIN = new StaticImage("fa-solid fa-thumbtack", "pin.png") {
+        @Override
+        public boolean useIcon() {
+            return true;
+        }
+    };
+
     public static final StaticImage LOADING_BAR_GIF = new StaticImage("loading_bar.gif");
     public static final StaticImage LOADING_BAR = new StaticImage("loading_bar.png");
     public static final StaticImage LOADING_ASYNC = new StaticImage("fa-solid fa-spinner fa-spin", "loading_async.gif");

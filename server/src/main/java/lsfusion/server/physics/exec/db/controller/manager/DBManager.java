@@ -2176,6 +2176,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         systemEventsLM.serverSize.change(isRedundantString(size) ? NullValue.instance : systemEventsLM.size.getDataObject(size), session);
         systemEventsLM.serverNavbar.change(isRedundantString(navbar) ? NullValue.instance : systemEventsLM.navbar.getDataObject(navbar), session);
         systemEventsLM.serverNavigatorPinMode.change(businessLogics.navigatorPinMode, true, session);
+        systemEventsLM.serverLogsPinMode.change(businessLogics.logsPinMode, session);
         apply(session);
     }
 

@@ -29,6 +29,8 @@ public interface ClientMessages extends Messages {
     
     String navigator();
 
+    String logPanelPinModeToggle();
+
     String formRendererEmpty();
     String formRendererNotDefined();
     String formRendererRequired();

@@ -67,6 +67,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP serverSize;
     public LP serverNavbar;
     public LP serverNavigatorPinMode;
+    public LP serverLogsPinMode;
 
     public LP computerConnection;
     public LP remoteAddressConnection;
@@ -195,6 +196,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         serverSize = findProperty("serverSize[]");
         serverNavbar = findProperty("serverNavbar[]");
         serverNavigatorPinMode = findProperty("serverNavigatorPinMode[]");
+        serverLogsPinMode = findProperty("serverLogsPinMode[]");
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");

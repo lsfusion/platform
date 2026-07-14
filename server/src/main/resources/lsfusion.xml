@@ -1073,5 +1073,6 @@
         <property name="size" value="${user.size:#{null}}"/>
         <property name="navbar" value="${user.navbar:#{null}}"/>
         <property name="navigatorPinMode" value="${user.navigatorPinMode:#{false}}"/>
+        <property name="logsPinMode" value="${user.logsPinMode:#{false}}"/>
     </bean>
 </beans>

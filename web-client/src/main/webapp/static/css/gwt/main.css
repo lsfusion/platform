@@ -36,6 +36,15 @@
     white-space: nowrap;
 }
 
+.nav-log-pin {
+    margin-top: auto;
+    align-self: flex-start;
+}
+
+.navbar-always-hide-unpinned .nav-log-pin .fa-thumbtack {
+    transform: rotate(90deg);
+}
+
 .vertical-stretch-separator {
     border-left: 1px solid var(--panel-border-color);
     margin: 0.1875rem 0;
