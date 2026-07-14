@@ -810,8 +810,9 @@ module.exports = {
             },
             'how-to/How-to_Metaprogramming', 
             'how-to/How-to_Physical_model', 
-            'how-to/How-to_Internationalization', 
+            'how-to/How-to_Internationalization',
             'how-to/How-to_Adding_New_Fonts',
+            'how-to/How-to_Logging',
           ]
         },
       ]
