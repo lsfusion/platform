@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
 import com.google.common.base.Throwables;
-import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.type.Type;

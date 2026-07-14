@@ -1,6 +1,6 @@
 package lsfusion.server.data.type;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -22,7 +22,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import lsfusion.server.physics.admin.Settings;
@@ -140,7 +140,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T read(Object value); // it is also a sort of parsing, but some "really close" types instead of strings
 
-    OverJDBField formatDBF(String fieldName) throws JDBFException;
+    JDBField formatDBF(String fieldName) throws JDBFException;
     Object formatJSON(T object); // returns Number, String, Boolean
     String formatJSONSource(String valueSource, SQLSyntax syntax); // should correspond formatJSON
     String getJSONType();

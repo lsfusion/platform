@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
 import com.google.common.base.Throwables;
-import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -17,9 +16,9 @@ public class ExportDBFWriter extends ExportFilePlainWriter {
     public ExportDBFWriter(ImOrderMap<String, Type> fieldTypes, String charset) throws IOException, JDBFException {
         super(fieldTypes);
 
-        OverJDBField[] fields = getFields();
+        JDBField[] fields = getFields();
         if(fields.length == 0) // dbf format (with 13 terminator) just does not support no fields  
-            fields = new OverJDBField[] {new OverJDBField("dumb", 'N', 1, 0) };
+            fields = new JDBField[] {new JDBField("dumb", 'N', 1, 0) };
         writer = new DBFWriter(file.getAbsolutePath(), fields, charset);
     }
 
@@ -43,14 +42,14 @@ public class ExportDBFWriter extends ExportFilePlainWriter {
         }
     }
 
-    private OverJDBField[] getFields() {
-        ImOrderSet<OverJDBField> fields = fieldTypes.mapOrderSetValues((key, value) -> {
+    private JDBField[] getFields() {
+        ImOrderSet<JDBField> fields = fieldTypes.mapOrderSetValues((key, value) -> {
             try {
                 return value.formatDBF(key);
             } catch (JDBFException e) {
                 throw new RuntimeException(e);
             }
         });
-        return fields.toArray(new OverJDBField[fields.size()]);
+        return fields.toArray(new JDBField[fields.size()]);
     }
 }

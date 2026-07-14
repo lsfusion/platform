@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
@@ -9,7 +9,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -160,9 +160,9 @@ public abstract class AStringClass extends TextBasedClass<String> {
     }
 
     @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+    public JDBField formatDBF(String fieldName) throws JDBFException {
         ExtInt charLength = getCharLength();
-        return OverJDBField.createField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
+        return JDBField.createField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
     }
 
     @Override

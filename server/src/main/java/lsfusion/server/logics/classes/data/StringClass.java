@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.Compare;
@@ -12,7 +12,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.*;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

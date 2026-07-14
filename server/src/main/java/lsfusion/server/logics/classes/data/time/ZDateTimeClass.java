@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.connection.LocalePreferences;
@@ -12,7 +12,7 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -199,8 +199,8 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
     }
 
     @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return OverJDBField.createField(fieldName, 'D', 8, 0);
+    public JDBField formatDBF(String fieldName) throws JDBFException {
+        return JDBField.createField(fieldName, 'D', 8, 0);
     }
 
     @Override

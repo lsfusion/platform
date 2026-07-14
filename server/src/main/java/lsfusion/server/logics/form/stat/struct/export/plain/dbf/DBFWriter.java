@@ -10,12 +10,12 @@
 
 package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
-import com.hexiong.jdbf.JDBFException;
-import com.hexiong.jdbf.JDBField;
 import lsfusion.server.physics.admin.Settings;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * <p>Title: java访问DBF文件的接口</p>

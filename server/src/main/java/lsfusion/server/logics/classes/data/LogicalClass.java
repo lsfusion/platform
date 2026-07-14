@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
@@ -13,7 +13,7 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import lsfusion.server.physics.admin.Settings;
@@ -245,8 +245,8 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return OverJDBField.createField(fieldName, 'L', 1, 0);
+    public JDBField formatDBF(String fieldName) throws JDBFException {
+        return JDBField.createField(fieldName, 'L', 1, 0);
     }
 
     public boolean calculateStat() {

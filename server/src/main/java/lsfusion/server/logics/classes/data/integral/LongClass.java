@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data.integral;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -9,7 +9,7 @@ import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.PreparedStatement;
@@ -79,8 +79,8 @@ public class LongClass extends IntClass<Long> implements DBType {
     }
 
     @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return OverJDBField.createField(fieldName, 'N', 20, 0);
+    public JDBField formatDBF(String fieldName) throws JDBFException {
+        return JDBField.createField(fieldName, 'N', 20, 0);
     }
 
     public int getSQL(SQLSyntax syntax) {

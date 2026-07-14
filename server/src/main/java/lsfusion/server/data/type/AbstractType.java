@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
 import com.google.common.base.Throwables;
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.file.FileData;
@@ -25,7 +25,7 @@ import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
@@ -250,8 +250,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return OverJDBField.createField(fieldName, 'C', 253, 0);
+    public JDBField formatDBF(String fieldName) throws JDBFException {
+        return JDBField.createField(fieldName, 'C', 253, 0);
     }
     @Override
     public Object formatJSON(T object) {

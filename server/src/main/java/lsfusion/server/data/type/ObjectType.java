@@ -1,6 +1,6 @@
 package lsfusion.server.data.type;
 
-import com.hexiong.jdbf.JDBFException;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -29,7 +29,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
-import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.json.JSONException;
@@ -152,7 +152,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+    public JDBField formatDBF(String fieldName) throws JDBFException {
         return idClass.formatDBF(fieldName);
     }
 
