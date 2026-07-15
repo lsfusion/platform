@@ -18,6 +18,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.property.CurrentConnectionProperty;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -292,7 +293,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String asyncStacks = replaceNonUTFCharacters(exStacks.asyncStacks);
 
         String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
-        logger.error( message + " at '" + time + "' from '" + clientName + "': " + '\n' + ExceptionUtils.getExStackTrace(javaStack, lsfStack) + '\n' + asyncStacks);
+        ServerLoggers.systemLogger.error( message + " at '" + time + "' from '" + clientName + "': " + '\n' + ExceptionUtils.getExStackTrace(javaStack, lsfStack) + '\n' + asyncStacks);
 
         try (DataSession session = ThreadLocalContext.createSession()) {
             DataObject exceptionObject;

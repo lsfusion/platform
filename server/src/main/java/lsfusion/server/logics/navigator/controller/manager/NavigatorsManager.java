@@ -26,7 +26,6 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -39,8 +38,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(NavigatorsManager.class);
-
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
     public static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("lsfusion.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
 
@@ -266,7 +263,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             try {
                 navigator.close();
             } catch (RemoteException e) {
-                logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.shutdown.client}"), e);
+                ServerLoggers.systemLogger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.shutdown.client}"), e);
             }
         });
     }

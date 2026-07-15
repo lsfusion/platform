@@ -40,6 +40,8 @@ public class ServerLoggers {
 
     public static final Logger lruLogger = Logger.getLogger("LRULogger");
 
+    public static final Logger cacheLogger = Logger.getLogger("CacheLogger");
+
     public static final Logger allocatedBytesLogger = Logger.getLogger("AllocatedBytesLogger");
 
     public static final Logger importLogger = Logger.getLogger("ImportLogger");

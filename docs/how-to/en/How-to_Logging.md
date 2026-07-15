@@ -112,32 +112,26 @@ The `lsfusion.server.physics.admin.log.ServerLoggers` class contains static refe
 |`sqlLogger`|`sql.log`|database server calls|
 |`remoteLogger`|`server-remote.log`|application server calls|
 |`mailLogger`|`mail.log`|sending and receiving mail|
-|`importLogger`|—|import processes (the file is configured in the project configuration)|
+|`importLogger`|`import.log`|import processes|
 
 ## Example 4
 
 ### Task
 
-Import processes need a separate `logs/import.log` log with size-based rotation.
+The exchange log from [Example 1](#example-1) (`logs/exchange.log`) needs size-based rotation.
 
 ### Solution
-
-In Java code, messages are written to the `ImportLogger` logger (the ready-made `ServerLoggers.importLogger` reference can be used):
-
-```java
-ServerLoggers.importLogger.info("Import finished, rows processed: " + count);
-```
 
 The logger configuration is defined in the `log4j.xml` file. A project can put its own copy of this file into its resources (`src/main/resources`) — as a rule, it comes earlier in the classpath than the platform one and therefore overrides it. An appender and a category are added to the configuration:
 
 ```xml
-<appender name="importlog" class="org.apache.log4j.rolling.RollingFileAppender">
+<appender name="exchangelog" class="org.apache.log4j.rolling.RollingFileAppender">
     <param name="encoding" value="UTF-8" />
     <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
         <param name="minIndex" value="1"/>
         <param name="maxIndex" value="9"/>
-        <param name="activeFileName" value="logs/import.log"/>
-        <param name="fileNamePattern" value="logs/import-%i.log.zip"/>
+        <param name="activeFileName" value="logs/exchange.log"/>
+        <param name="fileNamePattern" value="logs/exchange-%i.log.zip"/>
     </rollingPolicy>
     <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
         <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
@@ -147,13 +141,13 @@ The logger configuration is defined in the `log4j.xml` file. A project can put i
     </layout>
 </appender>
 
-<category name="ImportLogger" additivity="false">
+<category name="ExchangeLogger" additivity="false">
     <priority value="INFO"/>
-    <appender-ref ref="importlog"/>
+    <appender-ref ref="exchangelog"/>
 </category>
 ```
 
-The same logger automatically becomes available from lsFusion code as well: calling `printToLog[TEXT, STRING]` with the `'import'` logger name writes the message to the `logs/import.log` configured above.
+Now calling `printToLog[TEXT, STRING]` with the `'exchange'` logger name writes to the appender with rotation configured above instead of the automatically created file. The same logger is also available from Java code: `Logger.getLogger("ExchangeLogger")`.
 
 ## See also
 

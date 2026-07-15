@@ -142,7 +142,6 @@ import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -155,7 +154,7 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.dir
 import static lsfusion.server.physics.admin.log.ServerLoggers.*;
 
 public class DBManager extends LogicsManager implements InitializingBean {
-    public static final Logger logger = Logger.getLogger(DBManager.class);
+    public static final Logger systemLogger = ServerLoggers.systemLogger;
     public static final Logger serviceLogger = ServerLoggers.serviceLogger;
 
     private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
@@ -1004,7 +1003,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             String localhostName = SystemUtils.getLocalHostName();
             return DBManager.HOSTNAME_COMPUTER == null || (localhostName != null && localhostName.equals(DBManager.HOSTNAME_COMPUTER));
         } catch (Exception e) {
-            logger.error("Error reading computer: ", e);
+            systemLogger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
         }
     }
@@ -1020,10 +1019,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 return new DataObject((Long)addObject.object, businessLogics.authenticationLM.computer); // to update classes after apply
             }
 
-            logger.debug("Begin user session " + strHostName + " " + result);
+            systemLogger.debug("Begin user session " + strHostName + " " + result);
             return (DataObject) result;
         } catch (Exception e) {
-            logger.error("Error reading computer: ", e);
+            systemLogger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
         }
     }
@@ -2811,9 +2810,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         startLog("Packing tables");
         for (final ImplementTable table : tables) {
-            logger.debug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
+            systemLogger.debug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
             packTable(session, table, isolatedTransaction);
-            logger.debug("Done");
+            systemLogger.debug("Done");
         }
     }
 

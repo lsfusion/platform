@@ -2,11 +2,11 @@ package lsfusion.client.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.StartupProperties;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.controller.remote.ClientCallBackProcessor;
 import lsfusion.interop.navigator.LifecycleMessage;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
-import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
@@ -15,8 +15,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PingThread extends Thread {
-
-    private final static Logger logger = Logger.getLogger(MainController.class);
 
     private final ClientCallBackInterface remoteClient;
 
@@ -134,7 +132,7 @@ public class PingThread extends Thread {
                         pingInfoMap.clear();
                         globalCounter = 0;
                     } catch (RemoteException e) {
-                        logger.error("Ping statistics saving failed: ", e);
+                        ClientLoggers.remoteLogger.error("Ping statistics saving failed: ", e);
                     }
                 }
             }

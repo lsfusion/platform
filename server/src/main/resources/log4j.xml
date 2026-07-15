@@ -215,7 +215,7 @@
             <param name="fileNamePattern" value="logs/hexinfolog-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="300485760"/> <!-- 100MB -->
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.EnhancedPatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %X{client} - %X{computer} - %X{remoteAddress} %5p %c{1} - %m%n%throwable{1000}"/>
@@ -231,7 +231,7 @@
             <param name="fileNamePattern" value="logs/jdbc-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="990485760"/> <!-- 90MB -->
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
         </triggeringPolicy>
         <layout class="lsfusion.server.physics.admin.log.SimpleLayout">
         </layout>
@@ -262,7 +262,7 @@
             <param name="fileNamePattern" value="logs/mail-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="100485760"/>
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.EnhancedPatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
@@ -445,6 +445,38 @@
         </layout>
     </appender>
 
+    <appender name="cachelog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="9"/>
+            <param name="activeFileName" value="logs/cache.log"/>
+            <param name="fileNamePattern" value="logs/cache-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+
+    <appender name="importlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="9"/>
+            <param name="activeFileName" value="logs/import.log"/>
+            <param name="fileNamePattern" value="logs/import-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+
     <appender name="jasperlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -599,9 +631,21 @@
         <appender-ref ref="httptoexternalsystemrequestslog"/>
     </category>
 
+    <category name="ImportLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="importlog"/>
+        <appender-ref ref="stdout"/>
+    </category>
+
     <category name="net.sf.jasperreports" additivity="false">
         <priority value="INFO" />
         <appender-ref ref="jasperlog"/>
+    </category>
+
+    <!-- hot-path cache diagnostics, muted by default; set priority to DEBUG to enable -->
+    <category name="CacheLogger" additivity="false">
+        <priority value="ERROR"/>
+        <appender-ref ref="cachelog"/>
     </category>
 
     <root>

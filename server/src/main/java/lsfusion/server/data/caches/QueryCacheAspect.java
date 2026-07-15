@@ -18,7 +18,6 @@ import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslator;
 import lsfusion.server.data.translate.RemapValuesTranslator;
 import lsfusion.server.data.value.Value;
-import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -27,8 +26,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
 public class QueryCacheAspect {
-    private final static Logger logger = Logger.getLogger(QueryCacheAspect.class);
-
     public interface QueryCacheInterface {
         IQuery getCacheTwin();
         void setCacheTwin(IQuery query);
@@ -133,85 +130,4 @@ public class QueryCacheAspect {
         }
         return thisJoinPoint.proceed();
     }
-
-/*    @Around("execution(* lsfusion.server.data.query.Query.calculatePack()) && target(query)")
-    public Object callPack(ProceedingJoinPoint thisJoinPoint, Query query) throws Throwable {
-        if(query.cacheTwin!=query) {
-            if(query.cacheTwin==null)
-                query.cacheTwin = cacheTwin(query);
-            return query.cacheTwin.pack();
-        }
-        return thisJoinPoint.proceed();
-    }*/
-
-
-/*    static <K,V,CK,CV> MapQuery<CK,CV,K,V> cacheQuery(Query<K,V> cache, Query<CK,CV> query) {
-
-        Result<MapTranslate> translator = new Result<MapTranslate>();
-        Query.MultiParamsContext<?, ?> multiParams = cache.getMultiParamsContext().mapInner(query.getMultiParamsContext(), true, translator);
-        if(multiParams!=null) {
-            Query<K,V> mapCache = (Query<K, V>)multiParams.getQuery();
-            Map<CV,V> mapProps = BaseUtils.mapColValues(query.properties,mapCache.properties);
-            assert cache.packed!=null;
-            return new MapQuery<CK,CV,K,V>(cache.pack(),mapProps,BaseUtils.crossValues(query.mapKeys, mapCache.mapKeys),translator.result.mapColValues());
-        }
-        return null;
-    }
-
-    final static Map<Integer, Collection<Query>> cachePack = new HashMap<Integer, Collection<Query>>();
-    <K,V> IQuery<K,V, ?> pack(Query<K,V> query,ProceedingJoinPoint thisJoinPoint) throws Throwable {
-        Collection<Query> hashCaches;
-        synchronized(cachePack) {
-            int hashQuery = query.getMultiParamsContext().hashInner(true);
-            hashCaches = cachePack.get(hashQuery);
-            if(hashCaches==null) {
-                hashCaches = new ArrayList<Query>();
-                cachePack.put(hashQuery, hashCaches);
-            }
-        }
-        synchronized(hashCaches) {
-            for(Query<?,?> cache : hashCaches) {
-                IQuery<K,V, ?> packed = cacheQuery(cache, query);
-                if(packed !=null) {
-                    logger.info("cached");
-                    return packed;
-                }
-            }
-            logger.info("not cached");
-            Result<Query> cache = new Result<Query>();
-            IQuery<K,V, ?> packed = calculatePack(query, thisJoinPoint, cache);
-            hashCaches.add(cache.result);
-            return packed;
-        }
-    }
-
-    private <K,V> IQuery<K,V, ?> calculatePack(Query<K, V> query, ProceedingJoinPoint thisJoinPoint, Result<Query> cacheResult) throws Throwable {
-        Map<Value, Value> bigValues = query.getBigValues();
-        if(BaseUtils.onlyObjects(query.mapKeys.keySet()) && BaseUtils.onlyObjects(query.properties.keySet()) && bigValues == null) {
-            cacheResult.set(query);
-            return (IQuery<K, V, ?>) thisJoinPoint.proceed();
-        } else { // чтобы не было утечки памяти, "заменяем" компилируемый запрос на объекты, а все большие значения на поменьше
-            Map<K,Object> genKeys = BaseUtils.generateObjects(query.mapKeys.keySet());
-            Map<V,Object> genProps = BaseUtils.generateObjects(query.properties.keySet());
-
-            Query<Object, Object> cache = new Query<Object, Object>(BaseUtils.crossJoin(genKeys, query.mapKeys), BaseUtils.crossJoin(genProps, query.properties),
-                    query.where);
-
-            if(bigValues!=null) // bigvalues - работа с транслированными объектами, а в конце трансляция назад
-                cache = cache.translateValues(new MapValuesTranslator(bigValues));
-
-            Query<Object,Object> packedCache = (Query<Object,Object>) thisJoinPoint.proceed(new Object[]{cache}); // по сути идем сразу в calculate
-            cache.packed = packedCache; // вот тут в явную чтобы еще раз MapCacheAspect не вызывать
-
-            cacheResult.set(cache);
-            return new MapQuery<K, V, Object, Object>(packedCache, genProps, genKeys,
-                    bigValues==null ? MapValuesTranslator.noTranslate : new MapValuesTranslator(BaseUtils.reverse(bigValues)));
-        }
-    }
-
-    @Around("execution(lsfusion.server.data.query.IQuery lsfusion.server.data.query.Query.calculatePack()) && target(query)")
-    public Object callPack(ProceedingJoinPoint thisJoinPoint, Query query) throws Throwable {
-        return pack(query,thisJoinPoint);
-    }
-     */
 }

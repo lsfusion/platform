@@ -150,7 +150,6 @@ import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -166,8 +165,6 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 // modules logics in theory should be in dev.module.package but in this class it's more about logics, than about modularity
 public abstract class LogicsModule {
-    protected static final Logger logger = Logger.getLogger(LogicsModule.class);
-
     protected static final ActionDebugger debugger = ActionDebugger.getInstance();
 
     private LocalizedString getConstraintObject(ValueClass valueClass, Function<String, LocalizedString> debugInfoFormatter) {

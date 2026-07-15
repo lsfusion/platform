@@ -55,7 +55,7 @@ import static lsfusion.server.base.caches.CacheStats.incrementMissed;
 
 @Aspect
 public class MapCacheAspect {
-    private final static Logger logger = Logger.getLogger(MapCacheAspect.class);
+    private final static Logger logger = ServerLoggers.cacheLogger;
 
     public static class CacheResult<I extends ValuesContext, R extends TranslateValues> {
         public final I implement;

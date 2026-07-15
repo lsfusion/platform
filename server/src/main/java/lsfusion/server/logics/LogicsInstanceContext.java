@@ -16,14 +16,11 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.Locale;
 
 public class LogicsInstanceContext extends AbstractContext {
-    private static final Logger logger = Logger.getLogger(LogicsInstanceContext.class);
-
     private final LogicsInstance logicsInstance;
 
     private final ConnectionContext remoteContext;

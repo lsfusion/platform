@@ -36,14 +36,11 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.DBTable;
 import lsfusion.server.physics.exec.db.table.FullTablesInterface;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class BaseClass extends AbstractCustomClass {
-
-    protected final static Logger logger = Logger.getLogger(BaseClass.class);
 
     public final UnknownClass unknown;
 

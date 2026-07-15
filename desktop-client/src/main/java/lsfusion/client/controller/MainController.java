@@ -16,6 +16,7 @@ import lsfusion.client.authentication.UserInfo;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.equ.ComBridge;
 import lsfusion.client.base.exception.ClientExceptionManager;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.log.ClientLoggingManager;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.base.view.ClientImages;
@@ -56,8 +57,6 @@ import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
-    private final static Logger logger = Logger.getLogger(MainController.class);
-
     public static final String LSFUSION_TITLE = "lsFusion";
 
     public static RemoteLogicsInterface remoteLogics; // hack, in theory it's better to wrap all request in runRequest, but it's not important in current usages
@@ -136,8 +135,7 @@ public class MainController {
 
             initSwing();
         } catch (Exception e) {
-            logger.error("Error during startup: ", e);
-            e.printStackTrace();
+            ClientLoggers.systemLogger.error("Error during startup: ", e);
             removeSingleInstanceListener();
             System.exit(1);
         }

@@ -6,6 +6,7 @@ import com.lowagie.text.FontFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.ConnectionLostManager;
@@ -60,7 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class MainFrame extends JFrame {
-    private final static Logger logger = Logger.getLogger(MainController.class);
+    private final static Logger logger = ClientLoggers.systemLogger;
 
     public static MainFrame instance;
     public static void load() {

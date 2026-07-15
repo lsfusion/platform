@@ -4,14 +4,10 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 
 public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
-
-    private final static Logger logger = Logger.getLogger(GroupPairs.class);
-
 
     protected abstract I createI(ImRevMap<O, O> map);
 
@@ -56,14 +52,6 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
                 return true;
             
             if(maxIterations > 0 && groupNext >= maxIterations) {
-//                try {
-//                    String stackTrace = "";
-//                    for(StackTraceElement stackLine : Thread.currentThread().getStackTrace())
-//                        stackTrace += stackLine.toString() + '\n';
-//                    if (logger.isDebugEnabled())
-//                        logger.debug("MAP INNER HASH : " + map1 + '\n' + map2 + '\n' + stackTrace);
-//                } catch(Exception e) {
-//                }
                 return false;
             }
 

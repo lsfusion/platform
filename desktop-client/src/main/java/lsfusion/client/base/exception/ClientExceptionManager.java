@@ -2,6 +2,7 @@ package lsfusion.client.base.exception;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
@@ -23,7 +24,7 @@ import java.util.concurrent.CancellationException;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientExceptionManager {
-    private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
+    private final static Logger logger = ClientLoggers.clientLogger;
     private final static List<Throwable> unreportedThrowables = new ArrayList<>();
     
     public static Throwable fromDesktopClientToAppServer(Throwable e) {

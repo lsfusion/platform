@@ -61,7 +61,6 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.navigator.window.WindowType;
-import org.apache.log4j.Logger;
 import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
@@ -83,8 +82,6 @@ import static lsfusion.base.BaseUtils.mergeLinked;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class DockableMainFrame extends MainFrame implements AsyncListener {
-    private static final Logger logger = Logger.getLogger(DockableMainFrame.class);
-
     private final ClientNavigatorActionDispatcher actionDispatcher;
 
     private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<>();

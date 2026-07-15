@@ -112,32 +112,26 @@ public class RunExchange extends InternalAction {
 |`sqlLogger`|`sql.log`|обращения к серверу БД|
 |`remoteLogger`|`server-remote.log`|обращения к серверу приложений|
 |`mailLogger`|`mail.log`|отправка и получение почты|
-|`importLogger`|—|процессы импорта (файл настраивается в конфигурации проекта)|
+|`importLogger`|`import.log`|процессы импорта|
 
 ## Пример 4
 
 ### Условие
 
-Для процессов импорта нужен отдельный лог `logs/import.log` с ротацией по размеру.
+Для лога обмена из [Примера 1](#пример-1) (`logs/exchange.log`) нужна ротация по размеру.
 
 ### Решение
-
-В Java-коде сообщения пишутся в логгер `ImportLogger` (можно использовать готовую ссылку `ServerLoggers.importLogger`):
-
-```java
-ServerLoggers.importLogger.info("Импорт завершен, обработано строк: " + count);
-```
 
 Конфигурация логгера задается в файле `log4j.xml`. Проект может положить в свои ресурсы (`src/main/resources`) собственную копию этого файла — как правило, она находится в classpath раньше платформенной и поэтому перекрывает её. В конфигурацию добавляются appender и категория:
 
 ```xml
-<appender name="importlog" class="org.apache.log4j.rolling.RollingFileAppender">
+<appender name="exchangelog" class="org.apache.log4j.rolling.RollingFileAppender">
     <param name="encoding" value="UTF-8" />
     <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
         <param name="minIndex" value="1"/>
         <param name="maxIndex" value="9"/>
-        <param name="activeFileName" value="logs/import.log"/>
-        <param name="fileNamePattern" value="logs/import-%i.log.zip"/>
+        <param name="activeFileName" value="logs/exchange.log"/>
+        <param name="fileNamePattern" value="logs/exchange-%i.log.zip"/>
     </rollingPolicy>
     <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
         <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
@@ -147,13 +141,13 @@ ServerLoggers.importLogger.info("Импорт завершен, обработа
     </layout>
 </appender>
 
-<category name="ImportLogger" additivity="false">
+<category name="ExchangeLogger" additivity="false">
     <priority value="INFO"/>
-    <appender-ref ref="importlog"/>
+    <appender-ref ref="exchangelog"/>
 </category>
 ```
 
-Этот же логгер автоматически становится доступен и из lsFusion-кода: вызов `printToLog[TEXT, STRING]` с именем логгера `'import'` запишет сообщение в настроенный выше `logs/import.log`.
+Теперь вызов `printToLog[TEXT, STRING]` с именем логгера `'exchange'` будет писать в настроенный выше appender с ротацией, а не в автоматически создаваемый файл. Этот же логгер доступен и из Java-кода: `Logger.getLogger("ExchangeLogger")`.
 
 ## Дополнительно
 
