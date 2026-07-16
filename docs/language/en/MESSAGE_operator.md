@@ -8,7 +8,7 @@ The `MESSAGE` operator creates an [action](../paradigm/Actions.md) that shows th
 ### Syntax
 
 ```
-MESSAGE expression options
+MESSAGE expression [HEADER headerExpression] options
 ```
 
 Operator options `options` can be listed one after another in any order. The following set of options is supported:
@@ -28,6 +28,10 @@ The `MESSAGE` operator creates an action that shows a message to the user either
 
     An expression which value is the message text.
 
+- `headerExpression`
+
+    An expression whose value is used as the dialog header. If omitted, or if its value is `NULL`, the `lsFusion` header is used.
+
 - `syncType`
 
     Synchronisation type. Specifies when the execution of the created action completes. Specified by one of the keywords:
@@ -38,24 +42,26 @@ The `MESSAGE` operator creates an action that shows a message to the user either
 
 - `messageType`
 
-    Message type. Specifies how the message will be displayed on the screen. Specified by one of the keywords:
+    Message type. Specifies where the message is shown and its severity icon. Specified by one of the keywords:
 
-    - `LOG` - message in the `System.log` window.
-  
-    - `INFO` - information message.
-	
-	- `SUCCESS` - success message.
-	
-	- `WARN` - warning message.
-	
-	- `ERROR` - error message.
+    - `LOG` - shown in the `System.log` window only (no dialog box).
 
-	- `DEFAULT` - plain message. This value is used by default.	
+    - `INFO` - shown as a notification and in the `System.log` window (no dialog box).
+
+    - `SUCCESS` - shown as a dialog box with a success icon.
+
+    - `WARN` - shown as a dialog box with a warning icon.
+
+    - `ERROR` - shown as a dialog box with an error icon, and also written to the `System.log` window.
+
+    - `DEFAULT` - shown as a plain dialog box. This value is used by default.
 
 ### Examples
 
 ```lsf
 message { MESSAGE 'Hello World!'; } // plain text message
+
+messageWithHeader { MESSAGE 'Hello World!' HEADER 'Greeting'; } // dialog with a custom header
 
 isGood = DATA BOOLEAN (Item);
 stringData(Item i) {
