@@ -3,21 +3,25 @@ slug: "/Show_message_MESSAGE_ASK"
 title: 'Show message (MESSAGE, ASK)'
 ---
 
-The *show message* operators create [actions](Actions.md) that show a text message to the user. The message is defined as a [property](Properties.md) whose value will be used as the message content. This message can be displayed either using a dialog box or in the `System.log` system window.
+The *show message* operators create [actions](Actions.md) that show a text message to the user. The message is defined as a [property](Properties.md) whose value will be used as the message content. This message can be displayed either using a dialog box or in the `System.log` system window. The dialog box also has a header that may be defined as a property.
 
 ### Flow control
 
-By default, the created action stops the thread until the user closes the message. However, this behavior can be changed using the corresponding option – in this case, the created action is completed immediately and the message is shown to the user as soon as possible (that is, the next user interaction). The first mode shall be called *synchronous* and the second *asynchronous*.
+By default, the created action stops the thread until the user closes the message. However, this behavior can be changed using the corresponding option – in this case, the created action is completed immediately and the message is shown to the user as soon as possible (that is, the next user interaction). The first mode is called *synchronous* and the second *asynchronous*.
+
+### Message type {#type}
+
+Besides its text, a message can be of several *types*. They differ in how the message reaches the user — as a dialog box the user closes, as a transient notification, and (or) as an entry in the `System.log` system window — and in whether it carries a severity mark: informational, success, warning, or error. By default the message is a plain dialog box without a severity mark.
 
 ### Dialog form {#dialog}
 
-It is also often necessary not only to inform the user about something, but also, for example, to request confirmation to continue an action. For such cases, the operator allows, instead of simply displaying the message (with a single `OK` button), to ask a question with positive and negative answers and thereby essentially to implement [a value input](Value_input.md). In this case, a positive answer means that the input is completed successfully, and a negative answer is treated as [input cancellation](Value_input.md#result).
+It is also often necessary not only to inform the user about something, but also, for example, to request confirmation to continue an action. For such cases, the operator allows, instead of simply displaying the message (with a single `OK` button), to ask a question with positive and negative answers and thereby implement [a value input](Value_input.md). In this case, a positive answer means that the input is completed successfully, and a negative answer is treated as [input cancellation](Value_input.md#result).
 
 In addition, if `YESNO` is specified, the question has a separate `Cancel` button, while the positive and negative answers become successful input results. In this case, it is considered that [the input result](Value_input.md#result) will be a value of logical class (`Yes` - `TRUE`, `No` - `NULL`). As in the first case, the input is considered to be canceled if the `Cancel` button is selected.
 
 If the message text is `NULL`, the dialog is not shown and the input is considered completed successfully. For the variant with a logical result, this is equivalent to a positive answer.
 
-The form of the operator in which the user is asked a question shall be called the *dialog* form.
+The form of the operator in which the user is asked a question is called the *dialog* form.
 
 As with other value input operators, in the dialog form of this operator you can define [main and alternative](Value_input.md#result) actions. The first is called if the input was successfully completed, the second if not (i.e. if the input was canceled).
 

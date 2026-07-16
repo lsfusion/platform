@@ -3,11 +3,11 @@ slug: "/Value_request_REQUEST"
 title: 'Value request (REQUEST)'
 ---
 
-The *value request* operator creates an [action](Actions.md) in which *requesting* value(s) is separated from directly *processing* the value(s). Accordingly, this operator allows not to perform a value request if its result *is known in advance* in the context of the call (the value of the `System.requestPushed` property is equal to `TRUE`). This, in turn, automatically gives you the following capabilities in various use cases:
+The *value request* operator creates an [action](Actions.md) in which *requesting* values is separated from directly *processing* the values. Accordingly, this operator allows not to perform a value request if its result *is known in advance* in the context of the call (the value of the `System.requestPushed` property is equal to `TRUE`). This, in turn, automatically gives you the following capabilities in various use cases:
 
 - Asynchronous input
 
-    If the user initiates a [property](Form_events.md) [change event](Form_events.md) (`CHANGE`), and processing it contains exactly one request for the value of a builtin class (the most common case), then the platform does not call it immediately, but first asks the user to input the value of the builtin class. As soon as this input is completed, the user can immediately continue his work and the input result asynchronously (in a new thread) is sent to the server, where the processing of the occurred event is started only at that moment (and not when the event actually occurred). Moreover (we call this technique *pushing* the query value), the query result is marked as known in advance (the value of the `System.requestPushed` property is set to `TRUE`), and the input value is written to the special property family: `requested`. Accordingly, since this property family is used as the default result of all [value input](Value_input.md) operators, synchronous processing is emulated; however, the ergonomics of changing data on the form is significantly improved (for example, the user can continue to input data without waiting for the calculation of all properties on the form).
+    If the user initiates a [property change event](Form_events.md#property) (`CHANGE`), and processing it contains exactly one request for the value of a builtin class (the most common case), then the platform does not call it immediately, but first asks the user to input the value of the builtin class. As soon as this input is completed, the user can immediately continue his work and the input result asynchronously (in a new thread) is sent to the server, where the processing of the occurred event is started only at that moment (and not when the event actually occurred). Moreover (we call this technique *pushing* the query value), the query result is marked as known in advance (the value of the `System.requestPushed` property is set to `TRUE`), and the input value is written to the special property family: `requested`. Accordingly, since this property family is used as the default result of all [value input](Value_input.md) operators, synchronous processing is emulated; however, the ergonomics of changing data on the form is significantly improved (for example, the user can continue to input data without waiting for the calculation of all properties on the form).
 
 - PASTE
 
@@ -21,7 +21,7 @@ The *value request* operator creates an [action](Actions.md) in which *requestin
 
     - CHANGE
 
-        The user is [requested](Form_events.md#queryValue) an object of the property value class which is used as an argument, and this property value changes to the received object 
+        The user is [requested](Form_events.md#queryValue) an object of the property value class which is used as an argument, after which the value of this property changes to the received object 
 
     - CHANGEWYS
 
