@@ -520,14 +520,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         private class FlushingLogClientMessageProcessor implements AbstractContext.LogMessageProcessor {
-            private final long taskLogId;
+            private final Long taskLogId;
             private final String taskCaption;
 
             private final List<AbstractContext.LogMessage> messages = new ArrayList<>();
 
             private ScheduledFuture<?> flusherTask;
 
-            public FlushingLogClientMessageProcessor(long taskLogId, String taskCaption) {
+            public FlushingLogClientMessageProcessor(Long taskLogId, String taskCaption) {
                 this.taskLogId = taskLogId;
                 this.taskCaption = taskCaption;
 
@@ -548,7 +548,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
             public synchronized void flush(ExecutionStack stack) {
                 if (!messages.isEmpty()) {
-                    logClientTasks(ListFact.fromJavaList(messages), taskLogId, taskCaption, stack);
+                    if (taskLogId != null)
+                        logClientTasks(ListFact.fromJavaList(messages), taskLogId, taskCaption, stack);
                     messages.clear();
                 }
             }
