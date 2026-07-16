@@ -15,7 +15,7 @@
     <properties>
         <!-- DEPENDENCY VERSIONS -->
         <junit.version>4.13.1</junit.version>
-        <log4j.version>1.2.17</log4j.version>
+        <reload4j.version>1.2.26</reload4j.version>
         <log4j.extras.version>1.1</log4j.extras.version>
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.20</jacob.version>
@@ -23,7 +23,7 @@
         <commons.collections.version>3.2.2</commons.collections.version>
         <commons.io.version>2.7</commons.io.version>
         <commons.codec.version>1.4</commons.codec.version>
-        <commons.logging.version>1.1</commons.logging.version>
+        <commons.logging.version>1.2</commons.logging.version>
         <commons.daemon.version>1.0.5</commons.daemon.version>
         <commons.exec.version>1.1</commons.exec.version>
         <jdom.version>1.1</jdom.version>
@@ -133,14 +133,20 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j.version}</version>
+                <groupId>ch.qos.reload4j</groupId>
+                <artifactId>reload4j</artifactId>
+                <version>${reload4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>apache-log4j-extras</artifactId>
                 <version>${log4j.extras.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.xBaseJ</groupId>
@@ -221,6 +227,10 @@
                         <groupId>org.eclipse.jdt</groupId>
                         <artifactId>org.eclipse.jdt.core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <!--подменяем для обхода бага Jasper при запуске на Java 8 приложения, скомпилированного на Java 7 (api)-->
@@ -279,6 +289,12 @@
                 <groupId>net.sourceforge.jexcelapi</groupId>
                 <artifactId>jxl</artifactId>
                 <version>${jexcelapi.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
@@ -403,7 +419,7 @@
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
+                <artifactId>slf4j-reload4j</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
