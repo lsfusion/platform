@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.ERunnable;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.design.view.ClientFormLayout;
@@ -382,7 +383,7 @@ public class SwingUtils {
                 icon = view.getSystemIcon(file);
                 icons.put(extension, icon);
             } catch (IOException e) {
-                e.printStackTrace();
+                ClientLoggers.systemLogger.error("Error getting system icon for extension " + extension, e);
             } finally {
                 BaseUtils.safeDelete(file);
             }

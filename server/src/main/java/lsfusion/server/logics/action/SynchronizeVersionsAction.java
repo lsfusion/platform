@@ -6,6 +6,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.SystemProperties;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -26,7 +27,7 @@ public class SynchronizeVersionsAction extends InternalAction {
             findProperty("apiVersion[]").change(BaseUtils.getApiVersion(), context);
             findProperty("revisionVersion[]").change(BaseUtils.parseInt(getRevision(SystemProperties.inDevMode)), context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            e.printStackTrace();
+            ServerLoggers.systemLogger.error("Error synchronizing versions", e);
         }
     }
 }

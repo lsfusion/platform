@@ -39,7 +39,7 @@ public class ClientLoggingManager {
             Logger.getLogger(loggerName).setLevel(level);
             instance.handlers.add(fh);
         } catch (Exception e) {
-            e.printStackTrace();
+            ClientLoggers.systemLogger.error("Error turning on logging for " + loggerName, e);
         }
     }
 

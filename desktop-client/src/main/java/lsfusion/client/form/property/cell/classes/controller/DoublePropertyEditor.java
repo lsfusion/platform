@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import org.apache.commons.lang.StringUtils;
 
@@ -111,7 +112,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             try {
                 setText(formatter.valueToString(value));
             } catch (ParseException e) {
-                e.printStackTrace();
+                ClientLoggers.systemLogger.error("Error formatting numeric value", e);
             }
         }
 

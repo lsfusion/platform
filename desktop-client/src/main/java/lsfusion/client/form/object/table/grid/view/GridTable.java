@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientRichTextClass;
@@ -1309,7 +1310,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         try {
             return rowKeys.get(rowIndex);
         } catch (IndexOutOfBoundsException be) {
-            be.printStackTrace();
+            ClientLoggers.systemLogger.error("Error getting selected object row key", be);
             return null;
         }
     }

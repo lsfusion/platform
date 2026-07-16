@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.controller.rich;
 
+import lsfusion.client.base.log.ClientLoggers;
 import net.atlanticbb.tantlinger.i18n.I18n;
 import net.atlanticbb.tantlinger.ui.UIUtils;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
@@ -144,7 +145,7 @@ public class AlignAction extends HTMLTextEditAction {
                 try {
                     doc.setOuterHTML(parent, snipet);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    ClientLoggers.systemLogger.error("Error setting element alignment", ex);
                 }
             }
         } else {

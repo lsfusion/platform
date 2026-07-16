@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.controller.rich;
 
+import lsfusion.client.base.log.ClientLoggers;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
 import net.atlanticbb.tantlinger.ui.text.HTMLUtils;
 import net.atlanticbb.tantlinger.ui.text.actions.DecoratedTextAction;
@@ -178,7 +179,7 @@ public class EnterKeyAction extends DecoratedTextAction {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ClientLoggers.systemLogger.error("Error handling enter key in rich text editor", ex);
         }
         CompoundUndoManager.endCompoundEdit(document);
     }

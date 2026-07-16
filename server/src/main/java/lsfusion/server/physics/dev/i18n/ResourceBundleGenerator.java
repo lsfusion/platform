@@ -1,5 +1,7 @@
 package lsfusion.server.physics.dev.i18n;
 
+import lsfusion.server.physics.admin.log.ServerLoggers;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,7 +32,7 @@ public class ResourceBundleGenerator {
             writer = new FileWriter(bundleFile);
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            ServerLoggers.systemLogger.error("Error creating resource bundle file", e);
         }
         alreadyAdded = new HashSet<>();
     }
@@ -43,7 +45,7 @@ public class ResourceBundleGenerator {
                 }
                 alreadyAdded.add(s);
             } catch (IOException e) {
-                e.printStackTrace();
+                ServerLoggers.systemLogger.error("Error writing entry to resource bundle file", e);
             }
         }
     }

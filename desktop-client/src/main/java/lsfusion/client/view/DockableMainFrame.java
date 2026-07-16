@@ -29,6 +29,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.base.view.ColorThemeChangeListener;
@@ -322,7 +323,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                     mainControl.getResources().writeStream(out);
                     out.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    ClientLoggers.systemLogger.error("Error saving layout on window close", e);
                 }
             }
         });
@@ -474,7 +475,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                         mainControl.load("default");
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ClientLoggers.systemLogger.error("Error loading docking layout", e);
                     mainContentArea.deploy(mainGrid); // иначе покажется пустая форма
                 }
                 break;
@@ -491,13 +492,13 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 formsController.getForms().read(in);
                 mainControl.getResources().readStream(in);
             } catch (Exception e) {
-                e.printStackTrace();
+                ClientLoggers.systemLogger.error("Error reading layout file", e);
             } finally {
                 if (in != null) {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        ClientLoggers.systemLogger.error("Error closing layout file", e);
                     }
                 }
             }

@@ -2,6 +2,7 @@ package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import lsfusion.base.BaseUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPSClient;
@@ -221,7 +222,7 @@ public class IOUtils {
                     ftpClient.logout();
                     ftpClient.disconnect();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    BaseUtils.systemLogger.error("Error disconnecting FTP client", e);
                 }
             }
         }

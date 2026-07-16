@@ -12,6 +12,7 @@ import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.base.view.SwingDefaults;
@@ -1702,7 +1703,7 @@ public class ClientFormController implements AsyncListener {
                         result.put(key, value);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    ClientLoggers.systemLogger.error("Error reading grouped data", e);
                 }
 
                 return result;

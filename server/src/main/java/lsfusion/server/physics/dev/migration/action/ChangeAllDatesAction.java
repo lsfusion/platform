@@ -116,7 +116,7 @@ public class ChangeAllDatesAction extends InternalAction {
                 }    
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            e.printStackTrace();
+            ServerLoggers.systemLogger.error("Error changing all dates", e);
         } finally {
             sql.popNoReadOnly();
         }

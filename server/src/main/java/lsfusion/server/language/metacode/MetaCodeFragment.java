@@ -2,6 +2,7 @@ package lsfusion.server.language.metacode;
 
 import lsfusion.base.Pair;
 import lsfusion.server.language.ScriptedStringUtils;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.util.ArrayList;
@@ -156,7 +157,7 @@ public class MetaCodeFragment {
                 }
             }
         } catch (ScriptedStringUtils.TransformationError transformationError) {
-            transformationError.printStackTrace();
+            ServerLoggers.systemLogger.error("Error transforming string literal", transformationError);
         }
         return part;
     }

@@ -3,6 +3,7 @@ package lsfusion.client.base.busy;
 import lsfusion.base.lambda.Provider;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.view.MainFrame;
 
@@ -190,7 +191,7 @@ public class BusyDisplayer extends TimerTask {
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            e.printStackTrace();
+            ClientLoggers.systemLogger.error("Error creating Robot for screen capture", e);
         }
         return robot.createScreenCapture(screenRectangle);
     }

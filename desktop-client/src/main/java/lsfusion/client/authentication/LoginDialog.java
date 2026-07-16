@@ -286,7 +286,7 @@ public class LoginDialog extends JDialog {
             fileWr.write(serverInfo.exportName + "\n");
             fileWr.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            ClientLoggers.clientLogger.error("Error storing server and user info", e);
         }
     }
 

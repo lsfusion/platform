@@ -7,6 +7,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.exception.ClientExceptionManager;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
@@ -520,7 +521,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 try {
                     result.put(logFile.getName(), new RawFileData(logFile));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    ClientLoggers.systemLogger.error("Error reading log file " + logFile.getName(), e);
                 }
             }
         }

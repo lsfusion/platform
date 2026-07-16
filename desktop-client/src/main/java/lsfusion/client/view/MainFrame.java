@@ -429,7 +429,7 @@ public abstract class MainFrame extends JFrame {
                 in.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error loading window size", e);
             Dimension size = Toolkit.getDefaultToolkit().getScreenSize().getSize();
             setSize(size.width, size.height - 30);
         }
@@ -445,7 +445,7 @@ public abstract class MainFrame extends JFrame {
 
             out.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error saving window size", e);
         }
     }
 

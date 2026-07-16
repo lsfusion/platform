@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.table.view;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
@@ -33,7 +34,7 @@ public class TableTransferHandler extends TransferHandler {
             try {
                 return new StringSelection(((GridTable) c).getSelectedTable());
             } catch (ParseException e) {
-                e.printStackTrace();
+                ClientLoggers.systemLogger.error("Error formatting selected table for copy", e);
             }
         } else if (c instanceof TableInterface) {
             JTable table = (JTable) c;
@@ -55,7 +56,7 @@ public class TableTransferHandler extends TransferHandler {
                 try {
                     return new StringSelection(property.formatString(value));
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    ClientLoggers.systemLogger.error("Error formatting cell value for copy", e);
                 }
             }
         }

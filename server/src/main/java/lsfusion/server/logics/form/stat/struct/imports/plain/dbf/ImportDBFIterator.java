@@ -8,6 +8,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.imports.plain.ImportPlainIterator;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import net.iryndin.jdbf.core.DbfField;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
             if (reader != null)
                 reader.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            ServerLoggers.systemLogger.error("Error closing DBF reader", e);
         }
     }
 }

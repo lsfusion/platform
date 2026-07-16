@@ -98,7 +98,7 @@ public class ExternalHttpServer extends MonitorServer {
         } catch (Exception e) {
             if (server != null)
                 server.stop(0);
-            e.printStackTrace();
+            ServerLoggers.systemLogger.error("Error starting external http server", e);
         }
     }
 
