@@ -1953,8 +1953,8 @@
       "stale": false
     },
     "how-to/How-to_Logging.md": {
-      "file_hash": "sha256:3deaaddc999692cc306fecf01dc2ac26c13756db56f7e7f014677fb76ff44d4a",
-      "indexed_at": "2026-07-14T07:44:16Z",
+      "file_hash": "sha256:f6957ddb66b4fc39370e72054901862825ea0a016278a61ed7db74aa0dbff461",
+      "indexed_at": "2026-07-16T07:15:09Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1988,15 +1988,15 @@
           "source_file": "how-to/How-to_Logging.md"
         },
         "How-to_Logging::task-003": {
-          "file_id": "file-RvLVwKAL41afVthgT2HQdM",
+          "file_id": "file-7f4P1a7fisfGhFTPvRt1iR",
           "heading_path": "How-to: Logging > Example 3",
-          "section_payload_hash": "sha256:40422e9b62cf5ebd5d402434ad6d486ca7759596a5019f674c583e017079d3f5",
+          "section_payload_hash": "sha256:512f3f596fc8ccd3c1239ba517591a1df7dc4fad205d98938cf961c9e1835392",
           "source_file": "how-to/How-to_Logging.md"
         },
         "How-to_Logging::task-004": {
-          "file_id": "file-1cYKAdA7yPw4HyfpXT77Go",
+          "file_id": "file-TJeH6SjMs4rK3HSR9UaRZn",
           "heading_path": "How-to: Logging > Example 4",
-          "section_payload_hash": "sha256:ad12d5470629f6dc499c238a185c9092bdf7b13538b54e0ecd091ad9b617efa9",
+          "section_payload_hash": "sha256:1f1b93eb34fca888dc31ed88f27d5f18f9dd7bdf1b2bb6b531882e7664ba3731",
           "source_file": "how-to/How-to_Logging.md"
         }
       },
@@ -10831,8 +10831,8 @@
       "stale": false
     },
     "paradigm/Journals_and_logs.md": {
-      "file_hash": "sha256:c20fbb238fb5af888e32a06dc9d4d5d6485830099321a0d162923eeb750a269e",
-      "indexed_at": "2026-05-22T23:25:28Z",
+      "file_hash": "sha256:f81e7ed21b7bc6e38e3ee55f09d2dae77567606d60667a70f8054c42d00c55eb",
+      "indexed_at": "2026-07-16T07:15:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10854,9 +10854,9 @@
           "source_file": "paradigm/Journals_and_logs.md"
         },
         "Journals_and_logs::logs-logs": {
-          "file_id": "file-YaCQd6J9SPq64pmWHsRx9J",
+          "file_id": "file-4R4JUa99RduWirviYXXxn7",
           "heading_path": "Journals and logs > Logs {#logs}",
-          "section_payload_hash": "sha256:b3b190febac0da63777d7217b7b65935723eb0836771cd8314892c6ffcf3b8f3",
+          "section_payload_hash": "sha256:183bf9c4e66a1093547dec30493696934f09ce7616f45f2cc7e787da7625f102",
           "source_file": "paradigm/Journals_and_logs.md"
         }
       },
@@ -14539,7 +14539,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3a4f9f43e47d705d0f0faed5d4b0ed6863c56281",
+  "last_indexed_docs_commit": "bc329ce1500d81f4d01a1ac18757811df61a50cd",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
