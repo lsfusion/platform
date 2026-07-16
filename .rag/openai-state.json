@@ -5445,8 +5445,8 @@
       "stale": false
     },
     "language/INPUT_operator.md": {
-      "file_hash": "sha256:02a9c2f2222e2dbd68e647e673e39c6b85ae1b4f66578e00723b3d0e9621b3c3",
-      "indexed_at": "2026-06-05T20:19:52Z",
+      "file_hash": "sha256:66f92d79710ba931ac74f858ca3795970ae0769a41a36bdcdd7e40060151f9c1",
+      "indexed_at": "2026-07-16T14:07:07Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5456,33 +5456,33 @@
       },
       "sections": {
         "INPUT_operator::description": {
-          "file_id": "file-4JDAAUHnBTGL2UiLHWqX55",
+          "file_id": "file-V2XEdfuU4ZjfZ3p1RHef8h",
           "heading_path": "INPUT operator > Description",
-          "section_payload_hash": "sha256:cb2e9d2f52d98258d26cf301990a34dde7e754b3de28e09a7358c02abc87a0f0",
+          "section_payload_hash": "sha256:eded35b044aedcfd2bf52bf63416925624190fced42bc3b9c107522f3df5b813",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::examples": {
-          "file_id": "file-3tSznFGVMCQs4NTWr3KXAU",
+          "file_id": "file-NZfUXRqWyaS5NXrMt3MS9K",
           "heading_path": "INPUT operator > Examples",
-          "section_payload_hash": "sha256:4dcae36ce9d0c2b0a4130f521687bf29d4a917284ee81baa40274d917a1aa23d",
+          "section_payload_hash": "sha256:d632434cb54bfbdc7df5a2352856732f7a5dd2e277e462983140d205c44873d0",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::input-operator": {
-          "file_id": "file-RbLy2UdFyxZCB9MYdp1aZT",
+          "file_id": "file-NwnaZmsEJohozC5T2GRfUB",
           "heading_path": "INPUT operator",
-          "section_payload_hash": "sha256:56b00fa290625e70c23dca570824085b9fa314d9bd1f3b6875480c5560258a6c",
+          "section_payload_hash": "sha256:1228fb6e9953a774a7317a75633af166ddc8dba5abd33ba0a0dbd84fb3b88abe",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::parameters": {
-          "file_id": "file-Sv9cj67bhqhB2e94J65Tw5",
+          "file_id": "file-GbEtQFjiAxZGvVdsTtmAJo",
           "heading_path": "INPUT operator > Parameters",
-          "section_payload_hash": "sha256:2ee9f66e14f13b9d69f74ab4a27568620e23fc6d5456cb2087c118349f6ca8ae",
+          "section_payload_hash": "sha256:2859f85f0837aeeb028ce1855320693b1625e46819fd35b4fd99ef611b84dd87",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::syntax": {
-          "file_id": "file-NumEkgJ9o3VepW5uRiHcKT",
+          "file_id": "file-W3XT2erm4nqH9sRvfNGSN6",
           "heading_path": "INPUT operator > Syntax",
-          "section_payload_hash": "sha256:7da363cb1936809bd6c953032a69ca32a30823609192fe335cbd7a040e288080",
+          "section_payload_hash": "sha256:f95bc398f4c9711a2956fba06ad6c5777098363353977fc7cb74d10f610625c1",
           "source_file": "language/INPUT_operator.md"
         }
       },
@@ -5839,8 +5839,8 @@
       "stale": false
     },
     "language/MESSAGE_operator.md": {
-      "file_hash": "sha256:9ceb7be02d469055c5df2cc8c6c724ee9c3c630a99a85f9636d14d17b110094b",
-      "indexed_at": "2026-05-22T22:28:20Z",
+      "file_hash": "sha256:ae36169f53dddd6556315d379819dbc38cc066c5bed387e956bb1829825cb141",
+      "indexed_at": "2026-07-16T14:07:21Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5850,9 +5850,9 @@
       },
       "sections": {
         "MESSAGE_operator::examples": {
-          "file_id": "file-8aqu1kabi4cfhtsbYU4x3V",
+          "file_id": "file-9sWFhXpExGJi9wo15PCXus",
           "heading_path": "MESSAGE operator > Examples",
-          "section_payload_hash": "sha256:e0e2ef1680a0c6a301c66adfc72029c83cc30ca597fecce963e6de1cfcd57611",
+          "section_payload_hash": "sha256:34b8908600da122b3982afb07802e07d06d4ae0ed1ab625b3a22abffd6632ec7",
           "source_file": "language/MESSAGE_operator.md"
         },
         "MESSAGE_operator::message-operator": {
@@ -5862,15 +5862,15 @@
           "source_file": "language/MESSAGE_operator.md"
         },
         "MESSAGE_operator::parameters": {
-          "file_id": "file-FQw6G1i4pVsdxCGYoRtHU9",
+          "file_id": "file-82g7QJTpo5d5Qks5dBZc8Y",
           "heading_path": "MESSAGE operator > Parameters",
-          "section_payload_hash": "sha256:f8563cb3a66f7663cf236430c3fcf01f7846b7be4e6e08ddfeea08cd712fa91b",
+          "section_payload_hash": "sha256:3b6cca7932b1e0bc70c1ae9dd7e687e57571a82ec2ed716ef334103fe00dfdfc",
           "source_file": "language/MESSAGE_operator.md"
         },
         "MESSAGE_operator::syntax+description": {
-          "file_id": "file-6vR3Z3zeAsUYC1hN9r16vQ",
+          "file_id": "file-E6WFGdwGMXFo7B55DicBvu",
           "heading_path": "MESSAGE operator > Syntax + Description",
-          "section_payload_hash": "sha256:fe4ba4a36c95ab723e7884aaaf70f14cedd69b1bad7ab071527d175f9d33e08b",
+          "section_payload_hash": "sha256:9d762310248da97a66d7fe72f6b3f583508e8636a18a7e232f4b8c7502dd541f",
           "source_file": "language/MESSAGE_operator.md"
         }
       },
@@ -9906,8 +9906,8 @@
       "stale": false
     },
     "paradigm/Form_events.md": {
-      "file_hash": "sha256:4a72d7f8d57b96736ba956b904929a683f4f3cc41e70d6b7d6e15825ed3b42ac",
-      "indexed_at": "2026-06-11T09:45:32Z",
+      "file_hash": "sha256:89827a472c9938c2365c0507d4421f2b41334745e11646571042fd84c17cdfd1",
+      "indexed_at": "2026-07-16T14:07:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9917,9 +9917,9 @@
       },
       "sections": {
         "Form_events::default-handlers-default": {
-          "file_id": "file-Jox9EaeQ4nrVX3aEHTpyiS",
+          "file_id": "file-QMxdDh46EcgczXTh939Gk1",
           "heading_path": "Form events > Default handlers {#default}",
-          "section_payload_hash": "sha256:9831cf96480665cb6b1d991f939c3294298e723ce6c6b1b35ca81c22e0f1afee",
+          "section_payload_hash": "sha256:7c88eeff01851d2a1752fe967c9d2c645ac09d03d5e9b6b28cfe0345f3621b7d",
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::examples": {
@@ -11873,8 +11873,8 @@
       "stale": false
     },
     "paradigm/Primitive_input_INPUT.md": {
-      "file_hash": "sha256:0112d3c81c65bb48d214c018c669bf5a945f73e3bb5622632bef233bf4931849",
-      "indexed_at": "2026-05-22T23:32:04Z",
+      "file_hash": "sha256:e0470bb2c84106bc1c1585ec560b38f08d8901b087577fd73e86b7fa25a96e70",
+      "indexed_at": "2026-07-16T14:07:44Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11883,16 +11883,34 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Primitive_input_INPUT::language+examples": {
-          "file_id": "file-2QvMHGz5wLxSosADawzrRP",
-          "heading_path": "Primitive input (INPUT) > Language + Examples",
-          "section_payload_hash": "sha256:74461b3ae10f75969a7f94ef4ec47332f06873d286f3d6886348bbae37f5aaaf",
+        "Primitive_input_INPUT::common-input-capabilities": {
+          "file_id": "file-XHmAGBHSSTmtEZhYpdCVdx",
+          "heading_path": "Value input (INPUT) > Common input capabilities",
+          "section_payload_hash": "sha256:fdde832b641442d28f33e479b1e9af991f880dad4a7f85e95a794a83ed087793",
           "source_file": "paradigm/Primitive_input_INPUT.md"
         },
-        "Primitive_input_INPUT::primitive-input-input": {
-          "file_id": "file-QdcXos3Q63eE3EPtWWTQNZ",
-          "heading_path": "Primitive input (INPUT)",
-          "section_payload_hash": "sha256:bed465737eae4d450f54d59a3adf3c1653acc6a5cc0ce4af2fa2c6ed173ad293",
+        "Primitive_input_INPUT::language+examples": {
+          "file_id": "file-1SGuBssxe1oN3iQrqtFrky",
+          "heading_path": "Value input (INPUT) > Language + Examples",
+          "section_payload_hash": "sha256:ea257718f2b4c8b4c3f002c7a20af3d1dea6ff94aed375ceb0b19bb9d71fddbe",
+          "source_file": "paradigm/Primitive_input_INPUT.md"
+        },
+        "Primitive_input_INPUT::offered-values-list": {
+          "file_id": "file-XM3KbeVHPXi9W8kJ1uimZJ",
+          "heading_path": "Value input (INPUT) > Offered values {#list}",
+          "section_payload_hash": "sha256:b3f253f66c00c2681eb05fb04d097e2087d07d50a2ec9b1627232912e2b90356",
+          "source_file": "paradigm/Primitive_input_INPUT.md"
+        },
+        "Primitive_input_INPUT::requested-value-value": {
+          "file_id": "file-2maA7SCG6DPYStJfNMw7Xg",
+          "heading_path": "Value input (INPUT) > Requested value {#value}",
+          "section_payload_hash": "sha256:7d21bcc1c5a04efb74023080c338847e8a4c5619860c44d00fea57882f1a65e5",
+          "source_file": "paradigm/Primitive_input_INPUT.md"
+        },
+        "Primitive_input_INPUT::value-input-input": {
+          "file_id": "file-RwVhaM3FoWFNEnoy94VaxW",
+          "heading_path": "Value input (INPUT)",
+          "section_payload_hash": "sha256:728cfbbf71a71ba54af20d6f56537b87fd16172c0bf932ba0072795262f43b3a",
           "source_file": "paradigm/Primitive_input_INPUT.md"
         }
       },
@@ -12667,8 +12685,8 @@
       "stale": false
     },
     "paradigm/Show_message_MESSAGE_ASK.md": {
-      "file_hash": "sha256:ebb7c8c2195204b8616e57b22f85efaacb67f1ae553a421bc7d7c28bcbcee33e",
-      "indexed_at": "2026-05-22T23:37:48Z",
+      "file_hash": "sha256:f7566c1fec7f5ee368a2a388a0bdacf45f06785d3d94d86a8a6b21380bc382d9",
+      "indexed_at": "2026-07-16T14:07:54Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12678,9 +12696,9 @@
       },
       "sections": {
         "Show_message_MESSAGE_ASK::dialog-form-dialog": {
-          "file_id": "file-7xHQxYxqNWEekT4FeBRP2k",
+          "file_id": "file-GEYGDhEaiDV5pQqPYV96eP",
           "heading_path": "Show message (MESSAGE, ASK) > Dialog form {#dialog}",
-          "section_payload_hash": "sha256:27782e328a34ca300e288104abdda2adf11d9aec9967196d25eddb717d1d0f88",
+          "section_payload_hash": "sha256:606e3b0cad44ee891bf0f17861967bedfed89bbd25af2903638a6a7d514f1ba1",
           "source_file": "paradigm/Show_message_MESSAGE_ASK.md"
         },
         "Show_message_MESSAGE_ASK::examples": {
@@ -12690,9 +12708,9 @@
           "source_file": "paradigm/Show_message_MESSAGE_ASK.md"
         },
         "Show_message_MESSAGE_ASK::flow-control": {
-          "file_id": "file-MtFwmRyyuUcPR4WzEV9kBX",
+          "file_id": "file-7Zc7opWZ2pBrfQvmFoZj8r",
           "heading_path": "Show message (MESSAGE, ASK) > Flow control",
-          "section_payload_hash": "sha256:150716f50c2066212b4e043e830014fe076be40915e91170c851c69158f257d2",
+          "section_payload_hash": "sha256:abfadb271a66c7d222c7832ab5fce5e960ddf04f9ea6925f68d5a087c1eb381a",
           "source_file": "paradigm/Show_message_MESSAGE_ASK.md"
         },
         "Show_message_MESSAGE_ASK::language": {
@@ -12701,10 +12719,16 @@
           "section_payload_hash": "sha256:884f90a2ef3d89c88512ffabbdfe8281f8d55d7c281ebee2eaa5f7a07ee2e166",
           "source_file": "paradigm/Show_message_MESSAGE_ASK.md"
         },
+        "Show_message_MESSAGE_ASK::message-type-type": {
+          "file_id": "file-LmtVjknfW2eXUQeHKrZSph",
+          "heading_path": "Show message (MESSAGE, ASK) > Message type {#type}",
+          "section_payload_hash": "sha256:834b0e77eeaaba8668354db184f9176b499eb0166741f272ae4df3ab7db58f1f",
+          "source_file": "paradigm/Show_message_MESSAGE_ASK.md"
+        },
         "Show_message_MESSAGE_ASK::show-message-message-ask": {
-          "file_id": "file-5J1zSXe1r6HgjSp8buiHy6",
+          "file_id": "file-3tXfNRjs9LMf2vZXhPwnhD",
           "heading_path": "Show message (MESSAGE, ASK)",
-          "section_payload_hash": "sha256:ce7c8686925212da907780539a90b918edbdb0f91db019e38afd264a202b210a",
+          "section_payload_hash": "sha256:9835b09f044e67126c260f290085b4590708a7a6d04f64d5fe9e6470c3a8efe9",
           "source_file": "paradigm/Show_message_MESSAGE_ASK.md"
         }
       },
@@ -14295,8 +14319,8 @@
       "stale": false
     },
     "paradigm/Value_input.md": {
-      "file_hash": "sha256:aa0a461b23e279396de24e658c3c60cbb177b3077d0e8df29c85aad530a5734a",
-      "indexed_at": "2026-05-22T23:40:55Z",
+      "file_hash": "sha256:0c8d0d48edb9cbda76e50d4ebb86bbb0889b5822cf38ab11c39d7e5f62b8993d",
+      "indexed_at": "2026-07-16T14:08:07Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14312,9 +14336,15 @@
           "source_file": "paradigm/Value_input.md"
         },
         "Value_input::initial-values-and-automatic-change-initial": {
-          "file_id": "file-DDDTE3s443AMK5UCf4gZK8",
+          "file_id": "file-UWi34ign3kL2uCqstgyJAq",
           "heading_path": "Value input > Initial values and automatic change {#initial}",
-          "section_payload_hash": "sha256:8351975af072feec1841d9da9a16ff62fdd2248cc642cbadb1d0de048c38c93c",
+          "section_payload_hash": "sha256:3d9dde26c92cdff61b77677aeea59ee7c7889a6abcd39c79ace11c4178949c5e",
+          "source_file": "paradigm/Value_input.md"
+        },
+        "Value_input::input-execution-execution": {
+          "file_id": "file-Lr8b4JobwsSteBEZ68nVyQ",
+          "heading_path": "Value input > Input execution {#execution}",
+          "section_payload_hash": "sha256:3e6cddc613b77b22be4f18bcb5749e76685596508078d82385f35f89b0d88f0c",
           "source_file": "paradigm/Value_input.md"
         },
         "Value_input::value-input": {
@@ -14327,8 +14357,8 @@
       "stale": false
     },
     "paradigm/Value_request_REQUEST.md": {
-      "file_hash": "sha256:fbd25e1f843cd3312dea89e366ff4c7760304803f967f9fb0f481bd6a9a7641e",
-      "indexed_at": "2026-05-22T23:41:03Z",
+      "file_hash": "sha256:99683033ebee66b4932529a903f4c3a44a96d89dcfbd5408ef7b7da6c9d08e85",
+      "indexed_at": "2026-07-16T14:08:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14350,9 +14380,9 @@
           "source_file": "paradigm/Value_request_REQUEST.md"
         },
         "Value_request_REQUEST::value-request-request": {
-          "file_id": "file-MS8Rx9apiLm6dE771FQmbk",
+          "file_id": "file-N1rnLhj9izbQ38ZB2uCMNT",
           "heading_path": "Value request (REQUEST)",
-          "section_payload_hash": "sha256:80b5ecf9b80a74c79d6897a1968113f496bc246c99f6545c5da8e0c7820e3769",
+          "section_payload_hash": "sha256:ad550b95c414ab625bdb78c134a1a6077b1a1317e64a3c3e6cbd2b938d1a6896",
           "source_file": "paradigm/Value_request_REQUEST.md"
         }
       },
@@ -14539,7 +14569,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "bc329ce1500d81f4d01a1ac18757811df61a50cd",
+  "last_indexed_docs_commit": "6463de482e94a6b00d657b6c84eab14a625e213b",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
