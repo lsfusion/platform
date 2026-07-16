@@ -173,7 +173,11 @@ public class SQLTemporaryPool {
         if(!Settings.get().isAutoAnalyzeTempStats())
             stats.remove(table);
         FieldStruct fieldStruct = structs.remove(table);
-        Set<String> structTables = tables.get(fieldStruct);
+        Set<String> structTables = fieldStruct != null ? tables.get(fieldStruct) : null;
+        if(structTables == null) { // the table is already removed from the pool (for example in returnTemporaryTable after a failed truncate, with a repeated removal in rollbackTransaction) - should not abort the transactionTables cleanup
+            ServerLoggers.assertLog(false, "REMOVE TABLE : TABLE IS NOT IN THE POOL " + table);
+            return;
+        }
         structTables.remove(table);
         if(structTables.isEmpty())
             tables.remove(fieldStruct);

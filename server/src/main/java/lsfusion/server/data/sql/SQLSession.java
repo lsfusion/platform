@@ -677,17 +677,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
-                        ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
+                        runSuppressed(() -> {
+                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
-                        WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-                        if(isExplainTemporaryTablesEnabled())
-                            addTTLog("TRANSRET", transactionTable, tableOwner == null ? null : tableOwner.get(), owner);
-//                            
+                            WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
+                            if(isExplainTemporaryTablesEnabled())
+                                addTTLog("TRANSRET", transactionTable, tableOwner == null ? null : tableOwner.get(), owner);
+//
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
 //
-                        lastReturnedStamp.remove(transactionTable);
-                        privateConnection.temporary.removeTable(transactionTable);
+                            lastReturnedStamp.remove(transactionTable);
+                            privateConnection.temporary.removeTable(transactionTable);
+                        }, firstException);
                     }
                     privateConnection.temporary.setCounter(transactionCounter);
                 } else
@@ -1346,7 +1348,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 if(firstException.result != null) {
                     runSuppressed(() -> {
                         lastReturnedStamp.remove(table);
-                        privateConnection.temporary.removeTable(table);
+                        if(!transactionTables.contains(table)) // a transaction table will be removed from the pool in rollbackTransaction (together with the counter rollback), removing it here as well caused an NPE (structTables) there
+                            privateConnection.temporary.removeTable(table);
                     }, firstException);
                     runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
                 }
