@@ -151,10 +151,19 @@ public class CompileWebMojo extends AbstractMojo {
         // React Compiler (auto-memoization) runs — like the no-build in-browser .jsx tier — whenever the module
         // has JSX (a .jsx/.tsx source); a component that violates the rules of React bails out untouched, so it
         // is always safe. A module with only plain .js/.ts (JSX only reaches the build tier through a .jsx/.tsx
-        // extension) skips it, and with it GraalJS and the Java-11 build-JVM requirement.
-        Path srcRoot = hasJsx(originalRoot)
-                ? runReactCompiler(originalRoot) // transformed mirror: ALL sources (incl. lib/) pass through the compiler
-                : originalRoot;
+        // extension) skips it, and with it GraalJS and its build-JVM range.
+        // Outside that range the pass is SKIPPED, not fatal: it is an optimization on top of a JSX transform
+        // esbuild performs itself (--jsx=transform below), so the bundles are still correct and complete —
+        // only the auto-memoization is missing. Failing the build instead would leave the application with no
+        // bundles at all (the output directory is cleaned above) over a lost optimization.
+        Path srcRoot = originalRoot;
+        if (hasJsx(originalRoot)) {
+            String rcUnavailable = rcJavaVersionIssue(); // null when this JVM can run GraalJS
+            if (rcUnavailable == null)
+                srcRoot = runReactCompiler(originalRoot); // transformed mirror: ALL sources (incl. lib/) pass through the compiler
+            else
+                getLog().warn("web-compile: react-compiler skipped — " + rcUnavailable);
+        }
         Path libDir = srcRoot.resolve("lib");
         List<Path> entries;
         try (Stream<Path> walk = Files.walk(srcRoot)) {
@@ -280,7 +289,6 @@ public class CompileWebMojo extends AbstractMojo {
     // (a vendored babel-standalone + compiler-plugin + autoMemo bundle, see bin/build-rc-graal.mjs) — no Node,
     // no external toolchain beyond the esbuild binary.
     private Path runReactCompiler(Path srcRoot) throws MojoExecutionException, IOException, InterruptedException {
-        checkRcJavaVersion(); // BEFORE any org.graalvm class is touched, so an old JVM gets guidance, not an UnsupportedClassVersionError
         Path mirror = new File(workDir, "rc-src").toPath();
         if (Files.exists(mirror))
             deleteRecursively(mirror);
@@ -313,7 +321,7 @@ public class CompileWebMojo extends AbstractMojo {
     }
 
     // any JSX source (.jsx/.tsx) anywhere under the root, lib/ included? — checked on the ORIGINAL tree (the
-    // React Compiler mirror has the same structure), before that compiler and its Java-11 requirement engage
+    // React Compiler mirror has the same structure), before that compiler and its build-JVM range engage
     private static boolean hasJsx(Path root) throws IOException {
         try (Stream<Path> walk = Files.walk(root)) {
             return walk.filter(Files::isRegularFile).anyMatch(p -> {
@@ -323,20 +331,32 @@ public class CompileWebMojo extends AbstractMojo {
         }
     }
 
-    // The React Compiler runs on GraalJS, whose 22.3.x classfiles need Java 11; the guard turns what would be a
-    // bare UnsupportedClassVersionError on an older Maven JVM into actionable guidance. Uses only java.lang so
-    // the check itself cannot trip over the Graal classes it is guarding.
-    private static void checkRcJavaVersion() throws MojoExecutionException {
+    /** build JVMs the React Compiler pass can run on: GraalJS 22.3.x has Java-11 classfiles, so an older JVM
+     * cannot load them at all, and its Truffle calls sun.misc.Unsafe.ensureClassInitialized, which Java 24
+     * removed from sun.misc.Unsafe. Both ends lift together when the engine is upgraded (a newer GraalVM line
+     * drops the Unsafe call but raises the classfile floor, so it needs the platform's own build floor to rise
+     * first) — the same range is documented for the no-build tier in JsxTransformer. */
+    private static final int RC_MIN_JAVA = 11;
+    private static final int RC_MAX_JAVA = 23;
+
+    // why the React Compiler pass cannot run on this JVM, or null when it can. Reported as a warning and the
+    // pass skipped (see compile()), never fatal. Uses only java.lang so the check itself cannot trip over the
+    // Graal classes it is guarding — it must run BEFORE any org.graalvm class is touched, so that an out-of-range
+    // JVM gets this message rather than an UnsupportedClassVersionError or a NoSuchMethodError from deep inside
+    // Truffle.
+    private static String rcJavaVersionIssue() {
         String spec = System.getProperty("java.specification.version", "");
         int major;
         try {
             major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec); // "1.8" -> 8, "11" -> 11
         } catch (NumberFormatException e) {
-            return; // unrecognized scheme: don't block, let class loading decide
+            return null; // unrecognized scheme: don't block, let class loading decide
         }
-        if (major < 11)
-            throw new MojoExecutionException("compiling src/main/web requires the build to run on Java 11+ (the React Compiler runs on GraalJS); current JVM is "
-                    + System.getProperty("java.version") + " — build on Java 11+, or set -Dlsfusion.web.skip=true to skip the web compile");
+        if (major >= RC_MIN_JAVA && major <= RC_MAX_JAVA)
+            return null;
+        return "its engine (GraalJS) supports Java " + RC_MIN_JAVA + "-" + RC_MAX_JAVA + ", this build runs on Java "
+                + System.getProperty("java.version") + ". The bundles are still built and complete — esbuild performs the JSX"
+                + " transform itself — but components are not auto-memoized; build on Java " + RC_MIN_JAVA + "-" + RC_MAX_JAVA + " to get that";
     }
 
     private String rcTransform(String source, String fileName, String displayName) throws MojoExecutionException, InterruptedException {

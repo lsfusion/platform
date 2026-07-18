@@ -1,13 +1,32 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.file.RawFileData;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 public class JsxTransformerTest {
+
+    // this tier only runs on the JVMs its JS engine supports (JsxTransformer.MIN_JAVA..MAX_JAVA); outside that
+    // range every transform legitimately degrades to a console.error stub, so the suite is skipped rather than
+    // reported as failure — a developer on a newer JDK than the platform's engine supports gets a skip with a
+    // reason, not a wall of red
+    @BeforeClass
+    public static void engineSupportsThisJvm() {
+        String spec = System.getProperty("java.specification.version", "");
+        int major;
+        try {
+            major = Integer.parseInt(spec.startsWith("1.") ? spec.substring(2) : spec);
+        } catch (NumberFormatException e) {
+            return; // unrecognized scheme: run and let the assertions decide
+        }
+        assumeTrue("the lightweight .jsx tier's JS engine supports Java 11-23, this JVM is " + System.getProperty("java.version"),
+                major >= 11 && major <= 23);
+    }
 
     private static String transform(String name, String source) {
         return JsxTransformer.transform(name, new RawFileData(source, StandardCharsets.UTF_8)).getString(StandardCharsets.UTF_8);

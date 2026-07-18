@@ -78,10 +78,18 @@ public class JsxTransformer {
 
     private static final Pattern MODULE_SYNTAX = Pattern.compile("\\b(import|export|module)\\b", Pattern.CASE_INSENSITIVE);
 
-    // The Babel/GraalJS engine (org.graalvm.js 22.3.x) is compiled for Java 11; on an older server JVM
-    // touching a Graal class throws an opaque UnsupportedClassVersionError. transform()'s catch already
-    // degrades a failed .jsx to a console.error stub rather than breaking the page, so this only makes
-    // the stub's message actionable instead of cryptic. Checked without loading any Graal class.
+    /** server JVMs this tier can run on: the Babel/GraalJS engine (org.graalvm.js 22.3.x) is compiled for Java 11,
+     * so an older JVM cannot load it at all, and its Truffle calls sun.misc.Unsafe.ensureClassInitialized, which
+     * Java 24 removed from sun.misc.Unsafe. Both ends lift together when the engine is upgraded (a newer GraalVM
+     * line drops the Unsafe call but raises the classfile floor, so it needs the platform's own build floor to
+     * rise first) — the same range applies to the compiled tier, see CompileWebMojo.RC_MIN_JAVA. */
+    private static final int MIN_JAVA = 11;
+    private static final int MAX_JAVA = 23;
+
+    // Outside that range, touching a Graal class throws either an opaque UnsupportedClassVersionError (too old)
+    // or a NoSuchMethodError from deep inside Truffle (too new). transform()'s catch already degrades a failed
+    // .jsx to a console.error stub rather than breaking the page, so this only makes the stub's message
+    // actionable instead of cryptic. Checked without loading any Graal class.
     private static void checkJavaVersion() {
         String spec = System.getProperty("java.specification.version", "");
         int major;
@@ -90,9 +98,11 @@ public class JsxTransformer {
         } catch (NumberFormatException e) {
             return; // unrecognized scheme: don't block, let class loading decide
         }
-        if (major < 11)
-            throw new RuntimeException("the lightweight .jsx tier requires the server to run on Java 11+ (its JS engine); current JVM is "
-                    + System.getProperty("java.version") + " — use a plain .js resource or run the server on Java 11+");
+        if (major < MIN_JAVA || major > MAX_JAVA)
+            throw new RuntimeException("the lightweight .jsx tier requires the server to run on Java " + MIN_JAVA + "-" + MAX_JAVA
+                    + " (its JS engine); current JVM is " + System.getProperty("java.version")
+                    + " — run the server on Java " + MIN_JAVA + "-" + MAX_JAVA + ", or use a plain .js resource, or move the component"
+                    + " to the compiled src/main/web tier (which has no server-side JVM requirement)");
     }
 
     // synchronized: serializing transforms is fine for this tier (rare, cached by content)
