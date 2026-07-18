@@ -1063,7 +1063,9 @@ public class GFormController implements EditManager {
 
     private void updatePropertyChanges(GFormChanges fc, Predicate<GPropertyReader> filter) {
         fc.properties.foreachEntry((key, value) -> {
-            // react-owned readers route to base GWT views we do not build; reactData.update(fc) consumes fc.properties directly.
+            // a reader React consumes is skipped from GWT and instead fed by reactData.update(fc): a react-owned
+            // component's value (into data), or a delegated child's presentation reader (into data.components). The
+            // delegated child's own VALUE draw reader is not owned, so it still reaches its GWT view here.
             if(filter.test(key) && !isReactOwned(key))
                 key.update(this, value, fc.updateProperties.contains(key));
         });
@@ -1253,15 +1255,19 @@ public class GFormController implements EditManager {
         return reactControllers.get(group);
     }
 
+    // the react container that RENDERS this component, null if GWT does. A react container renders every child except
+    // a DELEGATED one — which keeps its GWT view and is mounted into a React placeholder, so it (and its subtree) is
+    // rendered by GWT. A non-delegated child gets no GWT view at all, so everything below it is rendered by the same
+    // container: the walk therefore climbs to the OUTERMOST react ancestor reachable through non-delegated hops
+    // (resolving to an inner react container that never gets a ReactContainerView would silently produce no data).
     public GContainer getReactContainer(GComponent component) {
-        GContainer result = null;
-        // the OUTERMOST react ancestor owns the whole subtree: a customReact container nested inside another react
-        // container is just part of the outer component's DOM — resolving to the innermost one would assign its
-        // groups to a scope that never gets a ReactContainerView, silently producing no data
-        for (GContainer container = component != null ? component.container : null; container != null; container = container.container)
-            if (container.isReact())
-                result = container;
-        return result;
+        GContainer parent = component != null ? component.container : null;
+        if (parent == null)
+            return null;
+        GContainer parentOwner = getReactContainer(parent);
+        if (parentOwner != null) // parent has no GWT view of its own, so its owner swallows this component too
+            return parentOwner;
+        return component.isReactProjected() ? parent : null; // parent == component.container, which isReactProjected checks
     }
 
     public GContainer getOwningReactContainer(GComponent component) {
@@ -1292,15 +1298,22 @@ public class GFormController implements EditManager {
         return property != null && (property.groupObject != null ? isReactOwned(property.groupObject) : getOwningReactContainer(property) != null);
     }
 
+    // a reader React consumes (so GWT skips it): either it belongs to a react-owned component — its value is projected
+    // into `data` — OR it is a delegated child's PRESENTATION reader (caption / captionClass / image) projected into
+    // `data.components`. The react container thus reaches into a delegated child's descriptor readers, even though the
+    // child keeps its own GWT VALUE view (that draw reader is not owned and still reaches GWT). As #1670 grows the
+    // projected presentation (read-only, colors, classes, images, sums), those readers join isComponentReader here.
     private boolean isReactOwned(GPropertyReader reader) {
         if (reactData == null)
             return false;
+        if (reactData.isComponentReader(reader)) // a delegated child's presentation reader, projected into data.components
+            return true;
         if (reader instanceof GPropertyDraw)
             return isReactOwned((GPropertyDraw) reader);
         if (reader instanceof GExtraPropertyReader)
             return isReactOwned(getProperty(((GExtraPropertyReader) reader).propertyID));
-        if (reader instanceof GRowPropertyReader)
-            return isReactOwned(getGroupObject(((GRowPropertyReader) reader).groupObjectID));
+        if (reader instanceof GGroupObjectPropertyReader)
+            return isReactOwned(getGroupObject(((GGroupObjectPropertyReader) reader).groupObjectID));
         if (reader instanceof GComponentReader)
             return isReactOwned(((GComponentReader) reader).getReaderComponent());
         return false;
@@ -1901,7 +1914,13 @@ public class GFormController implements EditManager {
         } else {
             DeferredRunner.get().commitDelayedGroupObjectChange(object.groupObject);
 
-            final GGroupObjectValue value = controller.getSelectedKey();
+            // the optimistic removal must drop the row the action RUNS ON, not whichever row happens to be selected: a
+            // custom view can exec the delete on any row (controller.changeProperty('DELETE', row)), and the server does
+            // delete that row — predicting the selected one instead made the wrong row vanish until the server corrected
+            // it. On the classic toolbar path the action runs on the current row, so the two agree.
+            GGroupObjectValue value = object.groupObject.filterRowKeys(execContext.getFullKey());
+            if(value == null || value.isEmpty())
+                value = controller.getSelectedKey();
             if(value == null || value.isEmpty())
                 return;
             asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, position, eventSource, onExec);
@@ -2014,9 +2033,15 @@ public class GFormController implements EditManager {
     }
     
     public void setContainerCollapsed(GContainer container, boolean collapsed) {
-        asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
+        setUserHidden(container, collapsed);
 
         formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
+    }
+
+    // one RPC for every user-driven hide: a collapsed container (above), or a CUSTOM REACT component showing / hiding a
+    // delegated child so its data is not read while React does not show it
+    public void setUserHidden(GComponent component, boolean hidden) {
+        asyncResponseDispatch(new SetUserHidden(component.ID, hidden));
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
@@ -2375,14 +2400,12 @@ public class GFormController implements EditManager {
 
     public void setContainerCaption(GContainer container, String caption) {
         container.caption = caption;
-
-        updateCaption(container);
+        updateCaption(container); // a delegated container's caption is drawn by React: its reader is react-owned (rerouted into data.components), so this runs only for GWT containers
     }
 
     public void setContainerImage(GContainer container, AppBaseImage image) {
         container.image = image;
-
-        updateImage(container);
+        updateImage(container); // a delegated container's image goes to React (data.components); its reader never reaches here
     }
 
     private Widget getCaptionWidget(GContainer container) {

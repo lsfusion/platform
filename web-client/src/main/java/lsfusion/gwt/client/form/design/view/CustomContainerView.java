@@ -1,48 +1,75 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 
-public class CustomContainerView extends LayoutContainerView {
+// CUSTOM 'html': the container's children are placed into the [sID] slots of an HTML template.
+// A 'simple' custom container (custom = '') has no template and lays its children out in order, like a plain panel.
+public class CustomContainerView extends ParkedContainerView {
 
-    private final ResizableComplexPanel panel;
-    private String currentCustom = "";
+    private String renderedCustom; // null until the template has been rendered; `` is a legitimate custom value, so it cannot mark that
 
     private final boolean simpleCustom;
 
     public CustomContainerView(GFormController formController, GContainer container) {
         super(container, formController);
         simpleCustom = "".equals(container.getCustom());
-        panel = new ResizableComplexPanel();
         GwtClientUtils.addClassName(panel, "panel-custom");
     }
 
+    @Override
     protected void addImpl(int index) {
-        ComponentViewWidget childView = getCustomChildView(index);
-        if(simpleCustom)
-            childView.add(panel, getChildPosition(index));
-        else // in theory can be attached to the panel
-            childView.attach(formController.getFormLayout().attachContainer);
+        if (simpleCustom)
+            getChildView(index).add(panel, getChildPosition(index));
+        else {
+            super.addImpl(index); // park the child; the template is (re)rendered on the next layout, which places it
+            invalidateTemplate();
+        }
+    }
+
+    @Override
+    protected void removeImpl(int index) {
+        if (simpleCustom)
+            getChildView(index).remove(panel, getChildPosition(index));
+        else {
+            super.removeImpl(index);
+            invalidateTemplate(); // placing a child consumed its [sID] slot, so re-render to bring the slot back
+        }
+    }
+
+    // force updateLayout to render the template again — the only place that parks all children, rewrites the HTML and
+    // re-places them, so both adding and removing a child go through the same path
+    private void invalidateTemplate() {
+        renderedCustom = null;
     }
 
     @Override
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
-        if (!simpleCustom && !currentCustom.equals(container.getCustom())) {
-            currentCustom = container.getCustom();
+        if (!simpleCustom && !container.getCustom().equals(renderedCustom)) {
+            renderedCustom = container.getCustom();
 
-            panel.getElement().setInnerHTML(getTagCustom(container.getCustom()));
-            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++)
-                getCustomChildView(i).replace(panel, children.get(i).sID);
+            // setInnerHTML destroys the elements of the children the previous template held, so they are parked first:
+            // a child whose slot the new template lacks then stays alive (parked, not shown) instead of detached
+            for (int i = 0, size = children.size(); i < size; i++)
+                parkChild(i);
+
+            panel.getElement().setInnerHTML(getTagCustom(renderedCustom));
+
+            for (int i = 0, size = children.size(); i < size; i++)
+                placeChild(i);
+            resizeChildren();
         }
         super.updateLayout(requestIndex, childrenVisible);
     }
 
     public void updateCustom(String custom) {
         this.container.setCustom(custom);
+    }
+
+    // moves the child's element into its [sID] slot; a child the template has no slot for stays parked, i.e. not shown
+    private void placeChild(int index) {
+        getChildView(index).replace(panel, children.get(index).sID);
     }
 
     private String getTagCustom(String rawCustom) {
@@ -58,23 +85,5 @@ public class CustomContainerView extends LayoutContainerView {
         }
 
         return rawCustom;
-    }
-
-    @Override
-    protected void removeImpl(int index) {
-        ComponentViewWidget childView = getCustomChildView(index);
-        if(simpleCustom)
-            childView.remove(panel, getChildPosition(index));
-        else // really odd method / behaviour (because something else should happen, but not sure what exactly)
-            childView.remove(panel);
-    }
-
-    private ComponentViewWidget getCustomChildView(int index) {
-        return getChildView(index);
-    }
-
-    @Override
-    public Widget getView() {
-        return panel;
     }
 }

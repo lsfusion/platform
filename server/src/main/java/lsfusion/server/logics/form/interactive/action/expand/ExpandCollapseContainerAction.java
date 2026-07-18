@@ -23,12 +23,17 @@ public class ExpandCollapseContainerAction extends SystemExplicitAction {
     
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (component instanceof ContainerView && ((ContainerView) component).isCollapsible()) {
-            FormInstance formInstance = context.getFormInstance(false, true);
-            if (collapse) {
-                formInstance.collapseContainer((ContainerView) component);    
-            } else {
-                formInstance.expandContainer((ContainerView) component);
+        if (component instanceof ContainerView) {
+            ContainerView container = (ContainerView) component;
+            if (container.isReactHidable()) // a React-delegated container's visibility is owned by its React component, not by a scripted collapse
+                throw new RuntimeException("cannot COLLAPSE / EXPAND a React-delegated container: its visibility is controlled by the React component");
+            if (container.isCollapsible()) {
+                FormInstance formInstance = context.getFormInstance(false, true);
+                if (collapse) {
+                    formInstance.collapseContainer(container);
+                } else {
+                    formInstance.expandContainer(container);
+                }
             }
         }
     }

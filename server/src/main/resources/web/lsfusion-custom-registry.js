@@ -41,15 +41,12 @@
 })();
 
 // CUSTOM REACT hooks + <List>, on the same window.lsfusion namespace. DEFINED here (this script loads before any
-// compiled bundle), but INSTALLED lazily by each compiled bundle's preamble (esbuild banner -> __installReactHooks)
-// right before the bundle body runs. That ordering is what lets a bundle alias a helper at module TOP —
-// `const List = window.lsfusion.List;` — and still bind to the FINAL window.React: an app may override React at a
-// less-negative before-system order (after this script but before the bundles), so we must NOT capture React eagerly
-// here. Idempotent; the first caller wins.
-// BEHAVIORAL TWIN of ReactContainerView.installHooks() (GWT JSNI), which installs the same logic at mount as the
-// self-contained fallback (and for hand-written global components, which get no preamble). The two MUST be kept in
-// sync; the canonical narrative for <List>/KeysList/SimpleList lives on the GWT side. Differences vs that copy: this
-// runs eagerly so it has an `if (!React) return` guard; `window.` instead of GWT's `$wnd.`.
+// compiled bundle), but INSTALLED lazily — by each compiled bundle's preamble (esbuild banner -> __installReactHooks)
+// right before the bundle body runs, and by ReactContainerView.createRoot at mount for a hand-written global that gets
+// no preamble. That ordering is what lets a bundle alias a helper at module TOP — `const List = window.lsfusion.List;`
+// — and still bind to the FINAL window.React: an app may override React at a less-negative before-system order (after
+// this script but before the bundles / the form), so we must NOT capture React eagerly here. Idempotent; the first
+// caller wins. This is the ONLY copy of the install logic; the GWT client calls it, it does not duplicate it.
 (function () {
     var ns = window.lsfusion || (window.lsfusion = {});
     if (ns.__installReactHooks) return; // idempotent (defensive: don't redefine)
@@ -65,6 +62,48 @@
             return React.useSyncExternalStore(store.subscribe, function () { return select(store.getSnapshot()); });
         };
         ns.useFormController = function () { return React.useContext(Ctx).controller; };
+        // the DELEGATION primitives. <LsfComponent sid/> is a placeholder for a DESIGN child marked `delegate = TRUE`:
+        // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
+        // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
+        // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
+        // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
+        // useLsfComponent(sid) -> a ref callback mounting the delegated child into the element the component ALREADY
+        // renders, so no placeholder node exists at all. The platform marks that element (class + data-lsf-sid/kind).
+        ns.useLsfComponent = function (sid) {
+            var view = React.useContext(Ctx).view;
+            var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
+            return React.useCallback(function (host) {
+                if (held.current) { view.unmount(sid, held.current); held.current = null; }
+                if (host) { view.mount(sid, host); held.current = host; }
+            }, [view, sid]);
+        };
+        ns.LsfComponent = function (props) {
+            return React.createElement('div', { ref: ns.useLsfComponent(props.sid), className: props.className, style: props.style });
+        };
+        // the delegated children's descriptors live in the projected data (data.components = { sid: {caption, image} },
+        // in DESIGN order) — a plain data field, so it is read with useFormData like any other; no dedicated
+        // hook is needed. A dynamic caption marks the scope dirty, so build() hands a new components map and this re-renders.
+        var EMPTY_COMPONENTS = Object.freeze({}); // STABLE ref when a scope has no delegated children (else useSyncExternalStore loops on a fresh {})
+        // <LsfComponents/>: place every delegated child, in DESIGN order. This is the generic default that makes the
+        // container content-extensible: a third module's `EXTEND FORM` + `delegate = TRUE` child appears in position
+        // without touching the react component. Each is drawn with its caption above it — the caption a delegated
+        // component no longer draws in GWT is drawn here instead (as a tabbed container draws captions in the tab strip).
+        // Pass props.components (or read props.data.components) for a different layout; the caption is in each descriptor.
+        ns.LsfComponents = function (props) {
+            var data = ns.useFormData(function (s) { return (s && s.components) || EMPTY_COMPONENTS; }); // ALWAYS call the hook, then let props override
+            var components = props.components || data; // the sid -> descriptor map (DESIGN insertion order)
+            return Object.keys(components).map(function (sid) {
+                var c = components[sid];
+                var caption = (c.caption != null || c.image != null)
+                    ? React.createElement('div', { className: 'lsf-slot-caption' },
+                        c.image != null ? React.createElement('span', { className: 'lsf-slot-image', dangerouslySetInnerHTML: { __html: c.image } }) : null,
+                        c.caption)
+                    : null;
+                return React.createElement('div', { key: sid, className: 'lsf-slot' },
+                    caption,
+                    React.createElement(ns.LsfComponent, { sid: sid }));
+            });
+        };
         var RowWrapper = React.memo(function (p) {
             var row = ns.useFormData(function (s) { var g = s && s[p.groupSID]; var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
             if (row == null) return null; // row removed (about to unmount): don't hand a null row to the component

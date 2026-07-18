@@ -42,6 +42,11 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
         add(child, getElement());
     }
 
+    // logical child of this panel, but its DOM element goes into container (which is deliberately not this panel's element)
+    public void addToElement(Widget child, Element container) {
+        add(child, container);
+    }
+
     public void insert(Widget w, int beforeIndex) {
         super.insert(w, getElement(), beforeIndex, true);
     }

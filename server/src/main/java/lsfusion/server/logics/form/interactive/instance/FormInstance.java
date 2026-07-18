@@ -1892,13 +1892,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     
     private ImList<ContainerView> userCollapseContainers = ListFact.EMPTY();
     public void collapseContainer(ContainerView container) throws SQLException, SQLHandledException {
-        setContainerCollapsed(container, true);
+        setUserHidden(container, true);
         userCollapseContainers = userCollapseContainers.addList(container);
     } 
     
     private ImList<ContainerView> userExpandContainers = ListFact.EMPTY();
     public void expandContainer(ContainerView container) throws SQLException, SQLHandledException {
-        setContainerCollapsed(container, false);
+        setUserHidden(container, false);
         userExpandContainers = userExpandContainers.addList(container);
     }
 
@@ -1930,7 +1930,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(isStaticHidden(component))
             return true;
 
-        // if this is a tab / collapsible container - use it's parent, since we want it's caption to be updated too (however maybe later we'll have to distinguish caption from other attributes)
+        // if this is a tab / collapsible / react-delegated container, use its parent: its CAPTION is drawn by the parent
+        // (a tab strip, a collapse header, or a React component that can keep showing the caption while unmounting the
+        // body), so the caption must keep updating even while the component's own body is hidden. The body / data is gated
+        // separately (isHidden(group), and a child property's own dynamic-hidable container which resolves to this one).
         ComponentView dynamicHidableContainer = component.getDynamicHidableContainer();
         if(dynamicHidableContainer == component && component.isUserHidable())
             dynamicHidableContainer = component.getHiddenContainer().getDynamicHidableContainer();
@@ -1958,7 +1961,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isStaticHidden(component) || isShowIfHidden(component);
     }
 
-    private boolean isDynamicHidden(ComponentView component) { // showif or tab
+    private boolean isDynamicHidden(ComponentView component) { // showif or user (tab / collapse / react)
         assert !isStaticHidden(component);
         assert component.isDynamicHidable();
         return isShowIfHidden(component) || isUserHidden(component);
@@ -1991,16 +1994,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         assert userHidableContainer.isUserHidable();
 
         ComponentView container = userHidableContainer.getHiddenContainer();
-        if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) {
+        if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) { // exclusive: one child active
             ComponentView active = activeTabs.get((ContainerView)container);
             ImList<ComponentView> siblings = ((ContainerView) container).getChildrenList();
             if (active == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
                 active = siblings.get(0);
             if (!userHidableContainer.equals(active))
                 return true;
-        } else {
-            assert ((ContainerView) userHidableContainer).isCollapsible();
-            if(collapsedContainers.contains((ContainerView) userHidableContainer))
+        } else { // isolated: collapsed captioned container or react-hidden delegated child, both plain membership
+            if(userHidden.contains(userHidableContainer))
                 return true;
         }
 
@@ -2009,7 +2011,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     protected Map<ContainerView, ComponentView> activeTabs = new HashMap<>();
     protected PropertyDrawEntity activeProperty = null;
-    protected Set<ContainerView> collapsedContainers = new HashSet<>();
+    // components the client isolatedly hid: a collapsed captioned container, or a delegated child a CUSTOM REACT
+    // component is not showing. A component is in at most one user-hidable role (a delegated container is not collapsible)
+    protected Set<ComponentView> userHidden = new HashSet<>();
 
     public void setTabActive(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbed();
@@ -2037,11 +2041,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             changeSelection(changeSelectionColumns);
     }
     
-    public void setContainerCollapsed(ContainerView container, boolean collapsed) throws SQLException, SQLHandledException {
-        if (collapsed) {
-            collapsedContainers.add(container);
+    // a user hid a component: a collapsed container, or a CUSTOM REACT component hiding a delegated child. A non-user-
+    // hidable id just adds ignored membership (isUserHidden only tests contains() on a resolved user-hidable ancestor).
+    public void setUserHidden(ComponentView component, boolean hidden) {
+        if (hidden) {
+            userHidden.add(component);
         } else {
-            collapsedContainers.remove(container);
+            userHidden.remove(component);
         }
     }
 

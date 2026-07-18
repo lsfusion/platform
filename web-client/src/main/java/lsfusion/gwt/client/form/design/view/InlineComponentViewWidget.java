@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -70,16 +71,11 @@ public class InlineComponentViewWidget implements ComponentViewWidget {
     }
 
     @Override
-    public void attach(ResizableComplexPanel attachContainer) {
-        for(ComponentViewWidget widget : widgets)
-            widget.attach(attachContainer);
-    }
-
-    @Override
     public void replace(ResizableComplexPanel panel, String sID) {
         for (int i = 0, widgetsSize = widgets.size(); i < widgetsSize; i++)
             widgets.get(i).replace(panel, getInnerSID(sID, i));
     }
+
 
     @Override
     public void remove(ResizableComplexPanel panel) {
@@ -131,5 +127,19 @@ public class InlineComponentViewWidget implements ComponentViewWidget {
     @Override
     public int getWidgetCount() {
         return widgets.size();
+    }
+
+    // CUSTOM REACT container usages
+
+    @Override
+    public void attachTo(ResizableComplexPanel panel, Element hostNode) {
+        for(ComponentViewWidget widget : widgets)
+            widget.attachTo(panel, hostNode);
+    }
+
+    @Override
+    public void appendTo(Element hostNode) {
+        for(ComponentViewWidget widget : widgets)
+            widget.appendTo(hostNode);
     }
 }

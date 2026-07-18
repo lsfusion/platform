@@ -14,4 +14,11 @@ public class GFooterReader extends GExtraPropertyReader {
     public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateFooterValues(this, values);
     }
+
+    @Override
+    public String getMetaField() { return "footer"; }
+    @Override
+    public GMetaConverter getMetaConverter() { return GMetaConverter.FOOTER; }
+    @Override
+    public boolean isColumnLevel(GPropertyDraw draw) { return true; } // the column footer (no static design fallback)
 }

@@ -4,7 +4,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 
-public class GRowForegroundReader extends GRowPropertyReader {
+public class GRowForegroundReader extends GGroupObjectPropertyReader {
 
     public GRowForegroundReader(){}
 
@@ -14,4 +14,9 @@ public class GRowForegroundReader extends GRowPropertyReader {
     public void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateRowForegroundValues(values);
     }
+
+    @Override
+    public String getMetaField() { return "foreground"; }
+    @Override
+    public GMetaConverter getMetaConverter() { return GMetaConverter.COLOR; }
 }

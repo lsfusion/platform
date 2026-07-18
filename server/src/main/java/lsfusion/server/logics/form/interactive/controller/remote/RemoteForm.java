@@ -832,16 +832,17 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException {
+    public ServerResponse setUserHidden(long requestIndex, long lastReceivedRequestIndex, int componentID, boolean hidden) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
-                logger.debug("setContainerCollapsed Action");
+                logger.debug("setUserHidden Action");
             }
 
-            ContainerView containerView = (ContainerView) richDesign.findById(containerID);
-            form.setContainerCollapsed(containerView, collapsed);
-            form.fireContainerEvent(stack, containerView, collapsed);
+            ComponentView component = richDesign.findById(componentID);
+            form.setUserHidden(component, hidden); // the client only sends user-hidable ids; a non-user-hidable one just adds ignored membership
+            if (component instanceof ContainerView) // a hidden container — collapsed OR React-delegated — fires COLLAPSE, shown fires EXPAND
+                form.fireContainerEvent(stack, (ContainerView) component, hidden);
         });
     }
 

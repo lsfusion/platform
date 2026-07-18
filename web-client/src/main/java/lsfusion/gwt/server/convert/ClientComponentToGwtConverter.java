@@ -80,6 +80,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         component.sID = clientComponent.getSID();
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
+        component.delegate = clientComponent.delegate;
 
         component.elementClass = clientComponent.elementClass;
 

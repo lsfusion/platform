@@ -131,8 +131,15 @@ public class GFormLayout extends SizedFlexPanel {
 
 
     public static Widget createContainerCaptionWidget(GFormController form, GContainer parentContainer, boolean isPopup, boolean hasBorder) {
+        // when the parent view draws its children's captions itself, the child gets no caption widget of its own: a
+        // tabbed parent draws it in the tab strip, a react parent hands it to the component via props.components (only a
+        // delegated child reaches here under a react parent — see addContainers). This is also why a delegated child
+        // never gets a CollapsiblePanel: that is built for a LayoutContainerView's flex children, and neither the tab
+        // strip nor the parked react subtree is one.
         if (parentContainer != null && parentContainer.tabbed) {
             return createTabCaptionWidget();
+        } else if (parentContainer != null && parentContainer.isReact()) {
+            return null;
         } else {
             if (isPopup) {
                 return new PopupButton(form);
@@ -171,6 +178,8 @@ public class GFormLayout extends SizedFlexPanel {
             captionWidget = formCaptionWidgetAsync.first;
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
+            // createContainerCaptionWidget returns null for a delegated child (its parent is react): its caption is
+            // drawn by the component from props.components, exactly as a tabbed parent draws a child's caption in the strip
             captionWidget = createContainerCaptionWidget(form, container.container,
                     container.popup, container.caption != null || container.collapsible);
 
@@ -196,10 +205,9 @@ public class GFormLayout extends SizedFlexPanel {
         // debug info
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
 
-        if (container.isReact()) // React owns the subtree: do not build GWT views for descendants
-            return;
-
         for (GComponent child : container.children) {
+            if (child.isReactProjected()) // React draws this child (from data): do not build GWT views for its subtree
+                continue;
             if(child instanceof GGrid)
                 child = ((GGrid)child).record;
             if (child instanceof GContainer) {
@@ -235,7 +243,8 @@ public class GFormLayout extends SizedFlexPanel {
 
     public void setCaptionClass(GContainer component, String elementClass) {
         component.captionClass = elementClass;
-
+        // a delegated container draws its captionClass in React (data.components); its reader is react-owned
+        // (rerouted into data.components), so this runs only for GWT containers, which have a real caption widget
         updateComponentClass(elementClass, containerViews.get(component.container).getCaptionView(component), "caption");
     }
 
@@ -377,8 +386,8 @@ public class GFormLayout extends SizedFlexPanel {
             hasVisible = hasVisible || childVisible;
         }
         containerView.updateLayout(requestIndex, childrenVisible);
-        // a CUSTOM REACT container has no GWT child views (React owns its subtree), so hasVisible is always false
-        // for it; it still renders its own content, so it must not be collapsed to display:none by its parent
+        // a CUSTOM REACT container has GWT child views only for its DELEGATED children, so hasVisible says nothing about
+        // what React renders; it always renders its own content, so it must not be collapsed to display:none by its parent
         return hasVisible || container.isReact();
     }
 

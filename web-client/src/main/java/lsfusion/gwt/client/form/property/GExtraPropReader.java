@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 
@@ -50,6 +51,46 @@ public class GExtraPropReader extends GExtraPropertyReader {
         } else if (readerType == DEFAULTVALUE) {
             controller.updateDefaultValueValues(this, values);
         }
+    }
+
+    @Override
+    public String getMetaField() {
+        if (readerType == COMMENT) return "comment";
+        if (readerType == PLACEHOLDER) return "placeholder";
+        if (readerType == PATTERN) return "pattern";
+        if (readerType == REGEXP) return "regexp";
+        if (readerType == REGEXPMESSAGE) return "regexpMessage";
+        if (readerType == TOOLTIP) return "tooltip";
+        if (readerType == VALUETOOLTIP) return "valueTooltip";
+        if (readerType == PROPERTY_CUSTOM_OPTIONS) return "customOptions";
+        if (readerType == DEFAULTVALUE) return "defaultValue";
+        return null; // CHANGEKEY/CHANGEMOUSE/... are not projected into data.meta
+    }
+
+    @Override
+    public GMetaConverter getMetaConverter() {
+        if (readerType == COMMENT || readerType == TOOLTIP) return GMetaConverter.TEXT; // both are a trimmed string
+        if (readerType == PROPERTY_CUSTOM_OPTIONS) return GMetaConverter.JSON;
+        return GMetaConverter.STRING; // PLACEHOLDER/PATTERN/REGEXP/REGEXPMESSAGE/VALUETOOLTIP/DEFAULTVALUE
+    }
+
+    @Override
+    public boolean isColumnLevel(GPropertyDraw draw) { return false; }
+
+    // the design value of this option, which the reader's delivered value overrides. These are per-cell options, but their
+    // design value is one per column, so it is emitted into the column entry and the row entry overrides it (buildPropMeta).
+    // The classic renderers read the same fields off the draw, so a React view now sees exactly what they see.
+    @Override
+    public String getColumnStatic(GComponent owner) {
+        GPropertyDraw draw = (GPropertyDraw) owner;
+        if (readerType == COMMENT) return draw.comment;
+        if (readerType == PLACEHOLDER) return draw.placeholder;
+        if (readerType == PATTERN) return draw.pattern;
+        if (readerType == REGEXP) return draw.regexp;
+        if (readerType == REGEXPMESSAGE) return draw.regexpMessage;
+        if (readerType == TOOLTIP) return draw.tooltip;
+        if (readerType == VALUETOOLTIP) return draw.valueTooltip;
+        return null; // PROPERTY_CUSTOM_OPTIONS / DEFAULTVALUE have no string design value
     }
 
     private static String getPrefix(int readerType) {

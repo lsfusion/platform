@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GComponentReader;
+import lsfusion.gwt.client.form.property.GMetaConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
@@ -215,6 +216,12 @@ public class GContainer extends GComponent implements HasNativeSID {
         return grid;
     }
     public boolean isAlignCaptions() {
+        // a react container has no line grid to align captions across (React owns its layout), and an aligned caption
+        // becomes a SEPARATE CaptionWidget, which no <LsfComponent> placeholder claims — a delegated child would lose
+        // its caption. Keeping captions inside the child's own widget is the only meaningful option here.
+        if (isReact())
+            return false;
+
         // children count in filters container changes in runtime, so this should go before check on children.size()
         if (alignCaptions != null) {
             return alignCaptions;
@@ -280,6 +287,13 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
+        public GMetaConverter getMetaConverter() { return GMetaConverter.CAPTION; } // same conversion this reader's update uses (getCaptionStringValue), for data.components
+        @Override
+        public String getMetaField() { return "caption"; }
+        @Override
+        public String getColumnStatic(GComponent owner) { return owner.getStaticCaption(); }
+
+        @Override
         public GComponent getReaderComponent() {
             return GContainer.this;
         }
@@ -305,6 +319,13 @@ public class GContainer extends GComponent implements HasNativeSID {
             assert values.firstKey().isEmpty();
             controller.setContainerImage(GContainer.this, PValue.getImageValue(values.firstValue()));
         }
+
+        @Override
+        public GMetaConverter getMetaConverter() { return GMetaConverter.IMAGE; } // same conversion this reader's update uses (getImageValue), for data.components
+        @Override
+        public String getMetaField() { return "image"; }
+        @Override
+        public String getColumnStatic(GComponent owner) { return owner.getStaticImageHTML(); }
 
         @Override
         public GComponent getReaderComponent() {
@@ -334,6 +355,9 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
+        public GMetaConverter getMetaConverter() { return GMetaConverter.CLASS; } // same conversion this reader's update uses (getClassStringValue), for data.components
+
+        @Override
         public GComponent getReaderComponent() {
             return GContainer.this;
         }
@@ -347,6 +371,24 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
     }
     public final GPropertyReader captionClassReader = new GCaptionClassReader();
+
+    @Override
+    public GPropertyReader getCaptionReader() {
+        return captionReader;
+    }
+    @Override
+    public GPropertyReader getImageReader() {
+        return imageReader;
+    }
+    @Override
+    public String getStaticCaption() {
+        return caption;
+    }
+    @Override
+    public BaseImage getStaticImage() {
+        return image;
+    }
+
     private class GValueClassReader implements GComponentReader {
         private String sID;
 

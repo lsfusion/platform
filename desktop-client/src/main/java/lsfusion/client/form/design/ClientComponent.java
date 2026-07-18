@@ -55,6 +55,8 @@ public abstract class ClientComponent extends ClientIdentityObject {
 
     public boolean defaultComponent;
 
+    public boolean delegate;
+
     public ClientComponent() {
     }
 
@@ -112,6 +114,8 @@ public abstract class ClientComponent extends ClientIdentityObject {
         captionAlignmentVert = pool.readObject(inStream);
 
         defaultComponent = inStream.readBoolean();
+
+        delegate = inStream.readBoolean();
 
         sID = pool.readString(inStream);
     }

@@ -267,3 +267,20 @@
 .dropdown-partner {
     z-index: 2 !important;
 }
+/* CUSTOM REACT: the moved delegated view is stretched to fill the host with the platform fill-parent-flex(-cont)
+   classes (applied in ReactContainerView.attachView) — the same fill a native SizedFlexPanel child gets, uniform
+   across kinds (a delegated property is now just a value, its caption having moved to React). Those classes deliberately
+   omit the min-size reset (min-size is content-specific, normally handled by FlexPanel.addFill's impl, which is
+   unavailable on a React-created host), so it is added here: a virtualized grid then scrolls instead of overflowing the
+   host. */
+.lsf-component, .lsf-component > * {
+    min-width: 0;
+    min-height: 0;
+}
+
+/* <LsfComponents/> default layout: each delegated child in a slot with its caption above it (the caption a delegated
+   component no longer draws in GWT — see PropertyPanelRenderer / GFormLayout). Restyle .lsf-slot in the app as needed. */
+.lsf-slot { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; } /* the slot stretches, like the host */
+.lsf-slot-caption { flex: 0 0 auto; font-weight: 600; }
+.lsf-slot-image { margin-right: 0.25em; } /* the delegated child's image, drawn before its caption text */
+.lsf-slot > .lsf-component { flex: 1 1 auto; } /* the host below the caption fills the rest of the slot (min-size above) */

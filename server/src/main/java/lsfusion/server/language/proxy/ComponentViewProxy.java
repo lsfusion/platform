@@ -30,6 +30,11 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         target.setActivated(activated, getVersion());
     }
 
+    @SuppressWarnings("unused")
+    public void setDelegate(boolean delegate) {
+        target.setDelegate(delegate, getVersion());
+    }
+
     /* ========= constraints properties ========= */
 
     @SuppressWarnings("unused")

@@ -1111,6 +1111,12 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if (captionElementClassValue != null)
             return captionElementClassValue;
 
+        // the class styles the caption element, so don't default one for a caption element that will not exist. The client
+        // draws that element when there is a caption OR an image (PropertyPanelRenderer.initCaption), so an icon-only
+        // property — an empty caption with an image, e.g. a btn-check toggle — still needs the class
+        if(hasNoCaption(entity.getCaption(), entity.getPropertyExtra(CAPTION), getElementClass()) && entity.getImage(context) == null)
+            return null;
+
         if(isProperty(context)) {
             String valueElementClass = getValueElementClass(context);
             // shortcut for the toggle button checkbox
@@ -1326,6 +1332,15 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         String commentElementClassValue = commentElementClass.get();
         if(commentElementClassValue != null)
             return commentElementClassValue;
+
+        // the class styles the comment element, so with no comment at all — neither a design one nor a computed one — there
+        // is nothing for the client to apply it to (setCommentClasses returns early when there is no comment). Send nothing
+        // instead of the default class, the way getDrawCaption returns null when the caption is always empty.
+        // an empty design comment still serializes as "" rather than null, and the client draws the comment element for
+        // any non-null comment, so only a wholly absent comment means the element will not exist
+        LocalizedString comment = getComment();
+        if(comment == null && !entity.hasPropertyExtra(COMMENT))
+            return null;
 
         return "form-text";
     }

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -24,13 +25,21 @@ public interface ComponentViewWidget {
 
     // CUSTOM HTML container usages
 
-    void attach(ResizableComplexPanel attachContainer);
-
     void replace(ResizableComplexPanel panel, String sID);
 
     void remove(ResizableComplexPanel panel);
 
     int getWidgetCount();
+
+    // CUSTOM REACT container usages
+    // hostNode is a raw DOM node outside the GWT layout — a React-owned host or the park node, never a GWT panel,
+    // unlike the panel + index / sID the methods above address a position with
+
+    // logical add to panel, but the element(s) go into hostNode
+    void attachTo(ResizableComplexPanel panel, Element hostNode);
+
+    // pure DOM move of the element(s) into hostNode, no logical re-parenting
+    void appendTo(Element hostNode);
 
     // CUSTOM PLAIN container usages
 

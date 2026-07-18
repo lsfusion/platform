@@ -297,9 +297,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a group rendered by a CUSTOM REACT container is drawn by React, not the standard grid, so the server must not
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
-    // into a JSON candidate list). The group is React-owned if ANY container in its box's ancestry is React - a
-    // customReact box around the group, a React wrapper above it, or the whole-form React main container (mirrors
-    // the client GFormController.getReactContainer ancestry walk)
+    // into a JSON candidate list). A DELEGATED box keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
         for (ComponentView component : getComponents())
             if (component instanceof ContainerView && ((ContainerView) component).groupObjectBox == group)
@@ -307,10 +305,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return false;
     }
     private static boolean isReactOwned(ContainerView container) {
-        for (ContainerView c = container; c != null; c = c.getContainer())
-            if (c.isReact())
-                return true;
-        return false;
+        return container.isReact() || getReactContainer(container) != null;
+    }
+
+    // the react container that RENDERS this component, null if a standard view is built for it (mirrors
+    // GFormController.getReactContainer): a non-delegated child gets no view, so its owner swallows everything below it
+    private static ContainerView getReactContainer(ComponentView component) {
+        ContainerView parent = component.getContainer();
+        if (parent == null)
+            return null;
+        ContainerView parentOwner = getReactContainer(parent);
+        if (parentOwner != null)
+            return parentOwner;
+        return parent.isReact() && !component.isDelegate() ? parent : null;
     }
 
     public Iterable<ComponentView> getNFComponentsIt(Version version) {
@@ -570,8 +577,105 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         pivotColumns.finalizeChanges();
         pivotRows.finalizeChanges();
         pivotMeasures.finalizeChanges();
-        
+
         components.finalizeChanges();
+
+        checkDelegates();
+        checkReactProjectionNames();
+    }
+
+    // A CUSTOM REACT container projects its groups and properties into a JS `data` object (see the web client's
+    // GReactFormData), which owns some names at every level. A projected integration SID that takes one of them, or that
+    // two projected items share, would silently overwrite the other — so reject it here, with the rest of the design
+    // checks: the whole form is then rejected once, when it is built, instead of failing in every browser that opens it.
+    // The names below mirror what GReactFormData writes; keep them in sync with it.
+    private void checkReactProjectionNames() {
+        Map<ContainerView, Set<String>> topNames = new HashMap<>();
+        Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();
+        Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>();
+        Map<GroupObjectEntity, Set<String>> propertyMetaNames = new HashMap<>();
+        Map<GroupObjectEntity, Set<String>> cellMetaNames = new HashMap<>();
+
+        for (ComponentView component : getComponents()) { // a group is projected under its SID on the scope it is rendered by
+            if (component instanceof ContainerView) {
+                GroupObjectEntity group = ((ContainerView) component).groupObjectBox;
+                ContainerView scope = group != null ? getOwningReactContainer(component) : null;
+                if (scope != null)
+                    claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'", "components", "meta");
+            }
+        }
+        for (PropertyDrawView property : getPropertiesIt()) {
+            String integrationSID = property.entity.getIntegrationSID();
+            if (integrationSID == null)
+                continue;
+            GroupObjectEntity group = property.entity.getToDraw(entity);
+            if (group == null) { // a form-level property is a member of `data` itself
+                ContainerView scope = getOwningReactContainer(property);
+                if (scope != null)
+                    claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'", "components", "meta");
+            } else if (isReactContainerGroup(group)) {
+                String source = "property '" + group.getSID() + "." + integrationSID + "'";
+                // node.meta[integrationSID] shares its namespace with the group's own meta fields (count, customOptions).
+                // A grouped-in-columns draw is not projected there at all (GReactFormData.buildNode skips it), so it
+                // claims nothing — claiming would reject a name that cannot collide
+                if (property.entity.getColumnGroupObjects().isEmpty())
+                    claimProjectionName(propertyMetaNames, group, integrationSID, source, "count", "customOptions");
+                if (property.entity.isList(entity)) {
+                    claimProjectionName(rowNames, group, integrationSID, source, "key", "isCurrent", "objects", "meta");
+                    // row.meta[integrationSID] shares its namespace with the row-level meta (meta.row)
+                    claimProjectionName(cellMetaNames, group, integrationSID, source, "row");
+                } else
+                    claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "meta");
+            }
+        }
+    }
+
+    private <K> void claimProjectionName(Map<K, Set<String>> names, K owner, String name, String source, String... reserved) {
+        for (String reservedName : reserved)
+            if (reservedName.equals(name))
+                throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " into the react component: '" + name
+                        + "' is a reserved name at this data level. Give the property an explicit EXTID");
+        if (!names.computeIfAbsent(owner, k -> new HashSet<>()).add(name))
+            throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " into the react component: '" + name
+                    + "' is already projected at this data level. Give one of them an explicit EXTID");
+    }
+
+    // this throws while the logics is being built, so the message is all the developer gets: name the form
+    private String formErrorPrefix() {
+        return entity.getCreationPath() + " form '" + entity.getSID() + "': ";
+    }
+
+    // the react container that OWNS this component: the one that renders it, or the component itself when it is the
+    // react container (mirrors GFormController.getOwningReactContainer)
+    private static ContainerView getOwningReactContainer(ComponentView component) {
+        ContainerView outer = getReactContainer(component);
+        if (outer != null)
+            return outer;
+        return component instanceof ContainerView && ((ContainerView) component).isReact() ? (ContainerView) component : null;
+    }
+
+    // the design is complete here, so `delegate` can finally be checked against the container tree
+    private void checkDelegates() {
+        for (ComponentView component : getComponents()) // the property draws are components too, so this covers them
+            checkDelegate(component);
+    }
+
+    private void checkDelegate(ComponentView component) {
+        if (!component.isDelegate())
+            return;
+
+        ContainerView container = component.getContainer();
+        if (container == null || !container.isReact())
+            throw new IllegalStateException("delegate is set for '" + component.getSID() + "', which is not a child of a CUSTOM REACT container");
+
+        // a property is drawn on its object GROUP, and a group the react component renders has no client controller,
+        // so no view would ever be built for the property — there would be nothing to place
+        if (component instanceof PropertyDrawView) {
+            GroupObjectEntity toDraw = ((PropertyDrawView) component).entity.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
+            if (toDraw != null && isReactContainerGroup(toDraw))
+                throw new IllegalStateException("delegate is set for property '" + component.getSID() + "', whose object group is rendered by the react component '"
+                        + container.getCustom() + "' — delegate the group's box instead");
+        }
     }
 
     public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);

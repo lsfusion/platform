@@ -16,4 +16,9 @@ public class GValueElementClassReader extends GExtraPropertyReader {
     public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
         controller.updateCellValueElementClasses(this, keys);
     }
+
+    @Override
+    public String getMetaField() { return "valueClass"; }
+    @Override
+    public GMetaConverter getMetaConverter() { return GMetaConverter.CLASS; }
 }

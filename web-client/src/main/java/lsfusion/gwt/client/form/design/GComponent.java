@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -18,6 +19,9 @@ public class GComponent implements Serializable {
     public String sID;
     public GContainer container;
     public boolean defaultComponent;
+
+    // meaningful only for a direct child of a CUSTOM REACT container (see isDelegated); ignored on any other component
+    public boolean delegate;
 
     public String elementClass;
 
@@ -94,6 +98,45 @@ public class GComponent implements Serializable {
 
     public boolean isInCustom() {
         return container != null && container.isCustom();
+    }
+
+    public boolean isInReact() { // a direct child of a CUSTOM REACT container (sibling of isInCustom)
+        return container != null && container.isReact();
+    }
+
+    // the delegate flag is only meaningful for a direct child of a CUSTOM REACT container: such a child keeps its real (server-built) GWT view and React mounts it into a placeholder instead of owning/replacing it
+    public boolean isDelegated() {
+        return delegate && isInReact();
+    }
+
+    // the complement of isDelegated within a react container: a child React DRAWS (from data), so GWT builds no view for
+    // it and it is react-owned. A child outside a react container is neither delegated nor react-projected.
+    public boolean isReactProjected() {
+        return !delegate && isInReact();
+    }
+
+    // a component's semantic presentation descriptors (caption / image) — their dynamic readers and static design
+    // values — exposed uniformly. Base has none; GPropertyDraw and GContainer override.
+    public GPropertyReader getCaptionReader() {
+        return null;
+    }
+    public GPropertyReader getImageReader() {
+        return null;
+    }
+    public String getStaticCaption() {
+        return null;
+    }
+    public BaseImage getStaticImage() {
+        return null;
+    }
+    public String getStaticImageHTML() { // the static design image (appImage) as an <img> HTML string, or null
+        BaseImage image = getStaticImage();
+        return image != null ? image.createImageHTML() : null;
+    }
+
+    // Each reader self-declares its field, conversion and static fallback, like a property's meta readers.
+    public GPropertyReader[] getComponentReaders() {
+        return new GPropertyReader[] { getCaptionReader(), getImageReader() };
     }
 
     public boolean isFlex() {

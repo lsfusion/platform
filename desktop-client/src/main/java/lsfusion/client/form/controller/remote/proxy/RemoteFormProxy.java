@@ -92,10 +92,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException {
-        logRemoteMethodStartVoidCall("setContainerCollapsed");
-        ServerResponse result = target.setContainerCollapsed(requestIndex, lastReceivedRequestIndex, containerID, collapsed);
-        logRemoteMethodEndVoidCall("setContainerCollapsed");
+    public ServerResponse setUserHidden(long requestIndex, long lastReceivedRequestIndex, int componentID, boolean hidden) throws RemoteException {
+        logRemoteMethodStartVoidCall("setUserHidden");
+        ServerResponse result = target.setUserHidden(requestIndex, lastReceivedRequestIndex, componentID, hidden);
+        logRemoteMethodEndVoidCall("setUserHidden");
         return result;
     }
 

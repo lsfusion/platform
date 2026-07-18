@@ -58,6 +58,12 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GRowForegroundReader rowForegroundReader;
     public GCustomOptionsReader customOptionsReader;
 
+    // the group's own presentation readers (each self-declares getMetaField/getMetaConverter/getMetaScope): per-row
+    // background/foreground/select -> meta.row, group-scoped customOptions -> node.meta. Any may be null.
+    public GGroupObjectPropertyReader[] getPresentationReaders() {
+        return new GGroupObjectPropertyReader[] { rowBackgroundReader, rowForegroundReader, rowSelectReader, customOptionsReader };
+    }
+
     // transient
     private transient GSize columnSumWidth;
     public GSize getColumnSumWidth() {

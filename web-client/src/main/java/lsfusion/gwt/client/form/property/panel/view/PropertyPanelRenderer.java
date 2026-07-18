@@ -52,7 +52,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip, String defaultValue, PValue propertyCustomOption) {
-        if(property.hasDynamicImage() && !property.isAction()) {
+        if(property.hasDynamicImage() && !property.isAction() && label != null) { // a delegated property has no label (its caption/image go to React)
             BaseImage.updateImage(image, label);
             image = null;
         }
@@ -63,8 +63,11 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
-        boolean hasCaption = property.caption != null;
-        if(!hasCaption && property.comment == null && property.appImage == null) // if there is no (empty) static caption and no dynamic caption
+        // a delegated property's caption is projected into data.components (like a tab hands its caption up to the tab
+        // strip); the React component draws it, so GWT renders the bare value with no label of its own
+        boolean delegated = property.isDelegated();
+        boolean hasCaption = property.caption != null && !delegated;
+        if(!hasCaption && property.comment == null && (property.appImage == null || delegated)) // if there is no (empty) static caption and no dynamic caption
             return valuePanel.view;
 
         // id and for we need to support editing when clicking on the label
@@ -113,7 +116,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
         boolean commentFirst = property.isPanelCommentFirst();
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
-        boolean inline = !isAlignCaption && property.isInline();
+        // a delegated property is mounted into a React host as ONE self-contained view (like every delegated child), so it
+        // is wrapped in a panel that keeps its own value/comment layout, not laid out inline as value/comment siblings
+        // directly in the host (which isInCustom() defaults to for a CUSTOM container child)
+        boolean inline = !isAlignCaption && property.isInline() && !delegated;
         boolean verticalDiffers = hasCaption && property.comment != null && !inline && property.captionVertical != property.panelCommentVertical;
         boolean panelVertical = hasCaption ? property.captionVertical : property.panelCommentVertical;
 

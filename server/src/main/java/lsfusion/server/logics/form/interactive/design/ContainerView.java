@@ -296,12 +296,13 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         return getCustom() != null;
     }
 
+    private static final java.util.regex.Pattern REACT_COMPONENT_NAME = java.util.regex.Pattern.compile("[A-Z][A-Za-z0-9_$]*");
     public boolean isReact() {
         // React is INFERRED from the custom value (not stored): a bare component identifier (UpperCamel) names a React
         // component; '', an HTML template ('<div>[child]</div>'), or a lower-case/path string is a plain custom design.
         // The SINGLE point of determination — computed here and serialized to the client, so the client just reads it.
         String cd = getCustom();
-        return cd != null && cd.matches("[A-Z][A-Za-z0-9_$]*");
+        return cd != null && REACT_COMPONENT_NAME.matcher(cd).matches();
     }
 
     @Override
@@ -492,6 +493,9 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     public boolean isCollapsible() {
+        if(isReactHidable()) // a delegated container's visibility is owned by React, not a GWT collapse toggle, so it is
+            return false;    // never collapsible — this keeps a component in at most one of the user-hidden roles
+
         Boolean collapsibleValue = collapsible.get();
         if(collapsibleValue != null)
             return collapsibleValue;

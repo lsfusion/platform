@@ -33,7 +33,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
                                         int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException;
 
-    ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException;
+    // user-driven hide of a component: a collapsed container or a CUSTOM REACT component hiding a delegated child
+    ServerResponse setUserHidden(long requestIndex, long lastReceivedRequestIndex, int componentID, boolean hidden) throws RemoteException;
 
     ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException;
 

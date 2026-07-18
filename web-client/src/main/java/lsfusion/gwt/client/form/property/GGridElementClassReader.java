@@ -16,4 +16,9 @@ public class GGridElementClassReader extends GExtraPropertyReader {
     public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
         controller.updateCellGridElementClasses(this, keys);
     }
+
+    @Override
+    public String getMetaField() { return "gridClass"; }
+    @Override
+    public GMetaConverter getMetaConverter() { return GMetaConverter.CLASS; }
 }

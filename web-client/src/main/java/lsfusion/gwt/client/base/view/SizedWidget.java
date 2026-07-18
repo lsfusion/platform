@@ -84,9 +84,6 @@ public class SizedWidget {
         }
 
         // CUSTOM container usages
-        public void attach(ResizableComplexPanel attachContainer) {
-            attachContainer.add(widget);
-        }
 
         public void replace(ResizableComplexPanel panel, String sID) {
             Element panelElement = panel.getElement();
@@ -95,6 +92,7 @@ public class SizedWidget {
                 panelChild.getParentElement().replaceChild(widget.getElement(), panelChild);
             }
         }
+
 
         public void remove(ResizableComplexPanel panel) {
             panel.remove(widget);
@@ -130,6 +128,16 @@ public class SizedWidget {
 
         public int getWidgetCount() {
             return 1;
+        }
+
+        // CUSTOM REACT container usages
+
+        public void attachTo(ResizableComplexPanel panel, Element hostNode) {
+            panel.addToElement(widget, hostNode);
+        }
+
+        public void appendTo(Element hostNode) {
+            hostNode.appendChild(widget.getElement());
         }
     };
 }

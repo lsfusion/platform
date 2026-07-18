@@ -41,6 +41,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, GPropertyDrawOrPivotColumn, Serializable {
+    private static final GImageReader STATIC_COMPONENT_IMAGE_READER = new GImageReader(-1, -1);
     public int ID;
     public String nativeSID;
     public String sID;
@@ -400,6 +401,35 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GExtraPropReader changeKeyReader;
     public GExtraPropReader changeMouseReader;
     public GExtraPropReader defaultValueReader;
+
+    // all of this draw's semantic display readers, projected into data.meta for react-owned properties; native DOM/CSS
+    // presentation (element classes and font) stays owned by the native renderers and is deliberately not projected.
+    // declares its own meta field name + converter (getMetaField / getMetaConverter), so GReactFormData iterates generically.
+    // (showIf/loading/changeKey/changeMouse are NOT presentation and are omitted; entries may be null and are skipped.)
+    public GPropertyReader[] getPresentationReaders() {
+        return new GPropertyReader[] {
+                captionReader, readOnlyReader, backgroundReader, foregroundReader, imageReader, footerReader,
+                commentReader, placeholderReader, patternReader, regexpReader,
+                regexpMessageReader, tooltipReader, valueTooltipReader, propertyCustomOptionsReader, defaultValueReader
+        };
+    }
+
+    @Override
+    public GPropertyReader getCaptionReader() {
+        return captionReader;
+    }
+    @Override
+    public GPropertyReader getImageReader() {
+        return imageReader != null ? imageReader : STATIC_COMPONENT_IMAGE_READER;
+    }
+    @Override
+    public String getStaticCaption() {
+        return caption;
+    }
+    @Override
+    public BaseImage getStaticImage() {
+        return appImage;
+    }
 
     // for pivoting
     public String formula;
