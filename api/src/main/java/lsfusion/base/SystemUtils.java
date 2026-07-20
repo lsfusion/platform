@@ -15,6 +15,10 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -332,16 +336,28 @@ public class SystemUtils {
         Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
         RunCommandActionResult result = null;
         if (wait) {
+            // streams are read in separate threads: the pipe read is not interruptible, and reading them
+            // sequentially in this thread can deadlock when the process fills the other pipe's buffer
+            // daemon threads: a surviving child of the command can keep the pipes open indefinitely
+            ExecutorService executor = Executors.newFixedThreadPool(2, new DaemonThreadFactory("run-cmd"));
             try {
-                String cmdOut = readInputStreamToString(p.getInputStream());
-                String cmdErr = readInputStreamToString(p.getErrorStream());
+                Future<String> cmdOut = executor.submit(() -> readInputStreamToString(p.getInputStream()));
+                Future<String> cmdErr = executor.submit(() -> readInputStreamToString(p.getErrorStream()));
 
                 p.waitFor();
 
-                int exitValue = p.exitValue();
-                result = new RunCommandActionResult(cmdOut, cmdErr, exitValue);
+                result = new RunCommandActionResult(cmdOut.get(), cmdErr.get(), p.exitValue());
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                // do not restore the interrupt flag: the platform propagates interruption as an exception,
+                // a flag left on the pooled invocation thread breaks main - invocation synchronization
+                p.destroyForcibly();
+                throw Throwables.propagate(e);
+            } catch (ExecutionException e) {
+                p.destroyForcibly();
+                Throwables.propagateIfPossible(e.getCause(), IOException.class); // keep the declared IOException contract
+                throw Throwables.propagate(e.getCause());
+            } finally {
+                executor.shutdownNow();
             }
         }
         return result;
