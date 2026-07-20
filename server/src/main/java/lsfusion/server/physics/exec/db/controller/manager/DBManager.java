@@ -1019,10 +1019,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 return new DataObject((Long)addObject.object, businessLogics.authenticationLM.computer); // to update classes after apply
             }
 
-            systemLogger.debug("Begin user session " + strHostName + " " + result);
+            remoteLogger.debug("Begin user session " + strHostName + " " + result);
             return (DataObject) result;
         } catch (Exception e) {
-            systemLogger.error("Error reading computer: ", e);
+            remoteLogger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
         }
     }

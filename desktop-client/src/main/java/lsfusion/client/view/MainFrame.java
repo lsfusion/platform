@@ -159,9 +159,7 @@ public abstract class MainFrame extends JFrame {
 
             setUIFontSize();
 
-            logger.info("Before init frame");
             DockableMainFrame frame = new DockableMainFrame(remoteNavigator, clientSettings.currentUserName);
-            logger.info("After init frame");
 
             frame.addWindowListener(
                     new WindowAdapter() {
@@ -172,7 +170,6 @@ public abstract class MainFrame extends JFrame {
             );
 
             frame.setExtendedState(MAXIMIZED_BOTH);
-            logger.info("After setExtendedState");
 
             ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode, clientSettings.autoReconnectOnConnectionLost);
 
