@@ -631,8 +631,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:268621279d2fb745273a5ade0cb4d827cd505ac6592d1b6905cf73f32573a844",
-      "indexed_at": "2026-07-09T09:52:49Z",
+      "file_hash": "sha256:e8dfb334c9cc2bb6c95e41a53a874f4adfdb15b16bffa1301f4e5fa5266996d9",
+      "indexed_at": "2026-07-20T10:25:57Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -647,6 +647,30 @@
           "section_payload_hash": "sha256:1634b0ca167babb86b6fb33492f4d4aadeb09ce7793b5348291f5b9b924898d2",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
+        "How-to_Custom_React_views::choosing-between-a-react-component-and-an-html-template": {
+          "file_id": "file-LrKvSmQXvwBedJaKqrTBJc",
+          "heading_path": "How-to: Custom React form views > Choosing between a React component and an HTML template",
+          "section_payload_hash": "sha256:35a15b8f5e697f250980b0d411248590651b8f653792156de2ffd41238f6eb85",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::delegating-children-back-to-lsfusion": {
+          "file_id": "file-LyibQGY1RvwCwi4vsBCejZ",
+          "heading_path": "How-to: Custom React form views > Delegating children back to lsFusion",
+          "section_payload_hash": "sha256:1db6be6566507d20306f36b1292f8983bb0364888761539af455f87019a9da83",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::display-options-display-options": {
+          "file_id": "file-1MeSjF1tkRngkpLZYxAm1E",
+          "heading_path": "How-to: Custom React form views > Display options {#display-options}",
+          "section_payload_hash": "sha256:bf55217e22c5c65917b5b3c559e9fc23b1107c2e1a023cd1c0b2a1349082756f",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::extending-a-delegating-container": {
+          "file_id": "file-YDE4zTdKiw5J9o4Ubmsrqs",
+          "heading_path": "How-to: Custom React form views > Extending a delegating container",
+          "section_payload_hash": "sha256:f2011b77ebacd6444d694f54f266d58ce6d1ffb01e93376a964414e0ca78808e",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
         "How-to_Custom_React_views::how-to-custom-react-form-views": {
           "file_id": "file-DzTmzwGzkM8cXag38ifn4a",
           "heading_path": "How-to: Custom React form views",
@@ -657,6 +681,12 @@
           "file_id": "file-NHa5d9B8GMQjeGESU7dXiu",
           "heading_path": "How-to: Custom React form views > Interactivity",
           "section_payload_hash": "sha256:0055e6f9418643f8fb4d91d6a80c39162727b92f75829ae818ebdefa523a3b99",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::placing-a-delegated-child": {
+          "file_id": "file-Ke9TvDmYNiuAKS9YCFAaLm",
+          "heading_path": "How-to: Custom React form views > Placing a delegated child",
+          "section_payload_hash": "sha256:968418edc17b05c3804eb31f90613930072209774372cd2e2bd2db64f3f86071",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::rendering-rows": {
@@ -672,17 +702,17 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
-          "file_id": "file-EnVxLQLU9jMWNpxyqHqfAf",
+          "file_id": "file-KBPuq6qdjXR73GBv3LPnnF",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:8a41c648acfeb64336493de613256426f77eca6ed0a5f9c2f5ed6f44fb32df0a",
+          "section_payload_hash": "sha256:51ac2af4a8fd37a06008e974af3e7150ea3663794956b09e8cbac48f242d14b5",
           "source_file": "how-to/How-to_Custom_React_views.md"
         }
       },
       "stale": false
     },
     "how-to/How-to_Custom_client_JS_modules.md": {
-      "file_hash": "sha256:b092816d45b208bdfe5ba39c5b96d923ee79d0c8fa08b5121711400040f84b4d",
-      "indexed_at": "2026-07-09T09:53:29Z",
+      "file_hash": "sha256:1142bbf241ec26078ecb003d7975e45f38d8007a6e046e224578b3c398bd095b",
+      "indexed_at": "2026-07-20T10:26:17Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -716,9 +746,9 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::lightweight-.jsx-no-build": {
-          "file_id": "file-2fJNAZSzbu1VpuzZo1LYho",
+          "file_id": "file-NwSn8LQ4DTNXKSvz9bUQa2",
           "heading_path": "How-to: Custom client JS modules > Lightweight .jsx (no build)",
-          "section_payload_hash": "sha256:59d80aae978b1570f638ec9281da81e4cfc466ff8142556488e86bcb44cf1fe9",
+          "section_payload_hash": "sha256:a9720e7e5fd597c20010091accf7399f366828ef4212517397cad6f26623ec40",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::named-exports-and-auto-registration": {
@@ -728,9 +758,9 @@
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::react-compiler": {
-          "file_id": "file-28SZGgXXFDKDnHQ2UmZ58C",
+          "file_id": "file-Fu4PhEwD6Exy1sLnQAN1kB",
           "heading_path": "How-to: Custom client JS modules > React Compiler",
-          "section_payload_hash": "sha256:622b7793e52f2432791ab290a8143ddc0ce1d08dc28787a7297bfe4023fb2c93",
+          "section_payload_hash": "sha256:7f837b3e4e97420386d50980f4fdf9e5b7dbe6b0a05d0941b9d7b8d11d92d812",
           "source_file": "how-to/How-to_Custom_client_JS_modules.md"
         },
         "How-to_Custom_client_JS_modules::styles": {
@@ -4197,8 +4227,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:87100f94ef0abe29f592fea3c67252c5b4b76e1c2055635f90bcfeac93ff1011",
-      "indexed_at": "2026-06-14T13:50:02Z",
+      "file_hash": "sha256:275a25bbd1b9ffd2c78c50c0f774c7f6dd2a4008d5d213bb633334f7d9fd3ee3",
+      "indexed_at": "2026-07-20T10:26:25Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4214,15 +4244,15 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::component-properties": {
-          "file_id": "file-WxCaX51hoTLpChFWRgk4S9",
+          "file_id": "file-GNEE2yUAaXxkDnJJ6HMAJf",
           "heading_path": "DESIGN statement > Parameters > Component properties",
-          "section_payload_hash": "sha256:f2bc9fb638a17f02c30091f61beb75aa6eafa0a61e169e774192f03e3f61297d",
+          "section_payload_hash": "sha256:909d9e0c86a5270cd3409d0a987ecda9b41821cb3949576012ed0d8cd1f13cdb",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::container-properties": {
-          "file_id": "file-UdRCrfeGtg3sGeEfLWpZNh",
+          "file_id": "file-ESmVPBnViUaFKhYoPVaK4h",
           "heading_path": "DESIGN statement > Parameters > Container properties",
-          "section_payload_hash": "sha256:f3e1b629cd64f13fbefbce31b0ca7aed8a1a0b1ebd7f2c8dbd237682027b5153",
+          "section_payload_hash": "sha256:481f531a8d1e351fb79b2b8d390140216087b0a66162825c192df4c4881ecb4f",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::description": {
@@ -7236,6 +7266,44 @@
       },
       "stale": false
     },
+    "language/SHOWDEP_operator.md": {
+      "file_hash": "sha256:213533fb7b41f4d0e0a13929a92396d97268a3fad5fb0a7c4e660f5fcabf2b6a",
+      "indexed_at": "2026-07-20T10:26:40Z",
+      "indexed_sourceType": "language",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "SHOWDEP_operator::examples": {
+          "file_id": "file-U1x1cy1kcq9mUBL1b8GXFz",
+          "heading_path": "SHOWDEP, SHOWREC operators > Examples",
+          "section_payload_hash": "sha256:0f64a04e6d5c8aa0fe9b28411d50a661be6cbf934f7b5bb789b68073ef90bb2f",
+          "source_file": "language/SHOWDEP_operator.md"
+        },
+        "SHOWDEP_operator::parameters": {
+          "file_id": "file-ASwGdgype4YwyL1J9QEyuQ",
+          "heading_path": "SHOWDEP, SHOWREC operators > Parameters",
+          "section_payload_hash": "sha256:e567e728e2fd8be8eb16c42c9452a6eb706aa2902592e6e51dee63ab48516555",
+          "source_file": "language/SHOWDEP_operator.md"
+        },
+        "SHOWDEP_operator::showdep-showrec-operators": {
+          "file_id": "file-7w7A1qMEnTRaR5CZqC85Vy",
+          "heading_path": "SHOWDEP, SHOWREC operators",
+          "section_payload_hash": "sha256:023b15be2bb9a8097482801f69c617340fef8c273be2e0d568fe8040b95b028f",
+          "source_file": "language/SHOWDEP_operator.md"
+        },
+        "SHOWDEP_operator::syntax+description": {
+          "file_id": "file-QoZohYZVdssQZxbJQJ2eZi",
+          "heading_path": "SHOWDEP, SHOWREC operators > Syntax + Description",
+          "section_payload_hash": "sha256:b57d119e5b43a4e398faa5b00f8f25f6f4a4297300f9b2c722b3e4cb8be04865",
+          "source_file": "language/SHOWDEP_operator.md"
+        }
+      },
+      "stale": false
+    },
     "language/SHOW_operator.md": {
       "file_hash": "sha256:d7812cd26e8413d21b0a05f5bb42c9468b01babe7c69c293afa1bb336dbb9065",
       "indexed_at": "2026-06-19T14:48:34Z",
@@ -8675,8 +8743,8 @@
       "stale": false
     },
     "paradigm/Chat.md": {
-      "file_hash": "sha256:03fad464f0ce97c81ab53810c51f1c39ddbb762c2255ce26760547d1b6118d36",
-      "indexed_at": "2026-05-22T22:57:52Z",
+      "file_hash": "sha256:446eed78bd30edf4d1b6a12cf8ec1327c6ac66aae51434e994e38a0fa951b0ab",
+      "indexed_at": "2026-07-20T10:26:50Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8684,7 +8752,50 @@
         "prefix_version": "v1",
         "source_url_version": "v1"
       },
-      "sections": {},
+      "sections": {
+        "Chat::chat": {
+          "file_id": "file-X3goneCj2NgT2MYCxbJNdB",
+          "heading_path": "Chat",
+          "section_payload_hash": "sha256:081a7d50dbc2d0b36dbeab99425f2c86d3fed6d6208be055dff61f73bc4e5884",
+          "source_file": "paradigm/Chat.md"
+        },
+        "Chat::chats-dialogs-and-participants": {
+          "file_id": "file-RfXibzx7tqFHiUR356oMD5",
+          "heading_path": "Chat > Chats, dialogs and participants",
+          "section_payload_hash": "sha256:d03e95eea815c276dc8b92577b0c79503279080a61fee7bd6052b980e15b1519",
+          "source_file": "paradigm/Chat.md"
+        },
+        "Chat::forms": {
+          "file_id": "file-Tv9cMbveRthNt4KHG2meNT",
+          "heading_path": "Chat > Forms",
+          "section_payload_hash": "sha256:7e5f5bdda4ae7e13950fb7dfe0f69a82f9ae79c34a4d3a46b07da2895355ab46",
+          "source_file": "paradigm/Chat.md"
+        },
+        "Chat::messages": {
+          "file_id": "file-89EFfqnm63Cxp2ZSDtSVag",
+          "heading_path": "Chat > Messages",
+          "section_payload_hash": "sha256:59fe19a86d3de40b64a58e7c445382b1535471feb97b81db23fd9eb5a110594e",
+          "source_file": "paradigm/Chat.md"
+        },
+        "Chat::push-notifications": {
+          "file_id": "file-1QUfc4WH56VzGUPyG5WRtc",
+          "heading_path": "Chat > Push notifications",
+          "section_payload_hash": "sha256:b34f3f0adbac997fc3b0d75a08d01c2b423c0d2ee906a5410f0df4b5bc862399",
+          "source_file": "paradigm/Chat.md"
+        },
+        "Chat::statuses-and-unread-messages": {
+          "file_id": "file-YW7TsbuVFDDkD4s3dV4pCV",
+          "heading_path": "Chat > Statuses and unread messages",
+          "section_payload_hash": "sha256:861b818d803882e2a776dda12e940e1244ae03346a98631096d661436d89d9f4",
+          "source_file": "paradigm/Chat.md"
+        },
+        "Chat::system-messages": {
+          "file_id": "file-XhibCnrmfMaFbTXSxfikuM",
+          "heading_path": "Chat > System messages",
+          "section_payload_hash": "sha256:c565233b954ff2fd7c97fa37ab3b3a30a5bc6d0a5f5d6f4314bae975a6e788dc",
+          "source_file": "paradigm/Chat.md"
+        }
+      },
       "stale": false
     },
     "paradigm/Class_change_CHANGECLASS_DELETE.md": {
@@ -10831,8 +10942,8 @@
       "stale": false
     },
     "paradigm/Journals_and_logs.md": {
-      "file_hash": "sha256:f81e7ed21b7bc6e38e3ee55f09d2dae77567606d60667a70f8054c42d00c55eb",
-      "indexed_at": "2026-07-16T07:15:19Z",
+      "file_hash": "sha256:13627315563d95c880488c82426f1e010075ece2c35ed5e5c3bfc85260fe3d70",
+      "indexed_at": "2026-07-20T10:27:00Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10841,16 +10952,16 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Journals_and_logs::..imagesjournals_and_logs_property_changes_history.png": {
-          "file_id": "file-7QaBfdGUffhvWVbcaEf146",
-          "heading_path": "Journals and logs > ![](../images/Journals_and_logs_property_changes_history.png)",
-          "section_payload_hash": "sha256:ab1b0a1a7f7903e251d06cca2a5c0ce19c1c82fd74cd4534bd539c047250373a",
+        "Journals_and_logs::journal-setup-mechanism-definelog": {
+          "file_id": "file-PWQfJv9nZ5rW2c2dC6Mqci",
+          "heading_path": "Journals and logs > Journal setup mechanism {#defineLog}",
+          "section_payload_hash": "sha256:d55832c032bc791cfeba38aae9a777e4a8a6fa2fa1444c3f7736294f9a534777",
           "source_file": "paradigm/Journals_and_logs.md"
         },
-        "Journals_and_logs::logs": {
-          "file_id": "file-9bWRRUn1tV6oKUonyPLY37",
-          "heading_path": "Journals and logs > Logs",
-          "section_payload_hash": "sha256:f221a1b90f197b6f5624b56cf9338111c18abf983700c0ceaeb0545e4e28f5de",
+        "Journals_and_logs::journals": {
+          "file_id": "file-E1do35knkrv7DYa5BMEwXG",
+          "heading_path": "Journals and logs > Journals",
+          "section_payload_hash": "sha256:634352b46cf66110f9945022ed5766a61b75fa3734bd544f21444a1d4da1a9ca",
           "source_file": "paradigm/Journals_and_logs.md"
         },
         "Journals_and_logs::logs-logs": {
@@ -11967,8 +12078,8 @@
       "stale": false
     },
     "paradigm/Process_monitor.md": {
-      "file_hash": "sha256:193d35b4888d8e7ca8a47d7d1bbce3fb06332eb6ec2e4c77ab8cd9c0aa04769a",
-      "indexed_at": "2026-05-22T23:32:42Z",
+      "file_hash": "sha256:f321b582f5dd1e6eea509baf4b7bc55ac446f02a05d99362d6bac2c0c95a01bc",
+      "indexed_at": "2026-07-20T10:27:11Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11976,12 +12087,49 @@
         "prefix_version": "v1",
         "source_url_version": "v1"
       },
-      "sections": {},
+      "sections": {
+        "Process_monitor::columns": {
+          "file_id": "file-U15vWwAdtFzawhJgLWaFzR",
+          "heading_path": "Process monitor > Columns",
+          "section_payload_hash": "sha256:7cd113e61c6169065a4746e54a320983237e8d67d0d4d3520cc4122d23407efc",
+          "source_file": "paradigm/Process_monitor.md"
+        },
+        "Process_monitor::filter-by-process-type": {
+          "file_id": "file-2LGtutybKVw3aom3dUtnEp",
+          "heading_path": "Process monitor > Filter by process type",
+          "section_payload_hash": "sha256:7dd75c1a0b7ea5769219200b1f1718776169d110412fad3e0dbd11bfe4523a48",
+          "source_file": "paradigm/Process_monitor.md"
+        },
+        "Process_monitor::interruption-and-forced-termination": {
+          "file_id": "file-TA8N8gf8Z1BYbCbVuLZX2d",
+          "heading_path": "Process monitor > Interruption and forced termination",
+          "section_payload_hash": "sha256:a113e9be278473e66cb461be1f579f179b436c391015ea45f7a9abc66e898d12",
+          "source_file": "paradigm/Process_monitor.md"
+        },
+        "Process_monitor::locks": {
+          "file_id": "file-GeGJ3yQhW94iqQFT1QMyKV",
+          "heading_path": "Process monitor > Locks",
+          "section_payload_hash": "sha256:4893c86b4510c9ae7713d5a4028b4d7617632ca3ded8c0ca6eb574ade01c200b",
+          "source_file": "paradigm/Process_monitor.md"
+        },
+        "Process_monitor::monitor-contents": {
+          "file_id": "file-XgpuWvXi8muSPRJUW8FR2w",
+          "heading_path": "Process monitor > Monitor contents",
+          "section_payload_hash": "sha256:5880ab827d521e4df027833b9e06f56af26e3e9a9eff35da75470c09fb5250f4",
+          "source_file": "paradigm/Process_monitor.md"
+        },
+        "Process_monitor::process-monitor": {
+          "file_id": "file-NxuWjBSrrbqHR4kTWhcTmu",
+          "heading_path": "Process monitor",
+          "section_payload_hash": "sha256:d7167515c3e3a961ced0d38385c37bb822150d1f70a48c1da82aa5f482f5df7c",
+          "source_file": "paradigm/Process_monitor.md"
+        }
+      },
       "stale": false
     },
     "paradigm/Profiler.md": {
-      "file_hash": "sha256:19cd99f9c6282e684d460a8674e5bc6b670034017b9d12817f9f1cb7e26eaf1e",
-      "indexed_at": "2026-05-22T23:32:42Z",
+      "file_hash": "sha256:608a8906ba8fe3a87103ce58998fbb90f2cae03dbc8c15cb4d145f167b6c9a83",
+      "indexed_at": "2026-07-20T10:28:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11989,7 +12137,44 @@
         "prefix_version": "v1",
         "source_url_version": "v1"
       },
-      "sections": {},
+      "sections": {
+        "Profiler::call-graph": {
+          "file_id": "file-D2hudmQ7XZrJXT78qDmn4t",
+          "heading_path": "Profiler > Call graph",
+          "section_payload_hash": "sha256:cf4ca006ed0776820f69a75b644e08c61a4a309c37cca7b46d2f17714b63d0c1",
+          "source_file": "paradigm/Profiler.md"
+        },
+        "Profiler::data-presentation": {
+          "file_id": "file-BCEuo7CZmTn9XAQbLRombJ",
+          "heading_path": "Profiler > Data presentation",
+          "section_payload_hash": "sha256:e61d460658991b669f07774d6a9fa701eed17b978709b1bac770a9d1a0b76674",
+          "source_file": "paradigm/Profiler.md"
+        },
+        "Profiler::metrics": {
+          "file_id": "file-NRQ93QQfjHGp2QtAW2576x",
+          "heading_path": "Profiler > Metrics",
+          "section_payload_hash": "sha256:f9cf77cb64bb0b423635579375032732732a9639d162bff00081a8fea240e0ef",
+          "source_file": "paradigm/Profiler.md"
+        },
+        "Profiler::profiler": {
+          "file_id": "file-EnFmBwAgET2Tdgnse3rX1X",
+          "heading_path": "Profiler",
+          "section_payload_hash": "sha256:336104d57eb8767ecd5ba1749521824e5219b8f7c38ee21ac209a8d94479eb81",
+          "source_file": "paradigm/Profiler.md"
+        },
+        "Profiler::query-plan-analysis-settings": {
+          "file_id": "file-63gSZ6Qn1fez2Ytso3Ggt6",
+          "heading_path": "Profiler > Query-plan analysis settings",
+          "section_payload_hash": "sha256:e0b9d811fdebe55e958f9076735ba30a56d40a94e152a8610a2f5dbb4bc91476",
+          "source_file": "paradigm/Profiler.md"
+        },
+        "Profiler::start-and-stop": {
+          "file_id": "file-GbUWMqvDnkSAqGEc5Tm2fz",
+          "heading_path": "Profiler > Start and stop",
+          "section_payload_hash": "sha256:8f77628b4c42f533b14ed527057a4f6f8e44a03bbdaae31ef46e44ff76bc0db3",
+          "source_file": "paradigm/Profiler.md"
+        }
+      },
       "stale": false
     },
     "paradigm/Projects.md": {
@@ -14569,7 +14754,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "6463de482e94a6b00d657b6c84eab14a625e213b",
+  "last_indexed_docs_commit": "7b6fcc5a51b92e87ff1b5142c4007876f3095310",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
