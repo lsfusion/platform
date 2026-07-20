@@ -2,9 +2,9 @@ name: lsfusion
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:18
     volumes:
-      - ./docker-db:/var/lib/postgresql/data # host/path:container/path
+      - ./docker-db:/var/lib/postgresql # host/path:container/path
     environment:
       - POSTGRES_PASSWORD=11111
 

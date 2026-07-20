@@ -2,9 +2,9 @@ name: ${docker.compose.projectName}
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:18
     volumes:
-      - ./docker-db:/var/lib/postgresql/data
+      - ./docker-db:/var/lib/postgresql
     environment:
       - POSTGRES_PASSWORD=11111
 
