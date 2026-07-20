@@ -3477,7 +3477,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
 
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
-                ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result + ", MIGRATED : " + sessionTablesMap.keySet() + ", REMOVED FROM POOL : " + removedTables);
+                ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
             } finally {
                 if(locked) {
                     isRestarting = false;
