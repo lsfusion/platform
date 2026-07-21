@@ -612,6 +612,30 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
         }
         inTransaction++;
+
+        if(inTransaction > 1) // diagnostics after the level is registered, so that it can not affect the transaction state
+            logNestedTransaction();
+    }
+
+    // diagnostics : the moment of the nesting, there is no other place where it can be caught (all the application level checks are per DataSession, and the nesting is created by another DataSession on the same SQLSession, or by DBManager.run on an already started transaction)
+    private void logNestedTransaction() {
+        logDiagnostics("NESTED SQL TRANSACTION START, LEVEL : " + inTransaction);
+    }
+
+    // diagnostics : the source of the nesting - the session is created while the sql session is already in transaction, so its apply will nest (see DataSession constructor)
+    public void logSessionCreatedInTransaction() {
+        logDiagnostics("SESSION CREATED ON SQL IN TRANSACTION");
+    }
+
+    private void logDiagnostics(String message) {
+        try {
+            handLogger.warn(message + ", SQL : " + System.identityHashCode(this) + '\n' + ExecutionStackAspect.getExStackTrace());
+        } catch (Throwable t) { // diagnostics should not break the transaction
+            try {
+                ServerLoggers.sqlSuppLog(t);
+            } catch (Throwable sl) {
+            }
+        }
     }
 
     public void handleAndPropagate(SQLException e, String message) throws SQLException, SQLHandledException {
