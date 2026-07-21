@@ -9449,8 +9449,8 @@
       "stale": false
     },
     "paradigm/Docker.md": {
-      "file_hash": "sha256:d2ed6e12841b4ca3a7b780eb040923c4362120566fab80e1ee5fe7d9c7310bee",
-      "indexed_at": "2026-05-22T23:09:37Z",
+      "file_hash": "sha256:da4a89f678bc45cc1643465f0f5d42468ececa5d690cae3359391a72db47073b",
+      "indexed_at": "2026-07-21T06:56:37Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9460,9 +9460,9 @@
       },
       "sections": {
         "Docker::creating-and-running-a-docker-image-of-your-project": {
-          "file_id": "file-PDDXtLkd94pXUs2bWJBuQZ",
+          "file_id": "file-61sdgTLPBP8D7Jhju1tvTm",
           "heading_path": "Docker installation > Creating and running a Docker image of your project",
-          "section_payload_hash": "sha256:f5a01911502ee6758f1f864c69b8043457a57e90ff56789b2c25fcb23989ee38",
+          "section_payload_hash": "sha256:1f93b19981afe7b6bb14a28f735558f3a04a510caeb6dea0468d970b1eb7f9b6",
           "source_file": "paradigm/Docker.md"
         },
         "Docker::docker-installation": {
@@ -9475,6 +9475,12 @@
           "file_id": "file-AknZKqhysKtrqBoP35cbfx",
           "heading_path": "Docker installation > Launching the lsFusion platform using Docker Compose {#docker-platform}",
           "section_payload_hash": "sha256:0e08eedd35fc69384fef3595ee7fa7786cb136190eb645dfa0e69c283ffc6e00",
+          "source_file": "paradigm/Docker.md"
+        },
+        "Docker::upgrading-postgresql-postgres-upgrade": {
+          "file_id": "file-PupAxMRCEZnCHM8udszyoP",
+          "heading_path": "Docker installation > Upgrading PostgreSQL {#postgres-upgrade}",
+          "section_payload_hash": "sha256:7daba6a29fa7be014063dba1b810aa34fced443b106c5400406cbed40816d8c0",
           "source_file": "paradigm/Docker.md"
         }
       },
@@ -14754,7 +14760,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "7b6fcc5a51b92e87ff1b5142c4007876f3095310",
+  "last_indexed_docs_commit": "51b649843d2cf2fd28521b08e83d9288825596dc",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
