@@ -557,8 +557,8 @@
       "stale": false
     },
     "how-to/How-to_CASE_IF_OVERRIDE.md": {
-      "file_hash": "sha256:8c9d6daf25df90fbc0c45039e1bd4fc76f81161b7a368763b92e48fd66c01dd0",
-      "indexed_at": "2026-06-19T07:22:50Z",
+      "file_hash": "sha256:bbb9af759f96625c8e89bfc8fee7e4884e6239321a177ac775bfc3fcbab708cc",
+      "indexed_at": "2026-07-21T10:24:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -595,6 +595,12 @@
           "file_id": "file-XTbaW6mvTicU4hGvMstuy5",
           "heading_path": "How-to: CASE/IF/OVERRIDE > Example 5",
           "section_payload_hash": "sha256:15347ac4166cccf3eb92b9978d6a8eac18b4bd41826a980ba8c72bcf8d671d3c",
+          "source_file": "how-to/How-to_CASE_IF_OVERRIDE.md"
+        },
+        "How-to_CASE_IF_OVERRIDE::task-006": {
+          "file_id": "file-P8WpDfMx7A5vNxCDh14jwa",
+          "heading_path": "How-to: CASE/IF/OVERRIDE > Example 6",
+          "section_payload_hash": "sha256:40ddb3acab702c63c7b9f7d0bb397ad2c8c3eb88f9e7322f7a1b8b91c94c3dc0",
           "source_file": "how-to/How-to_CASE_IF_OVERRIDE.md"
         }
       },
@@ -1413,8 +1419,8 @@
       "stale": false
     },
     "how-to/How-to_FOR.md": {
-      "file_hash": "sha256:3e23a91b0fd3cdef164a2907e06a80cc9a93a0a969a8ad26a61df83a4e088f25",
-      "indexed_at": "2026-05-22T21:47:03Z",
+      "file_hash": "sha256:2798c9e5eb354d8de20f4e6c6a0f0e928769146358d32580226e9516bcd7bf95",
+      "indexed_at": "2026-07-21T10:24:58Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1436,9 +1442,9 @@
           "source_file": "how-to/How-to_FOR.md"
         },
         "How-to_FOR::task-002": {
-          "file_id": "file-JygVHMj9zAUMo4ctCb3yBU",
+          "file_id": "file-XaaqYjrYxjbz9LHvreo1H2",
           "heading_path": "How-to: FOR > Example 3",
-          "section_payload_hash": "sha256:e352a778aec2c5180978dc3c08d36535d08412f31e14353dffe48112ca49ed34",
+          "section_payload_hash": "sha256:e9dd1ce9abab2e5428d9cf9a7056e73d2ce58e6381b32bf8ac637c23b12f41e3",
           "source_file": "how-to/How-to_FOR.md"
         },
         "How-to_FOR::task-003": {
@@ -1693,8 +1699,8 @@
       "stale": false
     },
     "how-to/How-to_GROUP_SUM.md": {
-      "file_hash": "sha256:4c24ae16e3e3f07db516727695005683cb6cbd89b4beaffb256bbdd3d45f743b",
-      "indexed_at": "2026-07-11T11:53:24Z",
+      "file_hash": "sha256:2ecd44b34877c22df0476262b985009365e22bbdca50dcdf1acdcae6833f3e5b",
+      "indexed_at": "2026-07-21T10:25:43Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1728,9 +1734,9 @@
           "source_file": "how-to/How-to_GROUP_SUM.md"
         },
         "How-to_GROUP_SUM::task-005": {
-          "file_id": "file-8yQSrbGdsSxNKxgziKrSAw",
+          "file_id": "file-Pciz5fMB6AbgUH61ShwDWt",
           "heading_path": "How-to: GROUP SUM > Example 5",
-          "section_payload_hash": "sha256:a203903c08e322639ccd46bfcdb5435803616a50d3964790076fd4f8eb2c9db6",
+          "section_payload_hash": "sha256:ecebdd188956b4c272a355f688a3da2304005ea9013ddb4377e5367f030becdb",
           "source_file": "how-to/How-to_GROUP_SUM.md"
         },
         "How-to_GROUP_SUM::task-006": {
@@ -2051,8 +2057,8 @@
       "stale": false
     },
     "how-to/How-to_JSON_parsing.md": {
-      "file_hash": "sha256:8dc7bb7f4013c24d6c26cd88f5885055dcde53a2a021cc6942dbdcc278d4492e",
-      "indexed_at": "2026-05-31T16:42:55Z",
+      "file_hash": "sha256:b23466222bb5534d950da74cd8b3b270c56967daa47979c44f9d33d701475b10",
+      "indexed_at": "2026-07-21T10:25:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2092,9 +2098,15 @@
           "source_file": "how-to/How-to_JSON_parsing.md"
         },
         "How-to_JSON_parsing::task-005": {
-          "file_id": "file-T1eX1yzPc7cJDNdyUebyUy",
+          "file_id": "file-2yxAxcp7bHTQJosdY8Suw6",
           "heading_path": "How-to: JSON parsing > Example 5",
-          "section_payload_hash": "sha256:e883ff0169afd70f67ea49ec66b02aac9473dcae3a027945ad4d712366e708ae",
+          "section_payload_hash": "sha256:d587dc78d45e8fce39078bc0dc61b53278deb4bcd6f89d1a5a806e97f5784f87",
+          "source_file": "how-to/How-to_JSON_parsing.md"
+        },
+        "How-to_JSON_parsing::task-006": {
+          "file_id": "file-EcA9jhKznYG3u9AVKHkkt6",
+          "heading_path": "How-to: JSON parsing > Example 6",
+          "section_payload_hash": "sha256:9932883c36524552b32ec69fdd99f1b6a6a0f09ce1de3a653b6ac9f1c7ec3227",
           "source_file": "how-to/How-to_JSON_parsing.md"
         }
       },
@@ -2313,8 +2325,8 @@
       "stale": false
     },
     "how-to/How-to_Numbering.md": {
-      "file_hash": "sha256:9769d04390fb3a5e182c28b12fe1d946581394b86566abd1a06bb12cf2722966",
-      "indexed_at": "2026-06-22T11:58:56Z",
+      "file_hash": "sha256:0a1a95c021979b725be5c1f94bee9298043b8e457d3b1517027bc5b5bfea849c",
+      "indexed_at": "2026-07-21T10:26:03Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2330,9 +2342,9 @@
           "source_file": "how-to/How-to_Numbering.md"
         },
         "How-to_Numbering::numbering-by-hand": {
-          "file_id": "file-N8WsSjfJ1tVENW93w1G8mV",
+          "file_id": "file-8ENC9NBx9L36KaBLnszHZx",
           "heading_path": "How-to: Numbering > Numbering by hand",
-          "section_payload_hash": "sha256:7b25c8840587f730db982af3943cdac87c4bc7862adb2151a38f05bae8eb63ae",
+          "section_payload_hash": "sha256:656ba1cc2917894392742bee7cf6a2b4abc32c922e8a16b7e2054bdd526c41eb",
           "source_file": "how-to/How-to_Numbering.md"
         },
         "How-to_Numbering::separate-sequence-per-document-type": {
@@ -3057,8 +3069,8 @@
       "stale": false
     },
     "language/ABSTRACT_action_operator.md": {
-      "file_hash": "sha256:62f6a339e7875c8e5b86100a3820457780fd760e9a94482a0d9a8d03286fa1e4",
-      "indexed_at": "2026-05-22T21:55:22Z",
+      "file_hash": "sha256:2fc59551fea425cded925313ebe8340a5cbada2722b95517c2992331b6647ff1",
+      "indexed_at": "2026-07-21T10:26:11Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3080,9 +3092,9 @@
           "source_file": "language/ABSTRACT_action_operator.md"
         },
         "ABSTRACT_action_operator::parameters": {
-          "file_id": "file-22CH9g8rwgi9eNruDPVHY7",
+          "file_id": "file-AREtwHvT3UAVVX1KbGRrb4",
           "heading_path": "ABSTRACT operator > Parameters",
-          "section_payload_hash": "sha256:82bc65c0b65559363adc8396de839fc1f1197e7436abdd983604edbbba3fd91c",
+          "section_payload_hash": "sha256:d8d2c07a81821f883e2e8d1fec7cc55a35dd06bc45d8f321061d8a3ef7026fe8",
           "source_file": "language/ABSTRACT_action_operator.md"
         },
         "ABSTRACT_action_operator::syntax+description": {
@@ -3095,8 +3107,8 @@
       "stale": false
     },
     "language/ABSTRACT_operator.md": {
-      "file_hash": "sha256:583f53636597c864505ae2d5681d208350c16b657c5c8eda8d47320e0a8cdfa1",
-      "indexed_at": "2026-05-22T23:46:07Z",
+      "file_hash": "sha256:554af84dafba3a81074dc33c9557a3c5e4b87dee7fc2abaea29b4fc92b7f3b11",
+      "indexed_at": "2026-07-21T10:27:23Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3118,9 +3130,9 @@
           "source_file": "language/ABSTRACT_operator.md"
         },
         "ABSTRACT_operator::parameters": {
-          "file_id": "file-BzMHtDQaLW28J1kXmHeHyr",
+          "file_id": "file-XQH1w1C3A5PCfiEje1CcBy",
           "heading_path": "ABSTRACT operator > Parameters",
-          "section_payload_hash": "sha256:5173257d8a47364ce8949c8fd1d50d01d47bfff49528d2a41887273bcf32edb0",
+          "section_payload_hash": "sha256:abccaa765a101e1807f2c856cd0e47f421920c4bdbb82e3657b7c52eda1b87ee",
           "source_file": "language/ABSTRACT_operator.md"
         },
         "ABSTRACT_operator::syntax+description": {
@@ -4071,8 +4083,8 @@
       "stale": false
     },
     "language/CONSTRAINT_statement.md": {
-      "file_hash": "sha256:b2aff0d2e72f7dcbb50c51426b650e84a6fa20054b78620c8d7e584592b0d9cc",
-      "indexed_at": "2026-06-05T05:40:49Z",
+      "file_hash": "sha256:e9eeab0e15e6d2249b0ec9b0dde40e598ee49cb0f799d74d79884239d39a2a21",
+      "indexed_at": "2026-07-21T10:27:35Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4087,6 +4099,12 @@
           "section_payload_hash": "sha256:6fabdd22fda6c6a9c004b4655d1bdb73a19f81210209f14d139b7c44b074d3b3",
           "source_file": "language/CONSTRAINT_statement.md"
         },
+        "CONSTRAINT_statement::description": {
+          "file_id": "file-YKsEPBfTT6fGKBypTdkZY4",
+          "heading_path": "CONSTRAINT statement > Description",
+          "section_payload_hash": "sha256:356c0c164128d4b22a5ddf1b22f17dfccc6a4c9b3e83cdccb49ea032f247eed4",
+          "source_file": "language/CONSTRAINT_statement.md"
+        },
         "CONSTRAINT_statement::examples": {
           "file_id": "file-Na7CBfbsAVxgLmz6uQfDP5",
           "heading_path": "CONSTRAINT statement > Examples",
@@ -4099,10 +4117,10 @@
           "section_payload_hash": "sha256:eb4a093746f12cb2727370c10cf499124bbbee73974f45d8bc5eca1e717121d0",
           "source_file": "language/CONSTRAINT_statement.md"
         },
-        "CONSTRAINT_statement::syntax+description": {
-          "file_id": "file-VkFM6bSjK7xvYNE85rSMH7",
-          "heading_path": "CONSTRAINT statement > Syntax + Description",
-          "section_payload_hash": "sha256:5400121b5396f979f88b20d31286610594f08947d460a4e2b3361e75810131b0",
+        "CONSTRAINT_statement::syntax": {
+          "file_id": "file-GwLcGMF5VXt15i3HnDXXUw",
+          "heading_path": "CONSTRAINT statement > Syntax",
+          "section_payload_hash": "sha256:9c7aa385e7ef83c52b4fb4e8910ef042b16383b746907235a53870e2c2645570",
           "source_file": "language/CONSTRAINT_statement.md"
         }
       },
@@ -5593,8 +5611,8 @@
       "stale": false
     },
     "language/INPUT_operator.md": {
-      "file_hash": "sha256:66f92d79710ba931ac74f858ca3795970ae0769a41a36bdcdd7e40060151f9c1",
-      "indexed_at": "2026-07-16T14:07:07Z",
+      "file_hash": "sha256:7a91faab90bb5bfcf064bc7fde1b3480b516b592820c0ba417eb0c5741e7012a",
+      "indexed_at": "2026-07-21T10:27:48Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5604,9 +5622,9 @@
       },
       "sections": {
         "INPUT_operator::description": {
-          "file_id": "file-V2XEdfuU4ZjfZ3p1RHef8h",
+          "file_id": "file-WxfsLj7kULUDExcwjycR3p",
           "heading_path": "INPUT operator > Description",
-          "section_payload_hash": "sha256:eded35b044aedcfd2bf52bf63416925624190fced42bc3b9c107522f3df5b813",
+          "section_payload_hash": "sha256:f5601f286951fc42720d825a946ed10f95578d889b03b663823802e16586153c",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::examples": {
@@ -6569,8 +6587,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:d6dcd0547acd355ab627f5363a1e4b143999625d1fad1fc328016f63aa4740f6",
-      "indexed_at": "2026-07-08T10:47:35Z",
+      "file_hash": "sha256:33e758ca261d0ab6e8ffd128e758e71d8f1ad30e8a88050357d64fbae2cfaa73",
+      "indexed_at": "2026-07-21T10:27:58Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6652,9 +6670,9 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::parameters": {
-          "file_id": "file-X48LKwgXZ7YSCf3FtFq6nW",
+          "file_id": "file-MgfcWYxDzEvSxM9EU8qsbZ",
           "heading_path": "Object blocks > Object block {#objects} > Parameters",
-          "section_payload_hash": "sha256:f58ab8527a102256f8b769829c2b37d59a5227a7bf331be95f25c85db594423f",
+          "section_payload_hash": "sha256:1cdfb30986a38c5515bbd8b50b2d8e66a531158a3c850f5c892762d4772efa1b",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::parameters::dup-1": {
@@ -9131,8 +9149,8 @@
       "stale": false
     },
     "paradigm/Constraints.md": {
-      "file_hash": "sha256:b065e530f57cffc2c5025c1a87bda645830f23bfa4271fe66b17a577334f3f13",
-      "indexed_at": "2026-07-11T11:55:14Z",
+      "file_hash": "sha256:a7bdf6d90efe705add7868d21dcdfb455e8114d3dacd203f98ac931ee09691c2",
+      "indexed_at": "2026-07-21T10:28:08Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9142,15 +9160,21 @@
       },
       "sections": {
         "Constraints::constraints": {
-          "file_id": "file-SV8QmfQPZSjFxTBg9f22du",
+          "file_id": "file-5hTHsw6n6FDiu4v4bNQdn8",
           "heading_path": "Constraints",
-          "section_payload_hash": "sha256:31dcabac2baf6709e4de44c81a7615ffbe4b26aede2b817e8c293bd5065b6c22",
+          "section_payload_hash": "sha256:573a9f2aeed111ab4a7b793cd8a2ddd99b7989cffd46f18ad414c0f33ac921e1",
           "source_file": "paradigm/Constraints.md"
         },
-        "Constraints::language+examples": {
-          "file_id": "file-FfeFtMyZDstefhS1Gy6rUn",
-          "heading_path": "Constraints > Language + Examples",
-          "section_payload_hash": "sha256:ee2ffe56843d1ac81b15977b92ec183e3616bbaa3a8874265172bdc40f5adeda",
+        "Constraints::examples": {
+          "file_id": "file-WYKEaxcpb3rCp7dkSnhgA7",
+          "heading_path": "Constraints > Examples",
+          "section_payload_hash": "sha256:4d188e83d50665184ab2435276307e1dc573713eff6a3b41010644b92b5c4df0",
+          "source_file": "paradigm/Constraints.md"
+        },
+        "Constraints::language": {
+          "file_id": "file-UxYAy5X2iuKK2rDWbV3a3j",
+          "heading_path": "Constraints > Language",
+          "section_payload_hash": "sha256:f83777ae8bdfb0cf3c874df9c66aec21e9faf82aaad49256aeec5075f5641a13",
           "source_file": "paradigm/Constraints.md"
         },
         "Constraints::show-message-message": {
@@ -13274,8 +13298,8 @@
       "stale": false
     },
     "paradigm/Structured_view.md": {
-      "file_hash": "sha256:1daf1472909c253ce90c96c681b449e5b03a14040446c37cca744a2084f90930",
-      "indexed_at": "2026-07-11T11:55:22Z",
+      "file_hash": "sha256:35701710931be1283bb1b563fd5637f8c2976551202b12ba99e997a573282857",
+      "indexed_at": "2026-07-21T10:28:22Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13303,9 +13327,9 @@
           "source_file": "paradigm/Structured_view.md"
         },
         "Structured_view::hierarchical-view-hierarchy": {
-          "file_id": "file-1tgsXqS7mWwThSG9MEbPLH",
+          "file_id": "file-SeCy87qiVEiCDYuDtim4Fr",
           "heading_path": "Structured view > Hierarchical view {#hierarchy}",
-          "section_payload_hash": "sha256:c608b0851482eb887e629346869dc6dc0df6120f02b42474b59c3f57d557b8a7",
+          "section_payload_hash": "sha256:4d15289a9b8dbcffaa18f14ba6938e8632650f79ab22783cb233f524295555b1",
           "source_file": "paradigm/Structured_view.md"
         },
         "Structured_view::language+open-form": {
@@ -14782,8 +14806,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:b952a0d850bcf9415b59e8b9a261127d36425e9e6f6147993fb085d39d358a10",
-      "indexed_at": "2026-07-04T18:04:32Z",
+      "file_hash": "sha256:e9fcd5b9b52b54b795169d5e8203b7c68a4b239834c824f4d4ec92af03d09db2",
+      "indexed_at": "2026-07-21T10:28:32Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14793,15 +14817,21 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-H8iU1Lg943ECYsSBJwMYYH",
+          "file_id": "file-L1SLYKB4Jdvi8c9ukrG9fK",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:0962f21f8c8a7eecbe44d6ecd9b6abf98a34890b165d4f45792c4b655b88ffc2",
+          "section_payload_hash": "sha256:1210f5563edd2d9c341efd91984eeae0b74db43447a76fe8df334c26f91754dd",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
-          "file_id": "file-QkHPjZLYdSXRumFpqVK6AC",
+          "file_id": "file-5XbJ6cVMWbLiodMkMAdTes",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:57c45ff9f751be4c7f02f2fae2dadd5a450b46c8306aafb00b446e614008c040",
+          "section_payload_hash": "sha256:0475fe14ea4d1c087f42959659bdb55cfd850015143a8518b6d3a26f424842c0",
+          "source_file": "paradigm/Working_parameters.md"
+        },
+        "Working_parameters::working-parameters::part-02": {
+          "file_id": "file-4wKTN68pabCDeB1t1gwhXf",
+          "heading_path": "Working parameters",
+          "section_payload_hash": "sha256:1c99b8d057e781a0cb9fc3b5c02f2a5f78b96731f2b5ca7843dd284023494e78",
           "source_file": "paradigm/Working_parameters.md"
         }
       },
@@ -14834,8 +14864,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:5519ff3d53fe08bae9759f07f398ab7b287eae8d81cb1014e9e0c79011ebaa7e",
-      "indexed_at": "2026-07-11T11:55:33Z",
+      "file_hash": "sha256:c3e6db4314501f367523b45de074dda3b24ba6fa2f4e1b75f7d2b3c6ed4d8459",
+      "indexed_at": "2026-07-21T10:29:03Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14851,27 +14881,33 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
-          "file_id": "file-BE65i1EUCYWejc4bbQh9e6",
+          "file_id": "file-RM5PcNL7nC54hAinBqm6LW",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:269d377bcfc9e86cfed4e77605d8178241b132d7d2b5ab1a5b024d1cf08bbaee",
+          "section_payload_hash": "sha256:49cd96dc1b8031696470518694c90e8e6243257cffe94c00cf44f91564969199",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-DPycg3UdoCaXoe8gw5aeRd",
+          "file_id": "file-8qRbvRixz7K7AmmrPBnvq5",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:0301eb64c3818a6f26c7b15269cab251795ab69188cf82466404a1670dda303e",
+          "section_payload_hash": "sha256:0d809cce6f2cbff70fc47e66317eeb20487058e03ad733c383d08ab28febd2ae",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-CwYNiyz5CHPaZoFS35Z1e3",
+          "file_id": "file-S76Vgd1ejQbU5vxEYvERgr",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:53735c35a9184d800f90bab7abaf4298a303231b827131a6bb102712dbf81af9",
+          "section_payload_hash": "sha256:5613fe9ef1849cca7f9e21d3b2b276f7d615d62d6d1134959fd87639367e4ce6",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-04": {
-          "file_id": "file-6Aie4C3ZBWBvZWX4KwzE9q",
+          "file_id": "file-ENh9XSo9FUDoe5N3B1up6e",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:c7fa57265a6283cf655d16b1180d9fed64d92f681b9034c372b2d8421b1febc9",
+          "section_payload_hash": "sha256:332744428adede3f575c5a705bc9ad4f0314216bdf881fc28b42058cc8029287",
+          "source_file": "rules/Rules.md"
+        },
+        "Rules::lsfusion-rules::part-05": {
+          "file_id": "file-LFxCpEfy6D1FVQ3CHq2W63",
+          "heading_path": "lsFusion Rules",
+          "section_payload_hash": "sha256:c79d7bee35cc4d37ddade10ae2737bf51cfabdf8277fa7f0e9dfe6e54c5f9234",
           "source_file": "rules/Rules.md"
         }
       },
@@ -14978,7 +15014,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "f44adfe4c36ccc51f077caddb2770b11913661d8",
+  "last_indexed_docs_commit": "877105d2258d3ce844b13963c7071ae2eb49eba1",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
