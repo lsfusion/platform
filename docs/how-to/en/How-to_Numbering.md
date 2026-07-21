@@ -36,7 +36,7 @@ WHEN SET(Book b IS Book) AND NOT number(b) DO {
 }
 ```
 
-The event will be triggered at the moment of saving a book to the database in the same transaction.
+The event will be triggered at the moment of saving a book to the database in the same transaction. This also holds when several new books are saved in one session (batch creation, import): the event is executed for the new books one by one, so each receives its own next number.
 
 In some situations, you may need to apply different numbering for the same object. For this purpose, you can add a special `Numerator` class.
 

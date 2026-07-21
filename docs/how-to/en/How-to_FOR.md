@@ -112,7 +112,7 @@ makeDiscount 'Make discount' (Order o)  {
 }
 ```
 
-Both these implementations will provide the same result.
+Both these implementations will provide the same result. They can, however, differ greatly in cost. Besides executing row by row, the loop may pay query compilation on every iteration: when the assigned expression contains aggregate subqueries, the compiled query is not always reused between iterations, and even on small data an iteration can take seconds. The set-based variant compiles its query once; a large branching assignment is better split into several simple set-based assignments, which compile faster still. When an action is slow because of compilation, the profiling log shows app time far exceeding SQL time.
 
 ## Example 4
 

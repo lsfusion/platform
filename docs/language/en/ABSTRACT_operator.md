@@ -47,6 +47,8 @@ The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
 
     Used only with `OVERRIDE`.
 
+    The addition order across modules is the module initialization order: implementations from [required modules](Module_header.md) are added before implementations from the modules that depend on them, and within one module — in the order they appear in the source.
+
 - `FULL`
 
     Keyword. If specified, the platform automatically checks the [completeness of implementations](../paradigm/Property_extension.md#full): for all descendants of the argument classes there must be at least one applicable implementation, or exactly one if the conditions are mutually exclusive.

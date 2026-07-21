@@ -129,7 +129,7 @@ XML of the object group ::=
 
 <a className="lsdoc-anchor" id="innerjson"/>
 
-When exporting to JSON, a string property value that is itself JSON (starts and ends with a square or curly bracket), for example a value of the `JSON` or `JSONTEXT` class, is embedded into the result as a nested object or array rather than as a string. If such a value cannot be parsed as JSON, it is exported as a plain string. The embedding can be disabled for an individual property with the ':escapeInnerJSON' postfix in the [export name](#extid). When importing from JSON, conversely, if a nested object or array corresponds to a property in the imported document, its text representation is written to the property.
+When exporting to JSON, a string property value that is itself JSON (starts and ends with a square or curly bracket), for example a value of the `JSON` or `JSONTEXT` class, is embedded into the result as a nested object or array rather than as a string. If such a value cannot be parsed as JSON, it is exported as a plain string. The parsing is lenient: unquoted tokens are accepted, and text after the first parsed value is discarded, so a string value that merely resembles JSON (for example, `'[AA] [BB]'`) is embedded in altered form (`["AA"]`). The embedding can be disabled for an individual property with the ':escapeInnerJSON' postfix in the [export name](#extid); for string values that may begin with a bracket it should be disabled explicitly. When importing from JSON, conversely, if a nested object or array corresponds to a property in the imported document, its text representation is written to the property.
 
 When exporting/importing to XML, the special `ATTR` option can be specified for a property on the form. Thus, when exporting/importing that property, its value will be stored not in a separate tag, but in the attribute of the parent tag:
 
@@ -140,6 +140,8 @@ When exporting/importing to XML, the special `ATTR` option can be specified for 
 When importing from XML, the name of the uppermost tag (in the rule) is ignored (according to the XML specification, there should be only one such tag).
 
 On import, the file is matched against this hierarchy by names: the value of each property, property group, or object group is read from the element under its [export/import name](#extid). Elements of the file that do not correspond to any name in the hierarchy are ignored. The reverse situation raises no error either: an object group or property group with no matching element imports nothing (its entire subtree is skipped), while a property whose own element is missing from an imported record — with its parent element present — is imported as `NULL`. In particular, when importing from JSON, the records of an object group are read only from an array under a key equal to that group's export/import name; a root-level array is converted to `{ "value" : [ ... ] }` (see [Predefined value](#value)) and is therefore read only by an object group with the export/import name `value`.
+
+An empty string in the file is imported into a string property as follows: JSON keeps it as an empty non-`NULL` string — thus a value distinct from an absent field and from an explicit `null`, both of which are imported as `NULL` — while CSV and XML import it as `NULL`.
 
 Properties with `NULL` values, as well as property groups that do not have any tags inside as a result of export, are not exported (ignored).
 

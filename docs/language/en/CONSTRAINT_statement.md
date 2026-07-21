@@ -16,7 +16,7 @@ CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyI
 
 The `CONSTRAINT` statement creates a constraint. If the constraint is violated, the user will be shown the [message](../paradigm/Constraints.md#message) defined in the statement.
 
-Also, by using the `CHECKED` option you can use the constraint when showing dialogs for changing properties whose values may violate the constraint if changed. In this instance an additional filter will be set in the dialog so that, when the property value changes, the constraint is not violated. If it is necessary to limit the set of properties for which the above filtering will be performed, the list of properties can be specified after the keyword `BY`.
+Also, by using the `CHECKED` option you can use the constraint when showing dialogs for changing properties whose values may violate the constraint if changed. In this instance an additional filter will be set in the dialog so that, when the property value changes, the constraint is not violated. If it is necessary to limit the set of properties for which the above filtering will be performed, the list of properties can be specified after the keyword `BY`. The filter works only in these change dialogs; input mechanisms that offer values in some other way do not use it — there a violating value is rejected only when the constraint itself is checked.
 
 
 :::info

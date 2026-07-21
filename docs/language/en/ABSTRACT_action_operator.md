@@ -47,6 +47,8 @@ The `ABSTRACT` operator is a [context-independent action operator](Action_operat
 
     Used either after `OVERRIDE` for the `CASE` and `MULTI` forms or after `LIST`.
 
+    The addition order across modules is the module initialization order: implementations from [required modules](Module_header.md) are added before implementations from the modules that depend on them, and within one module — in the order they appear in the source. In particular, in the `LIST` form (without `FIRST`) implementations from a base module are executed before implementations added to the same action by dependent modules.
+
 - `FULL`
 
     Keyword. If specified, the platform automatically checks the [completeness of implementations](../paradigm/Action_extension.md#full): for all descendants of the argument classes there must be at least one applicable implementation, or exactly one if the conditions are mutually exclusive.

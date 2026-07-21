@@ -72,7 +72,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
 - `classId`
 
-    [Object class ID](IDs.md#classid). 
+    [Object class ID](IDs.md#classid). An object of a [built-in class](../paradigm/Built-in_classes.md) can be shown in the interactive view only when the set of its values is bounded — for example, by form filters over properties whose values are filled in the session (as in staging forms for import) or over a property enumerating a finite range, or by displaying the object in the panel with its value entered by the user (as in the turnover form example below). Reading the table of a built-in class object group without such a bound causes a runtime error, since all values of a built-in class cannot be enumerated.
 
 - `caption`
 

@@ -117,6 +117,8 @@ currentBalance 'Current balance' (Book b) = GROUP SUM currentBalance(b, Stock s)
 
 Unlike the current balance for all the warehouses, it is not reasonable to mark this property as `MATERIALIZED` if you have only few warehouses — otherwise, UPDATE CONFLICT may occur when several users try to write the movement of the same book at different warehouses simultaneously.
 
+This composition — a base aggregate by the dimensions of the movement records (`currentBalance` from [**Example 3**](#example-3)) and a second aggregate on top of it — is also the shape to prefer for other cuts of the balance. A large grouping that instead contains another computed aggregate in its source or condition can compile into a subquery over the whole movement data — the outer restriction is not always pushed inside — so even reading a single value degrades sharply. Rewriting it as a base aggregate by the underlying dimensions plus a second aggregate on top restores index reads.
+
 ## Example 6
 
 ### Task

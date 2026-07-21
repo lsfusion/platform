@@ -51,6 +51,8 @@ The `CUSTOM` block replaces the default input editor with a custom one rendered 
 
 The input result is written to the local parameter `alias` and made available in the `DO` block. It can additionally be written to a property. The `CHANGE` block writes the result to the changed property: by default the one specified as the initial input value (or the `changeExpr` property), and by default it limits the offered values to those whose assignment would not break any existing [constraint](../paradigm/Constraints.md). The `TO` block writes the result to the named property `propID`.
 
+Interactive input of a built-in class value is performed in the editor of the form property cell whose change is being handled — so the action created by the operator must be called from a change handler of a form property (as in the example below). When the action is called outside such a handler — for example, as a button added to a form — input is possible only for classes whose values are input through a separate dialog: file classes and `COLOR`. Requesting other built-in classes there is not supported and causes a runtime error. To request a value of another built-in class outside a change handler, use the [`DIALOG` operator](DIALOG_operator.md): open a form whose object of that class is displayed in the panel, marking the object with `INPUT` — the value entered by the user is returned when the form closes.
+
 ### Parameters
 
 - `className`

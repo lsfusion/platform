@@ -279,4 +279,80 @@ The `importBooks` form mirrors the JSON shape: for the `books` array there is an
 
 `FOR importBookName(INTEGER i)` walks every row whose imported name is not `NULL` and creates a `Book` object for each. The system `imported[INTEGER]` property should not be used for iteration here — unlike with flat formats (`IMPORT XLS`, `IMPORT CSV`), it is not set under `IMPORT … JSON FROM`; the "this row came from the file" role is played by any non-empty staging property instead.
 
+Keep in mind that an empty string `""` in the JSON file is imported as an empty non-`NULL` string, not as `NULL` (see [Structured view](../paradigm/Structured_view.md)). Such a value satisfies non-`NULL` conditions — the `FOR` above, `IF`, aggregates like `GROUP LAST`. When empty strings should behave as missing values, normalize them right after the import:
+
+```lsf
+importBookName(INTEGER i) <- NULL WHERE importBookName(i) = '';
+```
+
 The object creation runs in `NEWSESSION` so the import does not accidentally apply pending edits sitting on the `books` form itself. `APPLY` commits the changes; if a constraint fails, it shows the error text to the user on its own.
+
+## Example 6
+
+### Task
+
+The JSON contains arrays nested at several levels, and the innermost array holds primitive values rather than objects:
+
+```json
+{
+    "docflows": [
+        {
+            "number": "DF-1001",
+            "events": [
+                {"type": "sent",     "participants": ["C-101", "C-102"]},
+                {"type": "received", "participants": ["C-103"]}
+            ]
+        },
+        {
+            "number": "DF-1002",
+            "events": [
+                {"type": "sent", "participants": []}
+            ]
+        }
+    ]
+}
+```
+
+We need to load all three levels, keeping the links between them.
+
+### Solution
+
+```lsf
+docflowNumber = DATA LOCAL STRING[50] (INTEGER);
+
+eventDocflow = DATA LOCAL INTEGER (INTEGER);
+eventType    = DATA LOCAL STRING[50] (INTEGER);
+
+participantEvent = DATA LOCAL INTEGER (INTEGER);
+participantId    = DATA LOCAL STRING[50] (INTEGER);
+
+FORM importDocflows
+    OBJECTS d = INTEGER EXTID 'docflows'
+    PROPERTIES(d) docflowNumber EXTID 'number'
+
+    OBJECTS e = INTEGER EXTID 'events'
+    PROPERTIES(e) eventType EXTID 'type'
+    FILTERS eventDocflow(e) = d
+
+    OBJECTS p = INTEGER EXTID 'participants'
+    PROPERTIES(p) participantId EXTID 'value'
+    FILTERS participantEvent(p) = e
+;
+
+showDocflows (FILE f) {
+    IMPORT importDocflows JSON FROM f;
+
+    FOR docflowNumber(INTEGER d) DO {
+        MESSAGE 'Docflow ' + docflowNumber(d);
+        FOR eventDocflow(INTEGER e) = d DO
+            MESSAGE 'event ' + eventType(e) + ': ' +
+                (GROUP CONCAT participantId(INTEGER p) IF participantEvent(p) = e, ', ' ORDER p);
+    }
+}
+```
+
+Every nested array gets its own `OBJECTS` block over `INTEGER`, exactly like the single array in [example 5](#example-5). The link to the parent level is a `LOCAL` property from the child row to the parent row (`eventDocflow`, `participantEvent`) referenced in `FILTERS`: on import the platform fills it with the row of the enclosing array element. The same filter also makes the child group a child of the parent group when the [object group hierarchy](../paradigm/Static_view.md#hierarchy) is built — this is what directs the `events` array to be read from the key `events` inside each `docflows` element rather than from the form root.
+
+The innermost array holds strings, not objects; per the [predefined `value` conversion](../paradigm/Structured_view.md#value) each such element is read as an object `{ "value" : ... }`, so the staging property is mapped with `EXTID 'value'`.
+
+When a nested array lies not directly in the element but under an intermediate object key (say, `"status": {"details": [...]}`), declare a [property group](../language/GROUP_statement.md) with that export/import name and add the child `OBJECTS` block to it with `IN`. The group nests under the object group of the iterated element — per the same hierarchy building — not under the form root.

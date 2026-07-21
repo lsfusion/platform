@@ -279,4 +279,80 @@ EXTEND FORM books
 
 `FOR importBookName(INTEGER i)` обходит каждую строку, для которой импортированное название не `NULL`, и для каждой создаёт объект класса `Book`. Системное свойство `imported[INTEGER]` для итерации после `IMPORT … JSON FROM` использовать не следует — иначе чем для плоских форматов (`IMPORT XLS`, `IMPORT CSV`), в этом режиме оно не выставляется; роль признака «строка пришла из файла» играет любое непустое staging-свойство.
 
+Следует учитывать, что пустая строка `""` в JSON-файле импортируется как пустая, но не `NULL`, строка (см. [Структурированное представление](../paradigm/Structured_view.md)). Такое значение проходит условия на не-`NULL` — приведённый выше `FOR`, `IF`, агрегации вроде `GROUP LAST`. Если пустые строки должны вести себя как отсутствующие значения, их нужно нормализовать сразу после импорта:
+
+```lsf
+importBookName(INTEGER i) <- NULL WHERE importBookName(i) = '';
+```
+
 Создание объектов изолировано в `NEWSESSION`, чтобы импорт не зацепил несохранённые правки на самой форме `books`. `APPLY` фиксирует изменения; при нарушении ограничения он сам показывает пользователю текст ошибки.
+
+## Пример 6
+
+### Задача
+
+JSON содержит массивы, вложенные на нескольких уровнях, причём самый внутренний массив состоит из примитивных значений, а не объектов:
+
+```json
+{
+    "docflows": [
+        {
+            "number": "DF-1001",
+            "events": [
+                {"type": "sent",     "participants": ["C-101", "C-102"]},
+                {"type": "received", "participants": ["C-103"]}
+            ]
+        },
+        {
+            "number": "DF-1002",
+            "events": [
+                {"type": "sent", "participants": []}
+            ]
+        }
+    ]
+}
+```
+
+Нужно загрузить все три уровня, сохранив связи между ними.
+
+### Решение
+
+```lsf
+docflowNumber = DATA LOCAL STRING[50] (INTEGER);
+
+eventDocflow = DATA LOCAL INTEGER (INTEGER);
+eventType    = DATA LOCAL STRING[50] (INTEGER);
+
+participantEvent = DATA LOCAL INTEGER (INTEGER);
+participantId    = DATA LOCAL STRING[50] (INTEGER);
+
+FORM importDocflows
+    OBJECTS d = INTEGER EXTID 'docflows'
+    PROPERTIES(d) docflowNumber EXTID 'number'
+
+    OBJECTS e = INTEGER EXTID 'events'
+    PROPERTIES(e) eventType EXTID 'type'
+    FILTERS eventDocflow(e) = d
+
+    OBJECTS p = INTEGER EXTID 'participants'
+    PROPERTIES(p) participantId EXTID 'value'
+    FILTERS participantEvent(p) = e
+;
+
+showDocflows (FILE f) {
+    IMPORT importDocflows JSON FROM f;
+
+    FOR docflowNumber(INTEGER d) DO {
+        MESSAGE 'Документооборот ' + docflowNumber(d);
+        FOR eventDocflow(INTEGER e) = d DO
+            MESSAGE 'событие ' + eventType(e) + ': ' +
+                (GROUP CONCAT participantId(INTEGER p) IF participantEvent(p) = e, ', ' ORDER p);
+    }
+}
+```
+
+Каждый вложенный массив получает собственный блок `OBJECTS` по `INTEGER` — ровно как единственный массив в [примере 5](#пример-5). Связью с родительским уровнем служит `LOCAL`-свойство от дочерней строки к родительской (`eventDocflow`, `participantEvent`), указанное в `FILTERS`: при импорте платформа заполняет его строкой охватывающего элемента массива. Этот же фильтр делает дочернюю группу потомком родительской при построении [иерархии групп объектов](../paradigm/Static_view.md#hierarchy) — именно он направляет чтение массива `events` из ключа `events` внутри каждого элемента `docflows`, а не из корня формы.
+
+Самый внутренний массив состоит из строк, а не объектов; по [преобразованию предопределённого значения `value`](../paradigm/Structured_view.md#value) каждый такой элемент читается как объект `{ "value" : ... }`, поэтому промежуточное свойство отображается через `EXTID 'value'`.
+
+Если вложенный массив лежит не прямо в элементе, а под промежуточным ключом-объектом (скажем, `"status": {"details": [...]}`), объявите [группу свойств](../language/GROUP_statement.md) с этим именем экспорта / импорта и добавьте дочерний блок `OBJECTS` в неё через `IN`. Группа вкладывается под группу объектов итерируемого элемента — по тому же построению иерархии, — а не под корень формы.

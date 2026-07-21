@@ -354,6 +354,13 @@ ACTION RULES
    are still in scope, rather than lifting values out
    into auxiliary storage.
 
+   Conversely, a parameter declared inside a `GROUP`
+   aggregate belongs to that aggregate and is NOT visible
+   outside of it; in particular it cannot serve as the loop
+   variable of the enclosing `FOR`. Declare the variable as
+   the `FOR`'s own parameter and use the aggregate only as
+   a boolean condition over it.
+
 3. The assistant SHOULD avoid introducing `LOCAL`
    properties without a concrete need.
 
@@ -406,6 +413,46 @@ ACTION RULES
    NOT use the parameterized form inside an expression
    (`IF fileExists(path)` is wrong).
 ----------------------------------------------------------------
+ASSIGNMENT RULES (`<-`)
+
+1. The arguments of the changed property on the left side
+   of `<-` may be expressions over the statement's
+   parameters (`sentFolder(account(f)) <- f`), but new
+   local parameters can be introduced only as typed
+   parameters, not inside expressions. Writing "into
+   a computed key" by analogy with imperative
+   `map[key] = value` easily breaks this.
+
+   So when remapping self-referential links while
+   deep-copying an object graph, the assistant SHOULD keep
+   an inverse map and iterate with the TARGET object as the
+   parameter —
+   `link(Copy n) <- newOf(link(srcOf(n))) WHERE spec(n);` —
+   rather than write `link(newOf(x)) <- newOf(link(x));`
+
+2. `<- expr IF cond` assigns the whole expression to ALL
+   objects: where `cond` fails, the property is overwritten
+   with `NULL`. It is effectively reset-plus-set.
+
+   When ADDING an assignment to a property already populated
+   earlier in the same action, the assistant MUST use the
+   `WHERE` form (`prop(x) <- TRUE WHERE cond(x)`), which
+   changes only the rows matching the condition. A second
+   IF-form assignment to the same property MUST be treated
+   as a review red flag.
+
+3. Inline in an action or event body, `PREV(<expr>)` takes
+   the WHOLE wrapped expression to the session-start state,
+   including its argument sub-expressions: an argument
+   computed in the current session (a `LOCAL`, a property
+   of an object created in the session) reads as `NULL`
+   inside `PREV`, silently nulling the result.
+
+   To read previous data with current arguments, the
+   assistant MUST wrap `PREV` in a separate property —
+   `prevF(x) = PREV(f(x));` — and call it instead of
+   writing `PREV(f(<session-computed arg>))` inline.
+----------------------------------------------------------------
 EVENT RULES (`WHEN`)
 
 1. A `WHEN` event fires whenever its condition becomes true
@@ -445,18 +492,6 @@ EVENT RULES (`WHEN`)
 
    In the absence of an explicit change the event writes
    the value of the expression even when it is `NULL`.
-
-5. Inline in an action or event body, `PREV(<expr>)` takes
-   the WHOLE wrapped expression to the session-start state,
-   including its argument sub-expressions: an argument
-   computed in the current session (a `LOCAL`, a property
-   of an object created in the session) reads as `NULL`
-   inside `PREV`, silently nulling the result.
-
-   To read previous data with current arguments, the
-   assistant MUST wrap `PREV` in a separate property —
-   `prevF(x) = PREV(f(x));` — and call it instead of
-   writing `PREV(f(<session-computed arg>))` inline.
 ----------------------------------------------------------------
 CONSTRAINT RULES
 
@@ -488,6 +523,7 @@ CONSTRAINT RULES
    a cheap change-detector condition, reads of the heavy
    values into `LOCAL`s in the handler, then `MESSAGE` +
    `CANCEL` on violation.
+
 ----------------------------------------------------------------
 PROPERTY NAMING POLICY
 
@@ -678,6 +714,19 @@ FORM RULES
     `NEW` / `EDIT` / `DELETE` (which the platform places in the
     system toolbar itself). The property / action views are
     `GRID`, `TOOLBAR`, `PANEL`, and `POPUP`.
+
+14. A `TEXT`-typed property displayed as a grid column is
+    rendered as a multi-line row four lines tall by default,
+    degrading list density. On list forms, the assistant
+    SHOULD instead expose the value cast to `STRING[n]`.
+    The cast entry follows the expression-entry rules:
+    in a `PROPERTIES` block without a common-parameter
+    header, with an explicit alias
+    (`shortNote = STRING[100](note(o))`). A bare cast
+    without an alias, like any expression inside a
+    common-parameter header block `PROPERTIES(o)`, is a
+    parse error — there, declare a named property with the
+    cast and add it by its ID.
 ----------------------------------------------------------------
 REPORT RULES
 
@@ -778,6 +827,24 @@ MODULE DESIGN RULES
     (or any module that already requires it)
     to the current module's `REQUIRE` list before using
     its elements.
+
+11. The server ships bundled system modules whose names
+    MUST NOT be reused for application modules — the server
+    fails at startup with "module '<name>' has already been
+    added". The bundled names are:
+    System, Utils, UserEvents, Scheduler, Email, Time,
+    Reflection, Security, Service, Icon, Authentication,
+    SystemEvents, Word, WebSocket, Integration, Profiler,
+    SQLUtils, ProcessMonitor, DefaultData, Image, Printer,
+    Numerator, Chat, Eval, I18n, Com, Sound, Backup, OpenCV,
+    Geo, Historizable, Schedule, Document, QZTray, Excel,
+    Hierarchy, RabbitMQ, MasterData, JKanban, FrappeGantt,
+    Chart, Carousel, Messenger, Whatsapp, Skype, Telegram,
+    Viber, Slack.
+
+    For generic domain names from this list (`MasterData`,
+    `Document`, `Schedule`, `Chart`, `Numerator`), the
+    assistant SHOULD add a project prefix to the module name.
 ----------------------------------------------------------------
 MIGRATION RULES (`migration.script`)
 
