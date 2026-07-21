@@ -826,6 +826,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                        SessionEvents sessionEvents, OperationOwner upOwner, ImSet<FormEntity> fixedForms) {
         this.sql = sql;
 
+        // diagnostics : this session's apply will start a nested sql transaction (its own isInTransaction is false, so neither NESTED APPLY nor any other per session check will catch it), see SQLSession.logNestedTransaction
+        if(sql.isInTransaction())
+            sql.logSessionCreatedInTransaction();
+
         this.baseClass = baseClass;
         this.sessionClass = sessionClass;
         this.currentSession = currentSession;
