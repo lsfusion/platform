@@ -645,8 +645,24 @@ module.exports = {
       label: 'AI',
       link: {type: 'doc', id: 'paradigm/AI'},
       items: [
-        {type: 'doc', id: 'brief/Brief', label: 'Brief'},
-        {type: 'doc', id: 'rules/Rules', label: 'Rules'},
+        {
+          type: 'category',
+          label: 'Brief',
+          link: {type: 'doc', id: 'brief/Brief'},
+          items: [
+            'brief/Brief_export',
+            'brief/Brief_physical_model',
+          ]
+        },
+        {
+          type: 'category',
+          label: 'Rules',
+          link: {type: 'doc', id: 'rules/Rules'},
+          items: [
+            'rules/Rules_export',
+            'rules/Rules_physical_model',
+          ]
+        },
         {type: 'doc', id: 'paradigm/MCP_server'},
       ]
     },
