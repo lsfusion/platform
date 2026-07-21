@@ -125,6 +125,11 @@ public class JDBField {
             if (obj == null) {
                 obj = "";
             }
+            if (obj instanceof LocalTime) {
+                // the DBF format has no time type, so TIME is written as 'HH:mm:ss' text
+                // (going through the string branch below for the length check and the padding)
+                obj = new SimpleDateFormat("HH:mm:ss").format(localTimeToSqlTime((LocalTime) obj));
+            }
             if (obj instanceof String) {
                 String s = (String) obj;
                 if (s.length() > getLength()) {
@@ -136,9 +141,6 @@ public class JDBField {
 
                 }
                 return s + stringBuilder1;
-            } else if (obj instanceof LocalTime) {
-                Date date = localTimeToSqlTime((LocalTime) obj);
-                return new SimpleDateFormat("HH:mm:ss").format(date);
             } else {
                 throw new JDBFException("Expected a String, got " + obj.getClass() + ".");
             }

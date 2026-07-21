@@ -86,6 +86,58 @@ public class DBFWriter {
   }
 
   /**
+   * opens an EXISTING dbf file for appending records: the fields are read from its header,
+   * the added records are written after the existing ones (used by EXTERNAL DBF)
+   */
+  public DBFWriter(String s, String s1) throws JDBFException {
+    fileName = s;
+    dbfEncoding = s1;
+    try (RandomAccessFile raf = new RandomAccessFile(s, "rw")) {
+      byte[] header = new byte[16];
+      raf.readFully(header);
+      recCount = (header[4] & 0xFF) | ((header[5] & 0xFF) << 8) | ((header[6] & 0xFF) << 16) | ((header[7] & 0xFF) << 24);
+      int fullHeaderLength = (header[8] & 0xFF) | ((header[9] & 0xFF) << 8);
+      int oneRecordLength = (header[10] & 0xFF) | ((header[11] & 0xFF) << 8);
+
+      // read the 32-byte field descriptors (until the 0x0D header terminator)
+      List<JDBField> readFields = new ArrayList<>();
+      raf.seek(32);
+      byte[] fieldBytes = new byte[32];
+      while (true) {
+        int first = raf.read();
+        if (first == 0x0D || first == -1)
+          break;
+        fieldBytes[0] = (byte) first;
+        raf.readFully(fieldBytes, 1, 31);
+        int nameLength = 0;
+        while (nameLength < 11 && fieldBytes[nameLength] > 0)
+          nameLength++;
+        readFields.add(new JDBField(new String(fieldBytes, 0, nameLength), (char) fieldBytes[11], fieldBytes[16] & 0xFF, fieldBytes[17] & 0xFF));
+      }
+      fields = readFields.toArray(new JDBField[0]);
+
+      // drop the 0x1A end-of-file marker (it is written back on close) and append after the last record
+      raf.setLength(fullHeaderLength + (long) recCount * oneRecordLength);
+    }
+    catch (JDBFException e) {
+      throw e;
+    }
+    catch (Exception e) {
+      throw new JDBFException(e);
+    }
+    try {
+      stream = new BufferedOutputStream(new FileOutputStream(s, true));
+    }
+    catch (FileNotFoundException filenotfoundexception) {
+      throw new JDBFException(filenotfoundexception);
+    }
+  }
+
+  public JDBField[] getFields() {
+    return fields;
+  }
+
+  /**
    * 初始化写操作
    * @param outputstream 输出流
    * @param ajdbfield 字段列表
@@ -214,6 +266,13 @@ public class DBFWriter {
       }
       catch (UnsupportedEncodingException unsupportedencodingexception) {
         throw new JDBFException(unsupportedencodingexception);
+      }
+      // the field length is in bytes, and a multi-byte value can exceed it even when its length in characters fits:
+      // only the padding spaces can be safely cut off, a cut value would be silently corrupted
+      for (int i1 = fields[l].getLength(); i1 < abyte1.length; i1++) {
+        if (abyte1[i1] != (byte) ' ') {
+          throw new JDBFException("Value '" + s.trim() + "' does not fit into the field " + fields[l].getName() + " (" + fields[l].getLength() + " bytes) in charset " + (dbfEncoding != null ? dbfEncoding : "default"));
+        }
       }
       for (int i1 = 0; i1 < fields[l].getLength(); i1++) {
         abyte0[k + i1] = abyte1[i1];

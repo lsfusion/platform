@@ -2,7 +2,8 @@ package lsfusion.server.logics.action.controller.context;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import org.xBaseJ.DBF;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.DBFWriter;
+import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBFException;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 public class ConnectionService {
     Map<String, Connection> sqlConnectionMap;
-    Map<String, DBF> dbfFilesMap;
+    Map<String, DBFWriter> dbfFilesMap;
     Map<Pair<String, Integer>, Socket> tcpSocketMap;
 
     public ConnectionService() {
@@ -45,23 +46,23 @@ public class ConnectionService {
         sqlConnectionMap.clear();
     }
 
-    public DBF getDBFFile(String connectionString) {
+    public DBFWriter getDBFFile(String connectionString) {
         if(connectionString.isEmpty()) {
-            return (DBF) getSingle(dbfFilesMap);
+            return (DBFWriter) getSingle(dbfFilesMap);
         } else {
             return dbfFilesMap.get(connectionString);
         }
     }
 
-    public void putDBFFile(String connectionString, DBF dbfFile) {
+    public void putDBFFile(String connectionString, DBFWriter dbfFile) {
         dbfFilesMap.put(connectionString, dbfFile);
     }
 
     public void closeDBFFiles() {
-        for(DBF dbfFile : dbfFilesMap.values()) {
+        for(DBFWriter dbfFile : dbfFilesMap.values()) {
             try {
                 dbfFile.close();
-            } catch (IOException e) {
+            } catch (JDBFException e) {
                 throw Throwables.propagate(e);
             }
         }
