@@ -709,6 +709,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         runSuppressed(() -> tryCommon(owner, true), firstException);
 
+        runSuppressed(() -> { // in the suppressed sequence, so that the assertion (that throws under -ea) can not leave the session locked
+            // the problem must not survive the transaction : rollback resets it, commit fails on it (see commitTransaction) - otherwise truncate() stays a silent no-op forever and every returned table goes back to the pool dirty
+            ServerLoggers.assertLog(problemInTransaction == null, "TRANSACTION PROBLEM SHOULD NOT SURVIVE THE TRANSACTION : " + problemInTransaction);
+            problemInTransaction = null;
+        }, firstException);
+
         startTransaction = null;
         attemptCountMap = new HashMap<>();
         unlockWrite();
@@ -777,6 +783,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void commitTransaction(OperationOwner owner, SQLRunnable afterCommit) throws SQLException, SQLHandledException {
         if(inTransaction == 1) {
             try {
+                // PostgreSQL silently converts COMMIT of an aborted transaction into ROLLBACK (without throwing), so a "successful" commit here would be a silent data loss
+                // (and the temp tables created in the transaction would be physically dropped with their registries still filled) - fail explicitly, the caller goes through its regular rollback path
+                if(problemInTransaction != null)
+                    throw new SQLException("COMMIT OF AN ABORTED TRANSACTION (PROBLEM : " + problemInTransaction + ")");
+
                 privateConnection.sql.commit();
             } catch (SQLException e) {
                 handleAndPropagate(e, "COMMIT TRANSACTION");
