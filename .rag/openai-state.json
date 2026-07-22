@@ -12226,8 +12226,8 @@
       "stale": false
     },
     "paradigm/Process_monitor.md": {
-      "file_hash": "sha256:f321b582f5dd1e6eea509baf4b7bc55ac446f02a05d99362d6bac2c0c95a01bc",
-      "indexed_at": "2026-07-20T10:27:11Z",
+      "file_hash": "sha256:c9b2410d2b7605127f8c1aae4daa944b795aacd4e33fc4a0024e00f001e66c5e",
+      "indexed_at": "2026-07-22T13:06:42Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12249,9 +12249,9 @@
           "source_file": "paradigm/Process_monitor.md"
         },
         "Process_monitor::interruption-and-forced-termination": {
-          "file_id": "file-TA8N8gf8Z1BYbCbVuLZX2d",
+          "file_id": "file-UVvFg4f4ux8uoCYvbVx1sy",
           "heading_path": "Process monitor > Interruption and forced termination",
-          "section_payload_hash": "sha256:a113e9be278473e66cb461be1f579f179b436c391015ea45f7a9abc66e898d12",
+          "section_payload_hash": "sha256:386fbf3ad77be1d67bd9fb6e74b73ce60d3b19b2bc0decf6b5063228381650b6",
           "source_file": "paradigm/Process_monitor.md"
         },
         "Process_monitor::locks": {
@@ -15014,7 +15014,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "877105d2258d3ce844b13963c7071ae2eb49eba1",
+  "last_indexed_docs_commit": "5e33fbddf154b83a4a11811d92a7ed4b1cd66be4",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
