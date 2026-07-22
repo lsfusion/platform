@@ -257,10 +257,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }*/
 
     public void drop(SQLSession session, OperationOwner owner) throws SQLException {
-        if (table != null) {
-            table.drop(session, this, owner);
+        SessionData<?> dropTable;
+        synchronized (this) { // check-then-act was not thread-safe : a form-close cleaner (flushed asynchronously, with the owner synchronization explicitly suppressed - see AssertSynchronizedAspect.pushSuppress in DataSession) racing another close path could both pass the null check and both return the table - and the second return is a stale one (see the owner validation in SQLSession.returnTemporaryTable)
+            dropTable = table;
             table = null;
-        } else
+        }
+        if (dropTable != null)
+            dropTable.drop(session, this, owner);
+        else
             ServerLoggers.assertLog(false, "TABLE WAS DROPPED BEFORE");
     }
 
