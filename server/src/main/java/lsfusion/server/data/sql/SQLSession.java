@@ -1990,7 +1990,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if(syntax.isConnectionClosed(e)) {
             handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);
-            problemInTransaction = Problem.CLOSED;
+            if(inTransaction) // just like EXCEPTION above : outside a transaction nothing resets the problem (the reset points are the level-1 rollback and the outer transaction end), so it would stay set forever, turning truncate() into a permanent silent no-op - every returned table would go back to the pool dirty, including on a NEW healthy connection acquired later
+                problemInTransaction = Problem.CLOSED;
         }
 
         if(handled != null) {
