@@ -14882,8 +14882,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:c3e6db4314501f367523b45de074dda3b24ba6fa2f4e1b75f7d2b3c6ed4d8459",
-      "indexed_at": "2026-07-21T10:29:03Z",
+      "file_hash": "sha256:31e65f702fefe135341423b9bc700d3c11d3b714b6f8211c712befb6092c07ac",
+      "indexed_at": "2026-07-22T14:05:48Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14911,9 +14911,9 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-S76Vgd1ejQbU5vxEYvERgr",
+          "file_id": "file-KFp3cKqos4rN3MiBuPdN4n",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:5613fe9ef1849cca7f9e21d3b2b276f7d615d62d6d1134959fd87639367e4ce6",
+          "section_payload_hash": "sha256:2e430a32b1219e8b50aab50b1c9fde24c31b40e84968508e000474c093290088",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-04": {
@@ -15032,7 +15032,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "e6e8199aa2b673a67e0dd32e92194fabcb4e00e5",
+  "last_indexed_docs_commit": "5be1bc8f0a0e71869899568098690f336bfb2813",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
