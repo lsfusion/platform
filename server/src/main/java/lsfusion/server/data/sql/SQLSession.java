@@ -1392,6 +1392,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         temporaryTablesLock.lock();
 
         try {
+            // validation BEFORE any destructive work : a stale / duplicate return (an async close racing the owner, a second drop of the same usage) used to physically truncate a table
+            // that could already be reissued to another owner and to remove that owner's registration - silent data corruption; the old owner check ran only AFTER the truncate and only logged
+            if(owner != TableOwner.debug) {
+                WeakReference<TableOwner> wCurrentOwner = sessionTablesMap.get(table);
+                TableOwner currentOwner = wCurrentOwner != null ? wCurrentOwner.get() : null;
+                if(wCurrentOwner == null || currentOwner != owner) {
+                    handLogger.warn("RETURN OF A NOT OWNED TABLE, SKIPPED : " + table + ", RETURNING : " + owner + ", CURRENT : " + (wCurrentOwner == null ? "NOT REGISTERED" : currentOwner) + ", DEBUG INFO : " + sessionDebugInfo.get(table) + '\n' + ExecutionStackAspect.getExStackTrace());
+                    return;
+                }
+            }
+
             Result<Throwable> firstException = new Result<>();
             if(isExplainTemporaryTablesEnabled())
                 addTTLog("RETURN " + truncate, table, owner, opOwner);
@@ -1408,11 +1419,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     handLogger.warn("RETURN WITHOUT TRUNCATE (PROBLEM IN TRANSACTION : " + problemInTransaction + "), TABLE STAYS IN POOL : " + table + ", DEBUG INFO : " + sessionDebugInfo.get(table));
             }
     
-            runSuppressed(() -> {
-                assert sessionTablesMap.containsKey(table);
-                WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
-                ServerLoggers.assertLog(removed == null || removed.get()==owner, "REMOVE OWNER SHOULD BE EQUAL TO GET OWNER");
-            }, firstException);
+            sessionTablesMap.remove(table); // the registration and its owner were validated at the top, under the same temporaryTablesLock that serializes the issuing
     
             runSuppressed(() -> tryCommon(opOwner, true), firstException);
 
