@@ -830,8 +830,8 @@ MODULE DESIGN RULES
 
 11. The server ships bundled system modules whose names
     MUST NOT be reused for application modules — the server
-    fails at startup with "module '<name>' has already been
-    added". The bundled names are:
+    fails at startup with `module '<name>' has already been
+    added`. The bundled names are:
     System, Utils, UserEvents, Scheduler, Email, Time,
     Reflection, Security, Service, Icon, Authentication,
     SystemEvents, Word, WebSocket, Integration, Profiler,

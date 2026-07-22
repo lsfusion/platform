@@ -840,7 +840,7 @@ D. ОБРАТНАЯ СВЯЗЬ / ОТЧЁТЫ (`lsfusion_report_feedback`)
 11. Сервер поставляется со встроенными системными модулями,
     чьи имена НЕЛЬЗЯ переиспользовать для модулей
     приложения — сервер падает при запуске с ошибкой
-    «module '<имя>' has already been added». Встроенные
+    `module '<имя>' has already been added`. Встроенные
     имена:
     System, Utils, UserEvents, Scheduler, Email, Time,
     Reflection, Security, Service, Icon, Authentication,
