@@ -87,10 +87,12 @@ Four actions are available for each process in the monitor:
 
 |Action|What it does|When to use|
 |---|---|---|
-|Cancel Java-process|Sends the thread a cancellation request through the standard interruption mechanism; the process finishes its current operation and exits at the next interruption-flag check|A regular cancellation of a long or stuck user action|
-|Kill Java-process|Forced termination of the thread|A last resort: the process does not respond to cancellation|
-|Cancel SQL-process|Sends the database server a request to cancel the running query|A long or stuck query after which the process should continue normally|
-|Kill SQL-process|Forced termination of the database process|A stuck database process interfering with others|
+|Cancel process|Cancels the process's SQL query if it has one; otherwise sends the java thread a cancellation request through the standard interruption mechanism — the thread finishes its current operation and exits at the next interruption-flag check|A regular cancellation of a long or stuck process|
+|Kill process|Forcibly terminates the database process if a query is active; otherwise forcibly terminates the java thread|A last resort: the process does not respond to cancellation|
+|Cancel java-process|Sends the java thread a cancellation request even when the row is an SQL process|Cancel the java side of an SQL process without touching the query|
+|Kill java-process|Forcibly terminates the java thread of an SQL process|A last resort on the java side of an SQL process|
+
+The `Cancel java-process` and `Kill java-process` buttons are shown only for SQL processes backed by a java thread.
 
 "Kill" is a last-resort operation: after it, the state of the application server and the database server may require a restart.
 
