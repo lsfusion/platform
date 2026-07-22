@@ -8529,8 +8529,8 @@
       "stale": false
     },
     "paradigm/Automatic_installation.md": {
-      "file_hash": "sha256:787265b704894d19aceb427b6a36e9a092f1697c6cfc2642efb98d08a7ee1b7a",
-      "indexed_at": "2026-05-22T22:52:51Z",
+      "file_hash": "sha256:8e22e608c2b26a16810410b4ff25675fc7d88fdc0809330987c2d3077fd50427",
+      "indexed_at": "2026-07-22T13:12:09Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8543,6 +8543,12 @@
           "file_id": "file-3shNn9AxhdzGzHUp5FMKfo",
           "heading_path": "Install automatically > [For development](Development_auto.md) + [For production](Execution_auto.md)",
           "section_payload_hash": "sha256:a8e964023ca9fd21b094ee3aee6e4673f6d8bfdb218e5bae652e7180c9dea0ef",
+          "source_file": "paradigm/Automatic_installation.md"
+        },
+        "Automatic_installation::install-automatically": {
+          "file_id": "file-H47F4zoEYhGEG3kjXrxKUk",
+          "heading_path": "Install automatically",
+          "section_payload_hash": "sha256:72f20d3cbd731c9d7b0d16c6f3440bf73a9d6db07d20e1ee4e662443ca6601c1",
           "source_file": "paradigm/Automatic_installation.md"
         }
       },
@@ -9591,8 +9597,8 @@
       "stale": false
     },
     "paradigm/Docker.md": {
-      "file_hash": "sha256:da4a89f678bc45cc1643465f0f5d42468ececa5d690cae3359391a72db47073b",
-      "indexed_at": "2026-07-21T06:56:37Z",
+      "file_hash": "sha256:2ab80dde2db7909794e3f1079f6be4425fe36fd33caa57215b09a6c8041d908f",
+      "indexed_at": "2026-07-22T13:12:17Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -9608,9 +9614,9 @@
           "source_file": "paradigm/Docker.md"
         },
         "Docker::docker-installation": {
-          "file_id": "file-78AD3XPorMugtV4UWCBE41",
+          "file_id": "file-7UzsSi174SLTvPvGv4Zgup",
           "heading_path": "Docker installation",
-          "section_payload_hash": "sha256:d78148ea88679030c601d9a052c316739e76f7b495fad8150bdec37917368d6a",
+          "section_payload_hash": "sha256:e4f247683999e0b570b4209382454dfa513c02fbfb0775845a4627e02a89e6c8",
           "source_file": "paradigm/Docker.md"
         },
         "Docker::launching-the-lsfusion-platform-using-docker-compose-docker-platform": {
@@ -10709,8 +10715,8 @@
       "stale": false
     },
     "paradigm/Install.md": {
-      "file_hash": "sha256:224f1b9874d0196f4d5772484494e34a2fc80b76a7e7a644a62d8777f3c41436",
-      "indexed_at": "2026-06-04T13:29:44Z",
+      "file_hash": "sha256:3bb71a595c29399b83240b6cd9e208fbc7773e277734e4bf18a7de55b39b2b9b",
+      "indexed_at": "2026-07-22T13:17:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10723,6 +10729,12 @@
           "file_id": "file-5AsU1HpWMqv2nsGMRbinzw",
           "heading_path": "Install > Additional setup",
           "section_payload_hash": "sha256:baba81c8e9974d76bf7831b58780c0e9e0af8376339e0df1f353236df525771d",
+          "source_file": "paradigm/Install.md"
+        },
+        "Install::install": {
+          "file_id": "file-FbjX6fi9H1WM698cV1M5BQ",
+          "heading_path": "Install",
+          "section_payload_hash": "sha256:bb2c3f638f827d10388152fe7214ac3d13931c14018acf9a6a799c658d0ba357",
           "source_file": "paradigm/Install.md"
         },
         "Install::install-automatically": {
@@ -11366,8 +11378,8 @@
       "stale": false
     },
     "paradigm/Manual_installation.md": {
-      "file_hash": "sha256:cd749c7d4834f72c61e4e3ed36d80a1d29ffa7bbfb3a249cc154a8494101fc95",
-      "indexed_at": "2026-05-22T23:27:40Z",
+      "file_hash": "sha256:c23a94bb3bcfe539a25694ea75315f1c597073d385845917449a5be7b2d7c1d5",
+      "indexed_at": "2026-07-22T13:17:34Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11380,6 +11392,12 @@
           "file_id": "file-2vXFkW4QDBDpo9ALhzHewB",
           "heading_path": "Install manually > [For development](Development_manual.md) + [For production](Execution_manual.md)",
           "section_payload_hash": "sha256:8dabccf1e185fc0f3c7d172f97c34dcc2aa7d7f2f08c245009586dcd49d901dc",
+          "source_file": "paradigm/Manual_installation.md"
+        },
+        "Manual_installation::install-manually": {
+          "file_id": "file-EA37ZSePbqUcwqBQP1iPbm",
+          "heading_path": "Install manually",
+          "section_payload_hash": "sha256:3c5acd557032555519dd06b07ece6b0470d7cded6d11bde7e23d1a749bf72480",
           "source_file": "paradigm/Manual_installation.md"
         }
       },
@@ -12326,8 +12344,8 @@
       "stale": false
     },
     "paradigm/Projects.md": {
-      "file_hash": "sha256:3281f80a3a756c01729cef50325acdb9ecd93f9fd181f2a27ffc908d59a72498",
-      "indexed_at": "2026-05-22T23:32:42Z",
+      "file_hash": "sha256:325d97864acf135829c19f3d31e7d94a649b1de6554990c52598d3829c390845",
+      "indexed_at": "2026-07-22T13:17:41Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12336,10 +12354,10 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Projects::language": {
-          "file_id": "file-JmpHYFg55pjH25vTiowQza",
-          "heading_path": "Projects > Language",
-          "section_payload_hash": "sha256:32731e09e8ac864d15336d12a6b7cb2f37568a351062810cd707d6e0c462bb90",
+        "Projects::module-loading": {
+          "file_id": "file-Bzg2Hade2sfab21NjbNzRp",
+          "heading_path": "Projects > Module loading",
+          "section_payload_hash": "sha256:f4c98aa2236de861ac957f40e1b26dec317f9beeff7a3fa48623310a7a2eafe1",
           "source_file": "paradigm/Projects.md"
         },
         "Projects::projects": {
@@ -15014,7 +15032,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5e33fbddf154b83a4a11811d92a7ed4b1cd66be4",
+  "last_indexed_docs_commit": "e6e8199aa2b673a67e0dd32e92194fabcb4e00e5",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
