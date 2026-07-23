@@ -5611,8 +5611,8 @@
       "stale": false
     },
     "language/INPUT_operator.md": {
-      "file_hash": "sha256:7a91faab90bb5bfcf064bc7fde1b3480b516b592820c0ba417eb0c5741e7012a",
-      "indexed_at": "2026-07-21T10:27:48Z",
+      "file_hash": "sha256:1300eaa4ae5a561e9c73d7b7198c3c29c39885eb8c0ff12d5d0bb001c58dfc7f",
+      "indexed_at": "2026-07-23T13:40:57Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5640,19 +5640,19 @@
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::parameters": {
-          "file_id": "file-GbEtQFjiAxZGvVdsTtmAJo",
+          "file_id": "file-MviQVHqjKyX5QWdy9QRGa2",
           "heading_path": "INPUT operator > Parameters",
-          "section_payload_hash": "sha256:2859f85f0837aeeb028ce1855320693b1625e46819fd35b4fd99ef611b84dd87",
+          "section_payload_hash": "sha256:a39d41d918972cf40bc0775c35e87d1f76117c5bf56f2b6a98139b67088174d5",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::syntax": {
-          "file_id": "file-W3XT2erm4nqH9sRvfNGSN6",
+          "file_id": "file-CMWyEZvdtXUkyqXA6nFr6M",
           "heading_path": "INPUT operator > Syntax",
-          "section_payload_hash": "sha256:f95bc398f4c9711a2956fba06ad6c5777098363353977fc7cb74d10f610625c1",
+          "section_payload_hash": "sha256:556db0b35b019f80d2298689466604e7073eaf812d83cabf7bd818a6d927125b",
           "source_file": "language/INPUT_operator.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "language/INTERNAL_operator.md": {
       "file_hash": "sha256:356fd4fb20dca8efc6240794ca56df706698f6f6c4e056b0502df730f6443726",
@@ -12156,8 +12156,8 @@
       "stale": false
     },
     "paradigm/Primitive_input_INPUT.md": {
-      "file_hash": "sha256:e0470bb2c84106bc1c1585ec560b38f08d8901b087577fd73e86b7fa25a96e70",
-      "indexed_at": "2026-07-16T14:07:44Z",
+      "file_hash": "sha256:e0455aceb3ef5fb61056a0fe20298b55282d3bf373114e03d79dd3e887475241",
+      "indexed_at": "2026-07-23T13:51:08Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12191,9 +12191,9 @@
           "source_file": "paradigm/Primitive_input_INPUT.md"
         },
         "Primitive_input_INPUT::value-input-input": {
-          "file_id": "file-RwVhaM3FoWFNEnoy94VaxW",
+          "file_id": "file-XcnwYdKKHA4kvy1RT34wDh",
           "heading_path": "Value input (INPUT)",
-          "section_payload_hash": "sha256:728cfbbf71a71ba54af20d6f56537b87fd16172c0bf932ba0072795262f43b3a",
+          "section_payload_hash": "sha256:2a1d1c9478e36b153f9bd1affc22f6eefccdbebd4cd82b03d6ae1baa6f4fdd63",
           "source_file": "paradigm/Primitive_input_INPUT.md"
         }
       },
