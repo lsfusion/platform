@@ -66,7 +66,8 @@
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <org.jfree.version>1.0.23</org.jfree.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <jackson.version>2.14.1</jackson.version>
+        <jackson.version>2.22.1</jackson.version>
+        <jackson.annotations.version>2.22</jackson.annotations.version>
 
         <spring.version>5.2.7.RELEASE</spring.version>
         <spring.security.version>5.3.0.RELEASE</spring.security.version>
@@ -437,6 +438,22 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId> <!-- added for consistency with dependency in jasperreports. is used in jjwt -->
                 <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <!-- keep the whole jackson family on one version: databind requires a matching core, and jasperreports pulls older transitives -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.annotations.version}</version> <!-- annotations are released per minor only, without patch versions -->
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
 
