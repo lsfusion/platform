@@ -2819,9 +2819,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         startLog("Packing tables");
         for (final ImplementTable table : tables) {
-            systemLogger.debug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
+            startLogDebug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
             packTable(session, table, isolatedTransaction);
-            systemLogger.debug("Done");
+            startLogDebug("Done");
         }
     }
 

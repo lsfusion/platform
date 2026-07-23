@@ -996,7 +996,6 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("changeGroupObject") {
             @Override
             protected void onAsyncRequest(long requestIndex) {
-//                        System.out.println("!!Async changing group object with req#: " + requestIndex + " on " + objectValue);
                 pendingChangeCurrentObjectsRequests.put(group, requestIndex);
             }
 
@@ -1034,9 +1033,6 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("changeProperty", editDispatcher) {
             @Override
             protected void onAsyncRequest(long requestIndex) {
-//                System.out.println("!!Async changing property with req#: " + requestIndex);
-//                ExceptionUtils.dumpStack();
-//                System.out.println("------------------------");
 
                 GridController controller = controllers.get(property.groupObject);
 

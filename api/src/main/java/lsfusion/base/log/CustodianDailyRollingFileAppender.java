@@ -190,7 +190,6 @@ public class CustodianDailyRollingFileAppender extends FileAppender {
                 rollingCalendar.setType(i);
                 Date next = new Date(rollingCalendar.getNextCheckMillis(epoch));
                 String r1 = simpleDateFormat.format(next);
-                // System.out.println("Type = "+i+", r0 = "+r0+", r1 = "+r1);
                 if (!r0.equals(r1)) {
                     return i;
                 }

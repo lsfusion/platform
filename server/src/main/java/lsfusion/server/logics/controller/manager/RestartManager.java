@@ -49,12 +49,7 @@ public class RestartManager implements InitializingBean {
         }
 
         logger.info("Server Stopping initiated");
-        try {
-            restartFuture = scheduler.scheduleAtFixedRate(this::doRestart, restartDelayMinutes, restartDelayMinutes, TimeUnit.MINUTES);
-        } catch (RejectedExecutionException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        restartFuture = scheduler.scheduleAtFixedRate(this::doRestart, restartDelayMinutes, restartDelayMinutes, TimeUnit.MINUTES);
     }
 
     private synchronized void doRestart() {
