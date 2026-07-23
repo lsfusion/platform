@@ -17,6 +17,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
@@ -91,10 +92,13 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.form.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
@@ -1438,8 +1442,39 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return Collections.synchronizedList(super.createLAPList());
     }
 
+    // raw compile, cached per script - to be used only for trusted scripts (form extendCode customization),
+    // all dynamically executed user code must go through evaluateRun
     @IdentityLazy
-    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+    public Pair<LA, EvalScriptingLogicsModule> evaluateCompile(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
         return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
+    }
+
+    // the single security check point for all dynamically executed code : EVAL operator (interpreter form),
+    // HTTP /eval, JS controller eval, navigator eval - the compile is cached, the check is per-caller
+    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+        Pair<LA, EvalScriptingLogicsModule> result = evaluateCompile(script, parentLMs, action);
+        checkEvalSecurity(result.second);
+        return result;
+    }
+
+    private static void checkEvalSecurity(EvalScriptingLogicsModule module) {
+        if(Settings.get().isDisableEvalSecurityPolicy())
+            return;
+
+        SecurityPolicy policy = ThreadLocalContext.getSecurityPolicy();
+        if(policy == null) // system context
+            return;
+
+        // INTERNAL java / SQL bodies read data bypassing the property policy, so they can't be allowed to a restricted user
+        if(module.hasUnsafeCode && policy.hasForbidden())
+            throw new RuntimeException(ServerResourceBundle.getString("logics.policy.eval.unsafe.code.forbidden"));
+
+        for(ActionOrProperty ref : module.usedRefs)
+            if(ref instanceof Action ? !policy.checkDirectActionAccess((Action) ref) : !policy.checkPropertyViewPermission(ref))
+                throw new RuntimeException(ServerResourceBundle.getString("logics.policy.eval.access.forbidden", ref.getCanonicalName()));
+
+        for(Property ref : module.changeRefs)
+            if(!policy.checkPropertyChangePermission(ref))
+                throw new RuntimeException(ServerResourceBundle.getString("logics.policy.eval.access.forbidden", ref.getCanonicalName()));
     }
 }

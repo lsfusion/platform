@@ -1,14 +1,13 @@
 package lsfusion.server.base.controller.context;
 
-import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Locale;
 
@@ -139,6 +138,11 @@ public class AsyncContext extends AbstractContext {
     @Override
     public Long getCurrentUserRole() {
         return upContext.getCurrentUserRole();
+    }
+
+    @Override
+    public SecurityPolicy getSecurityPolicy() {
+        return upContext.getSecurityPolicy();
     }
 
 //    @Override

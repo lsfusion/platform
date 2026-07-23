@@ -13,4 +13,8 @@ public class ElementSecurityPolicy<T> {
     synchronized public Boolean checkPermission(T obj) {
         return permission.get(obj);
     }
+
+    synchronized public boolean hasForbidden() {
+        return permission.containsValue(Boolean.FALSE);
+    }
 }

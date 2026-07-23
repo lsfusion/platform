@@ -37,6 +37,17 @@ public class RoleSecurityPolicy {
         return this.propertyChange.checkPermission(property);
     }
 
+    // direct (non-form) property change, e.g. in dynamically executed code - there is no form event action to consider
+    public Boolean checkPropertyChangePermission(ActionOrProperty property) {
+        if(isReadOnlyPolicy)
+            return false;
+        return this.propertyChange.checkPermission(property);
+    }
+
+    public boolean hasForbidden() {
+        return isReadOnlyPolicy || propertyView.hasForbidden() || propertyChange.hasForbidden();
+    }
+
     public Boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
         return this.propertyEditObjects.checkPermission(property);
     }

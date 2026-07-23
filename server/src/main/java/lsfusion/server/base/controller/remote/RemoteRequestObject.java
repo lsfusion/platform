@@ -11,6 +11,7 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.SyncType;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -29,6 +30,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.classes.ValueClass;
@@ -37,6 +39,9 @@ import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -332,6 +337,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                     throw new RuntimeException("Action was not found: " + action);
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
+                checkControllerSecurityPolicy(resolved.lap, true); // the policy applies even to form-authorized entries (parity with clicking on the form)
                 terminal = runControllerAction((LA<?>) resolved.lap, params, stack);
             } catch (Exception e) { // business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
@@ -365,6 +371,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                     throw new RuntimeException("Property was not found: " + property);
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
+                checkControllerSecurityPolicy(resolved.lap, false);
                 terminal = runControllerChange((LP<?>) resolved.lap, params, value, stack);
             } catch (Exception e) {
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
@@ -394,6 +401,19 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     protected ControllerResolved resolveController(String name, boolean action) {
         BusinessLogics BL = getControllerBL();
         return new ControllerResolved(action ? BL.findActionByName(name) : BL.findPropertyByName(name), false);
+    }
+
+    // same security policy semantics as /exec (RemoteConnection.checkEnableApi) and EVAL (BaseLogicsModule.checkEvalSecurity);
+    // the policy comes from the bound request context (form / navigator / session), null means a trusted (system) context
+    private static void checkControllerSecurityPolicy(LAP<?, ?> lap, boolean action) {
+        if(Settings.get().isDisableApiSecurityPolicy())
+            return;
+        SecurityPolicy policy = ThreadLocalContext.getSecurityPolicy();
+        if(policy == null)
+            return;
+        ActionOrProperty actionOrProperty = lap.getActionOrProperty();
+        if(action ? !policy.checkDirectActionAccess((Action) actionOrProperty) : !policy.checkDirectPropertyChangeAccess(actionOrProperty))
+            throw new RuntimeException(ServerResourceBundle.getString("logics.policy.api.access.forbidden", actionOrProperty.getCanonicalName()));
     }
 
     private ClientAction runControllerAction(LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {

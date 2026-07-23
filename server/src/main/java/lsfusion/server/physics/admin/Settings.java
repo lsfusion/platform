@@ -907,6 +907,28 @@ public class Settings implements Cloneable {
         this.disableDefaultChangeOnReadOnlyChange = disableDefaultChangeOnReadOnlyChange;
     }
 
+    // backward compatibility switch : disables the security policy check for dynamically executed code (EVAL / API eval)
+    private boolean disableEvalSecurityPolicy = false;
+
+    public boolean isDisableEvalSecurityPolicy() {
+        return disableEvalSecurityPolicy;
+    }
+
+    public void setDisableEvalSecurityPolicy(boolean disableEvalSecurityPolicy) {
+        this.disableEvalSecurityPolicy = disableEvalSecurityPolicy;
+    }
+
+    // backward compatibility switch : disables the security policy check for API calls of named elements (/exec, JS controller exec / change)
+    private boolean disableApiSecurityPolicy = false;
+
+    public boolean isDisableApiSecurityPolicy() {
+        return disableApiSecurityPolicy;
+    }
+
+    public void setDisableApiSecurityPolicy(boolean disableApiSecurityPolicy) {
+        this.disableApiSecurityPolicy = disableApiSecurityPolicy;
+    }
+
     public int getLimitExclusiveCount() {
         return limitExclusiveCount;
     }

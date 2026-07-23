@@ -31,7 +31,6 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -1806,7 +1805,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             if (extendCode != null) {
                 try {
                     String script = "FORM " + name + " EXTEND FORMS " + canonicalName + ";\n" + extendCode + ";\nrun{}";
-                    Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
+                    // evaluateCompile (not evaluateRun) : extendCode is admin-managed customization, not the opening user's code,
+                    // and the form machinery applies the user's security policy when rendering / executing it anyway
+                    Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateCompile(script, Collections.emptySet(), false);
 
                     FormEntity copyForm = evalResult.second.findForm(name);
                     copyForm.customizeForm = this;

@@ -2,7 +2,6 @@ package lsfusion.server.logics.navigator.controller.context;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
@@ -51,7 +50,7 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         
         uiContext = new RemoteUIContext() {
             @Override
-            protected SecurityPolicy getSecurityPolicy() {
+            public SecurityPolicy getSecurityPolicy() {
                 return navigator.securityPolicy;
             }
 

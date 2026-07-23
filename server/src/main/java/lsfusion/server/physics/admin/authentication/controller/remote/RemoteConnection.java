@@ -27,9 +27,9 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -45,7 +45,6 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -647,6 +646,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             throw authException;
 
         checkAPIAccess(property.action.hasAnnotation("api"), redirect);
+
+        // /exec of a named action is checked against the caller's security policy (eval scripts - script == true - are
+        // checked in evaluateRun against their whole reference set instead)
+        if(!script && !Settings.get().isDisableApiSecurityPolicy() && securityPolicy != null && !securityPolicy.checkDirectActionAccess(property.action))
+            throw new RuntimeException(ServerResourceBundle.getString("logics.policy.api.access.forbidden", property.action.getCanonicalName()));
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {

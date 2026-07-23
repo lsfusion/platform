@@ -62,7 +62,7 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     @Override
-    protected SecurityPolicy getSecurityPolicy() {
+    public SecurityPolicy getSecurityPolicy() {
         return form.form.securityPolicy;
     }
 

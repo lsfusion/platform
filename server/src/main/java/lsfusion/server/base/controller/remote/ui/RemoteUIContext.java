@@ -2,10 +2,8 @@ package lsfusion.server.base.controller.remote.ui;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
-import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -110,7 +108,7 @@ public abstract class RemoteUIContext extends AbstractContext {
     }
 
     public abstract FocusListener getFocusListener();
-    protected abstract SecurityPolicy getSecurityPolicy();
+    public abstract SecurityPolicy getSecurityPolicy();
     protected boolean isExternal() {
         return false;
     }

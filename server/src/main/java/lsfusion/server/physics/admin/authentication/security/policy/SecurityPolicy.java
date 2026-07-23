@@ -48,6 +48,27 @@ public class SecurityPolicy {
         return checkPermission(policy -> policy.checkPropertyChangePermission(property, eventAction));
     }
 
+    // direct (non-form) property change, e.g. in dynamically executed code
+    public boolean checkPropertyChangePermission(ActionOrProperty property) {
+        return checkPermission(policy -> policy.checkPropertyChangePermission(property));
+    }
+
+    // direct (non-form) access to a named element - dynamically executed code (EVAL) and API calls (/exec, JS controller) :
+    // executing an action requires the same permissions as on a form - to see it and to change (execute) it
+    public boolean checkDirectActionAccess(Action action) {
+        return checkPropertyViewPermission(action) && checkPropertyChangePermission(action, action);
+    }
+    public boolean checkDirectPropertyChangeAccess(ActionOrProperty property) {
+        return checkPropertyViewPermission(property) && checkPropertyChangePermission(property);
+    }
+
+    public boolean hasForbidden() {
+        for(RoleSecurityPolicy policy : policies)
+            if(policy.hasForbidden())
+                return true;
+        return false;
+    }
+
     public boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
         return checkPermission(policy -> policy.checkPropertyEditObjectsPermission(property));
     }

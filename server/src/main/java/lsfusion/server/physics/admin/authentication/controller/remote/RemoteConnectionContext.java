@@ -3,6 +3,7 @@ package lsfusion.server.physics.admin.authentication.controller.remote;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.util.Locale;
@@ -49,5 +50,10 @@ public abstract class RemoteConnectionContext extends AbstractContext {
     @Override
     public Long getCurrentUserRole() {
         return getConnectionObject().userRole;
+    }
+
+    @Override
+    public SecurityPolicy getSecurityPolicy() {
+        return getConnectionObject().securityPolicy;
     }
 }

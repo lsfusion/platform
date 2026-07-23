@@ -4,13 +4,10 @@ import com.google.common.base.Throwables;
 import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.connection.TFormats;
-import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.manager.EventServer;
@@ -47,6 +44,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -157,6 +155,12 @@ public class ThreadLocalContext {
 
     public static Long getCurrentUser() {
         return get().getCurrentUser();
+    }
+
+    // null-safe unlike the other getters - it is called from evaluateRun which can also run in system threads with no context bound (for example migration scripts on startup)
+    public static SecurityPolicy getSecurityPolicy() {
+        Context context = get();
+        return context == null ? null : context.getSecurityPolicy();
     }
 
     public static Long getCurrentComputer() {

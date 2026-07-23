@@ -2,6 +2,42 @@
 
 ## 7.0
 
+### Security policy is now enforced in dynamically executed code (EVAL) and API calls
+
+Dynamically executed scripts - the `EVAL` operator (including the `System.interpreter`
+form) and the external API script execution (HTTP `/eval`, the JS controller `eval`) -
+are now checked against the calling user's security policy before execution. A script
+is rejected with a security policy error when it directly references a property or an
+action that the user's role forbids (view permission for reads, change permission for
+writes and executed actions). Scripts defining their own `INTERNAL` java or
+`INTERNAL DB` / `EXTERNAL DB` / `EXTERNAL DBF` bodies are rejected entirely for users
+whose roles carry any property restrictions, because such code reads data bypassing
+the property policy.
+
+API calls of named elements are checked the same way: HTTP `/exec` of an action and the
+JS controller `exec` / `change` now require the calling user's role to permit the
+referenced action / property (view + change permissions, as on a form). `@noauth`
+actions and signed requests are exempt - those are endpoints explicitly published by
+the developer.
+
+Users whose roles have no forbidden elements (e.g. administrators) are unaffected.
+
+Symptoms after upgrade: scripts and API calls executed under restricted users -
+user-defined formula evaluation, integration endpoints calling `/eval` or `/exec` with
+a non-admin technical user, custom components using the JS controller - may start
+failing with `Security policy forbids access to ...`.
+
+#### Quick fallback
+
+Each check can be disabled via `settings.properties` (or `-D` JVM parameters):
+
+```
+settings.disableEvalSecurityPolicy = true   # EVAL / eval scripts
+settings.disableApiSecurityPolicy = true    # /exec, JS controller exec / change
+```
+
+See the [Working parameters](https://docs.lsfusion.org/Working_parameters/) article.
+
 ### Deterministic order-dependent aggregations
 
 Order-dependent aggregations and row picks (`GROUP LAST` / `CONCAT` / ordered `CUSTOM`,

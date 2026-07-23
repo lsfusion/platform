@@ -1,10 +1,8 @@
 package lsfusion.server.base.controller.context;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.form.ShowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.LogicsInstance;
@@ -24,6 +22,7 @@ import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -64,6 +63,11 @@ public interface Context {
     Long getCurrentConnection();
     Long getCurrentUser();
     Long getCurrentUserRole();
+
+    // null means a trusted (system) context - no user restrictions
+    default SecurityPolicy getSecurityPolicy() {
+        return null;
+    }
 
     String localize(LocalizedString s);
     String localize(LocalizedString s, Locale locale);

@@ -3,6 +3,8 @@ package lsfusion.server.language;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.table.IndexType;
+import lsfusion.base.Result;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.PropertySettings;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -16,11 +18,13 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.LazyProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,6 +35,97 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String code) {
         super(code, baseModule, BL);
         this.parentLMs = parentLMs;
+    }
+
+    // all direct by-name references of the script, collected at compile time to be checked against the caller's
+    // security policy in BaseLogicsModule.evaluateRun (script-defined elements also get here, but they are new
+    // objects that can't be present in the policy maps, so they pass the check automatically)
+    public final Set<ActionOrProperty> usedRefs = new LinkedHashSet<>();
+    public final Set<Property> changeRefs = new LinkedHashSet<>(); // targets of CHANGE / <- / RECALCULATE
+    // INTERNAL java / INTERNAL DB / EXTERNAL DB(F) defined by the script itself - can't be statically checked
+    // against the property security policy (java / sql read data bypassing it)
+    public boolean hasUnsafeCode;
+
+    private boolean captureChangeRef;
+
+    @Override
+    public LP<?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?> result = super.resolveProperty(compoundName, params);
+        registerPropertyRef(result);
+        return result;
+    }
+
+    @Override
+    public LP<?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        LP<?> result = super.resolveAbstractProperty(compoundName, params, prioritizeNotEquals);
+        registerPropertyRef(result);
+        return result;
+    }
+
+    @Override
+    public LA<?> resolveAction(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LA<?> result = super.resolveAction(compoundName, params);
+        if(result != null)
+            usedRefs.add(result.action);
+        return result;
+    }
+
+    @Override
+    public LA<?> resolveAbstractAction(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        LA<?> result = super.resolveAbstractAction(compoundName, params, prioritizeNotEquals);
+        if(result != null)
+            usedRefs.add(result.action);
+        return result;
+    }
+
+    private void registerPropertyRef(LP<?> result) {
+        if(result != null) {
+            usedRefs.add(result.property);
+            if(captureChangeRef) { // the first property resolved inside getIdentityLPPropertyUsageWithWhere is the change target
+                changeRefs.add(result.property);
+                captureChangeRef = false;
+            }
+        }
+    }
+
+    @Override
+    public Pair<LPWithParams, LPWithParams> getIdentityLPPropertyUsageWithWhere(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext, Result<Integer> rExParams) throws ScriptingErrorLog.SemanticErrorException {
+        captureChangeRef = true;
+        try {
+            return super.getIdentityLPPropertyUsageWithWhere(context, propertyUsage, propertyMapping, whereProperty, newContext, rExParams);
+        } finally {
+            captureChangeRef = false;
+        }
+    }
+
+    @Override
+    public LA addScriptedInternalAction(String javaClassName, ImList<ValueClass> paramClasses, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+        hasUnsafeCode = true;
+        return super.addScriptedInternalAction(javaClassName, paramClasses, allowNullValue);
+    }
+
+    @Override
+    public LA addScriptedInternalAction(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+        hasUnsafeCode = true;
+        return super.addScriptedInternalAction(code, allowNullValue);
+    }
+
+    @Override
+    public LAWithParams addScriptedInternalDBAction(LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        hasUnsafeCode = true;
+        return super.addScriptedInternalDBAction(exec, params, context, toPropertyUsageList);
+    }
+
+    @Override
+    public LAWithParams addScriptedExternalDBAction(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        hasUnsafeCode = true;
+        return super.addScriptedExternalDBAction(connectionString, exec, params, context, toPropertyUsageList);
+    }
+
+    @Override
+    public LAWithParams addScriptedExternalDBFAction(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        hasUnsafeCode = true;
+        return super.addScriptedExternalDBFAction(connectionString, charset, params, context, toPropertyUsageList);
     }
 
     @Override
