@@ -142,6 +142,7 @@ import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1263,8 +1264,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public void flush(ImSet<Property> flushedChanges) {
+            flush(flushedChanges, property -> true);
+        }
+
+        public void flush(ImSet<Property> flushedChanges, Predicate<ActionOrProperty<?>> filter) {
             propCache.proceedSafeLockLRUEKeyValues((property, refs) -> {
-                if (property != null && InputValueList.depends(property, flushedChanges)) {
+                if (property != null && filter.test(property) && InputValueList.depends(property, flushedChanges)) {
                     for (ParamRef ref : refs)
                         ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
                 }
@@ -1305,6 +1310,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private MSet<Property> mChanges = SetFact.mSet();
 
     public void registerChange(ImSet<Property> properties) {
+        // for the LAZY WAIT properties the invalidation is a part of apply (just like for the strong ones, see flushStrong)
+        weakLazyValueCache.flush(properties, property -> property instanceof Property && ((Property<?>) property).isLazyWait());
+
+        // the LAZY NOWAIT properties and the async values caches are flushed periodically (see getFlushAsyncValuesCachesTask)
         synchronized (changesListLock) {
             mChanges.addAll(properties);
         }

@@ -421,13 +421,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public enum Lazy {WEAK, STRONG}
 
     protected Lazy lazy;
+    // whether the lazy value cache invalidation is synchronous with apply (WAIT) or deferred to the periodic flush (NOWAIT), see DBManager.registerChange / flushChanges
+    protected boolean lazyWait;
 
     public boolean isLazyStrong() {
         return lazy == Lazy.STRONG;
     }
 
-    public void setLazy(Lazy lazy, DebugInfo.DebugPoint debugPoint) {
+    public boolean isLazyWait() {
+        return lazyWait;
+    }
+
+    public void setLazy(Lazy lazy, boolean wait, DebugInfo.DebugPoint debugPoint) {
         this.lazy = lazy;
+        this.lazyWait = wait;
         if (isLazyStrong()) {
             SystemAction flushAction = new SystemAction(LocalizedString.NONAME, (ImOrderSet<PropertyInterface>) getFriendlyOrderInterfaces()) {
                 @Override

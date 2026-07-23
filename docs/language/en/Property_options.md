@@ -38,7 +38,7 @@ REGEXP rexpr [message]
 ECHO
 DEFAULTCOMPARE compare
 EVENTID eventId
-LAZY [WEAK | STRONG]
+LAZY [WEAK | STRONG] [WAIT | NOWAIT]
 EXTID extId
 imageSetting
 annotationSetting
@@ -374,12 +374,17 @@ Property annotation. Begins with `@@`. The following annotations are supported:
         
         String literal. Now only `SCANNER` value is supported. Enables special keydown handling mode to detect GS (group separator) input.
 
-- `LAZY [WEAK | STRONG]`
+- `LAZY [WEAK | STRONG] [WAIT | NOWAIT]`
 
-	Specifies the caching level of a property. 
-	`WEAK` means caching the property value on the application server (if reading is done for all fixed parameters).
-	`STRONG` means that the cache will not be entirely cleared upon any property change, but instead, an event will be triggered, and specific values will be cleared.
+	Specifies the caching level of a property (the property value is cached on the application server if reading is done for all fixed parameters). 
+	`WEAK` and `STRONG` specify what is evicted from the cache when the property changes.
+	`WEAK` means that upon any change the property depends on, all its cached values are evicted.
+	`STRONG` means that the cache will not be entirely cleared upon any property change, but instead, an event will be triggered, and specific values will be cleared. It requires the set of changed values to be enumerable.
 	Default value is `WEAK`.
+	`WAIT` and `NOWAIT` specify when the cache is invalidated.
+	With `WAIT` the invalidation is synchronous with applying the change: after the change is applied, no read will return the previous value from the cache. Use it for properties whose values the logic makes decisions on (for example, checking the existence of an object by a unique value).
+	With `NOWAIT` the invalidation is deferred and performed periodically (the period is set by the `flushAsyncValuesCaches` setting, 1 second by default), so for a short time after the change reads can still return the previous value. Use it where such short staleness is harmless.
+	Default value is `NOWAIT`. For `STRONG` the invalidation is always synchronous, so `NOWAIT` cannot be specified with it.
 
 - `EXTID extId`
 

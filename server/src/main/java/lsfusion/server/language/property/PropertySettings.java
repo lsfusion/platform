@@ -30,5 +30,6 @@ public class PropertySettings extends ActionOrPropertySettings {
     public Boolean aggr;
     public String eventId;
     public Property.Lazy lazy;
+    public Boolean lazyWait;
     public DebugInfo.DebugPoint debugPoint;
 }

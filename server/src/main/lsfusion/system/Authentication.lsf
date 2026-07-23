@@ -12,7 +12,7 @@ TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
 name(Computer c) += hostname(c);
-computer = GROUP LAST Computer computer ORDER computer BY hostname(computer) LAZY;
+computer = GROUP LAST Computer computer ORDER computer BY hostname(computer) LAZY WAIT;
 
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
@@ -77,15 +77,15 @@ name '{authentication.name.user}' (User user) = IF user IS SystemUser
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
 // login
-login '{authentication.login}' = DATA ISTRING (CustomUser) CHARWIDTH 15 LAZY;
+login '{authentication.login}' = DATA ISTRING (CustomUser) CHARWIDTH 15 LAZY WAIT;
 name(CustomUser c) += login(c);
 
 lowerLogin(CustomUser c) = lower(login(c));
 customUserLowerLogin = GROUP AGGR CustomUser customUser BY lowerLogin(customUser);
-customUserLogin (ISTRING login) = customUserLowerLogin(lower(login)) LAZY;
+customUserLogin (ISTRING login) = customUserLowerLogin(lower(login)) LAZY WAIT;
 lowerEmail(CustomUser c) = lower(email(c)) IF c IS CustomUser;
 customUserLowerEmail = GROUP LAST CustomUser customUser ORDER lowerLogin(customUser), customUser BY lowerEmail(customUser);
-customUserEmail(ISTRING email) = customUserLowerEmail(lower(email)) LAZY;
+customUserEmail(ISTRING email) = customUserLowerEmail(lower(email)) LAZY WAIT;
 
 customUserLower(ISTRING[100] login) = customUserLowerLogin(login) @@deprecated('6.1');
 customUserNormalized(ISTRING[100] login) = customUserLogin(login);
@@ -94,7 +94,7 @@ customUserNormalized(ISTRING[100] login) = customUserLogin(login);
 logName (CustomUser user) = OVERRIDE name(user), login(user) LAZY;
 
 // password
-sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO LAZY;
+sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO LAZY WAIT;
 calculatedHash = DATA LOCAL STRING[100] ();
 calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.action.CalculateBase64HashAction' (BPSTRING[10], BPSTRING[30]);
 changeSHA256Password(CustomUser customUser)  { 

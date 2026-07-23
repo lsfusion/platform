@@ -1425,7 +1425,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(ps.eventId != null)
             drawOptions.setEventID(ps.eventId);
         if(ps.lazy != null)
-            property.property.setLazy(ps.lazy, ps.debugPoint);
+            property.property.setLazy(ps.lazy, ps.lazyWait != null ? ps.lazyWait : ps.lazy == Property.Lazy.STRONG, ps.debugPoint); // NOWAIT by default (WAIT for STRONG - its invalidation has always been synchronous)
     }
 
     /** Проверяет нужно ли обернуть свойство в join.
@@ -1487,8 +1487,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setLazy(PropertySettings ps, Property.Lazy lazy, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public void setLazy(PropertySettings ps, Property.Lazy lazy, Boolean wait, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        // the expensive part of STRONG (the APPLY event collecting the changed keys) runs inside the transaction and cannot be deferred, so deferring only the cache eviction buys nothing
+        if (lazy == Property.Lazy.STRONG && wait != null && !wait)
+            errLog.emitSimpleError(parser, "LAZY STRONG NOWAIT is not supported");
         ps.lazy = lazy;
+        ps.lazyWait = wait;
         ps.debugPoint = debugPoint;
     }
 

@@ -3410,14 +3410,15 @@ eventIdSetting [PropertySettings ps]
 lazySetting [PropertySettings ps]
 @init {
 	Lazy lazy = Lazy.WEAK;
+	Boolean wait = null;
 	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		self.setLazy(ps, lazy, debugPoint);
+		self.setLazy(ps, lazy, wait, debugPoint);
 	}
 }
-	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
+	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })? (w = syncTypeLiteral { wait = $w.val; })?
 	;
 
 asonEventActionSetting [ActionSettings as]
