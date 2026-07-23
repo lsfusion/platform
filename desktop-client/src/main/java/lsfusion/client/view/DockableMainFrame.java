@@ -62,7 +62,6 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.navigator.window.WindowType;
-import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -78,6 +77,7 @@ import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import static lsfusion.base.BaseUtils.mergeLinked;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -92,7 +92,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     private final NavigatorController navigatorController;
     private final ClientNavigator mainNavigator;
 
-    private NonReentrantLock lock = new NonReentrantLock();
+    private final Semaphore lock = new Semaphore(1); // non-reentrant mutex
 
     private final TableManager tableManager = new TableManager();
     
@@ -237,7 +237,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     private long executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync) {
         if (action != null) {
-            if (lock.tryLock()) {
+            if (lock.tryAcquire()) {
                 return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
             } else {
                 SwingUtils.invokeLater(() -> {
@@ -248,7 +248,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 return -1;
             }
         } else {
-            lock.lock();
+            lock.acquireUninterruptibly();
             return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
         }
     }
@@ -305,7 +305,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
             return request.getRequestIndex();
         } finally {
-            lock.unlock();
+            lock.release();
         }
     }
 
