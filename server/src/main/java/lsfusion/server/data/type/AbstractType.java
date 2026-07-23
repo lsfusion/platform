@@ -27,8 +27,8 @@ import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
-import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
-import net.iryndin.jdbf.core.DbfFieldTypeEnum;
+import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.DbfRecord;
+import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.DbfField;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -206,9 +206,9 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
+    public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
         String string;
-        if(dbfRecord.getField(fieldName).getType() == DbfFieldTypeEnum.Memo)
+        if(dbfRecord.getField(fieldName).getType() == DbfField.Type.Memo)
             string = dbfRecord.getMemoAsString(fieldName, Charset.forName(charset));
         else
             string = dbfRecord.getString(fieldName, charset);

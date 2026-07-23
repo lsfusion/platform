@@ -30,7 +30,7 @@ import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
-import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.json.JSONException;
 
@@ -142,7 +142,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     @Override
-    public Long parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+    public Long parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
         return idClass.parseDBF(dbfRecord, fieldName, charset);
     }
 

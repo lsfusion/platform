@@ -64,7 +64,6 @@
         <mysql.version>8.0.30</mysql.version>
         <slf4j.version>1.7.36</slf4j.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
-        <jdbf.version>2.2.1</jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
         <jjwt.version>0.12.6</jjwt.version>
         <jackson.version>2.14.1</jackson.version>
@@ -414,11 +413,6 @@
                 <groupId>commons-httpclient</groupId>
                 <artifactId>commons-httpclient</artifactId>
                 <version>${commons.httpclient.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.spyhunter99</groupId>
-                <artifactId>jdbf</artifactId>
-                <version>${jdbf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jfree</groupId>

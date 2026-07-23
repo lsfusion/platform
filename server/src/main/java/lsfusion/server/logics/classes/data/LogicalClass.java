@@ -15,7 +15,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
-import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.DbfRecord;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
@@ -177,7 +177,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public Boolean parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) {
+    public Boolean parseDBF(DbfRecord dbfRecord, String fieldName, String charset) {
         return readDBF(dbfRecord.getBoolean(fieldName));
     }
     @Override

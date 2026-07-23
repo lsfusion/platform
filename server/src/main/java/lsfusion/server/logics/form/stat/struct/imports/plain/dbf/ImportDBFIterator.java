@@ -9,13 +9,12 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.imports.plain.ImportPlainIterator;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import net.iryndin.jdbf.core.DbfField;
 
 import java.io.IOException;
 import java.util.Collection;
 
 public class ImportDBFIterator extends ImportPlainIterator {
-    private CustomDbfReader reader;
+    private DbfReader reader;
     private String charset;
 
     @Override
@@ -26,7 +25,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
     public ImportDBFIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, String wheres, RawFileData memo) throws IOException {
         super(fieldTypes, wheres);
 
-        this.reader = new CustomDbfReader(file, memo);
+        this.reader = new DbfReader(file, memo);
         this.charset = charset;
         
         finalizeInit();
@@ -41,7 +40,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
         return mResult.immutableOrder();
     }
         
-    private CustomDbfRecord record;
+    private DbfRecord record;
     @Override
     protected boolean nextRow(boolean checkWhere) throws IOException {
         do {

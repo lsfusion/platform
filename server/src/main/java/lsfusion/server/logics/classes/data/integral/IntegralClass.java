@@ -11,7 +11,7 @@ import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
-import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.DbfRecord;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
@@ -161,7 +161,7 @@ public abstract class IntegralClass<T extends Number> extends FormatClass<T> imp
     }
 
     @Override
-    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException {
+    public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException {
         return readDBF(dbfRecord.getNumber(fieldName));
     }
 

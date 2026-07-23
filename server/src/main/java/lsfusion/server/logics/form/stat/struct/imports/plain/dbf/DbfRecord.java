@@ -2,11 +2,6 @@ package lsfusion.server.logics.form.stat.struct.imports.plain.dbf;
 
 import lsfusion.base.DateConverter;
 import lsfusion.server.logics.classes.data.ParseException;
-import net.iryndin.jdbf.core.DbfField;
-import net.iryndin.jdbf.core.DbfFieldTypeEnum;
-import net.iryndin.jdbf.core.DbfMetadata;
-import net.iryndin.jdbf.util.BitUtils;
-import net.iryndin.jdbf.util.JdbfUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -18,34 +13,24 @@ import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class CustomDbfRecord {
+public class DbfRecord {
 
     public static final String NUMERIC_OVERFLOW = "*";
     public static final String NULL_VALUE = "?";
+    private static final int EMPTY = 0x20; // space
 
-    private byte[] bytes;
-    private DbfMetadata metadata;
-    private CustomMemoReader memoReader;
+    private final byte[] bytes;
+    private final DbfMetadata metadata;
+    private final MemoReader memoReader;
     private final int recordNumber;
 
-    public CustomDbfRecord(byte[] source, DbfMetadata metadata, CustomMemoReader memoReader, int recordNumber) {
+    public DbfRecord(byte[] source, DbfMetadata metadata, MemoReader memoReader, int recordNumber) {
         this.recordNumber = recordNumber;
         this.bytes = new byte[source.length];
         System.arraycopy(source, 0, this.bytes, 0, source.length);
         this.metadata = metadata;
         this.memoReader = memoReader;
     }
-
-    /*
-    public CustomDbfRecord(DbfMetadata metadata) {
-        this.metadata = metadata;
-        fillBytesFromMetadata();
-    }
-    private void fillBytesFromMetadata() {
-        bytes = new byte[metadata.getOneRecordLength()];
-        BitUtils.memset(bytes, JdbfUtils.EMPTY);
-    }
-    */
 
     /**
      * Check if record is deleted.
@@ -85,12 +70,12 @@ public class CustomDbfRecord {
         System.arraycopy(bytes, actualOffset, fieldBytes, 0, actualLength);
 
         // check for empty strings
-        while ((actualLength > 0) && (bytes[actualOffset] == JdbfUtils.EMPTY)) {
+        while ((actualLength > 0) && (bytes[actualOffset] == EMPTY)) {
             actualOffset++;
             actualLength--;
         }
 
-        while ((actualLength > 0) && (bytes[actualOffset + actualLength - 1] == JdbfUtils.EMPTY)) {
+        while ((actualLength > 0) && (bytes[actualOffset + actualLength - 1] == EMPTY)) {
             actualLength--;
         }
 
@@ -102,26 +87,9 @@ public class CustomDbfRecord {
         return new String(bytes, actualOffset, actualLength, charset).replace((char) 0x00, ' ');
     }
 
-    public byte[] getMemoAsBytes(String fieldName) throws IOException, ParseException {
-        DbfField f = getField(fieldName);
-        if (f.getType() != DbfFieldTypeEnum.Memo) {
-            throw new IllegalArgumentException("Field '" + fieldName + "' is not MEMO field!");
-        }
-        int offsetInBlocks;
-        if (f.getLength() == 10) {
-            offsetInBlocks = getBigDecimal(fieldName).intValueExact();
-        } else {
-            byte[] dbfFieldBytes = new byte[f.getLength()];
-            System.arraycopy(bytes, f.getOffset(), dbfFieldBytes, 0, f.getLength());
-            offsetInBlocks = BitUtils.makeInt(dbfFieldBytes[0],dbfFieldBytes[1],dbfFieldBytes[2],dbfFieldBytes[3]);
-        }
-        if (offsetInBlocks == 0) return new byte[0];
-        return memoReader.read(offsetInBlocks).getValue();
-    }
-
     public String getMemoAsString(String fieldName, Charset charset) throws IOException, ParseException {
         DbfField f = getField(fieldName);
-        if (f.getType() != DbfFieldTypeEnum.Memo) {
+        if (f.getType() != DbfField.Type.Memo) {
             throw new IllegalArgumentException("Field '" + fieldName + "' is not MEMO field!");
         }
         int offsetInBlocks;
@@ -135,7 +103,7 @@ public class CustomDbfRecord {
         }
         if (offsetInBlocks == 0) return "";
         assert memoReader != null;
-        return memoReader.read(offsetInBlocks).getValueAsString(charset);
+        return new String(memoReader.read(offsetInBlocks), charset);
     }
 
     public Date getDate(String fieldName) throws java.text.ParseException {
@@ -243,23 +211,11 @@ public class CustomDbfRecord {
         }
     }
 
-    public void setBoolean(String fieldName, Boolean value) {
-        DbfField f = getField(fieldName);
-        // TODO: write boolean
-    }
-
     public byte[] getBytes(String fieldName) {
         DbfField f = getField(fieldName);
         byte[] b = new byte[f.getLength()];
         System.arraycopy(bytes, f.getOffset(), b, 0, f.getLength());
         return b;
-    }
-
-    public void setBytes(String fieldName, byte[] fieldBytes) {
-        DbfField f = getField(fieldName);
-        // TODO:
-        // assert fieldBytes.length = f.getLength()
-        System.arraycopy(fieldBytes, 0, bytes, f.getOffset(), f.getLength());
     }
 
     private Integer getInteger(String fieldName) throws ParseException {
@@ -273,9 +229,5 @@ public class CustomDbfRecord {
 
     public DbfField getField(String fieldName) {
         return metadata.getField(fieldName);
-    }
-
-    public Collection<DbfField> getFields() {
-        return metadata.getFields();
     }
 }

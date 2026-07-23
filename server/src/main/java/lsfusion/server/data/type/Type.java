@@ -24,7 +24,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
-import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.DbfRecord;
 import lsfusion.server.physics.admin.Settings;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -129,7 +129,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     boolean getValueShrinkHorz();
     boolean getValueShrinkVert();
 
-    T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
+    T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
     T parseJSON(Object value) throws ParseException, JSONException; // Number, String, Boolean
     T parseCSV(String value) throws ParseException;
     T parseXML(String value) throws ParseException;

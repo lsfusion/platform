@@ -216,10 +216,6 @@
             <artifactId>jackcess</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.spyhunter99</groupId>
-            <artifactId>jdbf</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
         </dependency>
