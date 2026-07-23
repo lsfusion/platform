@@ -21,6 +21,7 @@ title: 'Операторы-действия'
 -   [Оператор `CASE`](CASE_action_operator.md)
 -   [Оператор `CHANGE`](CHANGE_operator.md)
 -   [Оператор `CHANGECLASS`](CHANGECLASS_operator.md)
+-   [Оператор `CLOSE FORM`](CLOSE_FORM_operator.md)
 -   [Оператор `COLLAPSE`](COLLAPSE_operator.md)
 -   [Оператор `CONTINUE`](CONTINUE_operator.md)
 -   [Оператор `DELETE`](DELETE_operator.md)

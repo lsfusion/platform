@@ -554,6 +554,7 @@ module.exports = {
                     'language/CANCEL_operator', 
                     'language/CASE_action_operator', 
                     'language/CHANGECLASS_operator',
+                    'language/CLOSE_FORM_operator',
                     'language/COLLAPSE_operator',
                     'language/CONTINUE_operator', 
                     'language/INTERNAL_operator', 
