@@ -20,13 +20,13 @@ LOCAL
 
 ### Description
 
-The `NEWSESSION` operator creates an action that executes the other action in a new session. `NEWSQL` and `NESTED` are mutually exclusive: when `NEWSQL` is given, the entire `NESTED ... [CLASSES]` clause is ignored and the new session inherits neither local-property values nor class changes from the current one.
+The `NEWSESSION` operator creates an action that executes the other action in a new session. `NEWSQL` and `NESTED` are mutually exclusive: when `NEWSQL` is given, the entire `NESTED ... [CLASSES]` clause is ignored and the new session inherits neither local-property values nor class changes from the current one. If the operator is executed during an [apply transaction](../paradigm/Apply_changes_APPLY.md) of the current session, [no new session is created](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md) — the executed action is deferred and executed in the current session inside the same transaction.
 
 ### Parameters
 
 - `NEWSQL`
 
-    Optional keyword. Opens the new session on a [separate SQL connection](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md#newsql), independent of the current session's connection. Has no effect when `NEWSESSION` is itself called inside an [apply transaction](../paradigm/Apply_changes_APPLY.md) of the current session — the platform falls back to recursive apply and does not open a separate SQL connection in that case.
+    Optional keyword. Opens the new session on a [separate SQL connection](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md#newsql), independent of the current session's connection.
 
 - `formId1, ..., formIdM`
 

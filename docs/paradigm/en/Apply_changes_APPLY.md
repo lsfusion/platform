@@ -7,6 +7,14 @@ The *apply changes* operator saves all changes made to the database, and also tr
 
 For this operator you can also define an *applied* action — it runs before event handling is triggered, but inside the same transaction. Execution within a single transaction increases performance and integrity, but a [cancel](Cancel_changes_CANCEL.md) rolls back the applied action's changes as well. Because the apply transaction may be retried automatically after an update conflict, deadlock, or timeout, the applied action may be executed more than once and should not perform irreversible side effects outside the platform (such as sending emails or making remote calls).
 
+If the session is not [nested](New_session_NEWSESSION_NESTEDSESSION.md#nested), the apply is performed in the following order:
+
+1.  Before the transaction starts, the remaining local [event](Events.md) handlers of the session are executed.
+2.  Inside the transaction, the applied action (if defined) runs first, followed — in the order of dependencies between them — by the handlers of synchronous global events, [constraint](Constraints.md) checks, and [materialization](Materializations.md) updates, after which the changes are written to the database tables.
+3.  When all the handlers have run and the changes have been written, the transaction is committed.
+
+When a [form](Form_events.md) session is saved, the handlers of the form `APPLY` event are executed as applied actions, while the `APPLY BEFORE` and `APPLY AFTER` form events are executed outside the transaction — before it starts and after it successfully ends, respectively.
+
 The apply operation itself can be canceled by the [cancel changes](Cancel_changes_CANCEL.md) operator running during the apply transaction — for example, inside the applied action or inside an event handler. The result of the apply is reflected in the `System.canceled[]` property: `TRUE` if the apply was canceled, `NULL` otherwise. After a successful apply the session is cleared — its accumulated changes are discarded since they are now in the database; after a canceled apply the session is preserved. After the operation completes (whether successfully or not), all messages issued during the apply — including those produced by the applied action and by event handlers — are written to the special property `System.applyMessage[]`.
 
 The apply transaction is atomic: a database error or a [constraint](Constraints.md) violation also rolls it back, returning the session and the database to their pre-apply state. By default the transaction uses the database's default isolation level; for a particular apply the platform also allows requesting the strictest *serializable* isolation level when stronger guarantees against concurrent applies are needed.

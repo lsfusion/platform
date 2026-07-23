@@ -228,4 +228,17 @@ changeSku (OrderDetail d)  {
 
 // list form of the Sku class instead of a named form
 selectAnySku () { DIALOG LIST Sku INPUT s DO MESSAGE 'sku selected'; }
+
+quantity = DATA INTEGER (OrderDetail);
+
+// prompting for a value of a built-in class: the object is displayed in the panel
+FORM askQuantity 'Quantity'
+    OBJECTS q = INTEGER PANEL
+    PROPERTIES VALUE(q)
+;
+
+changeQuantity (OrderDetail d) {
+    DIALOG askQuantity OBJECTS q = quantity(d) INPUT DO
+        quantity(d) <- q;
+}
 ```

@@ -228,4 +228,17 @@ changeSku (OrderDetail d)  {
 
 // форма выбора класса Sku вместо именованной формы
 selectAnySku () { DIALOG LIST Sku INPUT s DO MESSAGE 'sku selected'; }
+
+quantity = DATA INTEGER (OrderDetail);
+
+// запрос значения встроенного класса: объект отображается в панели
+FORM askQuantity 'Количество'
+    OBJECTS q = INTEGER PANEL
+    PROPERTIES VALUE(q)
+;
+
+changeQuantity (OrderDetail d) {
+    DIALOG askQuantity OBJECTS q = quantity(d) INPUT DO
+        quantity(d) <- q;
+}
 ```

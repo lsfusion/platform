@@ -7,6 +7,8 @@ The new [session](Change_sessions.md) operator executes an action in a session d
 
 As with other session management operators, you can explicitly specify [nested local properties](Session_management.md#nested) when creating a new session — this lets you list which local properties of the current session are migrated into the new one. When creating a [nested session](#nested) this is not needed — it copies the entire current session into the nested one anyway.
 
+If the operator is executed during the [apply transaction](Apply_changes_APPLY.md) of the current session — for example, in a global [event](Events.md) handler — no new session is created (including on a separate SQL connection). Instead, the executed action is deferred: after the event handlers have run and the changes have been written to the database tables, the deferred actions are executed in the current session inside the same transaction, after which event handling and change writing are performed again. Accordingly, the changes of a deferred action are not isolated from the current session and are committed to the database together with the changes of the apply itself, while applying changes inside a deferred action does not perform a separate apply.
+
 ### Nested sessions {#nested}
 
 It is also possible to create a new *nested* session. In this case, all changes that occurred in the current session are copied to the nested session (the same happens when [changes are discarded](Cancel_changes_CANCEL.md) in a nested session). At the same time, when you [apply changes](Apply_changes_APPLY.md) in the nested session, all changes are copied back to the current session (without being saved to the database).
@@ -19,8 +21,6 @@ By default a new session uses the same SQL connection as the current one. When n
 - the latest committed database data must be read in parallel with a long-running transaction of the current session — on a separate connection the reader sees the committed state rather than the snapshot of the open transaction.
 
 On a separate SQL connection, the new session inherits neither local properties nor class changes from the current one.
-
-This option takes effect when the operator runs outside an already-running apply transaction of the current session: inside such a transaction the platform falls back to recursive apply and does not open a separate SQL connection.
 
 ### Language
 
