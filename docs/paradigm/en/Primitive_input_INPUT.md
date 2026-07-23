@@ -5,7 +5,7 @@ title: 'Value input (INPUT)'
 
 The *value input* operator creates an [action](Actions.md) that requests the user to [input a value](Value_input.md). The requested value can be an object of a [built-in class](Built-in_classes.md) (for example, a string, a number, a date, or a file) or an object of a custom class. The user can [cancel the input](Value_input.md#result), for example by pressing the `Esc` key on the keyboard.
 
-This operator can only be used in property [change event](Form_events.md#property) handlers on a form.
+Interactive input of a built-in class value runs in the editor of the form property whose change is being handled, so for most built-in classes this operator must be invoked from a property [change event](Form_events.md#property) handler. Values of file classes and colors are entered through a separate dialog, so they can also be requested from other form event handlers, for example from a button.
 
 ### Requested value {#value}
 

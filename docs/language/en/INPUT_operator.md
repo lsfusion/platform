@@ -8,7 +8,7 @@ The `INPUT` operator creates an [action](../paradigm/Actions.md) that [inputs a 
 ### Syntax
 
 ```
-INPUT inputValue
+INPUT [MULTI] inputValue
       [CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [NOCHANGE]]
       [CUSTOM editorFunction]
       [LIST listSource]
@@ -55,6 +55,10 @@ Interactive input of a built-in class value is performed in the editor of the fo
 
 ### Parameters
 
+- `MULTI`
+
+    A keyword. When specified, the operator switches to multiple input — the user enters several values at once, one per row. An implicit parameter `row` of class `INTEGER` (the row number) is added, available in the `DO` block, which is then executed for each entered row.
+
 - `className`
 
     The name of the class of the requested value.
@@ -85,7 +89,7 @@ Interactive input of a built-in class value is performed in the editor of the fo
 
 - `listExpr`
 
-    An expression that defines the set of values offered for selection. When inputting a value of a built-in class, it supplies the candidate values shown in the inline list. When inputting a value of a custom class, it maps each candidate object to a displayed value (for example `id(s)`); the value class of `listExpr` determines the inline editor.
+    An expression that defines the set of values offered for selection. When inputting a value of a built-in class, it supplies the candidate values shown in the inline list. When inputting a value of a custom class, it maps each candidate object to a displayed value (for example `name(s)`); the value class of `listExpr` determines the inline editor.
 
 - `listAction`
 
@@ -163,8 +167,16 @@ testFile  {
 
 sku = DATA Sku (OrderDetail);
 
-// select an object of a custom class, offering skus by their id and keeping only those in stock, and write it back
+// select an object of a custom class, offering skus by their name and keeping only those in stock, and write it back
 changeSku (OrderDetail d)  {
-    INPUT s = sku(d) CHANGE LIST id(s) WHERE inStock(s);
+    INPUT s = sku(d) CHANGE LIST name(s) WHERE inStock(s);
+}
+
+tagName = DATA STRING[100] (Order, INTEGER);
+
+// multiple input: the user enters several values at once, and the DO block runs for each entered row
+changeTags (Order o)  {
+    INPUT MULTI s = STRING[100] DO
+        tagName(o, row) <- s;
 }
 ```
