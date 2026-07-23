@@ -2,7 +2,6 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
-import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
@@ -77,11 +76,11 @@ public class ZipUtils {
                 while (ze != null) {
                     if (ze.isDirectory()) {
                         File dir = new File(outputDirectory.getPath() + "/" + ze.getName());
-                        if (dir.mkdirs())
+                        if (isInsideDirectory(outputDirectory, dir) && dir.mkdirs())
                             dirSet.add(dir);
                     } else {
                         String filePath = ze.getName();
-                        if(!filePath.contains("../")) { //ignore files that can be unpacked outside the temp dir
+                        if(isInsideDirectory(outputDirectory, new File(outputDirectory.getPath() + "/" + filePath))) { //ignore files that can be unpacked outside the temp dir
                             String[] splitted = filePath.split("/");
 
                             String fileName;
@@ -141,24 +140,26 @@ public class ZipUtils {
                 File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
                 if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                     dirSet.add(outputDirectory);
-                    Archive a = new Archive(new FileVolumeManager(inputFile));
-                    FileHeader fh = a.nextFileHeader();
-                    while (fh != null) {
-                        String fileName = (fh.isUnicode() ? fh.getFileNameW() : fh.getFileNameString());
-                        outputFile = new File(outputDirectory.getPath() + "/" + fileName);
-                        File dir = outputFile.getParentFile();
-                        if (dir.mkdirs())
-                            dirSet.add(dir);
-                        if (!outputFile.isDirectory()) {
-                            try (FileOutputStream os = new FileOutputStream(outputFile)) {
-                                a.extractFile(fh, os);
+                    try (Archive a = new Archive(inputFile)) {
+                        FileHeader fh = a.nextFileHeader();
+                        while (fh != null) {
+                            String fileName = fh.getFileName();
+                            outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                            if (isInsideDirectory(outputDirectory, outputFile)) { //ignore entries that can be unpacked outside the temp dir
+                                File dir = outputFile.getParentFile();
+                                if (dir.mkdirs())
+                                    dirSet.add(dir);
+                                if (!outputFile.isDirectory()) {
+                                    try (FileOutputStream os = new FileOutputStream(outputFile)) {
+                                        a.extractFile(fh, os);
+                                    }
+                                    result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
+                                    BaseUtils.safeDelete(outputFile);
+                                }
                             }
-                            result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                            BaseUtils.safeDelete(outputFile);
+                            fh = a.nextFileHeader();
                         }
-                        fh = a.nextFileHeader();
                     }
-                    a.close();
                 }
 
                 for (File dir : dirSet) {
@@ -190,6 +191,10 @@ public class ZipUtils {
             }
         }
         return isRar5;
+    }
+
+    private static boolean isInsideDirectory(File dir, File file) throws IOException {
+        return file.getCanonicalPath().startsWith(dir.getCanonicalPath() + File.separator);
     }
 
     private static String getFileName(Map<String, FileData> files, String fileName) {
