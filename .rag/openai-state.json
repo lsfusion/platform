@@ -3525,8 +3525,8 @@
       "stale": false
     },
     "language/Action_operators.md": {
-      "file_hash": "sha256:f6e03be5bf159e38b2856c60d55df859641959f2d0d0405114fd25bb1bc3207d",
-      "indexed_at": "2026-05-31T20:49:37Z",
+      "file_hash": "sha256:2d1ff22830b240503cf1faee99c05de179c147af9b54589c45db589cd29ea44f",
+      "indexed_at": "2026-07-23T14:42:03Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3554,7 +3554,7 @@
           "source_file": "language/Action_operators.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "language/Action_options.md": {
       "file_hash": "sha256:d1e6c5a92a3ff1c4a7971517f6e83aab773f025a2a197f32eb5e335a9d87df7b",
@@ -3999,6 +3999,19 @@
         }
       },
       "stale": false
+    },
+    "language/CLOSE_FORM_operator.md": {
+      "file_hash": "sha256:dda3e8668c87e79e6d8c20652efdc29186e5345033b778ad84f74c6df30d949f",
+      "indexed_at": "2026-07-23T14:45:01Z",
+      "indexed_sourceType": "language",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {},
+      "stale": true
     },
     "language/COLLAPSE_operator.md": {
       "file_hash": "sha256:0f3403defe298f867ee37564a115458be6ec11537005d72247365ec47fff2ae0",
@@ -5612,7 +5625,7 @@
     },
     "language/INPUT_operator.md": {
       "file_hash": "sha256:1300eaa4ae5a561e9c73d7b7198c3c29c39885eb8c0ff12d5d0bb001c58dfc7f",
-      "indexed_at": "2026-07-23T13:40:57Z",
+      "indexed_at": "2026-07-23T14:45:49Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5628,9 +5641,9 @@
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::examples": {
-          "file_id": "file-NZfUXRqWyaS5NXrMt3MS9K",
+          "file_id": "file-Pjx2dKEdZvSmxUSTzEg7cJ",
           "heading_path": "INPUT operator > Examples",
-          "section_payload_hash": "sha256:d632434cb54bfbdc7df5a2352856732f7a5dd2e277e462983140d205c44873d0",
+          "section_payload_hash": "sha256:eb9d9d949d2abca2cfa40ac6d3fa21e507c24fb8d66a085594e97aba5ef2b0f5",
           "source_file": "language/INPUT_operator.md"
         },
         "INPUT_operator::input-operator": {
@@ -5652,7 +5665,7 @@
           "source_file": "language/INPUT_operator.md"
         }
       },
-      "stale": true
+      "stale": false
     },
     "language/INTERNAL_operator.md": {
       "file_hash": "sha256:356fd4fb20dca8efc6240794ca56df706698f6f6c4e056b0502df730f6443726",
