@@ -7061,8 +7061,8 @@
       "stale": false
     },
     "language/Property_options.md": {
-      "file_hash": "sha256:a4e5a6a886e354e0167d1e1c0e92c09e878d5d2a9ab296964883e31948947124",
-      "indexed_at": "2026-06-26T11:46:40Z",
+      "file_hash": "sha256:651d99f609018ed5de109023f3d73f5946a39c5ed09b6223046063f4bcc8f5ba",
+      "indexed_at": "2026-07-23T07:38:29Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7077,10 +7077,16 @@
           "section_payload_hash": "sha256:9c36e41c4f0a7b92e5f882173d55a20086e1a14767be6ecbdc7ee0764e3df37d",
           "source_file": "language/Property_options.md"
         },
-        "Property_options::design-statement-default-values-block": {
-          "file_id": "file-GCS2FkjQUYbfvr5K8CMVeu",
+        "Property_options::design-statement-default-values-block::part-00": {
+          "file_id": "file-A4d6KZNaFoM4hWoQwe8zEM",
           "heading_path": "Property options > Description and parameters > `DESIGN` statement default values block",
-          "section_payload_hash": "sha256:5af02f310bdd77aa297b0fe927364dc65cf08e5d5a7019e665d2796ae06755cf",
+          "section_payload_hash": "sha256:65cea307e059489d3e85d411b66ccfc71d5d6d5adcb23fe65912eccd548efba2",
+          "source_file": "language/Property_options.md"
+        },
+        "Property_options::design-statement-default-values-block::part-01": {
+          "file_id": "file-T9M3BWvj1g3JwgL8vYizY6",
+          "heading_path": "Property options > Description and parameters > `DESIGN` statement default values block",
+          "section_payload_hash": "sha256:37bcdd8ec326f618a8067315b4e6c91b92d3df0d756f6d2653c2ad9b25db9992",
           "source_file": "language/Property_options.md"
         },
         "Property_options::examples": {
@@ -7102,9 +7108,9 @@
           "source_file": "language/Property_options.md"
         },
         "Property_options::syntax": {
-          "file_id": "file-8X7pJ7CYoPj1v18FCXeSDM",
+          "file_id": "file-DBnsfcVoH5add4kNK6fGrb",
           "heading_path": "Property options > Syntax",
-          "section_payload_hash": "sha256:28e86e941e3a6956e4a53cbcfaee36eb3fae89ab29606dcf61454d5e9fe512ab",
+          "section_payload_hash": "sha256:d4883ebaa99e0c5984c44fd6ab44c9baefdbea4a34b5c29b8bb6380530342533",
           "source_file": "language/Property_options.md"
         }
       },
@@ -15032,7 +15038,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5be1bc8f0a0e71869899568098690f336bfb2813",
+  "last_indexed_docs_commit": "24fcb7ae98ca23da088adff53be4357c929fd502",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
