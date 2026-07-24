@@ -652,6 +652,15 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="checkNavigatorElementsTask" class="lsfusion.server.logics.navigator.controller.init.CheckNavigatorElementsTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="finalizeNavigatorElementsTask"/> <!-- so that the whole navigator tree (parents, windows) is finalized before checking -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="initClassDialogFormsTask" class="lsfusion.server.logics.classes.controller.init.InitClassDialogFormsTask">
         <property name="dependencies">
             <set>
@@ -753,6 +762,7 @@
                 <ref bean="finalizeClassesTask"/>
                 <ref bean="finalizeTablesTask"/>
                 <ref bean="finalizeNavigatorElementsTask"/>
+                <ref bean="checkNavigatorElementsTask"/>
             </set>
         </property>
     </bean>

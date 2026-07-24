@@ -232,6 +232,11 @@ public abstract class NavigatorElement {
         return !getChildren().isEmpty();
     }
 
+    // A folder placed directly in the top NAVIGATOR (System.root, a horizontal toolbar) must specify a WINDOW for its children
+    public boolean isTopFolderWithoutWindow() {
+        return !isLeafElement() && isParentRoot() && window == null;
+    }
+
     public abstract boolean isLeafElement();
 
     public abstract byte getTypeID();
