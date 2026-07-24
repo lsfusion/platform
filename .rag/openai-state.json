@@ -14920,8 +14920,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:b66410f6015e98e3ad535f714af3e05de280d41b51b1b4f4d9a02b45d1d50580",
-      "indexed_at": "2026-07-24T09:59:10Z",
+      "file_hash": "sha256:21bdbbd3d54f25b33f583e6ef3dd12a2efab42f2213311e00d532e4e2558bd5c",
+      "indexed_at": "2026-07-24T13:01:52Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14937,15 +14937,15 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
-          "file_id": "file-RM5PcNL7nC54hAinBqm6LW",
+          "file_id": "file-HXCdnwZNDEhFyKSPFh7t3i",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:49cd96dc1b8031696470518694c90e8e6243257cffe94c00cf44f91564969199",
+          "section_payload_hash": "sha256:b3beff757e2a475343695e17651f0990e316223fa11a6afd56a1fb0b571ce287",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-8qRbvRixz7K7AmmrPBnvq5",
+          "file_id": "file-57ApJ6bzE9487GP2J66tCs",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:0d809cce6f2cbff70fc47e66317eeb20487058e03ad733c383d08ab28febd2ae",
+          "section_payload_hash": "sha256:91e2bf3e386d20f80edb9d8804e35da3178cba22adbee3a2489c6dd48644df75",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
@@ -14955,19 +14955,19 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-04": {
-          "file_id": "file-8jM1m8Dv8n7vYMKfEjkazn",
+          "file_id": "file-9NgsVxasHxiedszqgXy9AY",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:4e211d91121374b5f78c2c6f074eb1b9a00b2797a62b19558d0c19382c798410",
+          "section_payload_hash": "sha256:ac394b2c0424502bc9c5cb9df776a67426b1c1bfaf85518c97c7c734392a0b4a",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-05": {
-          "file_id": "file-RXF8e4AdXh49d7DXtksYwu",
+          "file_id": "file-WJRPgtrKCoC1m7E6L8kFwe",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:1994c3d1e03ac0aad2ab57a6d2763cf44670db71b56648679e3166d09ceeff51",
+          "section_payload_hash": "sha256:3769d0f7d8693e2d0a4cc0a2d79f04c257ab3956573989c4b1e1aa7018e33a0e",
           "source_file": "rules/Rules.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "rules/Rules_export.md": {
       "file_hash": "sha256:61cb8904503f9ed671eabfdaa0f1372a7bdfd664cb01e28b0d85308a4da802e9",
