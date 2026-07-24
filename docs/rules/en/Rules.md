@@ -727,6 +727,24 @@ FORM RULES
     common-parameter header block `PROPERTIES(o)`, is a
     parse error — there, declare a named property with the
     cast and add it by its ID.
+
+15. The default `CHANGE` handling of a property shown on a form
+    is derived not from what its expression looks like, but from
+    the property's write path: changeable properties are data
+    properties, the selection operator, and compositions of
+    changeable properties — a write is passed through the
+    composition into the underlying changeable property. The
+    write path is not visible at the usage site, so the assistant
+    MUST NOT assume that a computed-looking property is
+    non-editable.
+
+    Every property displayed for reading only MUST be explicitly
+    marked `READONLY` — block-level
+    (`PROPERTIES(o) READONLY ...`) or on the individual entry —
+    in all form contexts: not only in the grids of list forms,
+    but also in panels, dialogs, dashboards, and charts.
+    The explicit mark also documents intent
+    for the code reader.
 ----------------------------------------------------------------
 REPORT RULES
 

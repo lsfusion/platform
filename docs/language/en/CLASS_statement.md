@@ -58,7 +58,7 @@ The `NATIVE` keyword is used in some system modules. It is used to declare indiv
 
 - `objectName1, ..., objectNameM`
 
-    The names of static objects of this class. Each name is defined by a simple ID. The name of each static object is available through the `name[StaticObject]` property.
+    The names of static objects of this class. Each name is defined by a simple ID. The `name[StaticObject]` property returns this name qualified with the namespace and class — the object's [canonical name](../paradigm/Static_objects.md).
 
 - `objectCaption1, ..., objectCaptionM`
 

@@ -85,7 +85,7 @@ CLASS Adjustment 'Adjustment';
 @defineNumeratedDefault(Adjustment, 'Adjustments', 'INV');
 ```
 
-`@defineNumbered` adds the stored `number` and `series` properties (here the series is a three-character string) plus their indexed concatenation. `@defineNumeratedDefault` then seeds an initial numerator named `Adjustments` with series `INV`, makes it the default for the class, and assigns it to every new object. On creation the number is filled from that numerator and its counter is advanced, so the first adjustment becomes `INV00001`, the next `INV00002`, and so on.
+`@defineNumbered` adds the stored `number` and `series` properties (here the series is a three-character string) plus their indexed concatenation. `@defineNumeratedDefault` adds a default numerator to the class, assigned to every new object, while the creation of the initial numerator named `Adjustments` with series `INV` is registered as an implementation of the abstract `loadDefaultNumerators[]` action — the metacode itself does not create it. On a fresh database this action must be run once (with the `Load default numerators` button or the overall `Load default data` button on the `Default data` form); until then the default numerator is empty and no numbers are assigned. Once loaded, on creation the number is filled from that numerator and its counter is advanced, so the first adjustment becomes `INV00001`, the next `INV00002`, and so on.
 
 ### Separate sequence per document type
 

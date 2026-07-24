@@ -143,7 +143,7 @@ CLASS GameResult 'G/R' {
 }
 ```
 
-For this purpose we create a `GameResult` class and add three [static objects](../paradigm/Static_objects.md) to it that are specified using expressions specified in braces `{ }`. In this case, the values `win`, `winOT`, `winSO` and `W`, `OW`, `SW` will be available through the system properties `name` and `caption`, respectively.
+For this purpose we create a `GameResult` class and add three [static objects](../paradigm/Static_objects.md) to it that are specified using expressions specified in braces `{ }`. In this case, the captions `W`, `OW`, `SW` will be available through the system property `caption[StaticObject]`, while the system property `name[StaticObject]` will return the canonical names of these objects: `HockeyStats_GameResult.win`, `HockeyStats_GameResult.winOT`, `HockeyStats_GameResult.winSO`.
 
 We create the `resultName` property, which will return the caption of the game result (`W`, `OW`, or `SW`). To do this, we take the system property `caption`, which is supported for all objects in the system, and constrain its signature using the `IF` operator, indicating that the object must be of the `GameResult` class. This property is added to the `base` property group so that it appears in the automatic dialog for selecting an object of the `GameResult` class.
 

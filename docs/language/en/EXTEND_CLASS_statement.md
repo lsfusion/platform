@@ -36,7 +36,7 @@ The `EXTEND CLASS` statement extends an existing [custom class](../paradigm/User
 
 - `objectName1, ..., objectNameM`
 
-    Names of new static objects of the specified class. Each name is defined [by a simple ID](IDs.md#id). The name of each static object is available through the `name[StaticObject]` property.
+    Names of new static objects of the specified class. Each name is defined [by a simple ID](IDs.md#id). The `name[StaticObject]` property returns this name qualified with the namespace and class — the object's [canonical name](../paradigm/Static_objects.md).
 
 - `objectCaption1, ..., objectCaptionM`
 
