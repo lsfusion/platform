@@ -2350,6 +2350,10 @@ public class GFormController implements EditManager {
         if(formDestroyed)
             return;
 
+        // every panel renderer registers in MainFrame's static color-theme listener list, and nothing on a closing
+        // form unregisters it - each one would stay reachable, with its whole widget graph, for the life of the page
+        panelController.destroy();
+
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>(getPopupOwner()) {
@@ -3067,6 +3071,13 @@ public class GFormController implements EditManager {
     @Override
     public boolean isThisCellEditing(CellEditor cellEditor) {
         return cellEditor == this.cellEditor;
+    }
+
+    // cancel the edit only if THIS context is the one being edited: a renderer being dropped must not cancel an edit
+    // that belongs to another one, and must not leave the form holding an edit context whose widget is gone
+    public void cancelEditing(EditContext context, CancelReason cancelReason) {
+        if (editContext == context)
+            cancelEditing(cancelReason);
     }
 
     @Override

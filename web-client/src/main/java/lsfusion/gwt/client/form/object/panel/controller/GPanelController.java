@@ -73,6 +73,12 @@ public class GPanelController extends GPropertyController {
         updatedProperties.clear();
     }
 
+    // the form is closing: nothing will ask these renderers for anything again, and a renderer left behind stays
+    // reachable from MainFrame's static color-theme listener list for the life of the page
+    public void destroy() {
+        propertyControllers.foreachValue(GPropertyPanelController::destroyRenderers);
+    }
+
     public boolean isEmpty() {
         return propertyControllers.isEmpty();
     }

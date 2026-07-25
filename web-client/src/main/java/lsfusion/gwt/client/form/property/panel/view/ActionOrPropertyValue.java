@@ -363,6 +363,12 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         update();
     }
 
+    // the constructor registers this value in MainFrame's static listener list, so a value that is discarded before the
+    // page is (a panel renderer whose column key went away, or one of a closing form) must unregister, or it is never collected
+    public void destroy() {
+        MainFrame.removeColorThemeChangeListener(this);
+    }
+
     @Override
     public GFormController getForm() {
         return form;

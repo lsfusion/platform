@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 
 import java.util.ArrayList;
 
@@ -149,6 +150,18 @@ public abstract class PanelRenderer {
 
     protected Widget getTooltipWidget() {
         return value;
+    }
+
+    // a renderer outlives neither its column key nor its row: finalizeInit attaches a tippy and the value registers
+    // itself as a global color-theme listener, and both keep the whole renderer reachable once it is dropped
+    public void destroy() {
+        form.cancelEditing(value, CancelReason.HIDE); // only if THIS renderer is the one being edited
+
+        if (tippy != null) {
+            TooltipManager.removeTooltip(getTooltipWidget());
+            tippy = null;
+        }
+        value.destroy();
     }
 
     protected abstract void setLabelText(String text);

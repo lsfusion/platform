@@ -157,7 +157,15 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public ComponentViewWidget removePanelRenderer(GGroupObjectValue columnKey) {
         PanelRenderer renderer = renderers.remove(columnKey);
         form.removePropertyBindings(renderer.bindingEventIndices);
-        return renderer.getComponentViewWidget();
+        ComponentViewWidget widget = renderer.getComponentViewWidget();
+        renderer.destroy(); // after the widget is read out: a dropped renderer is otherwise kept alive by its tippy and by MainFrame's color-theme listener list
+        return widget;
+    }
+
+    // the form is closing: unhook every renderer from what outlives the form (the static color-theme listener list,
+    // a tippy) - and nothing more. No layout surgery: the form's whole DOM subtree is discarded with it.
+    public void destroyRenderers() {
+        renderers.foreachValue(PanelRenderer::destroy);
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
