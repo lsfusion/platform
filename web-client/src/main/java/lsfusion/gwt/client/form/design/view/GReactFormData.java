@@ -8,27 +8,22 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
-import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GComponentReader;
-import lsfusion.gwt.client.form.property.GExtraPropertyReader;
-import lsfusion.gwt.client.form.property.GMetaConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
-import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GGroupObjectPropertyReader;
-import lsfusion.gwt.client.form.property.GMetaScope;
+import lsfusion.gwt.client.form.property.GGroupAttributeScope;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 
 // Maintains the @lsfusion/core-shaped `data` snapshot for CUSTOM REACT containers,
 // accumulated incrementally from each GFormChanges delta, built into a JS object on demand.
-// data = { <groupSID>: { list:[{key, isCurrent, <propSID>:val}], byKey, ...panelProps }, <formPropSID>: val }
+// data = { <groupSID>: { list:[{key, isCurrent, <propSID>:{value,...}}], byKey, keys, count, <propSID>:{caption} }, <formPropSID>:{value,...}, <containerSID>:{caption,image} }
 public class GReactFormData {
 
     private final GForm form;
@@ -44,23 +39,26 @@ public class GReactFormData {
     // ===== structural sharing: build() returns the SAME JS refs for unchanged subtrees, so React.memo'd components skip.
     // The cache holds the last-built objects; the dirty sets (per update, cleared after all scopes are built) decide what to rebuild.
     private final NativeSIDMap<GContainer, JavaScriptObject> lastData = new NativeSIDMap<>(); // last built top object per React scope
-    private final NativeSIDMap<GContainer, JavaScriptObject> lastComponents = new NativeSIDMap<>(); // last built data.components per scope (reused unless dirtyComponents) - same lastX+dirtyX pattern as lastNodes+dirtyNodes
-    private final NativeSIDMap<GGroupObject, JavaScriptObject> lastNodes = new NativeSIDMap<>();   // last built node per group
+    private final NativeSIDMap<GGroupObject, JavaScriptObject> lastGroups = new NativeSIDMap<>();   // last built node per group
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastLists = new NativeSIDMap<>();   // last built list array per group
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastKeys = new NativeSIDMap<>();   // last built STABLE keys array per group (ref changes only on membership/order, never on a value/current change) - the <List> subscription path
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, JavaScriptObject>> lastRows = new NativeSIDMap<>(); // last row obj per (group, key)
-    private final NativeSIDMap<GGroupObject, Boolean> dirtyNodes = new NativeSIDMap<>();      // group node must rebuild (current/list/prop changed)
+    private final NativeSIDMap<GGroupObject, Boolean> dirtyGroups = new NativeSIDMap<>();      // group node must rebuild (current/list/prop changed)
     private final NativeSIDMap<GGroupObject, Boolean> dirtyLists = new NativeSIDMap<>();      // group list (rows/order) changed
     private final NativeSIDMap<GGroupObject, Boolean> dirtyOrder = new NativeSIDMap<>();      // group membership/order changed (rebuild the stable keys array) - set ONLY by add/remove/reorder, NOT by value/current changes
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> dirtyRowKeys = new NativeSIDMap<>(); // rows whose values changed
     private final NativeSIDMap<GContainer, Boolean> dirtyScopes = new NativeSIDMap<>();       // scopes whose top object must rebuild
-    private final NativeSIDMap<GContainer, Boolean> dirtyComponents = new NativeSIDMap<>();   // scopes whose data.components changed (a descriptor reader fired) - set ONLY by descriptor changes, so a value-only rebuild reuses the components ref off the cached top
 
-    // ===== data.components: semantic descriptors (caption / image) of the lsf children of each React scope,
-    // keyed by child sid in DESIGN order. Delivered by the lsf caption/image READERS (they never touch GWT);
-    // stored in `values` like any reader and read back in the top build (buildComponents), the static design value as the
-    // fallback — so there is NO dedicated cache, data.components is assembled exactly like the panel scalars and shares
-    // the top object's structural sharing (rebuilt only when its scope is dirty).
+    // ===== there is NO `meta` namespace: every thing the platform computed is projected DIRECTLY, keyed as the thing is
+    // keyed, with its value and attributes as sibling fields.
+    //   a PROPERTY is an object { value, <attrs...> }: a react-owned value under `.value`, its attributes beside it. A
+    //     grouped property's COLUMN attributes (caption/image, once) live at data.<group>.<prop>; its per-CELL value +
+    //     attributes at data.<group>.list[i].<prop>. A form-level property is one object at data.<prop>. Each attribute
+    //     is at ONE point (effective = dynamic else static design default), so a consumer never merges.
+    //   a GROUP's own attributes (count, options) are direct on its node, beside list/byKey/keys.
+    //   a CONTAINER is data.<containerSID> = { caption, image }, direct in data like a group or a property.
+    // Ownership excludes an LSF subtree (the chain that answers it stops at the lsf child): the platform draws such a
+    // subtree whole, and React only labels its boundary. An LSF property/container projects caption/image only.
 
     public GReactFormData(GForm form, GFormController formController) {
         this.form = form;
@@ -77,46 +75,33 @@ public class GReactFormData {
             gridRows.put(group, list);
             if (prev != null && prev.equals(list)) // the server re-read the group and sent back the SAME rows in the same
                 return;                            // order: nothing changed, so don't churn the node / list / stable keys
-            markNodeDirty(group);
-            dirtyLists.put(group, Boolean.TRUE); // row set / order changed
-            dirtyOrder.put(group, Boolean.TRUE); // membership/order -> the stable keys array must rebuild
+            markGroupDirty(group, GroupDirty.ORDER); // row set / order changed -> the stable keys array must rebuild too
         });
 
         fc.properties.foreachEntry((reader, keyValues) -> {
             NativeHashMap<GGroupObjectValue, PValue> fStore = getOrCreateValues(reader);
-            GComponent componentChild = getComponentChild(reader);
-            if (componentChild != null) { // an lsf child's caption/class/image: stored like any reader, read back into data.components in the top build
-                if (putChanged(fStore, keyValues, null) != null)
-                    markComponentDirty(componentChild.container); // data.components rebuilds (and the top with it); other data reused
-            } else if (reader instanceof GPropertyDraw && ((GPropertyDraw) reader).integrationSID != null) {
+            if (reader instanceof GPropertyDraw && ((GPropertyDraw) reader).integrationSID != null) {
                 GPropertyDraw draw = (GPropertyDraw) reader;
-                droppedProperties.remove(draw); // a shown draw is sent again with its values
+                boolean wasDropped = droppedProperties.remove(draw) != null; // a shown draw is sent again with its values
                 NativeHashMap<GGroupObjectValue, PValue> changedKeys = putChanged(fStore, keyValues, draw);
-                if (changedKeys != null)
+                // an LSF draw's VALUE is platform-drawn: no entry carries it, so its delta rebuilds nothing - EXCEPT
+                // when the draw comes back from a drop, which must re-project its descriptor entry
+                if (changedKeys != null && (!draw.isLsfView() || wasDropped))
                     markPropertyDirty(draw, changedKeys);
             } else {
-                // a react-owned property/row PRESENTATION reader (readOnly/background/caption/image/... or row
-                // background/foreground/select/customOptions): it lands here with NO value-draw dirty flag, so its owning
-                // cell/row/node/scope would not rebuild and data.meta would go stale -> mark it dirty to re-project meta.
+                // every other reader is an ATTRIBUTE of something - a property's, a container's, a group's or a row's -
+                // and markAttributeDirty routes it by the OWNER the reader itself names. Without the marking, its owning
+                // cell/row/node/scope would not rebuild and the projected attribute would go stale.
                 NativeHashMap<GGroupObjectValue, PValue> changedKeys = putChanged(fStore, keyValues, null);
                 if (changedKeys != null)
-                    markPresentationDirty(reader, changedKeys);
+                    markAttributeDirty(reader, changedKeys);
             }
         });
 
         for (GPropertyDraw drop : fc.dropProperties) {
             droppedProperties.put(drop, Boolean.TRUE);
             values.remove(drop);
-            if (drop.integrationSID != null) {
-                if (drop.groupObject == null) markScopeDirty(getPropertyOwningReactContainer(drop));
-                else {
-                    markNodeDirty(drop.groupObject);
-                    if (drop.isList) {
-                        dirtyLists.put(drop.groupObject, Boolean.TRUE);
-                        lastRows.put(drop.groupObject, null); // reused rows would keep the dropped property's stale value: force a full row rebuild
-                    }
-                }
-            }
+            markPropertyPresenceDirty(drop);
         }
     }
     // set a group's current object (from a server fc.objects delta OR an optimistic changeGroupObject); idempotent —
@@ -128,8 +113,7 @@ public class GReactFormData {
         if (GwtClientUtils.nullEquals(old, key))
             return false;
         currentObjects.put(group, key);
-        markNodeDirty(group); // panel props for the new current
-        dirtyLists.put(group, Boolean.TRUE); // old + new current rows flip isCurrent
+        markGroupDirty(group, GroupDirty.ROWS); // panel props for the new current; old + new current rows flip isCurrent
         markRowDirty(group, old);
         markRowDirty(group, key);
         return true;
@@ -138,7 +122,8 @@ public class GReactFormData {
     // keyed the same way (the property cell key), and mark it dirty like markPropertyDirty — so the react container shows
     // the edit immediately, reconciled later when the server fc.properties arrives. Returns false if the draw isn't projected.
     public boolean setPropertyValue(GPropertyDraw draw, GGroupObjectValue fullKey, PValue value) {
-        if (draw.integrationSID == null || getPropertyOwningReactContainer(draw) == null)
+        if (draw.integrationSID == null || !formController.isReactOwned(draw) // the SAME ownership answer build() uses,
+                || (draw.isList && !isProjectedListDraw(draw))) // so an optimistic value is never stored for a draw whose entry the projection would not build
             return false;
         NativeHashMap<GGroupObjectValue, PValue> store = getOrCreateValues(draw);
         GGroupObjectValue valueKey = getValueKey(draw, fullKey);
@@ -161,7 +146,7 @@ public class GReactFormData {
 
     // store the delta and return ONLY the keys whose value actually changed (null if none changed). The server re-delivers
     // values that did not change (a reader recomputed for the whole group, a refresh); marking those dirty would rebuild
-    // rows / data.components that are byte-identical and break the structural-sharing contract (an untouched row MUST keep
+    // rows that are byte-identical and break the structural-sharing contract (an untouched row MUST keep
     // its ref so React.memo skips it). draw != null -> the store is keyed by the draw's value key, like the value itself.
     private NativeHashMap<GGroupObjectValue, PValue> putChanged(NativeHashMap<GGroupObjectValue, PValue> store,
                                                                 NativeHashMap<GGroupObjectValue, PValue> keyValues, GPropertyDraw draw) {
@@ -180,20 +165,33 @@ public class GReactFormData {
 
     // mark the draw's node dirty (form-level -> scope; panel -> node only). Returns true if it's a LIST draw whose changed
     // rows still need markRowDirty (the only difference between the two markPropertyDirty overloads below).
-    private boolean markDrawNodeDirty(GPropertyDraw draw) {
+    private boolean markPropertyEntryDirty(GPropertyDraw draw) {
+        if (draw.isList && !isProjectedListDraw(draw)) // not projected -> its delta changes nothing to rebuild
+            return false;
         GGroupObject group = draw.groupObject;
-        if (group == null) { // form-level -> top-level scalar (fullKey == EMPTY, the key fillProperties reads)
-            markScopeDirty(getPropertyOwningReactContainer(draw));
+        if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillSingles reads)
+            markScopeDirty(getTopLevelScope(draw));
             return false;
         }
-        markNodeDirty(group);
-        if (!draw.isList) // a panel property -> the node rebuilds; its list/rows are reused
-            return false;
-        dirtyLists.put(group, Boolean.TRUE); // a list cell -> the list (+ the changed rows) rebuild
-        return true;
+        // a panel property -> the node rebuilds and its list/rows are reused; a list cell -> the list (+ rows) rebuild too
+        markGroupDirty(group, draw.isList ? GroupDirty.ROWS : GroupDirty.NODE);
+        return draw.isList;
+    }
+    // a draw APPEARED or DISAPPEARED (a SHOWIF flip, a form-structure drop or restore): its entry's EXISTENCE changed,
+    // which for a list draw with CELLS changes the shape of every projected row - per-row dirty keys cannot express that.
+    // An LSF list draw has no cells (only its column entry comes and goes), so its group node rebuilds and the rows stay.
+    private void markPropertyPresenceDirty(GPropertyDraw draw) {
+        if (draw.integrationSID == null)
+            return;
+        if (draw.isLsfView() && draw.isList) {
+            markGroupDirty(draw.groupObject, GroupDirty.NODE);
+            return;
+        }
+        if (markPropertyEntryDirty(draw)) // true exactly for a projected LIST draw - the one whose rows change shape
+            invalidateRows(draw.groupObject);
     }
     private void markPropertyDirty(GPropertyDraw draw, GGroupObjectValue key) {
-        if (markDrawNodeDirty(draw))
+        if (markPropertyEntryDirty(draw))
             markRowDirty(draw.groupObject, getValueKey(draw, key));
     }
 
@@ -213,9 +211,7 @@ public class GReactFormData {
                     rows.add(position, key);
                 else
                     rows.add(key);
-                markNodeDirty(group);
-                dirtyLists.put(group, Boolean.TRUE);
-                dirtyOrder.put(group, Boolean.TRUE); // optimistic add -> membership changed
+                markGroupDirty(group, GroupDirty.ORDER); // optimistic add -> membership changed
                 markRowDirty(group, key);
                 changed = true;
             }
@@ -232,9 +228,7 @@ public class GReactFormData {
         GGroupObjectValue current = currentObjects.get(group);
         if (GwtClientUtils.nullEquals(current, key))
             setCurrentObject(group, getNearObject(rows, index));
-        markNodeDirty(group);
-        dirtyLists.put(group, Boolean.TRUE);
-        dirtyOrder.put(group, Boolean.TRUE); // optimistic remove -> membership changed
+        markGroupDirty(group, GroupDirty.ORDER); // optimistic remove -> membership changed
         markRowDirty(group, key);
         return true;
     }
@@ -247,6 +241,9 @@ public class GReactFormData {
 
     // read accessors over the accumulator, for the controller-less (whole-form React) optimistic paths in GFormController
     public GGroupObjectValue getCurrentObject(GGroupObject group) { return currentObjects.get(group); }
+    // the group's rows in order - the same list an optimistic add or delete maintains, so a caller reading it here sees
+    // a new row before the server has confirmed it
+    public ArrayList<GGroupObjectValue> getRows(GGroupObject group) { return gridRows.get(group); }
     public PValue getValue(GPropertyDraw draw, GGroupObjectValue key) {
         NativeHashMap<GGroupObjectValue, PValue> store = values.get(draw);
         return store == null || key == null ? null : store.get(key);
@@ -256,18 +253,31 @@ public class GReactFormData {
         return rows == null || key == null ? -1 : rows.indexOf(key);
     }
 
-    private void markNodeDirty(GGroupObject group) {
+    // how much of a group's node the next build has to redo. The levels are MONOTONE - ORDER implies ROWS implies NODE -
+    // so a caller states the strongest thing that changed and the implications follow, instead of re-establishing the
+    // chain by hand at every site (which is what silently drifts: an order change that forgets to dirty the list).
+    private enum GroupDirty { NODE, ROWS, ORDER }
+
+    private void markGroupDirty(GGroupObject group, GroupDirty level) {
         GContainer scope = getGroupOwningReactContainer(group);
         if (scope == null)
             return;
-        dirtyNodes.put(group, Boolean.TRUE);
+        dirtyGroups.put(group, Boolean.TRUE);
         markScopeDirty(scope);
+        if (level != GroupDirty.NODE)
+            dirtyLists.put(group, Boolean.TRUE);
+        if (level == GroupDirty.ORDER)
+            dirtyOrder.put(group, Boolean.TRUE);
     }
 
-    private void markComponentDirty(GContainer scope) { // an lsf child's descriptor changed -> data.components rebuilds; scope is the child's container, always non-null here (getComponentChild required it)
-        dirtyComponents.put(scope, Boolean.TRUE);
-        markScopeDirty(scope);
+    // rebuild the list AND forbid reusing any cached row: the change altered the SHAPE of every projected row (a
+    // property's entry appeared or disappeared in each of them), which per-row dirty keys cannot express. Deliberately
+    // NOT a GroupDirty level: ORDER still reuses surviving rows, while this preserves order but rebuilds them all.
+    private void invalidateRows(GGroupObject group) {
+        markGroupDirty(group, GroupDirty.ROWS);
+        lastRows.put(group, null);
     }
+
     private void markRowDirty(GGroupObject group, GGroupObjectValue key) { // a row whose `value`/isCurrent/props changed must rebuild
         if (key == null) return;
         NativeHashMap<GGroupObjectValue, Boolean> dr = dirtyRowKeys.get(group);
@@ -275,46 +285,49 @@ public class GReactFormData {
         dr.put(key, Boolean.TRUE);
     }
     private void markPropertyDirty(GPropertyDraw draw, NativeHashMap<GGroupObjectValue, PValue> changedKeys) {
-        if (markDrawNodeDirty(draw))
+        if (markPropertyEntryDirty(draw))
             changedKeys.foreachEntry((k, v) -> markRowDirty(draw.groupObject, getValueKey(draw, k)));
     }
 
     // a react-owned presentation reader changed: mark its owning cell/row/node/scope dirty so the next build re-projects
-    // data.meta (mirrors markPropertyDirty for the value draw). No-ops for non-react readers (their scopes resolve null).
-    private void markPresentationDirty(GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> keyValues) {
-        if (reader instanceof GShowIfReader) {
-            GPropertyDraw draw = form.getProperty(((GShowIfReader) reader).propertyID);
-            if (draw != null && draw.integrationSID != null) {
-                markDrawNodeDirty(draw);
-                if (draw.isList)
-                    lastRows.put(draw.groupObject, null); // SHOWIF changes the shape of every projected row in the column
+    // its projected object (mirrors markPropertyDirty for the value draw). No-ops for non-react readers (their scopes resolve null).
+    private void markAttributeDirty(GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> keyValues) {
+        if (reader.isPresenceReader()) { // it decides whether the entry EXISTS, so it is not routed as an attribute of one
+            GComponent shown = reader.getAttributeComponent(form);
+            if (shown instanceof GPropertyDraw)
+                markPropertyPresenceDirty((GPropertyDraw) shown);
+            return;
+        }
+        if (reader.getAttributeField() == null) // this reader is NOT projected (native CSS/font, loading, last, changeKey/changeMouse): no entry carries it,
+            return;                        // so its delta changes nothing in `data` — dirtying its rows would rebuild them for nothing
+        GComponent owner = reader.getAttributeComponent(form);
+        if (owner instanceof GPropertyDraw) { // the attribute of a PROPERTY: where it is projected says what to rebuild
+            GPropertyDraw draw = (GPropertyDraw) owner;
+            if (draw.integrationSID != null) {
+                if (draw.isList && reader.isColumnAttribute(draw)) // a column attribute lives on the group -> rebuild the group only, DON'T churn the list/row refs
+                    markGroupDirty(draw.groupObject, GroupDirty.NODE);
+                else // a cell (or single-value) attribute -> the same marking as the value it sits with
+                    markPropertyDirty(draw, keyValues);
             }
             return;
         }
-        if (reader.getMetaField() == null) // this reader is NOT projected (native CSS/font, loading, last, changeKey/changeMouse): buildPropMeta skips it,
-            return;                        // so its delta changes nothing in `data` — dirtying its rows would rebuild them for nothing
-        if (reader instanceof GExtraPropertyReader) { // a property's semantic presentation reader (caption/editability/colors/image/comment/tooltip/...)
-            GPropertyDraw draw = form.getProperty(((GExtraPropertyReader) reader).propertyID);
-            if (draw != null && draw.integrationSID != null) {
-                if (draw.isList && reader.isColumnLevel(draw)) // a column-level reader lives in node.meta[prop] -> rebuild the node only, DON'T churn the list/row refs
-                    markNodeDirty(draw.groupObject);
-                else // a cell-level (or panel) reader -> same node/list/rows/scope marking as the value draw
-                    markPropertyDirty(draw, keyValues);
-            }
-        } else if (reader instanceof GGroupObjectPropertyReader) { // a group-object reader: rowBackground/rowForeground/rowSelect (per row) or customOptions (group-scoped)
-            GGroupObject group = form.getGroupObject(((GGroupObjectPropertyReader) reader).groupObjectID);
-            if (group == null)
-                return;
-            markNodeDirty(group); // the group node (its meta.customOptions/count) rebuilds
-            if (((GGroupObjectPropertyReader) reader).getMetaScope() == GMetaScope.ROW) { // a per-row reader -> the list + each changed row rebuild (row.meta.row); a group-scoped one (customOptions) -> node only
-                dirtyLists.put(group, Boolean.TRUE);
-                keyValues.foreachEntry((k, v) -> markRowDirty(group, k));
-            }
+        GContainer containerScope = getContainerReaderScope(reader); // a projected CONTAINER's own caption/image: its
+        if (containerScope != null) {                                // entry sits on the scope's top object, which
+            markScopeDirty(containerScope);                          // rebuilds while nodes and rows are reused
+            return;
         }
+        GGroupObject group = reader.getAttributeGroup(form); // the attribute of the GROUP itself: rowBackground/rowForeground/rowSelect, or options
+        if (group == null)
+            return;
+        // a per-row attribute -> the list + each changed row; a group-scoped one (options / count) -> the node only
+        boolean perRow = reader.getAttributeScope() == GGroupAttributeScope.ROW;
+        markGroupDirty(group, perRow ? GroupDirty.ROWS : GroupDirty.NODE);
+        if (perRow)
+            keyValues.foreachEntry((k, v) -> markRowDirty(group, k));
     }
 
     private GGroupObjectValue getValueKey(GPropertyDraw draw, GGroupObjectValue key) {
-        if (draw.groupObject == null || !draw.isList || draw.hasColumnGroupObjects())
+        if (draw.groupObject == null || !draw.isList) // grouped-in-columns draws never get here (isProjectedListDraw gates every caller)
             return key;
         GGroupObjectValue rowKey = draw.groupObject.filterRowKeys(key);
         return rowKey != null ? rowKey : key;
@@ -328,84 +341,117 @@ public class GReactFormData {
         for (GGroupObject group : form.groupObjects) {
             if (getGroupOwningReactContainer(group) != scope)
                 continue;
-            JavaScriptObject node = lastNodes.get(group);
-            if (node == null || dirtyNodes.get(group) != null) { // rebuild only a changed (or first-seen) group node
-                node = buildNode(group);
-                lastNodes.put(group, node);
+            JavaScriptObject node = lastGroups.get(group);
+            if (node == null || dirtyGroups.get(group) != null) { // rebuild only a changed (or first-seen) group node
+                node = buildGroupEntry(group);
+                lastGroups.put(group, node);
             }
             setValue(data, group.getSID(), node);
         }
-        fillProperties(data, null, false, GGroupObjectValue.EMPTY, scope); // form-level (no group) scalars, on the new top
-        JavaScriptObject components = lastComponents.get(scope);
-        if (components == null || dirtyComponents.get(scope) != null) { // rebuild data.components only when a descriptor reader fired (else reuse the ref) - exactly like a group node above
-            components = buildComponents(scope);
-            lastComponents.put(scope, components);
-        }
-        setValue(data, "components", components);
+        fillSingles(data, null, GGroupObjectValue.EMPTY, scope); // the form-level properties, on the new top
+        fillContainers(data, scope);
         lastData.put(scope, data);
         return data;
     }
 
-    // ===== data.components ====================================================================================
+    // ===== containers ==========================================================================================
 
-    // data.components is a first-class cached slot exactly like a group node: lastComponents + dirtyComponents (set only in
-    // update's descriptor branch). build() reuses the cached components ref unless a descriptor actually changed, so an
-    // unrelated value change in the scope does not churn its ref. The descriptor VALUES themselves live in `values`.
-
-    // the lsf, React-scoped child whose caption / image this reader carries, or null
-    private GComponent getComponentChild(GPropertyReader reader) {
-        GComponent child = getPresentationComponent(reader);
-        if (child == null || !child.isLsfView())
-            return null;
-        GContainer scope = child.container; // the React container that places this child (its Lsfs lists it)
-        return scope != null && scope.isReact() ? child : null;
+    // a container with an entry in `data`: the author DECLARED it (DESIGN's `NEW <name>` - not "has a name", a group's
+    // generated BOX(g) is named too, for icons), OR it is an lsf child - whatever box that is. The lsf half is not a
+    // convenience: GWT skips an lsf child's caption/image for React to draw (the complement invariant), so a generated
+    // box marked lsf - MOVE BOX(o) { lsf = TRUE; }, the canonical case - MUST project its descriptor or its caption is
+    // drawn by nobody. What stays out is the boxes nobody wrote AND nobody placed: a group's toolbar/filter machinery.
+    private boolean isProjectedContainer(GComponent component) {
+        return component instanceof GContainer && (((GContainer) component).declared || component.isLsfView());
     }
 
-    // the component a presentation reader belongs to (only caption / image readers qualify), or null.
-    // reader-TYPE dispatch resolves the component (a container's reader carries the component; a property's reader carries
-    // its ID); then the component's own presentation aspects decide whether the reader is one of them.
-    private GComponent getPresentationComponent(GPropertyReader reader) {
-        GComponent comp = null;
-        if (reader instanceof GComponentReader) // a container's caption / image reader
-            comp = ((GComponentReader) reader).getReaderComponent();
-        else if (reader instanceof GExtraPropertyReader) // a property's caption / captionElementClass reader
-            comp = form.getProperty(((GExtraPropertyReader) reader).propertyID);
-        if (comp != null)
-            for (GPropertyReader r : comp.getComponentReaders())
-                if (reader == r)
-                    return comp;
-        return null;
+    // a projected container goes DIRECTLY in data, keyed by its design sid, with what the platform computed for it
+    // (caption / image) - a container is a thing in `data` like a group or a property, no meta wrapper. ALWAYS, `{}`
+    // when it has neither, so nothing has to predict what the entry will hold. WHICH containers is isProjectedContainer
+    // (declared or lsf); the scope walk is what excludes an LSF SUBTREE: ownership climbs only through non-lsf hops, so
+    // nothing below an lsf child - declared or not - resolves to any scope. Only the boundary itself is projected;
+    // everything under it the platform draws whole, its captions consumed by its own native renderers.
+    private void fillContainers(JavaScriptObject data, GContainer scope) {
+        fillContainers(data, scope, form.mainContainer);
+    }
+    private void fillContainers(JavaScriptObject data, GContainer scope, GComponent component) {
+        if (component instanceof GContainer) {
+            if (getProjectedContainerScope(component) == scope)
+                setValue(data, component.sID, buildDescriptorEntry(component, GGroupObjectValue.EMPTY));
+            for (GComponent child : ((GContainer) component).children)
+                fillContainers(data, scope, child);
+        }
     }
 
-    // data.components, DESIGN order, assembled in the top build (see fillProperties caller) from the SAME `values` store
-    // as the panel scalars — rebuilt with the top on any scope change, no dedicated cache
-    private JavaScriptObject buildComponents(GContainer scope) {
-        JavaScriptObject components = newObject();
-        for (GComponent child : scope.children) // DESIGN order
-            if (child.isLsfView())
-                setValue(components, child.sID, buildComponent(child));
-        return components;
+    // the scope whose data carries this container's entry, or null when it has none - THE statement of the container
+    // rule, asked by the build (fillContainers) and by the delta path (getContainerReaderScope) alike, so the two cannot
+    // drift. The server asks its own copy of the same question under the same name (FormView.getProjectedContainerScope)
+    // to reserve the names this emits. An LSF container is placed by the scope it sits in (getTopLevelScope).
+    private GContainer getProjectedContainerScope(GComponent component) {
+        return isProjectedContainer(component) ? getTopLevelScope(component) : null;
     }
 
-    // each aspect is ALWAYS projected (dynamic value else the static design value) — no dynamic-only omission and no separate
-    // static channel. This is cheap because data.components rides structural sharing (see build/dirtyComponents): the static
-    // parts are re-derived only when the object is actually rebuilt (a presentation reader fired), not on unrelated value
-    // changes. A reader that delivered null falls back to the static design value. Same loop shape as buildRowMeta/buildNode:
-    // each component reader declares its own field, converter and static fallback.
-    private JavaScriptObject buildComponent(GComponent child) {
-        JavaScriptObject[] holder = {newObject()}; // eager: keep a (possibly empty) descriptor object per lsf child
-        for (GPropertyReader reader : child.getComponentReaders())
-            if (reader != null)
-                emitPresentation(holder, reader, GGroupObjectValue.EMPTY, null, reader.getColumnStatic(child));
-        return holder[0];
+    // what the platform computed about a COMPONENT itself (a container, or an lsf property whose value it draws):
+    // caption and image, dynamic value first and the static design value as the fallback. `{}` when it has neither - an
+    // entry is never withheld for being empty, so nothing has to predict emptiness (see fillContainers).
+    // For an LSF property this set is not a narrowing of its column attributes, it is the exact complement of what its
+    // platform renderer draws: GFormController.isReactOwned hands GWT every reader of an lsf draw and takes back only
+    // what isDescriptorAttribute + isProjectedDescriptorAttribute admit (isLsfViewDescriptorReader) - the rest stay with
+    // the renderer that renders them; projecting them would draw them twice. The two sides ask the same predicates.
+    private JavaScriptObject buildDescriptorEntry(GComponent component, GGroupObjectValue key) {
+        JavaScriptObject entry = newObject();
+        for (GPropertyReader reader : component.getDescriptorReaders())
+            if (isProjectedDescriptorAttribute(reader, component))
+                emitAttribute(entry, reader, key, component);
+        return entry;
     }
 
-    public boolean isComponentReader(GPropertyReader reader) {
-        return getComponentChild(reader) != null;
+    // whether this component attribute reaches the projection at all. An LSF LIST property has one entry for the
+    // whole column, so a row-keyed attribute (an action's image) has no place in it - it stays with the per-row renderer,
+    // which does key it by row, instead of being taken away from GWT and then dropped. Only a list has that problem: a
+    // single-valued draw's entry is read at its own key, so every component attribute of it fits. The same answer decides
+    // both sides, which is what keeps them from disagreeing: what GWT skips (getLsfViewDescriptorOwner) is exactly what is emitted.
+    private boolean isProjectedDescriptorAttribute(GPropertyReader reader, GComponent component) {
+        if (reader == null)
+            return false;
+        return !(component instanceof GPropertyDraw) || !((GPropertyDraw) component).isList
+                || reader.isColumnAttribute((GPropertyDraw) component);
+    }
+
+    // the LSF child (a container or a property) whose caption / image this reader carries, or null - isLsfView()
+    // already means a direct child of a React container, so its caption is React's to draw and GWT skips this reader
+    private GComponent getLsfViewDescriptorOwner(GPropertyReader reader) {
+        GComponent child = getDescriptorOwner(reader);
+        return child != null && child.isLsfView() && isProjectedDescriptorAttribute(reader, child) ? child : null;
+    }
+
+    // the component whose OWN caption / image this reader carries, or null for anything else - both halves are the
+    // reader's own answers (getAttributeComponent / isDescriptorAttribute), so nothing here dispatches on its class
+    private GComponent getDescriptorOwner(GPropertyReader reader) {
+        return reader.isDescriptorAttribute() ? reader.getAttributeComponent(form) : null;
+    }
+
+    // this reader's owning CONTAINER's entry scope, or null for anything else - including a generated box, which has no
+    // entry to dirty (a property's caption/image reader is presentation like any other and reaches its object through
+    // the ordinary presentation path)
+    private GContainer getContainerReaderScope(GPropertyReader reader) {
+        return getProjectedContainerScope(getDescriptorOwner(reader));
+    }
+
+    // the scope whose data carries this component - a container, or a form-level property (both live directly on the
+    // top object, keyed as the thing is keyed). An LSF component is placed by the scope it is declared in: the
+    // platform draws it, but hands its caption to React. Anything else belongs to the scope that OWNS it, which by
+    // construction is nothing inside an lsf subtree. (A GROUPED property's object lives in its group node, not here.)
+    private GContainer getTopLevelScope(GComponent component) {
+        return component.isLsfView() ? component.container : formController.getOwningReactContainer(component);
+    }
+
+    public boolean isLsfViewDescriptorReader(GPropertyReader reader) {
+        return getLsfViewDescriptorOwner(reader) != null;
     }
 
     // build a group's node, reusing the unchanged list array and unchanged row objects
-    private JavaScriptObject buildNode(GGroupObject group) {
+    private JavaScriptObject buildGroupEntry(GGroupObject group) {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
 
@@ -415,8 +461,9 @@ public class GReactFormData {
         if (rows != null) {
             if (list == null || dirtyLists.get(group) != null) { // rebuild the list only if its rows/order/values changed
                 NativeHashMap<GGroupObjectValue, JavaScriptObject> prevRows = lastRows.get(group);
+                // every dirty key is row-shaped by construction: composite (grouped-in-columns) draws never reach the
+                // dirty paths (isProjectedListDraw), so an unchanged row is ALWAYS safe to reuse by its key
                 NativeHashMap<GGroupObjectValue, Boolean> dirtyKeys = dirtyRowKeys.get(group);
-                boolean reuseRows = canReuseRows(group, dirtyKeys); // false for composite/column keys we can't map to a row
                 NativeHashMap<GGroupObjectValue, JavaScriptObject> newRows = new NativeHashMap<>();
                 // canonical key string -> row, rebuilt WITH the list (row refs shared with it): selectors subscribe
                 // by STABLE key (s.i.byKey[row.key] — property lookup coerces a numeric key to the same string) so
@@ -425,17 +472,14 @@ public class GReactFormData {
                 byKey = newObject();
                 list = newArray();
                 for (GGroupObjectValue rowKey : rows) {
-                    JavaScriptObject prev = reuseRows && prevRows != null ? prevRows.get(rowKey) : null;
+                    JavaScriptObject prev = prevRows != null ? prevRows.get(rowKey) : null;
                     JavaScriptObject row;
                     if (prev != null && (dirtyKeys == null || dirtyKeys.get(rowKey) == null)) {
                         row = prev; // reuse the unchanged row object (same ref -> the row component memo-skips)
                     } else {
                         row = newObject();
-                        setBoolean(row, "isCurrent", current != null && rowKey.equals(current)); // declarative current-row marker
-                        fillProperties(row, group, true, rowKey, null); // per-cell values + row.meta[propSID]
-                        JavaScriptObject rowMeta = buildRowMeta(group, rowKey); // row.meta.row = { background, foreground, selected }
-                        if (rowMeta != null)
-                            setValue(getMeta(row), "row", rowMeta);
+                        fillRowAttributes(row, group, rowKey, current); // what the ROW itself is: isCurrent, background, foreground, selected
+                        fillCells(row, group, rowKey);                  // what is ON the row: one entry per list property
                     }
                     GGroupObjectValue.registerRow(row, rowKey); // the public row.key + the non-enumerable `objects` handle
                     setValue(byKey, rowKey.toKeyString(), row);
@@ -468,129 +512,155 @@ public class GReactFormData {
         }
         setValue(node, "keys", keys);
         setGroupSID(node, group.getSID());
-        if (current != null) // group panel properties (shown once, for the current object) + their node.meta[propSID]
-            fillProperties(node, group, false, current, null);
-        // group-level meta: loaded row count + the group's GROUP-LEVEL readers (customOptions, EMPTY key). Shares node.meta
-        // with the panel props above (getMeta reuses the object); count rebuilds with the node (list/reader change marks it).
-        JavaScriptObject groupMeta = getMeta(node);
-        setInt(groupMeta, "count", rows != null ? rows.size() : 0);
-        JavaScriptObject[] gm = {groupMeta}; // eager holder -> emitPresentation writes into the existing groupMeta
-        for (GGroupObjectPropertyReader reader : group.getPresentationReaders()) // the NODE-scoped readers (customOptions) -> node.meta, once at EMPTY
-            if (reader != null && reader.getMetaScope() == GMetaScope.NODE)
-                emitPresentation(gm, reader, GGroupObjectValue.EMPTY, null, null);
-        // COLUMN-level presentation for LIST properties -> node.meta[propSID], ONCE per column (not per row): buildPropMeta
-        // with columnStatic emits the column-level readers (caption/footer/property image, read at the column key)
-        // + semantic static design values; cell-level readers miss at EMPTY, so they stay in row.meta[propSID].
-        // A consumer merges node base <- row override. Single (EMPTY) column key; grouped-in-columns is a follow-up (skip,
-        // don't mis-key). Rebuilt with the node (a column reader marks only the node dirty), so it doesn't churn row refs.
-        for (GPropertyDraw draw : form.propertyDraws) {
-            if (draw.groupObject != group || !draw.isList || draw.integrationSID == null || draw.hasColumnGroupObjects())
-                continue;
-            if (!isPropertyShown(draw, GGroupObjectValue.EMPTY))
-                continue;
-            JavaScriptObject colMeta = buildPropMeta(draw, GGroupObjectValue.EMPTY, true);
-            if (colMeta != null)
-                setValue(getMeta(node), draw.integrationSID, colMeta);
-        }
+        if (current != null) // the group's panel properties (shown once, for the current object)
+            fillSingles(node, group, current, null);
+        // the group's own attributes, DIRECT on the node: the loaded row count + its GROUP-scoped readers (options, at
+        // EMPTY). No meta wrapper - `count`/`options` sit beside `list`/the column property objects, rebuilt with the node.
+        fillGroupAttributes(node, group, rows); // what the GROUP itself is: count, options
+        // and what is the same down each COLUMN. Reading node.<prop> for the caption and row.<prop>.value for the value is
+        // the column/cell split without a merge - each attribute lives at exactly one point. Rebuilt with the node (a
+        // column reader marks only the node dirty), so it doesn't churn row refs.
+        fillColumns(node, group);
         return node;
     }
 
-    // row.meta.row = { background, foreground, selected } from the group's PER-ROW readers (keyed by the row key); each
-    // reader self-declares its field + converter (COLOR / FLAG), so this is the same emitPresentation loop as everywhere else.
-    private JavaScriptObject buildRowMeta(GGroupObject group, GGroupObjectValue rowKey) {
-        JavaScriptObject[] rm = {null};
-        for (GGroupObjectPropertyReader reader : group.getPresentationReaders()) // the group's PER-ROW (ROW-scoped) readers self-declare field+converter (background/foreground -> COLOR, selected -> FLAG)
-            if (reader != null && reader.getMetaScope() == GMetaScope.ROW)
-                emitPresentation(rm, reader, rowKey, null, null);
-        return rm[0];
+    // the group's own PER-ROW attributes (background / foreground / selected), DIRECT on the row beside `isCurrent` - each
+    // reader self-declares its field + converter (COLOR / FLAG). No meta wrapper; the field names are reserved so a
+    // property cannot take them (checkReactProjectionNames).
+    private void fillRowAttributes(JavaScriptObject row, GGroupObject group, GGroupObjectValue rowKey, GGroupObjectValue current) {
+        setBoolean(row, "isCurrent", current != null && rowKey.equals(current)); // declarative current-row marker
+        for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
+            if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.ROW)
+                emitAttribute(row, reader, rowKey, null);
     }
 
-    // Rows may be reused only if every dirty key can be matched against a row key. A grouped-in-columns draw
-    // (hasColumnGroupObjects) is dirtied under its COMPOSITE key (getValueKey keeps it whole), which no row key equals —
-    // the per-row dirty mapping is then untrustworthy (a row could have changed without its key being marked), so every
-    // row must rebuild. The test is the key's SHAPE, not its history: a row-shaped key that is not a current row (a just
-    // DELETED row) is simply never consulted, so the survivors must keep their identity.
-    private boolean canReuseRows(GGroupObject group, NativeHashMap<GGroupObjectValue, Boolean> dirtyKeys) {
-        if (dirtyKeys == null)
-            return true;
-        int rowKeySize = group.objects.size();
-        boolean[] ok = {true};
-        dirtyKeys.foreachEntry((k, v) -> { if (k.size() != rowKeySize) ok[0] = false; });
-        return ok[0];
+    // the GROUP's own attributes, direct on its node beside list/byKey/keys: how many rows are loaded, and its
+    // group-scoped readers (options, read once at EMPTY). The mirror of fillRowAttributes, one level up.
+    private void fillGroupAttributes(JavaScriptObject node, GGroupObject group, ArrayList<GGroupObjectValue> rows) {
+        setInt(node, "count", rows != null ? rows.size() : 0);
+        for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
+            if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.GROUP)
+                emitAttribute(node, reader, GGroupObjectValue.EMPTY, null);
     }
 
     public void clearDirty() {
-        dirtyNodes.clear();
+        dirtyGroups.clear();
         dirtyLists.clear();
         dirtyOrder.clear();
         dirtyRowKeys.clear();
         dirtyScopes.clear();
-        dirtyComponents.clear();
     }
 
     // group/property SID resolution lives on GForm (shared with the other integration controllers); row identity
     // registration/resolution is centralized on GGroupObjectValue (registerRow/resolveObject)
 
-    // for the given group (null = form-level) and list/panel flag, set each matching draw's value (by integrationSID) on target
-    private void fillProperties(JavaScriptObject target, GGroupObject group, boolean list, GGroupObjectValue key, GContainer scope) {
+    // the CELLS of one row: every projected list property of the group contributes its {value, ...cell attributes}
+    // under its sid. EXISTENCE is decided here, where the row is enumerated - not by a builder returning null: an LSF
+    // draw has no cell (the platform draws it in the row), and a grouped-in-columns draw is not projected at all.
+    private void fillCells(JavaScriptObject row, GGroupObject group, GGroupObjectValue rowKey) {
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && draw.isList && isProjectedListDraw(draw) && !draw.isLsfView()
+                    && isShownProperty(draw, rowKey))
+                setValue(row, draw.integrationSID, buildCellEntry(draw, rowKey));
+    }
+
+    // a list draw the projection carries at all. Grouped-in-columns draws are a follow-up: their attributes are keyed by
+    // a COLUMN tuple that one node entry cannot hold (and one row key cannot address), so they are skipped EVERYWHERE -
+    // the build (no entry), the dirty paths and the optimistic write (nothing to rebuild) - by this one predicate.
+    private boolean isProjectedListDraw(GPropertyDraw draw) {
+        return !draw.hasColumnGroupObjects();
+    }
+
+    // the SINGLE-valued properties on a target: a group's panel properties on its node, or the form-level properties on
+    // the scope's top object - each one entry with its value and all its attributes
+    private void fillSingles(JavaScriptObject target, GGroupObject group, GGroupObjectValue key, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws) {
-            if (draw.groupObject != group)
+            if (draw.groupObject != group || draw.isList)
                 continue;
-            if (group != null && draw.isList != list)
+            if (group == null && getTopLevelScope(draw) != scope) // a form-level property belongs to the scope it sits in
                 continue;
-            if (group == null && getPropertyOwningReactContainer(draw) != scope)
-                continue;
-            if (draw.integrationSID == null)
-                continue;
-            if (!isPropertyShown(draw, key))
-                continue;
-            NativeHashMap<GGroupObjectValue, PValue> store = values.get(draw);
-            GGroupObjectValue valueKey = list ? key : draw.filterColumnKeys(key);
-            PValue pvalue = store == null || valueKey == null ? null : store.get(valueKey);
-            setValue(target, draw.integrationSID, GSimpleStateTableView.convertToJSValue(draw, pvalue, RendererType.SIMPLE, true));
-            JavaScriptObject propMeta = buildPropMeta(draw, valueKey, !list); // target.meta[integrationSID]: a row cell is dynamic-only; a panel/form-level prop (node) gets column-level static (caption/image)
-            if (propMeta != null)
-                setValue(getMeta(target), draw.integrationSID, propMeta);
+            GGroupObjectValue valueKey = draw.filterColumnKeys(key);
+            if (valueKey != null && isShownProperty(draw, key))
+                setValue(target, draw.integrationSID, buildSingleEntry(draw, valueKey));
         }
     }
 
-    // ===== data.meta: the per-property PRESENTATION the platform computes for native rendering, projected for react-owned
-    // properties from the SAME `values` store (each presentation reader), converted via the reader's own GMetaConverter
-    // (the same helpers the GWT views use). Built inline with the value (shares the row/node/top structural sharing); a presentation
-    // reader change marks the owning cell/row/scope dirty (markPresentationDirty) so meta rebuilds with its target.
-
-    // the per-property presentation object for one cell/panel key, or null if no reader delivered a value (omit an empty one).
-    // Each of the draw's presentation readers declares its own meta field name + converter, so this is a generic loop.
-    // one property's presentation, read at `key`. columnStatic = the COLUMN/base projection (node.meta[prop] for a panel or
-    // a list column): a column-level reader (caption/footer/property image) falls back to its static design
-    // value. columnStatic=false = the per-CELL projection (row.meta[prop]): dynamic-only, no static.
-    private JavaScriptObject buildPropMeta(GPropertyDraw draw, GGroupObjectValue key, boolean columnStatic) {
-        JavaScriptObject[] m = {null};
-        for (GPropertyReader reader : draw.getPresentationReaders()) {
-            if (reader == null)
-                continue;
-            // the static design value belongs in the COLUMN entry, whatever the reader's dynamic value is keyed by:
-            // a cell-level reader (pattern / comment / placeholder / tooltip / colors ...) misses at the column key, so its
-            // static lands there, and its per-row dynamic value overrides it in the row entry — exactly the column-then-row
-            // merge the consumer does. Without this a static design PATTERN (and the rest) reached no React view at all.
-            emitPresentation(m, reader, key, draw, columnStatic ? reader.getColumnStatic(draw) : null);
-        }
-        return m[0];
+    // the COLUMNS of a group: every list property contributes what is the same down its whole column, once, on the node
+    private void fillColumns(JavaScriptObject node, GGroupObject group) {
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && draw.isList && isProjectedListDraw(draw)
+                    && isShownProperty(draw, GGroupObjectValue.EMPTY))
+                setValue(node, draw.integrationSID, buildColumnEntry(draw));
     }
 
-    // read pv from the reader's store, convert per the reader's declared kind, set on the (lazily created) meta object; skip
-    // if absent/null. GWT represents java.lang.Boolean as a native JS boolean, so setValue stores a String / boolean / JS
-    // object all as their primitive JS form (a Boolean lands as a real true/false, not a truthy wrapper) — one path fits all.
-    // the ONE presentation-field emitter, shared by data.meta (react-owned props) and data.components (lsf children):
-    // the dynamic reader value if delivered (converted via the reader's own converter), else the static design value
-    // (null on the dynamic-only meta path), else skip. The only difference between the two projections is staticValue.
-    private void emitPresentation(JavaScriptObject[] holder, GPropertyReader reader, GGroupObjectValue key, GPropertyDraw draw, String staticValue) {
+    // a draw reaches the projection at all: it has a name there, and it is not hidden right now
+    private boolean isShownProperty(GPropertyDraw draw, GGroupObjectValue key) {
+        return draw.integrationSID != null && isPropertyShown(draw, key);
+    }
+
+    // ===== a property's projected ENTRY. Projected AT ALL is decided before this (isShownProperty / delegation); once it
+    // is, the entry exists whatever it holds, so `data.<group>.<prop>` is there even for a column with no caption at all.
+    // A property drawn per row has TWO of them, because it genuinely has two: one
+    // caption for the whole column, one value and one background per row. A property with a single value has ONE, with
+    // everything in it. Each attribute is an EFFECTIVE value - the dynamic value at the key, else the static design
+    // default - so it is delivered at one point and a consumer never merges a column base with a row override.
+    // An LSF property hands React only caption/image (the platform draws its value WITH the rest of its
+    // presentation), so its column / single entry is a component descriptor and it has no cell at all.
+
+    // the COLUMN entry of a list property: what is the same down the whole column (caption / image / footer / comment /
+    // tooltip / default). No value - the values are in the cells.
+    private JavaScriptObject buildColumnEntry(GPropertyDraw draw) {
+        if (draw.isLsfView())
+            return buildDescriptorEntry(draw, GGroupObjectValue.EMPTY);
+        JavaScriptObject entry = newObject();
+        for (GPropertyReader reader : draw.getPresentationReaders())
+            if (reader != null && reader.isColumnAttribute(draw))
+                emitAttribute(entry, reader, GGroupObjectValue.EMPTY, draw);
+        return entry;
+    }
+
+    // one ROW's cell of a list property: its value, and the attributes that can differ from row to row (background /
+    // foreground / readOnly / placeholder / pattern / ...)
+    private JavaScriptObject buildCellEntry(GPropertyDraw draw, GGroupObjectValue rowKey) {
+        JavaScriptObject entry = newObject();
+        emitValue(entry, draw, rowKey);
+        for (GPropertyReader reader : draw.getPresentationReaders())
+            if (reader != null && !reader.isColumnAttribute(draw))
+                emitAttribute(entry, reader, rowKey, draw);
+        return entry;
+    }
+
+    // the single entry of a property with ONE value (form-level, or a group's panel property): the value and ALL its
+    // attributes together - with one value there is nothing to split between a column and a cell
+    private JavaScriptObject buildSingleEntry(GPropertyDraw draw, GGroupObjectValue key) {
+        if (draw.isLsfView())
+            return buildDescriptorEntry(draw, key); // its own key, like any single entry - not EMPTY, which is a column's key
+        JavaScriptObject entry = newObject();
+        emitValue(entry, draw, key);
+        for (GPropertyReader reader : draw.getPresentationReaders())
+            if (reader != null)
+                emitAttribute(entry, reader, key, draw);
+        return entry;
+    }
+
+    // the value field of an entry, always present for a react-owned property (null value included, so the entry exists)
+    private void emitValue(JavaScriptObject entry, GPropertyDraw draw, GGroupObjectValue key) {
+        setValue(entry, "value", GSimpleStateTableView.convertToJSValue(draw, readerValue(draw, key), RendererType.SIMPLE, true));
+    }
+
+    // the ONE attribute emitter, shared by every entry (a property's, a container's, a group's, a row's): the EFFECTIVE
+    // value of one attribute - the dynamic reader value if delivered (converted by the reader's own converter), else the
+    // static design default - written under the field name the reader declares. Absent attributes are simply not written.
+    // GWT represents java.lang.Boolean as a native JS boolean, so setValue stores a String / boolean / JS object all as
+    // their primitive JS form (a Boolean lands as a real true/false, not a truthy wrapper) — one path fits all.
+    private void emitAttribute(JavaScriptObject entry, GPropertyReader reader, GGroupObjectValue key, GComponent owner) {
         PValue pvalue = readerValue(reader, key);
-        Object dynamic = pvalue != null ? reader.getMetaConverter().convert(pvalue, draw) : null; // getMetaConverter only reached when reader delivered -> reader != null
-        Object value = isPresent(dynamic) ? dynamic : staticValue; // dynamic wins; else the static design fallback (also when a delivered image was cleared)
-        String field = pvalue != null ? reader.getMetaField(pvalue) : reader.getMetaField();
+        GPropertyDraw draw = owner instanceof GPropertyDraw ? (GPropertyDraw) owner : null; // the converter wants the draw; a container / a group's own reader has none
+        Object dynamic = pvalue != null ? reader.getAttributeConverter().convert(pvalue, draw) : null; // getAttributeConverter only reached when reader delivered -> reader != null
+        Object value = isPresent(dynamic) ? dynamic : (owner != null ? reader.getStaticAttribute(owner) : null); // dynamic wins; else the static design default (also when a delivered image was cleared)
+        String field = reader.getAttributeField(pvalue); // the no-value case is the reader's own default
         if (field != null && isPresent(value))
-            setValue(lazyMeta(holder), field, value);
+            setValue(entry, field, value);
     }
 
     private boolean isPropertyShown(GPropertyDraw draw, GGroupObjectValue key) {
@@ -606,7 +676,7 @@ public class GReactFormData {
     }
 
     // JS-level "has a value": unlike a GWT-generated Java `!= null` (which the falsy-primitive trap misfires on, dropping a delivered
-    // false / 0 / "" — e.g. a JSON customOptions or a readOnly false), this only treats a real null/undefined as absent.
+    // false / 0 / "" — e.g. a JSON options or a readOnly false), this only treats a real null/undefined as absent.
     private static native boolean isPresent(Object v) /*-{ return v !== undefined && v !== null; }-*/;
 
     private PValue readerValue(GPropertyReader reader, GGroupObjectValue key) {
@@ -616,32 +686,16 @@ public class GReactFormData {
         return store == null ? null : store.get(key);
     }
 
-    private static JavaScriptObject lazyMeta(JavaScriptObject[] m) { // lazily create the per-target meta object on the first delivered field (stays null -> omitted if none); cf. getMeta which always creates obj.meta
-        if (m[0] == null)
-            m[0] = newObject();
-        return m[0];
-    }
-
-
-
     private GContainer getGroupOwningReactContainer(GGroupObject group) {
         if (group == null)
             return null;
         return formController.getOwningReactContainer(group.grid != null ? group.grid : group.parent);
     }
 
-    private GContainer getPropertyOwningReactContainer(GPropertyDraw draw) {
-        GGroupObject group = draw.groupObject;
-        if (group != null)
-            return getGroupOwningReactContainer(group);
-        return formController.getOwningReactContainer(draw);
-    }
-
     private void markScopeDirty(GContainer scope) {
         if (scope != null)
             dirtyScopes.put(scope, Boolean.TRUE);
     }
-
 
     private static native JavaScriptObject newObject() /*-{ return {}; }-*/;
     private static native JavaScriptObject newArray() /*-{ return []; }-*/;
@@ -651,5 +705,4 @@ public class GReactFormData {
     private static native void setValue(JavaScriptObject obj, String key, Object v) /*-{ obj[key] = v; }-*/;
     private static native void setBoolean(JavaScriptObject obj, String key, boolean v) /*-{ obj[key] = v; }-*/;
     private static native void setInt(JavaScriptObject obj, String key, int v) /*-{ obj[key] = v; }-*/;
-    private static native JavaScriptObject getMeta(JavaScriptObject obj) /*-{ return obj.meta || (obj.meta = {}); }-*/; // the shared per-target meta object (per-prop presentation + row / group count)
 }

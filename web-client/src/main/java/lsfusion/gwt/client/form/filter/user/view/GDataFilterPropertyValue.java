@@ -36,7 +36,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     private GInputListAction[] inputListActions;
 
     public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<PValue> afterCommit, Consumer<CancelReason> onCancel) {
-        super(condition.property, condition.columnKey, form, false, new ActionOrPropertyValueController() {
+        super(condition.property, condition.columnKey, null, form, false, new ActionOrPropertyValueController() { // a filter value belongs to no row
             @Override
             public void setValue(GGroupObjectValue columnKey, PValue value) {
             }

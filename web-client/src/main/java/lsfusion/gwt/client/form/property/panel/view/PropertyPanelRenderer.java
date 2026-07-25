@@ -29,8 +29,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private Widget comment;
 
-    public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
-        super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
+    public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, Result<CaptionWidget> captionContainer) {
+        super(form, controller, property, columnKey, rowKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
 
         SizedWidget valueWidget = value.getSizedWidget(false);
 
@@ -63,18 +63,25 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
-        // an lsf property's caption is projected into data.components (like a tab hands its caption up to the tab
+        // an lsf property's caption is projected into its entry (like a tab hands its caption up to the tab
         // strip); the React component draws it, so GWT renders the bare value with no label of its own
-        boolean lsf = property.isLsfView();
-        boolean hasCaption = property.caption != null && !lsf;
-        if(!hasCaption && property.comment == null && (property.appImage == null || lsf)) // if there is no (empty) static caption and no dynamic caption
+        boolean lsfView = property.isLsfView();
+        boolean hasCaption = property.caption != null && !lsfView;
+        if(!hasCaption && property.comment == null && (property.appImage == null || lsfView)) // if there is no (empty) static caption and no dynamic caption
             return valuePanel.view;
 
         // id and for we need to support editing when clicking on the label
         // however only CLICK and CHANGE (for boolean props) are propagated to the input, and not MOUSEDOWN
         // but since we use MOUSEDOWN as a change event (so it starts editing) we need to propagate MOUSEDOWN manually
         // we need id to be global (otherwise everything stops working if the same form is opened twice)
+        // one property draw can have MORE THAN ONE renderer at a time - one per key (grouped in columns) - and they would
+        // otherwise share an id, so every label's "for" would point at the first renderer. The key is appended only when
+        // there is one, so the single-renderer id (which selectors and tests rely on) is unchanged.
         String globalID = form.globalID + "->" + property.propertyFormName;
+        if(!GGroupObjectValue.EMPTY.equals(getColumnKey()))
+            globalID += "->" + getColumnKey().toKeyString();
+        if(getRowKeyOrNull() != null) // a per-row component has one renderer per row, and their ids must not collide either
+            globalID += "->" + getRowKeyOrNull().toKeyString();
         value.getElement().setId(globalID);
 
         SizedWidget sizedLabel = null;
@@ -119,7 +126,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         // an lsf property is mounted into a React host as ONE self-contained view (like every lsf child), so it
         // is wrapped in a panel that keeps its own value/comment layout, not laid out inline as value/comment siblings
         // directly in the host (which isInCustom() defaults to for a CUSTOM container child)
-        boolean inline = !isAlignCaption && property.isInline() && !lsf;
+        boolean inline = !isAlignCaption && property.isInline() && !lsfView;
         boolean verticalDiffers = hasCaption && property.comment != null && !inline && property.captionVertical != property.panelCommentVertical;
         boolean panelVertical = hasCaption ? property.captionVertical : property.panelCommentVertical;
 

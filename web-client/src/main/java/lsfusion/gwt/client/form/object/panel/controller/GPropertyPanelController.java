@@ -2,14 +2,17 @@ package lsfusion.gwt.client.form.object.panel.controller;
 
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
@@ -20,65 +23,55 @@ import java.util.List;
 import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GPropertyPanelController implements ActionOrPropertyValueController {
-    private boolean columnsUpdated = true;
+    private boolean rendererKeysUpdated = true;
 
     public GPropertyDraw property;
 
     private final GFormController form;
 
-    private NativeHashMap<GGroupObjectValue, Integer> renderedColumnKeys;
+    private NativeHashMap<GGroupObjectValue, Integer> renderedKeys;
     private NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
-    public SizedFlexPanel columnsPanel;
+    // what a renderer key means for this property and where its renderers go: columns of the property's own panel, or
+    // rows of a grid a CUSTOM REACT view draws - and it is the panel controller that owns this one which says which,
+    // because the placement state (a column panel, a row's host) is its own
+    private final GAbstractPanelController panelController;
 
-    private ArrayList<GGroupObjectValue> columnKeys;
+    private ArrayList<GGroupObjectValue> rendererKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
     private NativeHashMap<GGroupObjectValue, PValue> values;
-    private NativeHashMap<GGroupObjectValue, PValue> captions;
     private NativeHashMap<GGroupObjectValue, PValue> loadings;
     private NativeHashMap<GGroupObjectValue, PValue> showIfs;
-    private NativeHashMap<GGroupObjectValue, PValue> readOnly;
-    private NativeHashMap<GGroupObjectValue, PValue> cellFontValues;
-    private NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues;
-    private NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues;
-    private NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses;
-    private NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClasses;
 
-    private NativeHashMap<GGroupObjectValue, PValue> images;
+    // every ATTRIBUTE the server delivers, kept under the reader that delivered it instead of in a field per attribute.
+    // Keeping the reader is what lets the lookup ASK it which axis it was read over (readAttribute) rather than restate
+    // that rule here - the value itself, its loading flag and showIf stay apart above: they are not attributes.
+    private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> attributeValues = new NativeSIDMap<>();
 
-    private NativeHashMap<GGroupObjectValue, PValue> comments;
-    private NativeHashMap<GGroupObjectValue, PValue> cellCommentElementClasses;
-    private NativeHashMap<GGroupObjectValue, PValue> placeholders;
-    private NativeHashMap<GGroupObjectValue, PValue> patterns;
-    private NativeHashMap<GGroupObjectValue, PValue> regexps;
-    private NativeHashMap<GGroupObjectValue, PValue> regexpMessages;
-    private NativeHashMap<GGroupObjectValue, PValue> tooltips;
-    private NativeHashMap<GGroupObjectValue, PValue> valueTooltips;
-    private NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions;
-    private NativeHashMap<GGroupObjectValue, PValue> changeKeys;
-    private NativeHashMap<GGroupObjectValue, PValue> changeMouses;
-    private NativeHashMap<GGroupObjectValue, PValue> defaultValues;
-
-    public GPropertyPanelController(GPropertyDraw property, GFormController form) {
+    public GPropertyPanelController(GPropertyDraw property, GFormController form, GAbstractPanelController panelController) {
         this.property = property;
         this.form = form;
-        renderedColumnKeys = new NativeHashMap<>();
+        this.panelController = panelController;
+        renderedKeys = new NativeHashMap<>();
         renderers = new NativeHashMap<>();
     }
 
-    private boolean needColumnsPanel() {
-        return property.hasColumnGroupObjects() || property.hide;
+    private boolean formView; // whether the form laid something out for this property (see initView)
+
+    public boolean hasFormView() {
+        return formView;
     }
 
     public ComponentWidget initView() {
         boolean alignCaption = property.isAlignCaption();
-        if(needColumnsPanel()) {
+        if(!panelController.isSingleRenderer(property)) {
             assert !alignCaption;
 
-            columnsPanel = new SizedFlexPanel(property.panelColumnVertical);
-            GwtClientUtils.addClassName(columnsPanel, "property-container-panel", "propertyContainerPanel", v5);
-            return new ComponentWidget(columnsPanel);
+            Widget formWidget = panelController.getFormWidget(property);
+            formView = formWidget != null;
+            return formView ? new ComponentWidget(formWidget) : null; // null: the form lays out nothing here
         } else {
+            formView = true;
             Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null; // or is tabbed ?
             return new ComponentWidget(addPanelRenderer(GGroupObjectValue.EMPTY, captionWidget), captionWidget != null ? captionWidget.result : null);
         }
@@ -89,141 +82,132 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         List<GGroupObjectValue> optionsToRemove = new ArrayList<>();
 
         NativeHashMap<GGroupObjectValue, Integer> newRenderedColumnKeys = new NativeHashMap<>();
-        for (int i = 0; i < columnKeys.size(); i++) {
-            GGroupObjectValue columnKey = columnKeys.get(i);
-            if (showIfs == null || PValue.getBooleanValue(showIfs.get(columnKey))) {
-                Integer oldColumnKeyOrder = renderedColumnKeys.remove(columnKey);
+        for (int i = 0; i < rendererKeys.size(); i++) {
+            GGroupObjectValue rendererKey = rendererKeys.get(i);
+            if (showIfs == null || PValue.getBooleanValue(showIfs.get(panelController.getColumnKey(rendererKey)))) {
+                Integer oldColumnKeyOrder = renderedKeys.remove(rendererKey);
                 if (oldColumnKeyOrder != null) {
-                    if (i != oldColumnKeyOrder) {
-                        optionsToRemove.add(columnKey);
-                        optionsToAdd.add(columnKey);
+                    if (panelController.recreateRendererOnMove(oldColumnKeyOrder, i)) {
+                        optionsToRemove.add(rendererKey);
+                        optionsToAdd.add(rendererKey);
                     }
                 } else {
-                    optionsToAdd.add(columnKey);
+                    optionsToAdd.add(rendererKey);
                 }
-                newRenderedColumnKeys.put(columnKey, newRenderedColumnKeys.size());
+                newRenderedColumnKeys.put(rendererKey, newRenderedColumnKeys.size());
             }
         }
 
-        renderedColumnKeys.foreachKey(optionsToRemove::add);
+        renderedKeys.foreachKey(optionsToRemove::add);
 
-        renderedColumnKeys = newRenderedColumnKeys;
+        renderedKeys = newRenderedColumnKeys;
 
         return new Pair<>(optionsToAdd, optionsToRemove);
     }
 
     public void update() {
-        if (columnsUpdated) {
-            boolean hide = property.hide;
-            if (!hide || property.hasKeyBinding() || property.hasMouseBinding()) {
+        if (rendererKeysUpdated) {
+            if (panelController.shouldCreateRenderers(property)) {
 
                 Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
                 List<GGroupObjectValue> optionsToAdd = pair.first;
                 List<GGroupObjectValue> optionsToRemove = pair.second;
 
                 // removing old renderers
-                optionsToRemove.forEach(columnKey -> {
-                    ComponentViewWidget component = removePanelRenderer(columnKey);
-
-                    if (!hide) {
-                        component.remove(columnsPanel);
-                    }
-                });
+                optionsToRemove.forEach(rendererKey ->
+                        panelController.removeRenderer(rendererKey, property, removePanelRenderer(rendererKey)));
 
                 //adding new renderers
-                optionsToAdd.forEach(columnKey -> {
-                    ComponentViewWidget component = addPanelRenderer(columnKey, null);
-
-                    if (!hide) { // something like getChildPosition should be done here, but for now there is a hasColumnGroupObjects check
-                        component.add(columnsPanel, renderedColumnKeys.get(columnKey));
-                    }
-                });
+                optionsToAdd.forEach(rendererKey ->
+                        panelController.addRenderer(rendererKey, property, addPanelRenderer(rendererKey, null), renderedKeys.get(rendererKey)));
             }
 
-            columnsUpdated = false;
+            rendererKeysUpdated = false;
         }
 
         renderers.foreachEntry(this::updateRenderer);
     }
 
-    public ComponentViewWidget addPanelRenderer(GGroupObjectValue columnKey, Result<CaptionWidget> caption) {
-        PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, caption);
-        ComponentViewWidget component = newRenderer.getComponentViewWidget();
-        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.getShowingWidget());
-        renderers.put(columnKey, newRenderer);
-        return component;
+    // the renderer drawn for this key, or null. It is the only record of it: whoever places renderers asks here rather
+    // than keeping a second map of its own
+    public PanelRenderer getRenderer(GGroupObjectValue rendererKey) {
+        return renderers.get(rendererKey);
     }
 
-    public ComponentViewWidget removePanelRenderer(GGroupObjectValue columnKey) {
-        PanelRenderer renderer = renderers.remove(columnKey);
-        form.removePropertyBindings(renderer.bindingEventIndices);
-        ComponentViewWidget widget = renderer.getComponentViewWidget();
-        renderer.destroy(); // after the widget is read out: a dropped renderer is otherwise kept alive by its tippy and by MainFrame's color-theme listener list
-        return widget;
-    }
-
+    // take every renderer out and destroy it. NOT through the diff: the diff is skipped entirely when the panel says
+    // no renderers should exist right now, which is exactly the state a hidden property with renderers left over is in
     // the form is closing: unhook every renderer from what outlives the form (the static color-theme listener list,
-    // a tippy) - and nothing more. No layout surgery: the form's whole DOM subtree is discarded with it.
+    // a tippy) - and nothing more. No layout surgery: the form's whole DOM subtree, parks included, is discarded with it.
     public void destroyRenderers() {
         renderers.foreachValue(PanelRenderer::destroy);
     }
 
-    private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
-        PValue valueElementClass = null;
-        if(cellValueElementClasses != null) {
-            valueElementClass = cellValueElementClasses.get(columnKey);
-        }
-        PValue font = null;
-        if (cellFontValues != null) {
-            font = cellFontValues.get(columnKey);
-        }
-        PValue background = null;
-        if (cellBackgroundValues != null) {
-            background = cellBackgroundValues.get(columnKey);
-        }
-        PValue foreground = null;
-        if (cellForegroundValues != null) {
-            foreground = cellForegroundValues.get(columnKey);
-        }
-        PValue placeholder = null;
-        if(placeholders != null) {
-            placeholder = placeholders.get(columnKey);
-        }
-        PValue pattern = null;
-        if(patterns != null) {
-            pattern = patterns.get(columnKey);
-        }
-        PValue regexp = null;
-        if(regexps != null) {
-            regexp = regexps.get(columnKey);
-        }
-        PValue regexpMessage = null;
-        if(regexpMessages != null) {
-            regexpMessage = regexpMessages.get(columnKey);
-        }
-        PValue valueTooltip = null;
-        if(valueTooltips != null) {
-            valueTooltip = valueTooltips.get(columnKey);
-        }
+    public void removeAllRenderers() {
+        List<GGroupObjectValue> existing = new ArrayList<>();
+        renderers.foreachKey(existing::add);
+        for (GGroupObjectValue rendererKey : existing)
+            panelController.removeRenderer(rendererKey, property, removePanelRenderer(rendererKey));
 
-        PValue propertyCustomOption = null;
-        if(propertyCustomOptions != null) {
-            propertyCustomOption = propertyCustomOptions.get(columnKey);
-        }
+        renderedKeys = new NativeHashMap<>();
+        rendererKeys = new ArrayList<>();
+    }
 
-        PValue defaultValue = null;
-        if(defaultValues != null) {
-            defaultValue = defaultValues.get(columnKey);
-        }
+    public ComponentViewWidget addPanelRenderer(GGroupObjectValue rendererKey, Result<CaptionWidget> caption) {
+        PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, panelController.getColumnKey(rendererKey), panelController.getRowKey(rendererKey), caption);
+        ComponentViewWidget component = newRenderer.getComponentViewWidget();
+        if (panelController.shouldRegisterBindings())
+            newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.getShowingWidget());
+        renderers.put(rendererKey, newRenderer);
+        return component;
+    }
 
-        renderer.update(values.get(columnKey),
-                loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
-                images != null ? PValue.getImageValue(images.get(columnKey)) : null,
+    public ComponentViewWidget removePanelRenderer(GGroupObjectValue rendererKey) {
+        PanelRenderer renderer = renderers.remove(rendererKey);
+        if (renderer.bindingEventIndices != null) // a per-row renderer registers none, so there are none to take back
+            form.removePropertyBindings(renderer.bindingEventIndices);
+        ComponentViewWidget componentViewWidget = renderer.getComponentViewWidget();
+        renderer.destroy(); // after the widget is read out: a dropped renderer is otherwise kept alive by its tippy and by MainFrame's color-theme listener list
+        return componentViewWidget;
+    }
+
+    // an attribute's values, or null when this property has no such reader (nothing was ever delivered for it)
+    private NativeHashMap<GGroupObjectValue, PValue> attribute(GPropertyReader reader) {
+        return reader == null ? null : attributeValues.get(reader);
+    }
+
+    // one attribute of one renderer. WHICH KEY finds it is the reader's own answer: the server reads a column attribute
+    // over the column axis, so it arrives once per column even for a property drawn per row, while the rest arrive per
+    // renderer. Asking the reader is what keeps this half in step with the projection (GReactFormData splits a list
+    // property's column and cell entries by the same isColumnAttribute), so an lsf property - drawn HERE and
+    // captioned THERE - cannot end up reading one attribute at two different keys.
+    private PValue readAttribute(GPropertyReader reader, GGroupObjectValue rendererKey) {
+        NativeHashMap<GGroupObjectValue, PValue> values = attribute(reader);
+        if (values == null)
+            return null;
+        return values.get(reader.isColumnAttribute(property) ? panelController.getColumnKey(rendererKey) : rendererKey);
+    }
+
+    private void updateRenderer(GGroupObjectValue rendererKey, PanelRenderer renderer) {
+        PValue valueElementClass = readAttribute(property.valueElementClassReader, rendererKey);
+        PValue font = readAttribute(property.fontReader, rendererKey);
+        PValue background = readAttribute(property.backgroundReader, rendererKey);
+        PValue foreground = readAttribute(property.foregroundReader, rendererKey);
+        PValue placeholder = readAttribute(property.placeholderReader, rendererKey);
+        PValue pattern = readAttribute(property.patternReader, rendererKey);
+        PValue regexp = readAttribute(property.regexpReader, rendererKey);
+        PValue regexpMessage = readAttribute(property.regexpMessageReader, rendererKey);
+        PValue valueTooltip = readAttribute(property.valueTooltipReader, rendererKey);
+        PValue propertyCustomOption = readAttribute(property.propertyCustomOptionsReader, rendererKey);
+        PValue defaultValue = readAttribute(property.defaultValueReader, rendererKey);
+
+        renderer.update(values.get(rendererKey),
+                loadings != null && PValue.getBooleanValue(loadings.get(rendererKey)),
+                attribute(property.imageReader) != null ? PValue.getImageValue(readAttribute(property.imageReader, rendererKey)) : null,
                 valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass),
                 font == null ? property.font : PValue.getFontValue(font),
                 background == null ? property.getBackground() : PValue.getColorStringValue(background),
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
-                readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
+                attribute(property.readOnlyReader) == null ? null : PValue.get3SBooleanValue(readAttribute(property.readOnlyReader, rendererKey)),
                 placeholder == null ? property.placeholder : PValue.getStringValue(placeholder),
                 pattern == null ? property.getPattern() : PValue.getStringValue(pattern),
                 regexp == null ? property.regexp : PValue.getStringValue(regexp),
@@ -232,25 +216,27 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 defaultValue == null ? property.defaultValue : PValue.getStringValue(defaultValue),
                 propertyCustomOption);
 
-        if (captions != null)
-            renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
+        // these are SET only when the property actually has the reader: unlike the arguments above they have no static
+        // fallback here, so setting them from a missing attribute would clear what the design put there
+        if (attribute(property.captionReader) != null)
+            renderer.setCaption(GGridPropertyTable.getDynamicCaption(readAttribute(property.captionReader, rendererKey)));
 
-        if(changeKeys != null)
-            renderer.setChangeKey(PValue.getBindingValue(changeKeys.get(columnKey)));
+        if (attribute(property.changeKeyReader) != null)
+            renderer.setChangeKey(PValue.getBindingValue(readAttribute(property.changeKeyReader, rendererKey)));
 
-        if(changeMouses != null)
-            renderer.setChangeMouse(PValue.getBindingValue(changeMouses.get(columnKey)));
+        if (attribute(property.changeMouseReader) != null)
+            renderer.setChangeMouse(PValue.getBindingValue(readAttribute(property.changeMouseReader, rendererKey)));
 
-        if (cellCaptionElementClasses != null)
-            renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));
+        if (attribute(property.captionElementClassReader) != null)
+            renderer.setCaptionElementClass(PValue.getClassStringValue(readAttribute(property.captionElementClassReader, rendererKey)));
 
-        if (comments != null)
-            renderer.setComment(GGridPropertyTable.getDynamicComment(comments.get(columnKey)));
-        if (cellCommentElementClasses != null)
-            renderer.setCommentElementClass(PValue.getClassStringValue(cellCommentElementClasses.get(columnKey)));
+        if (attribute(property.commentReader) != null)
+            renderer.setComment(GGridPropertyTable.getDynamicComment(readAttribute(property.commentReader, rendererKey)));
+        if (attribute(property.commentElementClassReader) != null)
+            renderer.setCommentElementClass(PValue.getClassStringValue(readAttribute(property.commentElementClassReader, rendererKey)));
 
-        if (tooltips != null)
-            renderer.setTooltip(GGridPropertyTable.getDynamicTooltip(tooltips.get(columnKey)));
+        if (attribute(property.tooltipReader) != null)
+            renderer.setTooltip(GGridPropertyTable.getDynamicTooltip(readAttribute(property.tooltipReader, rendererKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {
@@ -258,8 +244,14 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             return false;
         }
 
-        PanelRenderer toFocus = columnKeys == null ? renderers.firstValue() : renderers.get(columnKeys.get(0));
-        return toFocus.focus(reason);
+        PanelRenderer toFocus;
+        if (rendererKeys == null)
+            toFocus = renderers.firstValue();
+        else {
+            GGroupObjectValue focusKey = panelController.getFocusKey(rendererKeys); // the first column, or the CURRENT row
+            toFocus = focusKey != null ? renderers.get(focusKey) : null;
+        }
+        return toFocus != null && toFocus.focus(reason);
     }
 
     @Override
@@ -288,125 +280,86 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         }
     }
 
-    public void setPropertyCaptions(NativeHashMap<GGroupObjectValue, PValue> captions) {
-        this.captions = captions;
-    }
 
-    public void setReadOnlyValues(NativeHashMap<GGroupObjectValue, PValue> readOnly) {
-        this.readOnly = readOnly;
+
+    // ONE entry point for every attribute: the reader says what it is, so nothing here has to name them one by one
+    public void setAttributeValues(GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        attributeValues.put(reader, values);
     }
 
     public void setShowIfs(NativeHashMap<GGroupObjectValue, PValue> showIfs) {
         if (!GwtSharedUtils.nullEquals(this.showIfs, showIfs)) {
             this.showIfs = showIfs;
 
-            columnsUpdated = needColumnsPanel();
+            rendererKeysUpdated = !panelController.isSingleRenderer(property);
         }
     }
 
-    public void setColumnKeys(ArrayList<GGroupObjectValue> columnKeys) {
-        if (!GwtSharedUtils.nullEquals(this.columnKeys, columnKeys)) {
-            this.columnKeys = columnKeys;
-
-            columnsUpdated = needColumnsPanel();
-        }
+    // the keys the property is drawn for: the panel controller turns the server's column keys into them
+    public void updateKeys(ArrayList<GGroupObjectValue> columnKeys) {
+        setRendererKeys(panelController.getRendererKeys(columnKeys));
     }
 
-    public void setCellValueElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses) {
-        this.cellValueElementClasses = cellValueElementClasses;
+    // returns whether these are different keys from the ones the renderers stand for, so a caller that reconciles on
+    // key changes can tell them from the far more common update that only carried values
+    public boolean setRendererKeys(ArrayList<GGroupObjectValue> rendererKeys) {
+        if (GwtSharedUtils.nullEquals(this.rendererKeys, rendererKeys))
+            return false;
+
+        this.rendererKeys = rendererKeys;
+
+        rendererKeysUpdated = !panelController.isSingleRenderer(property);
+        return true;
     }
 
-    public void setCellCaptionElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClasses) {
-        this.cellCaptionElementClasses = cellCaptionElementClasses;
-    }
 
-    public void setCellFontValues(NativeHashMap<GGroupObjectValue, PValue> cellFontValues) {
-        this.cellFontValues = cellFontValues;
-    }
 
-    public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues) {
-        this.cellBackgroundValues = cellBackgroundValues;
-    }
 
-    public void setCellForegroundValues(NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues) {
-        this.cellForegroundValues = cellForegroundValues;
-    }
 
-    public void setImages(NativeHashMap<GGroupObjectValue, PValue> images) {
-        this.images = images;
+
+
+    // the renderer a full key is about, or null. The panel says which part of the key identifies it - the ROW when
+    // the property is drawn once per row, the COLUMN otherwise - and getting that wrong is silent: the lookup simply
+    // misses, so the caller records no optimistic value, no loading state and no request to reconcile, and a lost edit
+    // reads as a slow server rather than as a bug.
+    private PanelRenderer getRendererForFullKey(GGroupObjectValue fullCurrentKey) {
+        GGroupObjectValue rendererKey = panelController.getRendererKey(property, fullCurrentKey);
+        return rendererKey != null ? renderers.get(rendererKey) : null;
     }
 
     public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GGroupObjectValue fullCurrentKey, PValue value) {
-        GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
-        if(propertyColumnKey == null)
-            return null;
-        PanelRenderer panelRenderer = renderers.get(propertyColumnKey);
+        PanelRenderer panelRenderer = getRendererForFullKey(fullCurrentKey);
         if(panelRenderer == null)
             return null;
-        return new Pair<>(propertyColumnKey, panelRenderer.setLoadingValue(value));
+        // the key the form records the pending change under: the renderer's own, so nothing re-derives it here
+        return new Pair<>(panelRenderer.getRendererKey(), panelRenderer.setLoadingValue(value));
     }
 
     @Override
-    public void startEditing(GGroupObjectValue columnKey) {
-        PanelRenderer panelRenderer = renderers.get(columnKey);
+    public void startEditing(GGroupObjectValue fullCurrentKey) {
+        PanelRenderer panelRenderer = getRendererForFullKey(fullCurrentKey);
         if(panelRenderer == null)
             return;
         panelRenderer.startEditing();
     }
 
     @Override
-    public void stopEditing(GGroupObjectValue columnKey) {
-        PanelRenderer panelRenderer = renderers.get(columnKey);
+    public void stopEditing(GGroupObjectValue fullCurrentKey) {
+        PanelRenderer panelRenderer = getRendererForFullKey(fullCurrentKey);
         if(panelRenderer == null)
             return;
         panelRenderer.stopEditing();
     }
 
-    public void setPropertyComments(NativeHashMap<GGroupObjectValue, PValue> comments) {
-        this.comments = comments;
-    }
 
-    public void setCellCommentElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellCommentElementClasses) {
-        this.cellCommentElementClasses = cellCommentElementClasses;
-    }
 
-    public void setPropertyPlaceholders(NativeHashMap<GGroupObjectValue, PValue> placeholders) {
-        this.placeholders = placeholders;
-    }
 
-    public void setPropertyPatterns(NativeHashMap<GGroupObjectValue, PValue> patterns) {
-        this.patterns = patterns;
-    }
 
-    public void setPropertyRegexps(NativeHashMap<GGroupObjectValue, PValue> regexps) {
-        this.regexps = regexps;
-    }
 
-    public void setPropertyRegexpMessages(NativeHashMap<GGroupObjectValue, PValue> regexpMessages) {
-        this.regexpMessages = regexpMessages;
-    }
 
-    public void setPropertyTooltips(NativeHashMap<GGroupObjectValue, PValue> tooltips) {
-        this.tooltips = tooltips;
-    }
 
-    public void setPropertyValueTooltips(NativeHashMap<GGroupObjectValue, PValue> valueTooltips) {
-        this.valueTooltips = valueTooltips;
-    }
 
-    public void setPropertyCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> propertyCustomOptions) {
-        this.propertyCustomOptions = propertyCustomOptions;
-    }
 
-    public void setPropertyChangeKeys(NativeHashMap<GGroupObjectValue, PValue> changeKeys) {
-        this.changeKeys = changeKeys;
-    }
 
-    public void setPropertyChangeMouses(NativeHashMap<GGroupObjectValue, PValue> changeMouses) {
-        this.changeMouses = changeMouses;
-    }
 
-    public void setPropertyDefaultValues(NativeHashMap<GGroupObjectValue, PValue> defaultValues) {
-        this.defaultValues = defaultValues;
-    }
 }

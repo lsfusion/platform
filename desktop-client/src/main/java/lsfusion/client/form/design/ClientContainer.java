@@ -21,6 +21,7 @@ public class ClientContainer extends ClientComponent {
 
     public String caption;
     public String name;
+    public boolean declared; // written by the author in DESIGN (`NEW <name>`), not generated
     public AppImage image;
 
     public String captionClass;
@@ -65,6 +66,7 @@ public class ClientContainer extends ClientComponent {
 
         caption = pool.readString(inStream);
         name = pool.readString(inStream);
+        declared = inStream.readBoolean();
         image = pool.readImageIcon(inStream);
 
         captionClass = pool.readString(inStream);

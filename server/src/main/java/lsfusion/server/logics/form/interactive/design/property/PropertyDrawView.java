@@ -531,6 +531,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return getBackground() != null || entity.getPropertyExtra(BACKGROUND) != null;
     }
 
+
     private boolean isLink(FormInstanceContext context) {
         return hasFlow(context, ChangeFlowType.INTERACTIVEFORM) && !hasFlow(context, ChangeFlowType.READONLYCHANGE);
     }
@@ -1627,6 +1628,15 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
     public void setNotNull(Boolean value, Version version) {
         notNull.set(value,version);
+    }
+
+    // LSF is declared on the property in the FORM statement, but what reaches the client is the component flag:
+    // ComponentView.customSerialize already writes isLsfView() for every component, and a property draw is one, so
+    // this override is the whole of the wire change. The DESIGN option remains available as the fallback.
+    @Override
+    public boolean isLsfView() {
+        Boolean entityLsf = entity.getLsfView();
+        return entityLsf != null ? entityLsf : super.isLsfView();
     }
 
     public boolean isSticky(FormInstanceContext context) {

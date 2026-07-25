@@ -18,7 +18,5 @@ public class GGridElementClassReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "gridClass"; }
-    @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.CLASS; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.CLASS; }
 }

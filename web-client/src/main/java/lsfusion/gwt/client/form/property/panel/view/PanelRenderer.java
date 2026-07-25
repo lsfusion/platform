@@ -22,18 +22,16 @@ public abstract class PanelRenderer {
     protected final GFormController form;
 
     protected final GPropertyDraw property;
-    protected final GGroupObjectValue columnKey;
 
     protected final ActionOrPropertyPanelValue value;
 
     public ArrayList<Integer> bindingEventIndices;
 
-    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, boolean globalCaptionIsDrawn) {
+    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, boolean globalCaptionIsDrawn) {
         this.form = form;
         this.property = property;
-        this.columnKey = columnKey;
 
-        value = new ActionOrPropertyPanelValue(property, columnKey, form, globalCaptionIsDrawn, controller); // captionContainer != null, now we use different approach when button is renderered as caption
+        value = new ActionOrPropertyPanelValue(property, columnKey, rowKey, form, globalCaptionIsDrawn, controller); // captionContainer != null, now we use different approach when button is renderered as caption
     }
 
     private JavaScriptObject tippy = null;
@@ -72,6 +70,22 @@ public abstract class PanelRenderer {
                 GFormController.setFont(labelWidget.getElement(), this.property.captionFont);
             }
         }
+    }
+
+    // the keys live in the value, which needs them for its edit context; the renderer reads them from there rather than
+    // keeping a second pair that could only ever say the same thing
+    protected GGroupObjectValue getColumnKey() {
+        return value.columnKey;
+    }
+
+    protected GGroupObjectValue getRowKeyOrNull() {
+        return value.rowKey;
+    }
+
+    // the key its controller files it under. Not another key: by the strategy's contract a renderer has a ROW only when
+    // it is drawn per row, and then that row IS the key; otherwise the column is
+    public GGroupObjectValue getRendererKey() {
+        return value.rowKey != null ? value.rowKey : value.columnKey;
     }
 
     public abstract ComponentViewWidget getComponentViewWidget();

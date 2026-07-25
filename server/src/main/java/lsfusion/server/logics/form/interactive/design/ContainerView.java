@@ -38,6 +38,11 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
 
     private NFProperty<LocalizedString> caption = NFFact.property();
     private NFProperty<String> name = NFFact.property(); // actually used only for icons
+
+    // the author wrote this container themselves - DESIGN's `NEW <name>` (ScriptingFormView.createNewComponent). The
+    // generated boxes of a form and of every group are not declared, even though some of them are named (for icons),
+    // and a CUSTOM REACT view is given only the containers that were declared (GReactFormData.fillContainers).
+    public boolean declared;
     private NFProperty<AppServerImage.Reader> image = NFFact.property();
 
     private NFProperty<String> valueClass = NFFact.property();
@@ -195,6 +200,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     private boolean hasCaption() {
         return !PropertyDrawView.hasNoCaption(getCaption(), getPropertyCaption(), null);
     }
+
     private boolean hasNFCaption(Version version) {
         return !PropertyDrawView.hasNoCaption(getNFCaption(version), getNFPropertyCaption(version), null);
     }
@@ -397,6 +403,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(getCaption()) : null); // optimization
         pool.writeString(outStream, getName()); // optimization
+        outStream.writeBoolean(declared);
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
         pool.writeString(outStream, getCaptionClass());
@@ -756,6 +763,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         debugPoint = src.debugPoint;
 
         main = src.main;
+        declared = src.declared; // a copied design keeps its author's containers - see the field
 
         recordContainer = mapping.get(src.recordContainer);
         addParent = mapping.get(src.addParent);
@@ -768,6 +776,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     public void extend(ContainerView<AddParent> src, ObjectMapping mapping) {
         super.extend(src, mapping);
 
+        declared |= src.declared; // monotone: extending a generated box with a declared one makes it the author's,
+                                  // and extending a declared box never un-declares it
         mapping.sets(caption, src.caption);
         mapping.sets(name, src.name);
         mapping.sets(image, src.image);

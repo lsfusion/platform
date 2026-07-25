@@ -16,9 +16,9 @@ public class GFooterReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "footer"; }
+    public String getAttributeField() { return "footer"; }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.FOOTER; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.FOOTER; }
     @Override
-    public boolean isColumnLevel(GPropertyDraw draw) { return true; } // the column footer (no static design fallback)
+    public boolean isColumnAttribute(GPropertyDraw draw) { return true; } // the column footer (no static design fallback)
 }

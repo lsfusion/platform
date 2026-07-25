@@ -63,6 +63,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferenc
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
+import lsfusion.gwt.client.form.object.panel.controller.GRowPanelController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
@@ -139,6 +140,7 @@ public class GFormController implements EditManager {
     private final LinkedHashMap<GGroupObject, GGridController> controllers = new LinkedHashMap<>();
     private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
     private final LinkedHashMap<GGroupObject, GReactController> reactControllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GGroupObject, GRowPanelController> rowPanelControllers = new LinkedHashMap<>(); // groups with LSF properties
     public GPanelController panelController;
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
@@ -760,6 +762,14 @@ public class GFormController implements EditManager {
         }
 
         for (GGroupObject group : form.groupObjects) {
+            // a group can have both: React draws its rows from the projection, and the platform draws its LSF
+            // properties into each of those rows
+            for (GPropertyDraw draw : form.propertyDraws)
+                if (draw.groupObject == group && draw.isLsfViewPerRow()) {
+                    rowPanelControllers.put(group, new GRowPanelController(this, group));
+                    break;
+                }
+
             if (isReactOwned(group)) {
                 initializeReactController(group);
             } else {
@@ -1036,17 +1046,18 @@ public class GFormController implements EditManager {
         if (reactData != null) { // CUSTOM REACT: project form state and push to the React container(s)
             reactData.update(fc);
             formLayout.updateReactContainers(reactData);
+
+            updateRowRenderers(); // after the projection: the per-row renderers follow the rows it now holds
         }
     }
 
     public void applyKeyChanges(GFormChanges fc, int requestIndex) {
         fc.gridObjects.foreachEntry((key, value) -> {
             getGroupController(key).updateKeys(key, value, fc, requestIndex);
+
         });
 
-        fc.objects.foreachEntry((key, value) -> {
-            getGroupController(key).updateCurrentKey(value);
-        });
+        fc.objects.foreachEntry((key, value) -> getGroupController(key).updateCurrentKey(value));
     }
 
     private void applyPropertyChanges(GFormChanges fc) {
@@ -1064,7 +1075,7 @@ public class GFormController implements EditManager {
     private void updatePropertyChanges(GFormChanges fc, Predicate<GPropertyReader> filter) {
         fc.properties.foreachEntry((key, value) -> {
             // a reader React consumes is skipped from GWT and instead fed by reactData.update(fc): a react-owned
-            // component's value (into data), or an lsf child's presentation reader (into data.components). The
+            // component's value (into data), or an lsf child's caption/image reader (into its entry). The
             // lsf child's own VALUE draw reader is not owned, so it still reaches its GWT view here.
             if(filter.test(key) && !isReactOwned(key))
                 key.update(this, value, fc.updateProperties.contains(key));
@@ -1077,6 +1088,9 @@ public class GFormController implements EditManager {
 
         for (GTreeGroupController treeController : treeControllers.values())
             treeController.update();
+
+        for (GRowPanelController rowPanelController : rowPanelControllers.values())
+            rowPanelController.update();
 
         panelController.update();
     }
@@ -1230,6 +1244,17 @@ public class GFormController implements EditManager {
     }
 
     public GPropertyController getPropertyController(GPropertyDraw property) {
+        // an LSF property is a grid property, so without this it would be routed to its group's controller - which
+        // for a group React draws is a set of deliberate no-ops, and its values would be dropped on the way
+        if (property.isLsfViewPerRow()) {
+            // initializeControllers makes one for every group holding such a property, by this very predicate, so a
+            // miss is a broken invariant rather than a case to fall through - falling through would route the property
+            // to its group's controller and drop its values there in silence
+            GRowPanelController rowPanelController = rowPanelControllers.get(property.groupObject);
+            assert rowPanelController != null;
+            return rowPanelController;
+        }
+
         if(property.isList) {
             return getGroupObjectController(property.groupObject);
         } else
@@ -1256,7 +1281,7 @@ public class GFormController implements EditManager {
     }
 
     // the react container that RENDERS this component, null if GWT does. A react container renders every child except
-    // an lsf one — which keeps its GWT view and is mounted into a React placeholder, so it (and its subtree) is
+    // an LSF one — which keeps its GWT view and is mounted into a React placeholder, so it (and its subtree) is
     // rendered by GWT. A non-lsf child gets no GWT view at all, so everything below it is rendered by the same
     // container: the walk therefore climbs to the OUTERMOST react ancestor reachable through non-lsf hops
     // (resolving to an inner react container that never gets a ReactContainerView would silently produce no data).
@@ -1283,6 +1308,21 @@ public class GFormController implements EditManager {
         return null;
     }
 
+    // the rows and the current row the projection holds for a group, for the per-row renderers that follow them. Both
+    // include an optimistic change the view made before the server confirmed it
+    public ArrayList<GGroupObjectValue> getReactRows(GGroupObject group) {
+        return reactData != null ? reactData.getRows(group) : null;
+    }
+
+    public GGroupObjectValue getReactCurrentObject(GGroupObject group) {
+        return reactData != null ? reactData.getCurrentObject(group) : null;
+    }
+
+    // the controller drawing this LSF property, for whoever is placing one of its per-row renderers
+    public GRowPanelController getRowPanelController(GPropertyDraw property) {
+        return property != null ? rowPanelControllers.get(property.groupObject) : null;
+    }
+
     public boolean isReactOwned(GComponent component) {
         return getOwningReactContainer(component) != null;
     }
@@ -1292,21 +1332,34 @@ public class GFormController implements EditManager {
     }
 
     public boolean isReactOwned(GPropertyDraw property) {
+        if (property == null)
+            return false;
+
+        // an LSF property is drawn by the platform - once per row for a grid property, once for a panel one - so its
+        // whole reader set (value, editability, colours, font, placeholder, pattern, tooltips and the rest) feeds those
+        // renderers instead of the projection. Its caption and image still reach its entry: taken earlier, by
+        // isLsfViewDescriptorReader. The predicate is isLsfView, not isLsfViewPerRow, so that it states the whole rule on its
+        // own: an LSF PANEL draw of a react-owned group would otherwise fall through to the group answer below and
+        // come back react-owned, and its readers would then be skipped here while the projection emits only caption/image.
+        // FormView.checkDelegate rejects that form at startup ("delegate the group's box instead"), so this is agreement
+        // with the server rather than a case that reaches us - an LSF draw is platform-drawn, and that is the answer.
+        if (property.isLsfView())
+            return false;
+
         // GROUP-based for any grouped draw (consistent with GReactFormData's projection ownership): a panel draw of a
         // non-react group physically placed inside a react container stays classic — projecting it would require a
         // react controller its group doesn't have (NPE), and the projection wouldn't pick it up anyway
-        return property != null && (property.groupObject != null ? isReactOwned(property.groupObject) : getOwningReactContainer(property) != null);
+        return property.groupObject != null ? isReactOwned(property.groupObject) : getOwningReactContainer(property) != null;
     }
 
     // a reader React consumes (so GWT skips it): either it belongs to a react-owned component — its value is projected
-    // into `data` — OR it is an lsf child's PRESENTATION reader (caption / captionClass / image) projected into
-    // `data.components`. The react container thus reaches into an lsf child's descriptor readers, even though the
-    // child keeps its own GWT VALUE view (that draw reader is not owned and still reaches GWT). As #1670 grows the
-    // projected presentation (read-only, colors, classes, images, sums), those readers join isComponentReader here.
+    // into `data` — OR it is an lsf child's DESCRIPTOR reader (what isLsfViewDescriptorReader admits) projected into its
+    // entry. The react container thus reaches into an lsf child's descriptor readers, even though the child keeps its
+    // own GWT VALUE view (that draw reader is not owned and still reaches GWT).
     private boolean isReactOwned(GPropertyReader reader) {
         if (reactData == null)
             return false;
-        if (reactData.isComponentReader(reader)) // an lsf child's presentation reader, projected into data.components
+        if (reactData.isLsfViewDescriptorReader(reader)) // an lsf child's caption/image reader, projected into its entry
             return true;
         if (reader instanceof GPropertyDraw)
             return isReactOwned((GPropertyDraw) reader);
@@ -2115,6 +2168,13 @@ public class GFormController implements EditManager {
     // applyRemoteChanges later reconciles through the same reactData.update(fc) + updateReactContainers path
     private void refreshReactOptimistic() {
         formLayout.updateReactContainers(reactData);
+
+        updateRowRenderers(); // an optimistically added row gets its editors now, not when the server confirms it
+    }
+
+    private void updateRowRenderers() {
+        for (GRowPanelController rowPanelController : rowPanelControllers.values())
+            rowPanelController.updateRowRenderers();
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -2351,8 +2411,11 @@ public class GFormController implements EditManager {
             return;
 
         // every panel renderer registers in MainFrame's static color-theme listener list, and nothing on a closing
-        // form unregisters it - each one would stay reachable, with its whole widget graph, for the life of the page
+        // form unregisters it - each one would stay reachable for the life of the page: the form panel's, and the
+        // per-row ones multiplied by the size of the key window
         panelController.destroy();
+        for (GRowPanelController rowPanelController : rowPanelControllers.values())
+            rowPanelController.destroy();
 
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
@@ -2404,12 +2467,12 @@ public class GFormController implements EditManager {
 
     public void setContainerCaption(GContainer container, String caption) {
         container.caption = caption;
-        updateCaption(container); // an lsf container's caption is drawn by React: its reader is react-owned (rerouted into data.components), so this runs only for GWT containers
+        updateCaption(container); // an lsf container's caption is drawn by React: its reader is react-owned (rerouted into its entry), so this runs only for GWT containers
     }
 
     public void setContainerImage(GContainer container, AppBaseImage image) {
         container.image = image;
-        updateImage(container); // an lsf container's image goes to React (data.components); its reader never reaches here
+        updateImage(container); // an lsf container's image goes to React (its entry); its reader never reaches here
     }
 
     private Widget getCaptionWidget(GContainer container) {
@@ -3073,8 +3136,8 @@ public class GFormController implements EditManager {
         return cellEditor == this.cellEditor;
     }
 
-    // cancel the edit only if THIS context is the one being edited: a renderer being dropped must not cancel an edit
-    // that belongs to another one, and must not leave the form holding an edit context whose widget is gone
+    // a renderer about to be dropped must not stay the edit context: the editor would later be committed or cancelled
+    // against a detached element, and the value would be written for a row that is no longer there
     public void cancelEditing(EditContext context, CancelReason cancelReason) {
         if (editContext == context)
             cancelEditing(cancelReason);

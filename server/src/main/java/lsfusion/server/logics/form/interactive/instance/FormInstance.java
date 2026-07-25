@@ -1930,7 +1930,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(isStaticHidden(component))
             return true;
 
-        // if this is a tab / collapsible / react-lsf container, use its parent: its CAPTION is drawn by the parent
+        // if this is a tab / collapsible / react-placed lsf-view container, use its parent: its CAPTION is drawn by the parent
         // (a tab strip, a collapse header, or a React component that can keep showing the caption while unmounting the
         // body), so the caption must keep updating even while the component's own body is hidden. The body / data is gated
         // separately (isHidden(group), and a child property's own dynamic-hidable container which resolves to this one).
@@ -2012,7 +2012,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     protected Map<ContainerView, ComponentView> activeTabs = new HashMap<>();
     protected PropertyDrawEntity activeProperty = null;
     // components the client isolatedly hid: a collapsed captioned container, or an lsf child a CUSTOM REACT
-    // component is not showing. A component is in at most one user-hidable role (an lsf container is not collapsible)
+    // component is not showing. A component is in at most one user-hidable role (an lsf-view container is not collapsible)
     protected Set<ComponentView> userHidden = new HashSet<>();
 
     public void setTabActive(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {

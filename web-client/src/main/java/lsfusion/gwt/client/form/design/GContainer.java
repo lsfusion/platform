@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GComponentReader;
-import lsfusion.gwt.client.form.property.GMetaConverter;
+import lsfusion.gwt.client.form.property.GAttributeConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
@@ -26,6 +26,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSep
 public class GContainer extends GComponent implements HasNativeSID {
     public String caption;
     public String name;
+    public boolean declared; // written by the author in DESIGN (`NEW <name>`); a generated box is not, though it may be named
     public BaseImage image;
 
     public String captionClass;
@@ -276,6 +277,8 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
 
     private class GCaptionReader implements GComponentReader {
+        @Override
+        public boolean isDescriptorAttribute() { return true; } // a container's own caption / image - what React draws for an lsf box
 
         public GCaptionReader() {
         }
@@ -287,11 +290,11 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public GMetaConverter getMetaConverter() { return GMetaConverter.CAPTION; } // same conversion this reader's update uses (getCaptionStringValue), for data.components
+        public GAttributeConverter getAttributeConverter() { return GAttributeConverter.CAPTION; } // same conversion this reader's update uses (getCaptionStringValue), for the projection
         @Override
-        public String getMetaField() { return "caption"; }
+        public String getAttributeField() { return "caption"; }
         @Override
-        public String getColumnStatic(GComponent owner) { return owner.getStaticCaption(); }
+        public String getStaticAttribute(GComponent owner) { return owner.getStaticCaption(); }
 
         @Override
         public GComponent getReaderComponent() {
@@ -310,6 +313,8 @@ public class GContainer extends GComponent implements HasNativeSID {
     public final GPropertyReader captionReader = new GCaptionReader();
 
     private class GImageReader implements GComponentReader {
+        @Override
+        public boolean isDescriptorAttribute() { return true; } // a container's own caption / image - what React draws for an lsf box
 
         public GImageReader() {
         }
@@ -321,11 +326,11 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public GMetaConverter getMetaConverter() { return GMetaConverter.IMAGE; } // same conversion this reader's update uses (getImageValue), for data.components
+        public GAttributeConverter getAttributeConverter() { return GAttributeConverter.IMAGE; } // same conversion this reader's update uses (getImageValue), for the projection
         @Override
-        public String getMetaField() { return "image"; }
+        public String getAttributeField() { return "image"; }
         @Override
-        public String getColumnStatic(GComponent owner) { return owner.getStaticImageHTML(); }
+        public String getStaticAttribute(GComponent owner) { return owner.getStaticImageHTML(); }
 
         @Override
         public GComponent getReaderComponent() {
@@ -355,7 +360,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public GMetaConverter getMetaConverter() { return GMetaConverter.CLASS; } // same conversion this reader's update uses (getClassStringValue), for data.components
+        public GAttributeConverter getAttributeConverter() { return GAttributeConverter.CLASS; } // same conversion this reader's update uses (getClassStringValue), for the projection
 
         @Override
         public GComponent getReaderComponent() {

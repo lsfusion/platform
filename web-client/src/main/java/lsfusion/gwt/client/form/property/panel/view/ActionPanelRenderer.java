@@ -11,8 +11,8 @@ public class ActionPanelRenderer extends PanelRenderer {
 
     private final SizedWidget sizedView;
 
-    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey) {
-        super(form, controller, property, columnKey, false);
+    public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey) {
+        super(form, controller, property, columnKey, rowKey, false);
 
         sizedView = value.getSizedWidget(false);
 

@@ -55,7 +55,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     public void setValue(PValue value) {
         this.value = value; // updating inner model
 
-        controller.setValue(columnKey, value); // updating outer model - controller
+        controller.setValue(getFullKey(), value); // updating outer model - controller
     }
 
     @Override
@@ -148,14 +148,19 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     protected GPropertyDraw property;
     protected GGroupObjectValue columnKey;
 
+    // set only for the panel renderer of a per-row component (one renderer per ROW of a grid); null for every classic
+    // panel renderer, which is what keeps "a panel renderer has no row" true where it has always been true
+    protected final GGroupObjectValue rowKey;
+
     protected GFormController form;
     protected ActionOrPropertyValueController controller;
 
     private boolean globalCaptionIsDrawn;
 
-    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
+    public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
         this.property = property;
         this.columnKey = columnKey;
+        this.rowKey = rowKey;
 
         this.form = form;
         this.controller = controller;
@@ -313,7 +318,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public GGroupObjectValue getRowKey() {
-        throw new UnsupportedOperationException();
+        if (rowKey == null) // getFullKey only asks a LIST draw for its row, and outside a per-row component a LIST draw
+            throw new UnsupportedOperationException(); // never gets a panel renderer at all
+        return rowKey;
     }
 
     @Override
@@ -364,7 +371,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     // the constructor registers this value in MainFrame's static listener list, so a value that is discarded before the
-    // page is (a panel renderer whose column key went away, or one of a closing form) must unregister, or it is never collected
+    // page is (a panel renderer whose column key went away) must unregister, or it is never collected
     public void destroy() {
         MainFrame.removeColorThemeChangeListener(this);
     }

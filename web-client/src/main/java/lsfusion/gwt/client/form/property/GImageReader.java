@@ -7,6 +7,9 @@ import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 
 public class GImageReader extends GExtraPropertyReader {
 
+    @Override
+    public boolean isDescriptorAttribute() { return true; } // the caption/image an lsf child hands to React
+
     public GImageReader(){}
 
     public GImageReader(int readerID, int groupObjectID) {
@@ -18,11 +21,11 @@ public class GImageReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "image"; }
+    public String getAttributeField() { return "image"; }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.IMAGE; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.IMAGE; }
     @Override
-    public boolean isColumnLevel(GPropertyDraw draw) { return !draw.isAction(); } // server keys property images by column, action images by row
+    public boolean isColumnAttribute(GPropertyDraw draw) { return !draw.isAction(); } // server keys property images by column, action images by row
     @Override
-    public String getColumnStatic(GComponent owner) { return owner.getStaticImageHTML(); }
+    public String getStaticAttribute(GComponent owner) { return owner.getStaticImageHTML(); }
 }

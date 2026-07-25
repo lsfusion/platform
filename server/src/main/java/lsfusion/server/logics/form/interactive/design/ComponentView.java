@@ -375,7 +375,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     }
 
     // the user / client drives this component's visibility and syncs it to the server, so its data is not read while
-    // hidden. Three variants: an unselected tab (exclusive, one of N), a collapsed captioned container, and an lsf
+    // hidden. Three variants: an unselected tab (exclusive, one of N), a collapsed captioned container, and an lsf-view
     // child a CUSTOM REACT component is not showing — the last two are the isolated "this one is hidden" kind
     public boolean isUserHidable() {
         ComponentView parent = getHiddenContainer();

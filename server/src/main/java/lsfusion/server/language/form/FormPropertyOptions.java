@@ -78,6 +78,9 @@ public class FormPropertyOptions {
 
     private FormSessionScope formSessionScope;
 
+    // renders this grid property as a per-ROW component placed by a CUSTOM REACT view, instead of projecting its value
+    private Boolean lsf;
+
     //integration options
     private Boolean attr;
     private String groupName;
@@ -415,6 +418,14 @@ public class FormPropertyOptions {
         this.integrationSID = integrationSID;
     }
 
+    public Boolean getLsf() {
+        return lsf;
+    }
+
+    public void setLsf(Boolean lsf) {
+        this.lsf = lsf;
+    }
+
     public Boolean getAttr() {
         return attr;
     }
@@ -560,6 +571,7 @@ public class FormPropertyOptions {
 
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
 
+        merged.setLsf(nvl(overrides.getLsf(), lsf));
         merged.setAttr(nvl(overrides.getAttr(), attr));
         merged.setGroupName(nvl(overrides.getGroupName(), groupName));
         merged.setExtNull(nvl(overrides.getExtNull(), extNull));

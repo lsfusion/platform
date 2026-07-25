@@ -6,6 +6,8 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +16,9 @@ import java.util.Set;
 
 // CUSTOM REACT 'fn': hosts a React component (window[fn], fn = container's custom) that OWNS this container's subtree,
 // except for the children marked `lsf = TRUE` in DESIGN — those keep their real GWT view, are excluded from the
-// projection, and the component places them with <Lsf sid/> (see props.data.components / <Lsfs/>).
+// projection, and the component places them with <Lsf sid/>, reading their caption/image from their entry in props.data.
 // The component receives props { data, controller }: `data` is the @lsfusion/core-shaped projected form state
-// (re-rendered on each form change) and carries the lsf children's descriptors in data.components; `controller`
+// (re-rendered on each form change) and carries every projected thing directly, keyed as it is keyed; `controller`
 // mutates the form. That is the primary, props-down contract — the
 // normal optimization is React.memo or React Compiler over props.data (structural sharing keeps unchanged refs stable).
 // For OPT-IN fine-grained re-render without prop-threading, descendants use the window.lsfusion hooks
@@ -67,8 +69,22 @@ public class ReactContainerView extends ParkedContainerView {
     // called back by the host's ref, and the cleanup is its exact inverse (F1). React runs every ref detach of a commit
     // before any attach, so a mount can never race an unmount of the same child: a second live host for one sid is
     // always a duplicate placeholder, never a legitimate move.
-    private void mountComponent(String sid, Element host) {
+    private void mountComponent(String sid, Element host, JavaScriptObject row) {
         stampHost(host, sid); // marks the host even when the mount reports a problem below
+
+        if (row != null) { // an LSF grid property: one renderer per ROW, so the row says WHICH of them goes here
+            GPropertyDraw property = getRowLsfViewProperty(sid);
+            GGroupObjectValue rowKey = GGroupObjectValue.resolveObject(row);
+            if (property == null || rowKey == null) {
+                reportUnknownRow(sid, host, property == null);
+                return;
+            }
+            // the property, not the sid JSX used: it may name it either way
+            if (formController.getRowPanelController(property).place(rowKey, property, host) != null)
+                reportDuplicate(sid, host); // another <Lsf> already placed this property for this row
+            return;
+        }
+
         if (!isLsfViewChild(sid)) { // a typo, or a non-lsf child: no view will ever exist for this host
             reportUnknown(sid, host);
             return;
@@ -115,7 +131,16 @@ public class ReactContainerView extends ParkedContainerView {
         host.removeAttribute("data-lsf-sid");
     }
 
-    private void unmountComponent(String sid, Element host) {
+    private void unmountComponent(String sid, Element host, JavaScriptObject row) {
+        if (row != null) { // the renderer goes back to waiting, it is NOT dropped: React unmounts a row by scrolling it out
+            GPropertyDraw property = getRowLsfViewProperty(sid);
+            GGroupObjectValue rowKey = GGroupObjectValue.resolveObject(row);
+            if (property != null && rowKey != null)
+                formController.getRowPanelController(property).unplace(rowKey, property, host);
+            clearHost(host);
+            return;
+        }
+
         if (hosts.get(sid) != host) { // an error / duplicate host, or a remount already moved the child to another host:
             clearDiagnostic(host);    // either way there is nothing of ours to release here
             return;
@@ -150,7 +175,7 @@ public class ReactContainerView extends ParkedContainerView {
         if (findDeclared(sid) == null) {
             showDiagnostic(host, "'" + sid + "' is not a child of '" + container.sID + "'");
             logError("component '" + sid + "' is not a child of container '" + container.sID + "'");
-        } else { // declared, but without lsf = TRUE, so React owns it
+        } else { // a child of the container, but without lsf = TRUE, so React owns it
             showDiagnostic(host, "'" + sid + "' has no lsf = TRUE");
             logError("child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: React owns it, so there is no GWT view to place");
         }
@@ -159,6 +184,27 @@ public class ReactContainerView extends ParkedContainerView {
     private void reportDuplicate(String sid, Element host) {
         showDiagnostic(host, "'" + sid + "' is already placed by another <Lsf>");
         logError("component '" + sid + "' is placed by more than one <Lsf>; the first placeholder keeps it");
+    }
+
+    // an LSF grid property declared in this container, or null. Unlike an lsf CONTAINER child, it has one
+    // renderer per row rather than one view, so it is placed through its row panel controller instead of `hosts`
+    private GPropertyDraw getRowLsfViewProperty(String sid) {
+        GComponent declared = findDeclared(sid);
+        if (declared == null) // a property's component sID is PROPERTY(name), but naming it by the property alone reads
+            declared = findDeclared("PROPERTY(" + sid + ")"); // better in JSX, so both are accepted
+        return declared instanceof GPropertyDraw && ((GPropertyDraw) declared).isLsfViewPerRow() ? (GPropertyDraw) declared : null;
+    }
+
+    // a per-row mount that cannot be resolved: either the sid names no LSF grid property of this container, or
+    // what was passed as the row is not one. Both would leave a silently empty cell, so both are shown in the page
+    private void reportUnknownRow(String sid, Element host, boolean unknownSid) {
+        if (unknownSid) {
+            showDiagnostic(host, "'" + sid + "' is not an LSF grid property");
+            logError("component '" + sid + "' of container '" + container.sID + "' is not a grid property marked LSF, so it is not drawn per row");
+        } else {
+            showDiagnostic(host, "the `row` given to '" + sid + "' is not a row");
+            logError("the `row` passed to '" + sid + "' does not identify a row: pass the row object from the projected data, not its key");
+        }
     }
 
     private GComponent findDeclared(String sid) {
@@ -185,8 +231,8 @@ public class ReactContainerView extends ParkedContainerView {
         return container;
     }
 
-    // pushed from GFormController.applyRemoteChanges after each form change. A lsf child's caption / captionClass /
-    // image now lives inside `data` (data.components, built by GReactFormData): a descriptor change marks the scope dirty,
+    // pushed from GFormController.applyRemoteChanges after each form change. An lsf child's caption / captionClass /
+    // image now lives in its own entry in `data` (built by GReactFormData): an attribute change marks the scope dirty,
     // so build() returns a new top ref and the data change alone re-renders React — no separate components channel.
     public void updateData(JavaScriptObject data) {
         if (data == lastData)
@@ -214,11 +260,13 @@ public class ReactContainerView extends ParkedContainerView {
             store: store,
             controller: controller,
             view: {
-                mount: function(sid, host) {
-                    reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::mountComponent(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;)(sid, host);
+                // row is absent for an lsf CHILD of this container - one view, one host - and is a row of the group
+                // for an LSF grid property, which has one renderer, and so one host, per row
+                mount: function(sid, host, row) {
+                    reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::mountComponent(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(sid, host, row || null);
                 },
-                unmount: function(sid, host) {
-                    reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::unmountComponent(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;)(sid, host);
+                unmount: function(sid, host, row) {
+                    reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::unmountComponent(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(sid, host, row || null);
                 }
             }
         };
@@ -281,7 +329,7 @@ public class ReactContainerView extends ParkedContainerView {
         var component = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::resolveComponent()();
         var ctxValue = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::ctxValue;
         var props = {
-            data: this.@lsfusion.gwt.client.form.design.view.ReactContainerView::lastData, // projected @lsfusion/core form state (primary contract; re-rendered each data change); includes data.components (lsf children's descriptors)
+            data: this.@lsfusion.gwt.client.form.design.view.ReactContainerView::lastData, // projected @lsfusion/core form state (primary contract; re-rendered each data change); every projected thing is an entry in it, keyed as it is keyed
             controller: ctxValue.controller // changeProperty/changeProperties/changeObject + exec/eval/evalAction/change
         };
         root.render(React.createElement($wnd.lsfusion.__formContext.Provider, { value: ctxValue }, React.createElement(component, props)));

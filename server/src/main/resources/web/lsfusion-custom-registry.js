@@ -62,48 +62,32 @@
             return React.useSyncExternalStore(store.subscribe, function () { return select(store.getSnapshot()); });
         };
         ns.useFormController = function () { return React.useContext(Ctx).controller; };
-        // the THE CROSSING BACK primitives. <Lsf sid/> is a placeholder for a DESIGN child marked `lsf = TRUE`:
+        // the crossing BACK to the platform. <Lsf sid/> marks where a DESIGN child with `lsf = TRUE` goes:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
         // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
         // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
         // useLsf(sid) -> a ref callback mounting the lsf child into the element the component ALREADY
-        // renders, so no placeholder node exists at all. The platform marks that element (class + data-lsf-sid/kind).
-        ns.useLsf = function (sid) {
+        // renders, so no placeholder node exists at all. The platform marks that element (the lsf-view class + data-lsf-sid).
+        // pass `row` for an LSF grid property: then the sid says WHICH property and the row says which of its
+        // per-row renderers, so the same sid legitimately has one host per row. Pass the row object out of the
+        // projected data (or its `objects`) - a key string cannot be resolved back to a row.
+        ns.useLsf = function (sid, row) {
             var view = React.useContext(Ctx).view;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
+            var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
             return React.useCallback(function (host) {
-                if (held.current) { view.unmount(sid, held.current); held.current = null; }
-                if (host) { view.mount(sid, host); held.current = host; }
-            }, [view, sid]);
+                if (held.current) { view.unmount(sid, held.current, heldRow.current); held.current = null; heldRow.current = null; }
+                if (host) { view.mount(sid, host, row); held.current = host; heldRow.current = row; }
+            }, [view, sid, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
         };
         ns.Lsf = function (props) {
-            return React.createElement('div', { ref: ns.useLsf(props.sid), className: props.className, style: props.style });
+            return React.createElement('div', { ref: ns.useLsf(props.sid, props.row), className: props.className, style: props.style });
         };
-        // the lsf children's descriptors live in the projected data (data.components = { sid: {caption, image} },
-        // in DESIGN order) — a plain data field, so it is read with useFormData like any other; no dedicated
-        // hook is needed. A dynamic caption marks the scope dirty, so build() hands a new components map and this re-renders.
-        var EMPTY_COMPONENTS = Object.freeze({}); // STABLE ref when a scope has no lsf children (else useSyncExternalStore loops on a fresh {})
-        // <Lsfs/>: place every lsf child, in DESIGN order. This is the generic default that makes the
-        // container content-extensible: a third module's `EXTEND FORM` + `lsf = TRUE` child appears in position
-        // without touching the react component. Each is drawn with its caption above it — the caption an lsf
-        // component no longer draws in GWT is drawn here instead (as a tabbed container draws captions in the tab strip).
-        // Pass props.components (or read props.data.components) for a different layout; the caption is in each descriptor.
-        ns.Lsfs = function (props) {
-            var data = ns.useFormData(function (s) { return (s && s.components) || EMPTY_COMPONENTS; }); // ALWAYS call the hook, then let props override
-            var components = props.components || data; // the sid -> descriptor map (DESIGN insertion order)
-            return Object.keys(components).map(function (sid) {
-                var c = components[sid];
-                var caption = (c.caption != null || c.image != null)
-                    ? React.createElement('div', { className: 'lsf-slot-caption' },
-                        c.image != null ? React.createElement('span', { className: 'lsf-slot-image', dangerouslySetInnerHTML: { __html: c.image } }) : null,
-                        c.caption)
-                    : null;
-                return React.createElement('div', { key: sid, className: 'lsf-slot' },
-                    caption,
-                    React.createElement(ns.Lsf, { sid: sid }));
-            });
-        };
+        // A lsf child's caption / image is NOT drawn by the platform - it is handed to React in its own entry, keyed as the
+        // child is: data[componentSID] for a container, data[integrationSID] / data.<group>[integrationSID]
+        // for an lsf property. The component names each child it wants and draws that caption itself; a container is
+        // not iterated for you, so a child no Lsf mentions is not shown.
         var RowWrapper = React.memo(function (p) {
             var row = ns.useFormData(function (s) { var g = s && s[p.groupSID]; var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
             if (row == null) return null; // row removed (about to unmount): don't hand a null row to the component

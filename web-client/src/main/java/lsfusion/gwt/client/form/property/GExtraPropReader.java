@@ -54,7 +54,7 @@ public class GExtraPropReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() {
+    public String getAttributeField() {
         if (readerType == COMMENT) return "comment";
         if (readerType == PLACEHOLDER) return "placeholder";
         if (readerType == PATTERN) return "pattern";
@@ -62,26 +62,39 @@ public class GExtraPropReader extends GExtraPropertyReader {
         if (readerType == REGEXPMESSAGE) return "regexpMessage";
         if (readerType == TOOLTIP) return "tooltip";
         if (readerType == VALUETOOLTIP) return "valueTooltip";
-        if (readerType == PROPERTY_CUSTOM_OPTIONS) return "customOptions";
+        if (readerType == PROPERTY_CUSTOM_OPTIONS) return "options";
         if (readerType == DEFAULTVALUE) return "defaultValue";
-        return null; // CHANGEKEY/CHANGEMOUSE/... are not projected into data.meta
+        return null; // CHANGEKEY/CHANGEMOUSE/... are not projected
     }
 
     @Override
-    public GMetaConverter getMetaConverter() {
-        if (readerType == COMMENT || readerType == TOOLTIP) return GMetaConverter.TEXT; // both are a trimmed string
-        if (readerType == PROPERTY_CUSTOM_OPTIONS) return GMetaConverter.JSON;
-        return GMetaConverter.STRING; // PLACEHOLDER/PATTERN/REGEXP/REGEXPMESSAGE/VALUETOOLTIP/DEFAULTVALUE
+    public GAttributeConverter getAttributeConverter() {
+        if (readerType == COMMENT || readerType == TOOLTIP) return GAttributeConverter.TEXT; // both are a trimmed string
+        if (readerType == PROPERTY_CUSTOM_OPTIONS) return GAttributeConverter.JSON;
+        return GAttributeConverter.STRING; // PLACEHOLDER/PATTERN/REGEXP/REGEXPMESSAGE/VALUETOOLTIP/DEFAULTVALUE
     }
 
+    // which axis the SERVER reads this reader over, mirroring FormInstance.getChangedDrawProps: the readers below are
+    // filled over propRowColumnGrids (the column groups only, so a single EMPTY key when there are none), the rest over
+    // propRowGrids (which includes toDraw for a list draw, i.e. one value per row). That axis is what splits a list
+    // property's projection: a column-axis reader is emitted once in node.<prop> (GReactFormData.buildColumnEntry) and a
+    // row-axis one per cell (buildCellEntry), and the delta path dirties the node or the rows to match.
+    // The answer is stated for every reader type, including ones the projection does not carry today (element classes,
+    // changeKey/changeMouse): it describes the server's axis, not whether this branch happens to read it.
     @Override
-    public boolean isColumnLevel(GPropertyDraw draw) { return false; }
+    public boolean isColumnAttribute(GPropertyDraw draw) {
+        return readerType == COMMENT || readerType == COMMENTELEMENTCLASS || readerType == TOOLTIP
+                || readerType == CHANGEKEY || readerType == CHANGEMOUSE
+                || readerType == CAPTIONELEMENTCLASS || readerType == FOOTERELEMENTCLASS
+                || readerType == DEFAULTVALUE;
+    }
 
     // the design value of this option, which the reader's delivered value overrides. These are per-cell options, but their
-    // design value is one per column, so it is emitted into the column entry and the row entry overrides it (buildPropMeta).
+    // design value is one per column, but it is the FALLBACK of a per-cell attribute, so it is emitted in each CELL entry
+    // (data.<group>.list[i].<prop>) as that cell's effective value - never separately at the column, so nothing is merged.
     // The classic renderers read the same fields off the draw, so a React view now sees exactly what they see.
     @Override
-    public String getColumnStatic(GComponent owner) {
+    public String getStaticAttribute(GComponent owner) {
         GPropertyDraw draw = (GPropertyDraw) owner;
         if (readerType == COMMENT) return draw.comment;
         if (readerType == PLACEHOLDER) return draw.placeholder;
@@ -122,7 +135,11 @@ public class GExtraPropReader extends GExtraPropertyReader {
             return "CAPTIONELEMENTCLASS";
         } else if (readerType == FOOTERELEMENTCLASS) {
             return "FOOTERELEMENTCLASS";
+        } else if (readerType == DEFAULTVALUE) {
+            return "DEFAULTVALUE";
         }
-        return null;
+        // the prefix makes the reader's SID, and that SID identifies its values (the panel keeps them in a map keyed by
+        // reader), so a type with no name of its own must still get one that no other type can take
+        return "TYPE" + readerType;
     }
 }

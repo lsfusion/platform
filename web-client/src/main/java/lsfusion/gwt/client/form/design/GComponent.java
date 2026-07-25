@@ -104,13 +104,13 @@ public class GComponent implements Serializable {
         return container != null && container.isReact();
     }
 
-    // the lsf flag is only meaningful for a direct child of a CUSTOM REACT container: such a child keeps its real (server-built) GWT view and React mounts it into a placeholder instead of owning/replacing it
+    // the lsf flag is only meaningful for a direct child of a CUSTOM REACT container: such a child keeps its real (server-built) lsFusion view and React mounts it into a placeholder instead of owning/replacing it
     public boolean isLsfView() {
         return lsf && isInReact();
     }
 
     // the complement of isLsfView within a react container: a child React DRAWS (from data), so GWT builds no view for
-    // it and it is react-owned. A child outside a react container is neither lsf nor react-projected.
+    // it and it is react-owned. A child outside a react container is neither an lsf view nor react-projected.
     public boolean isReactProjected() {
         return !lsf && isInReact();
     }
@@ -135,7 +135,7 @@ public class GComponent implements Serializable {
     }
 
     // Each reader self-declares its field, conversion and static fallback, like a property's meta readers.
-    public GPropertyReader[] getComponentReaders() {
+    public GPropertyReader[] getDescriptorReaders() {
         return new GPropertyReader[] { getCaptionReader(), getImageReader() };
     }
 

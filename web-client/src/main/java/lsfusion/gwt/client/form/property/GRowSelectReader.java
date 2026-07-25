@@ -17,7 +17,7 @@ public class GRowSelectReader extends GGroupObjectPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "selected"; }
+    public String getAttributeField() { return "selected"; }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.FLAG; } // present -> true (2-state), NOT get3SBooleanValue
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.FLAG; } // present -> true (2-state), NOT get3SBooleanValue
 }

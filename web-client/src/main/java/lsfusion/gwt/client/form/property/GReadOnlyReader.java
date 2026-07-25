@@ -17,11 +17,11 @@ public class GReadOnlyReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "readOnly"; }
+    public String getAttributeField() { return "readOnly"; }
     @Override
-    public String getMetaField(PValue value) { return getEditabilityField(PValue.get3SBooleanValue(value)); }
+    public String getAttributeField(PValue value) { return getEditabilityField(PValue.get3SBooleanValue(value)); }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.FLAG; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.FLAG; }
 
     private static native String getEditabilityField(Object value) /*-{
         return value === true ? "disabled" : value === false ? "readOnly" : null;

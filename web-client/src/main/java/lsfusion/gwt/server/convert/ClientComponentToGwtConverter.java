@@ -143,6 +143,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         container.nativeSID = "c" + clientContainer.ID;
         container.caption = clientContainer.caption;
         container.name = clientContainer.name;
+        container.declared = clientContainer.declared;
         container.image = createImage(clientContainer.image, false);
         container.captionClass = clientContainer.captionClass;
         container.valueClass = clientContainer.valueClass;

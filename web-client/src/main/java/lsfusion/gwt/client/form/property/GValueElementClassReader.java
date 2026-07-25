@@ -18,7 +18,5 @@ public class GValueElementClassReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "valueClass"; }
-    @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.CLASS; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.CLASS; }
 }

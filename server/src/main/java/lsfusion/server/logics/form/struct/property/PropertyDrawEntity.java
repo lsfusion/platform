@@ -107,6 +107,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<Boolean> optimisticAsync = NFFact.property();
 
     private final NFProperty<Boolean> askConfirm = NFFact.property();
+    // renders this grid property once per ROW as a component a CUSTOM REACT view places, instead of projecting
+    // its value into that view's data. Nullable, so a view can tell "unset" from an explicit FALSE.
+    private final NFProperty<Boolean> lsf = NFFact.property();
     private final NFProperty<String> askConfirmMessage = NFFact.property();
 
     private final NFProperty<ClassViewType> viewType = NFFact.property(); // assert not null, after initialization
@@ -171,6 +174,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         return getDefaultImage(context);
     }
+
 
     private AppServerImage getDefaultImage(ConnectionContext context) {
         return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage(), context);
@@ -238,6 +242,14 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
     public void setAttr(boolean attr, Version version) {
         this.attr.set(attr, version);
+    }
+
+    public Boolean getLsfView() {
+        return lsf.get();
+    }
+
+    public void setLsfView(Boolean lsf, Version version) {
+        this.lsf.set(lsf, version);
     }
 
     public boolean isExtNull() {
@@ -1447,6 +1459,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         mapping.sets(group, src.group);
         mapping.sets(attr, src.attr);
+        mapping.sets(lsf, src.lsf);
         mapping.sets(extNull, src.extNull);
 
         mapping.sets(formula, src.formula);

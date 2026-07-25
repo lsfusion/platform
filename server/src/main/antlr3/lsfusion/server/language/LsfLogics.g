@@ -1074,6 +1074,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($prop.action, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
+		|	'LSF' { $options.setLsf(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }

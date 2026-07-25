@@ -243,8 +243,8 @@ public class GFormLayout extends SizedFlexPanel {
 
     public void setCaptionClass(GContainer component, String elementClass) {
         component.captionClass = elementClass;
-        // an lsf container draws its captionClass in React (data.components); its reader is react-owned
-        // (rerouted into data.components), so this runs only for GWT containers, which have a real caption widget
+        // an lsf container draws its caption in React (from its entry in data); its reader is react-owned
+        // (rerouted into that entry), so this runs only for GWT containers, which have a real caption widget
         updateComponentClass(elementClass, containerViews.get(component.container).getCaptionView(component), "caption");
     }
 

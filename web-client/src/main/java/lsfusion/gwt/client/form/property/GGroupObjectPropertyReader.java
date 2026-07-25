@@ -1,15 +1,22 @@
 package lsfusion.gwt.client.form.property;
 
+import lsfusion.gwt.client.form.object.GGroupObject;
+
+import lsfusion.gwt.client.GForm;
+
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 
 // a presentation reader bound to a GROUP OBJECT (not a single property draw): delivered through the group's table
-// controller, keyed by GGroupObjectValue. Most are per-row (background/foreground/select -> meta.row); customOptions is
-// group-scoped (one value at EMPTY -> node.meta) -> see getMetaScope.
+// controller, keyed by GGroupObjectValue. Most are per-row (background/foreground/select -> direct row fields); options is
+// group-scoped (one value at EMPTY -> direct on the group) -> see getAttributeScope.
 public abstract class GGroupObjectPropertyReader implements GPropertyReader {
     public int groupObjectID;
+
+    @Override
+    public GGroupObject getAttributeGroup(GForm form) { return form.getGroupObject(groupObjectID); } // a group-object reader carries its ID
 
     public GGroupObjectPropertyReader() {
     }
@@ -26,9 +33,6 @@ public abstract class GGroupObjectPropertyReader implements GPropertyReader {
         return sID;
     }
 
-    // where this reader's presentation lands in data.meta: ROW = per-row (meta.row, keyed by the row, dirties the changed
-    // rows), NODE = once for the whole group (node.meta, read at EMPTY, dirties only the node). Overridden by the group-scoped ones.
-    public GMetaScope getMetaScope() { return GMetaScope.ROW; }
 
     protected abstract void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
 

@@ -297,7 +297,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a group rendered by a CUSTOM REACT container is drawn by React, not the standard grid, so the server must not
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
-    // into a JSON candidate list). A lsf box keeps its standard grid, so its group is not React-owned
+    // into a JSON candidate list). A box marked lsf keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
         for (ComponentView component : getComponents())
             if (component instanceof ContainerView && ((ContainerView) component).groupObjectBox == group)
@@ -590,45 +590,62 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // checks: the whole form is then rejected once, when it is built, instead of failing in every browser that opens it.
     // The names below mirror what GReactFormData writes; keep them in sync with it.
     private void checkReactProjectionNames() {
-        Map<ContainerView, Set<String>> topNames = new HashMap<>();
-        Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();
-        Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>();
-        Map<GroupObjectEntity, Set<String>> propertyMetaNames = new HashMap<>();
-        Map<GroupObjectEntity, Set<String>> cellMetaNames = new HashMap<>();
+        // There is no `meta` object: everything sits directly in one flat namespace at each level, so a projected name
+        // that takes an infrastructure key, or that two projected things share, silently overwrites. Reject it here.
+        Map<ContainerView, Set<String>> topNames = new HashMap<>();     // data.*           : groups + form-level props + containers
+        Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*    : list/byKey/keys/count/options + column & panel props
+        Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();  // data.<group>.list[i].* : key/isCurrent/objects/background/foreground/selected + cell props
 
-        for (ComponentView component : getComponents()) { // a group is projected under its SID on the scope it is rendered by
+        for (ComponentView component : getComponents()) {
             if (component instanceof ContainerView) {
+                // a group box is projected as data.<groupSID> on the scope it is rendered by
                 GroupObjectEntity group = ((ContainerView) component).groupObjectBox;
                 ContainerView scope = group != null ? getOwningReactContainer(component) : null;
                 if (scope != null)
-                    claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'", "components", "meta");
+                    claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'");
+
+                // a container the author DECLARED (`NEW <name>` in DESIGN) is data.<componentSID> = {caption, image},
+                // directly in data beside the groups and the form-level props (`{}` when it has neither). The generated
+                // boxes of a group are not projected and take no name here.
+                ContainerView container = (ContainerView) component;
+                ContainerView descriptorScope = getProjectedContainerScope(container);
+                if (descriptorScope != null)
+                    claimProjectionName(topNames, descriptorScope, container.getSID(), "container '" + container.getSID() + "'");
             }
         }
         for (PropertyDrawView property : getPropertiesIt()) {
             String integrationSID = property.entity.getIntegrationSID();
             if (integrationSID == null)
                 continue;
+            boolean lsf = property.isLsfView(); // the platform draws its value: not projected, only its caption/image are
             GroupObjectEntity group = property.entity.getToDraw(entity);
-            if (group == null) { // a form-level property is a member of `data` itself
-                ContainerView scope = getOwningReactContainer(property);
+            if (group == null) { // a form-level property: one object at data.<integrationSID>
+                ContainerView scope = lsf ? property.getContainer() // an LSF draw's parent IS react (checkLsfViews ran first)
+                        : getOwningReactContainer(property);
                 if (scope != null)
-                    claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'", "components", "meta");
-            } else if (isReactContainerGroup(group)) {
+                    claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'");
+            } else if (isReactContainerGroup(group) && property.entity.getColumnGroupObjects().isEmpty()) {
+                // grouped-in-columns draws are not projected (buildGroupEntry skips them); everything else is an object keyed by
+                // its integration sid at the NODE (a list column's caption, or a panel value) and, for a react-owned list
+                // cell, at the ROW too
                 String source = "property '" + group.getSID() + "." + integrationSID + "'";
-                // node.meta[integrationSID] shares its namespace with the group's own meta fields (count, customOptions).
-                // A grouped-in-columns draw is not projected there at all (GReactFormData.buildNode skips it), so it
-                // claims nothing — claiming would reject a name that cannot collide
-                if (property.entity.getColumnGroupObjects().isEmpty())
-                    claimProjectionName(propertyMetaNames, group, integrationSID, source, "count", "customOptions");
-                if (property.entity.isList(entity)) {
-                    claimProjectionName(rowNames, group, integrationSID, source, "key", "isCurrent", "objects", "meta");
-                    // row.meta[integrationSID] shares its namespace with the row-level meta (meta.row)
-                    claimProjectionName(cellMetaNames, group, integrationSID, source, "row");
-                } else
-                    claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "meta");
+                claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "count", "options");
+                if (property.entity.isList(entity) && !lsf) // an LSF list property has no per-row cell, only its column
+                    claimProjectionName(rowNames, group, integrationSID, source, "key", "isCurrent", "objects", "background", "foreground", "selected");
             }
         }
     }
+
+    // the scope whose data carries this container's entry, or null when it has none: only a container the author
+    // DECLARED is projected, and an LSF-VIEW one is placed by the scope it sits in rather than by the scope that owns
+    // it - the ownership walk stops at an lsf child. The client's statement of the same rule bears the same name
+    // (GReactFormData.getProjectedContainerScope); this one reserves the names that one emits.
+    private ContainerView getProjectedContainerScope(ContainerView container) {
+        if (container.isLsfView()) // an lsf child's parent IS a react container - checkLsfViews, which runs first, rejected anything else
+            return container.getContainer();
+        return container.declared ? getOwningReactContainer(container) : null; // declared OR lsf, nothing for the rest
+    }
+
 
     private <K> void claimProjectionName(Map<K, Set<String>> names, K owner, String name, String source, String... reserved) {
         for (String reservedName : reserved)
@@ -668,11 +685,35 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (container == null || !container.isReact())
             throw new IllegalStateException("lsf is set for '" + component.getSID() + "', which is not a child of a CUSTOM REACT container");
 
-        // a property is drawn on its object GROUP, and a group the react component renders has no client controller,
-        // so no view would ever be built for the property — there would be nothing to place
+        // a react container that is itself a non-lsf child of a react container is SWALLOWED - the outer component
+        // draws it from data and it never gets a view of its own - so nothing could place this child's view either
+        ContainerView owner = getReactContainer(container);
+        if (owner != null)
+            throw new IllegalStateException("lsf is set for '" + component.getSID() + "', but its container '" + container.getSID()
+                    + "' is itself rendered by the react component '" + owner.getCustom()
+                    + "' — nothing would place it; set lsf on '" + container.getSID() + "' as well to give it its own view");
+
         if (component instanceof PropertyDrawView) {
-            GroupObjectEntity toDraw = ((PropertyDrawView) component).entity.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
-            if (toDraw != null && isReactContainerGroup(toDraw))
+            PropertyDrawEntity<?, ?> property = ((PropertyDrawView) component).entity;
+            GroupObjectEntity toDraw = property.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
+            boolean reactGroup = toDraw != null && isReactContainerGroup(toDraw);
+
+            if (property.isList(entity)) {
+                // a GRID property is drawn once per ROW and the react component places each of those, so its group
+                // being rendered by that component is exactly what makes this work
+                if (!reactGroup)
+                    throw new IllegalStateException("LSF is set for property '" + component.getSID()
+                            + "', whose object group is not rendered by a CUSTOM REACT container — nothing would place the per-row renderers");
+
+                // per-row rendering rests on the renderer key being the ROW key. With column groups the full key joins
+                // row and column, so a value would be written under the joined key and read under the row key, and
+                // every edit would be lost without a word
+                if (!property.getColumnGroupObjects().isEmpty())
+                    throw new IllegalStateException("LSF is set for property '" + component.getSID()
+                            + "', which is grouped in columns — it draws one editor per ROW and cannot address a row-and-column cell");
+            } else if (reactGroup)
+                // a PANEL property is drawn once, for its group's current object - and a group the react component
+                // renders has no client controller, so no view would ever be built and there would be nothing to place
                 throw new IllegalStateException("lsf is set for property '" + component.getSID() + "', whose object group is rendered by the react component '"
                         + container.getCustom() + "' — set lsf on the group's box instead");
         }

@@ -16,7 +16,7 @@ public class GRowForegroundReader extends GGroupObjectPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "foreground"; }
+    public String getAttributeField() { return "foreground"; }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.COLOR; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.COLOR; }
 }

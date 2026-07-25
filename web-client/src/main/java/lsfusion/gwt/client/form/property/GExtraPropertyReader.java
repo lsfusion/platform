@@ -1,5 +1,9 @@
 package lsfusion.gwt.client.form.property;
 
+import lsfusion.gwt.client.form.design.GComponent;
+
+import lsfusion.gwt.client.GForm;
+
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -8,6 +12,9 @@ import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 public abstract class GExtraPropertyReader implements GPropertyReader {
 
     public int propertyID;
+
+    @Override
+    public GComponent getAttributeComponent(GForm form) { return form.getProperty(propertyID); } // a property's reader carries its ID
     public int groupObjectID;
 
     public GExtraPropertyReader() {

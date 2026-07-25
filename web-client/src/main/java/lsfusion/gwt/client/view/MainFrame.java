@@ -481,8 +481,8 @@ public class MainFrame implements EntryPoint {
     }
 
     // a listener here is reachable from a static field for the lifetime of the page, so anything that can be discarded
-    // while the page lives on (a panel renderer whose column key went away, or a whole closing form's) has to
-    // unregister itself, or its whole widget graph stays alive and keeps receiving colorThemeChanged
+    // while the form lives on (a panel renderer whose column key went away) has to unregister itself, or its whole
+    // widget graph stays alive and keeps receiving colorThemeChanged
     public static void removeColorThemeChangeListener(ColorThemeChangeListener listener) {
         colorThemeChangeListeners.remove(listener);
     }

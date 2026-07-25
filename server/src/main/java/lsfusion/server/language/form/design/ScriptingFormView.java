@@ -73,6 +73,7 @@ public class ScriptingFormView {
         }
 
         ContainerView container = createContainer(null, sid, debugPoint, view.containerFactory, version);
+        container.declared = true; // written by the author, which is what a CUSTOM REACT view is given
         view.setComponentSID(container, sid, version);
 
         addOrMoveComponent(container, parentComponent, location, version);
@@ -97,7 +98,13 @@ public class ScriptingFormView {
         if (!(parentComponent instanceof ContainerView))
             errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
 
-        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)) {
+        // a grid property is drawn by the grid itself, so it has no place of its own in the design - unless it is
+        // LSF, which means it is drawn once per row as a component that a CUSTOM REACT view places, and then where
+        // it is placed is exactly what the MOVE says. The option comes from the FORM statement, which is parsed before
+        // any DESIGN, so it is already known here; that the destination really is a react container can only be checked
+        // once the design is complete, and FormView.checkLsfViews does it there.
+        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)
+                && !Boolean.TRUE.equals(((PropertyDrawView) component).entity.getLsfView())) {
             errLog.emitIllegalGridPropertyMoveError(parser, component.getSID());
         }
 

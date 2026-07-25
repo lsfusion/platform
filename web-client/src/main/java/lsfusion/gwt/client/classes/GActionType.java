@@ -23,10 +23,10 @@ public class GActionType extends GDataType {
     public final static GActionType instance = new GActionType();
 
     @Override
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, Result<CaptionWidget> captionContainer) {
         if(property.isAlignCaption() && captionContainer != null)
-            return new PropertyPanelRenderer(form, controller, property, columnKey, captionContainer);
-        return new ActionPanelRenderer(form, controller, property, columnKey);
+            return new PropertyPanelRenderer(form, controller, property, columnKey, rowKey, captionContainer);
+        return new ActionPanelRenderer(form, controller, property, columnKey, rowKey);
     }
 
     @Override

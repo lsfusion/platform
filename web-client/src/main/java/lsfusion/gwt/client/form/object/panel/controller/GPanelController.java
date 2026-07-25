@@ -1,24 +1,28 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
-import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
 
-import static java.lang.Boolean.TRUE;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
-public class GPanelController extends GPropertyController {
+// the form's own panel: a key is a COLUMN of the property, and its renderers live in a panel of that property's own,
+// in key order. A hidden property keeps its renderers - they may still carry key or mouse bindings - but places none.
+public class GPanelController extends GAbstractPanelController {
 
-    private final NativeSIDMap<GPropertyDraw, GPropertyPanelController> propertyControllers = new NativeSIDMap<>();
+    // the panel each property's renderers go into, and what the form lays out for it. Only properties that HAVE such a
+    // panel are here: a property with exactly one renderer is laid out as that renderer, with nothing around it
+    private final NativeSIDMap<GPropertyDraw, SizedFlexPanel> columnPanels = new NativeSIDMap<>();
 
     public GPanelController(GFormController formController) {
         super(formController);
@@ -27,278 +31,84 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void removeProperty(GPropertyDraw property) {
+        super.removeProperty(property); // the form view goes first: until it does, the renderers still have a panel
+        columnPanels.remove(property);
     }
 
     private void focusNextElement(boolean forward, NativeEvent event) {
         formController.focusNextElement(FocusUtils.Reason.KEYNEXTNAVIGATE, forward);
     }
 
-    @Override
-    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setLoadings(values);
-
-        updatedProperties.put(property, TRUE);
-    }
+    // ---- placement ----
 
     @Override
-    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyPanelController propertyController = propertyControllers.get(property);
-        if(!updateKeys) {
-            if (propertyController == null) {
-                propertyController = new GPropertyPanelController(property, formController);
-                getFormLayout().addBaseComponent(property, propertyController.initView(), (FocusUtils.Reason reason) -> focusFirstWidget(reason));
-
-                propertyControllers.put(property, propertyController);
-            }
-            propertyController.setColumnKeys(columnKeys);
-        }
-        propertyController.setPropertyValues(values, updateKeys);
-
-        updatedProperties.put(property, Boolean.TRUE);
+    public GGroupObjectValue getRendererKey(GPropertyDraw property, GGroupObjectValue fullCurrentKey) {
+        return property.filterColumnKeys(fullCurrentKey);
     }
 
     @Override
-    public void removeProperty(GPropertyDraw property) {
-        propertyControllers.remove(property);
-
-        getFormLayout().removeBaseComponent(property);
-    }
-
-    private NativeSIDMap<GPropertyDraw, Boolean> updatedProperties = new NativeSIDMap<>();
-
-    public void update() {
-        updatedProperties.foreachKey(property -> propertyControllers.get(property).update());
-        updatedProperties.clear();
-    }
-
-    // the form is closing: nothing will ask these renderers for anything again, and a renderer left behind stays
-    // reachable from MainFrame's static color-theme listener list for the life of the page
-    public void destroy() {
-        propertyControllers.foreachValue(GPropertyPanelController::destroyRenderers);
-    }
-
-    public boolean isEmpty() {
-        return propertyControllers.isEmpty();
-    }
-
-    public boolean containsProperty(GPropertyDraw property) {
-        return propertyControllers.containsKey(property);
+    public GGroupObjectValue getColumnKey(GGroupObjectValue rendererKey) {
+        return rendererKey; // the renderer key IS the column key here, so there is nothing to project
     }
 
     @Override
-    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setCellValueElementClasses(values);
-
-        updatedProperties.put(property, TRUE);
+    public GGroupObjectValue getRowKey(GGroupObjectValue rendererKey) {
+        return null; // a panel renderer draws its group's current object, so it has no row of its own
     }
 
     @Override
-    public void updateCellCaptionElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setCellCaptionElementClasses(values);
-
-        updatedProperties.put(property, TRUE);
+    public void addRenderer(GGroupObjectValue rendererKey, GPropertyDraw property, ComponentViewWidget view, int index) {
+        if (!property.hide) // a hidden property keeps its renderer - it may carry a binding - but shows it nowhere
+            view.add(columnPanels.get(property), index); // something like getChildPosition should be done here, but for now there is a hasColumnGroupObjects check
     }
 
     @Override
-    public void updateCellFooterElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void removeRenderer(GGroupObjectValue rendererKey, GPropertyDraw property, ComponentViewWidget view) {
+        if (!property.hide)
+            view.remove(columnPanels.get(property));
     }
 
     @Override
-    public void updateCellFontValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setCellFontValues(values);
-
-        updatedProperties.put(property, TRUE);
+    public boolean recreateRendererOnMove(int oldIndex, int newIndex) {
+        return oldIndex != newIndex; // the position among the keys IS where the renderer sits in the panel
     }
 
     @Override
-    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setCellBackgroundValues(values);
+    public boolean shouldCreateRenderers(GPropertyDraw property) {
+        // a hidden property still makes its renderers if they have a binding to carry - the binding works while hidden
+        return !property.hide || property.hasKeyBinding() || property.hasMouseBinding();
+    }
 
-        updatedProperties.put(property, TRUE);
+    // asked once, at init, and only for a property that has more than the one renderer - so the panel is made here,
+    // and a hidden property gets one too: it is what the form lays out, it just stays empty
+    @Override
+    public Widget getFormWidget(GPropertyDraw property) {
+        SizedFlexPanel columnPanel = new SizedFlexPanel(property.panelColumnVertical);
+        GwtClientUtils.addClassName(columnPanel, "property-container-panel", "propertyContainerPanel", v5);
+        columnPanels.put(property, columnPanel);
+        return columnPanel;
     }
 
     @Override
-    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setCellForegroundValues(values);
-
-        updatedProperties.put(property, TRUE);
+    public ArrayList<GGroupObjectValue> getRendererKeys(ArrayList<GGroupObjectValue> columnKeys) {
+        return columnKeys;
     }
 
     @Override
-    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setImages(values);
-
-        updatedProperties.put(property, TRUE);
+    public boolean isSingleRenderer(GPropertyDraw property) {
+        // a property grouped in columns gains and loses renderers with its column keys, and a hidden one gets one only
+        // if it has a binding to carry; anything else has exactly one, made once by initView and never diffed
+        return !property.hasColumnGroupObjects() && !property.hide;
     }
 
     @Override
-    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyCaptions(values);
-
-        updatedProperties.put(property, TRUE);
+    public boolean shouldRegisterBindings() {
+        return true;
     }
 
     @Override
-    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setShowIfs(values);
-
-        updatedProperties.put(property, TRUE); // in grid it is a little bit different (when removing showif, updatedProperties is not flagged), however it's not that important
-    }
-
-    @Override
-    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-    }
-
-    @Override
-    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setReadOnlyValues(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updatePropertyComments(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyComments(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateCellCommentElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setCellCommentElementClasses(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updatePlaceholderValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyPlaceholders(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updatePatternValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyPatterns(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateRegexpValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyRegexps(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyRegexpMessages(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyTooltips(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyValueTooltips(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyCustomOptionsValues(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateChangeKeyValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyChangeKeys(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateChangeMouseValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyChangeMouses(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateDefaultValueValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyDefaultValues(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
-    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-    }
-
-    public void focusProperty(GPropertyDraw propertyDraw) {
-        GPropertyPanelController propertyPanelController = propertyControllers.get(propertyDraw);
-        if (propertyPanelController != null) {
-            propertyPanelController.focus(FocusUtils.Reason.ACTIVATE);
-        }
-    }
-
-    public boolean focusFirstWidget(FocusUtils.Reason reason) {
-        if (propertyControllers.isEmpty()) {
-            return false;
-        }
-
-        for (GPropertyDraw property : formController.getPropertyDraws()) {
-            GPropertyPanelController propController = propertyControllers.get(property);
-            if (propController != null) {
-                if (property.isFocusable() && propController.focus(reason)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
-        GPropertyPanelController panelController = propertyControllers.get(property);
-        return panelController != null ? panelController.setLoadingValueAt(fullCurrentKey, value) : null;
-    }
-
-    @Override
-    public boolean isPropertyShown(GPropertyDraw property) {
-        return containsProperty(property);
+    public GGroupObjectValue getFocusKey(ArrayList<GGroupObjectValue> keys) {
+        return keys != null && !keys.isEmpty() ? keys.get(0) : null;
     }
 }

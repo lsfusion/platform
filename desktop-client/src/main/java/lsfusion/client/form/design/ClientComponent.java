@@ -55,7 +55,7 @@ public abstract class ClientComponent extends ClientIdentityObject {
 
     public boolean defaultComponent;
 
-    public boolean lsf;
+    public boolean lsf; // keeps its lsFusion view inside a CUSTOM REACT container
 
     public ClientComponent() {
     }

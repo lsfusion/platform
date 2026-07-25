@@ -39,19 +39,21 @@ export function OrderBoard(props) {
 }
 ```
 
-`props.data` is the form projection. It contains a group only when that group's box is nested inside the custom container the view renders: `props.data.<g>` is `{ list, byKey, keys, meta }` for each such group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `list`, `byKey` and `keys` are always present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A group whose box is outside the container — or `REMOVE`'d from the design — is **absent** from `props.data` (`props.data.<g>` is `undefined`), so to feed a group's data to the view keep its box inside the custom container. A group's panel properties are members of the group itself, keyed by integration SID, and each form-level (no-group) property is a member of `props.data` directly, under its integration SID. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), and its `meta` is alongside a property's, so `controller.changeProperty('<group>.<action>', row)` runs it. `meta` holds the group's [display options](#display-options). Each row carries:
+`props.data` is the form projection — its own for each `CUSTOM REACT` container, holding only what that container owns, so a second React container on the form gets a separate one. Every property, group and container it projects is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. It contains a group only when that group's box is nested inside the custom container the view renders: `props.data.<g>` is `{ list, byKey, keys, count, options }` for each such group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `list`, `byKey` and `keys` are always present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A group whose box is outside the container — or `REMOVE`'d from the design — is **absent** from `props.data` (`props.data.<g>` is `undefined`), so to feed a group's data to the view keep its box inside the custom container. A group's panel properties are members of the group itself, keyed by integration SID and present once the group has a current object, and each form-level (no-group) property is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.changeProperty('<group>.<action>', row)` runs it; its `value` field is there too but carries nothing. `count` and `options` are the group's own [display options](#display-options). Each row carries:
 
 | Field | Meaning |
 | --- | --- |
 | `key` | A stable public id for the row — use it as the React key |
 | `isCurrent` | Whether the row is the current (selected) one |
-| `<integrationSID>` | The value of each form property, keyed by the property's integration SID |
+| `<integrationSID>` | Each list property, an object `{ value, ...cell attributes }` keyed by the property's integration SID — read its value as `.value` |
 | `objects` | An opaque row handle the controller uses to address the row |
-| `meta` | The row's [display options](#display-options), absent when the platform computed none |
+| `background`, `foreground`, `selected` | The row's own [display options](#display-options): its background and text colors and whether it is selected |
 
-`key`, `isCurrent`, `objects` and `meta` are reserved row field names; `list`, `byKey`, `keys` and `meta` are reserved on the group; `components` and `meta` are reserved at the top level. Inside a group's `meta`, `count` and `customOptions` are reserved, and inside a row's `meta`, `row` is reserved. A form whose projected integration SID takes a reserved name, or where two projected items claim the same value or metadata name at one data level, is rejected with an explicit error when it is built.
+A property grouped in columns (`COLUMNS`) is not projected at all: it has neither a column entry nor a cell entry, and nothing is reported — its values are addressed by a row-and-column key the projection has no place for. Declare an ordinary property if the view has to read those values.
 
-A property value in a row is converted to a JS value depending on the property's class:
+`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names; `list`, `byKey`, `keys`, `count` and `options` are reserved on the group. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built.
+
+A property's `value` is converted to a JS value depending on the property's class:
 
 | Property class | JS value |
 | --- | --- |
@@ -69,43 +71,45 @@ Except for `BOOLEAN`, a `NULL` value is converted to `null`.
 
 `list` contains only the read page, not all rows of the group. The view type of a group rendered by a React container remains the table, and the group is read page by page, but since the table itself is not displayed, the page size is not adjusted to the visible rows — the server default page size (50 objects) applies. For a view that shows all rows of the group — a calendar, a board, a map — specify the `PAGESIZE 0` option (read all objects) or an explicit page size in the [`OBJECTS`](../language/Object_blocks.md) block.
 
-```jsx
-function Row(props) {
-    const r = props.row;
-    return (
-        <div className={r.isCurrent ? "order order-current" : "order"}>
-            <span>{r.number}</span>
-            <span>{r.sum}</span>
-        </div>
-    );
-}
-```
+The component reads the projection in one of two ways, and the choice is about who re-renders when data changes.
+
+`props.data` is the whole snapshot. The component re-renders — with a fresh `data` — whenever anything in its scope changes, and renders everything it draws from the new snapshot. For a small view this is the whole story: no hooks, a plain function of the data, and the examples above are written this way. It is also the only way to read the scope as a whole — enumerate its top-level entries, read the containers.
+
+`useFormData(selector)` subscribes the component to a slice: it re-renders only when the reference of `selector(data)` changes — so the selector must return something the projection already holds (a group node, a row, an entry, a value), never a new object or array built inside it, which would differ on every read and re-render without end. Because of structural sharing — an unchanged node, row or entry keeps its previous reference — this is what lets a component pay only for what it reads: a root subscribed to its group node (`useFormData(s => s.o)`) ignores the rest of the scope, a row component subscribed to its own row (`useFormData(s => s.o.byKey[rowKey])`) ignores the other rows. `useFormController()` returns the same `controller` the root receives as a prop — the controller's identity never changes for the life of the form, so it is safe in dependencies and closures, and passing it down as a prop is equally fine.
+
+The two compose into tiers, and each following one is only needed when the previous one's re-render becomes the cost:
+
+1. a small view — `props.data`, render everything;
+2. a longer list — `props.data` plus row components memoized at module level (`React.memo` bails out on the unchanged rows' stable references), or [`List`](#rendering-rows) which does exactly that;
+3. a big board — subscriptions down the tree: the root subscribes to nothing, a column to its [bucket](#bucketing), a row to itself, so one edited value re-renders one card.
 
 ### Display options {#display-options}
 
-For every property drawn on a form the platform computes semantic options that determine how it is shown — its caption, image, background and text colors, whether it is read-only or disabled, its comment, the text shown in an empty cell, its tooltip. They come from the property's design and from the data-dependent options of the [properties and actions block](../language/Properties_and_actions_block.md) (`HEADER`, `IMAGE`, `BACKGROUND`, `FOREGROUND`, `READONLYIF`, `OPTIONS` and the rest), so an option that depends on the data is recomputed per row. Native element classes and fonts are not projected: a React component owns its CSS. `background` and `foreground` are projected — they are `BACKGROUND` / `FOREGROUND` highlighting, a data-dependent business signal, not a theme the component's own CSS should own. For a property the React container draws itself, the semantic result is projected into `data` under `meta`, so the view does not have to recompute it.
+For every property drawn on a form the platform computes semantic options that determine how it is shown — its caption, image, background and text colors, whether it is read-only or disabled, its comment, the text shown in an empty cell, its tooltip. They come from the property's design and from the data-dependent options of the [properties and actions block](../language/Properties_and_actions_block.md) (`HEADER`, `IMAGE`, `BACKGROUND`, `FOREGROUND`, `READONLYIF`, `OPTIONS` and the rest), so an option that depends on the data is recomputed per row. Native element classes and fonts are not projected: a React component owns its CSS. `background` and `foreground` are projected — they are `BACKGROUND` / `FOREGROUND` highlighting, a data-dependent business signal, not a theme the component's own CSS should own. For a property the React container draws itself, the semantic result is projected into `data` as sibling fields of the property's value, so the view does not have to recompute it.
 
 The projection follows what an option describes — a whole column, one cell, or the row:
 
 | Where | What it holds |
 | --- | --- |
-| `data.<g>.meta[<integrationSID>]` | For a property shown in the table — the options of its column, one value for the whole column: `caption`, `image`, `footer` and the design values of its semantic options. For a panel property of the group — that property's own options, read for the current object |
-| `data.<g>.list[i].meta[<integrationSID>]` | The options of one cell of a table property, computed for that row: `readOnly`, `disabled`, `background`, `foreground` and the rest |
-| `data.<g>.list[i].meta.row` | The options of the row itself: `background`, `foreground`, `selected` |
-| `data.<g>.meta` | `count` — how many rows have been read; `customOptions` — the group's custom options |
-| `data.meta[<integrationSID>]` | The options of a form-level (no-group) property |
+| `data.<g>.<integrationSID>` | For a property shown in the table — its column attributes, one entry for the whole column: `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue`. For a panel property of the group — the property's `value` and its attributes, read for the current object |
+| `data.<g>.list[i].<integrationSID>` | One cell of a table property — its `value` for that row and the cell attributes computed for that row: `readOnly`, `disabled`, `background`, `foreground` and the rest |
+| `data.<g>.list[i]` | The row's own options, direct on the row: `background`, `foreground`, `selected` |
+| `data.<g>` | `count` — how many rows have been read; `options` — the group's custom options |
+| `data.<integrationSID>` | A form-level (no-group) property — its `value` and attributes |
+| `data.<containerSID>` | The `caption` and `image` of a container the component can be asked to draw them for — one **declared** in the design (`NEW <name>`), or an `lsf` child like `BOX(o)` — keyed by its design component identifier, always at the top level, whatever the container is nested in. Such a container is always there, `{}` when it has neither. A generated container the author neither declared nor marked `lsf` (`BOX(g)`, `TOOLBAR(g)`, `PANEL(g)`, …) is not projected |
 
-The column entry carries the option's **design value** — the one written on the property, the same for the whole column — and the value the form delivers for the column overrides it. The row entry carries only what the form delivers **for that row**; a design value never appears there, because it is not per-row. So an option whose design value the property sets (`pattern`, `regexp`, `comment`, `placeholder`, `tooltip`, the colors, the caption, the image, …) is read from the column entry, and a row that the form computed a different value for overrides it. The options in force for a cell are therefore its column entry overridden by its row entry:
+Each attribute is delivered at one point, already resolved: the server folds a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result into a single effective value, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`; its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
 
 ```jsx
-const opts = { ...(props.data.o.meta[sid] || {}), ...((row.meta || {})[sid] || {}) };
+const caption = props.data.o.sum.caption;   // a column attribute, once for the column
+const cell = row.sum;                        // { value, background, readOnly, ... } for this row
 ```
 
-The server computes a dynamic `IMAGE` for a property once at the column key (using the current object), while an action's dynamic `IMAGE` is computed for every row. The projection preserves that distinction: a property's delivered image is in the column entry; an action's delivered image is in its row entry.
+The server computes a dynamic `IMAGE` for a property once at the column key (using the current object), while an action's dynamic `IMAGE` is computed for every row. The projection preserves that distinction: a property's image is on its column node `data.<g>.<prop>`; an action's image is on its row cell `data.<g>.list[i].<action>`.
 
-An option the platform computed nothing for is absent — a property with no `BACKGROUND` has no `background` in its cell entry — and a row with no options at all has no `meta`.
+An option the platform computed nothing for is absent — a property with no `BACKGROUND` has no `background` in its cell entry — and a row the platform computed no row options for has no `background`, `foreground` or `selected`.
 
-`SHOWIF` controls the property itself, not an option in `meta`. When it hides a table column, that property's field and its `meta` entry are absent from every row and from the group column metadata. When it hides a panel or form-level property, the corresponding field and `meta` entry are absent from its object. Test for the property field with `Object.hasOwn()` when a present `null` value must be distinguished from a hidden property.
+`SHOWIF` controls the property itself. When it hides a table column, that property's entry is absent from every row's cell and from the group's column node. When it hides a panel or form-level property, its entry is absent from its object. Test for the property entry with `Object.hasOwn()` when a hidden property must be distinguished from one whose `value` is `null`.
 
 | Option | What it is | JS value |
 | --- | --- | --- |
@@ -120,41 +124,40 @@ An option the platform computed nothing for is absent — a property with no `BA
 | `pattern` | The pattern the value is displayed with | string |
 | `regexp`, `regexpMessage` | The regular expression the entered value is checked against, and the message shown when it does not match | string |
 | `tooltip`, `valueTooltip` | The tooltips of the property and of its value | string |
-| `customOptions` | The property's custom options | parsed JSON value |
+| `options` | The property's custom options | parsed JSON value |
 | `defaultValue` | The value editing starts with | string |
 
-The row entry (`meta.row`) carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected.
+Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column; the rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected — directly, not inside any property entry.
 
 ```jsx
 function Row(props) {
     const r = props.row;
-    const opts = { ...(props.colMeta.sum || {}), ...((r.meta || {}).sum || {}) };
-    const rowOpts = (r.meta || {}).row || {};
+    const sum = r.sum;              // { value, readOnly, disabled, background, foreground, ... }
     return (
-        <div className="order" style={{ background: rowOpts.background }}>
-            <span>{r.number}</span>
-            <input value={r.sum} readOnly={!!opts.readOnly} disabled={!!opts.disabled}
-                   style={{ background: opts.background, color: opts.foreground }} />
+        <div className="order" style={{ background: r.background }}>
+            <span>{r.number.value}</span>
+            <input value={sum.value} readOnly={!!sum.readOnly} disabled={!!sum.disabled}
+                   style={{ background: sum.background, color: sum.foreground }} />
         </div>
     );
 }
 ```
 
-### Rendering rows
+### Rendering rows {#rendering-rows}
 
 Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first; without an alias, call it through `React.createElement`:
 
 ```jsx
 const List = window.lsfusion.List;
 // ...
-<List data={props.data.o} component={Row} />
+<List data={props.data.o} component={Row} />   // the group node itself, not a copy of it
 // or, without an alias:
 React.createElement(window.lsfusion.List, { data: props.data.o, component: Row })
 ```
 
 Render `List` as a component — through JSX or `React.createElement` — never by calling it as a plain function: it renders each row through a component that uses hooks, so it only works when React mounts it.
 
-`List` keys each row by `row.key`, passes the row to the component as `props.row`, and renders each row through a memoized wrapper bound to that row, so on a change only the rows that actually changed re-render. The plain alternative maps the list directly:
+`List` keys each row by `row.key`, passes the row to the component as `props.row` — with `rowKey`, `index` and any other props given to `List` — and renders each row through a memoized wrapper bound to that row, so on a change only the rows that actually changed re-render. The plain alternative maps the list directly:
 
 ```jsx
 props.data.o.list.map(r => <Row key={r.key} row={r} />)
@@ -172,9 +175,9 @@ props.data.o.list.map(r => <MRow key={r.key} row={r} />)
 
 A `React.memo(Row)` created inside the component on each render is a new component type every time, which defeats the memoization and re-renders every row.
 
-A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or globally with `window.lsfusion.listSimple`. It maps the list and memoizes the row component instead, relying on the projection reusing the row reference of an unchanged row; the row component receives the same props.
+A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or as the default for every `List` by setting `window.lsfusion.listSimple = true`. It maps the list and memoizes the row component instead, relying on the projection reusing the row reference of an unchanged row; the row component receives the same props.
 
-### Bucketing rows into cells
+### Bucketing rows into cells {#bucketing}
 
 When the view lays a group's rows out as a matrix rather than a list — a calendar, a kanban board, a timetable, a seating chart — each row belongs to a derived cell (day × employee, status column, and so on). `window.lsfusion.BucketScope` maintains a cell → rows index over one group, and each cell subscribes to only its own membership:
 
@@ -183,7 +186,7 @@ const { BucketScope, useBucket, useFormData } = window.lsfusion;
 
 const Shift = React.memo(({ rowKey }) => {
     const s = useFormData(d => d.ss.byKey[rowKey]);      // subscribes to its own row
-    return s ? <button>{s.intervalS}</button> : null;
+    return s ? <button>{s.intervalS.value}</button> : null;
 });
 
 const Cell = React.memo(({ ck }) => {
@@ -193,11 +196,11 @@ const Cell = React.memo(({ ck }) => {
 
 export function Board(props) {
     // the view owns both axes: the days of the shown week and one board row per employee
-    const days = weekOf(props.data.dates.scheduleFrom);
-    const rows = props.data.boardEmployees;              // e.g. a pre-parsed JSON property: [{ id, ... }]
+    const days = weekOf(props.data.dates.scheduleFrom.value);
+    const rows = props.data.boardEmployees.value;        // e.g. a pre-parsed JSON property: [{ id, ... }]
     return (
         <BucketScope group="ss" bucketDeps={[]}
-                     bucketOf={s => dateKey(s.date) + '|' + (s.assignedTo ?? '0')}>
+                     bucketOf={s => dateKey(s.date.value) + '|' + (s.assignedTo.value ?? '0')}>
             <div className="grid">
                 {rows.map(row => days.map(d =>
                     <Cell key={row.id + '/' + dateKey(d)} ck={dateKey(d) + '|' + row.id} />))}
@@ -224,16 +227,22 @@ const Column = ({ cellKey, rowKeys }) => (
     <div className="column">{rowKeys.map(k => <Card key={k} rowKey={k} />)}</div>
 );
 
-<Buckets group="t" cells={STATUSES} bucketOf={t => t.status} component={Column} />
+<Buckets group="t" cells={STATUSES} bucketOf={t => t.status.value} component={Column} />
 ```
 
 Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
 
 ### Crossing back to lsFusion
 
-By default the component draws the container's whole subtree from `props.data`. A child can instead keep its own lsFusion view: set `lsf = TRUE` on it, and the component places that view with `<Lsf sid/>` rather than drawing it.
+`custom` crosses from the platform to React; `lsf = TRUE` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child marked `lsf = TRUE` instead keeps its lsFusion view, and the component places that view with `<Lsf sid/>` rather than drawing it.
 
 ```lsf
+FORM orders 'Orders'
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY number, date, sum
+    PROPERTIES() comment = orderComment      // a form-level property, so its entry is data.comment
+;
+
 DESIGN orders {
     board {
         custom = 'Board';
@@ -243,31 +252,39 @@ DESIGN orders {
 }
 ```
 
-An lsf child is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image are the exception: they go to the component through `props.data.components` instead of the child's own view.
+An `lsf` child is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image are the exception: they go to the component in `data` instead of the child's own view. An `lsf` property projects only `{ caption, image }` — it has no `.value`, since the platform draws the value with the rest of the child's presentation. It projects that entry even with neither, as `{}`. An `lsf` container is projected the same way as any container the design declares: the component reads its `caption` and `image` from `data` and decides where the platform's view goes.
 
-`props.data.components` maps each lsf child's `sid` to its descriptor `{ caption, image }`, in `DESIGN` order. The `sid` (the key) is the design component's identifier, such as `BOX(o)` or `PROPERTY(comment)`; the descriptor carries the caption and image that an lsf child no longer draws in GWT. It is part of the projected `data`, so a dynamic caption or image re-renders it like any other data change.
+The entry holds `caption` and `image`, and it sits at the same place in `data` the [display options](#display-options) use, under the same name the child's value is keyed by:
 
-`Lsf`, `Lsfs` and `useLsf` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Lsf, Lsfs, useLsf } = window.lsfusion;`.
+| `lsf` child | Where its entry is | Key |
+| --- | --- | --- |
+| A property of an object group | `data.<g>.<integrationSID>`, alongside the group's other column attributes | The property's integration SID, `qty` |
+| A form-level (no-group) property | `data.<integrationSID>` | The property's integration SID, `note` |
+| A container | `data.<containerSID>`, always at the top level | The container's design component identifier, `BOX(o)` |
+
+A container is keyed by its design identifier because that is the only name it has; a property is keyed by its integration SID, the name its value is keyed by, not by the design identifier `PROPERTY(qty)`. The `sid` passed to `<Lsf>` is a different name: it is the design identifier of the child in the container, so an `lsf` property is placed as `<Lsf sid="PROPERTY(note)"/>` and read as `data.note`.
+
+Every container the React scope owns or places gets an entry in `data` when it is declared in the design (`NEW <name>`) or marked `lsf` — except a container inside an `lsf` subtree, which the platform draws whole and the component never looks into. A generated box the component neither placed nor the author named (`TOOLBAR(g)`, `PANEL(g)`, …) gets none. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
+
+`Lsf` and `useLsf` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Lsf, useLsf } = window.lsfusion;`.
+
+The component names each child it places, and draws the caption itself where it wants it:
 
 ```jsx
 export function Board(props) {
+    const data = props.data;
     return <div className="board">
-        {Object.keys(props.data.components).map(sid => <Lsf key={sid} sid={sid}/>)}
+        <h3>{data['BOX(o)'].caption}</h3>
+        <Lsf sid="BOX(o)"/>
+        <h3>{data.comment.caption}</h3>
+        <Lsf sid="PROPERTY(comment)"/>
     </div>;
-}
-```
-
-`<Lsfs/>` does the same iteration, so a container that uses it places every lsf child without naming any:
-
-```jsx
-export function Board() {
-    return <div className="board"><Lsfs/></div>;
 }
 ```
 
 ### Placing an lsf child
 
-An lsf child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
+An `lsf` child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
 
 ```jsx
 // the platform creates the host — a <div> inside the section
@@ -277,7 +294,7 @@ An lsf child's view is moved into a *host*: a DOM node React owns and never rend
 <section className="board-panel" ref={useLsf('BOX(o)')}/>
 ```
 
-`<Lsf>` is the shorter one, and it is what `<Lsfs/>` places. `useLsf(sid)` returns a ref callback, for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it.
+`<Lsf>` is the shorter one. `useLsf(sid)` returns a ref callback, for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it.
 
 Everything else is the same for both. The platform marks the host with the class `lsf-view` and with `data-lsf-sid`, whoever created it. Every host is styled so that the view fills it, whatever the child is, so the component sizes the host and the view follows:
 
@@ -285,31 +302,77 @@ Everything else is the same for both. The platform marks the host with the class
 .board > .lsf-view[data-lsf-sid="BOX(o)"] { height: 260px; }
 ```
 
-Sizing is the component's job, because an lsf child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either: they are handed to the component in `props.data.components`, so a component that places children itself draws them where it wants them.
-
-`<Lsfs/>` wraps each child in a `<div class="lsf-slot">` and, when the descriptor carries a caption or an image, draws them above the host in a `<div class="lsf-slot-caption">` (the image in a `<span class="lsf-slot-image">`). Its hosts are addressed from CSS as `.lsf-slot > .lsf-view[data-lsf-sid="..."]`. Iterate `props.data.components` yourself when a slot needs its own markup rather than its own style:
+Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either: they are handed to the component in `data`, so a component that places children itself draws them where it wants them — nothing draws them otherwise:
 
 ```jsx
-Object.keys(props.data.components).map(sid => {
-    const c = props.data.components[sid];
-    return <section key={sid} className="slot">
-        <h3>{c.caption}</h3>
-        <Lsf sid={sid}/>
-    </section>;
-})
+<section className="slot">
+    <h3><span dangerouslySetInnerHTML={{ __html: props.data['BOX(o)'].image }}/>
+        {props.data['BOX(o)'].caption}</h3>
+    <Lsf sid="BOX(o)"/>
+</section>
 ```
 
-Three rules bound the placement:
+`image` is a string with the image HTML, so it is inserted as HTML; `caption` is plain text.
 
-- A property drawn on an object group that the component renders cannot be marked `lsf`, because that group has no lsFusion view to place. Set `lsf` on the group's `BOX` instead. The server rejects such a design.
+These rules bound the placement:
+
+- A property drawn in the **panel** of an object group that the component renders cannot be marked `lsf`, because that group has no lsFusion view to place it in. Set `lsf` on the group's `BOX` instead. (A property drawn in the **table** of such a group is the per-row case below, and is exactly what `LSF` is for.)
+- A child of a container the component itself draws cannot be marked `lsf` either: that container has no view of its own, so nothing would place the child. Mark the container `lsf` as well, and it gets one.
 - Each lsf child is placed by at most one host. A child no host places is not shown; a duplicate host reports itself in the page and in the console, and the first one keeps the child.
 - The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
+- `lsf` may be set only on a direct child of a `CUSTOM REACT` container; anywhere else the form is rejected when it is built.
+
+A placement that cannot work says so in the host itself, not only in the console: a `sid` that names no child of the container, a child without `lsf`, a second host for the same child, a `sid` that is not an `LSF` grid property, and a `row` that is not a row each render their message into the host and mark it with the class `lsf-view-error`.
 
 A child the component stops rendering is reported to the server as not shown, and the server stops reading that child's data — the same gating an inactive tab or a collapsed container gets. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still shown as far as the server knows, and goes on being read. For the same reason the visibility of an lsf child belongs to the component alone — its `collapsible` attribute is ignored, and a scripted `COLLAPSE` / `EXPAND` on it is an error.
 
+### A live editor in every row
+
+An lsf child is drawn once. A grid property marked `LSF` in the `FORM` is drawn once per **row**, so a component can put a real lsFusion editor into every row it renders, instead of showing the value and having to build editing itself:
+
+```lsf
+FORM orders 'Orders'
+    OBJECTS o = Order
+    PROPERTIES(o) number READONLY, date
+    PROPERTIES(o) quantity LSF, note LSF
+;
+
+DESIGN orders {
+    NEW board {
+        custom = 'OrderBoard';
+        MOVE BOX(o);                  // React draws the rows, from data.o
+        MOVE PROPERTY(quantity);      // its per-row editors are placed by the component
+        MOVE PROPERTY(note);
+    }
+}
+```
+
+`LSF` says the property is a component rather than a value, and the `MOVE` says which container places it. The component names the property and the row:
+
+```jsx
+{data.o.list.map(row => (
+  <tr key={row.key}>
+    <td>{row.number.value}</td>
+    <td><Lsf sid="quantity" row={row}/></td>
+    <td><Lsf sid="note" row={row}/></td>
+  </tr>
+))}
+```
+
+Pass the row object out of the projected data — a row key alone cannot be resolved back to a row. The same property may be placed once per row, and only once per row.
+
+What the author gets and what stays theirs:
+
+- The editor is the platform's, with everything that implies: editing, `READONLYIF`, `BACKGROUND` and the other per-cell options, all read for **that row**.
+- The property leaves the rows: it is a component now, so `row.quantity` is not there (its column entry stays, with the caption). Declare a second, ordinary property if the value is also wanted as data.
+- The caption is not drawn in the row. Like an lsf child's, it arrives in the group's column node — `data.o.quantity.caption` — so the component puts it where it belongs, usually once, in a header.
+- A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor; only a row leaving that set loses it.
+
+The declaration is refused, with the property named, when it cannot work: on a grid property whose object group is not drawn by a `CUSTOM REACT` container (nothing would place the per-row editors), on a grid property grouped in columns (a per-row editor cannot address a row-and-column cell), and on a panel property of a group the component itself draws (there is no lsFusion view to place it in — set `lsf` on the group's box instead).
+
 ### Extending a container with lsf children
 
-Because the children come from `DESIGN`, another module extends the container's content without touching the component:
+Another module adds a child to the container from `DESIGN`:
 
 ```lsf
 EXTEND FORM orders PROPERTIES(o) rating;
@@ -318,13 +381,13 @@ DESIGN orders {
 }
 ```
 
-The layout is not extensible this way: a React composition cannot be modified from `DESIGN`. To change the layout, replace the whole component with `custom = 'OtherBoard'`; the children stay as declared.
+The component does not pick it up on its own. Every lsf child is placed by an `<Lsf>` that names its `sid`, so a child no `<Lsf>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`; the children stay as declared.
 
 ### Choosing between a React component and an HTML template
 
-A component that places lsf children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `[sID]` slots, without a React runtime and without a placeholder node per child. When every child of the container is marked `lsf`, `props.data` carries no group or property values, because an lsf child is not projected — only `props.data.components` with the children's descriptors.
+A component that places lsf children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `[sID]` slots, without a React runtime and without a placeholder node per child. When every child of the container is `lsf`, `props.data` carries no group or property values, because an lsf child is not projected — only the children's `{ caption, image }` entries in `props.data`.
 
-A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useFormData`, or the markup comes from a component library — or when `<Lsfs/>` is used, since it places a child a later module adds without anyone editing the component. An HTML template has neither: adding a child there means editing the template string, which belongs to the module that declared it.
+Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useFormData`, or the markup comes from a component library — while a template string belongs to the module that declared it and can only be replaced whole.
 
 ### Interactivity
 

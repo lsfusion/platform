@@ -26,8 +26,8 @@ import java.io.Serializable;
 import java.text.ParseException;
 
 public abstract class GType implements Serializable {
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
-        return new PropertyPanelRenderer(form, controller, property, columnKey, captionContainer);
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, Result<CaptionWidget> captionContainer) {
+        return new PropertyPanelRenderer(form, controller, property, columnKey, rowKey, captionContainer);
     }
 
     public abstract CellRenderer createCellRenderer(GPropertyDraw property);

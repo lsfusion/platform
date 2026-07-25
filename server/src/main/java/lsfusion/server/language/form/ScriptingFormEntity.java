@@ -657,6 +657,10 @@ public class ScriptingFormEntity {
         if(attr != null)
             property.setAttr(attr, version);
 
+        Boolean lsf = options.getLsf();
+        if(lsf != null)
+            property.setLsfView(lsf, version);
+
         Boolean extNull = options.getExtNull();
         if(extNull != null)
             property.setExtNull(extNull, version);

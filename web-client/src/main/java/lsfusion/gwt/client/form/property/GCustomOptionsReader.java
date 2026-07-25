@@ -16,9 +16,9 @@ public class GCustomOptionsReader extends GGroupObjectPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "customOptions"; }
+    public String getAttributeField() { return "options"; }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.JSON; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.JSON; }
     @Override
-    public GMetaScope getMetaScope() { return GMetaScope.NODE; } // group-scoped: one value at EMPTY -> node.meta.customOptions
+    public GGroupAttributeScope getAttributeScope() { return GGroupAttributeScope.GROUP; } // group-scoped: one value at EMPTY -> node.options
 }

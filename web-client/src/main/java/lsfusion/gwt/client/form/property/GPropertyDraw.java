@@ -92,6 +92,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean isList;
 
+    // LSF on a grid property: the platform draws it once per ROW and a CUSTOM REACT view places each of those,
+    // so its values feed real renderers instead of the view's data. isLsfView() already answers "is an lsf child
+    // of a react container", which the property is, because LSF requires it to be MOVEd there.
+    public boolean isLsfViewPerRow() {
+        return isLsfView() && isList;
+    }
+
     public GType getCellType() {
         return cellType;
     }
@@ -402,9 +409,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GExtraPropReader changeMouseReader;
     public GExtraPropReader defaultValueReader;
 
-    // all of this draw's semantic display readers, projected into data.meta for react-owned properties; native DOM/CSS
+    // all of this draw's semantic display readers, projected onto its object for react-owned properties; native DOM/CSS
     // presentation (element classes and font) stays owned by the native renderers and is deliberately not projected.
-    // declares its own meta field name + converter (getMetaField / getMetaConverter), so GReactFormData iterates generically.
+    // declares its own attribute field name + converter (getAttributeField / getAttributeConverter), so GReactFormData iterates generically.
     // (showIf/loading/changeKey/changeMouse are NOT presentation and are omitted; entries may be null and are skipped.)
     public GPropertyReader[] getPresentationReaders() {
         return new GPropertyReader[] {
@@ -618,8 +625,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public GPropertyDraw(){}
 
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
-        return getRenderType(RendererType.PANEL).createPanelRenderer(form, controller, this, columnKey, captionContainer);
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, GGroupObjectValue rowKey, Result<CaptionWidget> captionContainer) {
+        return getRenderType(RendererType.PANEL).createPanelRenderer(form, controller, this, columnKey, rowKey, captionContainer);
     }
 
     public boolean isAction() {

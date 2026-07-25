@@ -20,8 +20,8 @@ import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
-    public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
-        super(property, columnKey, form, globalCaptionIsDrawn, controller);
+    public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
+        super(property, columnKey, rowKey, form, globalCaptionIsDrawn, controller);
 
         render();
     }
@@ -79,21 +79,21 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     public void setLoading() {
         this.loading = true;
 
-        controller.setLoading(columnKey, PValue.getPValue(true));
+        controller.setLoading(getFullKey(), PValue.getPValue(true));
     }
 
     @Override
     public void startEditing() {
         super.startEditing();
         
-        controller.startEditing(columnKey);
+        controller.startEditing(getFullKey());
     }
 
     @Override
     public void stopEditing() {
         super.stopEditing();
 
-        controller.stopEditing(columnKey);
+        controller.stopEditing(getFullKey());
     }
 
     public PValue setLoadingValue(PValue value) {

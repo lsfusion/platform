@@ -18,9 +18,9 @@ public class GBackgroundReader extends GExtraPropertyReader {
     }
 
     @Override
-    public String getMetaField() { return "background"; }
+    public String getAttributeField() { return "background"; }
     @Override
-    public GMetaConverter getMetaConverter() { return GMetaConverter.COLOR; }
+    public GAttributeConverter getAttributeConverter() { return GAttributeConverter.COLOR; }
     @Override
-    public String getColumnStatic(GComponent owner) { return ((GPropertyDraw) owner).getBackground(); } // the design colour, which a delivered value overrides
+    public String getStaticAttribute(GComponent owner) { return ((GPropertyDraw) owner).getBackground(); } // the design colour, which a delivered value overrides
 }
