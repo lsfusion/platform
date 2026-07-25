@@ -4407,8 +4407,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:761812cfaeaf3fedcab4bc41bc81c041f8ad7e964d180ce9f8168c572afb0713",
-      "indexed_at": "2026-07-25T10:47:41Z",
+      "file_hash": "sha256:6ecc6ac8cec25b91e8e635d003ee6a629f871d0518b1b97f1b31739fc5cf14ba",
+      "indexed_at": "2026-07-25T11:58:12Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4490,9 +4490,9 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::toolbar-properties": {
-          "file_id": "file-XbrH2avtpi4dYywQTJELVf",
+          "file_id": "file-LaicPHVPnJM1vRk7isbCz4",
           "heading_path": "DESIGN statement > Parameters > Toolbar properties",
-          "section_payload_hash": "sha256:ae77f144f63a98d0a33b01c0abe650f003d8ae9c54b5abaf71de974de454eab9",
+          "section_payload_hash": "sha256:cc3e6c1cde3107a5b7c583d6b87d18f3ec2ac05d17b2b555181ed0c6d525d70f",
           "source_file": "language/DESIGN_statement.md"
         }
       },
@@ -15082,7 +15082,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "dfb7556a02b1ab30b801d815744aece09781aad8",
+  "last_indexed_docs_commit": "d44a2d43a66b4076bdc77847d1141cc296d6c7c9",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
