@@ -71,6 +71,30 @@ Except for `BOOLEAN`, a `NULL` value is converted to `null`.
 
 `list` contains only the read page, not all rows of the group. The view type of a group rendered by a React container remains the table, and the group is read page by page, but since the table itself is not displayed, the page size is not adjusted to the visible rows — the server default page size (50 objects) applies. For a view that shows all rows of the group — a calendar, a board, a map — specify the `PAGESIZE 0` option (read all objects) or an explicit page size in the [`OBJECTS`](../language/Object_blocks.md) block.
 
+A view that lays rows out in their own order — a card flow, a feed — can instead keep the page and let it follow the scroll, the way the standard table does. `useSeekOnScroll(controller.<group>)` returns a function that marks each row's element; the hook watches which of them are on screen — wherever the scrolling happens, in the component's own box or a platform container above it — and follows the table's own rules: while the current record is on screen, scrolling changes nothing; when it leaves, it is reseated on the visible edge it left through, which is also what requests the next page; on a page change the reseated row keeps its on-screen position, so nothing jumps under the eye; a current record moved from outside — a click, a programmatic seek — is scrolled into view instead. The pact rests on the same contract the table itself lives by, and it is the developer's to keep: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](../language/Object_blocks.md) block accordingly. The window then always extends a page beyond the current record, so it leaves the viewport — and reseats, pulling the next page — before the scroller runs out of room at a loaded edge:
+
+```jsx
+const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
+...
+{rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
+```
+
+Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the scroll must be still, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#placing-an-lsf-child) alike — follows.
+
+```jsx
+function Row(props) {
+    const r = props.row;
+    return (
+        <div className={r.isCurrent ? "order order-current" : "order"}>
+            <span>{r.number.value}</span>
+            <span>{r.sum.value}</span>
+        </div>
+    );
+}
+```
+
+### Reading the projection {#reading}
+
 The component reads the projection in one of two ways, and the choice is about who re-renders when data changes.
 
 `props.data` is the whole snapshot. The component re-renders — with a fresh `data` — whenever anything in its scope changes, and renders everything it draws from the new snapshot. For a small view this is the whole story: no hooks, a plain function of the data, and the examples above are written this way. It is also the only way to read the scope as a whole — enumerate its top-level entries, read the containers.

@@ -127,6 +127,181 @@
                 return React.createElement(memoComp, rowProps);
             });
         };
+        // useSeekOnScroll(groupController[, options]) -> (row) => ref callback. The native grid's scroll pact
+        // (DataGrid.checkSelectedRowVisible), ported to a custom card view: while the CURRENT row is on screen,
+        // scrolling seeks NOTHING; when it leaves, it is reseated on the visible edge it left through - first visible
+        // when it left above, last visible when it left below. Since the key window is a contiguous stretch of one
+        // linear order, moving current is also what pulls the next page, so the rows (and their <Lsf> editors) follow.
+        //   const seekRef = useSeekOnScroll(controller.b, { enabled: follow });
+        //   <div key={row.key} ref={seekRef(row)} ...>
+        // The other half of the pact, also the grid's: on a window shift the JUST-SEEKED row holds its on-screen
+        // position (the scroller is corrected by exactly the layout shift - and the browser's own scroll anchoring is
+        // turned off there, or it would correct the same removal a second time); and a current moved from OUTSIDE (a
+        // click elsewhere, a programmatic seek) is scrolled INTO view instead of being re-seeked away.
+        // The pact rests on the grid's own geometry contract, which is the DEVELOPER's to keep: the page must hold
+        // more rows than the viewport can show (set PAGESIZE on the OBJECTS block accordingly). The window then always
+        // has a page beyond current, so current leaves the viewport - and reseats, recentring the window - before the
+        // scroller can starve at a loaded edge. A page smaller than the viewport stalls there, as the grid itself would.
+        // "On screen" is threshold-based (60% by default), a deliberate hysteresis for tall cards where the native
+        // grid's touch-the-border rule would churn current on every pixel of clipping.
+        // ONE hook per scrolling element: two instances above one scroller would fight over its correction.
+        // options: enabled (true), threshold (0.6), settle (250ms), onSeek(row) - called for each issued seek.
+        ns.useSeekOnScroll = function (groupController, options) {
+            var opts = options || {};
+            var enabled = opts.enabled == null ? true : !!opts.enabled;
+            var st = React.useRef(null);
+            if (st.current == null)
+                st.current = { io: null, rows: new Map(), refs: new Map(), onScreen: new Map(),
+                               settle: null, flight: null, raf: null,
+                               asked: null, busy: false, anchor: null,
+                               controller: null, opts: null, lastCurrentKey: null };
+            var t = st.current;
+            t.controller = groupController; t.opts = opts; // read latest from the observer callbacks, no re-subscribe
+
+            var scrollerOf = function (el) {
+                for (var p = el.parentElement; p; p = p.parentElement) {
+                    var o = getComputedStyle(p).overflowY;
+                    if ((o === 'auto' || o === 'scroll') && p.scrollHeight > p.clientHeight) return p;
+                }
+                return document.scrollingElement;
+            };
+            // the element's LAYOUT position inside the scroller: rect difference + scrollTop cancels the scrolling out,
+            // so it changes only when the content above it changes - exactly the shift the correction must undo.
+            // (the document scroller's own rect already moves with the scroll, so its base is simply 0)
+            var layoutTop = function (scroller, el) {
+                var base = scroller === document.scrollingElement ? 0 : scroller.getBoundingClientRect().top;
+                return el.getBoundingClientRect().top - base + scroller.scrollTop;
+            };
+            // the anchor is ONE invariant: this element, at this layout position, in this scroller (whose own
+            // anchoring is leased away while ours holds). Dropping it restores what the lease took.
+            var dropAnchor = function () {
+                var a = t.anchor;
+                if (a) { a.scroller.style.overflowAnchor = a.prevOverflowAnchor; t.anchor = null; }
+            };
+            var setAnchor = function (el) {
+                var scroller = scrollerOf(el);
+                if (!t.anchor || t.anchor.scroller !== scroller) {
+                    dropAnchor();
+                    t.anchor = { scroller: scroller, prevOverflowAnchor: scroller.style.overflowAnchor };
+                    // OURS is the only anchoring here: the browser's own would correct the same removal a second
+                    // time (measured: overshooting the scroller to 0 and killing the scroll entirely)
+                    scroller.style.overflowAnchor = 'none';
+                }
+                t.anchor.el = el;
+                t.anchor.top = layoutTop(scroller, el);
+            };
+            var compensate = function () {
+                var a = t.anchor;
+                if (!t.io || !a || !a.el || !a.el.isConnected) return; // disabled -> hands off the scroller
+                if (scrollerOf(a.el) !== a.scroller) { dropAnchor(); return; } // the layout moved it elsewhere: stale
+                var top = layoutTop(a.scroller, a.el);
+                var delta = top - a.top;
+                if (delta !== 0) a.scroller.scrollTop += delta; // the seeked row stays where the eye left it
+                a.top = top;
+            };
+            var currentEntry = function () { // the current row's element, from the freshest row objects
+                var found = null;
+                t.rows.forEach(function (row, el) { if (row.isCurrent && el.isConnected) found = { el: el, row: row }; });
+                return found;
+            };
+
+            var threshold = opts.threshold == null ? 0.6 : opts.threshold;
+            React.useEffect(function () {
+                if (!enabled) return undefined;
+                var io = new IntersectionObserver(function (entries) {
+                    for (var i = 0; i < entries.length; i++) {
+                        var e = entries[i];
+                        // isIntersecting alone is true at a single pixel; ON SCREEN here means the threshold's worth
+                        if (e.isIntersecting && e.intersectionRatio >= threshold) t.onScreen.set(e.target, true);
+                        else t.onScreen.delete(e.target);
+                    }
+                    clearTimeout(t.settle);
+                    t.settle = setTimeout(t.evaluate, opts.settle == null ? 250 : opts.settle);
+                }, { threshold: threshold });
+                t.io = io;
+                t.rows.forEach(function (_, el) { io.observe(el); }); // elements mounted before enabling
+                return function () { // every pending continuation belongs to THIS lifecycle: none may cross into the next
+                    clearTimeout(t.settle); t.settle = null;
+                    clearTimeout(t.flight); t.flight = null; t.busy = false; t.asked = null;
+                    if (t.raf != null) { cancelAnimationFrame(t.raf); t.raf = null; }
+                    io.disconnect(); t.io = null; t.onScreen.clear();
+                    dropAnchor();
+                    t.lastCurrentKey = null; // on re-enable the standing current is news again: it syncs, not seeks
+                };
+            }, [enabled, threshold, opts.settle]);
+
+            t.evaluate = function () {
+                if (!t.io) return;
+                var visible = [];
+                t.onScreen.forEach(function (_, el) { if (el.isConnected && t.rows.has(el)) visible.push(el); });
+                if (!visible.length) return;
+                visible.sort(function (a, b) { // reading order = DOM order
+                    return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+                });
+
+                var cur = currentEntry();
+                if (!cur) return; // rows in transition (no current delivered yet): the pact has no subject
+                if (t.onScreen.has(cur.el)) return; // current on screen: scrolling seeks NOTHING (asked is cleared by
+                                                    // the LANDING, not here: a mid-flight scroll reversal must not
+                                                    // reclassify our own seek's arrival as an external one)
+                // the native exit rule: reseat current on the visible edge it left through
+                var target = (cur.el.compareDocumentPosition(visible[0]) & Node.DOCUMENT_POSITION_FOLLOWING)
+                        ? visible[0] : visible[visible.length - 1];
+
+                var row = t.rows.get(target);
+                if (!row) return;
+                if (t.busy || t.asked === row.key) return; // one seek in flight, never re-ask the one in question
+                setAnchor(target); // the new current holds its on-screen place through the coming shift
+                t.asked = row.key; t.busy = true;
+                t.controller.change(row);
+                if (t.opts.onSeek) t.opts.onSeek(row);
+                clearTimeout(t.flight); // one seek in flight: let the answer land before the next one
+                t.flight = setTimeout(function () { t.flight = null; t.busy = false; }, 500);
+            };
+
+            // the outside-change half: current moved NOT through this hook (a click on another row, a programmatic
+            // seek) - bring it into view, the way the grid follows its selection; our own seek is only bookkept
+            React.useEffect(function () {
+                var cur = currentEntry();
+                var key = cur ? cur.row.key : null;
+                if (key === t.lastCurrentKey) return undefined;
+                t.lastCurrentKey = key;
+                if (key != null && key === t.asked) { t.asked = null; return undefined; } // our seek landed
+                if (cur && enabled) {
+                    var sc = scrollerOf(cur.el);
+                    var r = cur.el.getBoundingClientRect(), b = sc.getBoundingClientRect();
+                    var top = sc === document.scrollingElement ? 0 : b.top;
+                    var bottom = sc === document.scrollingElement ? innerHeight : b.bottom;
+                    // adjust ONLY the chosen scroller (scrollIntoView would also move any ancestor it liked)
+                    if (r.top < top) sc.scrollTop += r.top - top;
+                    else if (r.bottom > bottom) sc.scrollTop += r.bottom - bottom;
+                }
+                return undefined;
+            });
+
+            // one ref callback per row KEY, held so a re-render does not detach/re-attach every element; the row
+            // object itself is refreshed on each call (it is rebuilt whenever its values change). Mounts and unmounts
+            // are also the signal that the layout under the scroller changed: one correction per commit, after it.
+            return function (row) {
+                var key = row.key;
+                var held = t.refs.get(key);
+                if (!held) {
+                    held = { el: null, row: null, cb: function (el) {
+                        if (held.el) { t.rows.delete(held.el); t.onScreen.delete(held.el); if (t.io) t.io.unobserve(held.el); }
+                        held.el = el;
+                        if (el) { t.rows.set(el, held.row); if (t.io) t.io.observe(el); }
+                        else t.refs.delete(key);
+                        if (t.raf == null)
+                            t.raf = requestAnimationFrame(function () { t.raf = null; compensate(); });
+                    } };
+                    t.refs.set(key, held);
+                }
+                held.row = row;
+                if (held.el) t.rows.set(held.el, row); // keep the freshest row object for an already-mounted element
+                return held.cb;
+            };
+        };
+
         ns.List = function (props) { // hook-free dispatcher: swaps component type, never a conditional hook
             var simple = props.simple == null ? !!ns.listSimple : !!props.simple;
             return React.createElement(simple ? SimpleList : KeysList, props);
