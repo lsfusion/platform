@@ -20,8 +20,8 @@ public class GComponent implements Serializable {
     public GContainer container;
     public boolean defaultComponent;
 
-    // meaningful only for a direct child of a CUSTOM REACT container (see isDelegated); ignored on any other component
-    public boolean delegate;
+    // meaningful only for a direct child of a CUSTOM REACT container (see isLsfView); ignored on any other component
+    public boolean lsf;
 
     public String elementClass;
 
@@ -104,15 +104,15 @@ public class GComponent implements Serializable {
         return container != null && container.isReact();
     }
 
-    // the delegate flag is only meaningful for a direct child of a CUSTOM REACT container: such a child keeps its real (server-built) GWT view and React mounts it into a placeholder instead of owning/replacing it
-    public boolean isDelegated() {
-        return delegate && isInReact();
+    // the lsf flag is only meaningful for a direct child of a CUSTOM REACT container: such a child keeps its real (server-built) GWT view and React mounts it into a placeholder instead of owning/replacing it
+    public boolean isLsfView() {
+        return lsf && isInReact();
     }
 
-    // the complement of isDelegated within a react container: a child React DRAWS (from data), so GWT builds no view for
-    // it and it is react-owned. A child outside a react container is neither delegated nor react-projected.
+    // the complement of isLsfView within a react container: a child React DRAWS (from data), so GWT builds no view for
+    // it and it is react-owned. A child outside a react container is neither lsf nor react-projected.
     public boolean isReactProjected() {
-        return !delegate && isInReact();
+        return !lsf && isInReact();
     }
 
     // a component's semantic presentation descriptors (caption / image) — their dynamic readers and static design

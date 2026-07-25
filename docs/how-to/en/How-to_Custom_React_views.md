@@ -229,92 +229,92 @@ const Column = ({ cellKey, rowKeys }) => (
 
 Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
 
-### Delegating children back to lsFusion
+### Crossing back to lsFusion
 
-By default the component draws the container's whole subtree from `props.data`. A child can instead keep its own lsFusion view: set `delegate = TRUE` on it, and the component places that view with `<LsfComponent sid/>` rather than drawing it.
+By default the component draws the container's whole subtree from `props.data`. A child can instead keep its own lsFusion view: set `lsf = TRUE` on it, and the component places that view with `<Lsf sid/>` rather than drawing it.
 
 ```lsf
 DESIGN orders {
     board {
         custom = 'Board';
-        MOVE BOX(o) { delegate = TRUE; }        // the standard grid, placed by the component
-        MOVE PROPERTY(comment) { delegate = TRUE; }
+        MOVE BOX(o) { lsf = TRUE; }        // the standard grid, placed by the component
+        MOVE PROPERTY(comment) { lsf = TRUE; }
     }
 }
 ```
 
-A delegated child is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image are the exception: they go to the component through `props.data.components` instead of the child's own view.
+An lsf child is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image are the exception: they go to the component through `props.data.components` instead of the child's own view.
 
-`props.data.components` maps each delegated child's `sid` to its descriptor `{ caption, image }`, in `DESIGN` order. The `sid` (the key) is the design component's identifier, such as `BOX(o)` or `PROPERTY(comment)`; the descriptor carries the caption and image that a delegated child no longer draws in GWT. It is part of the projected `data`, so a dynamic caption or image re-renders it like any other data change.
+`props.data.components` maps each lsf child's `sid` to its descriptor `{ caption, image }`, in `DESIGN` order. The `sid` (the key) is the design component's identifier, such as `BOX(o)` or `PROPERTY(comment)`; the descriptor carries the caption and image that an lsf child no longer draws in GWT. It is part of the projected `data`, so a dynamic caption or image re-renders it like any other data change.
 
-`LsfComponent`, `LsfComponents` and `useLsfComponent` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { LsfComponent, LsfComponents, useLsfComponent } = window.lsfusion;`.
+`Lsf`, `Lsfs` and `useLsf` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Lsf, Lsfs, useLsf } = window.lsfusion;`.
 
 ```jsx
 export function Board(props) {
     return <div className="board">
-        {Object.keys(props.data.components).map(sid => <LsfComponent key={sid} sid={sid}/>)}
+        {Object.keys(props.data.components).map(sid => <Lsf key={sid} sid={sid}/>)}
     </div>;
 }
 ```
 
-`<LsfComponents/>` does the same iteration, so a container that uses it places every delegated child without naming any:
+`<Lsfs/>` does the same iteration, so a container that uses it places every lsf child without naming any:
 
 ```jsx
 export function Board() {
-    return <div className="board"><LsfComponents/></div>;
+    return <div className="board"><Lsfs/></div>;
 }
 ```
 
-### Placing a delegated child
+### Placing an lsf child
 
-A delegated child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
+An lsf child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
 
 ```jsx
 // the platform creates the host — a <div> inside the section
-<section className="board-panel"><LsfComponent sid="BOX(o)"/></section>
+<section className="board-panel"><Lsf sid="BOX(o)"/></section>
 
 // the component's own element is the host — one node less
-<section className="board-panel" ref={useLsfComponent('BOX(o)')}/>
+<section className="board-panel" ref={useLsf('BOX(o)')}/>
 ```
 
-`<LsfComponent>` is the shorter one, and it is what `<LsfComponents/>` places. `useLsfComponent(sid)` returns a ref callback, for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it.
+`<Lsf>` is the shorter one, and it is what `<Lsfs/>` places. `useLsf(sid)` returns a ref callback, for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it.
 
-Everything else is the same for both. The platform marks the host with the class `lsf-component` and with `data-lsf-sid`, whoever created it. Every host is styled so that the view fills it, whatever the child is, so the component sizes the host and the view follows:
+Everything else is the same for both. The platform marks the host with the class `lsf-view` and with `data-lsf-sid`, whoever created it. Every host is styled so that the view fills it, whatever the child is, so the component sizes the host and the view follows:
 
 ```css
-.board > .lsf-component[data-lsf-sid="BOX(o)"] { height: 260px; }
+.board > .lsf-view[data-lsf-sid="BOX(o)"] { height: 260px; }
 ```
 
-Sizing is the component's job, because a delegated child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either: they are handed to the component in `props.data.components`, so a component that places children itself draws them where it wants them.
+Sizing is the component's job, because an lsf child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either: they are handed to the component in `props.data.components`, so a component that places children itself draws them where it wants them.
 
-`<LsfComponents/>` wraps each child in a `<div class="lsf-slot">` and, when the descriptor carries a caption or an image, draws them above the host in a `<div class="lsf-slot-caption">` (the image in a `<span class="lsf-slot-image">`). Its hosts are addressed from CSS as `.lsf-slot > .lsf-component[data-lsf-sid="..."]`. Iterate `props.data.components` yourself when a slot needs its own markup rather than its own style:
+`<Lsfs/>` wraps each child in a `<div class="lsf-slot">` and, when the descriptor carries a caption or an image, draws them above the host in a `<div class="lsf-slot-caption">` (the image in a `<span class="lsf-slot-image">`). Its hosts are addressed from CSS as `.lsf-slot > .lsf-view[data-lsf-sid="..."]`. Iterate `props.data.components` yourself when a slot needs its own markup rather than its own style:
 
 ```jsx
 Object.keys(props.data.components).map(sid => {
     const c = props.data.components[sid];
     return <section key={sid} className="slot">
         <h3>{c.caption}</h3>
-        <LsfComponent sid={sid}/>
+        <Lsf sid={sid}/>
     </section>;
 })
 ```
 
 Three rules bound the placement:
 
-- A property drawn on an object group that the component renders cannot be delegated, because that group has no lsFusion view to place. Delegate the group's `BOX` instead. The server rejects such a design.
-- Each delegated child is placed by at most one host. A child no host places is not shown; a duplicate host reports itself in the page and in the console, and the first one keeps the child.
-- The node `<LsfComponent>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
+- A property drawn on an object group that the component renders cannot be marked `lsf`, because that group has no lsFusion view to place. Set `lsf` on the group's `BOX` instead. The server rejects such a design.
+- Each lsf child is placed by at most one host. A child no host places is not shown; a duplicate host reports itself in the page and in the console, and the first one keeps the child.
+- The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
 
-A child the component stops rendering is reported to the server as not shown, and the server stops reading that child's data — the same gating an inactive tab or a collapsed container gets. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still shown as far as the server knows, and goes on being read. For the same reason the visibility of a delegated child belongs to the component alone — its `collapsible` attribute is ignored, and a scripted `COLLAPSE` / `EXPAND` on it is an error.
+A child the component stops rendering is reported to the server as not shown, and the server stops reading that child's data — the same gating an inactive tab or a collapsed container gets. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still shown as far as the server knows, and goes on being read. For the same reason the visibility of an lsf child belongs to the component alone — its `collapsible` attribute is ignored, and a scripted `COLLAPSE` / `EXPAND` on it is an error.
 
-### Extending a delegating container
+### Extending a container with lsf children
 
 Because the children come from `DESIGN`, another module extends the container's content without touching the component:
 
 ```lsf
 EXTEND FORM orders PROPERTIES(o) rating;
 DESIGN orders {
-    board { MOVE PROPERTY(rating) { delegate = TRUE; } }
+    board { MOVE PROPERTY(rating) { lsf = TRUE; } }
 }
 ```
 
@@ -322,9 +322,9 @@ The layout is not extensible this way: a React composition cannot be modified fr
 
 ### Choosing between a React component and an HTML template
 
-A component that places delegated children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `[sID]` slots, without a React runtime and without a placeholder node per child. When every child of the container is delegated, `props.data` carries no group or property values, because a delegated child is not projected — only `props.data.components` with the children's descriptors.
+A component that places lsf children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `[sID]` slots, without a React runtime and without a placeholder node per child. When every child of the container is marked `lsf`, `props.data` carries no group or property values, because an lsf child is not projected — only `props.data.components` with the children's descriptors.
 
-A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useFormData`, or the markup comes from a component library — or when `<LsfComponents/>` is used, since it places a child a later module adds without anyone editing the component. An HTML template has neither: adding a child there means editing the template string, which belongs to the module that declared it.
+A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useFormData`, or the markup comes from a component library — or when `<Lsfs/>` is used, since it places a child a later module adds without anyone editing the component. An HTML template has neither: adding a child there means editing the template string, which belongs to the module that declared it.
 
 ### Interactivity
 

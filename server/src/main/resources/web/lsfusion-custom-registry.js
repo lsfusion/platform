@@ -62,14 +62,14 @@
             return React.useSyncExternalStore(store.subscribe, function () { return select(store.getSnapshot()); });
         };
         ns.useFormController = function () { return React.useContext(Ctx).controller; };
-        // the DELEGATION primitives. <LsfComponent sid/> is a placeholder for a DESIGN child marked `delegate = TRUE`:
+        // the THE CROSSING BACK primitives. <Lsf sid/> is a placeholder for a DESIGN child marked `lsf = TRUE`:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
         // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
         // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
-        // useLsfComponent(sid) -> a ref callback mounting the delegated child into the element the component ALREADY
+        // useLsf(sid) -> a ref callback mounting the lsf child into the element the component ALREADY
         // renders, so no placeholder node exists at all. The platform marks that element (class + data-lsf-sid/kind).
-        ns.useLsfComponent = function (sid) {
+        ns.useLsf = function (sid) {
             var view = React.useContext(Ctx).view;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             return React.useCallback(function (host) {
@@ -77,19 +77,19 @@
                 if (host) { view.mount(sid, host); held.current = host; }
             }, [view, sid]);
         };
-        ns.LsfComponent = function (props) {
-            return React.createElement('div', { ref: ns.useLsfComponent(props.sid), className: props.className, style: props.style });
+        ns.Lsf = function (props) {
+            return React.createElement('div', { ref: ns.useLsf(props.sid), className: props.className, style: props.style });
         };
-        // the delegated children's descriptors live in the projected data (data.components = { sid: {caption, image} },
+        // the lsf children's descriptors live in the projected data (data.components = { sid: {caption, image} },
         // in DESIGN order) — a plain data field, so it is read with useFormData like any other; no dedicated
         // hook is needed. A dynamic caption marks the scope dirty, so build() hands a new components map and this re-renders.
-        var EMPTY_COMPONENTS = Object.freeze({}); // STABLE ref when a scope has no delegated children (else useSyncExternalStore loops on a fresh {})
-        // <LsfComponents/>: place every delegated child, in DESIGN order. This is the generic default that makes the
-        // container content-extensible: a third module's `EXTEND FORM` + `delegate = TRUE` child appears in position
-        // without touching the react component. Each is drawn with its caption above it — the caption a delegated
+        var EMPTY_COMPONENTS = Object.freeze({}); // STABLE ref when a scope has no lsf children (else useSyncExternalStore loops on a fresh {})
+        // <Lsfs/>: place every lsf child, in DESIGN order. This is the generic default that makes the
+        // container content-extensible: a third module's `EXTEND FORM` + `lsf = TRUE` child appears in position
+        // without touching the react component. Each is drawn with its caption above it — the caption an lsf
         // component no longer draws in GWT is drawn here instead (as a tabbed container draws captions in the tab strip).
         // Pass props.components (or read props.data.components) for a different layout; the caption is in each descriptor.
-        ns.LsfComponents = function (props) {
+        ns.Lsfs = function (props) {
             var data = ns.useFormData(function (s) { return (s && s.components) || EMPTY_COMPONENTS; }); // ALWAYS call the hook, then let props override
             var components = props.components || data; // the sid -> descriptor map (DESIGN insertion order)
             return Object.keys(components).map(function (sid) {
@@ -101,7 +101,7 @@
                     : null;
                 return React.createElement('div', { key: sid, className: 'lsf-slot' },
                     caption,
-                    React.createElement(ns.LsfComponent, { sid: sid }));
+                    React.createElement(ns.Lsf, { sid: sid }));
             });
         };
         var RowWrapper = React.memo(function (p) {

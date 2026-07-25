@@ -31,8 +31,8 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
     }
 
     @SuppressWarnings("unused")
-    public void setDelegate(boolean delegate) {
-        target.setDelegate(delegate, getVersion());
+    public void setLsf(boolean lsf) {
+        target.setLsfView(lsf, getVersion());
     }
 
     /* ========= constraints properties ========= */

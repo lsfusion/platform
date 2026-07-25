@@ -13,10 +13,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 // CUSTOM REACT 'fn': hosts a React component (window[fn], fn = container's custom) that OWNS this container's subtree,
-// except for the children marked `delegate = TRUE` in DESIGN — those keep their real GWT view, are excluded from the
-// projection, and the component places them with <LsfComponent sid/> (see props.data.components / <LsfComponents/>).
+// except for the children marked `lsf = TRUE` in DESIGN — those keep their real GWT view, are excluded from the
+// projection, and the component places them with <Lsf sid/> (see props.data.components / <Lsfs/>).
 // The component receives props { data, controller }: `data` is the @lsfusion/core-shaped projected form state
-// (re-rendered on each form change) and carries the delegated children's descriptors in data.components; `controller`
+// (re-rendered on each form change) and carries the lsf children's descriptors in data.components; `controller`
 // mutates the form. That is the primary, props-down contract — the
 // normal optimization is React.memo or React Compiler over props.data (structural sharing keeps unchanged refs stable).
 // For OPT-IN fine-grained re-render without prop-threading, descendants use the window.lsfusion hooks
@@ -32,7 +32,7 @@ public class ReactContainerView extends ParkedContainerView {
     private JavaScriptObject lastData = JavaScriptObject.createObject(); // last projected @lsfusion/core data (== the hook snapshot); starts empty, so no fallbacks anywhere
 
     // sID -> the host claimed for it (the first placeholder wins). The child's view is mounted there once it exists, so
-    // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfDelegated(sid) >= 0
+    // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfLsfView(sid) >= 0
     private final Map<String, Element> hosts = new HashMap<>();
     private final Set<String> reactHidden = new HashSet<>(); // sIDs the server has been told the component is not showing
     private boolean unmountingRoot; // true while the React root is torn down (form close), so no per-child hide is sent
@@ -53,7 +53,7 @@ public class ReactContainerView extends ParkedContainerView {
 
     @Override
     protected void addImpl(int index) {
-        // React owns the subtree, so only a DELEGATED child gets a GWT view here
+        // React owns the subtree, so only an lsf child gets a GWT view here
         super.addImpl(index);
 
         // the view is built by its controller, and a property hidden with `remove` is dropped and built again as it
@@ -69,7 +69,7 @@ public class ReactContainerView extends ParkedContainerView {
     // always a duplicate placeholder, never a legitimate move.
     private void mountComponent(String sid, Element host) {
         stampHost(host, sid); // marks the host even when the mount reports a problem below
-        if (!isDelegatedChild(sid)) { // a typo, or a non-delegated child: no view will ever exist for this host
+        if (!isLsfViewChild(sid)) { // a typo, or a non-lsf child: no view will ever exist for this host
             reportUnknown(sid, host);
             return;
         }
@@ -80,13 +80,13 @@ public class ReactContainerView extends ParkedContainerView {
         }
         hosts.put(sid, host);
         setReactHidden(sid, false); // React shows this child now, so the server may read its data again
-        int index = indexOfDelegated(sid);
+        int index = indexOfLsfView(sid);
         if (index >= 0) // the view exists; otherwise the host waits, and addImpl mounts it once the view is built
             attachView(index, host);
     }
 
-    // tell the server whether the React component is showing this delegated child, so a hidden child's data is not read
-    // (like collapse / tab activation). Only a real change is sent; a delegated child is shown by default on the server
+    // tell the server whether the React component is showing this lsf child, so a hidden child's data is not read
+    // (like collapse / tab activation). Only a real change is sent; an lsf child is shown by default on the server
     private void setReactHidden(String sid, boolean hidden) {
         if (hidden ? reactHidden.add(sid) : reactHidden.remove(sid))
             formController.setUserHidden(findDeclared(sid), hidden);
@@ -95,7 +95,7 @@ public class ReactContainerView extends ParkedContainerView {
     private void attachView(int index, Element host) {
         ComponentViewWidget childView = getChildView(index);
         childView.appendTo(host);
-        // a delegated child is one self-contained view (a property is forced non-inline in PropertyPanelRenderer, so it is
+        // an lsf child is one self-contained view (a property is forced non-inline in PropertyPanelRenderer, so it is
         // a single widget, not inline value/comment siblings) — getSingleWidget is that view. Stretch it to fill the host
         // with the platform fill-parent-flex(-cont) classes — the same fill a native SizedFlexPanel child gets; the
         // min-size reset those classes omit is added in layout.css.
@@ -103,15 +103,15 @@ public class ReactContainerView extends ParkedContainerView {
         resizeChildren(); // the child moved out of the display:none park into a laid-out slot
     }
 
-    // the host may be an element the component renders for its own layout (useLsfComponent), so the platform marks it
+    // the host may be an element the component renders for its own layout (useLsf), so the platform marks it
     // rather than expecting the marks
     private void stampHost(Element host, String sid) {
-        GwtClientUtils.addClassName(host, "lsf-component");
+        GwtClientUtils.addClassName(host, "lsf-view");
         host.setAttribute("data-lsf-sid", sid);
     }
 
     private void clearHost(Element host) {
-        GwtClientUtils.removeClassName(host, "lsf-component");
+        GwtClientUtils.removeClassName(host, "lsf-view");
         host.removeAttribute("data-lsf-sid");
     }
 
@@ -124,41 +124,41 @@ public class ReactContainerView extends ParkedContainerView {
         if (!unmountingRoot) // a real hide by React, not the form closing (which resets the server's hidden set anyway)
             setReactHidden(sid, true);
         clearHost(host); // the host outlives the mount: it may be the component's own element, or React may reuse it
-        int index = indexOfDelegated(sid);
+        int index = indexOfLsfView(sid);
         if (index >= 0) // the view still exists; park it. If it was already dropped (SHOWIF), there is nothing to park
             parkChild(index);
     }
 
-    private int indexOfDelegated(String sid) {
+    private int indexOfLsfView(String sid) {
         for (int i = 0, size = children.size(); i < size; i++) {
             GComponent child = children.get(i);
-            if (child.isDelegated() && child.sID.equals(sid))
+            if (child.isLsfView() && child.sID.equals(sid))
                 return i;
         }
         return -1;
     }
 
-    private boolean isDelegatedChild(String sid) {
+    private boolean isLsfViewChild(String sid) {
         GComponent declared = findDeclared(sid);
-        return declared != null && declared.isDelegated();
+        return declared != null && declared.isLsfView();
     }
 
-    // a sid that is not a delegated child will never get a view — say WHY. The diagnostic is VISIBLE, not console-only:
-    // a typo'd or non-delegated sid must not silently render nothing. Writing into the host is safe: an <LsfComponent>
+    // a sid that is not an lsf child will never get a view — say WHY. The diagnostic is VISIBLE, not console-only:
+    // a typo'd or non-lsf sid must not silently render nothing. Writing into the host is safe: an <Lsf>
     // host never renders React children (F2), so React cannot overwrite it.
     private void reportUnknown(String sid, Element host) {
         if (findDeclared(sid) == null) {
             showDiagnostic(host, "'" + sid + "' is not a child of '" + container.sID + "'");
             logError("component '" + sid + "' is not a child of container '" + container.sID + "'");
-        } else { // declared, but without delegate = TRUE, so React owns it
-            showDiagnostic(host, "'" + sid + "' has no delegate = TRUE");
-            logError("child '" + sid + "' of container '" + container.sID + "' has no `delegate = TRUE`: React owns it, so there is no GWT view to place");
+        } else { // declared, but without lsf = TRUE, so React owns it
+            showDiagnostic(host, "'" + sid + "' has no lsf = TRUE");
+            logError("child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: React owns it, so there is no GWT view to place");
         }
     }
 
     private void reportDuplicate(String sid, Element host) {
-        showDiagnostic(host, "'" + sid + "' is already placed by another <LsfComponent>");
-        logError("component '" + sid + "' is placed by more than one <LsfComponent>; the first placeholder keeps it");
+        showDiagnostic(host, "'" + sid + "' is already placed by another <Lsf>");
+        logError("component '" + sid + "' is placed by more than one <Lsf>; the first placeholder keeps it");
     }
 
     private GComponent findDeclared(String sid) {
@@ -170,12 +170,12 @@ public class ReactContainerView extends ParkedContainerView {
 
     private void showDiagnostic(Element host, String message) {
         host.setInnerText("lsFusion: " + message);
-        GwtClientUtils.addClassName(host, "lsf-component-error");
+        GwtClientUtils.addClassName(host, "lsf-view-error");
     }
 
     private void clearDiagnostic(Element host) {
         host.setInnerText("");
-        GwtClientUtils.removeClassName(host, "lsf-component-error");
+        GwtClientUtils.removeClassName(host, "lsf-view-error");
         clearHost(host);
     }
 
@@ -185,7 +185,7 @@ public class ReactContainerView extends ParkedContainerView {
         return container;
     }
 
-    // pushed from GFormController.applyRemoteChanges after each form change. A delegated child's caption / captionClass /
+    // pushed from GFormController.applyRemoteChanges after each form change. A lsf child's caption / captionClass /
     // image now lives inside `data` (data.components, built by GReactFormData): a descriptor change marks the scope dirty,
     // so build() returns a new top ref and the data change alone re-renders React — no separate components channel.
     public void updateData(JavaScriptObject data) {
@@ -281,7 +281,7 @@ public class ReactContainerView extends ParkedContainerView {
         var component = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::resolveComponent()();
         var ctxValue = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::ctxValue;
         var props = {
-            data: this.@lsfusion.gwt.client.form.design.view.ReactContainerView::lastData, // projected @lsfusion/core form state (primary contract; re-rendered each data change); includes data.components (delegated children's descriptors)
+            data: this.@lsfusion.gwt.client.form.design.view.ReactContainerView::lastData, // projected @lsfusion/core form state (primary contract; re-rendered each data change); includes data.components (lsf children's descriptors)
             controller: ctxValue.controller // changeProperty/changeProperties/changeObject + exec/eval/evalAction/change
         };
         root.render(React.createElement($wnd.lsfusion.__formContext.Provider, { value: ctxValue }, React.createElement(component, props)));

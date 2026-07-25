@@ -841,7 +841,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             ComponentView component = richDesign.findById(componentID);
             form.setUserHidden(component, hidden); // the client only sends user-hidable ids; a non-user-hidable one just adds ignored membership
-            if (component instanceof ContainerView) // a hidden container — collapsed OR React-delegated — fires COLLAPSE, shown fires EXPAND
+            if (component instanceof ContainerView) // a hidden container — collapsed OR react-placed lsf — fires COLLAPSE, shown fires EXPAND
                 form.fireContainerEvent(stack, (ContainerView) component, hidden);
         });
     }

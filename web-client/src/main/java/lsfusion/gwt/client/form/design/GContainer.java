@@ -217,7 +217,7 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
     public boolean isAlignCaptions() {
         // a react container has no line grid to align captions across (React owns its layout), and an aligned caption
-        // becomes a SEPARATE CaptionWidget, which no <LsfComponent> placeholder claims — a delegated child would lose
+        // becomes a SEPARATE CaptionWidget, which no <Lsf> placeholder claims — an lsf child would lose
         // its caption. Keeping captions inside the child's own widget is the only meaningful option here.
         if (isReact())
             return false;

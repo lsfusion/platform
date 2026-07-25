@@ -42,7 +42,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     protected NFProperty<Boolean> activated = NFFact.property();
 
     // meaningful only for a direct child of a CUSTOM REACT container: the child keeps its real (server-built) view and React mounts it into a placeholder instead of owning it; ignored everywhere else
-    protected NFProperty<Boolean> delegate = NFFact.property();
+    protected NFProperty<Boolean> lsf = NFFact.property();
 
     protected NFProperty<Double> flex = NFFact.property();
     protected NFProperty<FlexAlignment> alignment = NFFact.property();
@@ -375,7 +375,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     }
 
     // the user / client drives this component's visibility and syncs it to the server, so its data is not read while
-    // hidden. Three variants: an unselected tab (exclusive, one of N), a collapsed captioned container, and a delegated
+    // hidden. Three variants: an unselected tab (exclusive, one of N), a collapsed captioned container, and an lsf
     // child a CUSTOM REACT component is not showing — the last two are the isolated "this one is hidden" kind
     public boolean isUserHidable() {
         ComponentView parent = getHiddenContainer();
@@ -391,7 +391,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
     public boolean isReactHidable() {
         ComponentView parent = getHiddenContainer();
-        return isDelegate() && parent instanceof ContainerView && ((ContainerView) parent).isReact();
+        return isLsfView() && parent instanceof ContainerView && ((ContainerView) parent).isReact();
     }
 
     protected boolean hasPropertyComponent() {
@@ -457,7 +457,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
         outStream.writeBoolean(isDefaultComponent());
 
-        outStream.writeBoolean(isDelegate());
+        outStream.writeBoolean(isLsfView());
 
         pool.writeString(outStream, getSID());
     }
@@ -517,11 +517,11 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         activated.set(value, version);
     }
 
-    public boolean isDelegate() {
-        return nvl(delegate.get(), false);
+    public boolean isLsfView() {
+        return nvl(lsf.get(), false);
     }
-    public void setDelegate(Boolean value, Version version) {
-        delegate.set(value, version);
+    public void setLsfView(Boolean value, Version version) {
+        lsf.set(value, version);
     }
 
     public Double getFlex() {
@@ -682,7 +682,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         span.finalizeChanges();
         defaultComponent.finalizeChanges();
         activated.finalizeChanges();
-        delegate.finalizeChanges();
+        lsf.finalizeChanges();
         flex.finalizeChanges();
         alignment.finalizeChanges();
         shrink.finalizeChanges();
@@ -736,7 +736,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
         mapping.sets(defaultComponent,src.defaultComponent);
         mapping.sets(activated, src.activated);
-        mapping.sets(delegate, src.delegate);
+        mapping.sets(lsf, src.lsf);
 
         mapping.sets(flex, src.flex);
         mapping.sets(alignment, src.alignment);

@@ -55,7 +55,7 @@ public abstract class ClientComponent extends ClientIdentityObject {
 
     public boolean defaultComponent;
 
-    public boolean delegate;
+    public boolean lsf;
 
     public ClientComponent() {
     }
@@ -115,7 +115,7 @@ public abstract class ClientComponent extends ClientIdentityObject {
 
         defaultComponent = inStream.readBoolean();
 
-        delegate = inStream.readBoolean();
+        lsf = inStream.readBoolean();
 
         sID = pool.readString(inStream);
     }

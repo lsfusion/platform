@@ -297,7 +297,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a group rendered by a CUSTOM REACT container is drawn by React, not the standard grid, so the server must not
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
-    // into a JSON candidate list). A DELEGATED box keeps its standard grid, so its group is not React-owned
+    // into a JSON candidate list). A lsf box keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
         for (ComponentView component : getComponents())
             if (component instanceof ContainerView && ((ContainerView) component).groupObjectBox == group)
@@ -309,7 +309,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // the react container that RENDERS this component, null if a standard view is built for it (mirrors
-    // GFormController.getReactContainer): a non-delegated child gets no view, so its owner swallows everything below it
+    // GFormController.getReactContainer): a non-lsf child gets no view, so its owner swallows everything below it
     private static ContainerView getReactContainer(ComponentView component) {
         ContainerView parent = component.getContainer();
         if (parent == null)
@@ -317,7 +317,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         ContainerView parentOwner = getReactContainer(parent);
         if (parentOwner != null)
             return parentOwner;
-        return parent.isReact() && !component.isDelegate() ? parent : null;
+        return parent.isReact() && !component.isLsfView() ? parent : null;
     }
 
     public Iterable<ComponentView> getNFComponentsIt(Version version) {
@@ -580,7 +580,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
         components.finalizeChanges();
 
-        checkDelegates();
+        checkLsfViews();
         checkReactProjectionNames();
     }
 
@@ -654,27 +654,27 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return component instanceof ContainerView && ((ContainerView) component).isReact() ? (ContainerView) component : null;
     }
 
-    // the design is complete here, so `delegate` can finally be checked against the container tree
-    private void checkDelegates() {
+    // the design is complete here, so `lsf` can finally be checked against the container tree
+    private void checkLsfViews() {
         for (ComponentView component : getComponents()) // the property draws are components too, so this covers them
-            checkDelegate(component);
+            checkLsfView(component);
     }
 
-    private void checkDelegate(ComponentView component) {
-        if (!component.isDelegate())
+    private void checkLsfView(ComponentView component) {
+        if (!component.isLsfView())
             return;
 
         ContainerView container = component.getContainer();
         if (container == null || !container.isReact())
-            throw new IllegalStateException("delegate is set for '" + component.getSID() + "', which is not a child of a CUSTOM REACT container");
+            throw new IllegalStateException("lsf is set for '" + component.getSID() + "', which is not a child of a CUSTOM REACT container");
 
         // a property is drawn on its object GROUP, and a group the react component renders has no client controller,
         // so no view would ever be built for the property — there would be nothing to place
         if (component instanceof PropertyDrawView) {
             GroupObjectEntity toDraw = ((PropertyDrawView) component).entity.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
             if (toDraw != null && isReactContainerGroup(toDraw))
-                throw new IllegalStateException("delegate is set for property '" + component.getSID() + "', whose object group is rendered by the react component '"
-                        + container.getCustom() + "' — delegate the group's box instead");
+                throw new IllegalStateException("lsf is set for property '" + component.getSID() + "', whose object group is rendered by the react component '"
+                        + container.getCustom() + "' — set lsf on the group's box instead");
         }
     }
 

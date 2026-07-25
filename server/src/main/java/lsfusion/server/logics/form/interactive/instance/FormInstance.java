@@ -1930,7 +1930,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(isStaticHidden(component))
             return true;
 
-        // if this is a tab / collapsible / react-delegated container, use its parent: its CAPTION is drawn by the parent
+        // if this is a tab / collapsible / react-lsf container, use its parent: its CAPTION is drawn by the parent
         // (a tab strip, a collapse header, or a React component that can keep showing the caption while unmounting the
         // body), so the caption must keep updating even while the component's own body is hidden. The body / data is gated
         // separately (isHidden(group), and a child property's own dynamic-hidable container which resolves to this one).
@@ -2001,7 +2001,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 active = siblings.get(0);
             if (!userHidableContainer.equals(active))
                 return true;
-        } else { // isolated: collapsed captioned container or react-hidden delegated child, both plain membership
+        } else { // isolated: collapsed captioned container or react-hidden lsf child, both plain membership
             if(userHidden.contains(userHidableContainer))
                 return true;
         }
@@ -2011,8 +2011,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     protected Map<ContainerView, ComponentView> activeTabs = new HashMap<>();
     protected PropertyDrawEntity activeProperty = null;
-    // components the client isolatedly hid: a collapsed captioned container, or a delegated child a CUSTOM REACT
-    // component is not showing. A component is in at most one user-hidable role (a delegated container is not collapsible)
+    // components the client isolatedly hid: a collapsed captioned container, or an lsf child a CUSTOM REACT
+    // component is not showing. A component is in at most one user-hidable role (an lsf container is not collapsible)
     protected Set<ComponentView> userHidden = new HashSet<>();
 
     public void setTabActive(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
@@ -2041,7 +2041,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             changeSelection(changeSelectionColumns);
     }
     
-    // a user hid a component: a collapsed container, or a CUSTOM REACT component hiding a delegated child. A non-user-
+    // a user hid a component: a collapsed container, or a CUSTOM REACT component hiding an lsf child. A non-user-
     // hidable id just adds ignored membership (isUserHidden only tests contains() on a resolved user-hidable ancestor).
     public void setUserHidden(ComponentView component, boolean hidden) {
         if (hidden) {

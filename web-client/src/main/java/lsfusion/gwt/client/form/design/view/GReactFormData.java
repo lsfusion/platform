@@ -56,8 +56,8 @@ public class GReactFormData {
     private final NativeSIDMap<GContainer, Boolean> dirtyScopes = new NativeSIDMap<>();       // scopes whose top object must rebuild
     private final NativeSIDMap<GContainer, Boolean> dirtyComponents = new NativeSIDMap<>();   // scopes whose data.components changed (a descriptor reader fired) - set ONLY by descriptor changes, so a value-only rebuild reuses the components ref off the cached top
 
-    // ===== data.components: semantic descriptors (caption / image) of the DELEGATED children of each React scope,
-    // keyed by child sid in DESIGN order. Delivered by the delegated caption/image READERS (they never touch GWT);
+    // ===== data.components: semantic descriptors (caption / image) of the lsf children of each React scope,
+    // keyed by child sid in DESIGN order. Delivered by the lsf caption/image READERS (they never touch GWT);
     // stored in `values` like any reader and read back in the top build (buildComponents), the static design value as the
     // fallback — so there is NO dedicated cache, data.components is assembled exactly like the panel scalars and shares
     // the top object's structural sharing (rebuilt only when its scope is dirty).
@@ -85,7 +85,7 @@ public class GReactFormData {
         fc.properties.foreachEntry((reader, keyValues) -> {
             NativeHashMap<GGroupObjectValue, PValue> fStore = getOrCreateValues(reader);
             GComponent componentChild = getComponentChild(reader);
-            if (componentChild != null) { // a delegated child's caption/class/image: stored like any reader, read back into data.components in the top build
+            if (componentChild != null) { // an lsf child's caption/class/image: stored like any reader, read back into data.components in the top build
                 if (putChanged(fStore, keyValues, null) != null)
                     markComponentDirty(componentChild.container); // data.components rebuilds (and the top with it); other data reused
             } else if (reader instanceof GPropertyDraw && ((GPropertyDraw) reader).integrationSID != null) {
@@ -264,7 +264,7 @@ public class GReactFormData {
         markScopeDirty(scope);
     }
 
-    private void markComponentDirty(GContainer scope) { // a delegated child's descriptor changed -> data.components rebuilds; scope is the child's container, always non-null here (getComponentChild required it)
+    private void markComponentDirty(GContainer scope) { // an lsf child's descriptor changed -> data.components rebuilds; scope is the child's container, always non-null here (getComponentChild required it)
         dirtyComponents.put(scope, Boolean.TRUE);
         markScopeDirty(scope);
     }
@@ -352,12 +352,12 @@ public class GReactFormData {
     // update's descriptor branch). build() reuses the cached components ref unless a descriptor actually changed, so an
     // unrelated value change in the scope does not churn its ref. The descriptor VALUES themselves live in `values`.
 
-    // the DELEGATED, React-scoped child whose caption / image this reader carries, or null
+    // the lsf, React-scoped child whose caption / image this reader carries, or null
     private GComponent getComponentChild(GPropertyReader reader) {
         GComponent child = getPresentationComponent(reader);
-        if (child == null || !child.isDelegated())
+        if (child == null || !child.isLsfView())
             return null;
-        GContainer scope = child.container; // the React container that places this child (its LsfComponents lists it)
+        GContainer scope = child.container; // the React container that places this child (its Lsfs lists it)
         return scope != null && scope.isReact() ? child : null;
     }
 
@@ -382,7 +382,7 @@ public class GReactFormData {
     private JavaScriptObject buildComponents(GContainer scope) {
         JavaScriptObject components = newObject();
         for (GComponent child : scope.children) // DESIGN order
-            if (child.isDelegated())
+            if (child.isLsfView())
                 setValue(components, child.sID, buildComponent(child));
         return components;
     }
@@ -393,7 +393,7 @@ public class GReactFormData {
     // changes. A reader that delivered null falls back to the static design value. Same loop shape as buildRowMeta/buildNode:
     // each component reader declares its own field, converter and static fallback.
     private JavaScriptObject buildComponent(GComponent child) {
-        JavaScriptObject[] holder = {newObject()}; // eager: keep a (possibly empty) descriptor object per delegated child
+        JavaScriptObject[] holder = {newObject()}; // eager: keep a (possibly empty) descriptor object per lsf child
         for (GPropertyReader reader : child.getComponentReaders())
             if (reader != null)
                 emitPresentation(holder, reader, GGroupObjectValue.EMPTY, null, reader.getColumnStatic(child));
@@ -581,7 +581,7 @@ public class GReactFormData {
     // read pv from the reader's store, convert per the reader's declared kind, set on the (lazily created) meta object; skip
     // if absent/null. GWT represents java.lang.Boolean as a native JS boolean, so setValue stores a String / boolean / JS
     // object all as their primitive JS form (a Boolean lands as a real true/false, not a truthy wrapper) — one path fits all.
-    // the ONE presentation-field emitter, shared by data.meta (react-owned props) and data.components (delegated children):
+    // the ONE presentation-field emitter, shared by data.meta (react-owned props) and data.components (lsf children):
     // the dynamic reader value if delivered (converted via the reader's own converter), else the static design value
     // (null on the dynamic-only meta path), else skip. The only difference between the two projections is staticValue.
     private void emitPresentation(JavaScriptObject[] holder, GPropertyReader reader, GGroupObjectValue key, GPropertyDraw draw, String staticValue) {

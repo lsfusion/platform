@@ -120,7 +120,7 @@ To access design components, you can use their names or address property compone
 |`span`|Number of line cells the component occupies in a container laid out in several `lines` (or as a `grid`)|[Integer literal](Literals.md#intliteral)|`1`|`2`|
 |`defaultComponent`|Specifying that this component should get the focus when the form is initialized. Can only be set for one component on the entire form|Extended [Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`activated`|Marks the component (a tab page) as the one initially selected in its tabbed container when the form opens|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`delegate`|Keeps the standard view of a child of a React `custom` container, which the component then places with `<LsfComponent sid/>` instead of drawing it (web client only). Ignored on any other component|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`lsf`|Keeps the standard view of a child of a React `custom` container, which the component then places with `<Lsf sid/>` instead of drawing it (web client only). Ignored on any other component|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`fill`|Similar to the `flex` property, the only difference being that if a zero value is set, the `align` property is set to `START`, otherwise `align` is set to `STRETCH`|`NUMERIC` type literal|`0`|`1.5`|
 |`size`|The base component size in pixels (a value of -1 means that the size is undefined)|A pair of [integer literals](Literals.md#intliteral) (width, height)|`(-1, -1)`|`(100, 20)`|
 |`height`|The base component height in pixels.|Integer literal|`-1`|`50`|

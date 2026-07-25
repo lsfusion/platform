@@ -493,7 +493,7 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     public boolean isCollapsible() {
-        if(isReactHidable()) // a delegated container's visibility is owned by React, not a GWT collapse toggle, so it is
+        if(isReactHidable()) // an lsf container's visibility is owned by React, not a GWT collapse toggle, so it is
             return false;    // never collapsible — this keeps a component in at most one of the user-hidden roles
 
         Boolean collapsibleValue = collapsible.get();

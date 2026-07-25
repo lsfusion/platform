@@ -1064,8 +1064,8 @@ public class GFormController implements EditManager {
     private void updatePropertyChanges(GFormChanges fc, Predicate<GPropertyReader> filter) {
         fc.properties.foreachEntry((key, value) -> {
             // a reader React consumes is skipped from GWT and instead fed by reactData.update(fc): a react-owned
-            // component's value (into data), or a delegated child's presentation reader (into data.components). The
-            // delegated child's own VALUE draw reader is not owned, so it still reaches its GWT view here.
+            // component's value (into data), or an lsf child's presentation reader (into data.components). The
+            // lsf child's own VALUE draw reader is not owned, so it still reaches its GWT view here.
             if(filter.test(key) && !isReactOwned(key))
                 key.update(this, value, fc.updateProperties.contains(key));
         });
@@ -1256,9 +1256,9 @@ public class GFormController implements EditManager {
     }
 
     // the react container that RENDERS this component, null if GWT does. A react container renders every child except
-    // a DELEGATED one — which keeps its GWT view and is mounted into a React placeholder, so it (and its subtree) is
-    // rendered by GWT. A non-delegated child gets no GWT view at all, so everything below it is rendered by the same
-    // container: the walk therefore climbs to the OUTERMOST react ancestor reachable through non-delegated hops
+    // an lsf one — which keeps its GWT view and is mounted into a React placeholder, so it (and its subtree) is
+    // rendered by GWT. A non-lsf child gets no GWT view at all, so everything below it is rendered by the same
+    // container: the walk therefore climbs to the OUTERMOST react ancestor reachable through non-lsf hops
     // (resolving to an inner react container that never gets a ReactContainerView would silently produce no data).
     public GContainer getReactContainer(GComponent component) {
         GContainer parent = component != null ? component.container : null;
@@ -1299,14 +1299,14 @@ public class GFormController implements EditManager {
     }
 
     // a reader React consumes (so GWT skips it): either it belongs to a react-owned component — its value is projected
-    // into `data` — OR it is a delegated child's PRESENTATION reader (caption / captionClass / image) projected into
-    // `data.components`. The react container thus reaches into a delegated child's descriptor readers, even though the
+    // into `data` — OR it is an lsf child's PRESENTATION reader (caption / captionClass / image) projected into
+    // `data.components`. The react container thus reaches into an lsf child's descriptor readers, even though the
     // child keeps its own GWT VALUE view (that draw reader is not owned and still reaches GWT). As #1670 grows the
     // projected presentation (read-only, colors, classes, images, sums), those readers join isComponentReader here.
     private boolean isReactOwned(GPropertyReader reader) {
         if (reactData == null)
             return false;
-        if (reactData.isComponentReader(reader)) // a delegated child's presentation reader, projected into data.components
+        if (reactData.isComponentReader(reader)) // an lsf child's presentation reader, projected into data.components
             return true;
         if (reader instanceof GPropertyDraw)
             return isReactOwned((GPropertyDraw) reader);
@@ -2039,7 +2039,7 @@ public class GFormController implements EditManager {
     }
 
     // one RPC for every user-driven hide: a collapsed container (above), or a CUSTOM REACT component showing / hiding a
-    // delegated child so its data is not read while React does not show it
+    // lsf child so its data is not read while React does not show it
     public void setUserHidden(GComponent component, boolean hidden) {
         asyncResponseDispatch(new SetUserHidden(component.ID, hidden));
     }
@@ -2404,12 +2404,12 @@ public class GFormController implements EditManager {
 
     public void setContainerCaption(GContainer container, String caption) {
         container.caption = caption;
-        updateCaption(container); // a delegated container's caption is drawn by React: its reader is react-owned (rerouted into data.components), so this runs only for GWT containers
+        updateCaption(container); // an lsf container's caption is drawn by React: its reader is react-owned (rerouted into data.components), so this runs only for GWT containers
     }
 
     public void setContainerImage(GContainer container, AppBaseImage image) {
         container.image = image;
-        updateImage(container); // a delegated container's image goes to React (data.components); its reader never reaches here
+        updateImage(container); // an lsf container's image goes to React (data.components); its reader never reaches here
     }
 
     private Widget getCaptionWidget(GContainer container) {
