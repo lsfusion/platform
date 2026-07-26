@@ -5297,8 +5297,8 @@
       "stale": false
     },
     "language/GROUP_operator.md": {
-      "file_hash": "sha256:be704093f5f2eca594c46ffc83ceff5d6002d9124e77d812c7c19188d1bcbb0d",
-      "indexed_at": "2026-07-11T11:53:39Z",
+      "file_hash": "sha256:c7862c498f7f011775e7c1e14e4608c180474a0d488ae1ff7fe3ad042e4e99bc",
+      "indexed_at": "2026-07-26T08:57:15Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5308,9 +5308,9 @@
       },
       "sections": {
         "GROUP_operator::description": {
-          "file_id": "file-Foj6xJAnBXsHmh6krVRqKY",
+          "file_id": "file-U5xJcfKMeQip7g2C8nMNWF",
           "heading_path": "GROUP operator > Description",
-          "section_payload_hash": "sha256:6c47ae4ec73e1f08a2344a0f5bf6222f243ce245cef45df319281b7828039b00",
+          "section_payload_hash": "sha256:7e31455d8452c49b6ab50d12b702b6189fb4a2b13e4f1aa630d36c1461351ea4",
           "source_file": "language/GROUP_operator.md"
         },
         "GROUP_operator::examples": {
@@ -7105,8 +7105,8 @@
       "stale": false
     },
     "language/Property_options.md": {
-      "file_hash": "sha256:651d99f609018ed5de109023f3d73f5946a39c5ed09b6223046063f4bcc8f5ba",
-      "indexed_at": "2026-07-23T07:38:29Z",
+      "file_hash": "sha256:1af94cf27c77fb416c5253337eadd0cab0826a30ac48dd5fa269a530ff592bbb",
+      "indexed_at": "2026-07-26T08:57:23Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7116,9 +7116,9 @@
       },
       "sections": {
         "Property_options::description-and-parameters": {
-          "file_id": "file-QnJdFYT1aVTZyhyjs15JJo",
+          "file_id": "file-BZxtWrB9B89juteCfecxR1",
           "heading_path": "Property options > Description and parameters",
-          "section_payload_hash": "sha256:9c36e41c4f0a7b92e5f882173d55a20086e1a14767be6ecbdc7ee0764e3df37d",
+          "section_payload_hash": "sha256:1b04f183a90b55573ef5c64afdc3945f8b51b76f85e14bb22ac35677252d4afa",
           "source_file": "language/Property_options.md"
         },
         "Property_options::design-statement-default-values-block::part-00": {
@@ -7152,9 +7152,9 @@
           "source_file": "language/Property_options.md"
         },
         "Property_options::syntax": {
-          "file_id": "file-DBnsfcVoH5add4kNK6fGrb",
+          "file_id": "file-Vo9NSQxWTGkSvSppGUnpvZ",
           "heading_path": "Property options > Syntax",
-          "section_payload_hash": "sha256:d4883ebaa99e0c5984c44fd6ab44c9baefdbea4a34b5c29b8bb6380530342533",
+          "section_payload_hash": "sha256:71466c1e9a33d611719abce72bdc6f443c054b42fa4f5ccb76e0b307b154915b",
           "source_file": "language/Property_options.md"
         }
       },
@@ -8547,8 +8547,8 @@
       "stale": false
     },
     "paradigm/Arithmetic_operators_plus_minus_etc.md": {
-      "file_hash": "sha256:78ff0ed7a86ed1962c8f3127ce678c24fc5f220bebce3a6c0acedd8421dbf708",
-      "indexed_at": "2026-05-27T09:40:27Z",
+      "file_hash": "sha256:55a6a87b1363c3c71c7f09c04eb2b616c16365fc6ff4f9ead3655d7ed60cae1a",
+      "indexed_at": "2026-07-26T08:58:32Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8564,9 +8564,9 @@
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::determining-the-result-class": {
-          "file_id": "file-2bZ78fTnbtzK6bYyrEkqQM",
+          "file_id": "file-JrjohctrVUmMeXCRi5cNwe",
           "heading_path": "Arithmetic operators (+, -, *, ...) > Determining the result class",
-          "section_payload_hash": "sha256:c2f8043a29dca963d1372483cb208770e38bb36cb38c6b5b6119498f7e65c906",
+          "section_payload_hash": "sha256:26d08e33f42c05bc3b57fa3d4fb12978fd9c1be079bba947c33454f536a4cfa7",
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::language+examples": {
@@ -10221,8 +10221,8 @@
       "stale": false
     },
     "paradigm/Form_events.md": {
-      "file_hash": "sha256:89827a472c9938c2365c0507d4421f2b41334745e11646571042fd84c17cdfd1",
-      "indexed_at": "2026-07-16T14:07:31Z",
+      "file_hash": "sha256:2770fffe6f3be7e698135a13c473c55ce71e3d3e5ad95cd1e9d64b8483d1d8bc",
+      "indexed_at": "2026-07-26T08:58:40Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10231,6 +10231,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Form_events::change-source-source": {
+          "file_id": "file-7Ud4RWZDMKzzNciE6iSKkG",
+          "heading_path": "Form events > Change source {#source}",
+          "section_payload_hash": "sha256:9acce0e066ffc588722efd9fd19dd3c808c8bb795664a3fe4b4e178eb43af29d",
+          "source_file": "paradigm/Form_events.md"
+        },
         "Form_events::default-handlers-default": {
           "file_id": "file-QMxdDh46EcgczXTh939Gk1",
           "heading_path": "Form events > Default handlers {#default}",
@@ -10238,9 +10244,9 @@
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::examples": {
-          "file_id": "file-EnJ6vcPaN1381eXhzzqZ46",
+          "file_id": "file-75jyJfYNuFMnn6oUxz9kxq",
           "heading_path": "Form events > Examples",
-          "section_payload_hash": "sha256:b38aafd379692c18e4c1c1ded00594494d5ea8c6d879539703b0ef6820b78efb",
+          "section_payload_hash": "sha256:77cc9d9238a8bc5defbd65846c7b9da28a7dc7f763e51052934394e659df4fca",
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::form-events": {
@@ -15082,7 +15088,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "d44a2d43a66b4076bdc77847d1141cc296d6c7c9",
+  "last_indexed_docs_commit": "754b151f58f9359763ac22b2a3d50134d914a4f7",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
