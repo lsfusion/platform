@@ -119,6 +119,19 @@ For properties and actions on the form, it is also possible to define the follow
 -   *Read Only* (`READONLY`) - if the property is displayed in the table, the handler will be similar to `CHANGE` default handler when the property is not mutable (that is, the user filter mechanism will be called). If the property is not displayed in the table, nothing will happen. You can also make this option conditional (`READONLYIF`) (that is, change only if the value of some property is not `NULL`).
 -   *Selector* (`SELECTOR`) - when you try to make a change, a dialog will be shown in which the user will be asked to change the current value of the object.
 
+### Change source {#source}
+
+Inside a property's change event handler (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`), the developer can read the `System.eventSource[]` property to find out what triggered the change. Before the handler runs, the platform sets it to one of the following values:
+
+| Value | Change source |
+| --- | --- |
+| `EDIT` | The user edited the property value directly through its input control on the form. |
+| `BINDING` | The change was triggered by a keyboard shortcut or a mouse binding assigned to the property. |
+| `PASTE` | The user pasted the value into the property cell using the operating system's tools (a WYSIWYG change). |
+| `CUSTOM` | The change came from a custom client-side source, such as a custom renderer or the form controller API. |
+
+The `PASTE` and `CUSTOM` sources are *external changes*: the value did not come from the user editing the property directly on the form or from a binding.
+
 ### Language
 
 To define the form event handlers, use the `ON` option in the `FORM` statement ([events](../language/Event_block.md) block, [properties and actions](../language/Properties_and_actions_block.md) block, [objects](../language/Object_blocks.md#objects) block), as well as in [property options](../language/Property_options.md). 
@@ -178,6 +191,21 @@ EXTEND FORM POS
         // when opening the form, executing the action to create a new receipt,
         // which fills in the shift, cashier and other information
         ON INIT createReceipt() 
+;
+
+price = DATA NUMERIC[10,2] (Sku);
+
+changePrice (Sku s)  {
+    INPUT n = NUMERIC[10,2] DO price(s) <- n;
+    // showing the message only when the user edited the price directly,
+    // not when it was pasted or set through the client API
+    IF System.eventSource() == 'EDIT' THEN
+        MESSAGE 'Price changed to ' + price(s);
+}
+
+FORM sku 'SKU'
+    OBJECTS s = Sku
+    PROPERTIES(s) price ON CHANGE changePrice(s)
 ;
 ```
 

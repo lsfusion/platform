@@ -31,6 +31,7 @@ COMPLEX | NOCOMPLEX
 PREREAD
 HINT | NOHINT
 NONULL [DELETE] eventClause
+AGGR
 AUTOSET
 CHARWIDTH width [FLEX | NOFLEX]
 PATTERN patternStr
@@ -123,6 +124,10 @@ annotationSetting
     - `eventClause`
 
         [Event type description block](Event_description_block.md). Describes the event by which the property will be checked for `NULL`.
+
+- `AGGR`
+
+    Keyword marking the property as an [aggregation](../paradigm/Aggregations.md) property. It is intended for a property that takes a single parameter of a [user-defined class](../paradigm/Classes.md) and returns the object into which that parameter is aggregated; only such a property is registered as an aggregation property of that class. The platform then treats it like the property that the [`AGGR` operator](AGGR_operator.md) creates automatically to look up the aggregated object from its parameters: for a given parameter object it finds the existing aggregated object, which lets the platform check the aggregation's consistency and reuse that object instead of creating a duplicate. This is a property option and must not be confused with the `AGGR` operator, which is a property definition.
 
 - `AUTOSET`
 

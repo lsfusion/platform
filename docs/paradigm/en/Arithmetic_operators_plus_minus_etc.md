@@ -39,6 +39,8 @@ The sum and the difference also operate on date/time values, where a whole numbe
 |`DATE` `-` `DATE`|`INTEGER` (number of days)|
 |`DATETIME` / `ZDATETIME` / `TIME` `-` a value of the same class|`LONG` (number of base units)|
 
+If either operand of the `+` operator belongs to a string class, the result is a string class; its length, case-insensitivity, and other parameters follow the string-concatenation rules — see [string operators](String_operators_plus_CONCAT_SUBSTRING.md).
+
 ### Language
 
 Description [of arithmetic operators](../language/Arithmetic_operators.md).

@@ -56,6 +56,8 @@ The `TOP` and `OFFSET` blocks restrict the subset of records already selected fo
 
 The `WHERE` block defines the condition under which object collections will participate in the group operation. It can only be used with the aggregate functions `AGGR`, `NAGGR`, `CONCAT`, and `LAST`. For `LAST`, if `WHERE` is omitted, non-`NULL`ness of the aggregated expression itself is used as the condition.
 
+For `AGGR` and `NAGGR`, when more than one object collection falls into the same group — so the single aggregated object assumed per group does not hold — the aggregated object is chosen deterministically, as the maximum of the candidates, instead of an arbitrary one. For `EQUAL`, the same deterministic choice, as the maximum, is used when the operand values within a group are not all equal. In both cases, for non-comparable value types, such as files, the choice stays arbitrary.
+
 
 :::info
 For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` operator](IF_operator.md) in `GROUP` and `BY` blocks) only makes sense from the perspective of being able to change the created property to non-`NULL` in some automatic mechanisms of the platform (for example, [automatic resolution](../paradigm/Simple_constraints.md) of simple constraints).
