@@ -173,7 +173,7 @@ controller.getPropertyValues('customer', text, 'objects', result => {
 - `exec(action, ...params)` — runs a named action; resolves to its `RETURN` value.
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
-- `change(property, ...keyParams, value)` — changes a global property; the last argument is the value, the preceding ones are the keys.
+- `change(property, ...keyParams, value)` — changes a global property; the last argument is the value, the preceding ones are the keys. When the property's value is an object, the value is its id, and the platform assigns the object with that id — the object picker opens only for interactive editing.
 
 Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter). An lsFusion object is passed as its numeric id; when an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
 
