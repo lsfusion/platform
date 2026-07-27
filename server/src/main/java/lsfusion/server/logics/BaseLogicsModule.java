@@ -99,6 +99,7 @@ import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.UIReachabilityAudit;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.form.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
@@ -1454,7 +1455,20 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
         Pair<LA, EvalScriptingLogicsModule> result = evaluateCompile(script, parentLMs, action);
         checkEvalSecurity(result.second);
+        auditEvalReachability(result.second);
         return result;
+    }
+
+    private void auditEvalReachability(EvalScriptingLogicsModule module) {
+        SecurityPolicy policy = ThreadLocalContext.getSecurityPolicy();
+        if(policy == null)
+            return;
+
+        for(ActionOrProperty ref : module.usedRefs)
+            if(ref instanceof Action)
+                UIReachabilityAudit.auditAction(BL, policy, (Action<?>) ref, "eval");
+            else
+                UIReachabilityAudit.auditRead(BL, policy, ref, "eval");
     }
 
     private static void checkEvalSecurity(EvalScriptingLogicsModule module) {

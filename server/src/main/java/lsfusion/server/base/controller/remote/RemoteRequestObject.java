@@ -42,6 +42,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.UIReachabilityAudit;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -338,6 +339,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
                 checkControllerSecurityPolicy(resolved.lap, true); // the policy applies even to form-authorized entries (parity with clicking on the form)
+                auditControllerReachability(resolved.lap, true);
                 terminal = runControllerAction((LA<?>) resolved.lap, params, stack);
             } catch (Exception e) { // business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
@@ -372,6 +374,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
                 checkControllerSecurityPolicy(resolved.lap, false);
+                auditControllerReachability(resolved.lap, false);
                 terminal = runControllerChange((LP<?>) resolved.lap, params, value, stack);
             } catch (Exception e) {
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
@@ -414,6 +417,15 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         ActionOrProperty actionOrProperty = lap.getActionOrProperty();
         if(action ? !policy.checkDirectActionAccess((Action) actionOrProperty) : !policy.checkDirectPropertyChangeAccess(actionOrProperty))
             throw new RuntimeException(ServerResourceBundle.getString("logics.policy.api.access.forbidden", actionOrProperty.getCanonicalName()));
+    }
+
+    private void auditControllerReachability(LAP<?, ?> lap, boolean action) {
+        SecurityPolicy policy = ThreadLocalContext.getSecurityPolicy();
+        ActionOrProperty actionOrProperty = lap.getActionOrProperty();
+        if(action)
+            UIReachabilityAudit.auditAction(getControllerBL(), policy, (Action<?>) actionOrProperty, "controller");
+        else
+            UIReachabilityAudit.auditRead(getControllerBL(), policy, actionOrProperty, "controller");
     }
 
     private ClientAction runControllerAction(LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {

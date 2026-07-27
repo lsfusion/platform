@@ -48,6 +48,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.UIReachabilityAudit;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
@@ -651,6 +652,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         // checked in evaluateRun against their whole reference set instead)
         if(!script && !Settings.get().isDisableApiSecurityPolicy() && securityPolicy != null && !securityPolicy.checkDirectActionAccess(property.action))
             throw new RuntimeException(ServerResourceBundle.getString("logics.policy.api.access.forbidden", property.action.getCanonicalName()));
+
+        if(!script)
+            UIReachabilityAudit.auditAction(businessLogics, securityPolicy, property.action, "exec");
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {

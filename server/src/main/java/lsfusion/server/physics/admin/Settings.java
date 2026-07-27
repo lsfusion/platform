@@ -929,6 +929,17 @@ public class Settings implements Cloneable {
         this.disableApiSecurityPolicy = disableApiSecurityPolicy;
     }
 
+    // audit only (never denies) : logs dynamically executed / API accessed data that the user can't reach through the UI
+    private boolean enableUIReachabilityAudit = false;
+
+    public boolean isEnableUIReachabilityAudit() {
+        return enableUIReachabilityAudit;
+    }
+
+    public void setEnableUIReachabilityAudit(boolean enableUIReachabilityAudit) {
+        this.enableUIReachabilityAudit = enableUIReachabilityAudit;
+    }
+
     public int getLimitExclusiveCount() {
         return limitExclusiveCount;
     }
