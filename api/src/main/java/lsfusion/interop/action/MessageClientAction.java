@@ -41,4 +41,10 @@ public class MessageClientAction extends ExecuteClientAction {
     public String toString() {
         return "MessageClientAction[caption: " + caption + ", msg: " + textMessage + ", type: " + type + "]";
     }
+
+    @Override
+    public boolean isUserInteraction() { // the log / info types are only notified and logged, the rest is shown as a dialog to acknowledge
+        return type != MessageClientType.LOG && type != MessageClientType.INFO;
+    }
+
 }

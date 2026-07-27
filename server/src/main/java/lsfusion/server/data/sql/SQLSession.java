@@ -442,7 +442,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private int inTransaction = 0; // счетчик для по сути распределенных транзакций
+    private volatile int inTransaction = 0; // счетчик для по сути распределенных транзакций; volatile - a task read it from its own thread while its submitter waits (see ExecutionStack.isInTransaction)
+
+    // the transactions of the executing thread, so that a check deep inside the user interaction path can find them without the session being passed down the stack
+    // (and the transaction can be another session's anyway); a list rather than a single entry : the thread can enter a transaction on another sql session while holding this one
+    private static final ThreadLocal<List<SQLSession>> threadTransactions = ThreadLocal.withInitial(ArrayList::new);
+    public static boolean isThreadInTransaction() {
+        for(SQLSession sqlSession : threadTransactions.get())
+            if(sqlSession.isInTransaction()) // reading the session rather than trusting the list : a missed removal (a pooled thread) then simply reports no transaction
+                return true;
+        return false;
+    }
 
     public boolean isInTransaction() {
         return inTransaction > 0;
@@ -628,6 +638,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
         }
         inTransaction++;
+        if(inTransaction == 1) // the nested levels are the same session, it is already registered
+            threadTransactions.get().add(this);
 
         if(inTransaction > 1) // diagnostics after the level is registered, so that it can not affect the transaction state
             logNestedTransaction();
@@ -689,7 +701,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 popVolatileStats(owner);
         }, firstException);
 
-        runSuppressed(() -> inTransaction--, firstException);
+        runSuppressed(() -> {
+            inTransaction--;
+            if(inTransaction == 0)
+                threadTransactions.get().remove(this);
+        }, firstException);
 
         runSuppressed(() -> tryCommon(owner, true), firstException);
 

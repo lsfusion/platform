@@ -1935,6 +1935,16 @@ public class Settings implements Cloneable {
         this.allowNestedTransaction = allowNestedTransaction;
     }
 
+    private boolean allowUserInteractionInTransaction = false; // allow the user interaction in a transaction (it holds the transaction, and its locks, for the user think time) instead of failing; can be enabled for a single stack with pushSetting / popSetting
+
+    public boolean isAllowUserInteractionInTransaction() {
+        return allowUserInteractionInTransaction;
+    }
+
+    public void setAllowUserInteractionInTransaction(boolean allowUserInteractionInTransaction) {
+        this.allowUserInteractionInTransaction = allowUserInteractionInTransaction;
+    }
+
     private boolean packStatBackwardCompatibility = false;
 
     public boolean isPackStatBackwardCompatibility() {

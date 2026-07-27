@@ -179,11 +179,6 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         return navigator.requestUserInteraction(action);
     }
 
-    @Override
-    public boolean userInteractionCanBeProcessedInTransaction() {
-        return false;
-    }
-
     public FocusListener getFocusListener() {
         return navigator;
     }

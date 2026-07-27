@@ -230,11 +230,6 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
-    @Override
-    public boolean userInteractionCanBeProcessedInTransaction() {
-        return true;
-    }
-
     public abstract CustomClassListener getClassListener();
 
     // used in global context (when there is no sql / data session), otherwise use SQLSession.contextProvider

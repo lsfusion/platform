@@ -20,6 +20,11 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
+import lsfusion.server.base.controller.stack.ExecutionStackAspect;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.value.DataObject;
@@ -313,8 +318,27 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         RemotePausableInvocation.runUserInteraction(currentInvocation -> { currentInvocation.delayUserInteraction(action); return null;});
     }
 
+    // the user interaction holds the transaction (and its locks) for the user think time, and the transaction can be rolled back and retried under it
+    // being requested (rather than delayed) already means the server waits for the answer, and being HERE means it waits for a client - the server contexts
+    // answer the interaction themselves (see AbstractContext.aspectRequestUserInteraction), so the only question left is whether a human is on the other side
     public Object requestUserInteraction(ClientAction action) {
+        if(action.isUserInteraction() && isInTransaction()) {
+            if(!Settings.get().isAllowUserInteractionInTransaction())
+                throw new IllegalStateException("USER INTERACTION IN TRANSACTION");
+
+            // logged rather than asserted : the interaction is explicitly allowed, so it should not fail with assertions enabled either
+            ServerLoggers.assertLogger.info("USER INTERACTION IN TRANSACTION" + '\n' + ExecutionStackAspect.getExStackTrace());
+        }
+
         return RemotePausableInvocation.runUserInteraction(currentInvocation -> currentInvocation.pauseForUserInteraction(action));
+    }
+
+    private static boolean isInTransaction() {
+        if(SQLSession.isThreadInTransaction()) // this thread's own
+            return true;
+
+        NewThreadExecutionStack stack = ThreadLocalContext.getStack(); // the submitter's, when it waits for this thread - then it holds its transaction for whatever this thread does
+        return stack != null && stack.isInTransaction();
     }
 
     // ---- form/navigator JS controller: exec(action) / eval(script) / change(property) over the pausable channel ----

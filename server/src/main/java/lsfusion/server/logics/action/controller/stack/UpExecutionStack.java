@@ -70,6 +70,15 @@ public abstract class UpExecutionStack implements ExecutionStack {
     // nullable
     protected abstract DataSession getSession();
 
+    @Override
+    public boolean isInTransaction() {
+        DataSession session = getSession();
+        if(session != null && session.sql.isInTransaction()) // the sql session rather than this one : the transaction can be another session's on the same sql session
+            return true;
+        return upStack != null && upStack.isInTransaction();
+    }
+
+    @Override
     public boolean sameSession(UpdateCurrentClassesSession session) {
         DataSession thisSession = getSession();
         return thisSession == null || session.sameSession(thisSession);

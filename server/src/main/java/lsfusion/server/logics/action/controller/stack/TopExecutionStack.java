@@ -59,6 +59,11 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
+    public boolean isInTransaction() {
+        return false; // the bottom of a new thread's stack : it is linked to the submitter's only when the submitter waits for this thread, and then it is a SyncExecutionStack
+    }
+
+    @Override
     public boolean sameSession(UpdateCurrentClassesSession session) {
         return true; // особо не принципиально можно и false
     }

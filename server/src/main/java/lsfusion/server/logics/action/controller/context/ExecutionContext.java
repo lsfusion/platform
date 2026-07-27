@@ -724,16 +724,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return !getRemoteContext().isNative;
     }
 
-    private void assertNotUserInteractionInTransaction() {
-        ServerLoggers.assertLog(!getSession().isInTransaction() || ThreadLocalContext.userInteractionCanBeProcessedInTransaction(), "USER INTERACTION IN TRANSACTION");
-    }
     public Object requestUserInteraction(ClientAction action) {
-        assertNotUserInteractionInTransaction();
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
     public void requestFormUserInteraction(FormInstance remoteForm, FormOptions options) throws SQLException, SQLHandledException {
-        assertNotUserInteractionInTransaction();
         ThreadLocalContext.requestFormUserInteraction(remoteForm, options, stack);
     }
 
@@ -763,18 +758,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
 
     public boolean isRequestPushed() throws SQLException, SQLHandledException {
-        assertNotUserInteractionInTransaction();
         return getBL().LM.isRequestPushed(getEnv());
     }
 
     public boolean isRequestCanceled() throws SQLException, SQLHandledException {
-        assertNotUserInteractionInTransaction();
         return getBL().LM.isRequestCanceled(getEnv());
     }
 
     @Deprecated
     public ObjectValue requestUser(Type type, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
-        assertNotUserInteractionInTransaction();
         return getBL().LM.getRequestedValue(type, getEnv(), request);
     }
 
@@ -799,10 +791,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, boolean multipleInput, InputContextListEntity<T, P> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
-        assertNotUserInteractionInTransaction();
-
         InputResult pushedInput = getPushedInput(dataClass, true);
-        if(pushedInput != null)
+        if(pushedInput != null) // the input was pushed optimistically, there is no round trip to the user
             return pushedInput;
 
         InputContext<T> inputContext = null;

@@ -2,6 +2,47 @@
 
 ## 7.0
 
+### Nested transactions and user interaction in a transaction now fail
+
+Two situations that used to be tolerated now raise an error
+(see [issue #1726](https://github.com/lsfusion/platform/issues/1726)):
+
+- **another session working inside a transaction** - a session doing anything on an SQL
+  session that another one (typically opened earlier in the same thread) already holds a
+  transaction on. Its statements run in that transaction : they see its uncommitted data
+  and disappear with its rollback, while the session itself believes it is outside any
+  transaction. The extreme case is an apply, which never had a transaction of its own -
+  its commit was physically nothing, so the data was silently lost, and the temp tables
+  it created turned into the "relation t_N does not exist" errors of
+  [issue #1716](https://github.com/lsfusion/platform/issues/1716). The service operations
+  that do this knowingly (database synchronization, recalculations, checks) take it on
+  with the setting below, the same way an application can;
+- **a user interaction inside a transaction** - a dialog, a message or an input request
+  raised from a form or navigator action executed under `APPLY` (an apply event, for
+  instance). It used to be an assert, that is a log line in production, while the
+  transaction and its locks were held for the user think time. Interactions from the
+  contexts that can process them without a user (background tasks, the scheduler, the
+  external API) are unaffected.
+
+Symptoms after the upgrade : an action that previously "worked" now fails with
+`OTHER DATASESSION IN THE MIDDLE OF TRANSACTION IN THIS THREAD` or
+`USER INTERACTION IN TRANSACTION`. In both cases the flow
+was already broken - the changes were being lost, or the transaction was hanging on a
+dialog - so the fix is to move the apply or the interaction out of the transaction.
+
+When either is intended, it can be allowed for a single stack, taking the consequences
+on knowingly :
+
+```lsf
+pushSetting('allowUserInteractionInTransaction', 'true');
+// ... the action that interacts inside the transaction ...
+popSetting('allowUserInteractionInTransaction');
+```
+
+`allowNestedTransaction` works the same way for the nesting. Both settings also work
+globally, to buy time for the migration.
+
+
 ### Deterministic order-dependent aggregations
 
 Order-dependent aggregations and row picks (`GROUP LAST` / `CONCAT` / ordered `CUSTOM`,

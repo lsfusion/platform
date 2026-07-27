@@ -27,6 +27,9 @@ public interface ExecutionStack {
 
     void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException;
 
+    // whether a transaction is open up the stack - including the submitter's, when it waits for this thread (see SyncExecutionStack.newThread)
+    boolean isInTransaction();
+
     void dropPushAsyncResult();
 
     boolean sameSession(UpdateCurrentClassesSession session);

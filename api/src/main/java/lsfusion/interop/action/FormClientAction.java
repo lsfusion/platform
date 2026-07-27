@@ -35,4 +35,10 @@ public class FormClientAction extends ExecuteClientAction {
     public String toString() {
         return "FormClientAction[showFormType: " + showFormType + "]";
     }
+
+    @Override
+    public boolean isUserInteraction() { // only the modal synchronous form is requested (see RemoteUIContext), and it is closed by the user
+        return true;
+    }
+
 }

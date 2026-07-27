@@ -15,4 +15,10 @@ public class ChooseClassClientAction implements ClientAction {
     public Object dispatch(ClientActionDispatcher dispatcher) {
         return dispatcher.execute(this);
     }
+
+    @Override
+    public boolean isUserInteraction() {
+        return true;
+    }
+
 }

@@ -31,4 +31,10 @@ public class ConfirmClientAction implements ClientAction {
     public String toString() {
         return "ConfirmClientAction[caption: " + caption + ", msg: " + message + "]";
     }
+
+    @Override
+    public boolean isUserInteraction() {
+        return true;
+    }
+
 }
