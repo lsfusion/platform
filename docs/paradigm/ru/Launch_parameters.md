@@ -36,6 +36,7 @@ lsFusion параметры запуска сервера приложений �
 |`db.denyDropModules`, `db.denyDropTables`|`boolean`, `boolean`|Запреты на удаления при запуске:<ul><li>`db.denyDropModules` - модулей</li><li>`db.denyDropTables` - таблиц</li></ul>|`false`, `false`|
 |`db.allowDropModules`, `db.allowDropTables`|`string`, `string`|Списки имён через запятую, которые исключаются из соответствующего запрета на удаление:<ul><li>`db.allowDropModules` - модули, исключаемые из `db.denyDropModules`</li><li>`db.allowDropTables` - таблицы, исключаемые из `db.denyDropTables`</li></ul>|'', ''|
 |`logics.initialAdminPassword`|`string`|Пароль администратора по умолчанию||
+|`logics.lsfStrLiteralsLanguage`, `logics.lsfStrLiteralsCountry`|`string`, `string`|Язык и, при необходимости, страна, задающие локаль, в которой написаны строковые литералы lsf-кода. Если язык задан, при старте сервера включается обратный перевод литералов: по всем ResourceBundle файлам проекта в этой локали строится словарь `значение -> идентификатор`, и обычные строковые литералы, не использующие возможности локализации, при совпадении со значением записи [локализуются](Internationalization.md); сырые литералы обратному переводу не подлежат|не заданы (обратный перевод выключен)|
 
 ### Пример файла conf/settings.properties ([3-й пункт](#applsfusion)): {#filesettings}
 

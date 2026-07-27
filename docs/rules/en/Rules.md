@@ -607,6 +607,26 @@ INTERNATIONALIZATION AND REVERSE TRANSLATION RULES
    this canonical value is the source-language text itself,
    or its normalized stable form,
    so it effectively plays the role of the key.
+
+4. Reverse translation is turned on by the launch parameter
+   that sets the language of lsf string literals
+   (`logics.lsfStrLiteralsLanguage`).
+   When it is active, ANY plain `'...'` literal
+   in a localizable position —
+   including a constant literal in any expression —
+   that matches a ResourceBundle entry value
+   is silently replaced at code parse time with its key `{id}`
+   and is substituted in the current locale at runtime:
+   `'position'` can become `'pozycja'`.
+
+   Therefore the assistant MUST write technical literals —
+   JSON keys, URLs, formats, canonical names,
+   external identifiers —
+   as raw literals `r'...'`,
+   which take part neither in localization
+   nor in reverse translation.
+   Plain `'...'` literals are meant
+   for user-visible text.
 ----------------------------------------------------------------
 FORM RULES
 

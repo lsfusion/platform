@@ -351,7 +351,7 @@ To implement the import process, we need to declare the form of the [structure](
 
 We declare the `version` tag at the upmost level without inputs and then add it to the form.
 
-Since the `order` tag is an array, we declare an object with the same name on the form. The platform will create a new object for each array element in the JSON. The `date` and `number` properties for the order will be automatically imported from the corresponding tags in the JSON.
+Since the `order` tag is an array, we declare an object with the same name on the form. The platform will create a new object for each array element in the JSON. The `date` and `number` properties for the order will be automatically imported from the corresponding tags in the JSON. Individual values can also be read from such JSON without a form — using the [JSON access properties](../paradigm/System_Utils.md#json-access) of the `Utils` module, such as `field[JSON, STRING]` and `fieldText[JSON, STRING]`.
 
 Similarly, for the `detail` tag, we create an object with the same name and then link this object to the `order` object using `FILTERS`. During the import process, the system will fill the link in the order line based on this filter and the nesting of tags.
 

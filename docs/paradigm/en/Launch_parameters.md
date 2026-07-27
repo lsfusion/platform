@@ -36,6 +36,7 @@ lsFusion startup parameters for server applications can be set in one of the fol
 |`db.denyDropModules`, `db.denyDropTables`|`boolean`, `boolean`|Ban on deletion at startup:<ul><li>`db.denyDropModules` - modules</li><li>`db.denyDropTables` - tables</li></ul>|`false`, `false`|
 |`db.allowDropModules`, `db.allowDropTables`|`string`, `string`|Comma-separated lists of names that are excluded from the corresponding deletion ban:<ul><li>`db.allowDropModules` - modules excluded from `db.denyDropModules`</li><li>`db.allowDropTables` - tables excluded from `db.denyDropTables`</li></ul>|'', ''|
 |`logics.initialAdminPassword`|`string`|Default admin password||
+|`logics.lsfStrLiteralsLanguage`, `logics.lsfStrLiteralsCountry`|`string`, `string`|Language and, if needed, country defining the locale in which the string literals of the lsf code are written. If the language is set, reverse translation of literals is turned on at server startup: a `value -> id` dictionary is built from all ResourceBundle files of the project in that locale, and plain string literals that do not use localization capabilities are [localized](Internationalization.md) when they match an entry value; raw literals are not subject to reverse translation|not set (reverse translation is off)|
 
 ### Example conf/settings.properties file ([section 3](#applsfusion)): {#filesettings}
 

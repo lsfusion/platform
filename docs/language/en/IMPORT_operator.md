@@ -70,7 +70,7 @@ The first passed file is used to automatically determine a flat file format by i
 
 - `rootExpr`
 
-    [Expression](Expression.md) of a string class specifying the name of the element treated as the root on import. The source file is searched recursively for the first element with that name; processing of nested records starts from the found node. Only applicable for import from **JSON** and **XML**.
+    [Expression](Expression.md) of a string class specifying the name of the element treated as the root on import. The source file is searched recursively for the first element (for **JSON** — key) with that name; processing of nested records starts from the found element (for **JSON** — from the value of the found key). If no element with the specified name is found, the import fails with an error. Only applicable for import from **JSON** and **XML**.
 
 - `ATTR`
 
