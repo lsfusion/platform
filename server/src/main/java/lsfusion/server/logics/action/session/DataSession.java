@@ -1058,8 +1058,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     @Cancelable
     @ThisMessage (profile = false)
-    private boolean executeApplyAction(BusinessLogics BL, ExecutionStack stack, @ParamMessage ActionValueImplement action) throws SQLException, SQLHandledException {
-        startPendingSingles(action.action);
+    private boolean executeApplyAction(BusinessLogics BL, ExecutionStack stack, @ParamMessage RecursiveBody action) throws SQLException, SQLHandledException {
+        startPendingSingles(action.getSingleApplyAction());
 
         action.execute(this, stack);
 
@@ -1457,7 +1457,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void startPendingSingles(Action action) {
         assert isInTransaction();
 
-        if(!action.singleApply)
+        if(action == null || !action.singleApply) // null - the java bodies (NewSessionBody)
             return;
 
         neededProps = action.getDependsUsedProps();
@@ -1592,10 +1592,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private FunctionSet<SessionDataProperty> recursiveUsed = SetFact.EMPTY();
-    private List<ActionValueImplement> recursiveActions = ListFact.mAddRemoveList();
-    public void addRecursion(ActionValueImplement action, FunctionSet<SessionDataProperty> sessionUsed, boolean singleApply) {
-        action.action.singleApply = singleApply; // жестко конечно, но пока так
-        recursiveActions.add(action);
+    private List<RecursiveBody> recursiveBodies = ListFact.mAddRemoveList();
+    public void addRecursion(RecursiveBody action, FunctionSet<SessionDataProperty> sessionUsed, boolean singleApply) {
+        Action<?> singleApplyAction = action.getSingleApplyAction();
+        if(singleApplyAction != null) // the java bodies (NewSessionBody) have no action behind them
+            singleApplyAction.singleApply = singleApply; // жестко конечно, но пока так
+        recursiveBodies.add(action);
         recursiveUsed = BaseUtils.merge(recursiveUsed, sessionUsed);
     }
 
@@ -2054,10 +2056,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public Integer executingApplyEvent;
-    private boolean recursiveApply(ImOrderSet<ActionValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<? extends RecursiveBody> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
         try {
             executingApplyEvent = -1;
-            for (ActionValueImplement action : actions)
+            for (RecursiveBody action : actions)
                 if(!executeApplyAction(BL, stack, action))
                     return false;
         
@@ -2119,12 +2121,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             sql.inconsistent = false;
         }
 
-        if(recursiveActions.size() > 0) {
-            ImOrderSet<ActionValueImplement> execRecursiveActions = SetFact.fromJavaOrderSet(recursiveActions);
+        if(recursiveBodies.size() > 0) {
+            ImOrderSet<RecursiveBody> execRecursiveBodies = SetFact.fromJavaOrderSet(recursiveBodies);
 
             recursiveUsed = SetFact.EMPTY();
-            recursiveActions.clear();
-            return recursiveApply(execRecursiveActions, BL, stack);
+            recursiveBodies.clear();
+            return recursiveApply(execRecursiveBodies, BL, stack);
         }
 
         ImSet<Property> changedProps = mChangedProps.immutable();
@@ -2191,11 +2193,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void updateDataCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
-        if(recursiveActions.size()>0) {
+        if(recursiveBodies.size()>0) {
             recursiveUsed = BaseUtils.mergeElement(recursiveUsed, (SessionDataProperty) currentSession.property);
 
-            for (int i = 0; i < recursiveActions.size(); i++)
-                recursiveActions.set(i, recursiveActions.get(i).updateCurrentClasses(session));
+            for (int i = 0; i < recursiveBodies.size(); i++)
+                recursiveBodies.set(i, recursiveBodies.get(i).updateCurrentClasses(session));
         }
 
         updateCurrentClasses(session, filterSessionData(getKeepProps()).values());
@@ -2527,7 +2529,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
     
             recursiveUsed = SetFact.EMPTY();
-            recursiveActions.clear();
+            recursiveBodies.clear();
     
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
             apply.clear(sql, owner);

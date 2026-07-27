@@ -2297,13 +2297,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public static void runData(SessionCreator creator, boolean runInTransaction, RunServiceData run) throws SQLException, SQLHandledException {
         if(runInTransaction) {
-            ExecutionContext context = (ExecutionContext) creator;
-            try(ExecutionContext.NewSession newContext = context.newSession()) {
-                run.run(newContext.getSession());
-                newContext.apply();
-            }
+            runDataSession((ExecutionContext<?>) creator, run);
         } else
             run.run(creator);
+    }
+    private static <P extends PropertyInterface> void runDataSession(ExecutionContext<P> context, RunServiceData run) throws SQLException, SQLHandledException {
+        context.newSession(false, newContext -> { // deferInTransaction = false : the service recalculations need a transaction of their own, deferring them makes no sense
+            run.run(newContext.getSession());
+        });
     }
 
     public interface RunSyncService {

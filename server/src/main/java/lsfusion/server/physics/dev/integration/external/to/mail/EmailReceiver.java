@@ -24,6 +24,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.file.ZipUtils;
@@ -616,11 +617,10 @@ public class EmailReceiver {
         return attachments;
     }
 
-    private static void runIntegrationService(ExecutionContext context, List<ImportProperty<?>> props, List<ImportField> fields, List<ImportKey<?>> keys, List<List<Object>> data) throws SQLException, SQLHandledException {
-        try (ExecutionContext.NewSession newContext = context.newSession()) {
+    private static <P extends PropertyInterface> void runIntegrationService(ExecutionContext<P> context, List<ImportProperty<?>> props, List<ImportField> fields, List<ImportKey<?>> keys, List<List<Object>> data) throws SQLException, SQLHandledException {
+        context.newSession(newContext -> {
             new IntegrationService(newContext, new ImportTable(fields, data), keys, props).synchronize(true, false);
-            newContext.apply();
-        }
+        });
     }
 
     private static class EmailData {

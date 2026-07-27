@@ -84,21 +84,22 @@ public class CalculatePathAction extends DistanceGeoAction {
 
                         int[][] distances = new int[size][size];
                         for (int i = 0; i < size; i++) {
-                            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+                            final int fi = i;
+                            context.newSession(false, newContext -> { // deferInTransaction = false : remote distance queries inside, and the result matrix is consumed right below
                                 int[] localDistances = new int[size];
                                 List<Integer> queryIndices = new ArrayList<>();
                                 String destinations = "";
                                 int count = 0;
                                 for (int j = 0; j < size; j++) {
-                                    if (i != j) {
-                                        Integer localDistance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
+                                    if (fi != j) {
+                                        Integer localDistance = distanceMap.get(Pair.create(poiMap.get(fi), poiMap.get(j)));
                                         if (localDistance == null) {
                                             destinations += (destinations.isEmpty() ? "" : "|") + points.get(j);
                                             queryIndices.add(j);
                                             count++;
                                             if (count % partSize == 0) {
-                                                ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", i + 1, partSize));
-                                                int[] partDistances = readDistances(partSize, points.get(i), destinations, 0);
+                                                ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", fi + 1, partSize));
+                                                int[] partDistances = readDistances(partSize, points.get(fi), destinations, 0);
                                                 for (int k = 0; k < partDistances.length; k++) {
                                                     localDistances[queryIndices.get(k)] = partDistances[k]; 
                                                 }
@@ -109,24 +110,23 @@ public class CalculatePathAction extends DistanceGeoAction {
                                     }
                                 }
                                 if (!destinations.isEmpty()) {
-                                    ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s, others", i + 1, count % partSize));
-                                    int[] partDistances = readDistances(count % partSize, points.get(i), destinations, 0);
+                                    ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s, others", fi + 1, count % partSize));
+                                    int[] partDistances = readDistances(count % partSize, points.get(fi), destinations, 0);
                                     for (int k = 0; k < partDistances.length; k++) {
                                         localDistances[queryIndices.get(k)] = partDistances[k];
                                     }
                                 }
                                 for (int j = 0; j < size; j++) {
-                                    if (i != j) {
-                                        Integer distance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
+                                    if (fi != j) {
+                                        Integer distance = distanceMap.get(Pair.create(poiMap.get(fi), poiMap.get(j)));
                                         if (distance == null) {
                                             distance = localDistances[j];
-                                            findProperty("distancePOIPOI[POI,POI]").change(distance, newContext, poiMap.get(i), poiMap.get(j));
+                                            findProperty("distancePOIPOI[POI,POI]").change(distance, newContext, poiMap.get(fi), poiMap.get(j));
                                         }
-                                        distances[i][j] = distance;
+                                        distances[fi][j] = distance;
                                     }
                                 }
-                                newContext.apply();
-                            }
+                            });
                         }
 
                         //Hamiltonian

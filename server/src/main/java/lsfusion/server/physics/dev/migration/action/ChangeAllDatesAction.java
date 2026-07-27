@@ -32,91 +32,91 @@ public class ChangeAllDatesAction extends InternalAction {
         changeAllDates(context);
     }
 
-    private void changeAllDates(ExecutionContext context) throws SQLException, SQLHandledException {
+    private void changeAllDates(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         SQLSession sql = context.getSession().sql;
         try {
             sql.pushNoReadOnly();
             
-            try(ExecutionContext.NewSession newContext = context.newSession()) {
+            context.newSession(false, newContext -> { // deferInTransaction = false : raw DDL updates under pushNoReadOnly, whose scope ends right after (finally below)
+                try {
+                    Integer seconds = (Integer) findProperty("secondsChangeAllDates").read(newContext);
+                    if (seconds != null) {
     
-                Integer seconds = (Integer) findProperty("secondsChangeAllDates").read(newContext);
-                if (seconds != null) {
+                        Map<String, List<String>> tableColumnsMap = new HashMap<>();
     
-                    Map<String, List<String>> tableColumnsMap = new HashMap<>();
+                        KeyExpr propertyExpr = new KeyExpr("property");
     
-                    KeyExpr propertyExpr = new KeyExpr("property");
+                        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("property", propertyExpr);
+                        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+                        Expr dbNameExpr = findProperty("dbName[Property]").getExpr(propertyExpr);
+                        Expr returnExpr = findProperty("return[Property]").getExpr(propertyExpr);
+                        Expr tableSIDExpr = findProperty("tableSID[Property]").getExpr(propertyExpr);
+                        query.addProperty("dbName", dbNameExpr);
+                        query.addProperty("return", returnExpr);
+                        query.addProperty("tableSID", tableSIDExpr);
+                        query.and(dbNameExpr.getWhere());
+                        query.and(returnExpr.getWhere());
+                        query.and(tableSIDExpr.getWhere());
     
-                    ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev("property", propertyExpr);
-                    QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-                    Expr dbNameExpr = findProperty("dbName[Property]").getExpr(propertyExpr);
-                    Expr returnExpr = findProperty("return[Property]").getExpr(propertyExpr);
-                    Expr tableSIDExpr = findProperty("tableSID[Property]").getExpr(propertyExpr);
-                    query.addProperty("dbName", dbNameExpr);
-                    query.addProperty("return", returnExpr);
-                    query.addProperty("tableSID", tableSIDExpr);
-                    query.and(dbNameExpr.getWhere());
-                    query.and(returnExpr.getWhere());
-                    query.and(tableSIDExpr.getWhere());
-    
-                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(newContext);
-                    for (ImMap<Object, Object> valueEntry : result.values()) {
-                        String column = (String) valueEntry.get("dbName");
-                        String table = (String) valueEntry.get("tableSID");
-                        String returnProperty = (String) valueEntry.get("return");
-                        if (!table.isEmpty() && !column.isEmpty() && (returnProperty.equals("DATE") || returnProperty.equals("TIME") || returnProperty.equals("DATETIME"))) {
-                            List<String> columns = tableColumnsMap.get(table);
-                            if (columns == null) columns = new ArrayList<>();
-                            columns.add(column);
-                            tableColumnsMap.put(table, columns);
+                        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(newContext);
+                        for (ImMap<Object, Object> valueEntry : result.values()) {
+                            String column = (String) valueEntry.get("dbName");
+                            String table = (String) valueEntry.get("tableSID");
+                            String returnProperty = (String) valueEntry.get("return");
+                            if (!table.isEmpty() && !column.isEmpty() && (returnProperty.equals("DATE") || returnProperty.equals("TIME") || returnProperty.equals("DATETIME"))) {
+                                List<String> columns = tableColumnsMap.get(table);
+                                if (columns == null) columns = new ArrayList<>();
+                                columns.add(column);
+                                tableColumnsMap.put(table, columns);
+                            }
                         }
-                    }
     
-                    KeyExpr tableKeyExpr = new KeyExpr("tableKey");
+                        KeyExpr tableKeyExpr = new KeyExpr("tableKey");
     
-                    ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.singletonRev("tableKey", tableKeyExpr);
-                    QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<>(tableKeyKeys);
-                    tableKeyQuery.addProperty("classSID", findProperty("classSID[TableKey]").getExpr(tableKeyExpr));
-                    tableKeyQuery.addProperty("name", findProperty("name[TableKey]").getExpr(tableKeyExpr));
-                    tableKeyQuery.addProperty("sidTable", findProperty("sidTable[TableKey]").getExpr(tableKeyExpr));
-                    tableKeyQuery.and(findProperty("classSID[TableKey]").getExpr(tableKeyExpr).getWhere());
-                    tableKeyQuery.and(findProperty("name[TableKey]").getExpr(tableKeyExpr).getWhere());
+                        ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.singletonRev("tableKey", tableKeyExpr);
+                        QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<>(tableKeyKeys);
+                        tableKeyQuery.addProperty("classSID", findProperty("classSID[TableKey]").getExpr(tableKeyExpr));
+                        tableKeyQuery.addProperty("name", findProperty("name[TableKey]").getExpr(tableKeyExpr));
+                        tableKeyQuery.addProperty("sidTable", findProperty("sidTable[TableKey]").getExpr(tableKeyExpr));
+                        tableKeyQuery.and(findProperty("classSID[TableKey]").getExpr(tableKeyExpr).getWhere());
+                        tableKeyQuery.and(findProperty("name[TableKey]").getExpr(tableKeyExpr).getWhere());
     
-                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableKeyResult = tableKeyQuery.execute(newContext);
-                    for (ImMap<Object, Object> valueEntry : tableKeyResult.values()) {
-                        String classSID = (String) valueEntry.get("classSID");
-                        String key = (String) valueEntry.get("name");
-                        String table = (String) valueEntry.get("sidTable");
-                        if (!key.isEmpty() && !table.isEmpty() && (classSID.equals("DATE") || classSID.equals("TIME") || classSID.equals("DATETIME"))) {
-                            List<String> columns = tableColumnsMap.get(table);
-                            if (columns == null) columns = new ArrayList<>();
-                            columns.add(key);
-                            tableColumnsMap.put(table, columns);
+                        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableKeyResult = tableKeyQuery.execute(newContext);
+                        for (ImMap<Object, Object> valueEntry : tableKeyResult.values()) {
+                            String classSID = (String) valueEntry.get("classSID");
+                            String key = (String) valueEntry.get("name");
+                            String table = (String) valueEntry.get("sidTable");
+                            if (!key.isEmpty() && !table.isEmpty() && (classSID.equals("DATE") || classSID.equals("TIME") || classSID.equals("DATETIME"))) {
+                                List<String> columns = tableColumnsMap.get(table);
+                                if (columns == null) columns = new ArrayList<>();
+                                columns.add(key);
+                                tableColumnsMap.put(table, columns);
+                            }
                         }
-                    }
     
-                    int count = 1;
-                    for (Map.Entry<String, List<String>> entry : tableColumnsMap.entrySet()) {
-                        String table = entry.getKey();
-                        StringBuilder columnsDown = new StringBuilder();
-                        StringBuilder columnsUp = new StringBuilder();
-                        StringBuilder logColumns = new StringBuilder();
-                        for (String column : entry.getValue()) {
-                            columnsDown.append(String.format("%s%s = %s - %s*INTERVAL '1 second'", columnsDown.length() == 0 ? "" : ", ", column, column, 86400 * 10000));
-                            columnsUp.append(String.format("%s%s = %s + %s*INTERVAL '1 second'", columnsUp.length() == 0 ? "" : ", ", column, column, seconds + 86400 * 10000));
-                            logColumns.append(String.format("%s%s", (logColumns.length() == 0) ? "" : ", ", column));
+                        int count = 1;
+                        for (Map.Entry<String, List<String>> entry : tableColumnsMap.entrySet()) {
+                            String table = entry.getKey();
+                            StringBuilder columnsDown = new StringBuilder();
+                            StringBuilder columnsUp = new StringBuilder();
+                            StringBuilder logColumns = new StringBuilder();
+                            for (String column : entry.getValue()) {
+                                columnsDown.append(String.format("%s%s = %s - %s*INTERVAL '1 second'", columnsDown.length() == 0 ? "" : ", ", column, column, 86400 * 10000));
+                                columnsUp.append(String.format("%s%s = %s + %s*INTERVAL '1 second'", columnsUp.length() == 0 ? "" : ", ", column, column, seconds + 86400 * 10000));
+                                logColumns.append(String.format("%s%s", (logColumns.length() == 0) ? "" : ", ", column));
+                            }
+                            ServerLoggers.systemLogger.info(String.format("Changing dates %s/%s: table %s, columns %s", count, tableColumnsMap.size(), table, logColumns.toString()));
+                            sql.executeDDL(String.format("UPDATE %s SET %s", table, columnsDown.toString()));
+                            sql.executeDDL(String.format("UPDATE %s SET %s", table, columnsUp.toString()));
+                            count++;
                         }
-                        ServerLoggers.systemLogger.info(String.format("Changing dates %s/%s: table %s, columns %s", count, tableColumnsMap.size(), table, logColumns.toString()));
-                        sql.executeDDL(String.format("UPDATE %s SET %s", table, columnsDown.toString()));
-                        sql.executeDDL(String.format("UPDATE %s SET %s", table, columnsUp.toString()));
-                        count++;
-                    }
 
-                    newContext.apply();
-                }    
-            }
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            ServerLoggers.systemLogger.error("Error changing all dates", e);
+                    }
+                } catch (ScriptingErrorLog.SemanticErrorException e) {
+                    ServerLoggers.systemLogger.error("Error changing all dates", e);
+                }
+            });
         } finally {
             sql.popNoReadOnly();
         }

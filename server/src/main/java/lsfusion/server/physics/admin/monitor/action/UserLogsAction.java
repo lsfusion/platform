@@ -31,13 +31,10 @@ public class UserLogsAction extends InternalAction {
         if (logFiles != null && !logFiles.isEmpty()) {
             try {
                 FileData zipFile = ZipUtils.makeZipFile(logFiles, false);
-                try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+                context.newSession(newContext -> {
                     ObjectValue currentConnection = findProperty("currentConnection[]").readClasses(newContext);
                     if (currentConnection instanceof DataObject) findProperty("fileUserLogs[Connection]").change(zipFile, newContext, (DataObject) currentConnection);
-                    newContext.apply();
-                } catch (ScriptingErrorLog.SemanticErrorException e) {
-                    throw Throwables.propagate(e);
-                }
+                });
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }

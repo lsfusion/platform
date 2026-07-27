@@ -3,6 +3,7 @@ package lsfusion.server.physics.admin.backup.action;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -26,34 +27,34 @@ public class DeleteBackupAction extends InternalAction {
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
-            DataObject backupObject = newContext.getDataKeyValue(backupInterface);
+        try {
+            context.newSession(false, newContext -> { // deferInTransaction = false : deletes files on disk
+                DataObject backupObject = newContext.getDataKeyValue(backupInterface);
 
-            String backupFilePath = (String) findProperty("file[Backup]").read(newContext, backupObject);
-            String backupLogFilePath = (String) findProperty("fileLog[Backup]").read(newContext, backupObject);
-            boolean isMultithread = findProperty("isMultithread[Backup]").read(newContext, backupObject) != null;
-            File f = new File(backupFilePath);
-            File fLog = new File(backupLogFilePath);
-            BaseUtils.safeDelete(fLog);
+                String backupFilePath = (String) findProperty("file[Backup]").read(newContext, backupObject);
+                String backupLogFilePath = (String) findProperty("fileLog[Backup]").read(newContext, backupObject);
+                boolean isMultithread = findProperty("isMultithread[Backup]").read(newContext, backupObject) != null;
+                File f = new File(backupFilePath);
+                File fLog = new File(backupLogFilePath);
+                BaseUtils.safeDelete(fLog);
 
-            boolean deleted = false;
-            if(isMultithread) {
-                try {
-                    FileUtils.deleteDirectory(f);
-                    deleted = true;
-                } catch (IOException ignored) {
+                boolean deleted = false;
+                if(isMultithread) {
+                    try {
+                        FileUtils.deleteDirectory(f);
+                        deleted = true;
+                    } catch (IOException ignored) {
+                    }
+                } else {
+                    deleted = !f.exists() || f.delete();
                 }
-            } else {
-                deleted = !f.exists() || f.delete();
-            }
 
-            if (deleted) {
-                ServerLoggers.systemLogger.info("Deleted backup " + f.getName());
-                findProperty("fileDeleted[Backup]").change(true, newContext, backupObject);
-                context.messageSuccess("Deleted backup " + f.getName(), "Deleted backup");
-            }
-            newContext.apply();
-
+                if (deleted) {
+                    ServerLoggers.systemLogger.info("Deleted backup " + f.getName());
+                    findProperty("fileDeleted[Backup]").change(true, newContext, backupObject);
+                    context.messageSuccess("Deleted backup " + f.getName(), "Deleted backup");
+                }
+            });
         } catch (Exception e) {
             Throwables.propagate(e);
         }

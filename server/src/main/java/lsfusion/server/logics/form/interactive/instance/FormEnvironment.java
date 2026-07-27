@@ -3,10 +3,16 @@ package lsfusion.server.logics.form.interactive.instance;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+
+import java.sql.SQLException;
 
 public class FormEnvironment<P extends PropertyInterface> {
     private final ImMap<P, PropertyObjectInterfaceInstance> mapObjects;
@@ -17,6 +23,25 @@ public class FormEnvironment<P extends PropertyInterface> {
         this.mapObjects = mapObjects;
         this.changingDrawInstance = changingDrawInstance;
         this.formInstance = formInstance;
+    }
+
+    public static <P extends PropertyInterface> FormEnvironment<P> create(ImMap<P, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
+        return mapObjects == null ? null : new FormEnvironment<>(mapObjects, null, formInstance);
+    }
+
+    // the map objects have to be class-updated when their execution is postponed (see the apply recursion bodies - ActionValueImplement / NewSessionBody)
+    public static <P extends PropertyInterface> ImMap<P, PropertyObjectInterfaceInstance> updateCurrentClasses(UpdateCurrentClassesSession session, ImMap<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException, SQLHandledException {
+        if(mapObjects == null)
+            return null;
+
+        ImValueMap<P, PropertyObjectInterfaceInstance> mUpdateMapObjects = mapObjects.mapItValues(); // exception кидается
+        for(int i=0,size=mapObjects.size();i<size;i++) {
+            PropertyObjectInterfaceInstance mapObject = mapObjects.getValue(i);
+            if(mapObject instanceof ObjectValue)
+                mapObject = (PropertyObjectInterfaceInstance) session.updateCurrentClass((ObjectValue) mapObject);
+            mUpdateMapObjects.mapValue(i, mapObject);
+        }
+        return mUpdateMapObjects.immutableValue();
     }
 
     public ImMap<P, PropertyObjectInterfaceInstance> getMapObjects() {

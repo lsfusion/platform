@@ -43,54 +43,55 @@ public class BackupAction extends InternalAction {
         makeBackup(context, false);
     }
 
-    protected void makeBackup(ExecutionContext context, boolean partial) {
+    protected void makeBackup(ExecutionContext<ClassPropertyInterface> context, boolean partial) {
         DBManager dbManager = context.getDbManager();
         if (dbManager.checkBackupParams(context)) {
 
-            try (ExecutionContext.NewSession newContext = context.newSession()) {
+            try {
+                context.newSession(false, newContext -> { // deferInTransaction = false : creates backup files on disk
 
-                Integer threadCount = (Integer) findProperty("threadCount[]").read(newContext);
-                if (threadCount == null || threadCount < 1) {
-                    threadCount = 1;
-                }
-
-                String backupFileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
-
-                List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
-                String extraExcludeTablesString = partial ? getExtraExcludeTables(context) : null;
-                List<String> extraExcludeTables = splitTrim(extraExcludeTablesString);
-
-                String backupFilePath = dbManager.getBackupFilePath(backupFileName);
-                String backupFileLogPath = dbManager.getBackupFileLogPath(backupFileName);
-
-                DataObject backupObject = newContext.addObject((ConcreteCustomClass) findClass("Backup"));
-                LocalDateTime currentDateTime = LocalDateTime.now();
-                findProperty("date[Backup]").change(currentDateTime.toLocalDate(), newContext, backupObject);
-                findProperty("time[Backup]").change(currentDateTime.toLocalTime(), newContext, backupObject);
-                findProperty("file[Backup]").change(backupFilePath, newContext, backupObject);
-                findProperty("name[Backup]").change(FilenameUtils.getName(backupFilePath), newContext, backupObject);
-                findProperty("fileLog[Backup]").change(backupFileLogPath, newContext, backupObject);
-                findProperty("isMultithread[Backup]").change(threadCount > 1, newContext, backupObject);
-
-                if (partial) {
-                    findProperty("partial[Backup]").change(true, newContext, backupObject);
-                    for (String excludeTable : excludeTables) {
-                        ObjectValue tableObject = findProperty("table[ISTRING[100]]").readClasses(newContext, new DataObject(excludeTable));
-                        if (tableObject instanceof DataObject)
-                            findProperty("exclude[Backup,Table]").change(true, newContext, backupObject, (DataObject) tableObject);
+                    Integer threadCount = (Integer) findProperty("threadCount[]").read(newContext);
+                    if (threadCount == null || threadCount < 1) {
+                        threadCount = 1;
                     }
-                    findProperty("extraExclude[Backup]").change(extraExcludeTablesString, newContext, backupObject);
-                }
 
-                newContext.apply();
+                    String backupFileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
 
-                backupObject = new DataObject((Long) backupObject.object, (ConcreteCustomClass) findClass("Backup")); // обновляем класс после backup
+                    List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
+                    String extraExcludeTablesString = partial ? getExtraExcludeTables(context) : null;
+                    List<String> extraExcludeTables = splitTrim(extraExcludeTablesString);
 
-                excludeTables.addAll(extraExcludeTables);
-                dbManager.backupDB(context, backupFileName, threadCount, excludeTables);
+                    String backupFilePath = dbManager.getBackupFilePath(backupFileName);
+                    String backupFileLogPath = dbManager.getBackupFileLogPath(backupFileName);
 
-                findProperty("log[Backup]").change(readBackupLog(backupFileLogPath), newContext, backupObject);
-                newContext.apply();
+                    DataObject backupObject = newContext.addObject((ConcreteCustomClass) findClass("Backup"));
+                    LocalDateTime currentDateTime = LocalDateTime.now();
+                    findProperty("date[Backup]").change(currentDateTime.toLocalDate(), newContext, backupObject);
+                    findProperty("time[Backup]").change(currentDateTime.toLocalTime(), newContext, backupObject);
+                    findProperty("file[Backup]").change(backupFilePath, newContext, backupObject);
+                    findProperty("name[Backup]").change(FilenameUtils.getName(backupFilePath), newContext, backupObject);
+                    findProperty("fileLog[Backup]").change(backupFileLogPath, newContext, backupObject);
+                    findProperty("isMultithread[Backup]").change(threadCount > 1, newContext, backupObject);
+
+                    if (partial) {
+                        findProperty("partial[Backup]").change(true, newContext, backupObject);
+                        for (String excludeTable : excludeTables) {
+                            ObjectValue tableObject = findProperty("table[ISTRING[100]]").readClasses(newContext, new DataObject(excludeTable));
+                            if (tableObject instanceof DataObject)
+                                findProperty("exclude[Backup,Table]").change(true, newContext, backupObject, (DataObject) tableObject);
+                        }
+                        findProperty("extraExclude[Backup]").change(extraExcludeTablesString, newContext, backupObject);
+                    }
+
+                    newContext.apply();
+
+                    backupObject = new DataObject((Long) backupObject.object, (ConcreteCustomClass) findClass("Backup")); // обновляем класс после backup
+
+                    excludeTables.addAll(extraExcludeTables);
+                    dbManager.backupDB(context, backupFileName, threadCount, excludeTables);
+
+                    findProperty("log[Backup]").change(readBackupLog(backupFileLogPath), newContext, backupObject);
+                });
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }

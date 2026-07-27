@@ -51,19 +51,22 @@ public class ImportEMLAction extends EmailAction {
 
             Email email = parseEML(unpack, emlFile);
 
-            try (ExecutionContext.NewSession session = context.newSession()) {
+            context.newSession(false, false, session -> { // deferInTransaction = false : consumes the apply result (applyMessage, which a deferred body would not get); autoApply = false : applies itself
+                // the keys are reread from the (possibly deferred) context : they are class-updated between the apply recursion rounds
+                DataObject account = session.getDataKeyValue(accountInterface);
+                DataObject uid = session.getDataKeyValue(uidInterface);
 
-                ObjectValue emailObject = emailLM.emailAccountUID.readClasses(session, accountObject, uidObject);
+                ObjectValue emailObject = emailLM.emailAccountUID.readClasses(session, account, uid);
                 if (emailObject instanceof NullValue) {
                     //backward compatibility
-                    emailObject = emailLM.emailId.readClasses(session, accountObject, new DataObject(email.id));
+                    emailObject = emailLM.emailId.readClasses(session, account, new DataObject(email.id));
                     if (emailObject instanceof NullValue) {
                         emailObject = session.addObject(emailLM.email);
                     }
                 }
 
-                emailLM.accountEmail.change(accountObject, session, (DataObject) emailObject);
-                emailLM.uidEmail.change(uidObject.object, session, (DataObject) emailObject);
+                emailLM.accountEmail.change(account, session, (DataObject) emailObject);
+                emailLM.uidEmail.change(uid.object, session, (DataObject) emailObject);
                 emailLM.idEmail.change(email.id, session, (DataObject) emailObject);
                 emailLM.dateTimeSentEmail.change(email.dateTimeSent, session, (DataObject) emailObject);
                 emailLM.dateTimeReceivedEmail.change(LocalDateTime.now(), session, (DataObject) emailObject);
@@ -84,7 +87,7 @@ public class ImportEMLAction extends EmailAction {
                 if (result != null) {
                     throw new RuntimeException(result);
                 }
-            }
+            });
 
         } catch (Exception e) {
             logger.error(localize("{mail.failed.to.receive.mail}"), e);

@@ -58,11 +58,10 @@ public class WriteDefaultSettingsAction extends InternalAction {
 
             ImportTable table = new ImportTable(fields, data);
 
-            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+            context.newSession(newContext -> {
                 IntegrationService service = new IntegrationService(newContext, table, keys, props);
                 service.synchronize(true, false);
-                newContext.apply();
-            }
+            });
 
         } catch (InvocationTargetException | NoSuchMethodException | ScriptingErrorLog.SemanticErrorException | IllegalAccessException e) {
             throw Throwables.propagate(e);

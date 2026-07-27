@@ -145,36 +145,42 @@ public class SendEmailAction extends SystemAction {
 
                 ObjectValue folder = emailLM.sentFolder.readClasses(context, account);
                 if (folder instanceof DataObject) {
-                    try (ExecutionContext.NewSession newContext = context.newSession()) {
+                    String fFromAddress = fromAddress;
+                    context.newSession(true, false, newContext -> { // autoApply = false : applies itself, before writing lastSentEmail to the outer context
+                        try {
 
-                        DataObject emailObject = newContext.addObject(emailLM.email);
+                            DataObject emailObject = newContext.addObject(emailLM.email);
 
-                        long id = System.currentTimeMillis();
-                        emailLM.idEmail.change(String.valueOf(id), newContext, emailObject);
-                        emailLM.uidEmail.change(id, newContext, emailObject);
-                        emailLM.accountEmail.change(account, newContext, emailObject);
-                        emailLM.folderEmail.change(folder, newContext, emailObject);
-                        emailLM.subjectEmail.change(subject, newContext, emailObject);
-                        emailLM.fromAddressEmail.change(fromAddress, newContext, emailObject);
-                        emailLM.toAddressEmail.change(getRecipients(recipients, TO), newContext, emailObject);
-                        emailLM.ccAddressEmail.change(getRecipients(recipients, CC), newContext, emailObject);
-                        emailLM.bccAddressEmail.change(getRecipients(recipients, BCC), newContext, emailObject);
-                        DataObject dateTime = new DataObject(LocalDateTime.now(), DateTimeClass.instance);
-                        emailLM.dateTimeSentEmail.change(dateTime, newContext, emailObject);
-                        emailLM.dateTimeReceivedEmail.change(dateTime, newContext, emailObject);
-                        emailLM.messageEmail.change(StringUtils.join(inlineFiles, "\n"), newContext, emailObject);
+                            long id = System.currentTimeMillis();
+                            emailLM.idEmail.change(String.valueOf(id), newContext, emailObject);
+                            emailLM.uidEmail.change(id, newContext, emailObject);
+                            emailLM.accountEmail.change(account, newContext, emailObject);
+                            emailLM.folderEmail.change(folder, newContext, emailObject);
+                            emailLM.subjectEmail.change(subject, newContext, emailObject);
+                            emailLM.fromAddressEmail.change(fFromAddress, newContext, emailObject);
+                            emailLM.toAddressEmail.change(getRecipients(recipients, TO), newContext, emailObject);
+                            emailLM.ccAddressEmail.change(getRecipients(recipients, CC), newContext, emailObject);
+                            emailLM.bccAddressEmail.change(getRecipients(recipients, BCC), newContext, emailObject);
+                            DataObject dateTime = new DataObject(LocalDateTime.now(), DateTimeClass.instance);
+                            emailLM.dateTimeSentEmail.change(dateTime, newContext, emailObject);
+                            emailLM.dateTimeReceivedEmail.change(dateTime, newContext, emailObject);
+                            emailLM.messageEmail.change(StringUtils.join(inlineFiles, "\n"), newContext, emailObject);
 
-                        int counter = 1;
-                        for (EmailSender.AttachmentFile attachFile : attachFiles) {
-                            DataObject attachmentObject = newContext.addObject(emailLM.attachmentEmail);
-                            emailLM.emailAttachmentEmail.change(emailObject, newContext, attachmentObject);
-                            emailLM.idAttachmentEmail.change(String.valueOf(counter++), newContext, attachmentObject);
-                            emailLM.nameAttachmentEmail.change(attachFile.attachmentName, newContext, attachmentObject);
-                            emailLM.fileAttachmentEmail.change(new FileData(attachFile.file, attachFile.extension), newContext, attachmentObject);
+                            int counter = 1;
+                            for (EmailSender.AttachmentFile attachFile : attachFiles) {
+                                DataObject attachmentObject = newContext.addObject(emailLM.attachmentEmail);
+                                emailLM.emailAttachmentEmail.change(emailObject, newContext, attachmentObject);
+                                emailLM.idAttachmentEmail.change(String.valueOf(counter++), newContext, attachmentObject);
+                                emailLM.nameAttachmentEmail.change(attachFile.attachmentName, newContext, attachmentObject);
+                                emailLM.fileAttachmentEmail.change(new FileData(attachFile.file, attachFile.extension), newContext, attachmentObject);
+                            }
+                            newContext.apply();
+                            emailLM.lastSentEmail.change(new DataObject(emailObject.getValue(), emailLM.email), context);
+
+                        } catch (SQLException | SQLHandledException e) { // the sent mail record is not worth failing the mail sending (or, in a transaction, the outer apply) - same as the outer catch does for the sending itself
+                            logErrorAndShowMessage(context, localize("{mail.failed.to.send.mail}") + " : " + e);
                         }
-                        newContext.apply();
-                        emailLM.lastSentEmail.change(new DataObject(emailObject.getValue(), emailLM.email), context);
-                    }
+                    });
                 }
             } else {
                 throw new RuntimeException(localize("{mail.failed.email.not.configured}"));

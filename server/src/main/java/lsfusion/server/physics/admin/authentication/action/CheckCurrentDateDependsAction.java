@@ -43,10 +43,9 @@ public class CheckCurrentDateDependsAction extends InternalAction {
                             localize(LocalizedString.createFormatted("{security.property.depends.on.current.date.are.you.sure}", property.toString()))));
         }
         if (!allow) {
-            try(ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
-                BL.reflectionLM.userLoggableProperty.change((Boolean) null, newContext, propertyObject);
-                newContext.apply();
-            }
+            context.newSession(newContext -> {
+                BL.reflectionLM.userLoggableProperty.change((Boolean) null, newContext, newContext.getDataKeyValue(propertyInterface)); // the key is reread from the context : in the deferred mode it is class-updated between the recursion rounds
+            });
         }
     }
 }

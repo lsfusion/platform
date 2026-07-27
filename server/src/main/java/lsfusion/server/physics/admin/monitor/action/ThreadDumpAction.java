@@ -26,13 +26,10 @@ public class ThreadDumpAction extends InternalAction {
 
         RawFileData threadDump = (RawFileData) context.requestUserInteraction(new ThreadDumpClientAction());
         if (threadDump != null) {
-            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+            context.newSession(newContext -> {
                 ObjectValue currentConnection = findProperty("currentConnection[]").readClasses(newContext);
                 if(currentConnection instanceof DataObject) findProperty("fileThreadDump[Connection]").change(new FileData(threadDump, "txt"), newContext, (DataObject) currentConnection);
-                newContext.apply();
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
-                throw Throwables.propagate(e);
-            }
+            });
         }
     }
 }

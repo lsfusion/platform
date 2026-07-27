@@ -6,7 +6,9 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.lambda.Processor;
+import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.MessageClientType;
@@ -34,6 +36,7 @@ import lsfusion.server.logics.action.flow.ScheduledFutureService;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.action.NewSessionBody;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClasses;
@@ -503,14 +506,54 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
+    // the imperative forms work out of a transaction only - prefer the newSession(body) forms below when possible, they also handle the in-transaction case (by deferring the body)
     public NewSession<P> newSession() throws SQLException {
-        return newSession(null);
+        return newSession((ImSet<FormEntity>) null);
     }
     public NewSession<P> newSession(ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
         return newSession(getSession().sql, fixedForms);
     }
     public NewSession<P> newSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
+        // a new session on an sql that is already in a transaction (its own or another session's) would nest the sql transaction on apply - the deferring form has to be used there
+        // an explicitly created sql (the NEW SESSION NEWSQL path) is not in a transaction, so it passes
+        if(sql.isInTransaction())
+            throw new IllegalStateException("NEW SESSION IN TRANSACTION, USE newSession(body) INSTEAD (IN A TRANSACTION IT DEFERS THE BODY TO THE APPLY RECURSION)");
+
         return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), scheduledService, connectionService, form, stack);
+    }
+
+    // the java analog of the lsf NEW SESSION operator with the same in-transaction scheme (see NewSessionAction.beforeAspect) : out of a transaction
+    // the body runs against a new session, inside a transaction it is deferred to the apply recursion and executes on the CURRENT session, atomically
+    // with the outer transaction (a new session's apply would otherwise start a nested sql transaction with no atomicity of its own - see #1716)
+    // hence the deferred body contract, the same as for the lsf NEW SESSION body : database writes only (out-of-database side effects will not roll back
+    // with the outer transaction and will repeat on the apply retry), no user interaction, no cancel, no immediate results, objects through the context keys
+    public void newSession(EConsumer<ExecutionContext<P>, Exception> body) throws SQLException, SQLHandledException {
+        newSession(true, true, body);
+    }
+    public void newSession(boolean deferInTransaction, EConsumer<ExecutionContext<P>, Exception> body) throws SQLException, SQLHandledException {
+        newSession(deferInTransaction, true, body);
+    }
+
+    // deferInTransaction = false : the body can not be deferred (out-of-database side effects, immediately consumed results), so in a transaction it fails fast
+    // autoApply = false : the body manages its applies itself (an intermediate apply, applyMessage); in the deferred mode the recursion round saves the changes anyway
+    public void newSession(boolean deferInTransaction, boolean autoApply, EConsumer<ExecutionContext<P>, Exception> body) throws SQLException, SQLHandledException {
+        DataSession session = getSession();
+        if(session.isInTransaction()) {
+            if(!deferInTransaction)
+                throw new IllegalStateException("NEW SESSION IN TRANSACTION (THE BODY CAN NOT BE DEFERRED)");
+
+            // FullFunctionSet : the session locals have to survive to the recursion round the body runs in (a java body, unlike the lsf one, can not declare which locals it uses)
+            session.addRecursion(new NewSessionBody(getKeys(), getObjectInstances(), getFormAspectInstance(), body), FullFunctionSet.instance(), false);
+            return;
+        }
+
+        // if the sql session is inside ANOTHER session's transaction (this session was created before that transaction started), there is nothing to defer to
+        // and the new session would nest - newSession below throws then
+        try (NewSession<P> newContext = newSession()) {
+            NewSessionBody.run(newContext, body);
+            if(autoApply)
+                newContext.apply();
+        }
     }
 
     public ActionOrProperty getSecurityProperty() {

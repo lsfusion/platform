@@ -31,46 +31,46 @@ public class DecimateBackupsAction extends InternalAction {
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+        try {
+            context.newSession(false, newContext -> { // deferInTransaction = false : delete[Backup] deletes files on disk
 
-            boolean saveFirstDay = findProperty("saveFirstDayBackups[]").read(context) != null;
-            boolean saveMonday = findProperty("saveMondayBackups[]").read(context) != null;
-            Integer maxQuantity = (Integer) findProperty("maxQuantityBackups[]").read(context);
-            if(maxQuantity == null && !saveFirstDay && !saveMonday)
-                maxQuantity = 30;
+                boolean saveFirstDay = findProperty("saveFirstDayBackups[]").read(context) != null;
+                boolean saveMonday = findProperty("saveMondayBackups[]").read(context) != null;
+                Integer maxQuantity = (Integer) findProperty("maxQuantityBackups[]").read(context);
+                if(maxQuantity == null && !saveFirstDay && !saveMonday)
+                    maxQuantity = 30;
 
-            KeyExpr backupExpr = new KeyExpr("Backup");
-            ImRevMap<Object, KeyExpr> backupKeys = MapFact.singletonRev("Backup", backupExpr);
+                KeyExpr backupExpr = new KeyExpr("Backup");
+                ImRevMap<Object, KeyExpr> backupKeys = MapFact.singletonRev("Backup", backupExpr);
 
-            QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
-            backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr));
-            backupQuery.addProperty("timeBackup", findProperty("time[Backup]").getExpr(newContext.getModifier(), backupExpr));
-            backupQuery.and(findProperty("fileDeleted[Backup]").getExpr(newContext.getModifier(), backupExpr).getWhere().not());
-            backupQuery.and(findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr).getWhere());
+                QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
+                backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr));
+                backupQuery.addProperty("timeBackup", findProperty("time[Backup]").getExpr(newContext.getModifier(), backupExpr));
+                backupQuery.and(findProperty("fileDeleted[Backup]").getExpr(newContext.getModifier(), backupExpr).getWhere().not());
+                backupQuery.and(findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr).getWhere());
 
-            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(newContext, MapFact.toOrderMap((Object) "dateBackup", true, "timeBackup", true));
+                ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(newContext, MapFact.toOrderMap((Object) "dateBackup", true, "timeBackup", true));
 
-            int count = 0;
-            for (int i = 0; i < backupResult.size(); i++) {
-                DataObject backupObject = backupResult.getKey(i).getObject("Backup");
+                int count = 0;
+                for (int i = 0; i < backupResult.size(); i++) {
+                    DataObject backupObject = backupResult.getKey(i).getObject("Backup");
 
-                LocalDate dateBackup = (LocalDate) backupResult.getValue(i).get("dateBackup").getValue();
-                long delta = Duration.between(dateBackup.atStartOfDay(), LocalDateTime.now()).toDays();
-                boolean limit = maxQuantity != null && count >= maxQuantity;
-                boolean firstDay = dateBackup.getDayOfMonth() == 1 && saveFirstDay;
-                boolean monday = dateBackup.getDayOfWeek() == DayOfWeek.MONDAY && saveMonday;
-                //Если превышен лимит кол-ва, удаляем;
-                //Если старше недели, оставляем только за понедельник и за первое число;
-                //Если старше месяца, только за первое число.
-                if (limit || (delta > 30 && !firstDay) || (delta < 30 && delta > 7 && !firstDay && !monday)) {
-                    ServerLoggers.systemLogger.info("Decimate Backups: deleting backup " + dateBackup);
-                    findAction("delete[Backup]").execute(newContext, backupObject);
-                } else
-                    count++;
-            }
+                    LocalDate dateBackup = (LocalDate) backupResult.getValue(i).get("dateBackup").getValue();
+                    long delta = Duration.between(dateBackup.atStartOfDay(), LocalDateTime.now()).toDays();
+                    boolean limit = maxQuantity != null && count >= maxQuantity;
+                    boolean firstDay = dateBackup.getDayOfMonth() == 1 && saveFirstDay;
+                    boolean monday = dateBackup.getDayOfWeek() == DayOfWeek.MONDAY && saveMonday;
+                    //Если превышен лимит кол-ва, удаляем;
+                    //Если старше недели, оставляем только за понедельник и за первое число;
+                    //Если старше месяца, только за первое число.
+                    if (limit || (delta > 30 && !firstDay) || (delta < 30 && delta > 7 && !firstDay && !monday)) {
+                        ServerLoggers.systemLogger.info("Decimate Backups: deleting backup " + dateBackup);
+                        findAction("delete[Backup]").execute(newContext, backupObject);
+                    } else
+                        count++;
+                }
 
-            newContext.apply();
-
+            });
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

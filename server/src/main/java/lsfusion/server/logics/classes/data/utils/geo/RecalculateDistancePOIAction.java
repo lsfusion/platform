@@ -66,33 +66,32 @@ public class RecalculateDistancePOIAction extends DistanceGeoAction {
                 String latLong = latitude + "," + longitude;
 
 
-                try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
-                    String destinations = "";
-                    int count = 0;
-                    int[] localDistances = new int[size];
-                    for (int i = 0; i < size; i++) {
-                        destinations += (destinations.isEmpty() ? "" : "|") + points.get(i);
-                        count++;
-                        if(count % partSize == 0) {
-                            ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, partSize));
-                            int[] partDistances = readDistances(partSize, latLong, destinations, 0);
-                            System.arraycopy(partDistances, 0, localDistances, count - partSize, partDistances.length);
-                            destinations = "";
-                        }
+                context.newSession(false, newContext -> { // deferInTransaction = false : remote distance queries inside - not idempotent under the apply retry
+                String destinations = "";
+                int count = 0;
+                int[] localDistances = new int[size];
+                for (int i = 0; i < size; i++) {
+                    destinations += (destinations.isEmpty() ? "" : "|") + points.get(i);
+                    count++;
+                    if(count % partSize == 0) {
+                        ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, partSize));
+                        int[] partDistances = readDistances(partSize, latLong, destinations, 0);
+                        System.arraycopy(partDistances, 0, localDistances, count - partSize, partDistances.length);
+                        destinations = "";
                     }
-                    if(!destinations.isEmpty()) {
-                        ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, count % partSize));
-                        int[] partDistances = readDistances(count % partSize, latLong, destinations, 0);
-                        System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
-                    }
-                    for (int i = 0; i < points.size(); i++) {
-                        if (points.containsKey(i)) {
-                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], newContext, poiObject, poiMap.get(i));
-                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], newContext, poiMap.get(i), poiObject);
-                        }
-                    }
-                    newContext.apply();
                 }
+                if(!destinations.isEmpty()) {
+                    ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, count % partSize));
+                    int[] partDistances = readDistances(count % partSize, latLong, destinations, 0);
+                    System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
+                }
+                for (int i = 0; i < points.size(); i++) {
+                    if (points.containsKey(i)) {
+                        findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], newContext, poiObject, poiMap.get(i));
+                        findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], newContext, poiMap.get(i), poiObject);
+                    }
+                }
+                });
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
