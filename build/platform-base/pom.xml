@@ -117,7 +117,7 @@
         <tess4j.version>5.13.0</tess4j.version>
         <pdfbox.version>2.0.32</pdfbox.version>
         <web.push.version>5.1.1</web.push.version>
-        <bouncycastle.version>1.78.1</bouncycastle.version>
+        <bouncycastle.version>1.85</bouncycastle.version>
     </properties>
 
     <!-- DEPENDENCY VERSIONS -->
