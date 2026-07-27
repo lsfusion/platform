@@ -82,7 +82,7 @@
         <junrar.version>7.5.10</junrar.version>
         <ph.css.version>6.2.2</ph.css.version>
         <jstl.version>1.2</jstl.version>
-        <commons.fileupload.version>1.5</commons.fileupload.version>
+        <commons.fileupload.version>1.6.0</commons.fileupload.version>
         <com.ibm.icu.icu4j.version>77.1</com.ibm.icu.icu4j.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
         <scrimage.version>4.0.42</scrimage.version>
