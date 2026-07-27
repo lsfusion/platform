@@ -1925,6 +1925,16 @@ public class Settings implements Cloneable {
         this.useUserChangesSync = useUserChangesSync;
     }
 
+    private boolean allowNestedTransaction = false; // allow a nested sql transaction (it has no atomicity of its own : its commit is physically nothing and its changes disappear with the outer rollback) instead of failing; can be enabled for a single stack with pushSetting / popSetting - the way the service operations take the nesting on, see DBManager.run
+
+    public boolean isAllowNestedTransaction() {
+        return allowNestedTransaction;
+    }
+
+    public void setAllowNestedTransaction(boolean allowNestedTransaction) {
+        this.allowNestedTransaction = allowNestedTransaction;
+    }
+
     private boolean packStatBackwardCompatibility = false;
 
     public boolean isPackStatBackwardCompatibility() {

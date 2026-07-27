@@ -98,6 +98,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiFunction;
@@ -487,17 +488,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 //        ServerLoggers.pausableLogStack("LOCKREAD GET " + this);
 
-        try {
-            setActiveThread(tryLock);
-            if(owner != OperationOwner.unknown)
-                owner.checkThreadSafeAccess(writeOwner);
-        } catch (Throwable t) {
-            unlockRead();
-            throw t;
-        }
+        setActiveThread(owner, lock.readLock());
 
         return true;
     }
+
 
     @Override
     public String toString() {
@@ -541,7 +536,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 //        ServerLoggers.pausableLogStack("LOCKWRITE GET " + this);
 
-        setActiveThread(tryLock);
+        setActiveThread(owner, lock.writeLock()); // the access check here also catches the nested transaction start (the outer transaction is another session's)
         writeOwner = owner;
 
         return true;
@@ -595,7 +590,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void startTransaction(boolean serializable, DataAdapter.NeedExplicitServer needServer, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
-        lockWrite(owner);
+        lockWrite(owner); // a nested start is a particular case of another session working in this one's transaction, and is rejected there (see OperationOwner.checkThreadSafeAccess) :
+                          // the only two callers are DataSession (under its own owner) and DBManager.run (under an unknown one, and knowingly - it sets allowNestedTransaction around its block)
+
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
         assert isInTransaction() || transactionTables.isEmpty();
@@ -3148,9 +3145,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private void setActiveThread(boolean async) {
+    // on a rejection the acquisition is released here, and only it : unlockRead / unlockWrite would also drop this registration (activeThreads is a set, not a counter, and it is what
+    // statement cancellation and the connection restart go through) and the write owner - and both belong to the transaction that is still running on this thread
+    private void setActiveThread(OperationOwner owner, Lock acquired) {
         synchronized (activeThreadLock) {
             activeThreads.add(Thread.currentThread()); // не excl, потому как сначала lockWrite берет поток, а потом lockRead
+        }
+
+        if(owner != OperationOwner.unknown) {
+            try {
+                owner.checkThreadSafeAccess(writeOwner);
+            } catch (Throwable t) {
+                acquired.unlock();
+                throw t;
+            }
         }
     }
 

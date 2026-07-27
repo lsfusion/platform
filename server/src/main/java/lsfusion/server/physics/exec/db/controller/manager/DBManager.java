@@ -2797,21 +2797,39 @@ public class DBManager extends LogicsManager implements InitializingBean {
         session.executeDDL(getSyntax().getVacuumDB());
     }
 
+    private static final String ALLOW_NESTED_TRANSACTION = "allowNestedTransaction";
+    private static void pushAllowNestedTransaction() {
+        try {
+            ThreadLocalContext.pushSettings(ALLOW_NESTED_TRANSACTION, "true");
+        } catch (Exception e) { // the setting is resolved by name, hence the checked exceptions
+            throw Throwables.propagate(e);
+        }
+    }
+    private static void popAllowNestedTransaction() {
+        ThreadLocalContext.popSettings(ALLOW_NESTED_TRANSACTION);
+    }
+
     private static void run(SQLSession session, boolean runInTransaction, boolean serializable, DataAdapter.NeedExplicitServer needServer, RunService run, int attempts) throws SQLException, SQLHandledException {
         if(runInTransaction) {
-            session.startTransaction(serializable, needServer, OperationOwner.unknown);
+            // the service operations run sessions' applies inside their own transaction (synchronizeDB and the like), so the nesting here is taken on knowingly - with the same setting an application can push for its own stack
+            pushAllowNestedTransaction();
             try {
-                run.run(session);
-                session.commitTransaction();
-            } catch (Throwable t) {
-                session.rollbackTransaction();
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
-                    //serviceLogger.error("Run error: ", t);
-                    run(session, true, serializable, needServer, run, attempts + 1);
-                    return;
-                }
+                session.startTransaction(serializable, needServer, OperationOwner.unknown);
+                try {
+                    run.run(session);
+                    session.commitTransaction();
+                } catch (Throwable t) {
+                    session.rollbackTransaction();
+                    if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
+                        //serviceLogger.error("Run error: ", t);
+                        run(session, true, serializable, needServer, run, attempts + 1);
+                        return;
+                    }
 
-                throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+                    throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+                }
+            } finally {
+                popAllowNestedTransaction();
             }
         } else
             run.run(session);
