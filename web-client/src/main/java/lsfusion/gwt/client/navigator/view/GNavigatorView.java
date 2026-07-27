@@ -1,28 +1,23 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class GNavigatorView {
+public class GNavigatorView implements GINavigatorView {
 
     private GNavigatorWindow window;
     private Widget component;
     private GINavigatorController navigatorController;
-    private GNavigatorElement selected;
 
     private ResizableComplexPanel panel;
     private boolean verticalTextAlign;
@@ -42,15 +37,12 @@ public class GNavigatorView {
         this.panel = main.panel;
     }
 
+    @Override
     public Widget getView() {
         return component;
     }
 
-    public Widget getComponent() {
-        return window.drawScrollBars ? ((ScrollPanel) component).getWidget() : component;
-    }
-
-    public void setComponent(Widget component) {
+    private void setComponent(Widget component) {
         this.component = component;
 
         GFormLayout.setDebugInfo(component, window.canonicalName);
@@ -60,14 +52,12 @@ public class GNavigatorView {
         recentlySelected = new RecentlyEventClassHandler(component, true, "was-selected-recently", 1000);
     }
 
-    public void refresh(LinkedHashSet<GNavigatorElement> newElements) {
+    @Override
+    public void refresh(LinkedHashSet<GNavigatorElement> newElements, GNavigatorElement selected) {
         Result<Integer> index = new Result<>(0);
         for (GNavigatorElement newElement : newElements) {
             if (!newElements.contains(newElement.parent)) { // only root components, since children are added recursively
-                if (firstFolder == null && newElement.isFolder() && window.isRoot()) {
-                    firstFolder = newElement;
-                }
-                addElement(newElement, newElements, 0, index);
+                addElement(newElement, newElements, selected, 0, index);
             }
         }
 
@@ -75,14 +65,7 @@ public class GNavigatorView {
             panel.remove(index.result);
     }
 
-    public GNavigatorElement getSelectedElement() {
-        return selected;
-    }
-
-    //open first folder at start
-    GNavigatorElement firstFolder = null;
-
-    private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step, Result<Integer> index) {
+    private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, GNavigatorElement selected, int step, Result<Integer> index) {
         if (!element.hide) {
             boolean active = window.allButtonsActive() || (element.isFolder() && element.equals(selected));
 
@@ -90,7 +73,7 @@ public class GNavigatorView {
                 NavigatorImageButton button = (NavigatorImageButton) panel.getWidget(index.result);
                 button.change(element, step, active);
             } else {
-                NavigatorImageButton button = new NavigatorImageButton(element, verticalTextAlign, step, active, this::selectElement);
+                NavigatorImageButton button = new NavigatorImageButton(element, verticalTextAlign, step, active, navigatorController::activate);
                 panel.add(button);
             }
             index.set(index.result + 1);
@@ -98,7 +81,7 @@ public class GNavigatorView {
             if (element.window == null || element.window.equals(window)) {
                 for (GNavigatorElement childEl : element.children) {
                     if (newElements.contains(childEl)) {
-                        addElement(childEl, newElements, step + 1, index);
+                        addElement(childEl, newElements, selected, step + 1, index);
                     }
                 }
             }
@@ -108,37 +91,13 @@ public class GNavigatorView {
     private RecentlyEventClassHandler parentRecentlySelected;
     private RecentlyEventClassHandler recentlySelected;
 
+    @Override
     public void onParentSelected() {
         parentRecentlySelected.onEvent();
     }
 
+    @Override
     public void onSelected() {
         recentlySelected.onEvent();
-    }
-
-    public void resetSelectedElement(GNavigatorElement newSelectedElement) {
-        GNavigatorElement selectedElement = getSelectedElement();
-        if (selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
-            selected = null;
-        }
-    }
-
-    public void openFirstFolder() {
-        if (firstFolder != null) {
-            selectElement(firstFolder, null);
-            firstFolder = null;
-        }
-    }
-
-    private void selectElement(GNavigatorElement element, NativeEvent event) {
-        if (element instanceof GNavigatorFolder) {
-            navigatorController.resetSelectedElements(element);
-            selected = element;
-
-            navigatorController.update();
-
-            navigatorController.onSelectedElement(element);
-        } else
-            navigatorController.openElement((GNavigatorAction) element, event);
     }
 }

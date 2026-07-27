@@ -17,11 +17,9 @@ public interface GINavigatorController {
 
     void initMobileNavigatorView(GNavigatorWindow window, Widget widget);
 
+    void activate(GNavigatorElement element, NativeEvent event);
+
     void openElement(GNavigatorAction element, NativeEvent event);
 
     void updateVisibility(Map<GAbstractWindow, Boolean> visibleWindows);
-
-    void onSelectedElement(GNavigatorElement newSelectedElement);
-
-    void resetSelectedElements(GNavigatorElement newSelectedElement);
 }

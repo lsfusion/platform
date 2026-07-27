@@ -2,6 +2,7 @@ package lsfusion.gwt.client.navigator.window;
 
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.view.GINavigatorView;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
 
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class GNavigatorWindow extends GAbstractWindow {
         return canonicalName.equals("System.root");
     }
 
-    public GNavigatorView createView(GINavigatorController navigatorController) {
+    public GINavigatorView createView(GINavigatorController navigatorController) {
         return new GNavigatorView(this, navigatorController);
     }
 
