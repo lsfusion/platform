@@ -61,7 +61,7 @@
         <sejda.imageio.version>0.1.6</sejda.imageio.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
-        <mysql.version>8.0.30</mysql.version>
+        <mysql.version>8.4.0</mysql.version>
         <slf4j.version>1.7.36</slf4j.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <org.jfree.version>1.0.23</org.jfree.version>
@@ -396,8 +396,8 @@
                 <version>${informix.version}</version>
             </dependency>
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
                 <version>${mysql.version}</version>
             </dependency>
             <dependency>
