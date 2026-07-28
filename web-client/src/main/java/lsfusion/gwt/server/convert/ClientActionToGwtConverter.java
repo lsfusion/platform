@@ -49,7 +49,6 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.*;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.xerces.impl.dv.util.Base64;
 
 import java.io.ByteArrayInputStream;
@@ -444,7 +443,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         }
 
         try {
-            return URIUtil.encodeQuery(url, ExternalUtils.defaultUrlCharset.name());
+            return BaseUtils.encodeQuery(url, ExternalUtils.defaultUrlCharset);
         } catch (Throwable t) {
             throw Throwables.propagate(t);
         }

@@ -3,7 +3,6 @@ package lsfusion.interop.session;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.IOUtils;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.hc.client5.http.classic.methods.*;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.CookieStore;
@@ -40,7 +39,7 @@ public class ExternalHttpUtils {
     public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Long timeout, boolean insecureSSL, byte[] body,
                                                    Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
 
-//        connectionString = URIUtil.encodeQuery(connectionString);
+//        connectionString = BaseUtils.encodeQuery(connectionString);
 
         HttpUriRequest httpRequest;
         switch (method) {

@@ -38,8 +38,6 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.authentication.controller.remote.RequestLog;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -118,8 +116,8 @@ public abstract class CallHTTPAction extends CallAction {
         String transformedText = getTransformedText(context, param);
         if(!isRedundantString(transformedText) && !noEncode) {
             try {
-                transformedText = URIUtil.encodeQuery(normalizeHost ? normalizeIdnHost(transformedText) : transformedText, charset.toString());
-            } catch (URIException | URISyntaxException | MalformedURLException e) {
+                transformedText = BaseUtils.encodeQuery(normalizeHost ? normalizeIdnHost(transformedText) : transformedText, charset);
+            } catch (URISyntaxException | MalformedURLException e) {
                 throw Throwables.propagate(e);
             }
         }

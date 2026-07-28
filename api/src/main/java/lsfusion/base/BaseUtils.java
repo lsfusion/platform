@@ -19,6 +19,7 @@ import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
@@ -29,6 +30,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -2432,5 +2434,30 @@ public class BaseUtils {
 
     public static List<String> splitTrim(String value) {
         return value == null ? new ArrayList<>() : Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
+    }
+
+    // URL component escaping, byte-for-byte compatible with the removed commons-httpclient URIUtil.encodeQuery/encodePath:
+    // the allowed-character sets are the RFC 2396 allowed_query / allowed_abs_path sets, escaped through the same commons-codec URLCodec backend
+    private static final BitSet URL_ALLOWED_QUERY = urlBitSet("!$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
+    private static final BitSet URL_ALLOWED_ABS_PATH = urlBitSet("!$&'()*,-./0123456789:;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
+
+    private static BitSet urlBitSet(String allowed) {
+        BitSet bitSet = new BitSet(256);
+        for (int i = 0; i < allowed.length(); i++)
+            bitSet.set(allowed.charAt(i));
+        return bitSet;
+    }
+
+    public static String encodeQuery(String unescaped) {
+        return encodeQuery(unescaped, StandardCharsets.UTF_8);
+    }
+    public static String encodeQuery(String unescaped, Charset charset) {
+        return urlEncode(unescaped, URL_ALLOWED_QUERY, charset);
+    }
+    public static String encodePath(String unescaped) {
+        return urlEncode(unescaped, URL_ALLOWED_ABS_PATH, StandardCharsets.UTF_8);
+    }
+    private static String urlEncode(String unescaped, BitSet allowed, Charset charset) {
+        return new String(URLCodec.encodeUrl(allowed, unescaped.getBytes(charset)), StandardCharsets.US_ASCII);
     }
 }

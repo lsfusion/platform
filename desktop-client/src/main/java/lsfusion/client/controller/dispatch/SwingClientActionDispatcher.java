@@ -33,7 +33,6 @@ import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.session.ExternalUtils;
 import net.sf.jasperreports.engine.JRException;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioInputStream;
@@ -423,7 +422,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         try {
             String uriString = BaseUtils.deserializeObject(action.uri).toString();
             if(!action.noEncode)
-                uriString = URIUtil.encodeQuery(uriString, ExternalUtils.defaultUrlCharset.name());
+                uriString = BaseUtils.encodeQuery(uriString, ExternalUtils.defaultUrlCharset);
 
             URI uri = new URI(uriString);
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;

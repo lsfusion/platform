@@ -23,8 +23,6 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.logics.ServerSettings;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
@@ -488,11 +486,7 @@ public class FileUtils {
         if(rUrl != null)
             rUrl.set(url);
 
-        try {
-            url += URIUtil.encodePath(fileName);
-        } catch (URIException e) {
-            throw Throwables.propagate(e);
-        }
+        url += BaseUtils.encodePath(fileName);
 
         String urlParams = "";
         if(useDownload && ID != null)

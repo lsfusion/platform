@@ -8,7 +8,6 @@ import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.session.ExternalUtils;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.jfree.ui.ExtensionFileFilter;
 
 import javax.mail.internet.ParseException;
@@ -156,7 +155,7 @@ public abstract class ReadUtils {
                     return (new PasswordAuthentication(username, password.toCharArray()));
                 }
             });
-            urlSpec = URIUtil.encodeQuery(path.type + "://" + pathToFile);
+            urlSpec = BaseUtils.encodeQuery(path.type + "://" + pathToFile);
         } else {
             urlSpec = path.type + "://" + path.path;
         }
