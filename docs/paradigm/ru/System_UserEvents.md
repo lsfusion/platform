@@ -36,6 +36,7 @@ title: 'UserEvents'
 
 ### Язык
 
+- [Операторы `ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY`](../language/FILTER_ORDER_operators.md) — применяют или читают порядки и фильтры элемента формы.
 - [Оператор `EVAL`](../language/EVAL_operator.md) — запускает действие формы `FILTERS` / `FILTER`, читающее и заново применяющее фильтры группы объектов.
 - [Оператор `IMPORT`](../language/IMPORT_operator.md) — читает форму `filters` в промежуточную структуру.
 - [Оператор `EXPORT`](../language/EXPORT_operator.md) — пишет промежуточную структуру обратно в форму `filters`.

@@ -36,6 +36,7 @@ The `orders` form exposes the order rows (one `INTEGER` object, with `property` 
 
 ### Language
 
+- [`ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY` operators](../language/FILTER_ORDER_operators.md) — apply or read a form element's orders and filters.
 - [`EVAL` operator](../language/EVAL_operator.md) — runs the `FILTERS` / `FILTER` form action that reads and re-applies a group object's filters.
 - [`IMPORT` operator](../language/IMPORT_operator.md) — reads the `filters` form into the staging structure.
 - [`EXPORT` operator](../language/EXPORT_operator.md) — writes the staging structure back into the `filters` form.
