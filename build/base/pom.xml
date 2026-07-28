@@ -45,7 +45,7 @@
         <google.guava.version>33.6.0-jre</google.guava.version>
         
         <!-- When upgrading this version, change the corresponding version number in the equ-clt module. -->
-        <postgresql.version>42.7.3</postgresql.version>
+        <postgresql.version>42.7.13</postgresql.version>
     </properties>
 
     <repositories>
