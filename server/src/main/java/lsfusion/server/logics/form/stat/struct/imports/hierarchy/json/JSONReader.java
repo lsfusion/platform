@@ -67,6 +67,9 @@ public class JSONReader {
     }
 
     public static Object findRootNode(Object rootNode, String rootName, String root) throws JSONException {
+        if (rootName != null && rootName.equals(root))
+            return rootNode;
+
         if (rootNode instanceof JSONArray) {
             JSONArray array = (JSONArray) rootNode;
             for (int i = 0; i < array.length(); i++) {
@@ -84,9 +87,8 @@ public class JSONReader {
                 Object result = findRootNode(child, key, root);
                 if(result != null)
                     return result;
-            }            
-        } else if (rootName != null && rootName.equals(root))
-                return rootNode;
+            }
+        }
         return null;
     }
 
