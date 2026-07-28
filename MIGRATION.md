@@ -53,3 +53,15 @@ wholesale, the second reverts the interval comparison handling. Setting both res
 pre-7.0 push down planning entirely. The settings can also be applied selectively to
 localize which of the two changes causes a particular problem. See the
 [Working parameters](https://docs.lsfusion.org/Working_parameters/) article.
+
+
+### Ordered aggregations over nullable columns use the index
+
+Order-dependent group operators (`GROUP LAST` / `MAX` / `CONCAT`, ordered `PARTITION`)
+whose `ORDER` expression is a nullable property now emit an `ORDER BY` whose null placement
+matches the index built for that column on PostgreSQL, so the aggregation is served by an
+index scan instead of a full scan of the grouped partition plus a sort
+(see [issue #1727](https://github.com/lsfusion/platform/issues/1727)). Results are unchanged
+(the aggregation already excludes null-ordered rows); only the plan changes, and existing
+databases need no reindex. On large volumes this removes full-scan/spill behavior for such
+aggregations. The change is result-safe and there is no fallback setting.

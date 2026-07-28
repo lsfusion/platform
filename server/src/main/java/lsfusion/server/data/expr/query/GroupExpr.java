@@ -118,8 +118,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
         public String getSource(ImMap<Expr, String> fromPropertySelect, ImMap<Expr, ClassReader> propReaders, lsfusion.server.data.query.Query<KeyExpr, Expr> query, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
             ImOrderMap<Expr, CompileOrder> compileOrders = query.getCompileOrders(orders);
-            if(ordersNotNull) // если notNull, то все пометим
-                compileOrders = CompileOrder.setNotNull(compileOrders);
+            // marking the orders notNull here emits bare DESC/ASC (PG default NULLS FIRST/LAST) instead of the
+            // explicit NULLS LAST/FIRST that a physically-nullable column's index is built with, so the planner
+            // can no longer scan that index for GROUP LAST/MAX ... ORDER over a nullable column and falls back to a
+            // full sort. ordersNotNull is only a query-local guarantee (getOrderWhere ANDs the IS NOT NULL predicate
+            // into the aggregate), so the base per-expr notNull (KeyExpr, aligned with the index's KeyField rule) is
+            // both result-equivalent and index-matching. see PostgreSQLSyntax.getOrderDirection.
+//            if(ordersNotNull) // если notNull, то все пометим
+//                compileOrders = CompileOrder.setNotNull(compileOrders);
             return type.getSource(exprs.mapList(fromPropertySelect), exprs.mapList(propReaders), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
         }
 
