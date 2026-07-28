@@ -3537,8 +3537,8 @@
       "stale": false
     },
     "language/Action_operators.md": {
-      "file_hash": "sha256:2d1ff22830b240503cf1faee99c05de179c147af9b54589c45db589cd29ea44f",
-      "indexed_at": "2026-07-24T09:57:58Z",
+      "file_hash": "sha256:ea82d46aceb87591beb9633e155fbcea9e128570f2e27a424ed849e3f0e39e3e",
+      "indexed_at": "2026-07-28T15:11:51Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3554,9 +3554,9 @@
           "source_file": "language/Action_operators.md"
         },
         "Action_operators::context-dependent-operators-contextdependent": {
-          "file_id": "file-L2fzcCqpV1zkoP7DoyzZBR",
+          "file_id": "file-CsTKekBCA7u4oY5C5qcDJk",
           "heading_path": "Action operators > Context dependent operators {#contextdependent}",
-          "section_payload_hash": "sha256:7f2e5912185f862b6977d8ea4be742c8de054e4745f27b012944568139ca4804",
+          "section_payload_hash": "sha256:91ca4bba64fdd151ba8052a7831aee1016980feb8b5b93355b87233556d63eed",
           "source_file": "language/Action_operators.md"
         },
         "Action_operators::context-independent-operators-contextindependent": {
@@ -5056,6 +5056,50 @@
           "heading_path": "Expression > Using actions inside expressions",
           "section_payload_hash": "sha256:fcf1870ddd4b87921a0b5e04e012fc1b92b9db86b9a275a008fd3e9ec5ccea01",
           "source_file": "language/Expression.md"
+        }
+      },
+      "stale": false
+    },
+    "language/FILTER_ORDER_operators.md": {
+      "file_hash": "sha256:212f377756d8ca092447f6f4bc8c3b627c1ccb33ce929d485a750ea46aeb7deb",
+      "indexed_at": "2026-07-28T15:12:03Z",
+      "indexed_sourceType": "language",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "FILTER_ORDER_operators::description": {
+          "file_id": "file-64nqSanBktbnjihnfTLEjG",
+          "heading_path": "Form filter and order operators > Description",
+          "section_payload_hash": "sha256:95171e56ce0c0f1abdf7c90b7850312e1b956f42d2cdfa2c6795eaa5b36a0256",
+          "source_file": "language/FILTER_ORDER_operators.md"
+        },
+        "FILTER_ORDER_operators::examples": {
+          "file_id": "file-TaKKKuuBWqUz4idfWNc9AF",
+          "heading_path": "Form filter and order operators > Examples",
+          "section_payload_hash": "sha256:322ae751faf59fba1b1f09f0025c5dbc15494bc27e02550ce6e43237a1223701",
+          "source_file": "language/FILTER_ORDER_operators.md"
+        },
+        "FILTER_ORDER_operators::form-filter-and-order-operators": {
+          "file_id": "file-SYiqmL6dZLUx9ZHhqEx1Rm",
+          "heading_path": "Form filter and order operators",
+          "section_payload_hash": "sha256:6fc7f0072acc96dcdba8dbe8c4e1cbbe5779c54567dcdc5c347bbc43aa58392f",
+          "source_file": "language/FILTER_ORDER_operators.md"
+        },
+        "FILTER_ORDER_operators::parameters": {
+          "file_id": "file-Wy5oqbADE5ovPjGcmwMNHJ",
+          "heading_path": "Form filter and order operators > Parameters",
+          "section_payload_hash": "sha256:c6252769d6ce2fd47818d5418a414bef431beaf3c001c845f4d0fa1b37a441ac",
+          "source_file": "language/FILTER_ORDER_operators.md"
+        },
+        "FILTER_ORDER_operators::syntax": {
+          "file_id": "file-VEfn7LT55hQvxsGoWjUEfB",
+          "heading_path": "Form filter and order operators > Syntax",
+          "section_payload_hash": "sha256:ba2957e205136c320a5db3bb7ceae614766ac729d8be3da77b08ac8f62bae516",
+          "source_file": "language/FILTER_ORDER_operators.md"
         }
       },
       "stale": false
@@ -14238,8 +14282,8 @@
       "stale": false
     },
     "paradigm/System_UserEvents.md": {
-      "file_hash": "sha256:10c8814c6a7fa78a664ac81246a310edac2e495e9b13455aad4c654cdb0f23df",
-      "indexed_at": "2026-06-10T12:44:59Z",
+      "file_hash": "sha256:4b0a326e879cd83a5896519571ac3a11d1a13a7fafe7ce3f8ccbd4f5862749a3",
+      "indexed_at": "2026-07-28T15:13:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14249,9 +14293,9 @@
       },
       "sections": {
         "System_UserEvents::language": {
-          "file_id": "file-TPdqbtYrf6swVt6aoonwiP",
+          "file_id": "file-RsrrqHCcMpGU7t8HtDPnEa",
           "heading_path": "UserEvents > Language",
-          "section_payload_hash": "sha256:0299b2118505b73b355a280882b36b8b64f36bfd39b21e6c365d584835ad2db3",
+          "section_payload_hash": "sha256:3a4f91082d48620a252fb55be7c869341db5fa919b54e2cd0eb255e1a0676e55",
           "source_file": "paradigm/System_UserEvents.md"
         },
         "System_UserEvents::local-staging": {
@@ -15088,7 +15132,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "33a8e1ea3a7e13cfc6f7c78238ccedf22e5e9a4f",
+  "last_indexed_docs_commit": "f4462956c149a5b57c7162d6812f77b2a4556800",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
