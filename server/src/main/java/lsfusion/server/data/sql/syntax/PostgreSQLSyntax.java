@@ -182,27 +182,27 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public boolean isDeadLock(SQLException e) {
-        return e.getSQLState().equals("40P01");
+        return "40P01".equals(e.getSQLState()); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
     public boolean isUpdateConflict(SQLException e) {
-        return e.getSQLState().equals("40001");
+        return "40001".equals(e.getSQLState()); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
     public boolean isUniqueViolation(SQLException e) {
-        return e.getSQLState().equals("23505");
+        return "23505".equals(e.getSQLState()); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
     public boolean isTableDoesNotExist(SQLException e) {
-        return e.getSQLState().equals("42P01");
+        return "42P01".equals(e.getSQLState()); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
     public boolean isTimeout(SQLException e) {
-        return e.getSQLState().equals("57014");
+        return "57014".equals(e.getSQLState()); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
@@ -244,7 +244,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public boolean isTransactionCanceled(SQLException e) {
-        return e.getSQLState().equals("25P02");
+        return "25P02".equals(e.getSQLState()); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
