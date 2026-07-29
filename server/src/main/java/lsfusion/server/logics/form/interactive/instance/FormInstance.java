@@ -1835,6 +1835,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ServerLoggers.remoteLifeLog("FORM CLOSE : " + this);
 
+        // detaching the modifiers here, and not only on the delayed destroy path (see RemoteForm), makes it an invariant of the close itself : after it no eventChange reaches them,
+        // so the cleanup queued right below can not race the session's other threads over their structures (which is what cleanViews is for - see SessionModifier.cleanViews);
+        // the repeated call is expected and harmless (see OverrideSessionModifier.clean)
+        try {
+            cleanViews();
+        } catch (Throwable t) { // the detaching must not prevent the unregistration below : that is what queues the cleanup of this form's tables, and skipping it would leak them
+            ServerLoggers.sqlSuppLog(t);
+        }
+
         session.unregisterForm(this);
     }
 
