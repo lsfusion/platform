@@ -229,7 +229,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private static void runSuppressed(SQLRunnable run, Result<Throwable> firstException) {
+    public static void runSuppressed(SQLRunnable run, Result<Throwable> firstException) {
         try {
             run.run();
         } catch (Throwable t) {
@@ -245,7 +245,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private static void finishExceptions(Result<Throwable> firstException) throws SQLException {
+    public static void finishExceptions(Result<Throwable> firstException) throws SQLException {
         if(firstException.result != null)
             throw ExceptionUtils.propagate(firstException.result, SQLException.class);
     }

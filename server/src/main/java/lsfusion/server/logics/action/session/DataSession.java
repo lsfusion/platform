@@ -2745,8 +2745,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
             if(snapPendingCleaners.isEmpty())
                 return;
+
+            // each cleaner in its own suppressed step : the snapshot is already taken off the queue, so a failure of one of them used to lose the tables of all the others
+            Result<Throwable> firstException = new Result<>();
             for(Cleaner pendingCleaner : snapPendingCleaners)
-                pendingCleaner.run();
+                SQLSession.runSuppressed(pendingCleaner::run, firstException);
+            SQLSession.finishExceptions(firstException);
         }
     }
 
