@@ -1361,6 +1361,32 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         privateConnection.temporary.removeTable(table);
     }
 
+    // the pool believes the name is still there, so it hands it out again - and every reuse fails the same way : inside a transaction the return can not notice, because truncate is a silent
+    // no-op while the problem flag is set (see truncate), a reused name never enters transactionTables so the rollback compensation does not free it, and lastReturnedStamp is refreshed on
+    // every such return so the periodic cleaner does not either - the error is the only place that knows the table is gone
+    // only the POOL side is taken away : the owner keeps its registration and returns the table its usual way (its accounting goes there, as always), it just will not be handed out again
+    private void evictNotExistingTable(SQLException e) {
+        String message = e.getMessage();
+        if(message == null)
+            return;
+
+        Matcher matcher = Pattern.compile("relation\\s+\"(t_\\d+)\"").matcher(message); // the relation the error is ABOUT : the message carries the failing query too, which names the live tables
+        if(!matcher.find())
+            return;
+
+        String table = matcher.group(1);
+        temporaryTablesLock.lock(); // the lock that serializes the issuing (lockRead -> temporaryTablesLock, as in returnTemporaryTable)
+        try {
+            if(privateConnection == null || privateConnection.temporary.getStruct(table) == null) // not this pool's name, or taken out already
+                return;
+
+            handLogger.warn("TEMPORARY TABLE " + table + " NO LONGER EXISTS, TAKEN OUT OF THE POOL, DEBUG INFO : " + sessionDebugInfo.get(table));
+            privateConnection.temporary.removeTable(table);
+        } finally { // no physical drop : the table does not exist, and in an aborted transaction the drop would fail with 25P02 anyway
+            temporaryTablesLock.unlock();
+        }
+    }
+
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {
         if(isInTransaction()) // потому как truncate сможет rollback'ся
             return;
@@ -2009,6 +2035,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 ServerLoggers.sqlSuppLog(i);
             }
             handLogger.info("TABLE DOES NOT EXIST " + notExistInfo + sessionDebugInfo);
+
+            evictNotExistingTable(e);
         }
 
         String reason = syntax.getRetryWithReason(e);
@@ -3588,6 +3616,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private EConsumer<Connection, SQLException> restartConnection(Connection newConnection) throws SQLException, SQLHandledException {
         for (String table : sessionTablesMap.keySet()) {
             SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
+            if(struct == null) // the name was taken out of the pool because its table no longer exists (see evictNotExistingTable) : there is nothing to migrate, and its owner returns it as usual
+                continue;
             uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
         }
 
