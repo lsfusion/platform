@@ -735,36 +735,42 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Result<Throwable> firstException = new Result<>();
 
         if(inTransaction == 1) { // транзакция заканчивается
-            runSuppressed(() -> {
-                if(transactionCounter!=null) {
+            // every name is compensated in its own suppressed step : the transaction created them one by one, and a failure on one of them (a stale name removed twice, a broken registry)
+            // used to abort the whole compensation - the remaining names then stayed in the pool with no physical table behind them, and the counter was not restored either
+            if(transactionCounter!=null) {
+                runSuppressed(() -> {
                     // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                     int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
-                    if(transactionTables.size() != transTablesCount) {
+                    if(transactionTables.size() != transTablesCount)
                         ServerLoggers.assertLog(false, "CONSEQUENT TRANSACTION TABLES : COUNT " + transTablesCount + " " + transactionCounter + " " + transactionTables);
-                    }
-                    for(String transactionTable : transactionTables) {
+                }, firstException);
+
+                for(String transactionTable : transactionTables)
+                    runSuppressed(() -> {
                         //                dropTemporaryTableFromDB(transactionTable);
 
 //                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
-                        ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
                         WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-                        if(isExplainTemporaryTablesEnabled())
-                            addTTLog("TRANSRET", transactionTable, tableOwner == null ? null : tableOwner.get(), owner);
+                        try {
+                            if(isExplainTemporaryTablesEnabled())
+                                addTTLog("TRANSRET", transactionTable, tableOwner == null ? null : tableOwner.get(), owner);
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
 //
-                        lastReturnedStamp.remove(transactionTable);
-                        privateConnection.temporary.removeTable(transactionTable);
-                    }
-                    privateConnection.temporary.setCounter(transactionCounter);
-                } else
-                    ServerLoggers.assertLog(transactionTables.size() == 0, "CONSEQUENT TRANSACTION TABLES");
+                        } finally { // the accounting must be dropped even if the logging above fails : the counter is rewound anyway, and the name would be handed out again with no physical table behind it
+                            lastReturnedStamp.remove(transactionTable);
+                            privateConnection.temporary.removeTable(transactionTable);
+                        }
+                    }, firstException);
 
-                rollbackTransactionSessionTablesCount();
-            }, firstException);
+                runSuppressed(() -> privateConnection.temporary.setCounter(transactionCounter), firstException);
+            } else
+                runSuppressed(() -> ServerLoggers.assertLog(transactionTables.size() == 0, "CONSEQUENT TRANSACTION TABLES"), firstException);
+
+            runSuppressed(this::rollbackTransactionSessionTablesCount, firstException);
 
             if(!(problemInTransaction == Problem.CLOSED))
                 runSuppressed(() -> privateConnection.sql.rollback(), firstException);
