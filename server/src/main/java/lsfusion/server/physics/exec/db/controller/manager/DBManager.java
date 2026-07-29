@@ -2814,12 +2814,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // the service operations run sessions' applies inside their own transaction (synchronizeDB and the like), so the nesting here is taken on knowingly - with the same setting an application can push for its own stack
             pushAllowNestedTransaction();
             try {
+                int prevTransactionLevel = session.getTransactionLevel();
                 session.startTransaction(serializable, needServer, OperationOwner.unknown);
                 try {
                     run.run(session);
                     session.commitTransaction();
                 } catch (Throwable t) {
-                    session.rollbackTransaction();
+                    // only if the level this call started is still open : the throwable can come from the transaction end itself, and then rolling back would end the CALLER's
+                    // transaction (or fail on its own assert), and replace the original exception either way
+                    if(session.getTransactionLevel() > prevTransactionLevel)
+                        session.rollbackTransaction();
                     if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
                         //serviceLogger.error("Run error: ", t);
                         run(session, true, serializable, needServer, run, attempts + 1);

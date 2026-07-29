@@ -458,6 +458,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return inTransaction > 0;
     }
 
+    public int getTransactionLevel() { // to tell whether the level a caller started is still open - isInTransaction alone would also see an outer one (see DBManager.run)
+        return inTransaction;
+    }
+
     public static void setACID(Connection connection, boolean ACID, SQLSyntax syntax) throws SQLException {
         if(ACID) // setting parameters before starting / after ending transaction to do not have transaction aborted exception 
             setEnvParams(connection, true, syntax);
@@ -704,15 +708,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         runSuppressed(() -> {
             inTransaction--;
             if(inTransaction == 0)
-                threadTransactions.get().remove(this);
+                threadTransactions.get().removeIf(sqlSession -> sqlSession == this); // by identity : List.remove(Object) would call equals, and MutableObject.equals is an assert (identity only contract)
         }, firstException);
 
         runSuppressed(() -> tryCommon(owner, true), firstException);
 
         runSuppressed(() -> { // in the suppressed sequence, so that the assertion (that throws under -ea) can not leave the session locked
-            // the problem must not survive the transaction : rollback resets it, commit fails on it (see commitTransaction) - otherwise truncate() stays a silent no-op forever and every returned table goes back to the pool dirty
-            ServerLoggers.assertLog(problemInTransaction == null, "TRANSACTION PROBLEM SHOULD NOT SURVIVE THE TRANSACTION : " + problemInTransaction);
-            problemInTransaction = null;
+            if(inTransaction == 0) { // only the outer end owns the problem : at a nested end it has to survive, so that the outer commit still fails on it (and the nested rollback does not reset it either - see rollbackTransaction)
+                // the problem must not survive the transaction : rollback resets it, commit fails on it (see commitTransaction) - otherwise truncate() stays a silent no-op forever and every returned table goes back to the pool dirty
+                ServerLoggers.assertLog(problemInTransaction == null, "TRANSACTION PROBLEM SHOULD NOT SURVIVE THE TRANSACTION : " + problemInTransaction);
+                problemInTransaction = null;
+            }
         }, firstException);
 
         startTransaction = null;
