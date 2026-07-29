@@ -13,10 +13,10 @@ import lsfusion.server.logics.form.stat.struct.hierarchy.GroupParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.PropertyGroupParseNode;
 import org.apache.commons.io.IOUtils;
-import org.jdom.*;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.*;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

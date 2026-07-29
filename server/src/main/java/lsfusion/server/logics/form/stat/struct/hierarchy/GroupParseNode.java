@@ -10,7 +10,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 public abstract class GroupParseNode implements ParseNode {
     public final ImOrderSet<ChildParseNode> children;

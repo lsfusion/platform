@@ -25,7 +25,7 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.daemon.version>1.0.5</commons.daemon.version>
         <commons.exec.version>1.1</commons.exec.version>
-        <jdom.version>1.1</jdom.version>
+        <jdom.version>2.0.6.1</jdom.version>
         <commons.net.version>3.9.0</commons.net.version>
         <com.jcraft.version>0.1.54</com.jcraft.version>
         <com.healthmarketscience.version>3.0.1</com.healthmarketscience.version>
@@ -187,7 +187,7 @@
             </dependency>
             <dependency>
                 <groupId>org.jdom</groupId>
-                <artifactId>jdom</artifactId>
+                <artifactId>jdom2</artifactId>
                 <version>${jdom.version}</version>
             </dependency>
             <dependency>
