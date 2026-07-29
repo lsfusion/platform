@@ -173,6 +173,9 @@ public class SQLTemporaryPool {
         if(!Settings.get().isAutoAnalyzeTempStats())
             stats.remove(table);
         FieldStruct fieldStruct = structs.remove(table);
+        if(fieldStruct == null) // idempotent : the name can be removed twice - the failure branch of the return drops it from the pool without touching transactionTables, and then the rollback compensation repeats it (see SQLSession.rollbackTransaction)
+            return;
+
         Set<String> structTables = tables.get(fieldStruct);
         structTables.remove(table);
         if(structTables.isEmpty())
