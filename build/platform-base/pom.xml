@@ -68,8 +68,8 @@
         <jackson.version>2.22.1</jackson.version>
         <jackson.annotations.version>2.22</jackson.annotations.version>
 
-        <spring.version>5.2.7.RELEASE</spring.version>
-        <spring.security.version>5.3.0.RELEASE</spring.security.version>
+        <spring.version>5.3.39</spring.version>
+        <spring.security.version>5.8.16</spring.security.version>
 
         <aspectj.version>1.9.2</aspectj.version>
         <aspectj.maven.version>1.12.1</aspectj.maven.version>
