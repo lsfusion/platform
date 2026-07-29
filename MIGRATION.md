@@ -2,7 +2,7 @@
 
 ## 7.0
 
-### Nested transactions and user interaction in a transaction now fail
+### Another session and a user interaction inside a transaction now fail
 
 Two situations that used to be tolerated now raise an error
 (see [issue #1726](https://github.com/lsfusion/platform/issues/1726)):
@@ -26,9 +26,15 @@ Two situations that used to be tolerated now raise an error
 
 Symptoms after the upgrade : an action that previously "worked" now fails with
 `OTHER DATASESSION IN THE MIDDLE OF TRANSACTION IN THIS THREAD` or
-`USER INTERACTION IN TRANSACTION`. In both cases the flow
-was already broken - the changes were being lost, or the transaction was hanging on a
-dialog - so the fix is to move the apply or the interaction out of the transaction.
+`USER INTERACTION IN TRANSACTION`. In both cases the flow was already broken - the
+changes were being lost, or the transaction was hanging on a dialog - so the fix is to
+move the work or the interaction out of the transaction.
+
+Expect more of these than the flows you know about. Both situations used to be asserts,
+that is log lines in production, so they went unnoticed for as long as they existed; and
+the first one is now reported for ANY operation of the other session - a read, a write,
+a temp table - not only for its apply, which is simply the point where the damage used
+to become visible.
 
 When either is intended, it can be allowed for a single stack, taking the consequences
 on knowingly :
@@ -39,8 +45,10 @@ pushSetting('allowUserInteractionInTransaction', 'true');
 popSetting('allowUserInteractionInTransaction');
 ```
 
-`allowNestedTransaction` works the same way for the nesting. Both settings also work
-globally, to buy time for the migration.
+`allowNestedTransaction` works the same way for the other session's work. Both settings
+also work globally : setting them restores the previous behavior (a log line instead of
+the error), which is the quickest way back if the upgrade breaks a production flow -
+the places to fix are then in the assert log, under the same messages.
 
 
 ### Deterministic order-dependent aggregations
