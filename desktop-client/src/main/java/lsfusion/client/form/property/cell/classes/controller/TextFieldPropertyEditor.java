@@ -1,8 +1,5 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
@@ -377,7 +374,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     //based on glazedLists AutoCompleteSupport
     class SuggestBox {
-        private EventList<Object> items;
+        private DefaultComboBoxModel<Object> model;
         List<String> latestSuggestions = new ArrayList<>();
 
         private CustomComboBox comboBox;
@@ -385,9 +382,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         private JTextField comboBoxEditorComponent;
 
         public SuggestBox(String value) {
-            items = GlazedLists.eventListOf();
+            model = new DefaultComboBoxModel<>();
 
-            comboBox = new CustomComboBox(new DefaultEventComboBoxModel(items));
+            comboBox = new CustomComboBox(model);
             comboBox.setEditable(true);
             
             comboBox.setRenderer(new DefaultListCellRenderer() {
@@ -522,9 +519,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         public void updateItems(List<ClientAsync> result, boolean selectFirst) {
-            items.clear();
-            comboBox.getModel().setSelectedItem(null);
-            items.addAll(GlazedLists.eventList(result));
+            model.removeAllElements();
+            model.setSelectedItem(null);
+            // insertElementAt (not addElement) so the first item is not auto-selected, keeping the combo unselected until selectFirst decides
+            for (ClientAsync item : result)
+                model.insertElementAt(item, model.getSize());
             latestSuggestions = result.stream().map(ClientAsync::getReplacementString).collect(Collectors.toList());
             comboBox.setMaximumRowCount(result.size());
             //hide and show to call computePopupBounds
