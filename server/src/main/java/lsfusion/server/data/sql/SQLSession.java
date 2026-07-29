@@ -612,30 +612,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
         }
         inTransaction++;
-
-        if(inTransaction > 1) // diagnostics after the level is registered, so that it can not affect the transaction state
-            logNestedTransaction();
-    }
-
-    // diagnostics : the moment of the nesting, there is no other place where it can be caught (all the application level checks are per DataSession, and the nesting is created by another DataSession on the same SQLSession, or by DBManager.run on an already started transaction)
-    private void logNestedTransaction() {
-        logDiagnostics("NESTED SQL TRANSACTION START, LEVEL : " + inTransaction);
-    }
-
-    // diagnostics : the source of the nesting - the session is created while the sql session is already in transaction, so its apply will nest (see DataSession constructor)
-    public void logSessionCreatedInTransaction() {
-        logDiagnostics("SESSION CREATED ON SQL IN TRANSACTION");
-    }
-
-    private void logDiagnostics(String message) {
-        try {
-            handLogger.warn(message + ", SQL : " + System.identityHashCode(this) + '\n' + ExecutionStackAspect.getExStackTrace());
-        } catch (Throwable t) { // diagnostics should not break the transaction
-            try {
-                ServerLoggers.sqlSuppLog(t);
-            } catch (Throwable sl) {
-            }
-        }
     }
 
     public void handleAndPropagate(SQLException e, String message) throws SQLException, SQLHandledException {
@@ -662,8 +638,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
             }
 
-            if(inTransaction > 1 && !transactionTables.isEmpty()) // diagnostics : the registry is cleared at a nested level - if the outer level rolls back later, these names will stay in the pool without physical tables
-                handLogger.warn("NESTED TRANSACTION END CLEARS TABLES REGISTRY (STALE CANDIDATES) : " + transactionTables + ", LEVEL : " + inTransaction);
             transactionCounter = null;
             transactionTables.clear();
             endTransactionSessionTablesCount();
@@ -1375,8 +1349,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         privateConnection.temporary.removeTable(table);
                     }, firstException);
                     runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
-                } else if(problemInTransaction != null) // diagnostics : truncate was silently skipped (see truncate()), the name went back to the pool without checking the table state - a "table does not exist" candidate
-                    handLogger.warn("RETURN WITHOUT TRUNCATE (PROBLEM IN TRANSACTION : " + problemInTransaction + "), TABLE STAYS IN POOL : " + table + ", DEBUG INFO : " + sessionDebugInfo.get(table));
+                }
             }
     
             runSuppressed(() -> {
@@ -1932,27 +1905,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
 
-        if(syntax.isTableDoesNotExist(e)) {
-            String notExistInfo = "";
-            try { // diagnostics must not break error handling
-                String eMessage = e.getMessage();
-                if(eMessage != null) {
-                    StringBuilder tNames = new StringBuilder();
-                    Matcher tMatcher = Pattern.compile("\"(t_\\d+)\"").matcher(eMessage);
-                    while(tMatcher.find())
-                        tNames.append(tNames.length() == 0 ? "" : ",").append(tMatcher.group(1));
-                    notExistInfo += "TABLES : [" + tNames + "], ";
-                }
-                if(connection != null && connection.sql instanceof PGConnection)
-                    notExistInfo += "BACKEND : " + ((PGConnection) connection.sql).getBackendPID() + ", ";
-                notExistInfo += "IN TRANSACTION : " + inTransaction + ", ";
-                if(privateConnection != null)
-                    notExistInfo += "CONNECTION STARTED : " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(privateConnection.timeStarted)) + ", ";
-            } catch (Throwable i) {
-                ServerLoggers.sqlSuppLog(i);
-            }
-            handLogger.info("TABLE DOES NOT EXIST " + notExistInfo + sessionDebugInfo);
-        }
+        if(syntax.isTableDoesNotExist(e))
+            handLogger.info("TABLE DOES NOT EXIST " + sessionDebugInfo);
 
         String reason = syntax.getRetryWithReason(e);
         if(reason != null)
@@ -3480,16 +3434,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 // очищаем pool
                 Set<String> tables = new HashSet<>(privateConnection.temporary.getTables());
-                List<String> removedTables = new ArrayList<>(); // diagnostics : which names were removed from the pool (their tables died with the old connection)
                 for(String table : tables)
                     if(!sessionTablesMap.containsKey(table)) { // not used
                         lastReturnedStamp.remove(table);
                         privateConnection.temporary.removeTable(table);
-                        removedTables.add(table);
                     }
 
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
-                ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result + ", MIGRATED : " + sessionTablesMap.keySet() + ", REMOVED FROM POOL : " + removedTables);
+                ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
             } finally {
                 if(locked) {
                     isRestarting = false;
