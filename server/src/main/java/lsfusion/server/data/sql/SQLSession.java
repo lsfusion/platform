@@ -217,6 +217,30 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         sql.executeDDL(sql.syntax.getCancelActiveTaskQuery(processId));
     }
 
+    // the reaction to a table that no longer exists, the part of handle that does not classify the exception : the statement paths that catch the throwable themselves (executeDDL, executeDML,
+    // insertBatchRecords - the batch failure postgres reports through the exception chain - readSingleValues) call it directly, since they can not go through handle : it returns a
+    // SQLHandledException their signatures do not carry, so it would reach their callers wrapped in a RuntimeException, past every catch of theirs
+    // marking the transaction as aborted is NOT done here : those paths also catch what the driver throws on this side (binding a parameter before the statement is sent, reading a result of a
+    // query that succeeded), and postgres has not aborted anything then - the mark would only make a later truncate a silent no-op and put a dirty table back in the pool
+    private void handleNotExistingTable(Throwable t) {
+        if(!(t instanceof SQLException))
+            return;
+
+        SQLException e = (SQLException) t;
+        if(syntax.isTableDoesNotExist(e)) {
+            handLogger.info("TABLE DOES NOT EXIST " + sessionDebugInfo);
+
+            evictNotExistingTable(e);
+        }
+    }
+
+    // the same three steps for every statement path that catches the throwable itself : log it, handle the problem it carries, and keep it for afterStatementExecute to rethrow
+    private void handleStatementException(Throwable e, Statement statement, Result<Throwable> firstException) {
+        logger.error((statement == null ? "PREPARING STATEMENT" : statement.toString()) + " " + e.getMessage());
+        handleNotExistingTable(e);
+        firstException.set(e);
+    }
+
     private Throwable handle(SQLException e, String message, ExConnection connection) {
         return handle(e, message, false, connection, true, false, null);
     }
@@ -1728,8 +1752,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             statement.execute(DDL);
 
         } catch (Throwable e) {
-            logger.error((statement == null ? "PREPARING STATEMENT" : statement.toString()) + " " + e.getMessage());
-            firstException.set(e);
+            handleStatementException(e, statement, firstException);
         }
         
         afterStatementExecute(firstException, DDL, env, connection, statement, owner, change, -1);
@@ -1967,6 +1990,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(inTransaction && syntax.hasTransactionSavepointProblem())
             problemInTransaction = Problem.EXCEPTION;
 
+        handleNotExistingTable(e);
+
         SQLHandledException handled = null;
         boolean deadLock = false;
         if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e))) {
@@ -1987,9 +2012,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //      что одни и те же ключи появляются в двух подзапросах и при объединении дублируются
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
-
-        if(syntax.isTableDoesNotExist(e))
-            handLogger.info("TABLE DOES NOT EXIST " + sessionDebugInfo);
 
         String reason = syntax.getRetryWithReason(e);
         if(reason != null)
@@ -2279,8 +2301,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
             result = statement.executeUpdate(command);
         } catch (Throwable e) {
-            logger.error((statement == null ? "PREPARING STATEMENT" : statement.toString()) + " " + e.getMessage());
-            firstException.set(e);
+            handleStatementException(e, statement, firstException);
         }
 
         afterStatementExecute(firstException, command, null, connection, statement, owner, registerChange, result);
@@ -2574,8 +2595,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 else
                     e = next;
             }
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
-            firstException.set(e);
+            handleStatementException(e, statement, firstException);
         }
 
         afterStatementExecute(firstException, command.first, command.second, connection, statement, opOwner, registerChange, result);
@@ -2882,8 +2902,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 assert !result.next();
             }
         } catch (Throwable e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
-            firstException.set(e);
+            handleStatementException(e, statement, firstException);
         }
 
         afterStatementExecute(firstException, select, null, connection, statement, opOwner, null, -1);
