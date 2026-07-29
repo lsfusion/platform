@@ -525,6 +525,30 @@ CONSTRAINT RULES
    values into `LOCAL`s in the handler, then `MESSAGE` +
    `CANCEL` on violation.
 
+4. The constraint condition is also checked on objects
+   deleted in the session: when an object is deleted, its
+   data properties are reset to `NULL`, so
+   `CHANGED(prop(c))` is true for every deleted object
+   whose `prop` had a non-`NULL` previous value, and a
+   guard like
+   `NOT editable(c)` is also true: a property that
+   requires the object's class membership returns `NULL`
+   for the deleted object, and the negation of `NULL` is
+   true. Such a constraint unexpectedly blocks the
+   deletion of those objects.
+
+   When the constraint is not meant to prohibit deletion
+   and its condition does not otherwise exclude deleted
+   objects (for example, by a positive condition on the
+   current state), the assistant SHOULD add
+   `c IS <Class>` to the condition: for the deleted
+   object it returns `NULL`, and the condition does not
+   fire. A deliberate deletion prohibition is instead
+   built with `DROPPED(c IS <Class>)`, reading the old
+   values via `PREV` when the condition needs them.
+   A class change that moves the object out of `<Class>`
+   behaves in the same way as deletion.
+
 ----------------------------------------------------------------
 PROPERTY NAMING POLICY
 
