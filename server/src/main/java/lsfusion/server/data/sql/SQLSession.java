@@ -1353,6 +1353,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return sdfDate.format(now);
     }
     
+    // the truncate registers the removal itself when it succeeds (see truncateSession), so when it fails - or when there is nothing to truncate any more - the accounting has to be dropped by hand,
+    // all of it : a name left in the pool is handed out again, and rows left in the count make every later check of it disagree with the database
+    private void removeTemporaryTableFromPool(String table, TableOwner tableOwner) {
+        registerSessionChange(table, tableOwner, -1, TableChange.REMOVE);
+        lastReturnedStamp.remove(table);
+        privateConnection.temporary.removeTable(table);
+    }
+
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {
         if(isInTransaction()) // потому как truncate сможет rollback'ся
             return;
@@ -1366,8 +1374,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 if(isExplainTemporaryTablesEnabled())
                     addTTLog("RU " + force, entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner, opOwner);
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
-                truncateSession(entry.getKey(), opOwner, null, (tableOwner == null ? TableOwner.none : tableOwner));
-                logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить, в основном keysTable из-за pendingCleaners 
+                try {
+                    truncateSession(entry.getKey(), opOwner, null, (tableOwner == null ? TableOwner.none : tableOwner));
+                    logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить, в основном keysTable из-за pendingCleaners 
+                } catch (SQLException e) {
+                    if(!syntax.isTableDoesNotExist(e))
+                        throw e;
+
+                    // the physical table is gone, so there is nothing to clean and nothing to drop - the name has to leave the pool, which is what the truncate failure means everywhere else too (see returnTemporaryTable) :
+                    // otherwise this entry fails here forever, and with it EVERY getTemporaryTable, tryCommon and close of this session, since they all come through here
+                    ServerLoggers.sqlSuppLog(new SQLException("UNUSED TEMPORARY TABLE " + entry.getKey() + " NO LONGER EXISTS, DROPPED FROM THE POOL", e));
+                    removeTemporaryTableFromPool(entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner);
+                }
                 iterator.remove();
             }
         }
@@ -1416,10 +1434,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(truncate) {
                 runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
                 if(firstException.result != null) {
-                    runSuppressed(() -> {
-                        lastReturnedStamp.remove(table);
-                        privateConnection.temporary.removeTable(table);
-                    }, firstException);
+                    runSuppressed(() -> removeTemporaryTableFromPool(table, owner), firstException);
                     runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
                 } else if(problemInTransaction != null) // diagnostics : truncate was silently skipped (see truncate()), the name went back to the pool without checking the table state - a "table does not exist" candidate
                     handLogger.warn("RETURN WITHOUT TRUNCATE (PROBLEM IN TRANSACTION : " + problemInTransaction + "), TABLE STAYS IN POOL : " + table + ", DEBUG INFO : " + sessionDebugInfo.get(table));
