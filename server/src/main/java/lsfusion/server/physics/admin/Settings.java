@@ -1995,6 +1995,17 @@ public class Settings implements Cloneable {
         this.startServerAnyWay = startServerAnyWay;
     }
 
+    // stops startup right after logic (modules, classes, properties, actions) is compiled and checked, before any DB connection is opened
+    private boolean dryRun = false;
+
+    public boolean isDryRun() {
+        return dryRun;
+    }
+
+    public void setDryRun(boolean dryRun) {
+        this.dryRun = dryRun;
+    }
+
     private boolean disableAntiJoinOptimization = false;
 
     public boolean isDisableAntiJoinOptimization() {

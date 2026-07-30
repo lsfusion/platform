@@ -129,6 +129,7 @@
                 <entry key="useUserChangesSync" value="${settings.useUserChangesSync:}"/>
                 <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
                 <entry key="startServerAnyWay" value="${settings.startServerAnyWay:}"/>
+                <entry key="dryRun" value="${settings.dryRun:}"/>
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
                 <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>

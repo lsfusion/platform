@@ -217,6 +217,12 @@ public class LogicsInstance implements InitializingBean {
                         () -> Settings.get().getUnstableLRUMaxCount());
 
                 lifecycle.fireStarting();
+
+                if (Settings.get().isDryRun()) {
+                    startLog("Dry run : logic compiled and checked successfully, stopping before DB connection");
+                    return;
+                }
+
                 lifecycle.fireStarted();
 
                 businessLogics.cleanCaches();

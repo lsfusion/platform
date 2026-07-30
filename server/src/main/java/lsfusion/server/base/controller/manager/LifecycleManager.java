@@ -2,6 +2,7 @@ package lsfusion.server.base.controller.manager;
 
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.lifecycle.LifecycleListener;
+import lsfusion.server.physics.admin.Settings;
 
 import java.util.Collections;
 import java.util.Set;
@@ -36,6 +37,10 @@ public class LifecycleManager {
         }
         LifecycleEvent event = new LifecycleEvent(type);
         for (LifecycleListener listener : listeners) {
+            // dry run : stop right after the logic (modules / classes / properties / actions) listener finishes, before DBManager opens a connection
+            if (INIT.equals(type) && listener.getOrder() >= LifecycleListener.DBMANAGER_ORDER && Settings.get().isDryRun()) {
+                break;
+            }
             listener.lifecycleEvent(event);
         }
     }

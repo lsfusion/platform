@@ -61,6 +61,12 @@ public class BusinessLogicsBootstrap {
 
                 logicsInstance.start();
 
+                if (logicsInstance.getSettings().isDryRun()) {
+                    startLog("Dry run finished successfully in " + (System.currentTimeMillis() - startTime) + " ms, exiting");
+                    System.exit(0);
+                    return;
+                }
+
                 registerShutdownHook();
 
                 String version = BaseUtils.getPlatformVersion();
@@ -76,6 +82,11 @@ public class BusinessLogicsBootstrap {
             } catch (Throwable e) {
                 startLog("Error starting server, server will be stopped");
                 stop();
+                // stop()'s closer thread exits with 0 after a delay regardless of the failure reason; for a dry run
+                // a nonzero status is the only way a caller (CI, an AI agent) can tell validation actually failed
+                if (logicsInstance.getSettings().isDryRun()) {
+                    System.exit(1);
+                }
             }
         }
     }
