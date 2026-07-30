@@ -222,7 +222,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // so reacting while the connection lock is still held would deadlock against it - and both threads hold the session read lock, so nothing could restart or close the session afterwards
     // marking the transaction as aborted is NOT done here : those paths also catch what the driver throws on this side (binding a parameter before the statement is sent, reading a result of a
     // query that succeeded), and postgres has not aborted anything then - the mark would only make a later truncate a silent no-op and put a dirty table back in the pool
-    private void handleNotExistingTable(Throwable t) {
+    private void handleNotExistingTable(Throwable t, ExConnection connection) {
         if(!(t instanceof SQLException))
             return;
 
@@ -230,7 +230,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(syntax.isTableDoesNotExist(e)) {
             handLogger.info("TABLE DOES NOT EXIST " + sessionDebugInfo);
 
-            evictNotExistingTable(e);
+            evictNotExistingTable(e, connection);
         }
     }
 
@@ -1377,7 +1377,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // no-op while the problem flag is set (see truncate), a reused name never enters transactionTables so the rollback compensation does not free it, and lastReturnedStamp is refreshed on
     // every such return so the periodic cleaner does not either - the error is the only place that knows the table is gone
     // only the POOL side is taken away : the owner keeps its registration and returns the table its usual way (its accounting goes there, as always), it just will not be handed out again
-    private void evictNotExistingTable(SQLException e) {
+    private void evictNotExistingTable(SQLException e, ExConnection connection) {
         String message = e.getMessage();
         if(message == null)
             return;
@@ -1389,11 +1389,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         String table = matcher.group(1);
         temporaryTablesLock.lock(); // the lock that serializes the issuing (lockRead -> temporaryTablesLock, as in returnTemporaryTable)
         try {
-            if(privateConnection == null || privateConnection.temporary.getStruct(table) == null) // not this pool's name, or taken out already
+            // the pool belongs to the CONNECTION the statement ran on, which is not always this session's private one : on a common connection the name would otherwise stay in the pool and
+            // travel to the next session with it (returnConnection follows right after this)
+            if(connection == null || connection.temporary.getStruct(table) == null) // not that pool's name, or taken out already
                 return;
 
             handLogger.warn("TEMPORARY TABLE " + table + " NO LONGER EXISTS, TAKEN OUT OF THE POOL, DEBUG INFO : " + sessionDebugInfo.get(table));
-            privateConnection.temporary.removeTable(table);
+            connection.temporary.removeTable(table);
         } finally { // no physical drop : the table does not exist, and in an aborted transaction the drop would fail with 25P02 anyway
             temporaryTablesLock.unlock();
         }
@@ -2190,9 +2192,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
             runSuppressed(() -> unlockConnection(owner), firstException);
 
-            // after the connection lock (see handleNotExistingTable), but before the connection is given back : returnConnection can hand a private connection over to the next session, and
-            // the vanished name would travel with it
-            runSuppressed(() -> handleNotExistingTable(firstException.result), firstException);
+            // after the connection lock (see handleNotExistingTable), but before the connection is given back : returnConnection hands the connection - and its pool - over to the next session,
+            // and the vanished name would travel with it
+            runSuppressed(() -> handleNotExistingTable(firstException.result, connection), firstException);
 
             if(env != null)
                 runSuppressed(() -> env.after(SQLSession.this, connection, command, owner), firstException);
@@ -2500,9 +2502,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
             runSuppressed(() -> unlockConnection(execInfo.needConnectionLock(), owner), firstException);
 
-            // after the connection lock (see handleNotExistingTable), but before the connection is given back : returnConnection can hand a private connection over to the next session, and
-            // the vanished name would travel with it. handle leaves a 42P01 as it is (it classifies none of its branches), so what got here is still the original SQLException
-            runSuppressed(() -> handleNotExistingTable(firstException.result), firstException);
+            // after the connection lock (see handleNotExistingTable), but before the connection is given back : returnConnection hands the connection - and its pool - over to the next session,
+            // and the vanished name would travel with it. handle leaves a 42P01 as it is (it classifies none of its branches), so what got here is still the original SQLException
+            runSuppressed(() -> handleNotExistingTable(firstException.result, connection), firstException);
 
             runSuppressed(() -> returnConnection(connection, owner), firstException);
         }
