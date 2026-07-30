@@ -1350,10 +1350,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return sdfDate.format(now);
     }
     
-    // the truncate registers the removal itself when it succeeds (see truncateSession), so when it fails - or when there is nothing to truncate any more - the accounting has to be dropped by hand,
-    // all of it : a name left in the pool is handed out again, and rows left in the count make every later check of it disagree with the database
+    // a name left in the pool is handed out again, and rows left in the count make every later check of it disagree with the database - so both have to go
+    // the accounting is dropped only when it is still there : the statement registers its change no matter how it ended (afterStatementExecute registers it without looking at the exception),
+    // so a failed TRUNCATE has already taken the count entry out, and registering the removal a second time would just assert TABLE WAS REMOVED BEFORE - which under assertions would throw
+    // right here, leaving the name in the pool, exactly what this method exists to prevent. The entry does survive the DELETE FROM form of the truncate (see truncate) : that one registers a
+    // row change rather than a removal, so the entry stays behind and only the removal here takes it out
     private void removeTemporaryTableFromPool(String table, TableOwner tableOwner) {
-        registerSessionChange(table, tableOwner, -1, TableChange.REMOVE);
+        assertLock();
+
+        if(sessionTablesCount.containsKey(table))
+            registerSessionChange(table, tableOwner, -1, TableChange.REMOVE);
+
+        // the removal is permanent, so the rollback must not restore the count of a table that is gone : the transaction saved it to put it back (see registerTransactionChange), and putting
+        // null there instead makes the rollback drop the entry, the way it does for a table the transaction itself created. The saved total is corrected by the same rows for the same reason
+        if(isInTransaction()) {
+            Integer rollbackCount = transactionSessionTablesCount.put(table, null);
+            if(rollbackCount != null)
+                transactionTotalSessionTablesCount -= rollbackCount;
+        }
+
         lastReturnedStamp.remove(table);
         privateConnection.temporary.removeTable(table);
     }
