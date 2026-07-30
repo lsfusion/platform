@@ -3,7 +3,7 @@ slug: "/Object_group_operator"
 title: 'Object group operator'
 ---
 
-[Object group](../paradigm/Form_structure.md) operators are used for creating [properties](../paradigm/Properties.md) working with the [current state](../paradigm/Object_group_operators.md) of the object group on the [form](../paradigm/Forms.md).
+[Object group](../paradigm/Form_structure.md) operators are used for creating [properties](../paradigm/Properties.md) working with the [current state](../paradigm/Object_group_operators.md) of the object group and its properties on the [form](../paradigm/Forms.md).
 
 ### Syntax
 
@@ -14,6 +14,7 @@ ORDER groupObjectId
 SELECT groupObjectId
 SELECT ACTIVE groupObjectId
 VIEWTYPE groupObjectId
+SELECT PROPERTY formPropertyId
 ```
 
 ### Description
@@ -32,11 +33,17 @@ The `SELECT ACTIVE` operator creates a parameterless property which value is `TR
 
 The `VIEWTYPE` operator creates a parameterless property whose value is the current view type of the object group — an object of the `ListViewType` system class (`grid`, `pivot`, `map`, `custom`, or `calendar`).
 
+The `SELECT PROPERTY` operator creates a property whose value is `TRUE` if the specified form property is currently selected by the user, otherwise `NULL`. It accepts as parameters the objects by which the property is shown across columns; a property shown as a single column has no parameters.
+
 ### Parameters
 
 - `groupObjectId`
 
     Global [object group ID](IDs.md#groupobjectid).
+
+- `formPropertyId`
+
+    Global [ID of a property or action on a form](IDs.md#formpropertyid).
 
 ### Examples
 
@@ -46,12 +53,14 @@ name = DATA STRING[100] (Store);
 
 FORM stores
     OBJECTS s = Store
+    PROPERTIES(s) name
 ;
 countF 'Number of filtered warehouses' = GROUP SUM 1 IF [ VIEW stores.s](Store s);
 orderF 'Order in an object group' (Store s) = PARTITION SUM 1 IF [ FILTER stores.s](s) ORDER [ ORDER stores.s](s), s;
 isPivot 'Stores shown as pivot' () = [ VIEWTYPE stores.s]() == ListViewType.pivot;
 selectedCount 'Number of selected stores' () = GROUP SUM 1 IF [ SELECT stores.s](Store s);
 multiSelectActive 'Multiple-row selection is on' () = [ SELECT ACTIVE stores.s]();
+nameSelected 'Name property is selected' () = [ SELECT PROPERTY stores.name]();
 setNameX 'Add X to name'()  {
     LOCAL k = INTEGER ();
     k() <- 0;
