@@ -185,6 +185,28 @@ await controller.change('archived', orderId, true);
 
 Вызов после закрытия формы *отклоняется* с ошибкой `Form is closed` — он никогда не зависает, — поэтому `await` на закрытой форме попадает в ветку `catch`.
 
+### Контроллер навигатора {#navigator-controller}
+
+Действие [`INTERNAL CLIENT`](../language/INTERNAL_operator.md), помещённое в [`NAVIGATOR`](../language/NAVIGATOR_statement.md), тоже получает контроллер, но навигаторный: формы здесь нет, поэтому нет и перечисленных выше методов формы. Есть четыре серверных вызова — `exec`, `eval`, `evalAction`, `change`, — которые выполняются в собственной сессии навигатора, новой на каждый вызов и никогда не применяемой, поэтому сделанное здесь `change` не сохраняется; и есть `activate`:
+
+- `activate(canonicalName[, event])` — делает то же, что нажатие на этот элемент навигатора: выбирает папку либо выполняет действие, открывая его форму так же оптимистично. `canonicalName` — [каноническое имя](../language/IDs.md) элемента; `event` — событие нажатия, React-овское или браузерное, и при вызове из кода, у которого события нет, его можно не передавать.
+
+Активация несуществующего элемента или скрытого через `SHOWIF` бросает исключение — активация по имени достаёт ровно то, что навигатор показывает. О завершении выполненного действия не сообщается, как не сообщает о нём и нажатие.
+
+```js
+window.openMonthlyReport = function (controller) {
+    controller.activate('Reporting.monthly');
+};
+```
+
+```lsf
+openMonthlyReport 'Отчёт за месяц' () { INTERNAL CLIENT 'openMonthlyReport'; }
+
+NAVIGATOR {
+    NEW openMonthlyReport WINDOW system PARENT;
+}
+```
+
 ### Идентификация строки {#row-identity-contract}
 
 Метод, адресующий строку, принимает одно из:

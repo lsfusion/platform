@@ -1851,6 +1851,75 @@ public class GwtClientUtils {
         element.getStyle().setZIndex(0);
     }
 
+    // a placement that cannot work says so in the host itself, not only in the console: an <Lsf> that names nothing
+    // must not read as an empty spot. Writing into the host is safe - an <Lsf> host never renders children of its own
+    public static void showLsfViewError(Element host, String message) {
+        host.setInnerText("lsFusion: " + message);
+        addClassName(host, "lsf-view-error");
+    }
+
+    public static void clearLsfViewError(Element host) {
+        host.setInnerText("");
+        removeClassName(host, "lsf-view-error");
+    }
+
+    // one prefix for every custom view, so a form container and a navigator window do not sound like two features
+    public static native void logLsfViewError(String message)/*-{
+        $wnd.console.error("lsFusion custom view: " + message);
+    }-*/;
+
+    // <Lsf:name> in an HTML template is where a view the platform draws itself is put - a child of a form container,
+    // an element of a navigator window. The prefix is what makes it a place rather than markup: no HTML element and no
+    // custom element may carry a colon, so nothing an author writes for the browser can be mistaken for one.
+    public static Element getLsfPlace(Element root, String name) {
+        return root.getElementsByTagName(LSF_PLACE + name).getItem(0);
+    }
+
+    // the prefix's case is the author's to choose - an HTML parser lowercases a tag name, and both ends match either
+    // way. The NAME is not: the server matches it against a component sID or resolves it as written
+    private static final String LSF_PLACE = "lsf:";
+
+    // rendering a template is these two steps and never one: setInnerHTML alone leaves everything written after an
+    // unclosed place nested INSIDE it, which is not what the author wrote
+    public static void setLsfTemplate(Element root, String template) {
+        root.setInnerHTML(template);
+        unwrapLsfPlaces(root);
+    }
+
+    // a component drawn inline names each of its parts sID.caption, sID.comment; and a property may be named by itself,
+    // without the PROPERTY(...) the design wraps it in, as JSX writes it. Both at once, so a part of an unwrapped
+    // property resolves too - the server's FormView.names accepts exactly this set
+    public static String unwrapPropertySID(String sid) {
+        if (!sid.startsWith(PROPERTY_SID))
+            return null;
+
+        int close = sid.lastIndexOf(')');
+        String part = sid.substring(close + 1); // "" or ".caption"
+        if (close < 0 || !(part.isEmpty() || part.startsWith(".")))
+            return null;
+
+        return sid.substring(PROPERTY_SID.length(), close) + part;
+    }
+
+    private static final String PROPERTY_SID = "PROPERTY(";
+
+    // a place needs no closing tag: an HTML parser leaves an unclosed element open, so everything written after it
+    // becomes its content. Handing that content back - each node before ONE fixed point, or the order would reverse -
+    // restores exactly what the author wrote, and does nothing at all to a place that was closed properly.
+    private static native void unwrapLsfPlaces(Element root)/*-{
+        var all = root.getElementsByTagName('*');
+        var places = [];
+        for (var i = 0; i < all.length; i++)
+            if (all[i].tagName.toLowerCase().indexOf(@lsfusion.gwt.client.base.GwtClientUtils::LSF_PLACE) === 0)
+                places.push(all[i]);
+
+        for (var j = 0; j < places.length; j++) { // in document order, so an outer place hands its content out first
+            var place = places[j], ref = place.nextSibling;
+            while (place.firstChild)
+                place.parentNode.insertBefore(place.firstChild, ref);
+        }
+    }-*/;
+
     public static JavaScriptObject getGlobalField(String field) {
         return getGlobalField(field, null, false);
     }

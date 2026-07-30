@@ -29,6 +29,8 @@ public abstract class GNavigatorElement implements Serializable, HasNativeSID {
     public String path;
     public BaseImage image;
     public String elementClass;
+    // LSF: the platform draws this element, so a React window places it with <Lsf name/> and it is not projected
+    public boolean lsf;
     public boolean hide;
 
     public GAsyncExec asyncExec;

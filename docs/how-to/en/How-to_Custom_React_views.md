@@ -99,7 +99,9 @@ The component reads the projection in one of two ways, and the choice is about w
 
 `props.data` is the whole snapshot. The component re-renders — with a fresh `data` — whenever anything in its scope changes, and renders everything it draws from the new snapshot. For a small view this is the whole story: no hooks, a plain function of the data, and the examples above are written this way. It is also the only way to read the scope as a whole — enumerate its top-level entries, read the containers.
 
-`useFormData(selector)` subscribes the component to a slice: it re-renders only when the reference of `selector(data)` changes — so the selector must return something the projection already holds (a group node, a row, an entry, a value), never a new object or array built inside it, which would differ on every read and re-render without end. Because of structural sharing — an unchanged node, row or entry keeps its previous reference — this is what lets a component pay only for what it reads: a root subscribed to its group node (`useFormData(s => s.o)`) ignores the rest of the scope, a row component subscribed to its own row (`useFormData(s => s.o.byKey[rowKey])`) ignores the other rows. `useFormController()` returns the same `controller` the root receives as a prop — the controller's identity never changes for the life of the form, so it is safe in dependencies and closures, and passing it down as a prop is equally fine.
+`useData(selector)` subscribes the component to a slice: it re-renders only when the reference of `selector(data)` changes — so the selector must return something the projection already holds (a group node, a row, an entry, a value), never a new object or array built inside it, which would differ on every read and re-render without end. Because of structural sharing — an unchanged node, row or entry keeps its previous reference — this is what lets a component pay only for what it reads: a root subscribed to its group node (`useData(s => s.o)`) ignores the rest of the scope, a row component subscribed to its own row (`useData(s => s.o.byKey[rowKey])`) ignores the other rows. `useController()` returns the same `controller` the root receives as a prop — its identity never changes for the life of the root, so it is safe in dependencies and closures, and passing it down as a prop is equally fine.
+
+`useData` and `useController` read whatever root the component is mounted under, and know nothing about forms in particular. `Lsf` and `useLsf` place a view the platform draws itself, so they serve a form container and a [navigator window](#navigator-window) alike. The helpers built on the group and row shape of a form projection — `List`, `BucketScope`, `useBucket`, `Buckets`, `useSeekOnScroll` — are form-only: they read `data.<group>.list` / `.byKey` / `.keys`, which another kind of root does not have.
 
 The two compose into tiers, and each following one is only needed when the previous one's re-render becomes the cost:
 
@@ -169,7 +171,7 @@ function Row(props) {
 
 ### Rendering rows {#rendering-rows}
 
-Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first; without an alias, call it through `React.createElement`:
+Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first; without an alias, call it through `React.createElement`. The alias is read where the module runs, which for a compiled bundle and for a `.jsx` resource is before anything renders, so it can sit at the top of the module. In a resource written as `.js`, which is served as it is, read the platform's components and hooks inside the component instead — the module runs before the first view mounts, and they are installed at that mount:
 
 ```jsx
 const List = window.lsfusion.List;
@@ -206,10 +208,10 @@ A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or
 When the view lays a group's rows out as a matrix rather than a list — a calendar, a kanban board, a timetable, a seating chart — each row belongs to a derived cell (day × employee, status column, and so on). `window.lsfusion.BucketScope` maintains a cell → rows index over one group, and each cell subscribes to only its own membership:
 
 ```jsx
-const { BucketScope, useBucket, useFormData } = window.lsfusion;
+const { BucketScope, useBucket, useData } = window.lsfusion;
 
 const Shift = React.memo(({ rowKey }) => {
-    const s = useFormData(d => d.ss.byKey[rowKey]);      // subscribes to its own row
+    const s = useData(d => d.ss.byKey[rowKey]);          // subscribes to its own row
     return s ? <button>{s.intervalS.value}</button> : null;
 });
 
@@ -236,7 +238,7 @@ export function Board(props) {
 
 `<BucketScope group bucketOf bucketDeps>` wraps the grid markup. `group` is the group object SID. `bucketOf(row, rowKey)` computes the row's cell key from the row's property values — a string (any value is coerced to a string), an array of keys to place the row into several cells, or `null` for none. `bucketDeps` lists the outside values `bucketOf` closes over — like a hook dependency array, the index is rebuilt when they change; keep the array's length constant.
 
-`useBucket(cellKey)` returns the array of row keys currently in that cell, in the group's display order, and subscribes the component to only that cell. Call it once per cell component, with that cell's fixed key (the usual hook rules). An empty cell always returns the same frozen empty array. The cell component resolves each row key to a row component that subscribes to its own row via `useFormData(d => d.<g>.byKey[rowKey])`, as above.
+`useBucket(cellKey)` returns the array of row keys currently in that cell, in the group's display order, and subscribes the component to only that cell. Call it once per cell component, with that cell's fixed key (the usual hook rules). An empty cell always returns the same frozen empty array. The cell component resolves each row key to a row component that subscribes to its own row via `useData(d => d.<g>.byKey[rowKey])`, as above.
 
 The view keeps the layout: it supplies the cell keys — so empty cells exist and render too, e.g. as drop targets — and the cell markup. The platform keeps the index and the render economy: moving a row between cells re-renders only the old and the new cell; editing a value that does not change the row's cell re-renders only that row's own component; every other cell keeps its previous array reference and its `React.memo` skips. The plain alternative — grouping `data.<g>.list` into cells by hand on each render — rebuilds every cell's array every time, so any change re-renders the whole board.
 
@@ -258,7 +260,7 @@ Use bucketing for placing one group's rows into derived cells where only the mem
 
 ### Crossing back to lsFusion
 
-`custom` crosses from the platform to React; `lsf = TRUE` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child marked `lsf = TRUE` instead keeps its lsFusion view, and the component places that view with `<Lsf sid/>` rather than drawing it.
+`custom` crosses from the platform to React; `lsf = TRUE` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child marked `lsf = TRUE` instead keeps its lsFusion view, and the component places that view with `<Lsf name/>` rather than drawing it.
 
 ```lsf
 FORM orders 'Orders'
@@ -286,7 +288,7 @@ The entry holds `caption` and `image`, and it sits at the same place in `data` t
 | A form-level (no-group) property | `data.<integrationSID>` | The property's integration SID, `note` |
 | A container | `data.<containerSID>`, always at the top level | The container's design component identifier, `BOX(o)` |
 
-A container is keyed by its design identifier because that is the only name it has; a property is keyed by its integration SID, the name its value is keyed by, not by the design identifier `PROPERTY(qty)`. The `sid` passed to `<Lsf>` is a different name: it is the design identifier of the child in the container, so an `lsf` property is placed as `<Lsf sid="PROPERTY(note)"/>` and read as `data.note`.
+A container is keyed by its design identifier because that is the only name it has; a property is keyed by its integration SID, the name its value is keyed by, not by the design identifier `PROPERTY(qty)`. The `name` passed to `<Lsf>` is a different name: it is the design identifier of the child in the container, so an `lsf` property is placed as `<Lsf name="PROPERTY(note)"/>` and read as `data.note`.
 
 Every container the React scope owns or places gets an entry in `data` when it is declared in the design (`NEW <name>`) or marked `lsf` — except a container inside an `lsf` subtree, which the platform draws whole and the component never looks into. A generated box the component neither placed nor the author named (`TOOLBAR(g)`, `PANEL(g)`, …) gets none. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
 
@@ -299,9 +301,9 @@ export function Board(props) {
     const data = props.data;
     return <div className="board">
         <h3>{data['BOX(o)'].caption}</h3>
-        <Lsf sid="BOX(o)"/>
+        <Lsf name="BOX(o)"/>
         <h3>{data.comment.caption}</h3>
-        <Lsf sid="PROPERTY(comment)"/>
+        <Lsf name="PROPERTY(comment)"/>
     </div>;
 }
 ```
@@ -312,13 +314,13 @@ An `lsf` child's view is moved into a *host*: a DOM node React owns and never re
 
 ```jsx
 // the platform creates the host — a <div> inside the section
-<section className="board-panel"><Lsf sid="BOX(o)"/></section>
+<section className="board-panel"><Lsf name="BOX(o)"/></section>
 
 // the component's own element is the host — one node less
 <section className="board-panel" ref={useLsf('BOX(o)')}/>
 ```
 
-`<Lsf>` is the shorter one. `useLsf(sid)` returns a ref callback, for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it.
+`<Lsf>` is the shorter one. `useLsf(name)` returns a ref callback, for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it.
 
 Everything else is the same for both. The platform marks the host with the class `lsf-view` and with `data-lsf-sid`, whoever created it. Every host is styled so that the view fills it, whatever the child is, so the component sizes the host and the view follows:
 
@@ -329,10 +331,10 @@ Everything else is the same for both. The platform marks the host with the class
 Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either: they are handed to the component in `data`, so a component that places children itself draws them where it wants them — nothing draws them otherwise:
 
 ```jsx
-<section className="slot">
+<section className="board-panel">
     <h3><span dangerouslySetInnerHTML={{ __html: props.data['BOX(o)'].image }}/>
         {props.data['BOX(o)'].caption}</h3>
-    <Lsf sid="BOX(o)"/>
+    <Lsf name="BOX(o)"/>
 </section>
 ```
 
@@ -346,7 +348,7 @@ These rules bound the placement:
 - The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
 - `lsf` may be set only on a direct child of a `CUSTOM REACT` container; anywhere else the form is rejected when it is built.
 
-A placement that cannot work says so in the host itself, not only in the console: a `sid` that names no child of the container, a child without `lsf`, a second host for the same child, a `sid` that is not an `LSF` grid property, and a `row` that is not a row each render their message into the host and mark it with the class `lsf-view-error`.
+A placement that cannot work says so in the host itself, not only in the console: a name that names no child of the container, a child without `lsf`, a second host for the same child, a name that is not an `LSF` grid property, and a `row` that is not a row each render their message into the host and mark it with the class `lsf-view-error`.
 
 A child the component stops rendering is reported to the server as not shown, and the server stops reading that child's data — the same gating an inactive tab or a collapsed container gets. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still shown as far as the server knows, and goes on being read. For the same reason the visibility of an lsf child belongs to the component alone — its `collapsible` attribute is ignored, and a scripted `COLLAPSE` / `EXPAND` on it is an error.
 
@@ -377,8 +379,8 @@ DESIGN orders {
 {data.o.list.map(row => (
   <tr key={row.key}>
     <td>{row.number.value}</td>
-    <td><Lsf sid="quantity" row={row}/></td>
-    <td><Lsf sid="note" row={row}/></td>
+    <td><Lsf name="quantity" row={row}/></td>
+    <td><Lsf name="note" row={row}/></td>
   </tr>
 ))}
 ```
@@ -405,14 +407,128 @@ DESIGN orders {
 }
 ```
 
-The component does not pick it up on its own. Every lsf child is placed by an `<Lsf>` that names its `sid`, so a child no `<Lsf>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`; the children stay as declared.
+The component does not pick it up on its own. Every lsf child is placed by an `<Lsf>` that names it, so a child no `<Lsf>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`; the children stay as declared.
 
 ### Choosing between a React component and an HTML template
 
-A component that places lsf children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `[sID]` slots, without a React runtime and without a placeholder node per child. When every child of the container is `lsf`, `props.data` carries no group or property values, because an lsf child is not projected — only the children's `{ caption, image }` entries in `props.data`.
+A component that places lsf children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `<Lsf:name>` places, without a React runtime and without a host node per child. When every child of the container is `lsf`, `props.data` carries no group or property values, because an lsf child is not projected — only the children's `{ caption, image }` entries in `props.data`.
 
-Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useFormData`, or the markup comes from a component library — while a template string belongs to the module that declared it and can only be replaced whole.
+A template is given no data at all. It places what the platform draws, by name, and everything else in it is written out: it cannot read the caption or the image of a child, or of the container itself, and cannot put either into markup of its own. What it places carries its own caption, drawn by the platform inside the placed view, and the container's own caption and image are drawn by the platform beside the container rather than inside the template. So a heading of your own that has to show a caption the application computes is the point at which a template stops being enough.
+
+Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useData`, or the markup comes from a component library — or when the markup has to show something the projection carries, which for a container or an lsf child is its `caption` and its `image`. A template string belongs to the module that declared it and can only be replaced whole.
 
 ### Interactivity
 
 To read and change form state from the component — selecting a row, changing a property, calling actions — use `props.controller`. Its methods are described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
+
+### A navigator window {#navigator-window}
+
+A React component can also draw a navigator window — the menu itself — instead of the standard toolbar. The [`WINDOW`](../language/WINDOW_statement.md) is given the component name, and the elements placed in that window become its data:
+
+```lsf
+WINDOW appMenu VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CUSTOM 'AppMenu';
+
+NAVIGATOR {
+    NEW FOLDER sales 'Sales' WINDOW appMenu PARENT {
+        NEW orders;
+        NEW invoices;
+    }
+}
+```
+
+```jsx
+function AppMenu({ data, controller }) {
+    return <nav>{data.root.map(name => {
+        const e = data.byName[name];
+        return <button key={name} className={e.selected ? 'on' : ''}
+                       onClick={ev => controller.activate(name, ev.nativeEvent)}>{e.caption}</button>;
+    })}</nav>;
+}
+```
+
+A component can also be given to a window that already exists, the standard toolbar included — then the navigator is not restructured at all, and only its drawing changes:
+
+```lsf
+EXTEND WINDOW System.toolbar CUSTOM 'AppMenu';
+```
+
+`props.data` is the window's own elements, keyed by [canonical name](../paradigm/Naming.md#canonicalname) — canonical names contain dots, so they are map keys rather than fields:
+
+| Field | Meaning |
+| --- | --- |
+| `root` | The canonical names of the elements drawn at the top level, in display order |
+| `byName` | Each element by canonical name |
+
+and each element carries:
+
+| Field | Meaning |
+| --- | --- |
+| `name` | Its own canonical name, so a component that was handed the entry alone can still address the element |
+| `caption`, `elementClass` | Its caption and CSS class, the current ones — a `HEADER` or `CLASS` expression is applied as it changes |
+| `image` | Its icon, drawn with `<Image value={e.image}/>` — see [below](#image) — or `null` |
+| `folder` | Whether it is a folder rather than an action |
+| `hidden` | Whether `SHOWIF` currently hides it. Unlike the standard toolbar, which simply omits such an element, the projection keeps it, so the component decides how to treat it |
+| `selected` | Whether it is the selected element **of this window** |
+| `children` | The canonical names of its children that this window draws |
+
+An element declared [`LSF`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `children` and `lsf: true`, and none of the rest.
+
+The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not. `props.controller` is the navigator controller, whose [`activate`](How-to_Custom_view_controller.md#navigator-controller) does what clicking the element does: selects a folder, or runs an action.
+
+Only the desktop web client draws the component. The mobile web client and the desktop client render their standard menu for that window, so the navigator stays usable in all of them.
+
+#### The standard button {#standard-button}
+
+An element the component does not want to draw itself is placed with `<Lsf name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior; the node itself is left as the component rendered it, without the marks a form's host is given.
+
+```jsx
+const { Lsf } = window.lsfusion;
+
+function AppMenu({ data, controller }) {
+    return <nav>
+        <Lsf name="Sale.sales" className="menu-main"/>
+        {data.root.filter(name => name !== 'Sale.sales').map(name =>
+            <button key={name} onClick={ev => controller.activate(name, ev)}>{data.byName[name].caption}</button>)}
+    </nav>;
+}
+```
+
+The element must be declared `LSF` in the [`NAVIGATOR`](../language/NAVIGATOR_statement.md) — the crossing back is declared on the navigator side, the way `lsf = TRUE` declares it on a form:
+
+```lsf
+NAVIGATOR {
+    Sale.sales LSF;
+}
+```
+
+An `LSF` element no `<Lsf>` names is not shown, as on a form. Three mistakes are reported in the page: a name no navigator element has, a name that is not `LSF`, which the component is expected to draw from the projection instead, and a name a second `<Lsf>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one that crossed into another window, one gated out because its parent is not selected — is not a mistake and is not reported: the place stays empty and waits, and is filled as soon as the window draws that element.
+
+A menu that is mostly standard is written this way as one `<Lsf>` for each element the platform draws, and markup only for the elements the component draws itself.
+
+#### An HTML template instead of a component {#navigator-template}
+
+A window whose menu only needs its own markup is given an HTML template instead of a component name — the [same template](../language/WINDOW_statement.md) a `custom` container takes, where an `<Lsf:name>` place takes the element's standard button. The name is resolved the way every other name in the module is, so nothing has to be spelled out in full, and the place is written open — closing it is an error:
+
+```lsf
+EXTEND WINDOW System.toolbar CUSTOM
+    '<div class="menu"><div class="menu-head">Master data</div><Lsf:items><Lsf:partners></div>';
+```
+
+The element has to be declared before the template that gives it a place — a `NAVIGATOR` block that creates it goes above. A name that resolves to nothing is an error when the module is read, so a misspelled name stops the application instead of leaving the menu an item short.
+
+An element the template gives no place is not drawn, so it names everything it shows, and `LSF` is not needed on any of them — a template places nothing but the platform's own drawings.
+
+The template may also be computed: given a property instead of a literal, it is recomputed as the property's value changes and the window is drawn again from the new markup, so a menu can rearrange itself without a component. Nothing resolves a computed template, so its places name their elements in full, by canonical name. A component is still what a menu needs when the markup depends on what the component itself reads.
+
+### Drawing an image {#image}
+
+An image the platform projects — a property of an image class, the icon of a navigator element or of an action — is drawn by `Image`:
+
+```jsx
+const { Image } = window.lsfusion;
+
+<Image value={e.image} className="menu-icon"/>
+<Image value={row.photo.value} className="avatar"/>
+```
+
+The projected value is either an address or a ready element, since a font icon has no address at all, and `Image` draws whichever it was given. A view that wants the address itself — for a CSS background, say — still has it in the value; `Image` is there so that no view has to insert the platform's markup by hand. A missing image draws nothing.

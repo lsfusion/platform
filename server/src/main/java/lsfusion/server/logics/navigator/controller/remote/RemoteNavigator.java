@@ -680,6 +680,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         for(AbstractWindow window : getWindows()) {
             if(window.propertyElementClass != null)
                 mResult.exclAdd(new ClassWindowNavigator(window.propertyElementClass, window));
+            if(window instanceof NavigatorWindow && ((NavigatorWindow) window).getPropertyCustom() != null)
+                mResult.exclAdd(new CustomWindowNavigator(((NavigatorWindow) window).getPropertyCustom(), window));
         }
         return mResult.immutable();
     }

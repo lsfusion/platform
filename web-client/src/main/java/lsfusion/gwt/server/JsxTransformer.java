@@ -59,7 +59,7 @@ public class JsxTransformer {
         if (cached != null)
             return cached;
         try {
-            RawFileData result = new RawFileData(doTransform(source.getString(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            RawFileData result = new RawFileData(PREAMBLE + doTransform(source.getString(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
             if (cache.size() >= CACHE_LIMIT)
                 cache.clear();
             cache.put(id, result);
@@ -75,6 +75,14 @@ public class JsxTransformer {
             return new RawFileData("console.error(" + JSONObject.quote("lsFusion .jsx transform failed for " + resourceName + ": " + message) + ");", StandardCharsets.UTF_8);
         }
     }
+
+    // install the hooks (window.lsfusion.List / useData / Image / ...) BEFORE this file's body runs, so that a
+    // module-top `const List = window.lsfusion.List` alias resolves - they are defined by lsfusion-custom-registry.js
+    // (loaded earlier) but installed lazily, at the first React mount, which is long after this file executes. The
+    // compiled tier gets the same preamble from its esbuild banner, see CompileWebMojo; without it here the two tiers
+    // would disagree about whether that alias works. Installed against the now-final window.React: any app override of
+    // it runs at a less-negative order than this file's 100.
+    private static final String PREAMBLE = "if(window.lsfusion&&window.lsfusion.__installReactHooks)window.lsfusion.__installReactHooks();\n";
 
     private static final Pattern MODULE_SYNTAX = Pattern.compile("\\b(import|export|module)\\b", Pattern.CASE_INSENSITIVE);
 

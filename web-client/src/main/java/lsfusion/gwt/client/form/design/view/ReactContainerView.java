@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.design.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.ReactHost;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -16,24 +17,20 @@ import java.util.Set;
 
 // CUSTOM REACT 'fn': hosts a React component (window[fn], fn = container's custom) that OWNS this container's subtree,
 // except for the children marked `lsf = TRUE` in DESIGN — those keep their real GWT view, are excluded from the
-// projection, and the component places them with <Lsf sid/>, reading their caption/image from their entry in props.data.
+// projection, and the component places them with <Lsf name/>, reading their caption/image from their entry in props.data.
 // The component receives props { data, controller }: `data` is the @lsfusion/core-shaped projected form state
 // (re-rendered on each form change) and carries every projected thing directly, keyed as it is keyed; `controller`
 // mutates the form. That is the primary, props-down contract — the
 // normal optimization is React.memo or React Compiler over props.data (structural sharing keeps unchanged refs stable).
 // For OPT-IN fine-grained re-render without prop-threading, descendants use the window.lsfusion hooks
-// (useFormData(selector) over the data / useFormController) backed by a React context the platform installs around
-// the component (react-redux's Provider + useSelector/useDispatch shape) — e.g. useFormData(s => s.i.list[k]).
+// (useData(selector) over the data / useController) backed by a React context the platform installs around
+// the component (react-redux's Provider + useSelector/useDispatch shape) — e.g. useData(s => s.i.list[k]).
 // The hooks are zero-overhead when no component subscribes: the snapshot IS the (structurally shared) data object.
 public class ReactContainerView extends ParkedContainerView {
 
-    private final String componentName; // = container.custom
-    private final JavaScriptObject store; // selector store behind the context (subscribe/getSnapshot), per view, survives re-mounts
-    private final JavaScriptObject ctxValue; // stable context value { store, controller }: the Provider value must not change identity, or every context consumer re-renders
-    private JavaScriptObject root;       // the ReactDOM root, created lazily per attach
-    private JavaScriptObject lastData = JavaScriptObject.createObject(); // last projected @lsfusion/core data (== the hook snapshot); starts empty, so no fallbacks anywhere
+    private final ReactHost host;
 
-    // sID -> the host claimed for it (the first placeholder wins). The child's view is mounted there once it exists, so
+    // sID -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
     // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfLsfView(sid) >= 0
     private final Map<String, Element> hosts = new HashMap<>();
     private final Set<String> reactHidden = new HashSet<>(); // sIDs the server has been told the component is not showing
@@ -41,13 +38,13 @@ public class ReactContainerView extends ParkedContainerView {
 
     public ReactContainerView(GFormController formController, GContainer container) {
         super(container, formController);
-        componentName = container.getCustom();
-        store = createStore(); // DOM-independent, created once; updateData can feed it even before first mount
-        ctxValue = createCtxValue(store, formController.controller);
+        // row is absent for an lsf CHILD - one view, one host - and is a row of the group for an LSF grid property,
+        // which has one renderer, and so one host, per row
+        host = new ReactHost(container.getCustom(), formController.controller, this::mountComponent, this::unmountComponent);
         GwtClientUtils.addClassName(panel, "panel-react");
         panel.addAttachHandler(event -> {
             if (event.isAttached())
-                mount(panel.getElement());
+                host.mount(panel.getElement());
             else
                 unmount();
         });
@@ -68,7 +65,7 @@ public class ReactContainerView extends ParkedContainerView {
 
     // called back by the host's ref, and the cleanup is its exact inverse (F1). React runs every ref detach of a commit
     // before any attach, so a mount can never race an unmount of the same child: a second live host for one sid is
-    // always a duplicate placeholder, never a legitimate move.
+    // always a duplicate host, never a legitimate move.
     private void mountComponent(String sid, Element host, JavaScriptObject row) {
         stampHost(host, sid); // marks the host even when the mount reports a problem below
 
@@ -90,7 +87,7 @@ public class ReactContainerView extends ParkedContainerView {
             return;
         }
         Element current = hosts.get(sid);
-        if (current != null && current != host) { // the FIRST placeholder keeps the child, so it cannot be left empty
+        if (current != null && current != host) { // the FIRST host keeps the child, so it cannot be left empty
             reportDuplicate(sid, host);
             return;
         }
@@ -116,7 +113,7 @@ public class ReactContainerView extends ParkedContainerView {
         // with the platform fill-parent-flex(-cont) classes — the same fill a native SizedFlexPanel child gets; the
         // min-size reset those classes omit is added in layout.css.
         GwtClientUtils.setupFlexParent(childView.getSingleWidget().widget.getElement());
-        resizeChildren(); // the child moved out of the display:none park into a laid-out slot
+        resizeChildren(); // the child moved out of the display:none park into a laid-out place
     }
 
     // the host may be an element the component renders for its own layout (useLsf), so the platform marks it
@@ -173,17 +170,17 @@ public class ReactContainerView extends ParkedContainerView {
     // host never renders React children (F2), so React cannot overwrite it.
     private void reportUnknown(String sid, Element host) {
         if (findDeclared(sid) == null) {
-            showDiagnostic(host, "'" + sid + "' is not a child of '" + container.sID + "'");
+            GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not a child of '" + container.sID + "'");
             logError("component '" + sid + "' is not a child of container '" + container.sID + "'");
         } else { // a child of the container, but without lsf = TRUE, so React owns it
-            showDiagnostic(host, "'" + sid + "' has no lsf = TRUE");
+            GwtClientUtils.showLsfViewError(host, "'" + sid + "' has no lsf = TRUE");
             logError("child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: React owns it, so there is no GWT view to place");
         }
     }
 
     private void reportDuplicate(String sid, Element host) {
-        showDiagnostic(host, "'" + sid + "' is already placed by another <Lsf>");
-        logError("component '" + sid + "' is placed by more than one <Lsf>; the first placeholder keeps it");
+        GwtClientUtils.showLsfViewError(host, "'" + sid + "' is already placed by another <Lsf>");
+        logError("'" + sid + "' is placed by more than one <Lsf>; the first one keeps it");
     }
 
     // an LSF grid property declared in this container, or null. Unlike an lsf CONTAINER child, it has one
@@ -199,10 +196,10 @@ public class ReactContainerView extends ParkedContainerView {
     // what was passed as the row is not one. Both would leave a silently empty cell, so both are shown in the page
     private void reportUnknownRow(String sid, Element host, boolean unknownSid) {
         if (unknownSid) {
-            showDiagnostic(host, "'" + sid + "' is not an LSF grid property");
+            GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not an LSF grid property");
             logError("component '" + sid + "' of container '" + container.sID + "' is not a grid property marked LSF, so it is not drawn per row");
         } else {
-            showDiagnostic(host, "the `row` given to '" + sid + "' is not a row");
+            GwtClientUtils.showLsfViewError(host, "the `row` given to '" + sid + "' is not a row");
             logError("the `row` passed to '" + sid + "' does not identify a row: pass the row object from the projected data, not its key");
         }
     }
@@ -214,18 +211,14 @@ public class ReactContainerView extends ParkedContainerView {
         return null;
     }
 
-    private void showDiagnostic(Element host, String message) {
-        host.setInnerText("lsFusion: " + message);
-        GwtClientUtils.addClassName(host, "lsf-view-error");
-    }
-
     private void clearDiagnostic(Element host) {
-        host.setInnerText("");
-        GwtClientUtils.removeClassName(host, "lsf-view-error");
+        GwtClientUtils.clearLsfViewError(host);
         clearHost(host);
     }
 
-    private static native void logError(String message)/*-{ $wnd.console.error("lsFusion CUSTOM REACT: " + message); }-*/;
+    private static void logError(String message) {
+        GwtClientUtils.logLsfViewError(message);
+    }
 
     public GContainer getContainer() {
         return container;
@@ -235,119 +228,17 @@ public class ReactContainerView extends ParkedContainerView {
     // image now lives in its own entry in `data` (built by GReactFormData): an attribute change marks the scope dirty,
     // so build() returns a new top ref and the data change alone re-renders React — no separate components channel.
     public void updateData(JavaScriptObject data) {
-        if (data == lastData)
-            return;
-        lastData = data;
-        notifyStore(); // fine-grained subscribers (useFormData selectors)
-        render();      // props.data
+        host.updateData(data);
     }
 
-    private void mount(Element element) {
-        if (!createRoot(element))
-            return;
-        render();
-    }
 
-    private JavaScriptObject resolveComponent() {
-        return GwtClientUtils.getGlobalField(componentName, "reactView", true);
-    }
-
-    // stable context value: `view` is the per-CONTAINER delegation API (mount/unmount). It cannot live on `controller`,
-    // which is form-level and shared by every react container, so it could not resolve which container a sid belongs to.
-    private native JavaScriptObject createCtxValue(JavaScriptObject store, JavaScriptObject controller)/*-{
-        var reactView = this;
-        return {
-            store: store,
-            controller: controller,
-            view: {
-                // row is absent for an lsf CHILD of this container - one view, one host - and is a row of the group
-                // for an LSF grid property, which has one renderer, and so one host, per row
-                mount: function(sid, host, row) {
-                    reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::mountComponent(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(sid, host, row || null);
-                },
-                unmount: function(sid, host, row) {
-                    reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::unmountComponent(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(sid, host, row || null);
-                }
-            }
-        };
-    }-*/;
-
-    private native boolean createRoot(Element element)/*-{
-        if (!$wnd.React || !$wnd.ReactDOM) {
-            $wnd.console.error("lsFusion CUSTOM REACT: window.React / window.ReactDOM are not loaded");
-            return false;
-        }
-        if (!$wnd.lsfusion || !$wnd.lsfusion.__installReactHooks) {
-            $wnd.console.error("lsFusion CUSTOM REACT: lsfusion-custom-registry.js is not loaded");
-            return false;
-        }
-        if (!this.@lsfusion.gwt.client.form.design.view.ReactContainerView::resolveComponent()()) {
-            $wnd.console.error("lsFusion CUSTOM REACT: component '" + this.@lsfusion.gwt.client.form.design.view.ReactContainerView::componentName + "' not found in registry or on window");
-            return false;
-        }
-        // install the form context + hooks (window.lsfusion) — the Provider + useSelector-style API and the delegation
-        // primitives. Idempotent (first caller wins), and done at MOUNT, not at registry load, so it binds the FINAL
-        // window.React: an app may override React with a before-system resource after the registry but before mount.
-        // A compiled bundle's preamble already ran this before its own body, but a hand-written global gets no preamble
-        $wnd.lsfusion.__installReactHooks();
-        this.@lsfusion.gwt.client.form.design.view.ReactContainerView::root = $wnd.ReactDOM.createRoot(element);
-        return true;
-    }-*/;
-
-    // the hook snapshot IS the projected data object itself: lastData only changes ref when the data changed, and
-    // structural sharing keeps unchanged subtrees reference-equal — exactly what useSyncExternalStore selectors need.
-    // (selector hooks fit this immutable-snapshot model; a mutable-proxy useSnapshot would be the wrong fit.)
-    private native JavaScriptObject createStore()/*-{
-        var reactView = this;
-        var listeners = new $wnd.Set();
-        return {
-            subscribe: function(listener) {
-                listeners.add(listener);
-                return function() {
-                    listeners['delete'](listener);
-                };
-            },
-            getSnapshot: function() {
-                return reactView.@lsfusion.gwt.client.form.design.view.ReactContainerView::lastData;
-            },
-            _notify: function() {
-                listeners.forEach(function(listener) {
-                    listener();
-                });
-            }
-        };
-    }-*/;
-
-    private native void notifyStore()/*-{
-        this.@lsfusion.gwt.client.form.design.view.ReactContainerView::store._notify();
-    }-*/;
-
-    private native void render()/*-{
-        var root = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::root;
-        if (!root) return;
-        var React = $wnd.React;
-        var component = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::resolveComponent()();
-        var ctxValue = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::ctxValue;
-        var props = {
-            data: this.@lsfusion.gwt.client.form.design.view.ReactContainerView::lastData, // projected @lsfusion/core form state (primary contract; re-rendered each data change); every projected thing is an entry in it, keyed as it is keyed
-            controller: ctxValue.controller // changeProperty/changeProperties/changeObject + exec/eval/evalAction/change
-        };
-        root.render(React.createElement($wnd.lsfusion.__formContext.Provider, { value: ctxValue }, React.createElement(component, props)));
-    }-*/;
 
     private void unmount() {
         unmountingRoot = true;
-        unmountRoot(); // runs the hosts' ref cleanups, which park every mounted child and drop it from `hosts`
+        host.unmount(); // runs the hosts' ref cleanups, which park every mounted child and drop it from `hosts`
         unmountingRoot = false;
         hosts.clear(); // any host left waiting (its view dropped by SHOWIF) belongs to the old tree; drop it too
         reactHidden.clear(); // the server's FormInstance is reset on the next open, so its hidden set starts empty too
     }
 
-    private native void unmountRoot()/*-{
-        var root = this.@lsfusion.gwt.client.form.design.view.ReactContainerView::root;
-        if (root) {
-            root.unmount();
-            this.@lsfusion.gwt.client.form.design.view.ReactContainerView::root = null;
-        }
-    }-*/;
 }

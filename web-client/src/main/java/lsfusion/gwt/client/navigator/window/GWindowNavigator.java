@@ -20,7 +20,7 @@ public abstract class GWindowNavigator extends GPropertyNavigator {
         GAbstractWindow window = windowsController.findWindowByCanonicalName(canonicalName);
         if(window == null) // MainFrame.mobile, can be null when window is "forbidden" with a security policy
             return;
-        updateWindow(window, windowsController, value);
+        updateWindow(window, navigatorController, windowsController, value);
     }
-    public abstract void updateWindow(GAbstractWindow window, WindowsController windowsController, PValue value);
+    public abstract void updateWindow(GAbstractWindow window, GNavigatorController navigatorController, WindowsController windowsController, PValue value);
 }

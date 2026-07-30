@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.event.*;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -582,6 +583,64 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
         checkLsfViews();
         checkReactProjectionNames();
+        checkCustomTemplatePlaces();
+        checkCustomReactProperty();
+    }
+
+    // a literal `custom` beside a `custom` property is the pair the rest of the design uses (caption / propertyCaption):
+    // the literal is what the container starts with, the property recomputes it. The one combination that is not a pair
+    // is a React component, which draws the container itself and would never be handed a computed template
+    private void checkCustomReactProperty() {
+        for (ComponentView component : getComponents())
+            if (component instanceof ContainerView) {
+                ContainerView container = (ContainerView) component;
+                if (container.getPropertyCustom() != null && container.isReact())
+                    throw new IllegalStateException(formErrorPrefix() + "custom of container '" + container.getSID()
+                            + "' is both the React component '" + container.getCustom() + "' and a property; a component draws"
+                            + " the container itself, so a computed template would never be drawn");
+            }
+    }
+
+    // a child drawn inline gives a place to each of its parts - sID.caption, sID.comment - so a name belongs to a
+    // component when it is its sID or names a part below it; and a property may be named by itself, without PROPERTY(...)
+    private static boolean names(String name, String sid) {
+        if (namesOrPart(name, sid))
+            return true;
+
+        return sid.startsWith("PROPERTY(") && sid.endsWith(")") && namesOrPart(name, sid.substring("PROPERTY(".length(), sid.length() - 1));
+    }
+
+    private static boolean namesOrPart(String name, String base) {
+        return name.equals(base) || name.startsWith(base + ".");
+    }
+
+    // A container drawn by an HTML template gives each child it shows a <Lsf:sID> place. A place naming nothing the form
+    // has at all would never be filled and nothing would say so, so the form is rejected here instead - once, when it is
+    // built, with the rest of the design checks. A name the form HAS but this container no longer holds is left alone: an
+    // extending module may move a child out, and an unfilled place is what the client does with that anyway.
+    // mapPlaces is the traversal here, not a rewrite - the check is the throw, and its result is discarded
+    private void checkCustomTemplatePlaces() {
+        for (ComponentView component : getComponents()) {
+            if (!(component instanceof ContainerView))
+                continue;
+
+            ContainerView<?> container = (ContainerView<?>) component;
+            String custom = container.getCustom();
+            if (custom == null || Custom.isReactComponent(custom))
+                continue;
+
+            try {
+                Custom.mapPlaces(custom, name -> {
+                    for (ComponentView anywhere : getComponents()) // getComponents holds every child too
+                        if (names(name, anywhere.getSID()))
+                            return name;
+
+                    throw new Custom.PlaceError("'" + name + "' is not a component of this form");
+                });
+            } catch (Custom.PlaceError e) {
+                throw new IllegalStateException(formErrorPrefix() + "in the template of container '" + container.getSID() + "': " + e.getMessage());
+            }
+        }
     }
 
     // A CUSTOM REACT container projects its groups and properties into a JS `data` object (see the web client's
@@ -607,7 +666,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 // a container the author DECLARED (`NEW <name>` in DESIGN) is data.<componentSID> = {caption, image},
                 // directly in data beside the groups and the form-level props (`{}` when it has neither). The generated
                 // boxes of a group are not projected and take no name here.
-                ContainerView container = (ContainerView) component;
+                ContainerView<?> container = (ContainerView<?>) component;
                 ContainerView descriptorScope = getProjectedContainerScope(container);
                 if (descriptorScope != null)
                     claimProjectionName(topNames, descriptorScope, container.getSID(), "container '" + container.getSID() + "'");

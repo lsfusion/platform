@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.window;
 
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 public class GClassWindowNavigator extends GWindowNavigator {
@@ -13,7 +14,7 @@ public class GClassWindowNavigator extends GWindowNavigator {
     }
 
     @Override
-    public void updateWindow(GAbstractWindow window, WindowsController windowsController, PValue value) {
+    public void updateWindow(GAbstractWindow window, GNavigatorController navigatorController, WindowsController windowsController, PValue value) {
         window.elementClass = PValue.getClassStringValue(value);
 
         windowsController.updateElementClass(window);

@@ -2,9 +2,11 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.window.ClientClassWindowNavigator;
+import lsfusion.client.navigator.window.ClientCustomWindowNavigator;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.navigator.*;
 import lsfusion.gwt.client.navigator.window.GClassWindowNavigator;
+import lsfusion.gwt.client.navigator.window.GCustomWindowNavigator;
 import lsfusion.gwt.server.MainDispatchServlet;
 
 import java.io.IOException;
@@ -61,6 +63,12 @@ public class ClientNavigatorChangesToGwtConverter extends ObjectConverter {
     @Converter(from = ClientClassWindowNavigator.class)
     public GClassWindowNavigator convertClassWindowNavigator(ClientClassWindowNavigator imageElementNavigator) {
         return new GClassWindowNavigator(imageElementNavigator.canonicalName);
+    }
+
+    @Cached
+    @Converter(from = ClientCustomWindowNavigator.class)
+    public GCustomWindowNavigator convertCustomWindowNavigator(ClientCustomWindowNavigator customWindowNavigator) {
+        return new GCustomWindowNavigator(customWindowNavigator.canonicalName);
     }
 
     @Cached

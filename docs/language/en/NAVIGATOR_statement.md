@@ -46,6 +46,7 @@ imageSetting
 CLASS classExpr
 HEADER headerExpr
 SHOWIF showIfExpr
+LSF
 CHANGEKEY key [showSetting]
 CHANGEMOUSE key [showSetting]
 ```
@@ -66,7 +67,7 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `name`
 
-    Navigator element name. In the create statement, it is [a simple ID](IDs.md#id) and must be unique within the current [namespace](../paradigm/Naming.md#namespace), while in the rest of the statements it is a [composite ID](IDs.md#cid). The name does not have to be specified when creating a form element or action element. Here the form name or action name is used as the element name.
+    Navigator element name. In the create statement, it is [a simple ID](IDs.md#id) and must be unique within the current [namespace](../paradigm/Naming.md#namespace), while in the rest of the statements it is a [composite ID](IDs.md#cid). The name does not have to be specified when creating a form element or action element. Here the form name or action name is used as the element name. The element is created in the current namespace in either case, so its [canonical name](../paradigm/Naming.md#canonicalname) is that namespace and the element name — not the namespace of the form or action it was created from.
 
 - `caption`
 
@@ -168,6 +169,10 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
     - `showIfExpr`
 
         Expression whose value determines visibility of the navigator element.
+
+- `LSF`
+
+    Keyword specifying that the element is drawn by the platform in a window drawn by a React component: the component places that drawing rather than drawing the element itself. The component chooses where the drawing goes, so an element it places nowhere is not shown. The keyword is valid only in such a window; anywhere else the platform draws every element anyway, and the navigator is rejected at startup.
 
 - `CHANGEKEY key [showSetting]`
 

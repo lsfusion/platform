@@ -4,7 +4,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 
-// CUSTOM 'html': the container's children are placed into the [sID] slots of an HTML template.
+// CUSTOM 'html': the container's children are placed into the <Lsf:sID> places of an HTML template.
 // A 'simple' custom container (custom = '') has no template and lays its children out in order, like a plain panel.
 public class CustomContainerView extends ParkedContainerView {
 
@@ -34,7 +34,7 @@ public class CustomContainerView extends ParkedContainerView {
             getChildView(index).remove(panel, getChildPosition(index));
         else {
             super.removeImpl(index);
-            invalidateTemplate(); // placing a child consumed its [sID] slot, so re-render to bring the slot back
+            invalidateTemplate(); // placing a child consumed its place, so re-render to bring the place back
         }
     }
 
@@ -50,11 +50,11 @@ public class CustomContainerView extends ParkedContainerView {
             renderedCustom = container.getCustom();
 
             // setInnerHTML destroys the elements of the children the previous template held, so they are parked first:
-            // a child whose slot the new template lacks then stays alive (parked, not shown) instead of detached
+            // a child the new template gives no place then stays alive (parked, not shown) instead of detached
             for (int i = 0, size = children.size(); i < size; i++)
                 parkChild(i);
 
-            panel.getElement().setInnerHTML(getTagCustom(renderedCustom));
+            GwtClientUtils.setLsfTemplate(panel.getElement(), renderedCustom);
 
             for (int i = 0, size = children.size(); i < size; i++)
                 placeChild(i);
@@ -67,23 +67,9 @@ public class CustomContainerView extends ParkedContainerView {
         this.container.setCustom(custom);
     }
 
-    // moves the child's element into its [sID] slot; a child the template has no slot for stays parked, i.e. not shown
+    // moves the child's element into its <Lsf:sID> place; a child the template gives no place stays parked, not shown
     private void placeChild(int index) {
         getChildView(index).replace(panel, children.get(index).sID);
     }
 
-    private String getTagCustom(String rawCustom) {
-        while (true) {
-            int openBracket = rawCustom.indexOf("[");
-            int closeBracket = rawCustom.indexOf("]");
-            if (openBracket == -1 || closeBracket == -1) {
-                break;
-            } else {
-                String tagName = rawCustom.substring(openBracket + 1, closeBracket);
-                rawCustom = rawCustom.replace("[" + tagName + "]", "<" + tagName + "></" + tagName + ">");
-            }
-        }
-
-        return rawCustom;
-    }
 }

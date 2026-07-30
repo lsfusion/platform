@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -16,6 +17,7 @@ import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
@@ -59,6 +61,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         this.windowsController = windowsController;
         this.formsController = formsController;
         this.navigatorController = navigatorController;
+        // a custom navigator view hands this to its component; field initializers have all run by now, so it is ready
+        navigatorController.setController(controller);
     }
 
     @Override
@@ -113,9 +117,38 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         }
     }
 
+    // the shared exec/eval/change plus activate, which is not on the base GController since a form has no navigator
+    // elements to activate
+    private final JavaScriptObject controller = initController();
+    private native JavaScriptObject initController() /*-{
+        var thisObj = this;
+        return this.@GNavigatorActionDispatcher::gController.@lsfusion.gwt.client.form.controller.GController::extendController(Lcom/google/gwt/core/client/JavaScriptObject;)({
+            // activate(canonicalName[, event]) - the event is optional, since a caller may have no browser event at
+            // all, and may be React's synthetic one: passing that straight through would read its Ctrl modifier fine
+            // but lose the browser event the optimistic form open wants, so unwrap it here
+            activate: function (canonicalName, event) {
+                var browserEvent = event && event.nativeEvent ? event.nativeEvent : (event || null);
+                var error = thisObj.@GNavigatorActionDispatcher::activate(Ljava/lang/String;Lcom/google/gwt/dom/client/NativeEvent;)(canonicalName, browserEvent);
+                if (error) throw new Error(error);
+            }
+        });
+    }-*/;
+
+    private String activate(String canonicalName, NativeEvent event) {
+        GNavigatorElement element = navigatorController.getElement(canonicalName);
+        if (element == null)
+            return "Navigator element '" + canonicalName + "' not found";
+        // SHOWIF is not a security boundary, but activating by name must not reach past what the navigator shows
+        if (element.hide)
+            return "Navigator element '" + canonicalName + "' is hidden";
+
+        navigatorController.activate(element, event);
+        return null;
+    }
+
     @Override
     protected JavaScriptObject getController() {
-        return gController.controller;
+        return controller;
     }
 
     @Override

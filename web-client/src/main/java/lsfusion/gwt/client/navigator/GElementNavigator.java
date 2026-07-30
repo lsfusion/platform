@@ -15,21 +15,7 @@ public abstract class GElementNavigator extends GPropertyNavigator {
     }
 
     public void update(GNavigatorController navigatorController, WindowsController windowsController, PValue value) {
-        updateElement(findNavigatorElementByCanonicalName(navigatorController.getRoot()), value);
+        updateElement(navigatorController.getElement(canonicalName), value);
     }
     public abstract void updateElement(GNavigatorElement element, PValue value);
-
-    protected GNavigatorElement findNavigatorElementByCanonicalName(GNavigatorElement root) {
-        for(GNavigatorElement child : root.children) {
-            if(child.canonicalName.equals(canonicalName)) {
-                return child;
-            } else {
-                GNavigatorElement element = findNavigatorElementByCanonicalName(child);
-                if(element != null) {
-                    return element;
-                }
-            }
-        }
-        return null;
-    }
 }

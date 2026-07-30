@@ -1,5 +1,7 @@
 package lsfusion.server.language;
 
+import lsfusion.server.base.Custom;
+
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
@@ -34,6 +36,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -103,6 +106,20 @@ public class ScriptingLogicsModuleChecks {
     public void checkWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (window == null) {
             errLog.emitWindowNotFoundError(parser, name);
+        }
+    }
+
+    public void checkNativeWindowCustom(String name, boolean nativeWithCustom) throws ScriptingErrorLog.SemanticErrorException {
+        if (nativeWithCustom) {
+            errLog.emitNativeWindowCustomError(parser, name);
+        }
+    }
+
+    // only a LITERAL is classified: a property's text is computed, and the view that draws it is chosen once, before
+    // any value arrives - see Custom for the two vocabularies, a window's being the narrower one
+    public void checkWindowCustom(String name, String custom) throws ScriptingErrorLog.SemanticErrorException {
+        if (custom != null && !Custom.isReactComponent(custom) && !Custom.isHtmlTemplate(custom)) {
+            errLog.emitWindowCustomError(parser, name, custom);
         }
     }
 

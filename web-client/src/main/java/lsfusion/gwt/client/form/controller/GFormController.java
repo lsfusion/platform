@@ -426,7 +426,6 @@ public class GFormController implements EditManager {
     public final JavaScriptObject controller = initController();
     private native JavaScriptObject initController() /*-{
         var thisObj = this;
-        var base = this.@GFormController::gController.@GController::controller;
         var UNDEFINED = @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
         var controller = {
             // change a property value, or exec the action/property when the value is omitted — same shape as the CUSTOM
@@ -484,13 +483,9 @@ public class GFormController implements EditManager {
                 }
                 var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2];
                 thisObj.@GFormController::controllerGetPropertyValues(*)(property, object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
-            },
-            exec: base.exec, // exec(action, ...params) -> Promise (global action by canonical name)
-            eval: base.eval, // eval(script, ...params) -> Promise
-            evalAction: base.evalAction, // evalAction(script, ...params) -> Promise
-            change: base.change // change(property, ...keyParams, value) -> Promise (single global property, canonical name)
+            }
         };
-        return controller;
+        return this.@GFormController::gController.@GController::extendController(Lcom/google/gwt/core/client/JavaScriptObject;)(controller);
     }-*/;
 
     // structured WYSIWYG sugar that mirrors props.data: a form property is a member of the controller —

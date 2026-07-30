@@ -55,6 +55,10 @@ public abstract class NavigatorElement {
     // need supplier to have relevant form captions
     public Property headerProperty;
     public Property showIfProperty;
+
+    // LSF: the platform draws this element, and a custom React window places that drawing with <Lsf name/> instead of
+    // drawing the element itself - so the element is not projected, the same way an lsf child of a form container is not
+    public boolean lsf;
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
@@ -232,6 +236,18 @@ public abstract class NavigatorElement {
         return !getChildren().isEmpty();
     }
 
+    // the window this element itself is drawn in - WINDOW names the window of the CHILDREN, so it is the nearest
+    // ancestor's, unless PARENT put the element into its own. GNavigatorElement.getDrawWindow is the client's copy
+    public NavigatorWindow getDrawWindow() {
+        if (parentWindow)
+            return window;
+
+        NavigatorElement parent = getParent();
+        if (parent == null)
+            return null;
+        return parent.window != null ? parent.window : parent.getDrawWindow();
+    }
+
     // A folder placed directly in the top NAVIGATOR (System.root, a horizontal toolbar) must specify a WINDOW for its children
     public boolean isTopFolderWithoutWindow() {
         return !isLeafElement() && isParentRoot() && window == null;
@@ -323,6 +339,8 @@ public abstract class NavigatorElement {
         outStream.writeBoolean(nvl(showChangeKey, true));
         BaseUtils.writeObject(outStream, changeMouse);
         outStream.writeBoolean(nvl(showChangeMouse, true));
+
+        outStream.writeBoolean(lsf);
 
         AppServerImage.serialize(getImage(context), outStream);
 

@@ -5315,6 +5315,7 @@ indexStatement
 
 windowStatement
 	:	windowCreateStatement
+	|	windowExtendStatement
 	|	windowHideStatement
 	;
 
@@ -5329,6 +5330,27 @@ windowCreateStatement
 }
     //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
 	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? 'TOOLBAR'? opts=windowOptions  ';'
+	;
+
+windowExtendStatement
+	:	'EXTEND' 'WINDOW' wid=compoundID cst=windowCustom ';'
+		{
+			if (inMainParseState()) {
+				self.setWindowCustom($wid.sid, $cst.custom, $cst.property);
+			}
+		}
+	;
+
+windowCustom returns [String custom, LPWithParams property]
+	:	'CUSTOM' cst=propertyExpressionOrLiteral[null, null] {
+			if (inMainParseState()) {
+				if($cst.literal != null && $cst.literal.value instanceof LocalizedString) {
+					$custom = ((LocalizedString) $cst.literal.value).toString();
+				} else {
+					$property = $cst.property;
+				}
+			}
+		}
 	;
 
 windowHideStatement
@@ -5362,6 +5384,7 @@ windowOptions returns [NavigatorWindowOptions options]
                     }
                 }
             }
+        |	cst=windowCustom { $options.custom = $cst.custom; $options.customProperty = $cst.property; }
 		)*
 	;
 
@@ -5468,6 +5491,7 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, null, false] { $options.headerProperty = $headerExpr.property; }
 	|   'SHOWIF' showIfExpr = propertyExpression[null, null, false] { $options.showIfProperty = $showIfExpr.property; }
+	|   'LSF' { $options.lsf = true; }
 	|   changeKey = changeKeyNavigatorElement { $options.setChangeKey($changeKey.changeKey, $changeKey.show); }
 	|   changeMouse = changeMouseNavigatorElement { $options.setChangeMouse($changeMouse.changeMouse, $changeMouse.show); }
 	)*

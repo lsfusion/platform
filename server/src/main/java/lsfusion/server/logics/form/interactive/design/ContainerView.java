@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -302,13 +303,10 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         return getCustom() != null;
     }
 
-    private static final java.util.regex.Pattern REACT_COMPONENT_NAME = java.util.regex.Pattern.compile("[A-Z][A-Za-z0-9_$]*");
     public boolean isReact() {
         // React is INFERRED from the custom value (not stored): a bare component identifier (UpperCamel) names a React
-        // component; '', an HTML template ('<div>[child]</div>'), or a lower-case/path string is a plain custom design.
-        // The SINGLE point of determination — computed here and serialized to the client, so the client just reads it.
-        String cd = getCustom();
-        return cd != null && REACT_COMPONENT_NAME.matcher(cd).matches();
+        // component; '', an HTML template ('<div><Lsf:child></div>'), or a lower-case/path string is a plain custom design
+        return Custom.isReactComponent(getCustom());
     }
 
     @Override
@@ -691,7 +689,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
     public void setPropertyCustom(PropertyObjectEntity value, Version version) {
         propertyCustom.set(value, version);
-        setCustom("<div/>", version); // now empty means "simple"
+        if (custom.getNF(version) == null) // the view is chosen before the first value arrives, so SOMETHING has to be
+            setCustom(Custom.EMPTY_TEMPLATE, version); // there; '' would read as "simple", so it cannot be empty
     }
 
     @Override

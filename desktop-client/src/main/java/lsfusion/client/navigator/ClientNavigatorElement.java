@@ -56,6 +56,9 @@ public abstract class ClientNavigatorElement {
     protected boolean hasChildren;
     public ClientNavigatorWindow window;
     public boolean parentWindow;
+    // the wire model both clients read: ClientNavigatorToGwtConverter carries this on to the web client, while the
+    // desktop client draws its regular toolbar and ignores it
+    public boolean lsf;
 
     public ClientNavigatorElement(DataInputStream inStream, Map<String, ClientNavigatorWindow> windows) throws IOException {
         canonicalName = SerializationUtil.readString(inStream);
@@ -75,6 +78,8 @@ public abstract class ClientNavigatorElement {
         showChangeKey = inStream.readBoolean();
         changeMouse = BaseUtils.readObject(inStream);
         showChangeMouse = inStream.readBoolean();
+
+        lsf = inStream.readBoolean();
 
         appImage = IOUtils.readAppImage(inStream);
 

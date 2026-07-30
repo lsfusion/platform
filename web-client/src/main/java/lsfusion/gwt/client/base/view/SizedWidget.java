@@ -87,7 +87,14 @@ public class SizedWidget {
 
         public void replace(ResizableComplexPanel panel, String sID) {
             Element panelElement = panel.getElement();
-            Element panelChild = panelElement.getElementsByTagName(sID).getItem(0);
+
+            Element panelChild = GwtClientUtils.getLsfPlace(panelElement, sID);
+            if (panelChild == null) {
+                String unwrapped = GwtClientUtils.unwrapPropertySID(sID);
+                if (unwrapped != null)
+                    panelChild = GwtClientUtils.getLsfPlace(panelElement, unwrapped);
+            }
+
             if (panelChild != null) {
                 panelChild.getParentElement().replaceChild(widget.getElement(), panelChild);
             }

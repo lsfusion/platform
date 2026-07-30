@@ -51,45 +51,61 @@
     var ns = window.lsfusion || (window.lsfusion = {});
     if (ns.__installReactHooks) return; // idempotent (defensive: don't redefine)
     ns.__installReactHooks = function () {
-        if (ns.__formContext) return;
+        if (ns.__context) return;
         var React = window.React;
         if (!React) return; // eager path may run before React loads (defensive: it is a before-system resource, so normally present)
         var Ctx = React.createContext(null);
-        Object.defineProperty(ns, '__formContext', { value: Ctx }); // internal (non-enumerable)
-        ns.useFormData = function (selector) {
+        Object.defineProperty(ns, '__context', { value: Ctx }); // internal (non-enumerable)
+        // the data and the controller of whatever root the component is mounted under - these know nothing about forms
+        ns.useData = function (selector) {
             var store = React.useContext(Ctx).store;
             var select = selector || function (s) { return s; };
             return React.useSyncExternalStore(store.subscribe, function () { return select(store.getSnapshot()); });
         };
-        ns.useFormController = function () { return React.useContext(Ctx).controller; };
-        // the crossing BACK to the platform. <Lsf sid/> marks where a DESIGN child with `lsf = TRUE` goes:
+        ns.useController = function () { return React.useContext(Ctx).controller; };
+        // an image the platform projected - a property of an image class, an icon of a navigator element or of an
+        // action. The platform emits either an address or a ready element (a font icon has no address at all), and
+        // the two are told apart by the leading '<', which an address never has - so one component draws both, and
+        // no view has to inject platform markup itself.
+        ns.Image = function (props) {
+            var value = props.value;
+            if (!value) return null;
+            if (value.charAt(0) === '<')
+                return React.createElement('span', { className: props.className, style: props.style,
+                                                     dangerouslySetInnerHTML: { __html: value } });
+            return React.createElement('img', { src: value, className: props.className, style: props.style,
+                                                alt: props.alt || '' });
+        };
+        // the crossing BACK to the platform. <Lsf name/> marks where a DESIGN child with `lsf = TRUE` goes:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
         // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
         // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
-        // useLsf(sid) -> a ref callback mounting the lsf child into the element the component ALREADY
+        // useLsf(name) -> a ref callback mounting the lsf child into the element the component ALREADY
         // renders, so no placeholder node exists at all. The platform marks that element (the lsf-view class + data-lsf-sid).
-        // pass `row` for an LSF grid property: then the sid says WHICH property and the row says which of its
-        // per-row renderers, so the same sid legitimately has one host per row. Pass the row object out of the
+        // `name` is whatever the root it is mounted under names the thing being placed: the DESIGN identifier of a
+        // child for a form container, the canonical name of an element for a navigator window.
+        // pass `row` for an LSF grid property: then the name says WHICH property and the row says which of its
+        // per-row renderers, so the same name legitimately has one host per row. Pass the row object out of the
         // projected data (or its `objects`) - a key string cannot be resolved back to a row.
-        ns.useLsf = function (sid, row) {
+        ns.useLsf = function (name, row) {
             var view = React.useContext(Ctx).view;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
             return React.useCallback(function (host) {
-                if (held.current) { view.unmount(sid, held.current, heldRow.current); held.current = null; heldRow.current = null; }
-                if (host) { view.mount(sid, host, row); held.current = host; heldRow.current = row; }
-            }, [view, sid, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
+                if (held.current) { view.unmount(name, held.current, heldRow.current); held.current = null; heldRow.current = null; }
+                if (host) { view.mount(name, host, row); held.current = host; heldRow.current = row; }
+            }, [view, name, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
         };
         ns.Lsf = function (props) {
-            return React.createElement('div', { ref: ns.useLsf(props.sid, props.row), className: props.className, style: props.style });
+            return React.createElement('div', { ref: ns.useLsf(props.name, props.row), className: props.className, style: props.style });
         };
         // A lsf child's caption / image is NOT drawn by the platform - it is handed to React in its own entry, keyed as the
         // child is: data[componentSID] for a container, data[integrationSID] / data.<group>[integrationSID]
         // for an lsf property. The component names each child it wants and draws that caption itself; a container is
         // not iterated for you, so a child no Lsf mentions is not shown.
         var RowWrapper = React.memo(function (p) {
-            var row = ns.useFormData(function (s) { var g = s && s[p.groupSID]; var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
+            var row = ns.useData(function (s) { var g = s && s[p.groupSID]; var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
             if (row == null) return null; // row removed (about to unmount): don't hand a null row to the component
             var rowProps = {};
             var pass = p.pass;

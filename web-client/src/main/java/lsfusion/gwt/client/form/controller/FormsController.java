@@ -788,8 +788,9 @@ public abstract class FormsController {
     public void executeAction(String actionSID, Runnable onRequestFinished) {
         executeNavigatorAction(actionSID, false, true, 0, onRequestFinished);
     }
+    // there is no event when the element is activated from code rather than by a click, and then no modifier is held
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
-        return executeNavigatorAction(actionSID, event.getCtrlKey(), sync, 1, null);
+        return executeNavigatorAction(actionSID, event != null && event.getCtrlKey(), sync, 1, null);
     }
     public void executeNotificationAction(Integer id, String result, Runnable onRequestFinished) {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;

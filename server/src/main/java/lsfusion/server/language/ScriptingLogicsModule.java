@@ -20,6 +20,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -5701,10 +5702,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         window.propertyElementClass = options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null;
         window.elementClass = options.elementClass;
 
+        applyWindowCustom(window, name, options.custom, options.customProperty);
+
         return window;
     }
 
-    private AbstractWindow createNativeWindow(String name, LocalizedString caption, NavigatorWindowOptions options) {
+    private AbstractWindow createNativeWindow(String name, LocalizedString caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNativeWindowCustom(name, options.custom != null || options.customProperty != null);
+
         AbstractWindow window = new AbstractWindow(elementCanonicalName(name), caption);
         DockPosition dp = options.getDockPosition();
         if (dp != null)
@@ -5713,6 +5718,61 @@ public class ScriptingLogicsModule extends LogicsModule {
         window.propertyElementClass = options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null;
         window.elementClass = options.elementClass;
         return window;
+    }
+
+    // the renderer of an ALREADY declared window - so the elements keep their window, and the navigator keeps its
+    // structure, selection and startup behaviour; only the drawing changes
+    public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
+        AbstractWindow window = findWindow(name);
+        checks.checkNativeWindowCustom(name, !(window instanceof NavigatorWindow));
+
+        applyWindowCustom((NavigatorWindow) window, name, custom, customProperty);
+    }
+
+    // the one place a window is told what draws it, whichever statement said so - as the grammar has one rule - so the
+    // check cannot be forgotten by a third caller
+    private void applyWindowCustom(NavigatorWindow window, String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkWindowCustom(name, custom);
+
+        // a literal beside a property is the pair the rest of the design uses (elementClass / propertyElementClass):
+        // the literal is the markup the window starts with, the property recomputes it. Checked against the WINDOW,
+        // not against one statement, since the two can come from two modules - and only one combination is not a pair:
+        // a React component draws the window itself and would never be handed a computed template
+        String react = customProperty != null ? window.getCustom() : custom;
+        if ((customProperty != null || window.getPropertyCustom() != null) && Custom.isReactComponent(react))
+            errLog.emitWindowCustomReactPropertyError(parser, name, react);
+
+        if (customProperty != null)
+            window.setPropertyCustom(customProperty.getLP().property);
+        else
+            window.setCustom(resolveWindowTemplate(name, custom));
+    }
+
+    // a place in a window's template names its element the way the rest of the module does - by a name resolved in the
+    // module's namespaces - and is rewritten to the canonical name the client keys elements by. A name that resolves to
+    // nothing is an error here, when the module is read, instead of an element that silently never appears
+    private String resolveWindowTemplate(String name, String custom) throws ScriptingErrorLog.SemanticErrorException {
+        if (custom == null || Custom.isReactComponent(custom))
+            return custom;
+
+        try {
+            return Custom.mapPlaces(custom, elementName -> {
+                // resolved WITHOUT the error log: an emitted error is already a whole formatted banner, and wrapping
+                // one inside another gives the reader two headers and two source links for a single mistake
+                NavigatorElement element;
+                try {
+                    element = resolveNavigatorElement(elementName);
+                } catch (ResolvingError e) {
+                    element = null;
+                }
+                if (element == null)
+                    throw new Custom.PlaceError("'" + elementName + "' is not a navigator element");
+                return element.getCanonicalName();
+            });
+        } catch (Custom.PlaceError e) {
+            errLog.emitWindowCustomPlaceError(parser, name, e.getMessage());
+            return custom;
+        }
     }
 
     public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -5726,6 +5786,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public ImageOption imageOption;
         public LPWithParams headerProperty;
         public LPWithParams showIfProperty;
+        public boolean lsf;
 
         public LPWithParams elementClassProperty;
         public String elementClass;
@@ -5836,6 +5897,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementClass(element, options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null, options.elementClass);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
         setNavigatorElementShowIf(element, options.showIfProperty != null ? options.showIfProperty.getLP().property : null);
+        if (options.lsf)
+            element.lsf = true;
         setNavigatorElementChangeKey(element, options.changeKey, options.showChangeKey);
         setNavigatorElementChangeMouse(element, options.changeMouse, options.showChangeMouse);
 

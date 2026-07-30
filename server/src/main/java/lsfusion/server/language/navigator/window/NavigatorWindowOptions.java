@@ -94,6 +94,8 @@ public class NavigatorWindowOptions {
 
     public ScriptingLogicsModule.LPWithParams elementClassProperty;
     public String elementClass;
+    public String custom;
+    public ScriptingLogicsModule.LPWithParams customProperty;
 
     @Override
     public String toString() {

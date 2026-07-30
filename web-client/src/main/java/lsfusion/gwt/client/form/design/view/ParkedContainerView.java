@@ -8,8 +8,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 
-// a container whose own renderer decides WHERE each child view goes: an HTML template with [sID] slots
-// (CustomContainerView) or a React tree with <Lsf sid/> placeholders (ReactContainerView).
+// a container whose own renderer decides WHERE each child view goes: an HTML template with <Lsf:name> places
+// (CustomContainerView) or a React tree whose <Lsf name/> hosts the platform fills (ReactContainerView).
 //
 // A child is a LOGICAL child of panel, so GWT attaches it (event listener, sinkEvents, onLoad), keeps it in the
 // RequiresResize chain, and remove() finds its parent. Its ELEMENT meanwhile waits in a hidden park node, until the
@@ -51,7 +51,7 @@ public abstract class ParkedContainerView extends LayoutContainerView {
         getChildView(index).appendTo(getParkElement());
     }
 
-    // a child that just moved from the (display:none) park into a visible slot has never been measured, and a DOM move
+    // a child that just moved from the (display:none) park into a visible place has never been measured, and a DOM move
     // fires nothing in GWT — so the resize is scheduled here, once the new position has been laid out
     protected void resizeChildren() {
         if (resizeScheduled) // one pass is enough however many children a single render placed

@@ -42,6 +42,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.canonicalName = clientElement.getCanonicalName();
         element.caption = clientElement.caption;
         element.elementClass = clientElement.elementClass;
+        element.lsf = clientElement.lsf;
         element.creationPath = clientElement.creationPath;
         element.path = clientElement.path;
         element.children = new ArrayList<>();
@@ -100,7 +101,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     public <E extends GNavigatorWindow> E initNavigatorWindow(ClientNavigatorWindow clientWindow, E window) {
         initAbstractNavigatorWindow(clientWindow, window);
 
-        window.drawScrollBars = clientWindow.drawScrollBars;
         for (Object clientElement : clientWindow.elements) {
             GNavigatorElement element = convertOrCast((ClientNavigatorElement) clientElement);
             window.elements.add(element);
@@ -126,6 +126,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.verticalTextPosition = clientWindow.verticalTextPosition;
         window.showSelect = clientWindow.showSelect;
         window.vertical = clientWindow.type == 1;
+        window.custom = clientWindow.custom;
+        window.react = clientWindow.react;
         return window;
     }
 

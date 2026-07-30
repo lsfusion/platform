@@ -226,6 +226,23 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("can't create keystroke from string '%s'", ksLiteral));
     }
 
+    public void emitNativeWindowCustomError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements", name));
+    }
+
+    public void emitWindowCustomError(ScriptParser parser, String name, String custom) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM '%s' of window '%s' is neither a React component name (an uppercase letter followed by letters, digits, '_' or '$') nor an HTML template (it must contain a tag)", custom, name));
+    }
+
+    public void emitWindowCustomReactPropertyError(ScriptParser parser, String name, String custom) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM of window '%s' is both the React component '%s' and a property; a component draws the window itself, so a computed template would never be drawn", name, custom));
+    }
+
+    public void emitWindowCustomPlaceError(ScriptParser parser, String window, String message) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM of window '%s': %s", window, message));
+    }
+
+
     public void emitWindowPositionConflictError(ScriptParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height))" +
                 format("are specified for window '%s', only one of those should be used", name));

@@ -2,7 +2,10 @@ package lsfusion.gwt.client.navigator.window;
 
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.client.navigator.view.GNavigatorView;
+import lsfusion.gwt.client.navigator.view.GAbstractNavigatorView;
+import lsfusion.gwt.client.navigator.view.ToolbarNavigatorView;
+import lsfusion.gwt.client.navigator.view.CustomNavigatorView;
+import lsfusion.gwt.client.navigator.view.ReactNavigatorView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +37,9 @@ public class GNavigatorWindow extends GAbstractWindow {
     public float alignmentY;
     public float alignmentX;
 
-    public boolean drawScrollBars;
+    // the component name or the HTML template drawing this window's elements instead of the standard toolbar
+    public String custom;
+    public boolean react; // inferred from custom on the server, so the client just reads it
 
     public boolean isSystem() {
         return canonicalName.equals("System.system");
@@ -60,12 +65,25 @@ public class GNavigatorWindow extends GAbstractWindow {
         return canonicalName.equals("System.root");
     }
 
-    public GNavigatorView createView(GINavigatorController navigatorController) {
-        return new GNavigatorView(this, navigatorController);
+    public boolean isCustom() {
+        return custom != null;
+    }
+
+    public GAbstractNavigatorView createView(GINavigatorController navigatorController) {
+        if (isCustom())
+            return react ? new ReactNavigatorView(this, navigatorController) : new CustomNavigatorView(this, navigatorController);
+
+        return new ToolbarNavigatorView(this, navigatorController);
     }
 
     public boolean hasVerticalTextPosition() {
         return verticalTextPosition == BOTTOM;
+    }
+
+    // whether this element's button is drawn in its active state - one rule, asked by the standard strip and by the
+    // buttons a custom window hands out
+    public boolean isActive(GNavigatorElement element, GNavigatorElement selected) {
+        return allButtonsActive() || (element.isFolder() && element.equals(selected));
     }
 
     public boolean allButtonsActive() {

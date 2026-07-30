@@ -3,7 +3,7 @@ slug: "/WINDOW_statement"
 title: 'WINDOW statement'
 ---
 
-The `WINDOW` statement - creating a new [window](../paradigm/Navigator_design.md), the `HIDE WINDOW` statement - hiding an existing window.
+The `WINDOW` statement - creating a new [window](../paradigm/Navigator_design.md), the `EXTEND WINDOW` statement - changing the renderer of an existing window, the `HIDE WINDOW` statement - hiding an existing window.
 
 ### Syntax
 
@@ -24,11 +24,13 @@ VALIGN(alignType)
 TEXTHALIGN(alignType)
 TEXTVALIGN(alignType)
 CLASS cssClassExpr
+CUSTOM customExpr
 ```
 
-An existing window can be hidden with a separate statement:
+An existing window can be given a renderer, or hidden, with separate statements:
 
 ```
+EXTEND WINDOW windowName CUSTOM customExpr;
 HIDE WINDOW windowName;
 ```
 
@@ -37,6 +39,8 @@ HIDE WINDOW windowName;
 The `WINDOW` statement declares a new window and adds it to the current [module](../paradigm/Modules.md).
 
 By default a window is created that displays [navigator elements](../paradigm/Navigator.md).
+
+The `EXTEND WINDOW` statement gives an already declared window - a standard one included - the React component or HTML template that draws its navigator elements, leaving everything else about the window as it is. The elements keep the window they were placed in, so the navigator's structure, its selection and its startup behavior stay as they were, and only the renderer changes. The window must already exist and must not be `NATIVE`. When several modules extend one window, the last literal is the markup the window starts with and the last property is the one that recomputes it.
 
 The `HIDE WINDOW` statement hides the specified window, making it invisible. For example, hiding the `System.log` window causes messages to the user to be shown as system dialog forms.
 
@@ -160,6 +164,20 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. For
 
         [Expression](Expression.md), whose value determines the class name.
 
+- `CUSTOM customExpr`
+
+    The window's navigator elements are drawn by a React component or an HTML template instead of the standard toolbar. The mobile web client and the desktop client keep their standard menu.
+
+    - `customExpr`
+
+        [Expression](Expression.md) (string value). A [string literal](Literals.md#strliteral) matching `[A-Z][A-Za-z0-9_$]*` names a React component; a literal with markup in it, and any property, is an HTML template; a literal that is neither is an error. Only a literal names a component, since the renderer is chosen before the first value arrives, while a template given by a property is recomputed as that value changes and the window is drawn again from the new markup.
+
+        A literal and a property may be given together, the way `CLASS` takes a literal and a property: the literal is the markup the window is drawn from until the property computes its first value, and the property replaces it from then on. A React component cannot be paired with a property, since the component draws the window itself and a computed template would never be drawn.
+
+        The template is the one the `custom` attribute of a [`DESIGN`](DESIGN_statement.md) container takes, with the same rules for writing a place; here `<Lsf:name>` is the place the standard button of the navigator element with that name goes into. In a literal the name is resolved in the module's [namespaces](../paradigm/Naming.md#namespace), so the element must already be declared and a name that resolves to nothing is an error; a template computed by a property is not resolved, and there the [canonical name](../paradigm/Naming.md#canonicalname) is written.
+
+        A `NATIVE` window cannot be given a component or a template, since it holds no navigator elements.
+
 ### Examples
 
 ```lsf
@@ -177,6 +195,9 @@ WINDOW log NATIVE POSITION(80, 6, 20, 93) HIDETITLE CLASS logsWindowClass();
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening
 WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
+
+// a window drawn by an application React component
+WINDOW appMenu VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CUSTOM 'AppMenu';
 
 // hiding the predefined message window (then messages are shown as dialog forms)
 HIDE WINDOW System.log;

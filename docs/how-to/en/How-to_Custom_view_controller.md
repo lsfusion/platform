@@ -185,6 +185,28 @@ await controller.change('archived', orderId, true);
 
 A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch.
 
+### The navigator controller {#navigator-controller}
+
+An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept; and it has `activate`:
+
+- `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md); `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
+
+Activating an element that does not exist, or one hidden by `SHOWIF`, throws — activation by name reaches exactly what the navigator shows. Running an action reports no completion, just as a click does not.
+
+```js
+window.openMonthlyReport = function (controller) {
+    controller.activate('Reporting.monthly');
+};
+```
+
+```lsf
+openMonthlyReport 'Monthly report' () { INTERNAL CLIENT 'openMonthlyReport'; }
+
+NAVIGATOR {
+    NEW openMonthlyReport WINDOW system PARENT;
+}
+```
+
 ### Row identity {#row-identity-contract}
 
 A method that targets a row accepts one of:
