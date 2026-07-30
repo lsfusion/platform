@@ -3424,12 +3424,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         runLockReadOperation(() -> {
             if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
                 if(privateConnection.temporary.getTables().contains(table)) { // тут теоретически raceCondition'ов может быть очень много
-                    // the drop goes FIRST : taking the name out of the pool before it succeeds makes a failed drop leave a table nothing knows about any more - this cleaner walks the pool
-                    // names, so it would never come back to it, and it would live on until the connection is dropped. Keeping the name means the table can simply be reused instead
+                    // with a working database the only failure here is 42P01 : this runs outside any transaction (a transaction holds the write lock, and the cleaner gives up when it can not
+                    // take the read one), and nobody but this session can touch its own temp table. That one used to abort the whole pass and leave the other idle tables to the next run -
+                    // now it means what it says, the table is already gone and only its name still has to go
+                    // the drop also goes first, so that the name is not forgotten before the table behind it really is - a failure for any other reason (that is, a broken connection) then
+                    // leaves both where they were
                     try {
                         dropTemporaryTableFromDB(table);
                     } catch (SQLException e) {
-                        if(!syntax.isTableDoesNotExist(e)) // the table is already gone : nothing to drop, and the name has to leave the pool all the same
+                        if(!syntax.isTableDoesNotExist(e))
                             throw e;
                     }
 
