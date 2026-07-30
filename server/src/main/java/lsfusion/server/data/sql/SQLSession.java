@@ -1355,15 +1355,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // so a failed TRUNCATE has already taken the count entry out, and registering the removal a second time would just assert TABLE WAS REMOVED BEFORE - which under assertions would throw
     // right here, leaving the name in the pool, exactly what this method exists to prevent. The entry does survive the DELETE FROM form of the truncate (see truncate) : that one registers a
     // row change rather than a removal, so the entry stays behind and only the removal here takes it out
-    private void removeTemporaryTableFromPool(String table, TableOwner tableOwner) {
+    private void removeTemporaryTableFromPool(String table, TableOwner tableOwner, boolean vanished) {
         assertLock();
 
         if(sessionTablesCount.containsKey(table))
             registerSessionChange(table, tableOwner, -1, TableChange.REMOVE);
 
-        // the removal is permanent, so the rollback must not restore the count of a table that is gone : the transaction saved it to put it back (see registerTransactionChange), and putting
-        // null there instead makes the rollback drop the entry, the way it does for a table the transaction itself created. The saved total is corrected by the same rows for the same reason
-        if(isInTransaction()) {
+        // only for a table that is physically gone : then the rollback must not restore its count either - the transaction saved it to put it back (see registerTransactionChange), and putting
+        // null there instead makes the rollback drop the entry, the way it does for a table the transaction itself created; the saved total is corrected by the same rows for the same reason
+        // any other failure (a timeout, a cancel) keeps the saved count : the table survives the rollback WITH its rows - and it survives even when the DROP that follows this call went
+        // through, since a DROP inside a transaction is rolled back with it
+        if(vanished && isInTransaction()) {
             Integer rollbackCount = transactionSessionTablesCount.put(table, null);
             if(rollbackCount != null)
                 transactionTotalSessionTablesCount -= rollbackCount;
@@ -1424,7 +1426,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     // the physical table is gone, so there is nothing to clean and nothing to drop - the name has to leave the pool, which is what the truncate failure means everywhere else too (see returnTemporaryTable) :
                     // otherwise this entry fails here forever, and with it EVERY getTemporaryTable, tryCommon and close of this session, since they all come through here
                     ServerLoggers.sqlSuppLog(new SQLException("UNUSED TEMPORARY TABLE " + entry.getKey() + " NO LONGER EXISTS, DROPPED FROM THE POOL", e));
-                    removeTemporaryTableFromPool(entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner);
+                    removeTemporaryTableFromPool(entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner, true);
                 }
                 iterator.remove();
             }
@@ -1473,9 +1475,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
                 runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
-                if(firstException.result != null) {
-                    runSuppressed(() -> removeTemporaryTableFromPool(table, owner), firstException);
-                    runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
+                // only a database failure says anything about the table : an assertion (assertLog throws under -ea, and the accounting asserts fire on a perfectly healthy table) or any other
+                // throwable from this side would otherwise take a live table out of the pool and physically drop it
+                if(firstException.result instanceof SQLException) {
+                    boolean vanished = syntax.isTableDoesNotExist((SQLException) firstException.result);
+                    runSuppressed(() -> removeTemporaryTableFromPool(table, owner, vanished), firstException);
+                    if(!vanished) // there is nothing left to drop, and the DROP carries no IF EXISTS - it would only add a second failure to the first
+                        runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
                 }
             }
     
