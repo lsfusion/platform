@@ -89,6 +89,8 @@ import lsfusion.server.physics.exec.db.table.DBTable;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.apache.log4j.Logger;
 import org.postgresql.PGConnection;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -228,9 +230,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         SQLException e = (SQLException) t;
         if(syntax.isTableDoesNotExist(e)) {
-            handLogger.info("TABLE DOES NOT EXIST " + sessionDebugInfo);
+            String table = getNotExistingTable(e);
+            handLogger.info("TABLE DOES NOT EXIST " + (table != null ? table + ", " : "") + sessionDebugInfo); // the name it is about : this log is also where a 42P01 on a PERMANENT table ends up
 
-            evictNotExistingTable(e, connection);
+            if(table != null)
+                evictNotExistingTable(table, connection);
         }
     }
 
@@ -1393,20 +1397,31 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         privateConnection.temporary.removeTable(table);
     }
 
+    // the relation the error is ABOUT, from the SERVER's primary message : the exception's own message carries the detail, the hint and the failing query, and those name the live tables too.
+    // The identifier is matched by its quotes rather than by the "relation" keyword, because the keyword is translated on a server with a localized lc_messages while the quoted identifier is
+    // not - the keyword match made the whole eviction a silent no-op on such an installation
+    // but the same 42P01 also reports a table that DOES exist and is merely out of scope ("missing FROM-clause entry for table", "invalid reference to FROM-clause entry") - which the keyword
+    // match used to rule out by accident. Those come from one server routine, and the routine name is not translated either
+    private String getNotExistingTable(SQLException e) {
+        if(!(e instanceof PSQLException))
+            return null;
+
+        ServerErrorMessage serverMessage = ((PSQLException) e).getServerErrorMessage();
+        if(serverMessage == null || "errorMissingRTE".equals(serverMessage.getRoutine())) // no structured message : there is no locale independent way to tell which relation it is about
+            return null;
+
+        String message = serverMessage.getMessage();
+        if(message == null)
+            return null;
+
+        Matcher matcher = Pattern.compile("\"(t_\\d+)\"").matcher(message);
+        return matcher.find() ? matcher.group(1) : null;
+    }
     // the pool believes the name is still there, so it hands it out again - and every reuse fails the same way : inside a transaction the return can not notice, because truncate is a silent
     // no-op while the problem flag is set (see truncate), a reused name never enters transactionTables so the rollback compensation does not free it, and lastReturnedStamp is refreshed on
     // every such return so the periodic cleaner does not either - the error is the only place that knows the table is gone
     // only the POOL side is taken away : the owner keeps its registration and returns the table its usual way (its accounting goes there, as always), it just will not be handed out again
-    private void evictNotExistingTable(SQLException e, ExConnection connection) {
-        String message = e.getMessage();
-        if(message == null)
-            return;
-
-        Matcher matcher = Pattern.compile("relation\\s+\"(t_\\d+)\"").matcher(message); // the relation the error is ABOUT : the message carries the failing query too, which names the live tables
-        if(!matcher.find())
-            return;
-
-        String table = matcher.group(1);
+    private void evictNotExistingTable(String table, ExConnection connection) {
         temporaryTablesLock.lock(); // the lock that serializes the issuing (lockRead -> temporaryTablesLock, as in returnTemporaryTable)
         try {
             // the pool belongs to the CONNECTION the statement ran on, which is not always this session's private one : on a common connection the name would otherwise stay in the pool and
