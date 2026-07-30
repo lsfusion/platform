@@ -287,11 +287,20 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
+    // hardened against XXE (CVE-2021-33813-class issue, see GH #1728): external entity resolution disabled, used for all untrusted XML parsing
+    public static SAXBuilder createSecureSAXBuilder() {
+        SAXBuilder builder = new SAXBuilder();
+        builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        builder.setExpandEntities(false);
+        return builder;
+    }
+
     //check if it's XML inside
     private static List<Content> parseObject(String str, boolean escapeInnerXML) {
         if (!escapeInnerXML && str.contains("<") && str.contains("/") && str.contains(">")) {
             try {
-                List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
+                List<Content> children = new ArrayList<>(createSecureSAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
                 children.forEach(Content::detach);
                 return children;
             } catch (JDOMException | IOException ignored) {
