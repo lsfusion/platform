@@ -217,9 +217,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         sql.executeDDL(sql.syntax.getCancelActiveTaskQuery(processId));
     }
 
-    // the reaction to a table that no longer exists, the part of handle that does not classify the exception : the statement paths that catch the throwable themselves (executeDDL, executeDML,
-    // insertBatchRecords - the batch failure postgres reports through the exception chain - readSingleValues) call it directly, since they can not go through handle : it returns a
-    // SQLHandledException their signatures do not carry, so it would reach their callers wrapped in a RuntimeException, past every catch of theirs
+    // the reaction to a table that no longer exists, run from afterStatementExecute / afterExStatementExecute for every statement path at once - and run THERE rather than in the catch blocks
+    // because it takes temporaryTablesLock : the opposite order is taken by every truncate of a returned table (returnTemporaryTable holds temporaryTablesLock and goes down to lockConnection),
+    // so reacting while the connection lock is still held would deadlock against it - and both threads hold the session read lock, so nothing could restart or close the session afterwards
     // marking the transaction as aborted is NOT done here : those paths also catch what the driver throws on this side (binding a parameter before the statement is sent, reading a result of a
     // query that succeeded), and postgres has not aborted anything then - the mark would only make a later truncate a silent no-op and put a dirty table back in the pool
     private void handleNotExistingTable(Throwable t) {
@@ -234,10 +234,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    // the same three steps for every statement path that catches the throwable itself : log it, handle the problem it carries, and keep it for afterStatementExecute to rethrow
+    // the same two steps for every statement path that catches the throwable itself : log it and keep it for afterStatementExecute, which both rethrows it and reacts to a vanished table
     private void handleStatementException(Throwable e, Statement statement, Result<Throwable> firstException) {
         logger.error((statement == null ? "PREPARING STATEMENT" : statement.toString()) + " " + e.getMessage());
-        handleNotExistingTable(e);
         firstException.set(e);
     }
 
@@ -1990,8 +1989,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(inTransaction && syntax.hasTransactionSavepointProblem())
             problemInTransaction = Problem.EXCEPTION;
 
-        handleNotExistingTable(e);
-
         SQLHandledException handled = null;
         boolean deadLock = false;
         if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e))) {
@@ -2177,6 +2174,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 runSuppressed(statement::close, firstException);
 
             runSuppressed(() -> unlockConnection(owner), firstException);
+
+            // after the connection lock (see handleNotExistingTable), but before the connection is given back : returnConnection can hand a private connection over to the next session, and
+            // the vanished name would travel with it
+            runSuppressed(() -> handleNotExistingTable(firstException.result), firstException);
 
             if(env != null)
                 runSuppressed(() -> env.after(SQLSession.this, connection, command, owner), firstException);
@@ -2483,6 +2484,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 runSuppressed(() -> returnStatement.result.proceed(statement, runTime), firstException);
 
             runSuppressed(() -> unlockConnection(execInfo.needConnectionLock(), owner), firstException);
+
+            // after the connection lock (see handleNotExistingTable), but before the connection is given back : returnConnection can hand a private connection over to the next session, and
+            // the vanished name would travel with it. handle leaves a 42P01 as it is (it classifies none of its branches), so what got here is still the original SQLException
+            runSuppressed(() -> handleNotExistingTable(firstException.result), firstException);
 
             runSuppressed(() -> returnConnection(connection, owner), firstException);
         }
