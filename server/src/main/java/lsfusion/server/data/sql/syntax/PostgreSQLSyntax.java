@@ -250,7 +250,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     @Override
     public boolean isConnectionClosed(SQLException e) {
         String sqlState = e.getSQLState();
-        return sqlState.equals("08003") || sqlState.equals("08006");
+        return "08003".equals(sqlState) || "08006".equals(sqlState); // null safe : the state can be missing on a driver level failure, and this runs from inside the error handling
     }
 
     @Override
