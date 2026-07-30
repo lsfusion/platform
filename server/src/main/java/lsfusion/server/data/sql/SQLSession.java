@@ -1503,6 +1503,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 needPrivate();
 
                 String tableName = table.getName();
+
+                // the roll back is speculative : SessionTableUsage.aspectException rolls the drop of a table that, on most of its paths, was never returned at all (a timeout in modifyRecord,
+                // in updateRecordsCount, in checkClasses - nothing gives the table back). Registering the ADD again would then reset its row count to zero WITHOUT taking those rows out of the
+                // total (see registerSessionChange), so totalSessionTablesCount drifted up by the table's size on every handled exception - and it drives the connection restart and balance scores
+                WeakReference<TableOwner> currentOwner = sessionTablesMap.get(tableName);
+                if(currentOwner != null && currentOwner.get() == owner) { // still owned : it never left, there is nothing to roll back
+                    if(assertNotExists) // rollData follows an actual drop, so unlike the speculative aspectException this is not expected there
+                        ServerLoggers.assertLog(false, "ROLLBACK OF A TABLE THAT NEVER LEFT ITS OWNER : " + tableName + " " + owner);
+                    return;
+                }
+
                 registerSessionChange(tableName, owner, -1, TableChange.ADD);
 
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
