@@ -1609,9 +1609,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         lockRead(OperationOwner.unknown);
 
         try {
-            lockNeedPrivate();
+            lockNeedPrivate(); // released by popNoReadOnly : the connection must stay private, and the same one, between the two
 
-            pushNoReadOnly(getConnection().sql);
+            // getConnection raises explicitNeedPrivate of its own (and on a common connection it keeps temporaryTablesLock), and only returnConnection lets that go - without it the session
+            // could never give its private connection back, and every INTERNAL <sql> or migration action left it pinned for good
+            ExConnection connection = getConnection();
+            try {
+                pushNoReadOnly(connection.sql);
+            } finally {
+                returnConnection(connection, OperationOwner.unknown);
+            }
         } finally {
             unlockRead();
         }
@@ -1626,9 +1633,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void popNoReadOnly() throws SQLException {
         lockRead(OperationOwner.unknown);
         try {
-            popNoReadOnly(getConnection().sql);
+            ExConnection connection = getConnection();
+            try {
+                popNoReadOnly(connection.sql);
+            } finally {
+                returnConnection(connection, OperationOwner.unknown);
+            }
         } finally {
-            lockTryCommon(OperationOwner.unknown);
+            lockTryCommon(OperationOwner.unknown); // the lockNeedPrivate of pushNoReadOnly
 
             unlockRead();
         }
@@ -2374,6 +2386,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         ExConnection connection = getConnection();
         try (Statement statement = connection.sql.createStatement()) {
             statement.execute(select);
+        } finally { // on a common connection getConnection leaves temporaryTablesLock held for returnConnection to release, so without this the whole session stops
+            returnConnection(connection, OperationOwner.unknown);
         }
     }
 
