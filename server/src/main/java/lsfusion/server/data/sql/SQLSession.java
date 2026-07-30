@@ -3424,9 +3424,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         runLockReadOperation(() -> {
             if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
                 if(privateConnection.temporary.getTables().contains(table)) { // тут теоретически raceCondition'ов может быть очень много
+                    // the drop goes FIRST : taking the name out of the pool before it succeeds makes a failed drop leave a table nothing knows about any more - this cleaner walks the pool
+                    // names, so it would never come back to it, and it would live on until the connection is dropped. Keeping the name means the table can simply be reused instead
+                    try {
+                        dropTemporaryTableFromDB(table);
+                    } catch (SQLException e) {
+                        if(!syntax.isTableDoesNotExist(e)) // the table is already gone : nothing to drop, and the name has to leave the pool all the same
+                            throw e;
+                    }
+
                     lastReturnedStamp.remove(table);
                     privateConnection.temporary.removeTable(table);
-                    dropTemporaryTableFromDB(table);
                 }
             }
         });
