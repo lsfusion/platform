@@ -755,8 +755,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:bfabf0baf4f469e4078b297d7d1fb7d90151ff21d17cbbfa34f382b580c500b9",
-      "indexed_at": "2026-07-25T10:46:59Z",
+      "file_hash": "sha256:edcf0b7763356d012454b552c2468f170b8e9c643d297d24818926b1201111ee",
+      "indexed_at": "2026-07-30T10:59:57Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -766,27 +766,33 @@
       },
       "sections": {
         "How-to_Custom_React_views::a-live-editor-in-every-row": {
-          "file_id": "file-ShoGAc7bZhw7gVDZGT2dBU",
+          "file_id": "file-9NP4UDHZWLV1BwdXeKq2Hd",
           "heading_path": "How-to: Custom React form views > A live editor in every row",
-          "section_payload_hash": "sha256:ae6197200128ef1387447bb5df4894e339d17141f65c1f9ffcbef5dc2110cfa4",
+          "section_payload_hash": "sha256:0def9ddec69fd0725666f466741f4d09b75ed4645d27599148a4805913256119",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::a-navigator-window-navigator-window": {
+          "file_id": "file-JyFNxmjj9Xo2yHNYtFYHpY",
+          "heading_path": "How-to: Custom React form views > A navigator window {#navigator-window}",
+          "section_payload_hash": "sha256:aca0d4d29d0ea9923b78aa25dc766805ff66ad3cb7c3abd254716467afcbf309",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::bucketing-rows-into-cells-bucketing": {
-          "file_id": "file-Czg1Njaqhbmx3JMS1qgNEo",
+          "file_id": "file-TZdVTNAV3RtyvQ8iN3rt8s",
           "heading_path": "How-to: Custom React form views > Bucketing rows into cells {#bucketing}",
-          "section_payload_hash": "sha256:680a583cea0d5e191e240435aca27579b68d8567782739e782aa6ee5b9ab1c48",
+          "section_payload_hash": "sha256:26f77c1242719241a74662b0e8b36752a2d22566518591e4cecab3238ed98994",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::choosing-between-a-react-component-and-an-html-template": {
-          "file_id": "file-5s588uk8qfJ93FoTssfDz7",
+          "file_id": "file-LSJnb14Hmus7eS13ADvSzr",
           "heading_path": "How-to: Custom React form views > Choosing between a React component and an HTML template",
-          "section_payload_hash": "sha256:db36b6b38941fa019d1c55e603db8140d9f55469d67d22bb67a006f2abb2098e",
+          "section_payload_hash": "sha256:2e2179dfc031c29f6fa322d5af86162f705718f78f5410f00af848b234487e6a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::crossing-back-to-lsfusion": {
-          "file_id": "file-JgbP7WuFh9ZmqCpNLTV1Eb",
+          "file_id": "file-4KVkaXYTX72giPcHrDuW9h",
           "heading_path": "How-to: Custom React form views > Crossing back to lsFusion",
-          "section_payload_hash": "sha256:120f6bba603a7705b890cce9026a8af2d1c4cf996f0ad0b2e355b3020e74d711",
+          "section_payload_hash": "sha256:a3a6b8f8e070da09a6c153e647e9ee4855617e5c7830b62070b0b1be52f24251",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::display-options-display-options": {
@@ -795,10 +801,16 @@
           "section_payload_hash": "sha256:bbe2eff1bc6f31fa455d77cb480d6ede568fac5e04c4b345307a9b718d42f666",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
+        "How-to_Custom_React_views::drawing-an-image-image": {
+          "file_id": "file-KdPMMJh6a9AnKQmAA2XEtH",
+          "heading_path": "How-to: Custom React form views > Drawing an image {#image}",
+          "section_payload_hash": "sha256:284f4875db4cc19907c9a6162c0e57c61696a76d7445d70b53134920672b4061",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
         "How-to_Custom_React_views::extending-a-container-with-lsf-children": {
-          "file_id": "file-2oMHxDHYNhvEnXNFLeCHJc",
+          "file_id": "file-KzerhxVV9TpXCGFXjcpu5L",
           "heading_path": "How-to: Custom React form views > Extending a container with lsf children",
-          "section_payload_hash": "sha256:d017a415ea606efa832f9c8a4154ca6658702b5f8fa5e7c9d45e510a32dc5ae6",
+          "section_payload_hash": "sha256:325766e2a194cdb550709396988083d6b03307568e910f91af60ac98030ebe0a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::how-to-custom-react-form-views": {
@@ -814,21 +826,21 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::placing-an-lsf-child": {
-          "file_id": "file-R2fVcb5U5wpKu4oZGVjLXC",
+          "file_id": "file-8WZ6rtsrxaM3x9Z1MgpGtn",
           "heading_path": "How-to: Custom React form views > Placing an lsf child",
-          "section_payload_hash": "sha256:c41a67ad7bc92c5e869d4bba7b8cabc7d755a630a12da21a2bf13439a9e6fa86",
+          "section_payload_hash": "sha256:efd547bfe6240eab3320989cd31bc904fd030bb729b8f29175be462055385d9f",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::reading-the-projection-reading": {
-          "file_id": "file-Wic7oT62UYFduTqCmMNX9w",
+          "file_id": "file-HB4diqfHkSgZN1BmxWSyTa",
           "heading_path": "How-to: Custom React form views > Reading the projection {#reading}",
-          "section_payload_hash": "sha256:11fe9cd0d35c277423466070ca9e6a876ee0d84d30c7f550bbbe99cde9e77d86",
+          "section_payload_hash": "sha256:d2f036210ed0aba707a4969a8e96f74144626dc0feabeedd4a3569b430aebeef",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::rendering-rows-rendering-rows": {
-          "file_id": "file-H6fkfp4VWxG4jceiSZrGH7",
+          "file_id": "file-NhTyCy4tcoUfpojX9hqUoQ",
           "heading_path": "How-to: Custom React form views > Rendering rows {#rendering-rows}",
-          "section_payload_hash": "sha256:30fa55b958e4a54f29884510192cf0c0619b15b085c6ea4c9f46ef615ffded03",
+          "section_payload_hash": "sha256:238c9d0061c189318b8529230425789d272ebd6a7666f58d57630bab0ae4a20c",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
@@ -1077,8 +1089,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:a13d0175f38c622142b7b456fee9966f39596ad51127bad28793bc7cb3a35577",
-      "indexed_at": "2026-07-26T16:14:25Z",
+      "file_hash": "sha256:69382807d785135c7f5fc4cdb922029be1d8a7d5b941efcc1e9a2fbd49b94b97",
+      "indexed_at": "2026-07-30T11:00:20Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1121,6 +1133,12 @@
           "file_id": "file-NoAjrZcWBh3GwUiAb349WX",
           "heading_path": "How-to: Custom view controller API > The form controller",
           "section_payload_hash": "sha256:0b3ea19553566766bda4b2ddb35001c5abfc3cc9dda4eafe1ae7d4f173c323fa",
+          "source_file": "how-to/How-to_Custom_view_controller.md"
+        },
+        "How-to_Custom_view_controller::the-navigator-controller-navigator-controller": {
+          "file_id": "file-4sicwk8ZQ4hWMp2RRzqTPQ",
+          "heading_path": "How-to: Custom view controller API > The navigator controller {#navigator-controller}",
+          "section_payload_hash": "sha256:ed0c05ba001c393940ff5a8eae70069389c2069f39e39523bcf577971b73f40f",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         }
       },
@@ -4407,8 +4425,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:6ecc6ac8cec25b91e8e635d003ee6a629f871d0518b1b97f1b31739fc5cf14ba",
-      "indexed_at": "2026-07-25T11:58:12Z",
+      "file_hash": "sha256:99972bde86b0a89159bfe02f30be9b30ed6236e676d184996247e762f52dae18",
+      "indexed_at": "2026-07-30T11:00:28Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4424,15 +4442,15 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::component-properties": {
-          "file_id": "file-U8pT3QoDW67fYidPpy36Fv",
+          "file_id": "file-R3GiorMh6qPN8NHKoD7HCB",
           "heading_path": "DESIGN statement > Parameters > Component properties",
-          "section_payload_hash": "sha256:17f1d5d1d2f31ee1e716f20eddca8c6349f133444e0110d72f35ddfc082c6355",
+          "section_payload_hash": "sha256:dae5727fccf9384bae5c78f803caa28bbb31a9513a09305c11458a48c64acb97",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::container-properties": {
-          "file_id": "file-ESmVPBnViUaFKhYoPVaK4h",
+          "file_id": "file-NQwKrBBPEF3kFeXzYnaKhj",
           "heading_path": "DESIGN statement > Parameters > Container properties",
-          "section_payload_hash": "sha256:481f531a8d1e351fb79b2b8d390140216087b0a66162825c192df4c4881ecb4f",
+          "section_payload_hash": "sha256:2d8a557db725b7b13ad724f25fe9d8dba29b4171f0c7a99cb2addf466de1a2f2",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::description": {
@@ -6315,8 +6333,8 @@
       "stale": false
     },
     "language/NAVIGATOR_statement.md": {
-      "file_hash": "sha256:f636a5e07e63f09a42ba1687d08836d262183f907932d8b5568a8962651d1428",
-      "indexed_at": "2026-06-09T12:35:34Z",
+      "file_hash": "sha256:26b89a30860498f8c891cb9b6281ea4d3e2b7e60263d789da8d85f67abde4664",
+      "indexed_at": "2026-07-30T11:00:43Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6344,21 +6362,21 @@
           "source_file": "language/NAVIGATOR_statement.md"
         },
         "NAVIGATOR_statement::options": {
-          "file_id": "file-7FrAwiKRfwVvGhe62Kq9vN",
+          "file_id": "file-K7uoyXMu2TvYDgXydzw9ne",
           "heading_path": "NAVIGATOR statement > Options",
-          "section_payload_hash": "sha256:3e6fd2dd5b856ef67abf9dfaa7cdd3e93a25ae3eecc4b2a2bda5a8b01f1cc750",
+          "section_payload_hash": "sha256:e1425e52e6ffd06cce74ccf9ed15d2e018f2862ac19412e74fc3af1e8b2d1c41",
           "source_file": "language/NAVIGATOR_statement.md"
         },
         "NAVIGATOR_statement::parameters": {
-          "file_id": "file-QXiZJLN4FwXXtxRCqbJKhF",
+          "file_id": "file-4iCJfZYpCfECoiekwG5NWm",
           "heading_path": "NAVIGATOR statement > Parameters",
-          "section_payload_hash": "sha256:922bd69708bae46d6d9babc77032faea5bb79c571607d2f6d76c3b090a0f6aef",
+          "section_payload_hash": "sha256:93214d978fd1d217f88176a428ae1ed58eba2cff4cc7ca3eacdfe039976c034c",
           "source_file": "language/NAVIGATOR_statement.md"
         },
         "NAVIGATOR_statement::syntax": {
-          "file_id": "file-NBNaxNhf277jEz5dLnRct5",
+          "file_id": "file-7aKgLsctNNRoztKUM8iRyP",
           "heading_path": "NAVIGATOR statement > Syntax",
-          "section_payload_hash": "sha256:2a8c7a667583f2be99d8d5901c6e52aaa561db50061919f60e24f6c41199a4fa",
+          "section_payload_hash": "sha256:0fa83b3fddf7397cb6d16ae4bb112aa585c0c80a85da9804de98ca5d19e553b2",
           "source_file": "language/NAVIGATOR_statement.md"
         }
       },
@@ -7885,8 +7903,8 @@
       "stale": false
     },
     "language/WINDOW_statement.md": {
-      "file_hash": "sha256:d6486b7df15eab6681c580fe5c7ad231664607d8b8989ac98c1329f34956f143",
-      "indexed_at": "2026-06-09T12:35:44Z",
+      "file_hash": "sha256:67a4c63581bd9f1ee87c65c41b815f6ccf06b3f6b06b2f898a46d9752b5c39af",
+      "indexed_at": "2026-07-30T11:00:56Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7896,21 +7914,21 @@
       },
       "sections": {
         "WINDOW_statement::description": {
-          "file_id": "file-51emsamJG7fjBdj2QC855v",
+          "file_id": "file-4wc5oqCvQRjU8hANKUdwjc",
           "heading_path": "WINDOW statement > Description",
-          "section_payload_hash": "sha256:95e27b0b945b5d7257e263376eca2eca5475d588d713f3f9c40d7432fd7c7933",
+          "section_payload_hash": "sha256:759c6bef6b6b4b00cba70214229e43388f4fc48f32daff6ed3dfd5e7221a2a78",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::examples": {
-          "file_id": "file-DNzBsbmwPMqa9ayqnb1toT",
+          "file_id": "file-2XkahbvrEd73ZCHEwvcfA5",
           "heading_path": "WINDOW statement > Examples",
-          "section_payload_hash": "sha256:b7e49937952886cbf9ae977d5d7ddced90e54244f57e2d415dd0b86b120cbc63",
+          "section_payload_hash": "sha256:5b330319506c37358ea6c9f6ec19319126bc8d899be2ada02a743d81548b9704",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::options": {
-          "file_id": "file-EjGv6DLHeE1wXxsQMit1u8",
+          "file_id": "file-7U4Ysu88k51k4UXKxbuVBe",
           "heading_path": "WINDOW statement > Options",
-          "section_payload_hash": "sha256:2dd73504e9ab207460d1672663aac0eedc8612dc8b4e7d111a655b30016fa0f1",
+          "section_payload_hash": "sha256:eacb6cb518f294dfe85e34281a7042ba6c4ef239b3bc77fd678295de851add16",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::parameters": {
@@ -7920,15 +7938,15 @@
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::syntax": {
-          "file_id": "file-LbUYuQNqjwG8dy8TyWSFcY",
+          "file_id": "file-FKACMN1wJKsuwJEjUk69df",
           "heading_path": "WINDOW statement > Syntax",
-          "section_payload_hash": "sha256:ca2da45f3532ab5de24110749e2277c831e16ed8d763e973c041783180e7f2f6",
+          "section_payload_hash": "sha256:0a40ccdd308e1eeaf333aae68326ff4a54b43442e91089393e3c86509c1e5ad4",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::window-statement": {
-          "file_id": "file-HEo4YwzuqPDEsV2NwEUhfX",
+          "file_id": "file-7NgN877Y3S4qdsJhc8aw4q",
           "heading_path": "WINDOW statement",
-          "section_payload_hash": "sha256:2437e1d784c55d7deac40e53724bcc007489c98ae7dbe97c4d377637c56270a1",
+          "section_payload_hash": "sha256:61851b75e0cc89dbddc40b76c9754184086793876dcfb48650614c2422c25eb9",
           "source_file": "language/WINDOW_statement.md"
         }
       },
@@ -15132,7 +15150,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ba75981604b7e82078f9d7f0dc33a93013b89bca",
+  "last_indexed_docs_commit": "0a1ba1cb11759f4ab67875fe7d07bca6750ba2c5",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
