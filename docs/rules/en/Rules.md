@@ -453,6 +453,17 @@ ASSIGNMENT RULES (`<-`)
    assistant MUST wrap `PREV` in a separate property —
    `prevF(x) = PREV(f(x));` — and call it instead of
    writing `PREV(f(<session-computed arg>))` inline.
+
+4. A parameter through which a property whose name is
+   declared on several classes is read or changed MUST be
+   annotated with its class at first use
+   (`date(Interaction i) <- ...`): an overloaded name is
+   resolved by the parameter classes, and an untyped
+   parameter yields an "ambiguous name" error. This
+   especially concerns events: their statement is a separate
+   parameter context in which the class is not inferred from
+   anywhere else, and an `i IS Interaction` condition does
+   not set the parameter's class.
 ----------------------------------------------------------------
 EVENT RULES (`WHEN`)
 
@@ -493,6 +504,21 @@ EVENT RULES (`WHEN`)
 
    In the absence of an explicit change the event writes
    the value of the expression even when it is `NULL`.
+----------------------------------------------------------------
+ABSTRACT PROPERTY RULES (`+=`)
+
+1. The value class of a `+=` implementation MUST fit within
+   the value class declared on the abstract property; there
+   is no implicit cast — an implementation with a wider
+   class is rejected at server startup with a
+   "wrong value class of implementation" error.
+
+   An expression that widens the value class — above all
+   string concatenation, which sums the operands' lengths
+   (`ISTRING[326]` against a declared `ISTRING[250]`) —
+   the assistant MUST wrap in an explicit cast to the
+   declared class:
+   `f(X x) += ISTRING[250](a(x) + b(x));`
 ----------------------------------------------------------------
 CONSTRAINT RULES
 

@@ -126,7 +126,7 @@ controller.diff(list, (type, index, object) => {
 The _clearDiff_ method resets the remembered list — it is called in the component's optional _clear_ function, invoked when the view is cleared with the same _element_ and _controller_, so that the next rendering starts from an empty state.
 
 After removing the old elements, for each object in the _list_ array a _div_ _card_ is created, in which the desired display elements of each property are placed.
-The names of the object fields correspond to the names of the properties on the form. The property values are converted to JS values in the same way as in the rows of a [React view](How-to_Custom_React_views.md): for example, values of the date and time classes are passed as `Date`, and `JSON` — as a parsed object. The _isCurrent_ method determines which object from the list is current.
+The names of the object fields correspond to the names of the properties on the form. The property values are converted to JS values in the same way as in the rows of a [React view](How-to_Custom_React_views.md): for example, values of the date and time classes are passed as `Date`, and `JSON` — as a parsed object. A property whose value is an object arrives as that object's numeric id — the same id an object is passed by in [FK writes and server calls](How-to_Custom_view_controller.md). The _isCurrent_ method determines which object from the list is current.
 
 At the very end of the function, mouse click handlers are added to the item card. 
 

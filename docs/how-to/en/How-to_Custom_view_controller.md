@@ -121,6 +121,8 @@ A built-in primitive-class object group — a `DATE` navigator, for instance —
 Passing a handle (`otherRow.objects`) as an FK value silently sets it to `NULL`, with no error. A handle is only for the `object` argument (the edited row) and for `changeObject`; to set an FK, pass the target object's id.
 :::
 
+The format is the same in the read direction: an object property's value arrives in the data row as this same numeric id, so it can be compared with the target row's `row.key` (in a single-object group) or passed back as an FK value without conversion.
+
 If the edited property is marked `APPLY` on the form (the edit is applied at once), `changeProperty` commits the change immediately. For a simple edit from a view — a move, a resize, an in-place value edit — this is preferable to a separate server action; the server action (`exec`) stays for what a property change cannot express: creating an object (`NEW`), multi-step logic, opening a form.
 
 ```js
