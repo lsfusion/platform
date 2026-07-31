@@ -470,7 +470,8 @@ module.exports = {
       items: [
         'language/Tokens', 
         'language/IDs', 
-        'language/Literals', 
+        'language/Literals',
+        'language/String_literal',
         {
           type: 'category',
           label: 'Statements',
