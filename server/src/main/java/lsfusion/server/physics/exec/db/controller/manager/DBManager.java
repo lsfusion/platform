@@ -254,6 +254,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void initReflectionEvents() {
+        if (Settings.get().isDryRun()) {
+            return;
+        }
+
         assert LM == null && reflectionLM == null;
         LM = businessLogics.LM;
         reflectionLM = businessLogics.reflectionLM;
