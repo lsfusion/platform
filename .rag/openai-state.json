@@ -6021,8 +6021,8 @@
       "stale": false
     },
     "language/Literals.md": {
-      "file_hash": "sha256:3d00de7589a9e858cb031f096738d859cfbeb6d9dbfe4572fc1e44bfee3aff1d",
-      "indexed_at": "2026-07-27T13:39:18Z",
+      "file_hash": "sha256:d8853a52b51363ce42556709e8c76076f08c9ee5896ea0ff371df45d94664a67",
+      "indexed_at": "2026-07-31T23:19:09Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6032,9 +6032,9 @@
       },
       "sections": {
         "Literals::literals": {
-          "file_id": "file-MWKCBiQCbgFUbbnTqUxJa1",
+          "file_id": "file-Hrir9AyU8iW9zrUorwfyrP",
           "heading_path": "Literals",
-          "section_payload_hash": "sha256:13a50db28f836fa8ded1b9e6d5e3a7619a8869ae4aeebaaebb8e9a1c4295f68c",
+          "section_payload_hash": "sha256:df2c2f97d79f22b210f055f219cce26eb899c247afbfe8e42939fb7adfb6a2cf",
           "source_file": "language/Literals.md"
         }
       },
@@ -7650,6 +7650,110 @@
           "heading_path": "Statements",
           "section_payload_hash": "sha256:bd61a05fe77348a2be7d77807d8fcdae2c223124efdbfb0b0957cef6b8fa26bc",
           "source_file": "language/Statements.md"
+        }
+      },
+      "stale": false
+    },
+    "language/String_literal.md": {
+      "file_hash": "sha256:e73abd99c9fcdb1af8e338ea89e73f71bc026095f6d7f09395da46ec9d56e9aa",
+      "indexed_at": "2026-07-31T23:19:18Z",
+      "indexed_sourceType": "language",
+      "indexed_with": {
+        "chunker_version": "v3",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "String_literal::content-and-escaping": {
+          "file_id": "file-AopSE1UcEdNae2Njj8yQjd",
+          "heading_path": "String literal > Content and escaping",
+          "section_payload_hash": "sha256:acba61c6ec3ed73c1b7fc0ca0a6829c667d700f5152480590ef75535cc693c4a",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::examples": {
+          "file_id": "file-VGA4ZL5MP7fRGrQw8N3y2p",
+          "heading_path": "String literal > Content and escaping > Examples",
+          "section_payload_hash": "sha256:5c4cd6dac5995bab8c915c6e329080f8e3dd5d40b76df69665a0ba7e742222bc",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::examples::dup-1": {
+          "file_id": "file-8TvXM55XtjRbPkLdQcK6yf",
+          "heading_path": "String literal > Multi-line > Examples",
+          "section_payload_hash": "sha256:7702325039475b26f1adf1d25b438fb2ae0f254f3957ab47323c635feed954af",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::examples::dup-2": {
+          "file_id": "file-NihjqoLrsfVZVeVMbcuh9Y",
+          "heading_path": "String literal > Localization {#localization} > Examples",
+          "section_payload_hash": "sha256:4707c66092f116285be13f73f3525a381376a72c7e4ba71b40cd7db8a93b2eb9",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::examples::dup-3": {
+          "file_id": "file-V8bMKj7NeR4a4eXLKnDTDf",
+          "heading_path": "String literal > Interpolation > Examples",
+          "section_payload_hash": "sha256:180239ca81b34155bc780b4271752660986bf5d4090398374bc1150def96d805",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::examples::dup-4": {
+          "file_id": "file-RMkD5XuFGoiCikZWDBjWRZ",
+          "heading_path": "String literal > Inline sequences > Examples",
+          "section_payload_hash": "sha256:1c4c38d1cac2709d3287dc59d141fc067e9d91d984f697c0fc1720b87f135cd2",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::examples::dup-5": {
+          "file_id": "file-LZg6pJZ98RTWkpXb1xBnuZ",
+          "heading_path": "String literal > Raw literal > Examples",
+          "section_payload_hash": "sha256:14ca0177d7e071fcf217c80fe9ff7af16a68b068cbc15769d58758a16da986d4",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::inline-sequences": {
+          "file_id": "file-ADeTPJSqCr499q2Jd4R9uN",
+          "heading_path": "String literal > Inline sequences",
+          "section_payload_hash": "sha256:cc2873e9e711007ea5143aed573483ae6f17829abc982c5ee5475e06f7f3106a",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::interpolation": {
+          "file_id": "file-NpQbuenbhtCFFdC3F5N6qB",
+          "heading_path": "String literal > Interpolation",
+          "section_payload_hash": "sha256:0a6609d9571d19bde1ff08ed194143db27a7efab06287a479214f162bdc24d44",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::localization-localization": {
+          "file_id": "file-PTv7yUfym3nsTkTLmnEAn1",
+          "heading_path": "String literal > Localization {#localization}",
+          "section_payload_hash": "sha256:cd92d4cf00fc7371f5446ce7d1d65123df287808192fde29c0c39d3da0e670d5",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::multi-line": {
+          "file_id": "file-4nVDwMQb9hvE7G29pW82s3",
+          "heading_path": "String literal > Multi-line",
+          "section_payload_hash": "sha256:3c78256c66d5029b98c5f1e920d3e7affb27049122411b35f4c3f01d8a8d23a7",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::raw-literal": {
+          "file_id": "file-BBjxDAjY6s6SyHkhEDBxKs",
+          "heading_path": "String literal > Raw literal",
+          "section_payload_hash": "sha256:4b3c213e6de470bae95d74761db87e7459aaeb3c7e9d72a3faf5f7bc8f530bde",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::string-literal": {
+          "file_id": "file-7xU6ryNCdHLNf4xnTDtkS4",
+          "heading_path": "String literal",
+          "section_payload_hash": "sha256:e367ff7a27d3fc01cf36c2ee3fe0e729ab990d0723d37133deef6097d779245a",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::syntax": {
+          "file_id": "file-KesW8JegQqrRDPUMjVsUNY",
+          "heading_path": "String literal > Syntax",
+          "section_payload_hash": "sha256:fe9fc4d44f01c4cbf5ad9e50b0f19ad42e356de317b3ea7edcccd89c3cbe9666",
+          "source_file": "language/String_literal.md"
+        },
+        "String_literal::value-class": {
+          "file_id": "file-MexW6uvkAsSuwCcVX2WXd7",
+          "heading_path": "String literal > Value class",
+          "section_payload_hash": "sha256:98f8e832e007acae03aa68c1869c195c215bb41c59ac1cc9e3be821ce55c734d",
+          "source_file": "language/String_literal.md"
         }
       },
       "stale": false
@@ -15156,7 +15260,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "68ce25350c7c93c87976e102844293122aaf1fc7",
+  "last_indexed_docs_commit": "c99f4cfa4e939e309167d645c3ef11aa41ab9d94",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
