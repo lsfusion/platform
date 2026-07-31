@@ -342,7 +342,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
         } else { // висит полный lock
             try {
-                connectionPool.returnConnection(this, connection);
+                connectionPool.returnConnection(this, connection, false);
             } finally {
                 temporaryTablesLock.unlock();
             }
@@ -430,7 +430,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         if(inTransaction == 0 && sessionTablesMap.isEmpty() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
-            connectionPool.returnConnection(this, privateConnection);
+            connectionPool.returnConnection(this, privateConnection, false);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
 //            sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
             privateConnection = null;
@@ -3119,11 +3119,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 try {
                     removeUnusedTemporaryTables(true, owner);
                 } finally {
-                    ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this);
-                    connectionPool.returnConnection(this, privateConnection);
+                    // the pool takes the connection back with its temp tables in it, and hands them to the next session as free and empty. That holds only when the cleanup above went through :
+                    // it truncates the leftovers one by one and stops at the first failure it can not recover from, and then nothing says those tables are empty. A cancel is enough for that -
+                    // the close time truncate is registered as the executing statement, so the timeout killer can land right on it, on a perfectly live connection
+                    // such a connection is discarded instead : its tables go with it, which is what the next session would have assumed anyway
+                    connectionPool.returnConnection(this, privateConnection, !sessionTablesMap.isEmpty()); // discarded when they are not empty, see above
 //                    System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
 //                    sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
                     privateConnection = null;
+
+                    ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this); // after the connection is dealt with : the assertion throws under -ea
                 }
             }
             ServerLoggers.exinfoLog("SQL SESSION CLOSE " + this);

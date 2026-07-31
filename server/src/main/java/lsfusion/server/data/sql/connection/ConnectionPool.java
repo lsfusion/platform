@@ -16,7 +16,7 @@ public interface ConnectionPool {
     double getLoad(DataAdapter.Server server) throws SQLException;
 
     ExConnection getConnection(MutableObject object, DataAdapter.NeedServer needServer, SQLSessionLSNProvider lsn, SQLSessionContextProvider contextProvider) throws SQLException;
-    void returnConnection(MutableObject object, ExConnection connection) throws SQLException;
+    void returnConnection(MutableObject object, ExConnection connection, boolean discard) throws SQLException; // discard : the pool must not hand this connection on, its temp tables go with it
 
     Connection newRestartConnection(SQLSessionLSNProvider lsn) throws SQLException;
     void closeRestartConnection(Connection connection, EConsumer<Connection, SQLException> cleaner) throws SQLException;

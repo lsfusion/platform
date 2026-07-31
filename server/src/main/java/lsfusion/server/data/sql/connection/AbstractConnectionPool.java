@@ -207,29 +207,32 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         closeConnection(connection, cleaner);
     }
 
-    public void returnConnection(final MutableObject object, final ExConnection connection) throws SQLException {
-        boolean close = true;
-        boolean clean = true;
-        if (!connection.sql.isClosed()) {
-            if(!Settings.get().isDisablePoolConnections()) {
-                synchronized (usedConnections) {
-                    WeakReference<MutableObject> weakObject = usedConnections.remove(connection);
-                    assert weakObject.get() == object;
-                    assert connection.sql.getAutoCommit();
-                }
+    // discard : the connection must not be handed on - its temp tables were not emptied, so it is closed rather than cached, and NOT cleaned either, since cleaning is exactly what did not
+    // work out. Everything else is the same as an ordinary return
+    public void returnConnection(final MutableObject object, final ExConnection connection, boolean discard) throws SQLException {
+        boolean closed = connection.sql.isClosed();
 
-                ConcurrentLinkedDeque<ExConnection> freeQueue = freeExConnections.computeIfAbsent(getServer(connection.sql), s -> new ConcurrentLinkedDeque<>());
-                if (freeQueue.size() < Settings.get().getFreeConnections()) {
-                    freeQueue.addLast(connection);
-                    logConnection("CLOSE CONNECTION TO CACHE (size : " + freeExConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
-                    close = false;
-                }
+        // the registration goes first, and whether the connection is closed or not : leaving it behind lets checkUsed close the connection a second time once its holder is collected, taking
+        // the connection count down twice
+        if(!Settings.get().isDisablePoolConnections())
+            synchronized (usedConnections) {
+                WeakReference<MutableObject> weakObject = usedConnections.remove(connection);
+                assert weakObject.get() == object;
+                assert closed || discard || connection.sql.getAutoCommit();
             }
-        } else
-            clean = false;
 
-        if(close)
-            closeExConnection(connection, clean);
+        boolean cached = false;
+        if(!closed && !discard && !Settings.get().isDisablePoolConnections()) {
+            ConcurrentLinkedDeque<ExConnection> freeQueue = freeExConnections.computeIfAbsent(getServer(connection.sql), s -> new ConcurrentLinkedDeque<>());
+            if (freeQueue.size() < Settings.get().getFreeConnections()) {
+                freeQueue.addLast(connection);
+                logConnection("CLOSE CONNECTION TO CACHE (size : " + freeExConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
+                cached = true;
+            }
+        }
+
+        if(!cached)
+            closeExConnection(connection, !closed && !discard); // there is nothing to clean on a closed connection, and on a discarded one the cleaning is what just failed
     }
 
     private AtomicInteger neededSavePoints = new AtomicInteger();
