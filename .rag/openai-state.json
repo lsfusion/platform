@@ -12468,8 +12468,8 @@
       "stale": false
     },
     "paradigm/Projects.md": {
-      "file_hash": "sha256:325d97864acf135829c19f3d31e7d94a649b1de6554990c52598d3829c390845",
-      "indexed_at": "2026-07-22T13:17:41Z",
+      "file_hash": "sha256:b87aa6bb5fac2b32751dcbda49205f3642f13b96b2f434125e130ddf1713bbc8",
+      "indexed_at": "2026-07-31T12:15:37Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12479,9 +12479,9 @@
       },
       "sections": {
         "Projects::module-loading": {
-          "file_id": "file-Bzg2Hade2sfab21NjbNzRp",
+          "file_id": "file-WxF3et4BYatk25iBi9vJEA",
           "heading_path": "Projects > Module loading",
-          "section_payload_hash": "sha256:f4c98aa2236de861ac957f40e1b26dec317f9beeff7a3fa48623310a7a2eafe1",
+          "section_payload_hash": "sha256:d74b427b62122b34e2c05a71e737a45b27e450f22edd419a7a485853ee9ce19a",
           "source_file": "paradigm/Projects.md"
         },
         "Projects::projects": {
@@ -15156,7 +15156,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "69e8913c623e51531558b3257a23e0aa3590e91c",
+  "last_indexed_docs_commit": "68ce25350c7c93c87976e102844293122aaf1fc7",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
