@@ -50,18 +50,25 @@ public class ModuleList {
         return graph;
     }
     
-    public void filterWithTopModule(String topModuleName) {
+    public void filterWithTopModule(String topModuleNames) {
         Set<LogicsModule> remainingModules = new HashSet<>();
         Queue<LogicsModule> queue = new LinkedList<>();
 
-        // First, we always add system modules   
+        // First, we always add system modules
         for (String systemModuleName : systemModulesNames) {
             remainingModules.add(getModuleWithCheck(systemModuleName));
         }
 
-        LogicsModule startModule = getModuleWithCheck(topModuleName);
-        queue.add(startModule);
-        remainingModules.add(startModule);
+        // comma-separated list of (independent) top modules, same convention as db.allowDropTables / db.allowDropModules
+        for (String topModuleName : topModuleNames.split(",")) {
+            topModuleName = topModuleName.trim();
+            if (!topModuleName.isEmpty()) {
+                LogicsModule startModule = getModuleWithCheck(topModuleName);
+                if (remainingModules.add(startModule)) {
+                    queue.add(startModule);
+                }
+            }
+        }
 
         while (!queue.isEmpty()) {
             LogicsModule current = queue.poll();
