@@ -495,7 +495,7 @@ public class MainController {
         return "prefetch".equals(request.getHeader("Sec-Purpose")) || "prefetch".equals(request.getHeader("Purpose"));
     }
 
-    @RequestMapping(value = "/main", method = RequestMethod.GET)
+    @RequestMapping(value = {"/main", "/"}, method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request,
                                          HttpServletResponse response) {
 //        this way it is really faster, when we start creating navigator when user still type (however later maybe it's better to parameterize this)

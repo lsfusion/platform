@@ -2,8 +2,8 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         version="2.5">
+		  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
 
     <welcome-file-list>
         <welcome-file>main</welcome-file>
@@ -187,6 +187,11 @@
         <url-pattern>/2fa</url-pattern>
         <url-pattern>/manifest</url-pattern>
         <url-pattern>/main</url-pattern>
+        <!-- "" is the exact-match pattern for the context root (Servlet spec SRV.11.2); routes GET / to
+             MainController.processMain directly (same code path as /main), avoiding the container's
+             welcome-file dispatch, which stopped serving the root under anonymous auth after the Spring
+             5.3.39/5.8.16 upgrade (see rpt_40095061d8a34cd5) -->
+        <url-pattern></url-pattern>
         <url-pattern>/registration</url-pattern>
         <url-pattern>/forgot-password</url-pattern>
         <url-pattern>/change-password</url-pattern>
@@ -244,6 +249,8 @@
         <url-pattern>/2fa</url-pattern>
         <url-pattern>/login_check</url-pattern>
         <url-pattern>/main</url-pattern>
+        <!-- context root, same handler as /main; see the LSFWeb servlet-mapping comment below -->
+        <url-pattern></url-pattern>
         <url-pattern>/registration</url-pattern>
         <url-pattern>/forgot-password</url-pattern>
         <url-pattern>/change-password</url-pattern>
