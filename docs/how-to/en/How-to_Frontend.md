@@ -233,7 +233,7 @@ In order to accept this file as the final parameter (`$5` in this example) and u
 IMPORT JSON FROM $5 AS FILE FIELDS LONG item, NUMERIC[16,3] quantity, NUMERIC[16,3] price, NUMERIC[16,3] sum DO 
     NEW d = ShipmentDetail { 
         shipment(d) <- s; 
-        item(d) <- GROUP MAX i AS Item IF LONG(i) = item; 
+        item(d) <- GROUP MAX Item i IF LONG(i) = item;
         quantity(d) <- quantity; 
         price(d) <- price; 
         sum(d) <- sum; 
@@ -257,7 +257,7 @@ NEW s = Shipment {
     IMPORT JSON FROM $5 AS FILE FIELDS LONG item, NUMERIC[16,3] quantity, NUMERIC[16,3] price, NUMERIC[16,3] sum DO 
         NEW d = ShipmentDetail { 
             shipment(d) <- s; 
-            item(d) <- GROUP MAX i AS Item IF LONG(i) = item; 
+            item(d) <- GROUP MAX Item i IF LONG(i) = item;
             quantity(d) <- quantity; 
             price(d) <- price; 
             sum(d) <- sum; 
@@ -275,7 +275,7 @@ FOR Shipment s = $0 DO {
     IMPORT JSON FROM $5 AS FILE FIELDS LONG item, NUMERIC[16,3] quantity, NUMERIC[16,3] price, NUMERIC[16,3] sum DO 
         NEW d = ShipmentDetail { 
             shipment(d) <- s; 
-            item(d) <- GROUP MAX i AS Item IF LONG(i) = item; 
+            item(d) <- GROUP MAX Item i IF LONG(i) = item;
             quantity(d) <- quantity; 
             price(d) <- price; 
             sum(d) <- sum; 

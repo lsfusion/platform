@@ -224,7 +224,7 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-The value-or-row guess in `changeProperty`, the value formats, and the name qualification rules are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, the built-in Gantt chart view changes both dates at once when a task bar is dragged:
+The value-or-row guess in `changeProperty`, the value formats, and the name qualification rules are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
 
 ```js
 controller.changeProperties(['start', 'end'], [task, task], [newStart, newEnd]);
@@ -238,7 +238,7 @@ controller.getPropertyValues('name', query, result => { ... });
 
 `setBooleanViewFilter` and `setDateIntervalViewFilter` set a server view filter and the page size `pageSize`: the next _update_ call receives an already filtered list. `setBooleanViewFilter` keeps the objects whose `property` value is true. `setDateIntervalViewFilter` keeps the objects whose period from the `startProperty` value to the `endProperty` value intersects the interval from `start` to `end` (the values are JS `Date`s; when `endProperty` is `null`, both ends of the period are taken from `startProperty`); this is how the built-in calendar view reads only the events of the visible date range.
 
-The display getters let the component use the design attributes set on the form: for example, the built-in chart view builds its datasets taking the column captions and colors from `getCaption`, `getBackground` and `getForeground`.
+The display getters let the component use the design attributes set on the form: for example, a chart view builds its datasets taking the column captions and colors from `getCaption`, `getBackground` and `getForeground`.
 
 ### Calling the server {#calling-the-server}
 

@@ -24,6 +24,14 @@ All such references require an explicitly specified class:
 CONSTRAINT sum(Order o) < 0 MESSAGE 'The order amount must be positive';
 ```
 
+The class of a parameter introduced inside an expression is specified in the same way — at the parameter's first use. For example, a typical task is to find an object by the value of its property (here the `name` property is declared on several classes):
+
+```lsf
+currency (STRING[10] name) = GROUP MAX Currency currency IF name(currency) = name;
+```
+
+The class of a parameter cannot be specified with the [`AS` operator](../language/IS_AS_operators.md): in `GROUP MAX currency AS Currency IF name(currency) = name` the `currency` parameter remains untyped — `AS` creates a property that returns the value only if it belongs to the class, but it does not change the class of the parameter itself, so the `name(currency)` reference produces the same error.
+
   
 
   

@@ -12,7 +12,7 @@ The source and the condition share the same arguments as the destination propert
 The destination property must be a *mutable* property. Mutable properties are:
 
 -   [data properties](Data_properties_DATA.md), including local data properties;
--   properties created by the [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) — the platform determines which condition is satisfied for the assigned arguments and writes the value into the corresponding result property;
+-   properties created by the [selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) — the write is distributed over the conditions in the order they are listed: each result property receives the part of the write for which its condition holds, and the untaken remainder passes to the following conditions. For the [polymorphic form](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly) in which the condition is the result property itself, the condition of the write is the result's ability to accept the write as a mutable property, not its current value: a non-mutable result (for example, a constant) accepts nothing. So for a selection property with a mutable result and a constant as the default value, the write goes to the mutable result even while the current value comes from the constant;
 -   [composition](Composition_JOIN.md) of mutable properties — the write is routed through the composition to the underlying mutable property at the resolved arguments.
 
 :::info

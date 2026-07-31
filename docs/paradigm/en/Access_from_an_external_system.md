@@ -64,6 +64,8 @@ When processing BODY parameters, parameters with the content type from the follo
 
 When such a BODY parameter is bound to an action interface parameter whose class is not a file class, its content is parsed as a string and automatically converted to that parameter's class; empty strings become `NULL`. This conversion applies only to the action-parameter binding described above - in the [request properties](#request) below, the same parameter is always stored as a file value.
 
+A URL or urlencoded-body parameter is converted to the class of the interface parameter it is bound to in the same way, so for a non-file class an empty value (`&p=`) also becomes `NULL`, while for a file class it becomes an empty file, not `NULL`; an interface parameter that received no request parameter gets `NULL`. If, however, the class of the interface parameter is not defined, no conversion takes place and the value is bound as a string unchanged: an empty value stays an empty string — a regular non-`NULL` value that, for example, the `NOT p` check does not treat as absent.
+
 ##### Request properties {#request}
 
 [Headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) of an executed request are automatically saved to the `System.headers[TEXT]` property. The name of the header is written to the only parameter of this property, and the value of the header is written to the property's value.
@@ -86,7 +88,7 @@ The platform also fills the following properties with information about the curr
 
 Properties whose values must be returned as the result are passed in the request string by adding strings like `&return=<property name>` to its end. It is assumed that the values of specified properties are returned in the order of their appearance in the request string. By default, if no result properties are specified, the resulting property is the first one with a non-`NULL` value from the following [list](Built-in_classes.md#export). 
 
-The result properties from the default list above are [local](Data_properties_DATA.md#local) (`EXPORT` fills one of them), so they must be filled in the session in which the called action itself runs: for example, a value exported with [`EXPORT`](Data_export_EXPORT.md) inside a [new session](New_session_NEWSESSION_NESTEDSESSION.md) block stays in that session and does not reach the response, unless it is migrated back as a [nested](Session_management.md#nested) local property. Perform the export in the action's own session — the called action already runs in a separate session, so there is normally no need to open a new one.
+The result properties from the default list above are [local](Data_properties_DATA.md#local) (`EXPORT` fills one of them), so they must be filled in the session in which the called action itself runs: for example, a value exported with [`EXPORT`](Data_export_EXPORT.md) inside a [new session](New_session_NEWSESSION_NESTEDSESSION.md) block stays in that session and does not reach the response, unless it is migrated back as a [nested](Session_management.md#nested) local property. Perform the export in the action's own session — the called action already runs in a separate session, so there is normally no need to open a new one. For the same reason a successful [apply](Apply_changes_APPLY.md) after the export empties the response: applying changes resets ordinary (non-nested) local properties, including the already filled result property. Perform the export after the apply, carrying any values it needs across the apply in nested local properties (see [below](#createdresult) for an example).
 
 Alternatively, an action that has a [result](Actions.md) returns it directly as the response body — the simplest way to get a single value back, and the usual form for [`EVAL` / `EVAL ACTION`](#actiontype):
 
@@ -120,7 +122,7 @@ The values of the `System.cookiesTo[TEXT]` property are similarly written to the
 
 The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is read from the `System.statusHttpTo[]` property (`200` by default).
 
-##### Result computed for a created object
+##### Result computed for a created object {#createdresult}
 
 A common case is an action that both creates an object and must return, as the [result](#httpresult), a property computed for *that* object (a maintained total, a FIFO cost, and so on). The created object cannot be referenced directly after [`APPLY`](Apply_changes_APPLY.md):
 

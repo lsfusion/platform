@@ -55,7 +55,7 @@ preview 'Цена со скидкой' (Item i, NUMERIC[5,2] pct) {
 addSet 'Добавить набор' (JSON items) {
     IMPORT JSON FROM items FIELDS LONG item, INTEGER quantity DO
         NEW l = CartLine {
-            item(l) <- GROUP MAX i AS Item IF LONG(i) = item;
+            item(l) <- GROUP MAX Item i IF LONG(i) = item;
             quantity(l) <- quantity;
         }
 }

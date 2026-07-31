@@ -182,6 +182,13 @@ SYNTAX RULES
    into a separately named property. Otherwise the inner
    comma is parsed as the list separator and the list
    silently reshapes into something other than the intent.
+
+5. When introducing a new parameter, the assistant MUST
+   declare its class explicitly at the first use
+   (`prop(Class x)`, `GROUP MAX Class x IF ...`).
+   `AS` does NOT declare the parameter's class: it is
+   a cast — the parameter itself stays untyped
+   at later occurrences.
 ----------------------------------------------------------------
 BOOLEAN TYPE RULES
 
@@ -365,9 +372,15 @@ ACTION RULES
 3. The assistant SHOULD avoid introducing `LOCAL`
    properties without a concrete need.
 
-   Each `LOCAL` is backed by a temporary table
-   in PostgreSQL, so it carries a real runtime cost
-   well above a stack variable in a conventional language.
+   A `LOCAL` materializes a temporary table in PostgreSQL
+   only once it holds more than one row, so the runtime
+   cost well above a stack variable in a conventional
+   language applies to `LOCAL`s with parameters (buffers
+   keyed by row number, per-object values). A parameterless
+   `LOCAL` holds at most one row and always stays in
+   memory, so parameterless flags and single values are
+   cheap; avoid them to keep the number of entities
+   down, not because of cost.
 
 4. A `LOCAL` is normally justified when BOTH conditions hold:
    - its value is non-trivial to compute
@@ -946,13 +959,12 @@ MODULE DESIGN RULES
     SQLUtils, ProcessMonitor, DefaultData, Image, Printer,
     Numerator, Chat, Eval, I18n, Com, Sound, Backup, OpenCV,
     Geo, Historizable, Schedule, Document, QZTray, Excel,
-    Hierarchy, RabbitMQ, MasterData, JKanban, FrappeGantt,
-    Chart, Carousel, Messenger, Whatsapp, Skype, Telegram,
-    Viber, Slack.
+    Hierarchy, RabbitMQ, MasterData, Messenger, Whatsapp,
+    Skype, Telegram, Viber, Slack.
 
     For generic domain names from this list (`MasterData`,
-    `Document`, `Schedule`, `Chart`, `Numerator`), the
-    assistant SHOULD add a project prefix to the module name.
+    `Document`, `Schedule`, `Numerator`), the assistant
+    SHOULD add a project prefix to the module name.
 ----------------------------------------------------------------
 MIGRATION RULES (`migration.script`)
 
