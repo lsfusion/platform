@@ -114,3 +114,24 @@ index scan instead of a full scan of the grouped partition plus a sort
 (the aggregation already excludes null-ordered rows); only the plan changes, and existing
 databases need no reindex. On large volumes this removes full-scan/spill behavior for such
 aggregations. The change is result-safe and there is no fallback setting.
+
+
+### Bundled custom view modules removed
+
+The `JKanban`, `FrappeGantt`, `Chart` and `Carousel` system modules no longer ship with
+the platform, together with the JS and CSS they registered through `onWebClientInit`
+(`jkanban.*`, `frappe-gantt.*`, `chart.js` and the `custom_*` adapters around them).
+
+An application that `REQUIRE`s one of them now fails at startup with
+`Error in module '<module>': required module 'JKanban' was not found.`, and the object
+views they backed — `CUSTOM 'kanban'`, `CUSTOM 'frappeGantt'`, `CUSTOM 'carousel'` and
+`CUSTOM 'chart_line'` / `'chart_bar'` / `'chart_pie'` / `'chart_radar'` — are left
+without an implementation.
+
+To keep such a form working, move the module into the application: copy the `.lsf` file
+and the corresponding `web/objects/...` resources from the platform's 6.x sources into
+the project, where its own `onWebClientInit` registers them exactly the same way; or
+reimplement the view against the current API, described in
+[Custom object views](https://docs.lsfusion.org/How-to_Custom_components_objects/).
+The four names are no longer reserved either, so an application module may now be
+called `Chart` or `Carousel`.
