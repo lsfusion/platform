@@ -345,6 +345,7 @@ These rules bound the placement:
 - A property drawn in the **panel** of an object group that the component renders cannot be marked `lsf`, because that group has no lsFusion view to place it in. Set `lsf` on the group's `BOX` instead. (A property drawn in the **table** of such a group is the per-row case below, and is exactly what `LSF` is for.)
 - A child of a container the component itself draws cannot be marked `lsf` either: that container has no view of its own, so nothing would place the child. Mark the container `lsf` as well, and it gets one.
 - Each lsf child is placed by at most one host. A child no host places is not shown; a duplicate host reports itself in the page and in the console, and the first one keeps the child.
+- The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, an `<Lsf>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
 - The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
 - `lsf` may be set only on a direct child of a `CUSTOM REACT` container; anywhere else the form is rejected when it is built.
 

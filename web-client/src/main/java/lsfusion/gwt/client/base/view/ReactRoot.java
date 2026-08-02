@@ -22,10 +22,13 @@ public class ReactRoot {
     // starts empty, so nothing downstream ever has to guard a missing snapshot
     private JavaScriptObject lastData = JavaScriptObject.createObject();
 
+    private final Placement placement;
+
     public ReactRoot(String componentName, JavaScriptObject controller, Placement placement) {
         this.componentName = componentName;
+        this.placement = placement;
         this.store = createStore();
-        this.context = createContext(store, controller, placement);
+        this.context = createContext(store, controller, placement, this);
     }
 
     // where a placed view goes and where it is taken back from: <Lsf name/> renders the node, the owner moves its own
@@ -37,15 +40,35 @@ public class ReactRoot {
         void unmount(String name, Element host, JavaScriptObject row);
     }
 
-    private static native JavaScriptObject createContext(JavaScriptObject store, JavaScriptObject controller, Placement placement)/*-{
+    private static native JavaScriptObject createContext(JavaScriptObject store, JavaScriptObject controller, Placement placement, ReactRoot root)/*-{
         return { store: store, controller: controller, view: {
             mount: function(name, host, row) {
                 placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::mount(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(name, host, row || null);
             },
             unmount: function(name, host, row) {
                 placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::unmount(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(name, host, row || null);
+            },
+            check: function(name, host, row) {
+                root.@lsfusion.gwt.client.base.view.ReactRoot::checkPlaced(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(name, host, row || null);
             } } };
     }-*/;
+
+    // a host is judged only once the commit that rendered it is over, and the registry says when that is. At the moment
+    // the ref arrives, a legitimate portal's container is not in the page yet - refusing there refuses those portals,
+    // which was written, measured and reverted - and by the time the commit and its effects are done, a host that is
+    // still outside the document is one nothing will ever show. Then the placement is undone exactly as React's own
+    // cleanup would undo it, through the owner: the view goes back to where it waits instead of living on in a node
+    // that has left the page, and the name is free for a place that IS in it. One check for every surface, since every
+    // one of them draws through this root - the form container and its per-row editors, the navigator window, the
+    // forms window and the log
+    private void checkPlaced(String name, Element host, JavaScriptObject row) {
+        if (GwtClientUtils.isInDocument(host))
+            return;
+
+        GwtClientUtils.logLsfViewError("'" + name + "' was placed in an <Lsf> that is not in the page, so nothing put"
+                + " there would be seen; the place is given up and the view goes back to waiting");
+        placement.unmount(name, host, row);
+    }
 
     public void mount(Element element) {
         if (createRoot(element))

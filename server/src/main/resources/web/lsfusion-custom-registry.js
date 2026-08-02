@@ -158,7 +158,20 @@
                     return;
                 }
                 if (held.current) { view.unmount(named, held.current, heldRow.current); held.current = null; heldRow.current = null; }
-                if (host) { view.mount(named, host, row); held.current = host; heldRow.current = row; }
+                if (host) {
+                    view.mount(named, host, row); held.current = host; heldRow.current = row;
+                    // whether this host is in the page can only be told after the commit: React hands the ref while it
+                    // renders, and a portal's container is appended by an effect, which runs later. Two frames, because
+                    // effects run before the first paint of that commit - anything appended there is in by the second -
+                    // and the host is checked only if it is still the one being held, so a mount that was undone
+                    // meanwhile is not judged on a node nobody is waiting for
+                    if (window.requestAnimationFrame)
+                        window.requestAnimationFrame(function () {
+                            window.requestAnimationFrame(function () {
+                                if (held.current === host) view.check(named, host, row);
+                            });
+                        });
+                }
             }, [view, named, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
         };
         ns.Lsf = function (props) {
