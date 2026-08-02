@@ -755,8 +755,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:edcf0b7763356d012454b552c2468f170b8e9c643d297d24818926b1201111ee",
-      "indexed_at": "2026-07-30T10:59:57Z",
+      "file_hash": "sha256:68953bf2a045e749bd96f66afa5d439905ecbf146cfb1000977837d8ae5ac780",
+      "indexed_at": "2026-08-02T09:46:48Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -772,9 +772,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::a-navigator-window-navigator-window": {
-          "file_id": "file-JyFNxmjj9Xo2yHNYtFYHpY",
+          "file_id": "file-Expw7XR4DdTN6Bspq2P45P",
           "heading_path": "How-to: Custom React form views > A navigator window {#navigator-window}",
-          "section_payload_hash": "sha256:aca0d4d29d0ea9923b78aa25dc766805ff66ad3cb7c3abd254716467afcbf309",
+          "section_payload_hash": "sha256:f9191aa598837e3160be0e9669c0ac23451c7e341621fe3eedda5c366d236af0",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::bucketing-rows-into-cells-bucketing": {
@@ -801,6 +801,12 @@
           "section_payload_hash": "sha256:bbe2eff1bc6f31fa455d77cb480d6ede568fac5e04c4b345307a9b718d42f666",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
+        "How-to_Custom_React_views::drawing-a-caption-caption": {
+          "file_id": "file-UvMUrYQ17NymmmijGzFJus",
+          "heading_path": "How-to: Custom React form views > Drawing a caption {#caption}",
+          "section_payload_hash": "sha256:f1e209efa8b29602322a3c1ade774d4a31f6486be568cf0d8186bb920461edd9",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
         "How-to_Custom_React_views::drawing-an-image-image": {
           "file_id": "file-KdPMMJh6a9AnKQmAA2XEtH",
           "heading_path": "How-to: Custom React form views > Drawing an image {#image}",
@@ -825,10 +831,10 @@
           "section_payload_hash": "sha256:0055e6f9418643f8fb4d91d6a80c39162727b92f75829ae818ebdefa523a3b99",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
-        "How-to_Custom_React_views::placing-an-lsf-child": {
-          "file_id": "file-8WZ6rtsrxaM3x9Z1MgpGtn",
-          "heading_path": "How-to: Custom React form views > Placing an lsf child",
-          "section_payload_hash": "sha256:efd547bfe6240eab3320989cd31bc904fd030bb729b8f29175be462055385d9f",
+        "How-to_Custom_React_views::placing-an-lsf-child-lsf-child": {
+          "file_id": "file-6pmiezJfSbYNELcK7bWYop",
+          "heading_path": "How-to: Custom React form views > Placing an lsf child {#lsf-child}",
+          "section_payload_hash": "sha256:67fa32ba4418141bd6aa9475bde2abb4029d0f96040afdf9b879ba10c8ac13e9",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::reading-the-projection-reading": {
@@ -850,9 +856,21 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
-          "file_id": "file-1rnGA8j6YpGT49Ar6ErArm",
+          "file_id": "file-UZ6DBxvPDNqybZ2meN5bxH",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:46ea0b0cbd4a90050f19210f8af93035f8abeed787a2d6e2f2a1a1d4e1772219",
+          "section_payload_hash": "sha256:923567070682d66886adb5d5a312e38f879f03254cca4f975c4efdf294bb4df3",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::the-forms-window-forms-window": {
+          "file_id": "file-Ba6DoUAVi9NPdQJLX65J9f",
+          "heading_path": "How-to: Custom React form views > The forms window {#forms-window}",
+          "section_payload_hash": "sha256:05b4bfacbe0c3910c5cfffd48595d4076490dbaa83de2883ab09b8bd8530c8ef",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::the-log-window-log-window": {
+          "file_id": "file-PQ6KGzjemxe6NuvLqkHMHr",
+          "heading_path": "How-to: Custom React form views > The log window {#log-window}",
+          "section_payload_hash": "sha256:d0e5392b6ea52e6f24e5d679fd1a199cfafe7cffca41727a97cabdb6301ecfc1",
           "source_file": "how-to/How-to_Custom_React_views.md"
         }
       },
@@ -4425,8 +4443,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:99972bde86b0a89159bfe02f30be9b30ed6236e676d184996247e762f52dae18",
-      "indexed_at": "2026-07-30T11:00:28Z",
+      "file_hash": "sha256:b37294f73d4ebc17f62f509b2f68916fe68eb37dbb4a39007427acbaab235ed5",
+      "indexed_at": "2026-08-02T09:46:59Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -4448,9 +4466,9 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::container-properties": {
-          "file_id": "file-NQwKrBBPEF3kFeXzYnaKhj",
+          "file_id": "file-KcGEzQWdRfb7GzAFuazzbc",
           "heading_path": "DESIGN statement > Parameters > Container properties",
-          "section_payload_hash": "sha256:2d8a557db725b7b13ad724f25fe9d8dba29b4171f0c7a99cb2addf466de1a2f2",
+          "section_payload_hash": "sha256:41a9154f71eafd6d860677a5ed9d6bdbe723c0c3fc9b170fe55399df5cb6bafb",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::description": {
@@ -8013,8 +8031,8 @@
       "stale": false
     },
     "language/WINDOW_statement.md": {
-      "file_hash": "sha256:67a4c63581bd9f1ee87c65c41b815f6ccf06b3f6b06b2f898a46d9752b5c39af",
-      "indexed_at": "2026-07-30T11:00:56Z",
+      "file_hash": "sha256:6660c4ad7741e4cba1ff6cc17288fcc8c16415c9cced3465080778e17cf00c60",
+      "indexed_at": "2026-08-02T09:47:12Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8024,21 +8042,21 @@
       },
       "sections": {
         "WINDOW_statement::description": {
-          "file_id": "file-4wc5oqCvQRjU8hANKUdwjc",
+          "file_id": "file-Q4q65jrevVEHUqP4kPfLer",
           "heading_path": "WINDOW statement > Description",
-          "section_payload_hash": "sha256:759c6bef6b6b4b00cba70214229e43388f4fc48f32daff6ed3dfd5e7221a2a78",
+          "section_payload_hash": "sha256:0201717bad3d395d681b62afea7864e2baa1c435eef21dedc4fc795361a04b1f",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::examples": {
-          "file_id": "file-2XkahbvrEd73ZCHEwvcfA5",
+          "file_id": "file-LD6f19Ex9hiG2EbtRuuo1n",
           "heading_path": "WINDOW statement > Examples",
-          "section_payload_hash": "sha256:5b330319506c37358ea6c9f6ec19319126bc8d899be2ada02a743d81548b9704",
+          "section_payload_hash": "sha256:a548057749c1c82a2413559a5e7dba519c6cf95f6ab580287f5ea66142067d43",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::options": {
-          "file_id": "file-7U4Ysu88k51k4UXKxbuVBe",
+          "file_id": "file-7KaLHMLmbUuAgURs88yeMt",
           "heading_path": "WINDOW statement > Options",
-          "section_payload_hash": "sha256:eacb6cb518f294dfe85e34281a7042ba6c4ef239b3bc77fd678295de851add16",
+          "section_payload_hash": "sha256:151a3775ec481a310974d0574c8f9efa82a4c9c9b9a4f05369ff393530afa88a",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::parameters": {
@@ -15260,7 +15278,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "c99f4cfa4e939e309167d645c3ef11aa41ab9d94",
+  "last_indexed_docs_commit": "0e8008446b7707b25d0d035e907af23b9a631923",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
