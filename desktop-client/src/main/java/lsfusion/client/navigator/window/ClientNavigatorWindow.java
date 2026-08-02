@@ -3,7 +3,6 @@ package lsfusion.client.navigator.window;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.view.NavigatorView;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,11 +24,6 @@ public class ClientNavigatorWindow extends ClientAbstractWindow {
     public float alignmentX;
 
     public boolean drawScrollBars;
-    // the wire model both clients read: ClientNavigatorToGwtConverter carries these on to the web client, while the
-    // desktop client draws its regular toolbar and ignores them
-    public String custom;
-    public boolean react;
-
     public ClientNavigatorWindow(DataInputStream inStream) throws IOException {
         super(inStream);
 
@@ -47,8 +41,6 @@ public class ClientNavigatorWindow extends ClientAbstractWindow {
 
         drawScrollBars = inStream.readBoolean();
 
-        custom = SerializationUtil.readString(inStream);
-        react = inStream.readBoolean();
     }
     
     public boolean isVertical() {

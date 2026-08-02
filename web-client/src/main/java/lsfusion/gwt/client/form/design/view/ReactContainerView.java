@@ -3,15 +3,14 @@ package lsfusion.gwt.client.form.design.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.ReactHost;
+import lsfusion.gwt.client.base.view.PlacedViews;
+import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,11 +27,40 @@ import java.util.Set;
 // The hooks are zero-overhead when no component subscribes: the snapshot IS the (structurally shared) data object.
 public class ReactContainerView extends ParkedContainerView {
 
-    private final ReactHost host;
+    private final ReactRoot root;
 
     // sID -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
     // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfLsfView(sid) >= 0
-    private final Map<String, Element> hosts = new HashMap<>();
+    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+        @Override
+        public PlacedViews.Problem problem(String sid) {
+            GComponent declared = findDeclared(sid);
+            if (declared == null)
+                return new PlacedViews.Problem("'" + sid + "' is not a child of '" + container.sID + "'",
+                        "component '" + sid + "' is not a child of container '" + container.sID + "'");
+            if (!declared.isLsfView()) // a child of the container, but without lsf = TRUE, so React owns it
+                return new PlacedViews.Problem("'" + sid + "' has no lsf = TRUE",
+                        "child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: React owns it, so there is no GWT view to place");
+            return null;
+        }
+
+        @Override
+        public boolean place(String sid, Element host) {
+            int index = indexOfLsfView(sid);
+            if (index < 0) // the view does not exist yet - a SHOWIF dropped it, or it is not built - so the host waits
+                return false;
+
+            attachView(index, host);
+            return true;
+        }
+
+        @Override
+        public void park(String sid) {
+            int index = indexOfLsfView(sid);
+            if (index >= 0) // if a SHOWIF already dropped the view there is nothing to park
+                parkChild(index);
+        }
+    });
     private final Set<String> reactHidden = new HashSet<>(); // sIDs the server has been told the component is not showing
     private boolean unmountingRoot; // true while the React root is torn down (form close), so no per-child hide is sent
 
@@ -40,11 +68,21 @@ public class ReactContainerView extends ParkedContainerView {
         super(container, formController);
         // row is absent for an lsf CHILD - one view, one host - and is a row of the group for an LSF grid property,
         // which has one renderer, and so one host, per row
-        host = new ReactHost(container.getCustom(), formController.controller, this::mountComponent, this::unmountComponent);
+        root = new ReactRoot(container.getCustom(), formController.controller, new ReactRoot.Placement() {
+            @Override
+            public void mount(String name, Element host, JavaScriptObject row) {
+                mountComponent(name, host, row);
+            }
+
+            @Override
+            public void unmount(String name, Element host, JavaScriptObject row) {
+                unmountComponent(name, host, row);
+            }
+        });
         GwtClientUtils.addClassName(panel, "panel-react");
         panel.addAttachHandler(event -> {
             if (event.isAttached())
-                host.mount(panel.getElement());
+                root.mount(panel.getElement());
             else
                 unmount();
         });
@@ -56,11 +94,18 @@ public class ReactContainerView extends ParkedContainerView {
         super.addImpl(index);
 
         // the view is built by its controller, and a property hidden with `remove` is dropped and built again as it
-        // comes back, long after React rendered the host. A host never re-runs its ref for that, and the inherited
-        // removeImpl leaves the host in `hosts`, so the one that has been waiting is mounted here
-        Element host = hosts.get(children.get(index).sID);
-        if (host != null)
-            attachView(index, host);
+        // comes back, long after React rendered the host. A host never re-runs its ref for that, so the host that has
+        // been waiting is filled here
+        placed.retryPending();
+    }
+
+    @Override
+    protected void removeImpl(int index) {
+        // a SHOWIF took this child's view away. The host stays remembered - it will be filled again when the view comes
+        // back - but the placement must not: otherwise nothing would put the rebuilt view into it
+        placed.viewRemoved(children.get(index).sID, true);
+
+        super.removeImpl(index);
     }
 
     // called back by the host's ref, and the cleanup is its exact inverse (F1). React runs every ref detach of a commit
@@ -78,24 +123,23 @@ public class ReactContainerView extends ParkedContainerView {
             }
             // the property, not the sid JSX used: it may name it either way
             if (formController.getRowPanelController(property).place(rowKey, property, host) != null)
-                reportDuplicate(sid, host); // another <Lsf> already placed this property for this row
+                PlacedViews.reportDuplicate(sid, host); // another <Lsf> already placed this property for this row
             return;
         }
 
-        if (!isLsfViewChild(sid)) { // a typo, or a non-lsf child: no view will ever exist for this host
-            reportUnknown(sid, host);
+        // a property drawn per ROW has no single view to place: which of its renderers goes here is the row's to say.
+        // Without the row, the one-view bookkeeping below waits for a view that is never built - silently, for good -
+        // and a name spelled without PROPERTY(...) does not even read as a child, so the reason given was the wrong one
+        GPropertyDraw perRow = getRowLsfViewProperty(sid);
+        if (perRow != null) {
+            GwtClientUtils.showLsfViewError(host, "'" + sid + "' is drawn per row, so its <Lsf> needs a row");
+            GwtClientUtils.logLsfViewError("'" + sid + "' is an LSF property drawn per row: its <Lsf> is given the row it"
+                    + " belongs to, as <Lsf name row/>, since each row has a renderer of its own");
             return;
         }
-        Element current = hosts.get(sid);
-        if (current != null && current != host) { // the FIRST host keeps the child, so it cannot be left empty
-            reportDuplicate(sid, host);
-            return;
-        }
-        hosts.put(sid, host);
-        setReactHidden(sid, false); // React shows this child now, so the server may read its data again
-        int index = indexOfLsfView(sid);
-        if (index >= 0) // the view exists; otherwise the host waits, and addImpl mounts it once the view is built
-            attachView(index, host);
+
+        if (placed.mount(sid, host))
+            setReactHidden(sid, false); // React shows this child now, so the server may read its data again
     }
 
     // tell the server whether the React component is showing this lsf child, so a hidden child's data is not read
@@ -138,17 +182,10 @@ public class ReactContainerView extends ParkedContainerView {
             return;
         }
 
-        if (hosts.get(sid) != host) { // an error / duplicate host, or a remount already moved the child to another host:
-            clearDiagnostic(host);    // either way there is nothing of ours to release here
-            return;
-        }
-        hosts.remove(sid);
-        if (!unmountingRoot) // a real hide by React, not the form closing (which resets the server's hidden set anyway)
-            setReactHidden(sid, true);
+        if (placed.unmount(sid, host) && !unmountingRoot) // a real hide by React, not the form closing, which resets
+            setReactHidden(sid, true);                   // the server's hidden set anyway
+
         clearHost(host); // the host outlives the mount: it may be the component's own element, or React may reuse it
-        int index = indexOfLsfView(sid);
-        if (index >= 0) // the view still exists; park it. If it was already dropped (SHOWIF), there is nothing to park
-            parkChild(index);
     }
 
     private int indexOfLsfView(String sid) {
@@ -160,35 +197,10 @@ public class ReactContainerView extends ParkedContainerView {
         return -1;
     }
 
-    private boolean isLsfViewChild(String sid) {
-        GComponent declared = findDeclared(sid);
-        return declared != null && declared.isLsfView();
-    }
-
-    // a sid that is not an lsf child will never get a view — say WHY. The diagnostic is VISIBLE, not console-only:
-    // a typo'd or non-lsf sid must not silently render nothing. Writing into the host is safe: an <Lsf>
-    // host never renders React children (F2), so React cannot overwrite it.
-    private void reportUnknown(String sid, Element host) {
-        if (findDeclared(sid) == null) {
-            GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not a child of '" + container.sID + "'");
-            logError("component '" + sid + "' is not a child of container '" + container.sID + "'");
-        } else { // a child of the container, but without lsf = TRUE, so React owns it
-            GwtClientUtils.showLsfViewError(host, "'" + sid + "' has no lsf = TRUE");
-            logError("child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: React owns it, so there is no GWT view to place");
-        }
-    }
-
-    private void reportDuplicate(String sid, Element host) {
-        GwtClientUtils.showLsfViewError(host, "'" + sid + "' is already placed by another <Lsf>");
-        logError("'" + sid + "' is placed by more than one <Lsf>; the first one keeps it");
-    }
-
     // an LSF grid property declared in this container, or null. Unlike an lsf CONTAINER child, it has one
     // renderer per row rather than one view, so it is placed through its row panel controller instead of `hosts`
     private GPropertyDraw getRowLsfViewProperty(String sid) {
-        GComponent declared = findDeclared(sid);
-        if (declared == null) // a property's component sID is PROPERTY(name), but naming it by the property alone reads
-            declared = findDeclared("PROPERTY(" + sid + ")"); // better in JSX, so both are accepted
+        GComponent declared = findDeclared(sid); // by the design identifier, PROPERTY(qty) - the one spelling there is
         return declared instanceof GPropertyDraw && ((GPropertyDraw) declared).isLsfViewPerRow() ? (GPropertyDraw) declared : null;
     }
 
@@ -197,10 +209,10 @@ public class ReactContainerView extends ParkedContainerView {
     private void reportUnknownRow(String sid, Element host, boolean unknownSid) {
         if (unknownSid) {
             GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not an LSF grid property");
-            logError("component '" + sid + "' of container '" + container.sID + "' is not a grid property marked LSF, so it is not drawn per row");
+            GwtClientUtils.logLsfViewError("component '" + sid + "' of container '" + container.sID + "' is not a grid property marked LSF, so it is not drawn per row");
         } else {
             GwtClientUtils.showLsfViewError(host, "the `row` given to '" + sid + "' is not a row");
-            logError("the `row` passed to '" + sid + "' does not identify a row: pass the row object from the projected data, not its key");
+            GwtClientUtils.logLsfViewError("the `row` passed to '" + sid + "' does not identify a row: pass the row object from the projected data, not its key");
         }
     }
 
@@ -211,15 +223,6 @@ public class ReactContainerView extends ParkedContainerView {
         return null;
     }
 
-    private void clearDiagnostic(Element host) {
-        GwtClientUtils.clearLsfViewError(host);
-        clearHost(host);
-    }
-
-    private static void logError(String message) {
-        GwtClientUtils.logLsfViewError(message);
-    }
-
     public GContainer getContainer() {
         return container;
     }
@@ -228,16 +231,16 @@ public class ReactContainerView extends ParkedContainerView {
     // image now lives in its own entry in `data` (built by GReactFormData): an attribute change marks the scope dirty,
     // so build() returns a new top ref and the data change alone re-renders React — no separate components channel.
     public void updateData(JavaScriptObject data) {
-        host.updateData(data);
+        root.updateData(data);
     }
 
 
 
     private void unmount() {
         unmountingRoot = true;
-        host.unmount(); // runs the hosts' ref cleanups, which park every mounted child and drop it from `hosts`
+        root.unmount(); // runs the hosts' ref cleanups, which park every mounted child and drop it from `hosts`
         unmountingRoot = false;
-        hosts.clear(); // any host left waiting (its view dropped by SHOWIF) belongs to the old tree; drop it too
+        placed.reset(); // any host left waiting (its view dropped by SHOWIF) belongs to the old tree; drop it too
         reactHidden.clear(); // the server's FormInstance is reset on the next open, so its hidden set starts empty too
     }
 

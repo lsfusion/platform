@@ -21,6 +21,12 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
 
     public String elementClass;
 
+    // what draws this window instead of its standard view; what that means depends on the window's role - a navigator
+    // window is drawn from its navigator elements, the forms window from the forms open in it, the log window from the
+    // messages logged in it
+    public String custom;
+    public boolean react; // inferred from custom on the server, so the client just reads it
+
     public boolean autoSize;
 
     @Override

@@ -3,7 +3,7 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.ReactHost;
+import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
@@ -15,7 +15,7 @@ import java.util.LinkedHashSet;
 // navigator controller, whose activate() does what clicking an element does.
 public class ReactNavigatorView extends ParkedNavigatorView {
 
-    private final ReactHost host;
+    private final ReactRoot root;
     private JavaScriptObject lastData; // the projection last built, so an unchanged entry can keep its reference
 
     public ReactNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
@@ -23,22 +23,31 @@ public class ReactNavigatorView extends ParkedNavigatorView {
 
         GwtClientUtils.addClassName(panel, "panel-react");
 
-        host = new ReactHost(window.custom, navigatorController.getController(),
-                (name, host, row) -> buttons.mountButton(name, host),   // the crossing BACK to the platform: the
-                (name, host, row) -> buttons.unmountButton(name, host)); // component renders the node, we fill it
+        // the crossing BACK to the platform: the component renders the host node, we fill it with the standard button
+        root = new ReactRoot(window.custom, navigatorController.getController(), new ReactRoot.Placement() {
+            @Override
+            public void mount(String name, Element host, JavaScriptObject row) {
+                buttons.mountButton(name, host);
+            }
+
+            @Override
+            public void unmount(String name, Element host, JavaScriptObject row) {
+                buttons.unmountButton(name, host);
+            }
+        });
 
         panel.addAttachHandler(event -> {
             if (event.isAttached())
-                host.mount(panel.getElement());
+                root.mount(panel.getElement());
             else
-                host.unmount();
+                root.unmount();
         });
     }
 
     @Override
     public void refresh(LinkedHashSet<GNavigatorElement> elements, GNavigatorElement selected) {
         buttons.refresh(elements, selected); // so that <Lsf name/> has a standard button to place
-        host.updateData(buildData(elements, selected));
+        root.updateData(buildData(elements, selected));
     }
 
     // the projection is built from the BUCKET, not from the element tree: a child that crossed into another window, or
@@ -65,7 +74,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
 
     // structural sharing, the same guarantee the form projection gives: an entry that did not change keeps its
     // reference, so a component memoized on it does not re-render, and a refresh that changed nothing at all returns
-    // the very same snapshot, which ReactHost then skips entirely
+    // the very same snapshot, which ReactRoot then skips entirely
     private native JavaScriptObject reuse(JavaScriptObject prev, JavaScriptObject next)/*-{
         if (!prev) return next;
 

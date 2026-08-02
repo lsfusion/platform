@@ -1,6 +1,7 @@
 package lsfusion.client.navigator.window;
 
 import lsfusion.client.navigator.ClientNavigatorElement;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
 
 import javax.swing.*;
@@ -31,6 +32,11 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
     
     public boolean autoSize;
 
+    // the wire model both clients read: ClientNavigatorToGwtConverter carries these on to the web client, while the
+    // desktop client draws its regular toolbar and its regular tabs, and ignores them
+    public String custom;
+    public boolean react;
+
     public ClientAbstractWindow(DataInputStream inStream) throws IOException {
         canonicalName = inStream.readUTF();
         caption = inStream.readUTF();
@@ -54,6 +60,9 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
         }
         
         autoSize = inStream.readBoolean();
+
+        custom = SerializationUtil.readString(inStream);
+        react = inStream.readBoolean();
     }
 
     @Override

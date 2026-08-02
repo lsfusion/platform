@@ -89,11 +89,6 @@ public class SizedWidget {
             Element panelElement = panel.getElement();
 
             Element panelChild = GwtClientUtils.getLsfPlace(panelElement, sID);
-            if (panelChild == null) {
-                String unwrapped = GwtClientUtils.unwrapPropertySID(sID);
-                if (unwrapped != null)
-                    panelChild = GwtClientUtils.getLsfPlace(panelElement, unwrapped);
-            }
 
             if (panelChild != null) {
                 panelChild.getParentElement().replaceChild(widget.getElement(), panelChild);

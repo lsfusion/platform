@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
+import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
@@ -32,8 +33,49 @@ public class NavigatorButtons {
     private final Element park = Document.get().createDivElement();
 
     private final NativeStringMap<NavigatorImageButton> buttons = new NativeStringMap<>();
-    private final NativeStringMap<Element> hosts = new NativeStringMap<>(); // where a button was asked for, drawn or not
-    private final NativeStringMap<Element> filled = new NativeStringMap<>(); // where one actually sits
+    // what is wrong with a name, if anything. `requireLsf` is the difference between the two surfaces: a component's
+    // <Lsf> may only place an element declared LSF - anything else it is expected to draw from the projection - while
+    // a template places the window's ordinary buttons, and LSF is refused outside a React window in the first place
+    // (CheckNavigatorElementsTask), so asking for it there would call every element of every template a mistake
+    private PlacedViews.Problem problem(String canonicalName, boolean requireLsf) {
+        GNavigatorElement element = navigatorController.getElement(canonicalName);
+        if (element == null) // a name no element has will never be drawn
+            return new PlacedViews.Problem("'" + canonicalName + "' is not a navigator element",
+                    "'" + canonicalName + "' is not a navigator element, so nothing will ever be placed here");
+        if (requireLsf && !element.lsf) // declared, but the component owns it: there is no drawing to place
+            return new PlacedViews.Problem("'" + canonicalName + "' has no LSF",
+                    "'" + canonicalName + "' has no LSF, so the component draws it from the projection instead of placing it");
+        // whether the window draws it RIGHT NOW depends on the selection and is nobody's mistake, but which window
+        // draws it at all does not - waiting for a button another window owns would wait forever, in silence
+        if (element.getDrawWindow() != window)
+            return new PlacedViews.Problem("'" + canonicalName + "' belongs to another window",
+                    "'" + canonicalName + "' is drawn in window '" + windowName(element) + "', so this window has no button to place");
+        return null;
+    }
+
+    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+        @Override
+        public PlacedViews.Problem problem(String canonicalName) {
+            return NavigatorButtons.this.problem(canonicalName, true);
+        }
+
+        @Override
+        public boolean place(String canonicalName, Element host) {
+            NavigatorImageButton button = buttons.get(canonicalName);
+            if (button == null) // the window does not draw it yet; the host waits
+                return false;
+
+            host.appendChild(button.getElement());
+            return true;
+        }
+
+        @Override
+        public void park(String canonicalName) {
+            NavigatorImageButton button = buttons.get(canonicalName);
+            if (button != null)
+                park.appendChild(button.getElement()); // back to the park, still attached, tooltip alive
+        }
+    });
     // the names of the LAST refresh, and the only ones that may be placed: an element the selection took out of the
     // window is gone from the navigator, so handing its button out would activate an element the window no longer draws
     private final List<String> drawnNames = new ArrayList<>();
@@ -56,7 +98,7 @@ public class NavigatorButtons {
         });
 
         removeGone();
-        fillAsked();
+        placed.retryPending();
     }
 
     private void ensureButton(GNavigatorElement element, int level, boolean active) {
@@ -80,44 +122,9 @@ public class NavigatorButtons {
         });
 
         for (String name : gone) {
-            filled.remove(name);
+            placed.viewRemoved(name, true); // the host waits: the selection may bring this element back
             panel.remove(buttons.remove(name));
         }
-    }
-
-    // a component renders the same <Lsf> until its own props change, so a place is remembered whether or not the
-    // window draws that element right now - given up on here, it would never be offered again, and the element would
-    // stay missing once the selection brought it into the window. A form container waits the same way for a child
-    // whose view a SHOWIF has dropped
-    public void mountButton(String canonicalName, Element host) {
-        GNavigatorElement element = navigatorController.getElement(canonicalName);
-        if (element == null) { // a name no element has will never be drawn, so it is shown in the page, as a form's is
-            GwtClientUtils.showLsfViewError(host, "'" + canonicalName + "' is not a navigator element");
-            GwtClientUtils.logLsfViewError("'" + canonicalName + "' is not a navigator element, so nothing will ever be placed here");
-            return;
-        }
-        if (!element.lsf) { // declared, but the component owns it: there is no drawing to place
-            GwtClientUtils.showLsfViewError(host, "'" + canonicalName + "' has no LSF");
-            GwtClientUtils.logLsfViewError("'" + canonicalName + "' has no LSF, so the component draws it from the projection instead of placing it");
-            return;
-        }
-        // whether the window draws it RIGHT NOW depends on the selection and is nobody's mistake, but which window
-        // draws it at all does not - and waiting for a button another window owns would wait forever, in silence
-        if (element.getDrawWindow() != window) {
-            GwtClientUtils.showLsfViewError(host, "'" + canonicalName + "' belongs to another window");
-            GwtClientUtils.logLsfViewError("'" + canonicalName + "' is drawn in window '" + windowName(element) + "', so this window has no button to place");
-            return;
-        }
-
-        Element asked = hosts.get(canonicalName);
-        if (asked != null && asked != host) { // the first host keeps it, so a second cannot be left silently empty
-            GwtClientUtils.showLsfViewError(host, "'" + canonicalName + "' is already placed by another <Lsf>");
-            GwtClientUtils.logLsfViewError("'" + canonicalName + "' is placed by more than one <Lsf>; the first one keeps it");
-            return;
-        }
-
-        hosts.put(canonicalName, host);
-        fill(canonicalName, host);
     }
 
     private static String windowName(GNavigatorElement element) {
@@ -131,47 +138,40 @@ public class NavigatorButtons {
         if (place == null) // this window's template gives the element no place, so it is not drawn
             return;
 
-        filled.put(canonicalName, place.getParentElement());
-        place.getParentElement().replaceChild(buttons.get(canonicalName).getElement(), place);
+        // claimed BEFORE the DOM moves: no host and no cleanup here, so a second place for one name would silently
+        // steal the button from the first
+        if (placed.consumePlace(canonicalName))
+            place.getParentElement().replaceChild(buttons.get(canonicalName).getElement(), place);
     }
 
-    private void fill(String canonicalName, Element host) {
-        NavigatorImageButton button = buttons.get(canonicalName);
-        if (button == null || filled.get(canonicalName) != null) // nothing to fill it with yet, or already filled
+    // a place the template wrote and nothing filled. A name this window simply does not draw RIGHT NOW is not a
+    // mistake and stays silent; a name that is not an element, has no LSF or belongs to another window is the same
+    // mistake a component's <Lsf> makes, and says so in the place itself - the only path that used to say nothing
+    public void reportPlace(String canonicalName, Element root) {
+        Element place = GwtClientUtils.getLsfPlace(root, canonicalName);
+        if (place == null) // the place was filled, so it is gone from the document
             return;
 
-        filled.put(canonicalName, host);
-        host.appendChild(button.getElement());
-    }
-
-    // whatever the window draws now goes into the host that has been waiting for it
-    private void fillAsked() {
-        hosts.foreachEntry(this::fill);
-    }
-
-    public void unmountButton(String canonicalName, Element host) {
-        if (hosts.get(canonicalName) == host) // the component took the host away, so nothing waits for it any more
-            hosts.remove(canonicalName);
-
-        if (filled.get(canonicalName) != host) {
-            GwtClientUtils.clearLsfViewError(host); // a host that was never given a button may be holding the diagnostic instead
+        PlacedViews.Problem problem = problem(canonicalName, false);
+        if (problem == null) // the element is this window's and simply not drawn right now, which is not a mistake
             return;
-        }
 
-        filled.remove(canonicalName);
-        NavigatorImageButton button = buttons.get(canonicalName);
-        if (button != null)
-            park.appendChild(button.getElement()); // back to the park, still attached, tooltip alive
+        GwtClientUtils.showLsfViewError(place, problem.shown);
+        GwtClientUtils.logLsfViewError(problem.logged);
     }
 
     // everything goes back to the park, so the next render starts from a clean panel without losing a single button
     public void parkAll() {
-        buttons.foreachEntry((name, button) -> {
-            if (filled.get(name) != null) {
-                filled.remove(name);
-                park.appendChild(button.getElement());
-            }
-        });
+        placed.parkAll();
+    }
+
+    // the component's half of the crossing: it renders the node, we fill it
+    public void mountButton(String canonicalName, Element host) {
+        placed.mount(canonicalName, host);
+    }
+
+    public void unmountButton(String canonicalName, Element host) {
+        placed.unmount(canonicalName, host);
     }
 
     // the names of the current bucket, in the order the standard panel draws them

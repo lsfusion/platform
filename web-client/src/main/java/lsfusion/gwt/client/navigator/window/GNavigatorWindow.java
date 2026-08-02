@@ -4,7 +4,7 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.view.GAbstractNavigatorView;
 import lsfusion.gwt.client.navigator.view.ToolbarNavigatorView;
-import lsfusion.gwt.client.navigator.view.CustomNavigatorView;
+import lsfusion.gwt.client.navigator.view.TemplateNavigatorView;
 import lsfusion.gwt.client.navigator.view.ReactNavigatorView;
 
 import java.util.ArrayList;
@@ -37,10 +37,6 @@ public class GNavigatorWindow extends GAbstractWindow {
     public float alignmentY;
     public float alignmentX;
 
-    // the component name or the HTML template drawing this window's elements instead of the standard toolbar
-    public String custom;
-    public boolean react; // inferred from custom on the server, so the client just reads it
-
     public boolean isSystem() {
         return canonicalName.equals("System.system");
     }
@@ -71,7 +67,7 @@ public class GNavigatorWindow extends GAbstractWindow {
 
     public GAbstractNavigatorView createView(GINavigatorController navigatorController) {
         if (isCustom())
-            return react ? new ReactNavigatorView(this, navigatorController) : new CustomNavigatorView(this, navigatorController);
+            return react ? new ReactNavigatorView(this, navigatorController) : new TemplateNavigatorView(this, navigatorController);
 
         return new ToolbarNavigatorView(this, navigatorController);
     }

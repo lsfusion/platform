@@ -20,7 +20,7 @@ public class GCustomWindowNavigator extends GWindowNavigator {
         if (custom == null) // "nothing computed yet", not "no template": the window keeps the markup it has - the
             return;         // literal that was written beside the property, or the placeholder standing in for one
 
-        ((GNavigatorWindow) window).custom = custom;
+        window.custom = custom;
 
         navigatorController.update(); // the view re-renders the template, keeping the buttons it already built
     }

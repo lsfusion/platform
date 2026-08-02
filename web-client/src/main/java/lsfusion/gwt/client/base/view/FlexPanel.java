@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.view.TabbedFormsView;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabBar;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -1189,7 +1189,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public static PanelParams updatePanels(Widget widget) {
         // in a way similar to getParentSameFlexPanel (in web we assume that all intermediate panels are FlexPanel, in desktop we should do a recursion)
-        if (widget instanceof FlexPanel && !(widget instanceof FormsController.Panel)) {
+        if (widget instanceof FlexPanel && !(widget instanceof TabbedFormsView.Panel)) {
             FlexPanel flexPanel = (FlexPanel) widget;
             List<FlexLine> lines = flexPanel.getLines(null, FlexPanel::updatePanels);
             boolean vertical = flexPanel.vertical;
@@ -1245,7 +1245,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     top = Border.HAS;
                 else
                     bottom = Border.HAS;
-            } else if (widget instanceof NavigatorPanel || widget instanceof FormsController.Panel) {
+            } else if (widget instanceof NavigatorPanel || widget instanceof TabbedFormsView.Panel) {
                 // toolbarPanel has paddings / margins with the nav-expand (however they are inner paddings, so we might want to have more paddings, but considering that toolbars has no innerborders and scrollable it would be better to have no more paddings)
                 // Forms.Panel has paddings / margins (with form-shrink-padded-container and the same rule for the tabs bar)
                 if(ToolbarPanel.hasBorder(widget)) {

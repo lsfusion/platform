@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 
 // a container whose own renderer decides WHERE each child view goes: an HTML template with <Lsf:name> places
-// (CustomContainerView) or a React tree whose <Lsf name/> hosts the platform fills (ReactContainerView).
+// (TemplateContainerView) or a React tree whose <Lsf name/> hosts the platform fills (ReactContainerView).
 //
 // A child is a LOGICAL child of panel, so GWT attaches it (event listener, sinkEvents, onLoad), keeps it in the
 // RequiresResize chain, and remove() finds its parent. Its ELEMENT meanwhile waits in a hidden park node, until the

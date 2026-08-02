@@ -56,6 +56,38 @@
         if (!React) return; // eager path may run before React loads (defensive: it is a before-system resource, so normally present)
         var Ctx = React.createContext(null);
         Object.defineProperty(ns, '__context', { value: Ctx }); // internal (non-enumerable)
+        // what a component throwing while it renders leaves behind. React tears its whole root down on an uncaught
+        // error, so without this a window drawn by a component goes blank with only a stack in the console - and for
+        // the forms window that is the whole application, since the open forms sit parked and hidden. The reason goes
+        // where the window is instead, the way a placement mistake already says its own reason there.
+        // A class component because that is the only thing React lets catch a render error, and written this way
+        // because the registry is plain ES5 and has no build step.
+        function Boundary(props) {
+            React.Component.call(this, props);
+            this.state = { failed: null, data: props.data };
+        }
+        Boundary.prototype = Object.create(React.Component.prototype);
+        Boundary.prototype.constructor = Boundary;
+        Boundary.getDerivedStateFromError = function (error) { return { failed: error }; };
+        // a failure is about THIS data and not about the component: the next projection is a new attempt, so the
+        // window comes back as soon as the application state that broke it changes. Without this one throw would
+        // leave the window reading its own error for the rest of the session - and for the forms window that is
+        // every open form, unreachable until the page is reloaded
+        Boundary.getDerivedStateFromProps = function (props, state) {
+            if (props.data === state.data)
+                return null;
+            return { failed: null, data: props.data };
+        };
+        Boundary.prototype.componentDidCatch = function (error) {
+            window.console.error("lsFusion custom view: '" + this.props.name + "' threw while drawing", error);
+        };
+        Boundary.prototype.render = function () {
+            if (!this.state.failed)
+                return this.props.children;
+            return React.createElement('span', { className: 'lsf-view-error' },
+                                       "lsFusion: '" + this.props.name + "' failed to draw: " + this.state.failed);
+        };
+        Object.defineProperty(ns, '__boundary', { value: Boundary }); // internal (non-enumerable)
         // the data and the controller of whatever root the component is mounted under - these know nothing about forms
         ns.useData = function (selector) {
             var store = React.useContext(Ctx).store;
@@ -76,6 +108,19 @@
             return React.createElement('img', { src: value, className: props.className, style: props.style,
                                                 alt: props.alt || '' });
         };
+        // a caption the platform computed. Like an image it is "html or text": a plain caption is a string, but a
+        // caption the platform built is markup, and printing that as text shows the markup itself. Markup is told
+        // from text by the platform's OWN rule (containsHtmlTag - a tag ANYWHERE in the value), not by a leading '<'
+        // as an image is: an image is an address or an element, while a caption can carry a tag in the middle of it,
+        // so the leading-'<' test would print such a caption as its own source
+        ns.Caption = function (props) {
+            var value = props.value;
+            if (!value) return null;
+            if (window.containsHtmlTag(value))
+                return React.createElement('span', { className: props.className, style: props.style,
+                                                     dangerouslySetInnerHTML: { __html: value } });
+            return React.createElement('span', { className: props.className, style: props.style }, value);
+        };
         // the crossing BACK to the platform. <Lsf name/> marks where a DESIGN child with `lsf = TRUE` goes:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
         // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
@@ -89,13 +134,32 @@
         // per-row renderers, so the same name legitimately has one host per row. Pass the row object out of the
         // projected data (or its `objects`) - a key string cannot be resolved back to a row.
         ns.useLsf = function (name, row) {
-            var view = React.useContext(Ctx).view;
+            var context = React.useContext(Ctx);
+            // an <Lsf> only means anything under the root the platform mounted: a component rendering one into a React
+            // root of its own has no way to reach the platform, and used to find that out as a TypeError on `view`
+            var view = context ? context.view : null;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
+            // a name is what an <Lsf> IS, and the platform has the same words for a template place without one -
+            // without this the name arrives as the string "undefined" and is reported as something that is not a form.
+            // Said from INSIDE the callback, and after the hooks above, because the count of hooks a component calls
+            // may not change between renders: an <Lsf> whose name arrives later would otherwise break the component
+            var nameless = name === undefined || name === null || name === '';
+            // a name is a name whatever it was written as: the platform keeps its views in a Map, whose keys are
+            // type-strict, and `name={8}` for the form the projection calls "8" would otherwise find nothing
+            var named = nameless ? null : String(name);
             return React.useCallback(function (host) {
-                if (held.current) { view.unmount(name, held.current, heldRow.current); held.current = null; heldRow.current = null; }
-                if (host) { view.mount(name, host, row); held.current = host; heldRow.current = row; }
-            }, [view, name, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
+                if (!view) {
+                    if (host) window.console.error("lsFusion custom view: an <Lsf> is outside the view the platform draws, so nothing can be placed in it");
+                    return;
+                }
+                if (nameless) {
+                    if (host) window.console.error("lsFusion custom view: an <Lsf> has no name, so nothing will ever be placed in it");
+                    return;
+                }
+                if (held.current) { view.unmount(named, held.current, heldRow.current); held.current = null; heldRow.current = null; }
+                if (host) { view.mount(named, host, row); held.current = host; heldRow.current = row; }
+            }, [view, named, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
         };
         ns.Lsf = function (props) {
             return React.createElement('div', { ref: ns.useLsf(props.name, props.row), className: props.className, style: props.style });

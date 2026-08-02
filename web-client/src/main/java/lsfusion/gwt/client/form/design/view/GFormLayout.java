@@ -47,7 +47,7 @@ public class GFormLayout extends SizedFlexPanel {
         super(true);
 
         this.form = iform;
-        this.form.formLayout = this; //Because formController.getFormLayout() is used inside CustomContainerView.addImpl before formController is fully initialized, formLayout may be null.
+        this.form.formLayout = this; //Because formController.getFormLayout() is used inside TemplateContainerView.addImpl before formController is fully initialized, formLayout may be null.
         this.mainContainer = mainContainer;
 
         attachContainer = new ResizableComplexPanel();
@@ -107,7 +107,7 @@ public class GFormLayout extends SizedFlexPanel {
         else if (container.tabbed)
             return new TabbedContainerView(form, container);
         else if (container.isCustom())
-            return new CustomContainerView(form, container);
+            return new TemplateContainerView(form, container);
         else
             return new LinearContainerView(form, container);
     }

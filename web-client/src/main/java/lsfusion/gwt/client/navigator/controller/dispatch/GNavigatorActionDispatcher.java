@@ -107,7 +107,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GActivateFormAction action) {
-        formsController.selectTab(action.formCanonicalName);
+        formsController.setCurrentForm(action.formCanonicalName);
     }
 
     @Override
