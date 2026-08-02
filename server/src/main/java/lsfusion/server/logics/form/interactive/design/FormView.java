@@ -581,10 +581,51 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
         components.finalizeChanges();
 
+        // what draws a container comes first: every check below reads it - whether a child may carry `lsf`, whether a
+        // name is projected, what a place may name - so a container whose custom is not a renderer at all would fail
+        // one of them instead, naming a consequence rather than the mistake
+        checkCustomValue();
+        checkCustomTabbed();
+        checkCustomReactProperty();
+        checkCustomTemplatePlaces();
+
         checkLsfViews();
         checkReactProjectionNames();
-        checkCustomTemplatePlaces();
-        checkCustomReactProperty();
+    }
+
+    // the same three vocabularies a window's CUSTOM is read by, plus the container's own '': a component name, markup,
+    // or nothing to lay the children out in order. Anything else is a mistake and not a fourth kind - without this a
+    // misspelled component name is markup that happens to contain no tag, and the container draws that name as its text
+    private void checkCustomValue() {
+        for (ComponentView component : getComponents())
+            if (component instanceof ContainerView) {
+                ContainerView<?> container = (ContainerView<?>) component;
+                String custom = container.getCustom();
+                if (custom != null && !custom.isEmpty() && !Custom.isReactComponent(custom) && !Custom.isHtmlTemplate(custom))
+                    throw new IllegalStateException(formErrorPrefix() + "custom '" + custom + "' of container '" + container.getSID()
+                            + "' is neither a React component name (an uppercase letter followed by letters, digits, '_' or '$')"
+                            + " nor an HTML template (it must contain a tag)");
+
+                // said here rather than let the client meet it: a written value longer than one modified-UTF string is
+                // not refused when the form is serialized but thrown, and the form then refuses to open at all
+                if (Custom.isTooLong(custom))
+                    throw new IllegalStateException(formErrorPrefix() + "custom of container '" + container.getSID() + "' is "
+                            + custom.length() + " characters long, which is more than the " + Custom.MAX_LENGTH
+                            + " a written value can carry; a template this size is computed by a property instead");
+            }
+    }
+
+    // a container draws its children ONE way, and tabbed is one of them: with both, whichever the client happens to
+    // test for first wins and the other is silently ignored - and a tabbed container handed a custom PROPERTY has
+    // nowhere to put the recomputed template at all
+    private void checkCustomTabbed() {
+        for (ComponentView component : getComponents())
+            if (component instanceof ContainerView) {
+                ContainerView<?> container = (ContainerView<?>) component;
+                if (container.isTabbed() && (container.getCustom() != null || container.getPropertyCustom() != null))
+                    throw new IllegalStateException(formErrorPrefix() + "container '" + container.getSID() + "' is both tabbed"
+                            + " and drawn by custom; a container is drawn one way, so only one of the two can be given");
+            }
     }
 
     // a literal `custom` beside a `custom` property is the pair the rest of the design uses (caption / propertyCaption):
@@ -602,12 +643,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // a child drawn inline gives a place to each of its parts - sID.caption, sID.comment - so a name belongs to a
-    // component when it is its sID or names a part below it; and a property may be named by itself, without PROPERTY(...)
+    // component when it is its sID or names a part below it. Only the sID: a property is named as the design names it,
+    // PROPERTY(qty), and not by the property alone - one name, one spelling, and no question of which child answers
+    // when a container and a property could both be read as one
     private static boolean names(String name, String sid) {
-        if (namesOrPart(name, sid))
-            return true;
-
-        return sid.startsWith("PROPERTY(") && sid.endsWith(")") && namesOrPart(name, sid.substring("PROPERTY(".length(), sid.length() - 1));
+        return namesOrPart(name, sid);
     }
 
     private static boolean namesOrPart(String name, String base) {
