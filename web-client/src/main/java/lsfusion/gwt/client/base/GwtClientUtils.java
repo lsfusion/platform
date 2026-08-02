@@ -1851,6 +1851,11 @@ public class GwtClientUtils {
         element.getStyle().setZIndex(0);
     }
 
+    // whether React still has this node in the page: a host it has thrown away is one nothing should be moved into
+    public static native boolean isInDocument(Element host)/*-{
+        return !!host && !!host.isConnected;
+    }-*/;
+
     // a placement that cannot work says so in the host itself, not only in the console: an <Lsf> that names nothing
     // must not read as an empty spot.
     // Written into a node of the platform's OWN, and taken away by removing that node - not by emptying the host. A

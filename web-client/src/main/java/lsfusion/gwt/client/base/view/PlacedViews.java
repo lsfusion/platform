@@ -113,7 +113,7 @@ public class PlacedViews {
 
         while (!asked.isEmpty()) {
             Element next = asked.remove(0);
-            if (isInDocument(next)) {
+            if (GwtClientUtils.isInDocument(next)) {
                 GwtClientUtils.clearLsfViewError(next); // it has been holding "already placed by another <Lsf>"
                 mount(name, next);
                 break;
@@ -130,9 +130,6 @@ public class PlacedViews {
             refused.remove(name);
     }
 
-    private static native boolean isInDocument(Element host)/*-{
-        return !!host && !!host.isConnected;
-    }-*/;
 
     // said in one place, because the row path of a form container reports the same thing without going through the
     // bookkeeping here: a per-row renderer has one host per ROW, which is not the one-view / one-host ledger below
