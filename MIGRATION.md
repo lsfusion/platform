@@ -2,6 +2,58 @@
 
 ## 7.0
 
+### A window's `CUSTOM` accepts more, a `DESIGN` container's is checked, and the client must match
+
+A React component can now draw the window the forms open in and the window the messages
+appear in, and a `DESIGN` container's `custom` is read by the same rules a window's has
+always been read by. Three things an upgrading application can notice:
+
+- **the client and the server must be upgraded together**. The API version went to 392
+  because every window now carries what draws it, so a client of the previous version
+  refuses to connect. There is no setting for this : deploy the pair;
+- **a form the server used to build can now be refused**, with the message naming the
+  container. Three combinations are checked when the form is built : a `custom` literal
+  that is neither a React component name nor markup (a misspelled component name, which
+  the browser used to draw as its own text), `tabbed` together with `custom` (the client
+  drew one of the two and ignored the other, and with a `custom` property it failed in
+  the browser), and a React component paired with a `custom` property. The fix is to
+  write what was meant : a component name, markup, or one of `tabbed` / `custom`;
+- **`WINDOW ... CUSTOM 'literal' CUSTOM property()` written in ONE statement keeps both
+  halves**. It used to drop the literal, so a window drawn from a template started empty
+  until the property computed its first value ; it now shows the literal from the start,
+  as two statements always did. A window written this way with a COMPONENT literal beside
+  a property is refused at load, because a component draws the window itself.
+
+A template a property computes now reports a place that names nothing, in the place and
+in the browser console. That changes what such a window or container shows - a message
+where there used to be a blank spot - but not whether the application starts.
+
+### A window's `CUSTOM` accepts more, a `DESIGN` container's is checked, and the client must match
+
+A React component can now draw the window the forms open in and the window the messages
+appear in, and a `DESIGN` container's `custom` is read by the same rules a window's has
+always been read by. Three things an upgrading application can notice:
+
+- **the client and the server must be upgraded together**. The API version went to 392
+  because every window now carries what draws it, so a client of the previous version
+  refuses to connect. There is no setting for this : deploy the pair;
+- **a form the server used to build can now be refused**, with the message naming the
+  container. Three combinations are checked when the form is built : a `custom` literal
+  that is neither a React component name nor markup (a misspelled component name, which
+  the browser used to draw as its own text), `tabbed` together with `custom` (the client
+  drew one of the two and ignored the other, and with a `custom` property it failed in
+  the browser), and a React component paired with a `custom` property. The fix is to
+  write what was meant : a component name, markup, or one of `tabbed` / `custom`;
+- **`WINDOW ... CUSTOM 'literal' CUSTOM property()` written in ONE statement keeps both
+  halves**. It used to drop the literal, so a window drawn from a template started empty
+  until the property computed its first value ; it now shows the literal from the start,
+  as two statements always did. A window written this way with a COMPONENT literal beside
+  a property is refused at load, because a component draws the window itself.
+
+A template a property computes now reports a place that names nothing, in the place and
+in the browser console. That changes what such a window or container shows - a message
+where there used to be a blank spot - but not whether the application starts.
+
 ### Another session and a user interaction inside a transaction now fail
 
 Two situations that used to be tolerated now raise an error
@@ -114,24 +166,3 @@ index scan instead of a full scan of the grouped partition plus a sort
 (the aggregation already excludes null-ordered rows); only the plan changes, and existing
 databases need no reindex. On large volumes this removes full-scan/spill behavior for such
 aggregations. The change is result-safe and there is no fallback setting.
-
-
-### Bundled custom view modules removed
-
-The `JKanban`, `FrappeGantt`, `Chart` and `Carousel` system modules no longer ship with
-the platform, together with the JS and CSS they registered through `onWebClientInit`
-(`jkanban.*`, `frappe-gantt.*`, `chart.js` and the `custom_*` adapters around them).
-
-An application that `REQUIRE`s one of them now fails at startup with
-`Error in module '<module>': required module 'JKanban' was not found.`, and the object
-views they backed — `CUSTOM 'kanban'`, `CUSTOM 'frappeGantt'`, `CUSTOM 'carousel'` and
-`CUSTOM 'chart_line'` / `'chart_bar'` / `'chart_pie'` / `'chart_radar'` — are left
-without an implementation.
-
-To keep such a form working, move the module into the application: copy the `.lsf` file
-and the corresponding `web/objects/...` resources from the platform's 6.x sources into
-the project, where its own `onWebClientInit` registers them exactly the same way; or
-reimplement the view against the current API, described in
-[Custom object views](https://docs.lsfusion.org/How-to_Custom_components_objects/).
-The four names are no longer reserved either, so an application module may now be
-called `Chart` or `Carousel`.
