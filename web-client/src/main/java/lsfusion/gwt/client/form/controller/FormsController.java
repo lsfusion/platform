@@ -29,7 +29,6 @@ import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorActio
 import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.PopupForm;
-import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -40,6 +39,10 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.form.view.FormsView;
+import lsfusion.gwt.client.form.view.ReactFormsView;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
+import lsfusion.gwt.client.form.view.TabbedFormsView;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -69,7 +72,13 @@ public abstract class FormsController {
 
     private final ResizableSimplePanel container; // used for / in the setFullScreenMode, and it is assumed that it is returned in getView
 
-    private final Panel tabsPanel;
+    private FormsView formsView; // chosen in initView, once the forms window is known - null until then
+    private final FormsView.SelectionHandler selection;
+    // the tabbed view's extra tab widget, built here with its buttons - and built even when a component draws the
+    // window and it is never attached: the buttons are written from here as the state behind them changes (a held
+    // modifier's force mode, ALT+F11, a server maximize), and those writes cannot become one FormsView notification -
+    // a component is told about the chosen edit mode and the full screen mode, but not about a force mode
+    private final GToolbarView toolbarView;
 
     private final List<FormContainer> formContainers = new ArrayList<>();
 
@@ -91,16 +100,10 @@ public abstract class FormsController {
         return windowsController;
     }
 
-    public static class Panel extends FlexTabbedPanel {
-        public Panel(Widget extraTabWidget, boolean end) {
-            super(extraTabWidget, end);
-        }
-    }
-
     public FormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
 
-        GToolbarView toolbarView = new GToolbarView();
+        toolbarView = new GToolbarView();
 
         int editMode = windowsController.restoreEditMode();
         editModeButton = new GToolbarButton(EditMode.getImage(editMode)) {
@@ -117,7 +120,7 @@ public abstract class FormsController {
                             @Override
                             public ClickHandler getClickHandler() {
                                 return event -> {
-                                    selectEditMode(index);
+                                    setEditMode(buttons[index]);
                                     GwtClientUtils.hideAndDestroyTippyPopup(popup.result);
                                 };
                             }
@@ -161,28 +164,26 @@ public abstract class FormsController {
             toolbarView.addComponent(mobileMenuButton);
         }
 
-        tabsPanel = new Panel(toolbarView, MainFrame.mobile);
-
-        // unselected (but not removed)
-        tabsPanel.setBeforeSelectionHandler(index -> {
-            int selectedTab = tabsPanel.getSelectedTab();
-            if(selectedTab >= 0) {
-                forms.get(selectedTab).onBlur(isRemoving);
-                isRemoving = false;
+        selection = new FormsView.SelectionHandler() {
+            @Override
+            public void unselected(int index) { // unselected (but not removed)
+                if(index >= 0) {
+                    forms.get(index).onBlur(isRemoving);
+                    isRemoving = false;
+                }
             }
-        });
-        tabsPanel.setSelectionHandler(index -> {
-            if(index >= 0) {
-                forms.get(index).onFocus(isAdding);
-                formFocusOrder.set(index, focusOrderCount++);
-                isAdding = false;
+
+            @Override
+            public void selected(int index) {
+                if(index >= 0) {
+                    forms.get(index).onFocus(isAdding);
+                    formFocusOrder.set(index, focusOrderCount++);
+                    isAdding = false;
+                }
             }
-        });
+        };
 
-        GwtClientUtils.addClassName(tabsPanel, "forms-container");
-
-        container = new ResizableSimplePanel();
-        container.setPercentMain(tabsPanel);
+        container = new ResizableSimplePanel(); // filled by initView, with whichever view the forms window asks for
         GwtClientUtils.addClassName(container, "forms-container-window");
 
         initEditModeTimer();
@@ -344,6 +345,14 @@ public abstract class FormsController {
         updateEditMode(EditMode.getMode(prevModeButton), null);
     }
 
+    // the mode the user chose and the one stored between sessions - what the toolbar button's popup sets, and what a
+    // component's own chooser sets through controller.setEditMode. The force modes go through selectEditMode instead:
+    // they last while a modifier is held, so the view is not told about them
+    public void setEditMode(EditMode mode) {
+        selectEditMode(mode.getIndex());
+        requestViewUpdate();
+    }
+
     private void selectEditMode(int mode) {
         editModeButton.changeImage(EditMode.getImage(mode));
         updateEditMode(EditMode.getMode(mode), null);
@@ -410,10 +419,11 @@ public abstract class FormsController {
                     } else if(pressedAlt) {
                         pressedAlt = false;
                     } else {
-                        if (isForceLinkMode() || isForceDialogMode() || isForceGroupChangeMode()) {
+                        // the key-up was lost (a focus change, another window), so the force mode is dropped here.
+                        // removeForceEditMode restores the CHOSEN mode, image and title together - resetting to DEFAULT
+                        // after it would leave the button showing the chosen mode while editing behaved as default
+                        if (isForceLinkMode() || isForceDialogMode() || isForceGroupChangeMode())
                             removeForceEditMode();
-                            updateEditMode(EditMode.DEFAULT, null);
-                        }
                     }
                 }
             };
@@ -430,12 +440,32 @@ public abstract class FormsController {
         setFullScreenMode(!fullScreenMode);
     }
 
+    public boolean isFullScreenMode() {
+        return fullScreenMode;
+    }
+
     public void setFullScreenMode(boolean fullScreenMode) {
         if (fullScreenMode != this.fullScreenMode) {
             windowsController.setFullScreenMode(fullScreenMode);
             this.fullScreenMode = fullScreenMode;
             updateFullScreenButton();
+            requestViewUpdate();
         }
+    }
+
+    // the forms window is only known once the navigator has been read, which is after this controller is built - and
+    // no form can be open before that, so the view is chosen here rather than in the constructor. Building the tab
+    // strip there and replacing it here would cost the whole FlexTabbedPanel on every React view, and would leave
+    // `formsView` reading as if it could be either at any time.
+    // And not in the mobile layout: a component draws a window in the desktop web layout only, which is the rule for
+    // every window - a navigator window's component is already never drawn there, since the mobile navigator view draws
+    // that window instead. Here it is not just the rule: the toolbar a component replaces carries the mobile menu
+    // button, which is the only way into the navigator on a phone
+    public void initView(GAbstractWindow formsWindow) {
+        formsView = formsWindow.react && !MainFrame.mobile
+                ? new ReactFormsView(formsWindow.custom, this, forms, selection)
+                : new TabbedFormsView(toolbarView, MainFrame.mobile, selection);
+        container.setPercentMain(formsView.getView());
     }
 
     public void initRoot() {
@@ -479,7 +509,7 @@ public abstract class FormsController {
         if(!asyncOpened) {
             FormDockable duplicateForm = getDuplicateForm(form.canonicalName, forbidDuplicate);
             if (duplicateForm != null) {
-                selectTab(duplicateForm);
+                setCurrentForm(duplicateForm);
                 return null;
             }
         }
@@ -508,6 +538,7 @@ public abstract class FormsController {
         if (contextFormDockable != null) {
             contextFormDockable.block();
             contextFormDockable.setBlockingForm((FormDockable) formContainer);
+            formsView.formsChanged(); // the mask is a projected state, so a component view has to be told the transition happened
         }
 
         boolean isDialog = showFormType.isDialog();
@@ -555,10 +586,11 @@ public abstract class FormsController {
             if (contextFormDockable != null) {
                 contextFormDockable.setBlockingForm(null);
                 contextFormDockable.unblock();
+                formsView.formsChanged();
 
-                selectTab(contextFormDockable);
+                setCurrentForm(contextFormDockable);
             } else if (fShowFormType.isDocked() || fShowFormType.isDockedModal())
-                ensureTabSelected();
+                ensureCurrentForm();
 
             onResult.accept(null);
         };
@@ -602,6 +634,8 @@ public abstract class FormsController {
             Scheduler.ScheduledCommand runOpenForm = () -> {
                 FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
 
+                formContainer.requestedCaption = openForm.caption;
+
                 Widget captionWidget = formContainer.getCaptionWidget();
                 if(captionWidget != null)
                     BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, ImageHtmlOrTextType.FORM);
@@ -643,14 +677,30 @@ public abstract class FormsController {
         return null;
     }
 
-    public void selectTab(FormDockable dockable) {
-        tabsPanel.selectTab(forms.indexOf(dockable));
+    // something the forms view shows from its projection changed - a caption, an image, the blocked state.
+    // Applying one set of remote changes can touch several of them, and a component view rebuilds its whole
+    // projection each time, so the requests are collapsed into one pass
+    private boolean viewUpdateRequested;
+    public void requestViewUpdate() {
+        if (viewUpdateRequested)
+            return;
+
+        viewUpdateRequested = true;
+        Scheduler.get().scheduleFinally(() -> {
+            viewUpdateRequested = false;
+            formsView.formsChanged();
+        });
     }
 
-    public void selectTab(String formCanonicalName) {
+    public void setCurrentForm(FormDockable dockable) {
+        formsView.setCurrent(forms.indexOf(dockable));
+        formsView.formsChanged();
+    }
+
+    public void setCurrentForm(String formCanonicalName) {
         FormDockable form = findForm(formCanonicalName);
         if(form != null)
-            selectTab(form);
+            setCurrentForm(form);
     }
 
     public void closeForm(String formId) {
@@ -680,36 +730,29 @@ public abstract class FormsController {
 
         updateFormsNotEmptyClassName();
 
-        FlexPanel contentWidget = dockable.getContentWidget();
-
-        FlexPanel header = new FlexPanel();
-        header.addFillShrink(dockable.getTabWidget());
-        header.add(dockable.getCloseButton(), GFlexAlignment.CENTER);
-
-        tabsPanel.addTab(contentWidget, index, header);
-
-        FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget, tabsPanel.tabEnd);
+        formsView.formAdded(dockable, index); // the projection is rebuilt by setCurrentForm just below
 
         assert !isAdding;
         isAdding = true;
-        selectTab(dockable);
+        setCurrentForm(dockable);
         assert !isAdding;
     }
 
     public void removeDockable(FormDockable dockable) {
         int index = forms.indexOf(dockable);
-        boolean isTabSelected = forms.get(tabsPanel.getSelectedTab()).equals(dockable);
+        boolean wasCurrent = formsView.getCurrent() == index;
 
-        if (isTabSelected) {
+        if (wasCurrent) {
             assert !isRemoving;
             isRemoving = true;
         }
 
-        tabsPanel.removeTab(index);
-        assert !isRemoving; // checking that the active tab is closing
+        formsView.formRemoved(dockable, index);
+        assert !isRemoving; // checking that the form being closed was the current one
 
         forms.remove(index);
         formFocusOrder.remove(index);
+        formsView.formsChanged();
 
         updateFormsNotEmptyClassName();
         
@@ -717,14 +760,14 @@ public abstract class FormsController {
             MainFrame.openNavigatorMenu();
         }
 
-        ensureTabSelected();
+        ensureCurrentForm();
     }
     
     public int getFormsCount() {
         return forms.size();
     }
 
-    public void closeAllTabs() {
+    public void closeAllForms() {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             private int size = forms.size();
             @Override
@@ -732,9 +775,9 @@ public abstract class FormsController {
                 if (MainFrame.isModalPopup())
                     return true;
 
-                if (size > 0 && size <= forms.size()) { // check if some tab not closed by user while running "closeAllTabs"
+                if (size > 0 && size <= forms.size()) { // check if some form not closed by user while running "closeAllForms"
                     FormDockable lastTab = forms.get(size - 1);
-                    selectTab(lastTab);
+                    setCurrentForm(lastTab);
                     lastTab.closePressed();
                     size--;
                     return true;
@@ -745,9 +788,9 @@ public abstract class FormsController {
         }, 20);
     }
 
-    public void ensureTabSelected() {
+    public void ensureCurrentForm() {
         int size;
-        if(tabsPanel.getSelectedTab() < 0 && (size = forms.size()) > 0) {
+        if(formsView.getCurrent() < 0 && (size = forms.size()) > 0) {
             FormDockable lastFocusedForm = null;
             int maxOrder = 0;
             int formOrder;
@@ -758,7 +801,7 @@ public abstract class FormsController {
                     maxOrder = formOrder;
                 }
             }
-            selectTab(lastFocusedForm);
+            setCurrentForm(lastFocusedForm);
         }
     }
 

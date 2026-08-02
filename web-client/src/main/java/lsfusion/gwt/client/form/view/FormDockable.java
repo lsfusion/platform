@@ -41,7 +41,7 @@ public final class FormDockable extends WidgetForm {
             final MenuBar menuBar = new MenuBar(true);
             menuBar.addItem(new MenuItem(ClientMessages.Instance.get().closeAllTabs(), () -> {
                 GwtClientUtils.hideAndDestroyTippyPopup(popup.result);
-                formsController.closeAllTabs();
+                formsController.closeAllForms();
             }));
 
             popup.result = GwtClientUtils.showTippyPopup(getTabWidget(), menuBar);
@@ -62,6 +62,11 @@ public final class FormDockable extends WidgetForm {
     @Override
     public void hide(EndReason editFormCloseReason) {
         formsController.removeDockable(this);
+    }
+
+    // this form is masked because a docked modal child is open over it; clicking the mask goes to that child
+    public boolean hasBlockingForm() {
+        return blockingForm != null;
     }
 
     public void setBlockingForm(FormDockable blocking) {
@@ -101,7 +106,7 @@ public final class FormDockable extends WidgetForm {
     protected void onMaskClick() {
         Widget content = contentWidget.getContent();
         if (content instanceof GFormLayout && blockingForm != null) {
-            ((GFormLayout) content).getFormsController().selectTab(blockingForm);
+            ((GFormLayout) content).getFormsController().setCurrentForm(blockingForm);
         }
     }
 }

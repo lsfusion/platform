@@ -2480,16 +2480,25 @@ public class GFormController implements EditManager {
         Widget captionWidget = getCaptionWidget(container);
         if(captionWidget != null)
             BaseImage.updateText(captionWidget, container.caption);
+        updateFormsView(container);
     }
     public void updateImage(GContainer container) {
         Widget captionWidget = getCaptionWidget(container);
         if(captionWidget != null)
             BaseImage.updateImage(container.image, captionWidget);
+        updateFormsView(container);
+    }
+
+    // a form's caption and image ARE its main container's, so this is also where they change for a custom forms view,
+    // which reads them from its projection rather than from the tab widget the lines above write into
+    private void updateFormsView(GContainer container) {
+        if(container.main)
+            formsController.requestViewUpdate();
     }
 
     public void setContainerCustom(GContainer container, String custom) {
         GAbstractContainerView containerView = formLayout.getContainerView(container);
-        ((CustomContainerView)containerView).updateCustom(custom);
+        ((TemplateContainerView)containerView).updateCustom(custom);
     }
 
     private static final class Change {
