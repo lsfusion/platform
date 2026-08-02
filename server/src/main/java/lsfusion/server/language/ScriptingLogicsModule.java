@@ -5721,31 +5721,48 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // the renderer of an ALREADY declared window - so the elements keep their window, and the navigator keeps its
-    // structure, selection and startup behaviour; only the drawing changes
+    // structure, selection and startup behaviour; only the drawing changes.
+    // What a renderer MEANS depends on the window's role, and only the role knows: a navigator window is drawn from its
+    // navigator elements, the forms window from the forms open in it, the log window from the messages logged in it. So
+    // the vocabulary is checked per role here, not once for every window
     public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = findWindow(name);
-        checks.checkNativeWindowCustom(name, !(window instanceof NavigatorWindow));
 
-        applyWindowCustom((NavigatorWindow) window, name, custom, customProperty);
+        if (window instanceof NavigatorWindow) {
+            applyWindowCustom(window, name, custom, customProperty);
+            return;
+        }
+
+        // forms and log are the native windows a component can draw, and only a component: what they show is made while
+        // the application runs - the forms opened in one, the messages logged in the other - so a template would have
+        // nothing to name and a computed value nothing to compute
+        checks.checkNativeWindowCustom(name, window != baseLM.baseWindows.forms && window != baseLM.baseWindows.log);
+        checks.checkComponentOnlyWindowCustom(name, custom, customProperty != null);
+
+        window.setCustom(custom);
     }
 
-    // the one place a window is told what draws it, whichever statement said so - as the grammar has one rule - so the
-    // check cannot be forgotten by a third caller
-    private void applyWindowCustom(NavigatorWindow window, String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
+    // the one place a NAVIGATOR window is told what draws it, whichever statement said so - as the grammar has one
+    // rule - so the check cannot be forgotten by a third caller
+    private void applyWindowCustom(AbstractWindow window, String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkWindowCustom(name, custom);
 
         // a literal beside a property is the pair the rest of the design uses (elementClass / propertyElementClass):
-        // the literal is the markup the window starts with, the property recomputes it. Checked against the WINDOW,
-        // not against one statement, since the two can come from two modules - and only one combination is not a pair:
-        // a React component draws the window itself and would never be handed a computed template
-        String react = customProperty != null ? window.getCustom() : custom;
-        if ((customProperty != null || window.getPropertyCustom() != null) && Custom.isReactComponent(react))
-            errLog.emitWindowCustomReactPropertyError(parser, name, react);
+        // the literal is the markup the window starts with, the property recomputes it. Checked against the WINDOW and
+        // not against one statement, since the two can come from two modules - and against THIS statement too, since
+        // one statement can carry both. Only one combination is not a pair: a React component draws the window itself
+        // and would never be handed a computed template
+        String literal = custom != null ? custom : window.getCustom();
+        if ((customProperty != null || window.getPropertyCustom() != null) && Custom.isReactComponent(literal))
+            errLog.emitWindowCustomReactPropertyError(parser, name, literal);
 
+        // each half is written by the statement that brought it, so a statement carrying both keeps both. The literal
+        // goes first: setPropertyCustom stands a placeholder template in for a missing one, and a literal that is
+        // already there is what the window is drawn from until the property computes its first value
+        if (custom != null)
+            window.setCustom(resolveWindowTemplate(name, custom));
         if (customProperty != null)
             window.setPropertyCustom(customProperty.getLP().property);
-        else
-            window.setCustom(resolveWindowTemplate(name, custom));
     }
 
     // a place in a window's template names its element the way the rest of the module does - by a name resolved in the

@@ -97,6 +97,20 @@ public class Custom {
         return false;
     }
 
+    // the names a template's places ask for, as it wrote them - which for a literal that has been read is already the
+    // canonical name, since mapPlaces rewrote each one when the module was read
+    public static Set<String> places(String custom) {
+        Set<String> names = new HashSet<>();
+        try {
+            mapPlaces(custom, name -> {
+                names.add(name);
+                return name;
+            });
+        } catch (PlaceError ignored) { // a literal that got here has been walked once already, and a computed one is
+        }                             // not walked at all - either way there is nothing to say a second time
+        return names;
+    }
+
     public interface PlaceMapper {
         String map(String name) throws PlaceError;
     }
@@ -112,5 +126,27 @@ public class Custom {
     // that is not UpperCamel) stays an error instead of quietly becoming a template that draws its own text
     public static boolean isHtmlTemplate(String custom) {
         return custom != null && HTML_TEMPLATE.matcher(custom).matches();
+    }
+
+    // what a written value may weigh. A window and a container hand their custom to the client as one modified-UTF
+    // string, which cannot carry more than this - and a longer one is not refused there but THROWN, on every client
+    // that connects, long after the module was read: the application starts and nobody can log in. So it is refused
+    // where it is written, by name. A template that really needs to be bigger than this is computed by a property,
+    // which is pushed as an ordinary property value and has no such limit
+    public static final int MAX_LENGTH = 65535;
+
+    public static boolean isTooLong(String custom) {
+        return custom != null && utfLength(custom) > MAX_LENGTH;
+    }
+
+    // the length writeUTF counts: one byte below 0x80, two below 0x800, three above - and two for a NUL, which is
+    // why it is not simply the UTF-8 length
+    private static int utfLength(String custom) {
+        int length = 0;
+        for (int i = 0; i < custom.length(); i++) {
+            char c = custom.charAt(i);
+            length += c >= 0x0001 && c <= 0x007F ? 1 : c > 0x07FF ? 3 : 2;
+        }
+        return length;
     }
 }

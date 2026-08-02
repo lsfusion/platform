@@ -227,11 +227,19 @@ public class ScriptingErrorLog {
     }
 
     public void emitNativeWindowCustomError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements", name));
+        emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements; of the native windows only System.forms and System.log can be drawn by a React component, and only with EXTEND WINDOW", name));
     }
 
     public void emitWindowCustomError(ScriptParser parser, String name, String custom) throws SemanticErrorException {
         emitSimpleError(parser, format("CUSTOM '%s' of window '%s' is neither a React component name (an uppercase letter followed by letters, digits, '_' or '$') nor an HTML template (it must contain a tag)", custom, name));
+    }
+
+    public void emitCustomTooLongError(ScriptParser parser, String what, String name, int length) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM of %s '%s' is %d characters long, which is more than the %d a written value can carry; a template this size is computed by a property instead", what, name, length, lsfusion.server.base.Custom.MAX_LENGTH));
+    }
+
+    public void emitComponentOnlyWindowCustomError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM of window '%s' must be a React component name: the window is drawn from what the running application put in it - the forms open in it, the messages logged in it - and that exists only while the application runs, so there is nothing for a template or a computed value to name", name));
     }
 
     public void emitWindowCustomReactPropertyError(ScriptParser parser, String name, String custom) throws SemanticErrorException {

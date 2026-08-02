@@ -121,6 +121,24 @@ public class ScriptingLogicsModuleChecks {
         if (custom != null && !Custom.isReactComponent(custom) && !Custom.isHtmlTemplate(custom)) {
             errLog.emitWindowCustomError(parser, name, custom);
         }
+        checkCustomLength("window", name, custom);
+    }
+
+    // said here rather than let the client meet it: a written value longer than one modified-UTF string is not
+    // refused when it is serialized but thrown, on every client that connects
+    public void checkCustomLength(String what, String name, String custom) throws ScriptingErrorLog.SemanticErrorException {
+        if (Custom.isTooLong(custom)) {
+            errLog.emitCustomTooLongError(parser, what, name, custom.length());
+        }
+    }
+
+    // a native window a component may draw is drawn from what the running application put in it - the forms open in the
+    // forms window, the messages logged in the log window - and that exists only at runtime: a template would have to
+    // name those, and a property would have nothing to compute that the component cannot compute itself
+    public void checkComponentOnlyWindowCustom(String name, String custom, boolean property) throws ScriptingErrorLog.SemanticErrorException {
+        if (property || !Custom.isReactComponent(custom)) {
+            errLog.emitComponentOnlyWindowCustomError(parser, name);
+        }
     }
 
     public void checkNavigatorElement(NavigatorElement element, String name) throws ScriptingErrorLog.SemanticErrorException {

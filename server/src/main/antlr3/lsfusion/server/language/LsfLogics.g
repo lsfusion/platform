@@ -5384,7 +5384,17 @@ windowOptions returns [NavigatorWindowOptions options]
                     }
                 }
             }
-        |	cst=windowCustom { $options.custom = $cst.custom; $options.customProperty = $cst.property; }
+        |	cst=windowCustom {
+                if (inMainParseState()) {
+                    // one occurrence carries EITHER the literal or the property, and the two are a pair - so an
+                    // occurrence overwrites only what it brought, the way the CLASS option above does
+                    if($cst.custom != null) {
+                        $options.custom = $cst.custom;
+                    } else {
+                        $options.customProperty = $cst.property;
+                    }
+                }
+            }
 		)*
 	;
 
