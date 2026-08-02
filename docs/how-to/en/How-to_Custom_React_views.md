@@ -79,7 +79,7 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 {rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
 ```
 
-Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the scroll must be still, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#placing-an-lsf-child) alike — follows.
+Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the scroll must be still, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#lsf-child) alike — follows.
 
 ```jsx
 function Row(props) {
@@ -308,7 +308,7 @@ export function Board(props) {
 }
 ```
 
-### Placing an lsf child
+### Placing an lsf child {#lsf-child}
 
 An `lsf` child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
 
@@ -501,7 +501,7 @@ NAVIGATOR {
 }
 ```
 
-An `LSF` element no `<Lsf>` names is not shown, as on a form. Three mistakes are reported in the page: a name no navigator element has, a name that is not `LSF`, which the component is expected to draw from the projection instead, and a name a second `<Lsf>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one that crossed into another window, one gated out because its parent is not selected — is not a mistake and is not reported: the place stays empty and waits, and is filled as soon as the window draws that element.
+An `LSF` element no `<Lsf>` names is not shown, as on a form. Four mistakes are reported in the page: a name no navigator element has, a name that is not `LSF`, which the component is expected to draw from the projection instead, a name of an element another window draws, and a name a second `<Lsf>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place stays empty and waits, and is filled as soon as the window draws that element. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
 
 A menu that is mostly standard is written this way as one `<Lsf>` for each element the platform draws, and markup only for the elements the component draws itself.
 
@@ -520,6 +520,123 @@ An element the template gives no place is not drawn, so it names everything it s
 
 The template may also be computed: given a property instead of a literal, it is recomputed as the property's value changes and the window is drawn again from the new markup, so a menu can rearrange itself without a component. Nothing resolves a computed template, so its places name their elements in full, by canonical name. A component is still what a menu needs when the markup depends on what the component itself reads.
 
+### The forms window {#forms-window}
+
+A React component can also draw the window the forms open in, instead of the standard tabs. The [`WINDOW`](../language/WINDOW_statement.md) `System.forms` is given the component name, and the open forms become its data:
+
+```lsf
+EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
+```
+
+```jsx
+const { Lsf } = window.lsfusion;
+
+function FormsBoard({ data, controller }) {
+    const current = data.open.find(name => data.byName[name].selected);
+    return <div className="board">
+        <div className="board-bar">{data.open.map(name => {
+            const e = data.byName[name];
+            return <span key={name} className={e.selected ? 'on' : ''}>
+                <a onClick={() => controller.select(name)}>{e.caption || '...'}</a>
+                {!e.blocked && <a onClick={() => controller.close(name)}>x</a>}
+            </span>;
+        })}</div>
+        {current && <Lsf key={current} name={current} className="board-current"/>}
+    </div>;
+}
+```
+
+The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Lsf name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](#lsf-child) and a [navigator element](#standard-button), and the same mistakes are reported in the page.
+
+`props.data` is the open forms and the state of the window itself:
+
+| Field | Meaning |
+| --- | --- |
+| `open` | The names of the open forms, in the order the standard strip shows them in |
+| `byName` | Each form by name |
+| `editMode` | The name of the chosen edit mode — the one the platform's mode button chooses, and the one kept between sessions. A mode switched on by holding Ctrl, Shift or Alt lasts while the key is held and does not change `editMode` |
+| `editModes` | Every edit mode, in the order the mode button offers them |
+| `fullScreen` | Whether the forms window is expanded to the full screen |
+
+and each form carries:
+
+| Field | Meaning |
+| --- | --- |
+| `name` | Its own name, so a component that was handed the entry alone can still address the form |
+| `canonicalName` | The [canonical name](../paradigm/Naming.md#canonicalname) of the form, for a component that draws a particular form its own way |
+| `caption`, `image` | Its caption and icon, the current ones — the caption a tab shows. Drawn with [`<Caption value={e.caption}/>`](#caption) and [`<Image value={e.image}/>`](#image) |
+| `selected` | Whether it is the current form — the one the keyboard works in |
+| `loading` | Whether the form has not arrived from the server yet. Until it does, `caption` is the one the request that opened it carried and `image` is empty; the rest of the entry is there as always |
+| `blocked` | Whether a form opened from this one is on top of it. Such a form cannot be closed, which is why the standard tab disables its close button |
+
+and each edit mode in `editModes` carries what the mode button shows it with:
+
+| Field | Meaning |
+| --- | --- |
+| `name` | Its own name — the one `setEditMode` takes, and the one `editMode` is compared with |
+| `caption`, `image` | The mode's caption and icon. Drawn with [`<Caption value={m.caption}/>`](#caption) and [`<Image value={m.image}/>`](#image) |
+
+`props.controller` does what only the platform can do to an open form: `select(name)` makes it the current one, the way clicking its tab does, and `close(name)` asks it to close, the way its close button does. Closing is a request — a form with unsaved changes asks the user first and may stay open — so a form leaves `open` when it is actually closed, not when `close` is called.
+
+A form the component places nowhere stays **open and hidden**, which is what a background tab already is: the standard strip only hides the forms it does not show. So a component that places only the current form gives an application without tabs, where every form opened so far is still there, and placing one again shows it as it was left. A form is closed only through `close(name)` or `closeAll()`, or the way it is closed without a component view.
+
+The platform's own toolbar — edit mode, full screen, the mobile menu — sits in the standard tab strip, so a window drawn by a component does not show it. What it does to the window itself the component does through the controller: `setEditMode(name)` chooses an edit mode, the way the mode button does, where `name` is the name of a mode in `editModes`, and `toggleFullScreen()` expands the forms window to the full screen and brings it back, the way the full screen button and ALT+F11 do. What the standard tab's context menu offers is here too: `closeAll()` asks every open form to close, starting from the last one in that order; closing each of them is a request as well, so a form that did not close stays open and the rest are closed. The chosen mode and the full screen are state the platform holds itself, which is why it projects them: a mode chosen by the component and a full screen entered with ALT+F11 are both seen the same way, in `props.data`. The mobile menu is not something a component needs: on the mobile web client the platform draws the forms window.
+
+Only the desktop web client draws the component. The mobile web client and the desktop client keep their standard forms window.
+
+### The log window {#log-window}
+
+A React component can also draw the window the messages to the user appear in, instead of the standard panel. The [`WINDOW`](../language/WINDOW_statement.md) `System.log` is given the component name, and the logged messages become its data:
+
+```lsf
+EXTEND WINDOW System.log CUSTOM 'MessageLog';
+```
+
+```jsx
+const { Lsf } = window.lsfusion;
+
+function MessageLog({ data, controller }) {
+    return <div className="log">
+        <a className="log-pin" onClick={() => controller.togglePin()}>pin</a>
+        {data.messages.map(name => {
+            const m = data.byName[name];
+            return <div key={name} className={m.failed ? 'log-failed' : 'log-ok'}>
+                <div className="log-line">{new Date(m.time).toLocaleTimeString()} {m.caption}</div>
+                <Lsf name={name}/>
+            </div>;
+        })}
+    </div>;
+}
+```
+
+The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Lsf name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](#lsf-child), a [navigator element](#standard-button) and an [open form](#forms-window).
+
+`props.data` is the logged messages:
+
+| Field | Meaning |
+| --- | --- |
+| `messages` | The names of the logged messages, newest first — the order the standard panel shows them in |
+| `byName` | Each message by name |
+
+and each message carries:
+
+| Field | Meaning |
+| --- | --- |
+| `name` | Its own name, so a component that was handed the entry alone can still place the message |
+| `caption` | The caption of the action that logged the message, drawn with [`<Caption value={m.caption}/>`](#caption) |
+| `time` | When the message arrived, in milliseconds — what the standard panel prints on its date line |
+| `failed` | Whether the message is an error — the panel's only distinction between two messages, and the one a component styles from |
+
+A message is markup, so what the projection carries is only what the standard panel writes itself beside that markup. The name is the platform's own: two messages can carry the same text, caption and second, so nothing about a message identifies it.
+
+`props.controller` does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. Pinning is a setting of the display environment, shared with the desktop client, so the component cannot do it itself; it is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
+
+A message the component places nowhere is still logged and still in the projection: nothing drops one, exactly as the standard panel keeps every message it printed. So a component that shows only the last message, or only the failed ones, loses nothing — an earlier message placed again is shown as it was. There is no clearing and no dismissing, in the projection or in the controller, because the platform has none.
+
+The window itself is still the platform's: the component draws inside it, so the window is hidden, popped out over the form and revealed when a message arrives exactly as before.
+
+Only the desktop web client draws the component. The desktop client keeps its standard message panel, and the mobile web client, whose layout has no message window at all, is left as it was.
+
 ### Drawing an image {#image}
 
 An image the platform projects — a property of an image class, the icon of a navigator element or of an action — is drawn by `Image`:
@@ -532,3 +649,15 @@ const { Image } = window.lsfusion;
 ```
 
 The projected value is either an address or a ready element, since a font icon has no address at all, and `Image` draws whichever it was given. A view that wants the address itself — for a CSS background, say — still has it in the value; `Image` is there so that no view has to insert the platform's markup by hand. A missing image draws nothing.
+
+### Drawing a caption {#caption}
+
+A caption the platform projects — a form's, a navigator element's, the one a message carries — is drawn by `Caption`:
+
+```jsx
+const { Caption } = window.lsfusion;
+
+<Caption value={e.caption} className="tab-caption"/>
+```
+
+A caption is either plain text or markup the platform built, and `Caption` draws whichever it was given, by the same rule the platform draws a caption of its own by: the value is markup when a tag appears anywhere in it. Printed as text, such a caption would show its own markup, so a view that prints `{e.caption}` itself is right only while the caption is plain text. A missing caption draws nothing.

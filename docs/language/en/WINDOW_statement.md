@@ -40,9 +40,9 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
 By default a window is created that displays [navigator elements](../paradigm/Navigator.md).
 
-The `EXTEND WINDOW` statement gives an already declared window - a standard one included - the React component or HTML template that draws its navigator elements, leaving everything else about the window as it is. The elements keep the window they were placed in, so the navigator's structure, its selection and its startup behavior stay as they were, and only the renderer changes. The window must already exist and must not be `NATIVE`. When several modules extend one window, the last literal is the markup the window starts with and the last property is the one that recomputes it.
+The `EXTEND WINDOW` statement gives an already declared window - a standard one included - the React component or HTML template that draws its navigator elements, leaving everything else about the window as it is. The elements keep the window they were placed in, so the navigator's structure, its selection and its startup behavior stay as they were, and only the renderer changes. The window must already exist. Of the `NATIVE` windows only `System.forms` and `System.log` can be given a component, and no `NATIVE` window can be given a template. When several modules extend one window, the last literal is the markup the window starts with and the last property is the one that recomputes it.
 
-The `HIDE WINDOW` statement hides the specified window, making it invisible. For example, hiding the `System.log` window causes messages to the user to be shown as system dialog forms.
+The `HIDE WINDOW` statement hides the specified window, making it invisible. A hidden window draws nothing, so a window given a `CUSTOM` component and then hidden does not draw it, and the messages of a hidden `System.log` are logged and not shown anywhere.
 
 ### Parameters
 
@@ -166,7 +166,7 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. For
 
 - `CUSTOM customExpr`
 
-    The window's navigator elements are drawn by a React component or an HTML template instead of the standard toolbar. The mobile web client and the desktop client keep their standard menu.
+    The window's navigator elements are drawn by a React component or an HTML template instead of the standard toolbar. Only the desktop web client draws them that way: the mobile web client and the desktop client keep their standard menu, and the same holds for the `System.forms` and `System.log` windows described below, which keep their standard view there.
 
     - `customExpr`
 
@@ -174,9 +174,11 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. For
 
         A literal and a property may be given together, the way `CLASS` takes a literal and a property: the literal is the markup the window is drawn from until the property computes its first value, and the property replaces it from then on. A React component cannot be paired with a property, since the component draws the window itself and a computed template would never be drawn.
 
-        The template is the one the `custom` attribute of a [`DESIGN`](DESIGN_statement.md) container takes, with the same rules for writing a place; here `<Lsf:name>` is the place the standard button of the navigator element with that name goes into. In a literal the name is resolved in the module's [namespaces](../paradigm/Naming.md#namespace), so the element must already be declared and a name that resolves to nothing is an error; a template computed by a property is not resolved, and there the [canonical name](../paradigm/Naming.md#canonicalname) is written.
+        The template is markup the application writes and the platform inserts as it is, so what it contains is the application's: a `<script>` in it does not run, while an event attribute written on an element - `onclick`, `onerror` - does. The template is the one the `custom` attribute of a [`DESIGN`](DESIGN_statement.md) container takes, with the same rules for writing a place; here `<Lsf:name>` is the place the standard button of the navigator element with that name goes into. In a literal the name is resolved in the module's [namespaces](../paradigm/Naming.md#namespace), so the element must already be declared and a name that resolves to nothing is an error; a template computed by a property is not resolved, and there the [canonical name](../paradigm/Naming.md#canonicalname) is written.
 
-        A `NATIVE` window cannot be given a component or a template, since it holds no navigator elements.
+        The `System.forms` and `System.log` windows are the exception among `NATIVE` windows. They hold no navigator elements, but each can be given a React component, and that component is given what the running application put into the window instead - the forms open in `System.forms`, the messages logged in `System.log`. It places one of those with `<Lsf name/>`, and what it places nowhere is not lost: a form stays open and hidden, a message stays logged. Only a component may be given: there are no navigator elements for a template's places to take, and what such a window shows exists only while the application runs, so neither a template nor a property is accepted here.
+
+        Any other `NATIVE` window cannot be given a component or a template, since it holds no navigator elements and nothing else it could be drawn from.
 
 ### Examples
 
@@ -198,6 +200,12 @@ WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 
 // a window drawn by an application React component
 WINDOW appMenu VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CUSTOM 'AppMenu';
+
+// the window the forms open in, drawn by an application React component instead of the standard tabs
+EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
+
+// the window the messages are shown in, drawn by an application React component instead of the standard list
+EXTEND WINDOW System.log CUSTOM 'MessageLog';
 
 // hiding the predefined message window (then messages are shown as dialog forms)
 HIDE WINDOW System.log;
