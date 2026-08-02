@@ -11,20 +11,19 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-import lsfusion.gwt.client.navigator.view.NavigatorPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.Date;
 
-public class GLogPanel extends NavigatorPanel {
+// the standard panel: the messages one under another, newest first, each with the caption and the time it arrived, and
+// the platform's pin button under them
+public class GLogPanel extends LogPanel {
 
     private FlexPanel logPanel;
 
     private RecentlyEventClassHandler recentlySelected;
 
     public GLogPanel(Runnable togglePinMode) {
-        super(true);
-
         logPanel = new FlexPanel(true);
         GwtClientUtils.addClassName(logPanel, "nav-log-panel");
 
@@ -42,6 +41,7 @@ public class GLogPanel extends NavigatorPanel {
         recentlySelected = new RecentlyEventClassHandler(panel, true, "parent-was-selected-recently", 2000);
     }
 
+    @Override
     public void printMessage(Widget message, String caption, boolean failed) {
         String messageClass = failed ? "errorLogMessage" : "successLogMessage";
 
