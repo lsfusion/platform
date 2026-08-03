@@ -14,7 +14,6 @@ import lsfusion.gwt.client.controller.remote.action.navigator.LogClientException
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.io.PrintStream;
 import java.util.*;
 
 public class GExceptionManager {
@@ -133,7 +132,11 @@ public class GExceptionManager {
     public static String getStackTrace(Throwable t) {
         try {
             StringBuilder sb = new StringBuilder();
-            t.printStackTrace(new PrintStream(new StackTracePrintStream(sb)));
+            // StackTracePrintStream must be passed to printStackTrace DIRECTLY: only its own print/println overrides
+            // reach the StringBuilder. Wrapping it in a plain PrintStream routed printStackTrace through the byte
+            // write() path instead, down to the null sink StackTracePrintStream was constructed with (NPE, not IOException,
+            // so it escaped the catch below and replaced the exception being reported with itself)
+            t.printStackTrace(new StackTracePrintStream(sb));
             return sb.toString();
         } catch (JavaScriptException caught) {
             Log.error("Error logging stackTrace", caught);
@@ -172,7 +175,10 @@ public class GExceptionManager {
 
     public static List<StackTraceElement> parseJSExceptionStack(Throwable exception) {
         List<StackTraceElement> stack = new ArrayList<>();
-        for (String s : getJsExceptionStack(exception).split("\n")) {
+        String jsStack = getJsExceptionStack(exception);
+        if (jsStack == null) // a JavaScriptException with no thrown object (or a thrown object with no stack)
+            return stack;
+        for (String s : jsStack.split("\n")) {
             s = s.trim();
             if (s.contains("[")) //Parsing to the first line with square brackets because after will be trash from GWT
                 break;
@@ -183,18 +189,32 @@ public class GExceptionManager {
             if (openBracketIndex != -1 && lastColonIndex != -1 && openBracketIndex < lastColonIndex) {
                 String fileNameWithLineNumber = s.substring(openBracketIndex + 1, lastColonIndex); //file name with line number
                 int colonIndex = fileNameWithLineNumber.lastIndexOf(":");
+                int atIndex = s.indexOf("at ");
+                int nameEndIndex = s.indexOf(" (");
+
+                // a frame written in another shape - a native frame, an eval, an extension's own - is skipped rather
+                // than parsed on faith: this runs WHILE an error is being reported, so a line it cannot read must not
+                // become the error that gets reported instead
+                if (colonIndex <= 0 || atIndex < 0 || nameEndIndex < atIndex + 3)
+                    continue;
 
                 String filename = fileNameWithLineNumber.substring(0, colonIndex); // file name
                 String lineNumber = fileNameWithLineNumber.substring(colonIndex + 1); // line number
 
                 // string stack element example "at functionName (fileName:line:character)"
-                stack.add(new StackTraceElement("Unknown", s.substring(s.indexOf("at ") + 3, s.indexOf(" (")), filename, Integer.parseInt(lineNumber)));
+                try {
+                    stack.add(new StackTraceElement("Unknown", s.substring(atIndex + 3, nameEndIndex), filename, Integer.parseInt(lineNumber)));
+                } catch (NumberFormatException ignored) { // the same, for a frame whose line is not a number
+                }
             }
         }
         return stack;
     }
 
     private static native String getJsExceptionStack(Throwable exception)/*-{
-        return exception.@Throwable::backingJsObject.stack;
+        // backingJsObject is null for a JavaScriptException built from a name/description or from a thrown null
+        // (same guard as GWT's own StackTraceCreator.split)
+        var e = exception.@Throwable::backingJsObject;
+        return (e && e.stack) ? e.stack : null;
     }-*/;
 }
