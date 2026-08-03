@@ -183,13 +183,22 @@ public class GGridController extends GAbstractTableController implements GFormGr
     private void changeTableView(GTableView table) {
         assert isList();
 
-        if (this.table != null)
+        if (this.table != null) {
             this.table.onClear();
+            this.table.destroy(); // the replaced view is dropped, and it is registered in the global color-theme listener list
+        }
 
         changeGridView(table, groupObject.grid.isBoxed(table));
         table.onRender(formController.popEditEvent());
         this.table = table;
         updateSettingsButton();
+    }
+
+    // the form is closing: the table view is registered in MainFrame's static color-theme listener list, and from
+    // there it keeps the whole form (the view holds this controller, and the controller holds the form controller)
+    public void destroy() {
+        if (table != null)
+            table.destroy();
     }
 
     private GToolbarButton gridTableButton;

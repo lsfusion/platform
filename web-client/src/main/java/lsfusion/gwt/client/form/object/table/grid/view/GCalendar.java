@@ -41,6 +41,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }
 
     @Override
+    public void destroy() {
+        MainFrame.removeColorThemeChangeListener(this);
+    }
+
+    @Override
     public int getDefaultPageSize() {
         return 10;
     }

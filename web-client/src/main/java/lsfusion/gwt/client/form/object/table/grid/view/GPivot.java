@@ -83,6 +83,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         GwtClientUtils.setZeroZIndex(getElement());
     }
 
+    @Override
+    public void destroy() {
+        MainFrame.removeColorThemeChangeListener(this);
+    }
+
     public String getTDValue(Element th) {
         return th.getPropertyString("column");
     }

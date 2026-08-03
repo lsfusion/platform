@@ -116,5 +116,9 @@ public interface GTableView extends TableComponent {
     default void onRender(Event editEvent){}
     default void onClear(){}
 
+    // the view is dropped for good (the form is closing, or the table view is being switched); everything this view
+    // registered in a page-lifetime structure (MainFrame's color-theme listener list) has to be unregistered here
+    default void destroy(){}
+
     default boolean isDefaultBoxed() { return true; }
 }

@@ -154,6 +154,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         MainFrame.addColorThemeChangeListener(this);
     }
 
+    // the constructor registers this grid in MainFrame's static color-theme listener list, so a grid that is dropped
+    // before the page is (a closed form, a switched table view) has to unregister, otherwise the whole widget graph
+    // it holds - the table dom, the group controller and through it the form controller - is never collected
+    public void destroy() {
+        MainFrame.removeColorThemeChangeListener(this);
+    }
+
     private final RecentlyEventClassHandler recentlyScrolledClassHandler;
 
     private static boolean skipScrollEvent;
