@@ -60,6 +60,12 @@
     border-radius: unset;
 }
 
+/* the library marks the current date with the "today" class, but no stylesheet styles it;
+   a ring is used because backgrounds are taken: selection-color = in-range, blue = active */
+.daterangepicker td.today {
+    box-shadow: inset 0 0 0 1px var(--focus-color);
+}
+
 .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
     color: var(--date-picker-next-prev-month-day-color);
     font-weight: normal;
