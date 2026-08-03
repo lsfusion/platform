@@ -3235,11 +3235,8 @@ public class GFormController implements EditManager {
         // but in that case we need to move GridPropertyColumn.renderDom logics to GFormController.render here (or have some callbacks)
         update(editContext);
 
-        GPropertyDraw property = editContext.getProperty();
-        // see EditContext.getFullKey(): isList alone doesn't mean there is a row (filters / classic panel values have none)
-        GGroupObjectValue rowKey = property.isLsfViewPerRow() ? editContext.getRowKey() : GGroupObjectValue.EMPTY;
-
-        pendingLoadingProperty(property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
+        // the loading mark must be keyed exactly as the change it waits for, so it's the same key the request was sent with
+        pendingLoadingProperty(editContext.getProperty(), editContext.getFullKey(), requestIndex);
     }
 
     private void pendingLoadingProperty(GPropertyDraw property, GGroupObjectValue fullKey, long requestIndex) {

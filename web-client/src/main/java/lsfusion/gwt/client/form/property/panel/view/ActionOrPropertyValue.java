@@ -318,9 +318,17 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public GGroupObjectValue getRowKey() {
-        if (rowKey == null) // getFullKey only asks a LIST draw for its row, and outside a per-row component a LIST draw
-            throw new UnsupportedOperationException(); // never gets a panel renderer at all
+        if (rowKey == null) // a filter value / a classic panel renderer has no row of its own, so nobody may ask for one
+            throw new UnsupportedOperationException(); // (getFullKey below asks only when there is one)
         return rowKey;
+    }
+
+    @Override
+    public GGroupObjectValue getFullKey() {
+        // a LIST draw drawn here still may have no row - a filter value belongs to no row, and a classic panel renderer
+        // draws its group's current object - and then the row axis is simply empty, as it was before per-row renderers
+        GGroupObjectValue rowKey = property.isList && this.rowKey != null ? this.rowKey : GGroupObjectValue.EMPTY;
+        return GGroupObjectValue.getFullKey(rowKey, getColumnKey());
     }
 
     @Override
