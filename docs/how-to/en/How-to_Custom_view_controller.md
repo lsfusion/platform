@@ -82,7 +82,7 @@ At each node `.change(...)` mutates that node — a property's value, or a group
 
 `changeObject(groupSID, object)` sets the current object of the group `groupSID`. The `object` is a data row of that group, or a raw `objects` handle (see [the identity rules](#row-identity-contract) below) — not a bare `row.key`.
 
-`changeProperty(property, value)` changes `property` for the group's current object. To target a specific row, pass it in between: `changeProperty(property, object, value)`, where `object` is a data row or a raw handle. When `property` is an action (or any property with no editable value), the value is omitted: `changeProperty('edit')` execs it on the current object, `changeProperty('edit', object)` on the given row.
+`changeProperty(property, value)` changes `property` for the group's current object. To target a specific row, pass it in between: `changeProperty(property, object, value)`, where `object` is a data row or a raw handle. When `property` is an action, the value is omitted: `changeProperty('edit')` execs it on the current object, `changeProperty('edit', object)` on the given row.
 
 ```js
 function orderView(props) {
@@ -99,7 +99,7 @@ function orderView(props) {
 }
 ```
 
-In the two-argument `changeProperty(property, X)` form the platform decides whether `X` is a value or a row: when the property accepts a value and `X` resolves to a row (a data row or a raw handle), it is read as the row and the call execs on it; otherwise `X` is the value and the call changes the current object.
+In the two-argument `changeProperty(property, X)` form the platform decides whether `X` is a value or a row by `X` alone: it is read as the row when it resolves to one — a data row or a raw handle — and the call execs on it; in every other case `X` is the value and the call changes the current object. The property is not consulted, so the same argument always means the same thing: an id, a string, a number, a `Date`, `null` are values, whatever the property's own type or way of being edited. The single exception is an action, which has no value to set: a second argument that does not resolve to a row fails with an error naming what was expected — except `null`, which names the current object there, as it does wherever a row is passed.
 
 `changeProperties(properties, objects, values)` applies several changes at once from parallel arrays — `properties[i]` is changed to `values[i]` for `objects[i]` (an entry may be `null` for the current object). Each name is qualified the same way as in a single `changeProperty` — by a `'groupSID.property'` name or the passed object's group.
 

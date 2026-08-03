@@ -635,20 +635,22 @@ public class GFormController implements EditManager {
     }
 
     // the 2-arg changeProperty(property, X) guess — WHICH form is the call, (property, value) or (property, object)?
-    // Decided by whether there is anywhere to PUT a value (the same predicate shape as the classic isChangeObject):
-    // - the property takes a value (externalChangeType != null): only an unambiguous row carrier (resolveObject — a data
-    //   row or a raw objects handle, never a bare key/clone/primitive: ids collide with values generically) picks the object form
-    // - it doesn't: the value interpretation doesn't exist, so it is ALWAYS the object form — X goes to the object
-    //   slot as is, and the EXPLICIT dispatch path resolves it (resolveObject — a row or raw objects handle),
-    //   rejecting an unresolvable argument loudly
+    // Decided by X ALONE, so the same argument always means the same thing: X is the row when it is an unambiguous row
+    // carrier (resolveObject — a data row or a raw objects handle, never a bare key/clone/primitive: ids collide with
+    // values generically), and the value otherwise. The property's change type must NOT enter here: it is null for
+    // everything whose change is not a plain async input (an FK picked in a dialog, a custom CHANGE action), and keying
+    // on it read the documented changeProperty(property, value) of such a property as an object and rejected the value.
+    // An action is the one draw with no value slot, so the row is the only reading left for it — a non-row X goes to the
+    // object slot as is and the EXPLICIT dispatch path rejects it loudly, naming what was expected; null alone is not
+    // rejected there, it names the current object, as it does wherever a row is passed.
     // THE single guess core, shared by both surfaces — they differ only in how the draw is found (form-level: by the
     // controller name/object resolver; classic: by its view column), the policy is one
     public boolean isChangeObject(GPropertyDraw draw, JavaScriptObject object) {
         if (draw == null || draw.groupObject == null) // no object slot at all -> the value form is the only one
             return false;
-        if (draw.externalChangeType == null)
+        if (GGroupObjectValue.resolveObject(object) != null)
             return true;
-        return GGroupObjectValue.resolveObject(object) != null;
+        return draw.isAction();
     }
     public boolean isChangeObject(String property, JavaScriptObject object) {
         return isChangeObject(resolveControllerDraw(property, GGroupObjectValue.resolveObject(object)), object);
@@ -2413,6 +2415,13 @@ public class GFormController implements EditManager {
         panelController.destroy();
         for (GRowPanelController rowPanelController : rowPanelControllers.values())
             rowPanelController.destroy();
+
+        // the same for the table views (grid / pivot / calendar / custom / map and the tree table) - each of them
+        // registers in that list too, and each of them holds this form controller
+        for (GGridController controller : controllers.values())
+            controller.destroy();
+        for (GTreeGroupController treeController : treeControllers.values())
+            treeController.destroy();
 
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
