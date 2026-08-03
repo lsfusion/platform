@@ -95,6 +95,19 @@
             return React.useSyncExternalStore(store.subscribe, function () { return select(store.getSnapshot()); });
         };
         ns.useController = function () { return React.useContext(Ctx).controller; };
+        // the platform's OWN root, mounted once. It READS the projection out of the store instead of having it pushed
+        // by a second root.render, and that is what makes a change one React pass: the notification queues this root
+        // together with every selector subscriber, and React renders them in one go - whereas a root.render scheduled
+        // beside the notification is a second pass it cannot coalesce, the two being on different lanes.
+        // props.data stays the primary contract: this root re-renders on every change and builds the component a new
+        // props object, so a component that subscribes to nothing is still redrawn. The boundary sits here too, with
+        // the same data, so a component that throws still leaves its reason in the window
+        var Root = function (props) {
+            var data = ns.useData();
+            return React.createElement(ns.__boundary, { name: props.name, data: data },
+                React.createElement(props.component, { data: data, controller: props.controller }));
+        };
+        Object.defineProperty(ns, '__root', { value: Root }); // internal (non-enumerable)
         // an image the platform projected - a property of an image class, an icon of a navigator element or of an
         // action. The platform emits either an address or a ready element (a font icon has no address at all), and
         // the two are told apart by the leading '<', which an address never has - so one component draws both, and

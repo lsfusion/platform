@@ -83,12 +83,15 @@ public class ReactRoot {
         GwtClientUtils.logLsfViewError(logged);
     }
 
+    // ONE push for the whole update. props.data reaches the component through the platform's own root, which reads this
+    // same store, so it is a subscriber like any selector hook and this single notification queues all of them together
+    // - one React pass. Rendering the root again here as well was a second pass React could not merge with the first,
+    // a store notification and a root.render being scheduled on different lanes
     public void updateData(JavaScriptObject data) {
         if (data == lastData)
             return;
         lastData = data;
-        notifyStore(); // fine-grained subscribers (useData selectors)
-        render();      // props.data
+        notifyStore();
     }
 
     private JavaScriptObject findComponent() {
@@ -156,21 +159,21 @@ public class ReactRoot {
         this.@ReactRoot::store._notify();
     }-*/;
 
+    // rendered ONCE, at mount: what is mounted is the platform's own root, which subscribes to the store and hands the
+    // projection down as props.data, so every later change is one notification and one React pass. The boundary sits
+    // inside that root and around the application's component - a component that throws while drawing leaves the reason
+    // in the window instead of tearing the root down and leaving it blank
     private native void render()/*-{
         var root = this.@ReactRoot::root;
         if (!root) return;
         var React = $wnd.React;
-        var component = this.@ReactRoot::component;
         var context = this.@ReactRoot::context;
-        var props = {
-            data: this.@ReactRoot::lastData, // the projection (primary contract, re-rendered each data change); every projected thing is an entry in it, keyed as it is keyed
-            controller: context.controller
-        };
-        // the boundary sits INSIDE the Provider and around the application's component, so a component that throws
-        // while drawing leaves the reason in the window instead of tearing the root down and leaving it blank
         root.render(React.createElement($wnd.lsfusion.__context.Provider, { value: context },
-            React.createElement($wnd.lsfusion.__boundary, { name: this.@ReactRoot::componentName, data: props.data },
-                React.createElement(component, props))));
+            React.createElement($wnd.lsfusion.__root, {
+                name: this.@ReactRoot::componentName,
+                component: this.@ReactRoot::component,
+                controller: context.controller
+            })));
     }-*/;
 
     public native void unmount()/*-{
