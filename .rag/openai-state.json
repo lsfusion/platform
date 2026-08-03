@@ -755,8 +755,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:68953bf2a045e749bd96f66afa5d439905ecbf146cfb1000977837d8ae5ac780",
-      "indexed_at": "2026-08-02T09:46:48Z",
+      "file_hash": "sha256:0d0dfbd8538b7974b039f42c381a246d084cd04ca8db2105eafacaeb1cd71cb5",
+      "indexed_at": "2026-08-03T09:34:13Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -832,9 +832,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::placing-an-lsf-child-lsf-child": {
-          "file_id": "file-6pmiezJfSbYNELcK7bWYop",
+          "file_id": "file-UcmJ4cQAnyARzcJFWTRFG3",
           "heading_path": "How-to: Custom React form views > Placing an lsf child {#lsf-child}",
-          "section_payload_hash": "sha256:67fa32ba4418141bd6aa9475bde2abb4029d0f96040afdf9b879ba10c8ac13e9",
+          "section_payload_hash": "sha256:1533a10e69e0fa5156c47c26cb92099449dcec0c82cb1646852db4442811fc06",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::reading-the-projection-reading": {
@@ -15278,7 +15278,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "0e8008446b7707b25d0d035e907af23b9a631923",
+  "last_indexed_docs_commit": "74afbbc5a6fba86461ed48138e73c84e598009e2",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
