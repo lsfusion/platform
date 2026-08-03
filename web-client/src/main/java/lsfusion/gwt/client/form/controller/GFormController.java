@@ -3236,7 +3236,8 @@ public class GFormController implements EditManager {
         update(editContext);
 
         GPropertyDraw property = editContext.getProperty();
-        GGroupObjectValue rowKey = property.isList ? editContext.getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
+        // see EditContext.getFullKey(): isList alone doesn't mean there is a row (filters / classic panel values have none)
+        GGroupObjectValue rowKey = property.isLsfViewPerRow() ? editContext.getRowKey() : GGroupObjectValue.EMPTY;
 
         pendingLoadingProperty(property, GGroupObjectValue.getFullKey(rowKey, editContext.getColumnKey()), requestIndex);
     }

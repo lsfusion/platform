@@ -29,7 +29,9 @@ public interface EditContext extends ExecContext {
 
     default GGroupObjectValue getFullKey() {
         GPropertyDraw property = getProperty();
-        GGroupObjectValue rowKey = property.isList ? getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
+        // isList alone isn't enough: a filter or a classic panel value can be isList (a grid column) yet have no row at all;
+        // only a per-row LSF renderer actually has a rowKey to ask for
+        GGroupObjectValue rowKey = property.isLsfViewPerRow() ? getRowKey() : GGroupObjectValue.EMPTY;
         return GGroupObjectValue.getFullKey(rowKey, getColumnKey());
     }
 
