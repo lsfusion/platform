@@ -19,8 +19,8 @@ import net.sf.jasperreports.export.XlsReportConfiguration;
 import net.sf.jasperreports.export.pdf.FontRecipient;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
 
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
@@ -869,10 +869,7 @@ public class ReportGenerator {
                         if(password != null) {
                             sheet.protectSheet(password);
                             //allow resize images
-                            CTSheetProtection protection = ReflectionUtils.invokePrivateMethod(sheet.getClass(), sheet, "safeGetProtectionField", new Class<?>[0]);
-                            if(protection != null) {
-                                protection.setObjects(false);
-                            }
+                            ((XSSFSheet) sheet).lockObjects(false);
                         }
                         if(sheetName != null) {
                             wb.setSheetName(wb.getSheetIndex(sheet), sheetName);
