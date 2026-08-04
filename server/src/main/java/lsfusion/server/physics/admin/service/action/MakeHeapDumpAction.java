@@ -12,7 +12,7 @@ import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -28,25 +28,17 @@ public class MakeHeapDumpAction extends InternalAction {
         try {
             String name = "heap-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
             File heapFile = new File(name + ".hprof");
-            int pid = getProcessID();
-            Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), pid));
+            Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), getProcessID()));
             while(!heapFile.exists())
                 Thread.sleep(1000);
             context.delayUserInteraction(new WriteClientAction(new NamedFileData(new FileData(new RawFileData(heapFile), BaseUtils.getFileExtension(heapFile)), name), name, false, true));
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
         }
     }
-    
-    private int getProcessID() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        java.lang.management.RuntimeMXBean runtime =
-                java.lang.management.ManagementFactory.getRuntimeMXBean();
-        java.lang.reflect.Field jvm = runtime.getClass().getDeclaredField("jvm");
-        jvm.setAccessible(true);
-        Object mgmt = jvm.get(runtime);
-        java.lang.reflect.Method pid_method =
-                mgmt.getClass().getDeclaredMethod("getProcessId");
-        pid_method.setAccessible(true);
-        return (Integer) pid_method.invoke(mgmt);
+
+    private long getProcessID() {
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        return Long.parseLong(name.substring(0, name.indexOf('@')));
     }
 }
