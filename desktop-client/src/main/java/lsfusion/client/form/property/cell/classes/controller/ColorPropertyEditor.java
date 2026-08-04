@@ -1,13 +1,12 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import lsfusion.client.ClientResourceBundle;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class ColorPropertyEditor extends DialogBasedPropertyEditor {
     private JColorChooser colorChooser;
@@ -39,22 +38,43 @@ public class ColorPropertyEditor extends DialogBasedPropertyEditor {
             setChosenColor(null);
         };
 
-        chooserDialog = JColorChooser.createDialog(null, ClientResourceBundle.getString("form.choose.color"), true, colorChooser, okListener, cancelListener);
+        JDialog dialog = new JDialog((Frame) null, ClientResourceBundle.getString("form.choose.color"), true);
+        dialog.setLayout(new BorderLayout());
+        dialog.add(colorChooser, BorderLayout.CENTER);
 
-        //довольно дико конечно, но пока не хочется замарачиваться со своим диалогом...
-        Preconditions.checkState(chooserDialog.getClass().getName().equals("javax.swing.ColorChooserDialog"));
-        try {
-            Field cancelBtnField = chooserDialog.getClass().getDeclaredField("cancelButton");
-            cancelBtnField.setAccessible(true);
+        JButton okButton = new JButton(UIManager.getString("ColorChooser.okText"));
+        okButton.addActionListener(e -> {
+            okListener.actionPerformed(e);
+            dialog.setVisible(false);
+        });
 
-            JButton cancelButton = (JButton) cancelBtnField.get(chooserDialog);
-            Container buttonPane = cancelButton.getParent();
-            
-            JButton resetButton = ((JButton) buttonPane.getComponent(2));
-            resetButton.addActionListener(nullifyListener);
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
+        JButton cancelButton = new JButton(UIManager.getString("ColorChooser.cancelText"));
+        cancelButton.addActionListener(e -> {
+            cancelListener.actionPerformed(e);
+            dialog.setVisible(false);
+        });
+
+        JButton resetButton = new JButton(UIManager.getString("ColorChooser.resetText"));
+        resetButton.addActionListener(nullifyListener);
+
+        JPanel buttonPane = new JPanel();
+        buttonPane.add(okButton);
+        buttonPane.add(cancelButton);
+        buttonPane.add(resetButton);
+        dialog.add(buttonPane, BorderLayout.SOUTH);
+
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                cancelListener.actionPerformed(null);
+                dialog.setVisible(false);
+            }
+        });
+
+        dialog.getRootPane().setDefaultButton(okButton);
+        dialog.pack();
+
+        chooserDialog = dialog;
     }
 
     private void setChosenColor(Color chosenColor) {
