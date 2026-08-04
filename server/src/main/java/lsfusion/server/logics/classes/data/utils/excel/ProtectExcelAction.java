@@ -1,7 +1,6 @@
 package lsfusion.server.logics.classes.data.utils.excel;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -14,8 +13,8 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -66,10 +65,7 @@ public class ProtectExcelAction extends InternalAction {
                         if (password != null) {
                             sheet.protectSheet(password);
                             //allow resize images
-                            CTSheetProtection protection = ReflectionUtils.invokePrivateMethod(sheet.getClass(), sheet, "safeGetProtectionField", new Class<?>[0]);
-                            if(protection != null) {
-                                protection.setObjects(false);
-                            }
+                            ((XSSFSheet) sheet).lockObjects(false);
                         }
                     }
                     try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
