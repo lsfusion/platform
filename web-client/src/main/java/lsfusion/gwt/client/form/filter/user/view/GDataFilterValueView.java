@@ -32,9 +32,21 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
     private SizedWidget sizedView; // needed only to remove previous widget when changing properties
 
+    // the value cell is a property value like any other, so it is registered where they all are - a list that lives as
+    // long as the page - and has to unregister when it is dropped: when the property changes and it is rebuilt, and
+    // when the condition it belongs to is removed. Otherwise it keeps the form it was drawn for
+    public void destroy() {
+        if(cell != null) {
+            logicsSupplier.getForm().removeBindings(cell); // the enter binding this cell was given when it was built
+            cell.destroy();
+        }
+    }
+
     public void changeProperty(GPropertyFilter condition, boolean readSelectedValue) {
-        if(sizedView != null)
+        if(sizedView != null) {
             removeSized(sizedView.widget);
+            destroy(); // the cell being replaced registered itself in a list that lives as long as the page
+        }
 
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
 

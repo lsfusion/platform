@@ -58,6 +58,8 @@ public class GTreeGroupController extends GAbstractTableController implements GF
     // the form is closing: the tree table is registered in MainFrame's static color-theme listener list, and from
     // there it keeps the whole form (the table holds this controller, and the controller holds the form controller)
     public void destroy() {
+        super.destroy();
+
         tree.destroy();
     }
 

@@ -345,6 +345,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         removeConditionView(filter);
         GFilterConditionView filterView = conditionViews.remove(filter);
         filterView.isRemoved = true;
+        filterView.destroy();
+    }
+
+    // the form is closing: a condition still on screen holds its value cell, and that cell is registered for the life
+    // of the page
+    public void destroy() {
+        for(GFilterConditionView conditionView : conditionViews.values())
+            conditionView.destroy();
     }
 
     private void updateConditionsLastState() {

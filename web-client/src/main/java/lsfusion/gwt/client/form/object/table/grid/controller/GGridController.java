@@ -197,6 +197,8 @@ public class GGridController extends GAbstractTableController implements GFormGr
     // the form is closing: the table view is registered in MainFrame's static color-theme listener list, and from
     // there it keeps the whole form (the view holds this controller, and the controller holds the form controller)
     public void destroy() {
+        super.destroy();
+
         if (table != null)
             table.destroy();
     }

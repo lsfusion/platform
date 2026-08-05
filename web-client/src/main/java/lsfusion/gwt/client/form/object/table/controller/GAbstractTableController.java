@@ -37,6 +37,13 @@ public abstract class GAbstractTableController extends GPropertyController imple
     protected final GToolbarView toolbarView;
     public GFilterController filter;
 
+    // the view is dropped for good. What every table controller has to let go of is its filters: a condition's value
+    // cell is a property value, and those are registered for the life of the page
+    public void destroy() {
+        if(filter != null)
+            filter.destroy();
+    }
+
     protected TableContainer gridView;
 
     public void initGridView() {

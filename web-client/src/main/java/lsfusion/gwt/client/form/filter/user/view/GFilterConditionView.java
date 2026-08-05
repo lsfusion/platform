@@ -82,6 +82,10 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
     public boolean isRemoved;
 
+    public void destroy() {
+        valueView.destroy();
+    }
+
     public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
