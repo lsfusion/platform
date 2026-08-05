@@ -425,7 +425,7 @@ FORM physicalModel '{reflection.form.physical.model}'
 
 DESIGN physicalModel {
     BOX {
-        NEW container BEFORE TOOLBARBOX{
+        NEW container{
             fill = 1;
             tabbed = TRUE;
             NEW modelContainer {
@@ -562,7 +562,7 @@ FORM properties '{reflection.form.properties}'
 
 DESIGN properties {
     BOX {
-        NEW container BEFORE TOOLBARBOX {
+        NEW container {
             fill = 1;
             tabbed = TRUE;
 
@@ -598,7 +598,7 @@ FORM actions '{reflection.form.actions}'
 
 DESIGN actions {
     BOX {
-        NEW container BEFORE TOOLBARBOX {
+        NEW container {
             fill = 1;
             tabbed = TRUE;
 

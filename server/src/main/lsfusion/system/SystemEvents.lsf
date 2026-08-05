@@ -246,7 +246,6 @@ DESIGN design {
     }
     REMOVE PROPERTY(formApply());
     REMOVE PROPERTY(formCancel());
-    MOVE TOOLBARBOX;
 }
 
 showDesign '{system.events.show.design}' () {
@@ -872,7 +871,7 @@ FORM connections '{system.events.form.connections}'
 ;
 
 DESIGN connections{
-    NEW boxes BEFORE TOOLBARBOX {
+    NEW boxes {
         fill = 1;
         tabbed = TRUE;
         NEW activity {
@@ -1142,7 +1141,7 @@ FORM customizeForm '{action.form.customize}' IMAGE 'settings'
 
 DESIGN customizeForm {
     width = -1;
-    NEW main BEFORE TOOLBARBOX {
+    NEW main {
         fill = 1;
         NEW showPanel {
             alignment = CENTER;

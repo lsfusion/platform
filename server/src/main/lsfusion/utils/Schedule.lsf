@@ -159,7 +159,6 @@ DESIGN schedule {
             }         
         }                 
     }   
-    MOVE TOOLBARBOX;
 }
 
 FORM dialogSchedules '{schedule.schedules}'
@@ -224,7 +223,6 @@ DESIGN schedules{
             }        
         }
     } 
-    MOVE TOOLBARBOX; 
 }
 
 setDates() {

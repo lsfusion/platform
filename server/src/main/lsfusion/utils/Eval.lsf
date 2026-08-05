@@ -289,7 +289,6 @@ DESIGN interpreter {
             caption = '{eval.script.form.interpreter.caption.data}';
         }
     }
-    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR {

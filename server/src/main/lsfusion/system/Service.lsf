@@ -262,7 +262,6 @@ DESIGN maintenance {
             }                      
         }
     }       
-    MOVE TOOLBARBOX; 
 }
 
 NAVIGATOR { 

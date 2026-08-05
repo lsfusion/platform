@@ -328,7 +328,6 @@ DESIGN scheduledTask {
         MOVE PROPERTY(runSetupSchedulerApply());
         MOVE PROPERTY(stopSchedulerApply());
     }
-    MOVE TOOLBARBOX;
 }
 
 FORM scheduledTaskProperties '{scheduler.form.scheduled.task.properties}'

@@ -118,7 +118,8 @@ public class FormContainerSet {
         set.mainContainer.add(set.objectsContainer, version);
 
         if(!toolbarTopLeft) {
-            set.mainContainer.add(set.toolbarBoxContainer, version);
+            // pinned to the last group, so that the containers the design adds to the form BOX go above the toolbar and not below it
+            set.mainContainer.addLast(set.toolbarBoxContainer, version);
         }
 
         set.panelContainer.add(set.groupContainer, version);

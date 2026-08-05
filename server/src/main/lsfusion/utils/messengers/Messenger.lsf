@@ -113,7 +113,6 @@ DESIGN messengers {
         MOVE PROPERTY(newAttachment(c));
         horizontal = TRUE;
     }
-    MOVE TOOLBARBOX; 
 }
 
 NAVIGATOR {

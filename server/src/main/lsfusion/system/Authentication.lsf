@@ -625,7 +625,7 @@ DESIGN customUser {
             }
         }
     }
-    NEW container BEFORE TOOLBARBOX {
+    NEW container {
         horizontal = TRUE;
         fill = 1;
         MOVE BOX(u) {

@@ -97,7 +97,6 @@ DESIGN template {
         }
         MOVE BOX(te);
     }
-    MOVE TOOLBARBOX;
 }
 
 

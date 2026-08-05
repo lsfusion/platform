@@ -414,7 +414,6 @@ DESIGN profiler {
             MOVE BOX(g);
         }
     }
-    MOVE TOOLBARBOX;
 }
 
 setSelected '{profiler.form.profiler.caption.view.call.tree}'(ProfileObject po)  { 

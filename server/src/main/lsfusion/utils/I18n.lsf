@@ -110,7 +110,6 @@ DESIGN translation {
         }
     }
     MOVE PROPERTY(translateText()) { font = 'bold 24'; }
-    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR {
@@ -158,7 +157,6 @@ DESIGN dictionary {
                 font = 'bold 24';
             }
         }
-        MOVE TOOLBARBOX;
     }
 }
 

@@ -419,7 +419,7 @@ FORM dialogString '{utils.form.dialog.string}'
 ;
 
 DESIGN dialogString {
-    NEW string BEFORE TOOLBARBOX {
+    NEW string {
         fill = 1;
         MOVE PROPERTY (objValue) {
             fill = 1;
@@ -436,7 +436,7 @@ FORM dialogDate '{utils.form.dialog.date}'
 ;
 
 DESIGN dialogDate {
-    NEW date BEFORE TOOLBARBOX {
+    NEW date {
         fill = 1;
         MOVE PROPERTY (objValue) {
             fill = 1;

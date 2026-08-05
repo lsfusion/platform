@@ -126,7 +126,6 @@ DESIGN backup {
             MOVE PROPERTY(maxQuantityBackups());
         }        
     }
-    MOVE TOOLBARBOX;
 }
 
 FORM backups '{backup.backups}'

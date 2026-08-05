@@ -104,6 +104,8 @@ To access design components, you can use their names or address property compone
 
         Keyword indicating that the component should be added or moved in the order of insertion to the list of child components of the current container. This is the default value.
 
+        The `TOOLBARBOX` container of the form is added to the form `BOX` with `LAST` semantics, so components added to that `BOX` in the order of insertion are placed above the toolbar. To place a component below the toolbar, use `LAST` or `AFTER TOOLBARBOX`.
+
 
 - `propertyName`
 
