@@ -564,30 +564,6 @@ CONSTRAINT RULES
    values into `LOCAL`s in the handler, then `MESSAGE` +
    `CANCEL` on violation.
 
-4. The constraint condition is also checked on objects
-   deleted in the session: when an object is deleted, its
-   data properties are reset to `NULL`, so
-   `CHANGED(prop(c))` is true for every deleted object
-   whose `prop` had a non-`NULL` previous value, and a
-   guard like
-   `NOT editable(c)` is also true: a property that
-   requires the object's class membership returns `NULL`
-   for the deleted object, and the negation of `NULL` is
-   true. Such a constraint unexpectedly blocks the
-   deletion of those objects.
-
-   When the constraint is not meant to prohibit deletion
-   and its condition does not otherwise exclude deleted
-   objects (for example, by a positive condition on the
-   current state), the assistant SHOULD add
-   `c IS <Class>` to the condition: for the deleted
-   object it returns `NULL`, and the condition does not
-   fire. A deliberate deletion prohibition is instead
-   built with `DROPPED(c IS <Class>)`, reading the old
-   values via `PREV` when the condition needs them.
-   A class change that moves the object out of `<Class>`
-   behaves in the same way as deletion.
-
 ----------------------------------------------------------------
 PROPERTY NAMING POLICY
 
@@ -715,16 +691,26 @@ FORM RULES
    `INPUT` is allowed only in form property change handlers.
 
 4. The assistant MUST NOT display internal object identifiers
-   on a form.
+   on a form, including through object-valued properties:
+   an object value is displayed as its internal identifier —
+   a number that tells the user nothing.
 
-   Meaningful properties MUST be shown instead.
-
-5. The assistant MUST NOT add object-valued properties to forms.
-
-   Primitive or derived primitive / text properties
+   Meaningful primitive or derived primitive / text properties
    MUST be exposed instead.
 
-6. A `PANEL` object of a user-defined class
+   The most common case is a link to a static object of an
+   enumeration class (`status = DATA Status (Project)`): the
+   platform does NOT substitute the static object's caption
+   by itself. The form exposes the caption composition —
+   `captionStatus 'Status' = caption(status(p))`: a write
+   through the composition goes into the link, not into the
+   static object's caption (see rule 14), and with a small
+   number of options, as enumerations have, the web client
+   shows it as a selection element (button group / list /
+   dropdown — by the number of options and the length of
+   the captions).
+
+5. A `PANEL` object of a user-defined class
    is NOT user-selectable by default.
 
    If such an object is meant to be chosen by the user
@@ -737,31 +723,38 @@ FORM RULES
    The assistant MUST NOT assume a panel cell is editable
    by analogy with grid editing.
 
-7. These form rules do NOT cover `DESIGN` layout — the default
+6. These form rules do NOT cover `DESIGN` layout — the default
    container tree, the flexbox `fill` / alignment model, or the
    container idioms. They give only placement meta-advice.
    Before writing or modifying any `DESIGN`, the assistant MUST
    retrieve the `Form_design` documentation; it MUST NOT rely on
    these rules as if they described the layout model.
 
-8. The assistant SHOULD specify a `DESIGN`
+   The complete tables of the properties of components of every
+   kind (containers, components of properties and actions on the
+   form, toolbars, grids) live in the `DESIGN` statement
+   documentation (`DESIGN_statement`). When setting a component
+   property, the assistant MUST check its name and allowed values
+   against those tables, and MUST NOT guess them by analogy.
+
+7. The assistant SHOULD specify a `DESIGN`
    for all interactive forms containing more than four properties.
 
-9. Exception:
+8. Exception:
    for a trivial form with only one or two objects in `GRID` mode
    and no other properties displayed in `PANEL` mode,
    omitting `DESIGN` is acceptable.
 
-10. In `DESIGN`, the assistant SHOULD prefer moving `BOX(...)`
+9. In `DESIGN`, the assistant SHOULD prefer moving `BOX(...)`
     containers for tables first.
 
     `GRID(...)` SHOULD be used only when absolutely necessary.
 
-11. If possible, the assistant SHOULD avoid form designs
+10. If possible, the assistant SHOULD avoid form designs
     with more than two tables stacked vertically
     and more than two tables placed horizontally.
 
-12. In a form `PROPERTIES` block, the parameter style on the
+11. In a form `PROPERTIES` block, the parameter style on the
     property or action being added to the form MUST match
     the block header:
     - With a common-parameter header
@@ -789,7 +782,7 @@ FORM RULES
     expressions and ALWAYS use explicit parameters,
     regardless of the block header.
 
-13. Custom actions added to a grid form (status changes,
+12. Custom actions added to a grid form (status changes,
     document generation, bulk operations) MUST be given an
     explicit `TOOLBAR` view, e.g. `PROPERTIES(o) confirmDoc TOOLBAR`.
     Actions default to the `PANEL` view, so without `TOOLBAR` the
@@ -799,7 +792,7 @@ FORM RULES
     system toolbar itself). The property / action views are
     `GRID`, `TOOLBAR`, `PANEL`, and `POPUP`.
 
-14. A `TEXT`-typed property displayed as a grid column is
+13. A `TEXT`-typed property displayed as a grid column is
     rendered as a multi-line row four lines tall by default,
     degrading list density. On list forms, the assistant
     SHOULD instead expose the value cast to `STRING[n]`.
@@ -812,7 +805,7 @@ FORM RULES
     parse error — there, declare a named property with the
     cast and add it by its ID.
 
-15. The default `CHANGE` handling of a property shown on a form
+14. The default `CHANGE` handling of a property shown on a form
     is derived not from what its expression looks like, but from
     the property's write path: changeable properties are data
     properties, the selection operator, and compositions of

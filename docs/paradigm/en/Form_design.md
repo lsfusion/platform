@@ -175,7 +175,7 @@ The hierarchy of containers and components in the default design will look like 
 
 ### Language
 
-To set up the design of the form, use the [`DESIGN` statement](../language/DESIGN_statement.md).
+To set up the design of the form, use the [`DESIGN` statement](../language/DESIGN_statement.md); its article also gives the complete tables of the properties of components of every kind (containers, components of properties and actions on the form, toolbars, grids) set by this statement.
 
 ### Examples
 

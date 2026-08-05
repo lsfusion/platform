@@ -128,3 +128,34 @@ WHEN DROPPED(Order o IS Order) DO {
 ```
 
 When deleting an order and triggering an event with the `DROPPED` modifier, it is important to remember that the object no longer exists and all properties that take it as input will give `NULL` values. Therefore, we need to access them not directly, but through the `PREV` operator.
+
+## Example 5
+
+### Task
+
+Similar to [**Example 1**](#example-1). The order has a status.
+
+```lsf
+status 'Status' = DATA ISTRING[20] (Order);
+
+CLASS OrderStatusLog 'Order status history';
+order 'Order' = DATA Order (OrderStatusLog) NONULL;
+status 'Status' = DATA ISTRING[20] (OrderStatusLog);
+dateTime 'Date' = DATA DATETIME (OrderStatusLog);
+```
+
+We need to log every change of the order status.
+
+### Solution
+
+```lsf
+WHEN CHANGED(status(Order o)) AND o IS Order DO {
+    NEW l = OrderStatusLog {
+        order(l) <- o;
+        status(l) <- status(o);
+        dateTime(l) <- currentDateTime();
+    }
+}
+```
+
+[The condition of a simple event is also checked on objects deleted in the session](../paradigm/Simple_event.md): when an order is deleted, its data properties are reset to `NULL`, so without `o IS Order` the event would also fire on deletion — a history record would be created for the already deleted order. Its `order(l)` link would also be reset to `NULL` at apply (the value is no longer valid for the deleted object), and the `NONULL` would block the deletion of the order even though no deletion prohibition is declared anywhere. For the deleted order `o IS Order` returns `NULL`, and the event does not occur. When, on the contrary, deletion itself must be logged, an event with the `DROPPED` modifier reading the old values via `PREV` is used, as in [**Example 4**](#example-4).
