@@ -108,7 +108,7 @@ public final class CopyExcelUtil {
                 newCell.setCellValue(oldCell.getNumericCellValue());
                 break;
             case BLANK:
-                newCell.setCellType(CellType.BLANK);
+                newCell.setBlank();
                 break;
             case BOOLEAN:
                 newCell.setCellValue(oldCell.getBooleanCellValue());
@@ -305,7 +305,7 @@ public final class CopyExcelUtil {
                 newCell.setCellValue(oldCell.getNumericCellValue());
                 break;
             case BLANK:
-                newCell.setCellType(CellType.BLANK);
+                newCell.setBlank();
                 break;
             case BOOLEAN:
                 Boolean value = getBooleanCellValue(oldCell);

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.xls;
 
-import com.monitorjbl.xlsx.StreamingReader;
-import com.monitorjbl.xlsx.exceptions.NotSupportedException;
+import com.github.pjfanning.xlsx.StreamingReader;
+import com.github.pjfanning.xlsx.exceptions.NotSupportedException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
@@ -214,11 +214,6 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         @Override
         public CellType evaluateFormulaCell(Cell cell) {
             return CellType.NUMERIC;
-        }
-
-        @Override
-        public CellType evaluateFormulaCellEnum(Cell cell) {
-            return null;
         }
 
         @Override

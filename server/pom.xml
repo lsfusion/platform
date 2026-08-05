@@ -265,11 +265,16 @@
             <artifactId>thumbnailator</artifactId>
             <version>0.4.7</version>
         </dependency>
-        <!--for reading huge xlsx-->
+        <!--for reading huge xlsx -->
         <dependency>
-            <groupId>com.monitorjbl</groupId>
-            <artifactId>xlsx-streamer</artifactId>
-            <version>2.2.0</version>
+            <groupId>com.github.pjfanning</groupId>
+            <artifactId>excel-streaming-reader</artifactId>
+            <version>5.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pjfanning</groupId>
+            <artifactId>poi-shared-strings</artifactId>
+            <version>2.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

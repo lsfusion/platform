@@ -153,7 +153,6 @@ public class ProcessTemplateAction extends InternalAction {
 
         if (templateEntry.isNumeric) {
             cell.setCellValue(Double.parseDouble(value));
-            cell.setCellType(CellType.NUMERIC);
         } else {
             cell.setCellValue(value);
         }
