@@ -27,8 +27,11 @@ public class FocusUtils {
     }
 
     public static boolean focusLastBlurredElement(EventHandler focusEventHandler, Element focusEventElement) {
-        // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
-        if(lastBlurredElement != null && focusReason == null && lastBlurredElement != focusEventElement) { // return focus back where it was
+        // the element has to be still showing: it is remembered until the next blur, and whatever took it away
+        // meanwhile - a closed form, a rerender, a hidden container - leaves a node focus() cannot reach, so
+        // consuming the event for it would swallow the focus and leave it on the body
+        if(lastBlurredElement != null && focusReason == null && lastBlurredElement != focusEventElement
+                && GwtClientUtils.isShowing(lastBlurredElement)) { // return focus back where it was
             focusEventHandler.consume();
             runWithSuppressBlur(() -> focus(lastBlurredElement, Reason.RESTOREFOCUS));
             return true;

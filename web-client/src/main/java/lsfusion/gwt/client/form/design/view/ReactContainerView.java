@@ -121,7 +121,7 @@ public class ReactContainerView extends ParkedContainerView {
                 reportUnknownRow(sid, host, property == null);
                 return;
             }
-            // the property, not the sid JSX used: it may name it either way
+            // the property, not the sid JSX used: the ledger of who holds which row is the property's own
             if (formController.getRowPanelController(property).place(rowKey, property, host) != null)
                 PlacedViews.reportDuplicate(sid, host); // another <Lsf> already placed this property for this row
             return;

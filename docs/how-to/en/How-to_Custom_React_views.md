@@ -368,8 +368,8 @@ DESIGN orders {
     NEW board {
         custom = 'OrderBoard';
         MOVE BOX(o);                  // React draws the rows, from data.o
-        MOVE PROPERTY(quantity);      // its per-row editors are placed by the component
-        MOVE PROPERTY(note);
+        MOVE PROPERTY(quantity(o));   // its per-row editors are placed by the component
+        MOVE PROPERTY(note(o));
     }
 }
 ```
@@ -380,8 +380,8 @@ DESIGN orders {
 {data.o.list.map(row => (
   <tr key={row.key}>
     <td>{row.number.value}</td>
-    <td><Lsf name="quantity" row={row}/></td>
-    <td><Lsf name="note" row={row}/></td>
+    <td><Lsf name="PROPERTY(quantity(o))" row={row}/></td>
+    <td><Lsf name="PROPERTY(note(o))" row={row}/></td>
   </tr>
 ))}
 ```

@@ -88,12 +88,15 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        // closed even when the application's own renderer throws - see GCustom.onUpdate for why a transaction left
+        // open is not a local failure
         FocusUtils.startFocusTransaction(element);
-
-        JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType(), true);
-        update(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
-
-        FocusUtils.endFocusTransaction();
+        try {
+            JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType(), true);
+            update(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
+        } finally {
+            FocusUtils.endFocusTransaction();
+        }
 
         return false;
     }

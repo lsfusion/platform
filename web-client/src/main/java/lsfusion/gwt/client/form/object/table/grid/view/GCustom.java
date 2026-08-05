@@ -38,14 +38,17 @@ public class GCustom extends GTippySimpleStateTableView {
 
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
+        // the transaction has to be closed even when the application's own render throws: it is what holds back the
+        // blur events raised while the view is being redrawn, and one left open pends every later blur for good
         FocusUtils.startFocusTransaction(element);
-
-        if (renderFunctionWithoutArguments)
-            update(renderFunction, element, controller, list, getCustomOptions());
-        else
-            runFunction(element, list, renderFunction, controller);
-
-        FocusUtils.endFocusTransaction();
+        try {
+            if (renderFunctionWithoutArguments)
+                update(renderFunction, element, controller, list, getCustomOptions());
+            else
+                runFunction(element, list, renderFunction, controller);
+        } finally {
+            FocusUtils.endFocusTransaction();
+        }
     }
 
     @Override
