@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GFullInputType;
@@ -135,6 +136,19 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         if(input.autoSizeTextArea)
             $wnd.autosize.update(input);
     }-*/;
+    // autosize keeps every textarea it was given in a module-level map, and a window resize listener per textarea, and
+    // lets go of neither until it is told to - so a textarea that is autosized and then dropped is kept, with whatever
+    // it holds, for the life of the page. Paired with autosizeTextarea just like removeMask is with setMask
+    public static native void clearAutosizeTextarea(Element input) /*-{
+        if(input && input.autoSizeTextArea)
+            $wnd.autosize.destroy(input);
+    }-*/;
+    // for an input that the cell doesn't name - an editor's own (see InputBasedCellEditor.needReplace)
+    public static void clearAutosizeTextareas(Element cellParent) {
+        NodeList<Element> textAreas = cellParent.getElementsByTagName("textarea");
+        for(int i = 0, size = textAreas.getLength(); i < size; i++)
+            clearAutosizeTextarea(textAreas.getItem(i));
+    }
 
     private final static String toolbarContainerProp = "toolbarContainer";
 
@@ -237,8 +251,12 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         if(!isInput)
             GFormController.clearFont(element);
 
-        if(isInput)
+        if(isInput) {
+            // the input element goes with the render it was created in - either it IS this element, or it was appended
+            // to it and has just been dropped with the other children
+            clearAutosizeTextarea(getInputElement(element));
             clearInputElement(element);
+        }
 
         return true; // renderedAlignment;
     }

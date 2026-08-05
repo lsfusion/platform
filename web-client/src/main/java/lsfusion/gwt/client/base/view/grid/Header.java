@@ -40,4 +40,9 @@ public abstract class Header<H> {
     public abstract void renderAndUpdateDom(TableCellElement th, boolean rerender);
 
     public abstract void updateDom(TableCellElement th);
+
+    // the pair of renderAndUpdateDom(th, false): the row a header was rendered into is dropped whole and built again on
+    // every columns change, so whatever that render hung on the th - and on things that outlive the row - goes here
+    public void clearRenderDom() {
+    }
 }

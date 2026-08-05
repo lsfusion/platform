@@ -149,6 +149,11 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         assert needReplace(cellParent);
 
+        // super.clearRender drops the cell's children, and the input this edit appended is one of them - so autosize is
+        // told to let go of what is in the cell. Found there rather than remembered: an editor's input, unlike a
+        // renderer's, is not registered on the cell - needReplace reads exactly that absence
+        InputBasedCellRenderer.clearAutosizeTextareas(cellParent);
+
         TextBasedCellRenderer.clearTextPadding(cellParent);
 
 //        TextBasedCellRenderer.clearBasedTextFonts(property, element.getStyle(), renderContext);

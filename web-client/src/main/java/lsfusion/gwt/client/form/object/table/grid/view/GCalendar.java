@@ -43,7 +43,19 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     @Override
     public void destroy() {
         MainFrame.removeColorThemeChangeListener(this);
+
+        // the calendar this view created registers a window "resize" listener when it renders, and its drag handlers
+        // count into a shared window "touchmove" one; both are taken back only by the calendar's own destroy - until
+        // then they keep the calendar, whose event callbacks keep this view and through it the whole form
+        if (calendar != null) {
+            destroyCalendar(calendar);
+            calendar = null; // a resize can still reach the view after this, and a destroyed calendar has nothing to size
+        }
     }
+
+    protected native void destroyCalendar(JavaScriptObject calendar)/*-{
+        calendar.destroy();
+    }-*/;
 
     @Override
     public int getDefaultPageSize() {

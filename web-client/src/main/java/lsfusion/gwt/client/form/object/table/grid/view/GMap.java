@@ -206,7 +206,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 lines.add(createLine(map, route));
 
         if(fitBounds && !markers.isEmpty())
-            Scheduler.get().scheduleDeferred(() -> fitBounds(map, GwtSharedUtils.toArray(markers.values())));
+            // the map may be gone by the time this runs - the form closed, or the view switched, right after an update
+            Scheduler.get().scheduleDeferred(() -> {
+                if(map != null)
+                    fitBounds(map, GwtSharedUtils.toArray(markers.values()));
+            });
     }
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
@@ -304,6 +308,22 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
     protected native JavaScriptObject initMap(com.google.gwt.dom.client.Element element)/*-{
         return $wnd.L.map(element);
+    }-*/;
+
+    // the view is dropped for good, and the map it created is registered on the WINDOW: leaflet binds a "resize"
+    // listener there for as long as the map lives (trackResize is on by default), and from that listener the map,
+    // its layers, the markers' click handlers and through them this view and the whole form stay reachable for the
+    // life of the page. Its own remove() is what unbinds that listener, drops the panes and removes every layer
+    @Override
+    public void destroy() {
+        if (map != null) {
+            removeMap(map);
+            map = null; // a resize can still reach the view after this, and a removed map has no panes left to resize
+        }
+    }
+
+    protected native void removeMap(JavaScriptObject map)/*-{
+        map.remove();
     }-*/;
 
     protected static native JavaScriptObject setView(JavaScriptObject map, JavaScriptObject viewOptions)/*-{

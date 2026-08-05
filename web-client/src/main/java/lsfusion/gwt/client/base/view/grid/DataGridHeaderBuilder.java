@@ -66,8 +66,10 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     @Override
     public void update(boolean columnsChanged) {
         if (columnsChanged) {
-            if (headerRow != null)
+            if (headerRow != null) {
+                clearHeaderRow(headerRow);
                 headerRow.removeFromParent();
+            }
             headerRow = headerElement.insertRow(-1);
             delegate.setRowStyle(headerRow);
             // see .table-container-boxed comment
@@ -77,6 +79,25 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
             table.initArrow(headerRow, delegate.isFooter());
         } else {
             updateHeaderImpl(headerRow);
+        }
+    }
+
+    // every header that was rendered into the row being dropped, including the ones whose column has since been removed
+    // - the row still holds their th. A header is rendered into a NEW th on every rebuild, so what the previous render
+    // left has to go with the row it was left in
+    // the grid itself is being dropped: the row that is still standing was never replaced, so nothing has cleared what
+    // its headers rendered
+    public void clearRenderDom() {
+        if (headerRow != null)
+            clearHeaderRow(headerRow);
+    }
+
+    private void clearHeaderRow(TableRowElement tr) {
+        NodeList<TableCellElement> cells = tr.getCells();
+        for (int i = 0, size = cells.getLength(); i < size; i++) {
+            Header<?> header = getHeader(cells.getItem(i));
+            if (header != null) // there can be no header for a column (footers for example)
+                header.clearRenderDom();
         }
     }
 

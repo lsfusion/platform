@@ -157,6 +157,16 @@ public class GGridPropertyTableHeader extends Header<String> {
         PropertyPanelRenderer.setStyles(th, notNull, hasChangeAction);
     }
 
+    @Override
+    public void clearRenderDom() {
+        if(tippy != null) {
+            // the tooltip watches the th it was created for, and the attach handler it put on the table widget - which
+            // outlives any header row by far - is what keeps it, and the th it points to, once the row is gone
+            GwtClientUtils.destroyTippyPopup(tippy);
+            tippy = null;
+        }
+    }
+
     //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
     public static Element wrapDiv(Element th) {
         return GPropertyTableBuilder.wrapSized(th, Document.get().createDivElement());

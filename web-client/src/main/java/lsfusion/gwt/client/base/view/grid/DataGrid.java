@@ -159,6 +159,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     // it holds - the table dom, the group controller and through it the form controller - is never collected
     public void destroy() {
         MainFrame.removeColorThemeChangeListener(this);
+
+        headerBuilder.clearRenderDom(); // the header row still standing: nothing replaced it, so nothing cleared it
+        footerBuilder.clearRenderDom();
     }
 
     private final RecentlyEventClassHandler recentlyScrolledClassHandler;
