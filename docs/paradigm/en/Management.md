@@ -3,6 +3,8 @@ slug: "/Management"
 title: 'Management'
 ---
 
+Platform management groups the facilities the administrator and the operator use to configure and maintain an already running system: setting its parameters, regulating user access, executing service actions, observing processes, and preserving data.
+
 ### [System parameters](System_parameters.md)
 
 Contains a description of system parameters that affect its launch and shutdown in one way or another.
@@ -17,7 +19,7 @@ Describes the mechanisms that the admin can use to execute code in the lsFusion 
 
 ### [Security policy](Security_policy.md)
 
-Contains a description of the settings for accessing system elements depending on the user working in the system.
+Contains a description of how user access to forms, properties, and other system elements is configured — depending on the roles assigned to the user.
 
 ### [Scheduler](Scheduler.md)
 
@@ -29,7 +31,7 @@ Describes how to create full and partial database backups, retain them, and rest
 
 ### [Journals and logs](Journals_and_logs.md)
 
-Contains a description of journals and logs with detailed information on events that occurred in the system.
+Contains a description of journals (changes, connections, errors, startups) and the technical-process logs of the application server, the web server, and the client.
 
 ### [Process monitor](Process_monitor.md)
 
