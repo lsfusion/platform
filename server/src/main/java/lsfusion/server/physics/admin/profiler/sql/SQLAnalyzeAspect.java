@@ -77,9 +77,18 @@ public class SQLAnalyzeAspect {
 
         // Execute the actual command, wrapping DML with EXPLAIN ANALYZE when needed.
         final boolean ranExplain = command instanceof SQLDML && !noAnalyze;
-        final Object result = ranExplain || noAnalyzeCommand != null // proceed with new args overrides old params
-                ? thisJoinPoint.proceed(new Object[]{sql, ranExplain ? new SQLAnalyze(command, false) : command, queryExecEnv, owner, paramObjects, handler})
-                : thisJoinPoint.proceed();
+        final Object result;
+        try {
+            result = ranExplain || noAnalyzeCommand != null // proceed with new args overrides old params
+                    ? thisJoinPoint.proceed(new Object[]{sql, ranExplain ? new SQLAnalyze(command, false) : command, queryExecEnv, owner, paramObjects, handler})
+                    : thisJoinPoint.proceed();
+        } catch (Throwable t) {
+            // the query failed, so neither the inline EXPLAIN ANALYZE nor the post-explain below will produce
+            // a plan - the pre-explain one is all we have, log it instead of waiting for the deferred task
+            if (noAnalyzeCommand != null && scheduledLog.cancel(false))
+                logNoAnalyze(noAnalyzeCommand);
+            throw t;
+        }
 
         boolean scheduledLogNotExecutedYet = false;
         if(noAnalyzeCommand != null)
@@ -88,9 +97,8 @@ public class SQLAnalyzeAspect {
         final long elapsedMs = System.currentTimeMillis() - started;
 
         if (noAnalyzeCommand != null && noAnalyze) {
-            // cancel(false) returns true only if the task had not yet started (query finished
-            // before the scheduled delay).  In that case log if the query was still slow.
-            // If cancel returns false the scheduled task already ran and logged the plan.
+            // cancel(false) fails only once the scheduled task has completed, and then it has logged the
+            // plan itself.  Otherwise log it here if the query was still slow.
             if (scheduledLogNotExecutedYet && elapsedMs >= thresholdMs)
                 logNoAnalyze(noAnalyzeCommand);
         } else if (!ranExplain && elapsedMs >= thresholdMs) {
