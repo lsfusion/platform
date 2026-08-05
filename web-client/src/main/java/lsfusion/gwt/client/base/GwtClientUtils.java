@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base;
 
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
@@ -864,9 +865,55 @@ public class GwtClientUtils {
         return showTippyPopup(popupOwner, popupWidget, null);
     }
 
+    // the widget goes into the root panel for its GWT half - attach, its event listener, sizing - and tippy then moves
+    // its ELEMENT into the popper it keeps under the body, so the two trees disagree from that moment on and only the
+    // popup itself knows the widget is still logically there. It is remembered on the popup for exactly that: a popup
+    // built from a widget is one-shot (every place that opens one builds a new widget), so when it goes the widget has
+    // to go with it, or the root panel keeps it - and with it whatever its handlers hold - for the life of the page
     public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget, Runnable onHideAction) {
         RootPanel.get().add(popupWidget);
-        return showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction);
+        JavaScriptObject tippy = showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction);
+        setOwnedWidget(tippy, popupWidget);
+        return tippy;
+    }
+
+    private static native void setOwnedWidget(JavaScriptObject tippy, Widget widget)/*-{
+        tippy.__lsfOwnedWidget = widget;
+    }-*/;
+    private static native void setOwnedHandler(JavaScriptObject tippy, HandlerRegistration handler)/*-{
+        tippy.__lsfOwnedHandler = handler;
+    }-*/;
+    private static native HandlerRegistration getOwnedHandler(JavaScriptObject tippy)/*-{
+        return tippy.__lsfOwnedHandler || null;
+    }-*/;
+    private static native Widget getOwnedWidget(JavaScriptObject tippy)/*-{
+        return tippy.__lsfOwnedWidget || null;
+    }-*/;
+    private static native boolean isTippyDestroyed(JavaScriptObject tippy)/*-{
+        return !tippy || !tippy.state || !!tippy.state.isDestroyed;
+    }-*/;
+
+    // takes the widget back out of the root panel and then destroys the popup, in that order: removing a widget takes
+    // its element out of whatever DOM parent it actually has, which while the popup lives is the popper's content -
+    // and after the popup is destroyed is nothing at all. Idempotent: a popup is destroyed by whoever gets there
+    // first, an explicit close or the hide that follows a click away
+    public static void destroyTippyPopup(JavaScriptObject popup) {
+        // what the popup owns is released FIRST and unconditionally - whoever destroyed the popup, the widget and the
+        // handler are still ours to take back, and returning early on an already destroyed popup would leave them
+        Widget ownedWidget = getOwnedWidget(popup);
+        if (ownedWidget != null) {
+            setOwnedWidget(popup, null);
+            if (ownedWidget.getParent() == RootPanel.get())
+                RootPanel.get().remove(ownedWidget);
+        }
+        HandlerRegistration ownedHandler = getOwnedHandler(popup);
+        if (ownedHandler != null) {
+            setOwnedHandler(popup, null);
+            ownedHandler.removeHandler();
+        }
+
+        if (!isTippyDestroyed(popup))
+            destroyTippy(popup);
     }
 
     public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction) {
@@ -958,6 +1005,11 @@ public class GwtClientUtils {
             removePopupPartner(popupOwner, getPopup(instance), blurredTippy);
             if(onHideAction != null && !silentTippy)
                 onHideAction.run();
+            // hiding IS the end for a popup built from a widget, whichever way it was hidden - a menu item, or the
+            // click away that only hides. Nothing shows that widget again, so it and the popup are let go here;
+            // deferred, because destroying a popup from inside its own hide is not something tippy expects
+            if(getOwnedWidget(instance) != null)
+                Scheduler.get().scheduleDeferred(() -> destroyTippyPopup(instance));
         },
         (instance) -> {
             addPopupPartner(popupOwner, getPopup(instance));
@@ -966,7 +1018,10 @@ public class GwtClientUtils {
         }, referenceElementSupplier);
         Widget ownerWidget = popupOwner.widget;
         if(ownerWidget != null) {
-            ownerWidget.addAttachHandler(attachEvent -> {
+            // taken back when the popup is destroyed, and that is the whole point: the owner outlives the popup - a
+            // grid cell, a toolbar button - so a handler left on it holds this popup, and through it everything the
+            // popup draws, for as long as the owner lives. One popup opened per click then piles up one per click
+            setOwnedHandler(tippy, ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
                     Scheduler.get().scheduleDeferred(() -> {
                         if (!ownerWidget.isAttached()){
@@ -974,7 +1029,7 @@ public class GwtClientUtils {
                         }
                     });
                 }
-            });
+            }));
         }
         return tippy;
     }
@@ -1018,7 +1073,7 @@ public class GwtClientUtils {
     }-*/;
     public static void hideAndDestroyTippyPopup(JavaScriptObject popup, boolean silent) {
         hideTippy(popup, silent, false);
-        destroyTippy(popup);
+        destroyTippyPopup(popup);
     };
     private static native void hideTippy(JavaScriptObject tippy)/*-{
         tippy.hide();

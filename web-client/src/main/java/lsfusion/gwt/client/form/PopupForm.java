@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
@@ -76,10 +77,20 @@ public class PopupForm extends EditingForm {
 
     @Override
     protected void finishEditing(EndReason editFormCloseReason) {
-        if(tippy != null)
-            GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
+        // NOT hidden here: finishing may itself have been entered from the popup's own hide, and hiding again from
+        // inside that hide would run its commit a second time, before the edit is marked finished. Destroying takes
+        // the popup off the screen just as well - and it is done last, after the edit is finished, because it detaches
+        // the form's content and doing that mid-edit would tear it out from under the edit being finished
+        JavaScriptObject closing = tippy;
+        tippy = null;
 
         super.finishEditing(editFormCloseReason);
+
+        // deferred, because finishing may itself have been entered from the popup's own hide, and a popup is not
+        // destroyed from inside its hide. Idempotent, so the terminal cleanup that hide schedules and this one are
+        // the same thing done once
+        if(closing != null)
+            Scheduler.get().scheduleDeferred(() -> GwtClientUtils.destroyTippyPopup(closing));
     }
 
     @Override
