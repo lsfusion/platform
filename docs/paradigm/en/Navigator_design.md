@@ -47,7 +47,7 @@ At any moment in time in each window there can be one current *user-selected* na
 There are several predefined system windows that are necessary for the client application to work:
 
 -   `System.forms`: a window in which user forms open.
--   `System.log`: a window in which messages to the user are displayed. If this window is invisible, messages will be shown to the user in the form of system dialog forms.
+-   `System.log`: a window in which messages to the user are displayed. If this window is invisible, its messages are logged and shown nowhere.
 
 Also, additional windows are automatically created for ease of development:
 

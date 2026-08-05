@@ -207,7 +207,7 @@ EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
 // the window the messages are shown in, drawn by an application React component instead of the standard list
 EXTEND WINDOW System.log CUSTOM 'MessageLog';
 
-// hiding the predefined message window (then messages are shown as dialog forms)
+// hiding the predefined message window (its messages are then logged and shown nowhere)
 HIDE WINDOW System.log;
 ```
 
