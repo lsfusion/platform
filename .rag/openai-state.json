@@ -11223,8 +11223,8 @@
       "stale": false
     },
     "paradigm/Interpreter.md": {
-      "file_hash": "sha256:54826d7cd0f7d42a944cf5e356ad8a9a4ec77cb69f97908afab9c854a1174b47",
-      "indexed_at": "2026-05-22T23:24:31Z",
+      "file_hash": "sha256:d355fce848ab96065bd3693e28596581be8dd26f5bf1277d6a408cf77f52ab50",
+      "indexed_at": "2026-08-05T14:10:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11232,8 +11232,33 @@
         "prefix_version": "v1",
         "source_url_version": "v1"
       },
-      "sections": {},
-      "stale": false
+      "sections": {
+        "Interpreter::data-table": {
+          "file_id": "file-XCEAtQkGeXt3EoNqvi2yyf",
+          "heading_path": "Interpreter > Data table",
+          "section_payload_hash": "sha256:caab0da9326a643e85bee2150de5551809e1af5d5bf03274c4ff888207700bc5",
+          "source_file": "paradigm/Interpreter.md"
+        },
+        "Interpreter::execution": {
+          "file_id": "file-5T1aefFqkKcPVyd6iBF7vP",
+          "heading_path": "Interpreter > Execution",
+          "section_payload_hash": "sha256:cbbb498bf74edc474c58acc8f7c41e1aaf1266ebb770dbc21e77c323abda8cdb",
+          "source_file": "paradigm/Interpreter.md"
+        },
+        "Interpreter::interpreter": {
+          "file_id": "file-22u1ARekwe2sMLbRTab2G2",
+          "heading_path": "Interpreter",
+          "section_payload_hash": "sha256:5fe6733f3b8951d17e9a96201543a0b451ec7d5cc35c4add0f43737112b352d5",
+          "source_file": "paradigm/Interpreter.md"
+        },
+        "Interpreter::log": {
+          "file_id": "file-DP8mTfizVGUrY2pLEvXh9w",
+          "heading_path": "Interpreter > Log",
+          "section_payload_hash": "sha256:ea581c800f2ec534513884fdf963997dd31459633c10a8fd2e4199a263767593",
+          "source_file": "paradigm/Interpreter.md"
+        }
+      },
+      "stale": true
     },
     "paradigm/Interruption_BREAK.md": {
       "file_hash": "sha256:a0fcfca09e6dc2bad522fb91fd19a42d5d18499b6a477965ed11b515f6cfcfe9",
@@ -11604,8 +11629,8 @@
       "stale": false
     },
     "paradigm/Management.md": {
-      "file_hash": "sha256:196ce51a34a0972d3d239ecfc2bd82568ea3ecc688510339351f32d7684c44d1",
-      "indexed_at": "2026-05-25T10:06:06Z",
+      "file_hash": "sha256:8e38acd7ebcdea9c76976e1225f8beea1f3395b3166f9f52cd0959bbddd48de7",
+      "indexed_at": "2026-08-05T15:11:32Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11614,6 +11639,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Management::management": {
+          "file_id": "file-UKnTMrRfV8UTP6xM1pKVTs",
+          "heading_path": "Management",
+          "section_payload_hash": "sha256:c61dba8633eac6e0d7220f283490a9b773dbf47eb1b4f1b80ff8439115652ebb",
+          "source_file": "paradigm/Management.md"
+        },
         "Management::system-parameterssystem_parameters.md+user-interfaceuser_interface.md+interpreterinterpreter.md+security-policysecurity_policy.md+schedulerscheduler.md+backupsbackup_restore.md+journals-and-logsjournals_and_logs.md+process-monitorprocess_monitor.md+profilerprofiler.md+chatchat.md": {
           "file_id": "file-HVf3nDHwdfcMUbGnSY3hGX",
           "heading_path": "Management > [System parameters](System_parameters.md) + [User interface](User_interface.md) + [Interpreter](Interpreter.md) + [Security policy](Security_policy.md) + [Scheduler](Scheduler.md) + [Backups](Backup_restore.md) + [Journals and logs](Journals_and_logs.md) + [Process monitor](Process_monitor.md) + [Profiler](Profiler.md) + [Chat](Chat.md)",
@@ -11621,7 +11652,7 @@
           "source_file": "paradigm/Management.md"
         }
       },
-      "stale": false
+      "stale": true
     },
     "paradigm/Manual_installation.md": {
       "file_hash": "sha256:c23a94bb3bcfe539a25694ea75315f1c597073d385845917449a5be7b2d7c1d5",
@@ -13028,8 +13059,8 @@
       "stale": false
     },
     "paradigm/Security_policy.md": {
-      "file_hash": "sha256:98c75ba5845f8e5dc0c13af40975ec71c91fbe31063a2780b7b29eda4b17ca57",
-      "indexed_at": "2026-05-22T23:36:34Z",
+      "file_hash": "sha256:0527864acc8e7f1ff7b54a371468548b6e3f14ba4c22905cc7e80831976ce80d",
+      "indexed_at": "2026-08-05T15:41:54Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13044,10 +13075,16 @@
           "section_payload_hash": "sha256:a085b1729940d2fd058b8300b0305727a83c8e3dbd861b7b99f4c3f9aa84f5cb",
           "source_file": "paradigm/Security_policy.md"
         },
+        "Security_policy::security-policy": {
+          "file_id": "file-FkBfQYQdpwXEAn6vYNwJcp",
+          "heading_path": "Security policy",
+          "section_payload_hash": "sha256:1e849149ce0203cef8032e82ed9d46e0e77dc06ca8f8dfa1ca0e6ceb70c59e8b",
+          "source_file": "paradigm/Security_policy.md"
+        },
         "Security_policy::setting-access-to-system-elements": {
-          "file_id": "file-EN2aKtV6tJt82iJutubH9E",
+          "file_id": "file-NkF2zQ9tNuydF8Nn1ikYLs",
           "heading_path": "Security policy > Setting access to system elements",
-          "section_payload_hash": "sha256:3b5b2742fff5550bfa0a742d4cafb9aa71b6ab4843c02934c3d82ea6974a0bc8",
+          "section_payload_hash": "sha256:10067245b591f60f1216f57fd3c6cbe09ae95561720850d3e99ab0b580bfe732",
           "source_file": "paradigm/Security_policy.md"
         }
       },
@@ -14638,8 +14675,8 @@
       "stale": false
     },
     "paradigm/System_parameters.md": {
-      "file_hash": "sha256:40105a4e3227e5b8efd7aced6099ca1d5475863632f85484e48ff0187c4a3a42",
-      "indexed_at": "2026-05-22T23:39:52Z",
+      "file_hash": "sha256:18db026be7a977cb07a6e8d0efdcc899a2eb7b483e87407fccd42a045021cac9",
+      "indexed_at": "2026-08-05T15:50:55Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14652,6 +14689,12 @@
           "file_id": "file-2CEXRTcmMPpRGkgxYEqPrH",
           "heading_path": "System parameters > [Launch parameters](Launch_parameters.md) + [Working parameters](Working_parameters.md)",
           "section_payload_hash": "sha256:d1fd0ea91ccecb7a693368369c8e06691aa099f032ef799a5296b801810fce7d",
+          "source_file": "paradigm/System_parameters.md"
+        },
+        "System_parameters::system-parameters": {
+          "file_id": "file-3CbJ6xwTgFk8FxqfdGAzha",
+          "heading_path": "System parameters",
+          "section_payload_hash": "sha256:e22aea757340b38b6ece29cb5981f6cb83c4382558d29d643b87ad6216645e23",
           "source_file": "paradigm/System_parameters.md"
         }
       },
@@ -15070,8 +15113,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:4500e10edfecfeb69525fc37b985d548daace0f3557c50d52ed225fbf42d72bc",
-      "indexed_at": "2026-08-05T08:45:54Z",
+      "file_hash": "sha256:faa814ace5a97e4fd501ddbb1a483aff6bdf3e6203e1ddb513e67d93326fef81",
+      "indexed_at": "2026-08-05T15:51:03Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -15081,15 +15124,15 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-7hpdmebBgkfqQDpabVPsMp",
+          "file_id": "file-UnR9JSNRRG2CR1FwMHj2H2",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:6b39e9638ec3288006202036905a4221892df8f643e218abddc65f73c9ba38f6",
+          "section_payload_hash": "sha256:be30f8c84c1bc465da5d6807d978ed4a2e2a5e164015287c44fd27803f708f54",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
-          "file_id": "file-HeP1thLLpEuLXUH5cuPjwv",
+          "file_id": "file-DAK7hgwd25yZxmBjS78JXc",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:0d6a0aa21cd08a55abde8e9fc1b37bac86d0d052056404d007768bd3fb8940b6",
+          "section_payload_hash": "sha256:bc83b4778ffb9b439f1d6ab00832c15f5db32afe1e2a3227fffd4779a0dca892",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-02": {
