@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -32,8 +33,16 @@ public class GCustom extends GTippySimpleStateTableView {
 
     @Override
     public void onClear() {
-        if (renderFunctionWithoutArguments)
-            clear(renderFunction, getDrawElement(), controller);
+        if (renderFunctionWithoutArguments) {
+            // the application's own clear, and a throw from it is reported and goes no further: this runs while the
+            // form is being closed as well as when the view is switched, and there application code must not be able
+            // to stop the form being torn down and the server told it closed
+            try {
+                clear(renderFunction, getDrawElement(), controller);
+            } catch (Throwable t) {
+                GExceptionManager.logClientError(t, null);
+            }
+        }
     }
 
     @Override

@@ -197,6 +197,13 @@ public class GGridController extends GAbstractTableController implements GFormGr
     // the form is closing: the table view is registered in MainFrame's static color-theme listener list, and from
     // there it keeps the whole form (the view holds this controller, and the controller holds the form controller)
     public void destroy() {
+        // onClear is where a custom view lets go of what its own render built - a third-party widget, a listener of
+        // its own - and closing the form is the far more common way a view is dropped, so leaving it to the view
+        // switch meant the application never got the call at all. Before the platform's own teardown, so what it sees
+        // is the state the view switch shows it
+        if (table != null)
+            table.onClear();
+
         super.destroy();
 
         if (table != null)
