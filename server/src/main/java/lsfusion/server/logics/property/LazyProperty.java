@@ -84,7 +84,9 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
 
     @Override
     protected void fillDepends(MSet<Property> depends, boolean events) {
-        depends.add(property.property);
+        // same reasoning as getParseOldDepends() above : called before finalizeLazyInit(), nothing to report yet
+        if (property != null)
+            depends.add(property.property);
     }
 
     protected abstract PropertyMapImplement<?, ClassPropertyInterface> createProperty();
