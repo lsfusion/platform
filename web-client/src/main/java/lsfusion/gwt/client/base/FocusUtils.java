@@ -309,7 +309,10 @@ public class FocusUtils {
     public static void addFocusPartner(Element element, Element partner) {
         partner.setPropertyObject("focusPartner", element);
         partner.setTabIndex(-1); // we need focus partner to get focus, otherwise it will go to the body element
-        setOnFocusOut(partner, event -> {
+        // reregistered on every showing of a reused popup (a tippy popper, a dropdown menu, the busy dialog), and the
+        // owner can be a different one each time, so the handler replaces the previous one - just as the focusPartner
+        // property above does, there is exactly one owner per partner
+        setOnFocusOut(partner, PARTNER_FOCUS_OUT, event -> {
             // maybe it makes sense to check here that element is not inside focusTransaction
 
             // we need to return focus to the element and then to the event.relatedEventTarget (getFocusedElement ?)
@@ -341,18 +344,43 @@ public class FocusUtils {
         GwtClientUtils.addDropDownPartner(element, dropdown);
     }
     public static void setOnFocusOutFnc(Element element, JavaScriptObject fnc) {
-        setOnFocusOut(element, nativeEvent -> GwtClientUtils.call(fnc, nativeEvent));
+        setOnFocusOut(element, FNC_FOCUS_OUT, nativeEvent -> GwtClientUtils.call(fnc, nativeEvent));
     }
-    public static native void setOnFocusOut(Element element, Consumer<NativeEvent> run)/*-{
-        element.focusOutHandler = function (event) { // have no idea why onfocusout doesn't work
+    public static void removeOnFocusOutFnc(Element element) {
+        removeOnFocusOut(element, FNC_FOCUS_OUT);
+    }
+
+    // independent mechanisms put a focus out handler on the same element - a popup is hidden on blur and at the same
+    // time is a focus partner of its owner - so a handler is registered under the name of its mechanism: registering
+    // again replaces only that mechanism's listener, and removing drops only it
+    public static final String PARTNER_FOCUS_OUT = "partner";
+    public static final String HIDE_ON_BLUR_FOCUS_OUT = "hideOnBlur";
+    private static final String FNC_FOCUS_OUT = "fnc"; // the one set from js (lsfUtils.setOnFocusOut / removeOnFocusOut)
+
+    public static native void setOnFocusOut(Element element, String key, Consumer<NativeEvent> run)/*-{
+        var handlers = element.focusOutHandlers;
+        if (handlers == null) {
+            handlers = {};
+            element.focusOutHandlers = handlers;
+        }
+        var prevHandler = handlers[key];
+        if (prevHandler != null)
+            element.removeEventListener("focusout", prevHandler);
+
+        var handler = function (event) { // have no idea why onfocusout doesn't work
             if(!@lsfusion.gwt.client.base.FocusUtils::isFakeBlur(*)(event, element)) // if the focus is not returned to the element
                 run.@Consumer::accept(*)(event);
         }
-        element.addEventListener("focusout", element.focusOutHandler);
+        handlers[key] = handler;
+        element.addEventListener("focusout", handler);
     }-*/;
-    public static native void removeOnFocusOut(Element element)/*-{
-        element.removeEventListener("focusout", element.focusOutHandler);
-        element.focusOutHandler = null;
+    public static native void removeOnFocusOut(Element element, String key)/*-{
+        var handlers = element.focusOutHandlers;
+        var handler = handlers != null ? handlers[key] : null;
+        if (handler != null) {
+            element.removeEventListener("focusout", handler);
+            handlers[key] = null;
+        }
     }-*/;
 
     public static Element getFocusedChild(Element containerElement) {

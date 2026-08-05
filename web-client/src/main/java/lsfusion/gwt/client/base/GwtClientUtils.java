@@ -92,7 +92,7 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.base.FocusUtils::setOnFocusOutWithDropDownPartner(*)(element, partner, onFocusOut);
             },
             removeOnFocusOut: function (element) {
-                return @lsfusion.gwt.client.base.FocusUtils::removeOnFocusOut(*)(element);
+                return @lsfusion.gwt.client.base.FocusUtils::removeOnFocusOutFnc(*)(element);
             },
             isSuppressOnFocusChange: function (element) {
                 return @lsfusion.gwt.client.base.FocusUtils::isSuppressOnFocusChange(*)(element);
@@ -1089,7 +1089,9 @@ public class GwtClientUtils {
         return tippy.popper;
     }-*/;
     public static void setHideOnBlur(JavaScriptObject tippy) {
-        FocusUtils.setOnFocusOut(getPopup(tippy), nativeEvent -> hideTippy(tippy, false, true));
+        // set once per tippy (onCreate), while the same popup is also made a focus partner on every showing, hence the
+        // separate name - both handlers have to stay on the popup element
+        FocusUtils.setOnFocusOut(getPopup(tippy), FocusUtils.HIDE_ON_BLUR_FOCUS_OUT, nativeEvent -> hideTippy(tippy, false, true));
     }
 
     private static native JavaScriptObject initTippy(Element element, int delay, String trigger, Consumer<JavaScriptObject> onHideAction, Consumer<JavaScriptObject> onShowAction, Supplier<Element> referenceElementSupplier)/*-{
