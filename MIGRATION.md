@@ -156,6 +156,33 @@ localize which of the two changes causes a particular problem. See the
 [Working parameters](https://docs.lsfusion.org/Working_parameters/) article.
 
 
+### Intervals on composite index suffixes
+
+Until now an interval condition (`prop >= a AND prop < b`) was taken into account in the join
+statistics only when the property was the **first** field of some index. A property standing
+later in a composite index (say `dateTime` in `INDEX device(m), dateTime(m)`) was estimated as
+if it were not indexed at all, so a filter like `device(m) = value AND dateTime(m) >= from AND
+dateTime(m) < to` was estimated as a full scan of the table even though the index covers it.
+
+Such an interval is now taken into account for any field of a btree index. How much of the
+index the database can actually use - which depends on the fields preceding that one being
+bound - is a separate question, and it is answered where it was answered before: by the
+access cost calculation, which walks the real index field by field and stops at the first
+unbound one. Fields of `LIKE` / `MATCH` indexes other than the first are not affected.
+
+Affected queries compile into different - usually better - plans; as with any statistics
+change this may surface as a performance degradation of a specific complex query.
+
+#### Quick fallback
+
+```
+settings.prefixIndexIntervalBackwardCompatibility = true
+```
+
+This one is read while the indexes are being registered at startup, so it has to be set
+before the server starts.
+
+
 ### Ordered aggregations over nullable columns use the index
 
 Order-dependent group operators (`GROUP LAST` / `MAX` / `CONCAT`, ordered `PARTITION`)

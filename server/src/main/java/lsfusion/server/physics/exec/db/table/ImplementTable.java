@@ -43,6 +43,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.TableStatKeys;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -207,9 +208,15 @@ public class ImplementTable extends DBTable { // последний интерф
         assert CacheAspect.checkNoCaches(this, CacheAspect.Type.SIMPLE, ImplementTable.class, "getIndexes");
         indexes = indexes.addExcl(index);
 
-        Field field = index.get(0);
-        if(field instanceof PropertyField)
-            indexedProps = indexedProps.merge((PropertyField) field, indexType, IndexType.addValue());
+        // не только первое поле : интервал по любому полю индекса стоит учитывать в статистике, а насколько индекс применим (связаны ли
+        // предшествующие поля) считается отдельно - в Table.Join.getPushedCost, где перебор идет по реальному индексу и останавливается
+        // на первом несвязанном поле. для LIKE / MATCH (gin, gist) остальные поля не регистрируем - их семантика к суффиксу не применима
+        int size = indexType.isDefault() && !Settings.get().isPrefixIndexIntervalBackwardCompatibility() ? index.size() : 1;
+        for(int i = 0; i < size; i++) {
+            Field field = index.get(i);
+            if(field instanceof PropertyField)
+                indexedProps = indexedProps.merge((PropertyField) field, indexType, IndexType.addValue());
+        }
     }
 
     private NFOrderSet<ImplementTable> parents;

@@ -1975,6 +1975,16 @@ public class Settings implements Cloneable {
         this.keyExprCompareJoinBackwardCompatibility = keyExprCompareJoinBackwardCompatibility;
     }
 
+    private boolean prefixIndexIntervalBackwardCompatibility = false; // fall back to registering only the leading field of an index as indexed (ignoring composite index suffixes)
+
+    public boolean isPrefixIndexIntervalBackwardCompatibility() {
+        return prefixIndexIntervalBackwardCompatibility;
+    }
+
+    public void setPrefixIndexIntervalBackwardCompatibility(boolean prefixIndexIntervalBackwardCompatibility) {
+        this.prefixIndexIntervalBackwardCompatibility = prefixIndexIntervalBackwardCompatibility;
+    }
+
     private boolean noTransSyncDB = false;
 
     public boolean isNoTransSyncDB() {
