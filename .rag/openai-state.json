@@ -755,8 +755,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:0d0dfbd8538b7974b039f42c381a246d084cd04ca8db2105eafacaeb1cd71cb5",
-      "indexed_at": "2026-08-03T09:34:13Z",
+      "file_hash": "sha256:8a9a5c28f6f884229a5f571e6bb692fb9bf5f44277a334de1b8645d59019b45f",
+      "indexed_at": "2026-08-05T06:32:47Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -766,9 +766,9 @@
       },
       "sections": {
         "How-to_Custom_React_views::a-live-editor-in-every-row": {
-          "file_id": "file-9NP4UDHZWLV1BwdXeKq2Hd",
+          "file_id": "file-TLgKbBWXNohHDC8RP5ik86",
           "heading_path": "How-to: Custom React form views > A live editor in every row",
-          "section_payload_hash": "sha256:0def9ddec69fd0725666f466741f4d09b75ed4645d27599148a4805913256119",
+          "section_payload_hash": "sha256:9a8597e7c6ab37944e8fb65cce90331ec5f7852a5207a0fbbe701e3441f54d2a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::a-navigator-window-navigator-window": {
@@ -8031,8 +8031,8 @@
       "stale": false
     },
     "language/WINDOW_statement.md": {
-      "file_hash": "sha256:6660c4ad7741e4cba1ff6cc17288fcc8c16415c9cced3465080778e17cf00c60",
-      "indexed_at": "2026-08-02T09:47:12Z",
+      "file_hash": "sha256:e5866fc6602006073fad41984bb62f385379eeb12af87a2dede56478456e3b8d",
+      "indexed_at": "2026-08-05T06:33:01Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8048,9 +8048,9 @@
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::examples": {
-          "file_id": "file-LD6f19Ex9hiG2EbtRuuo1n",
+          "file_id": "file-Jb373vuPunCY4hkTncuevy",
           "heading_path": "WINDOW statement > Examples",
-          "section_payload_hash": "sha256:a548057749c1c82a2413559a5e7dba519c6cf95f6ab580287f5ea66142067d43",
+          "section_payload_hash": "sha256:60757eb118a510da4eaa74bbb4d66fb27ee42f3f2299bf067550e4aa455b2162",
           "source_file": "language/WINDOW_statement.md"
         },
         "WINDOW_statement::options": {
@@ -11928,8 +11928,8 @@
       "stale": false
     },
     "paradigm/Navigator_design.md": {
-      "file_hash": "sha256:91ad20b3361b1fd6c173c85cab1f5bab238c47391d28e1d49d4cda532376e789",
-      "indexed_at": "2026-06-09T12:36:32Z",
+      "file_hash": "sha256:b7aae4ff8fdb90b5370c5992e819dff8b79239970769392e62f573094ef879e8",
+      "indexed_at": "2026-08-05T06:33:13Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11969,9 +11969,9 @@
           "source_file": "paradigm/Navigator_design.md"
         },
         "Navigator_design::system-windows-systemwindows": {
-          "file_id": "file-TCoNzAukDywMT9SkxaLMh4",
+          "file_id": "file-QmYqXtvWLaCT5KhuF4cq2c",
           "heading_path": "Navigator design > System windows {#systemwindows}",
-          "section_payload_hash": "sha256:74bf86192e8025aa068b6f9eec9c134d758dc76136e124277c675c9d8c8c6563",
+          "section_payload_hash": "sha256:c1578dc60423569b0c4628e2d2254be92d897d8faa056b89baebf9d5fbf68a7e",
           "source_file": "paradigm/Navigator_design.md"
         },
         "Navigator_design::window-layout-on-the-desktop": {
@@ -15278,7 +15278,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "075b9138d9f213ba77b228b866aefaaaf0c54c34",
+  "last_indexed_docs_commit": "9b314a3f0ff2aeda5de73367f41c3ccbece16d46",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
