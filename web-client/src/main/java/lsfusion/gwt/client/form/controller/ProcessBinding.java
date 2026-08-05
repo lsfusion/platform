@@ -43,6 +43,8 @@ public class ProcessBinding {
         GGroupObject groupObject = bindingGroupObjectFunction.apply(target);
         for (int i = 0, size = bindingEvents.size(); i < size; i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
+            if (bindingEvent == null) // the binding was removed, and its slot stays so that kept indexes still name their own
+                continue;
             if (bindingEvent.event.check(event)) {
                 GFormController.Binding binding = bindings.get(i);
                 boolean equalGroup;

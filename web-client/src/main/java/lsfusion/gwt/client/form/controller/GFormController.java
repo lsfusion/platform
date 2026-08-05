@@ -2601,14 +2601,17 @@ public class GFormController implements EditManager {
     }
 
     public void addDynamicBinding(GInputBindingEvent inputBindingEvent, GPropertyDraw property, boolean mouse) {
-        for (int i = 0; i < bindingEvents.size(); i++) {
+        for (int i = 0, size = bindingEvents.size(); i < size; i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
-            Binding binding = bindings.get(i);
+            if (bindingEvent == null) // a cleared slot
+                continue;
             if (property.equals(bindingEvent.property) && mouse == bindingEvent.mouse) {
-                removeBinding(i);
                 if(inputBindingEvent == null)
                     inputBindingEvent = GInputBindingEvent.dumb;
-                addBinding(inputBindingEvent.inputEvent, inputBindingEvent.env, property, binding, bindingEvent.widget, property.groupObject);
+                // the same binding under another event, put back where it was: this runs on ordinary state updates,
+                // so spending a slot each time would grow the list - and everything dispatched through it - endlessly
+                replaceBinding(i, createBindingEvent(inputBindingEvent.inputEvent, inputBindingEvent.env, property,
+                        bindingEvent.widget), bindings.get(i));
             }
         }
     }
@@ -2625,14 +2628,21 @@ public class GFormController implements EditManager {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, GPropertyDraw property, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(createBindingEvent(event, env, property, component), createBinding(null, pressed, component, groupObject));
+    }
+    // the event half of a binding, built the same way whether the binding is being added or replaced
+    private GBindingEvent createBindingEvent(GInputEvent event, GBindingEnv env, GPropertyDraw property, Widget component) {
         //event != null - dumb check (see InputBindingEvent.dumb)
-        return addBinding(e -> event != null && event.isEvent(e), env, property, event instanceof GMouseInputEvent, null, pressed, component, groupObject);
+        return new GBindingEvent(e -> event != null && event.isEvent(e), env, property, component, event instanceof GMouseInputEvent);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event, env, null, false, enabled, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, GPropertyDraw property, boolean mouse, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(new GBindingEvent(event, env, property, component, mouse), new Binding(groupObject) {
+        return addBinding(new GBindingEvent(event, env, property, component, mouse), createBinding(enabled, pressed, component, groupObject));
+    }
+    private Binding createBinding(Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return new Binding(groupObject) {
             @Override
             public boolean showing() {
                 return component == null || isShowing(component);
@@ -2647,7 +2657,7 @@ public class GFormController implements EditManager {
             public void exec(Event event) {
                 pressed.exec(event);
             }
-        });
+        };
     }
     public int addBinding(GBindingEvent event, Binding action) {
         int index = bindings.size();
@@ -2655,9 +2665,26 @@ public class GFormController implements EditManager {
         bindings.add(action);
         return index;
     }
+    // a binding put back where it already is, keeping the index that names it. Adding instead would spend a slot on
+    // every replacement, and taking the entry out would shift every later one - and the index is the only handle a
+    // caller has for taking its own binding back later. Kept to this class: a slot belongs to whoever added it
+    private void replaceBinding(int index, GBindingEvent event, Binding action) {
+        bindingEvents.set(index, event);
+        bindings.set(index, action);
+    }
+    // cleared in place, for the same reason: an index kept elsewhere must go on naming its own binding. A cleared
+    // slot is not reused, so the lists keep the length of everything a form ever bound - two null references per
+    // binding that came and went, which is the price of the index staying a handle
     public void removeBinding(int index) {
-        bindingEvents.remove(index);
-        bindings.remove(index);
+        replaceBinding(index, null, null);
+    }
+    // every binding a widget was given, taken back with the widget - a filter condition removed, a value cell rebuilt
+    // for another property. The list lives as long as the form, so a binding left behind keeps the widget it names,
+    // and through it everything that widget draws
+    public void removeBindings(Widget component) {
+        for(int i = bindings.size() - 1; i >= 0; i--)
+            if(bindingEvents.get(i) != null && bindingEvents.get(i).widget == component)
+                removeBinding(i);
     }
 
     public void addEnterBindings(GBindingMode bindGroup, BiConsumer<Boolean, NativeEvent> selectNextElement, GGroupObject groupObject) {
