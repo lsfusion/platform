@@ -144,6 +144,7 @@
                 <entry key="queryLengthLimit" value="${settings.queryLengthLimit:}"/>
                 <entry key="remoteLogTime" value="${settings.remoteLogTime:}"/>
                 <entry key="explainThreshold" value="${settings.explainThreshold:}"/>
+                <entry key="explainNoAnalyzeThreshold" value="${settings.explainNoAnalyzeThreshold:}"/>
                 <entry key="explainJavaStack" value="${settings.explainJavaStack:}"/>
                 <entry key="explainCompile" value="${settings.explainCompile:}"/>
                 <entry key="conflictSleepThreshold" value="${settings.conflictSleepThreshold:}"/>

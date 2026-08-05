@@ -1826,7 +1826,7 @@ public class Settings implements Cloneable {
     }
 
     // Threshold for running EXPLAIN (VERBOSE, COSTS) before execution; should be larger than explainThreshold.
-    // Pre-explain fires when the command's estimated cost exceeds this value (ms).  0 disables pre-explain.
+    // Pre-explain fires when the command's estimated cost exceeds this value (ms), so 0 runs it for every command.
     private int explainNoAnalyzeThreshold = 10000;
 
     public int getExplainNoAnalyzeThreshold() {
