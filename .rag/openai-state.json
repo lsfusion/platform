@@ -14329,8 +14329,8 @@
       "stale": false
     },
     "paradigm/System_SystemEvents.md": {
-      "file_hash": "sha256:e1ef9c7767044296d4c203658bef2be9df74578b1765f6cef91e9dc01caf0f85",
-      "indexed_at": "2026-06-10T12:44:42Z",
+      "file_hash": "sha256:e7ab4ff324755cef2df7207b58701350af170dbdd7885eecbc2a436b7b39cca5",
+      "indexed_at": "2026-08-06T14:36:30Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -14394,9 +14394,9 @@
           "source_file": "paradigm/System_SystemEvents.md"
         },
         "System_SystemEvents::push-notifications-and-client-interaction": {
-          "file_id": "file-WPCtWprBJopLvPujF3MzJv",
+          "file_id": "file-VW9KsPpmmQ3KEPmBD7Ms3P",
           "heading_path": "SystemEvents > Push notifications and client interaction",
-          "section_payload_hash": "sha256:33c0c04677c8bd6b1e8ec74cf56877967cdb315da7c80f17897a0343c089e31d",
+          "section_payload_hash": "sha256:9d83c3d13a5640f212519a6b2a544e87d9d1137d0f6f4d114cd28f46afdf88c4",
           "source_file": "paradigm/System_SystemEvents.md"
         },
         "System_SystemEvents::see-also": {
@@ -15345,7 +15345,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "6757ed7f36fb2220382dbffa737be83a2eaae021",
+  "last_indexed_docs_commit": "09e7ec60ea928c0f858a3de48d2d04be5a6fb44a",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
