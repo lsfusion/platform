@@ -185,7 +185,7 @@ A ping record stores per-computer memory readings over an interval, keyed by `(C
 | `evalServer[TEXT]`                                       | runs the given code on the server                                            |
 | `evalInAllCurrentConnections[TEXT, TEXT]`               | runs the given code on every connected client                               |
 
-`customize[STRING, STRING]` opens the `customizeForm` dialog for adjusting a form: the base code and the `EXTEND FORM` code held in `dataExtendCode[Form]` (for all users) and `dataExtendCode[Form, User]` (for the current user). `formCustomizeBackground[]` and `formCustomizeShowIf[]` tint and gate the customization entry.
+`customize[STRING, STRING]` opens the `customizeForm` dialog for adjusting a form: the base code and the `EXTEND FORM` code held in `dataExtendCode[Form]` (for all users) and `dataExtendCode[Form, User]` (for the current user). `formCustomizeBackground[]` and `formCustomizeShowIf[]` tint and gate the customization entry. The two code fragments are joined with a line break and compiled on every form open; if the result does not compile, the error is reported and the form is opened without the customization, so the dialog stays reachable to fix or drop the code.
 
 ### Logo
 

@@ -185,7 +185,7 @@ title: 'SystemEvents'
 | `evalServer[TEXT]`                                       | выполняет переданный код на сервере                                          |
 | `evalInAllCurrentConnections[TEXT, TEXT]`               | выполняет переданный код на каждом подключённом клиенте                      |
 
-`customize[STRING, STRING]` открывает диалог `customizeForm` для настройки формы: базовый код и код `EXTEND FORM`, хранимый в `dataExtendCode[Form]` (для всех пользователей) и `dataExtendCode[Form, User]` (для текущего пользователя). `formCustomizeBackground[]` и `formCustomizeShowIf[]` подкрашивают и показывают пункт настройки.
+`customize[STRING, STRING]` открывает диалог `customizeForm` для настройки формы: базовый код и код `EXTEND FORM`, хранимый в `dataExtendCode[Form]` (для всех пользователей) и `dataExtendCode[Form, User]` (для текущего пользователя). `formCustomizeBackground[]` и `formCustomizeShowIf[]` подкрашивают и показывают пункт настройки. Два фрагмента кода склеиваются через перевод строки и компилируются при каждом открытии формы; если результат не компилируется, ошибка сообщается, а форма открывается без настройки, чтобы диалог оставался доступен для исправления или удаления кода.
 
 ### Логотип
 

@@ -129,7 +129,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     
     @Override
     public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean single) {
-        throw new RuntimeException(constructErrorMessage("event creation is forbidden in EVAL module"));
+        throw new ScriptParsingException(constructErrorMessage("event creation is forbidden in EVAL module"));
     }
 
     @Override
@@ -147,7 +147,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
             if (isNewGroup(group)) {
                 super.addPropertyToGroup(property, group);
             } else {
-                throw new RuntimeException(constructErrorMessage("addition of property or action to a group from another module is forbidden in EVAL module"));
+                throw new ScriptParsingException(constructErrorMessage("addition of property or action to a group from another module is forbidden in EVAL module"));
             }
         }
         if(property instanceof LazyProperty)

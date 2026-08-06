@@ -1102,7 +1102,8 @@ shareAction(STRING relativeUrl) {
 
 dataExtendCode = DATA TEXT (Form);
 dataExtendCode = DATA TEXT (Form, User);
-extendCode(Form f) = CONCAT '', dataExtendCode(f), dataExtendCode(f,currentUser()); 
+// the separator has to be a line break, otherwise the last line of the global code and the first line of the personal one are glued together
+extendCode(Form f) = CONCAT '\n', dataExtendCode(f), dataExtendCode(f,currentUser());
 extendCode(STRING sid) = extendCode(form(sid));
 
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';

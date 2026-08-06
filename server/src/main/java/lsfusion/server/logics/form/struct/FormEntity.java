@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.struct;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -13,6 +12,7 @@ import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -30,6 +30,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
+import lsfusion.server.language.ScriptErrorException;
+import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -86,6 +88,7 @@ import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -1813,12 +1816,25 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
                     copyForm.customizeLM = evalResult.second;
 
                     return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
-                } catch (ScriptingErrorLog.SemanticErrorException e) {
-                    throw Throwables.propagate(e);
+                } catch (ScriptingErrorLog.SemanticErrorException | ScriptParsingException | ScriptErrorException e) {
+                    // the customization code is written by the user, so a broken one must not make the form unopenable -
+                    // otherwise there is no way back: the customize action itself lives in that very form's toolbar
+                    reportCustomizeError(canonicalName, e);
                 }
             }
         }
         return new Pair<>(this, getObjects().toRevMap());
+    }
+
+    private static void reportCustomizeError(String canonicalName, Exception e) {
+        // the compilation error already carries the line and column inside the customization code, and the java stack
+        // is always the same getForm - evaluateRun path, so it is not logged: the code stays saved until someone fixes
+        // it, and the form is reopened with it again and again
+        String message = ThreadLocalContext.localize("{form.customize.error}") + " " + canonicalName + "\n" + e.getMessage();
+        ServerLoggers.systemLogger.error(message);
+        // print and export resolve the form through the same call, and a WARN raised there is recorded by the scheduler as a
+        // failed task, although it did produce its file from the base form
+        ThreadLocalContext.message(message, ThreadLocalContext.localize("{action.form.customize}"), MessageClientType.INFO);
     }
 
     public void prereadEventActions() {
