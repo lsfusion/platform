@@ -161,6 +161,11 @@
         </dependency>
 
         <dependency>
+            <groupId>net.atlanticbb</groupId>
+            <artifactId>shef</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>net.java.balloontip</groupId>
             <artifactId>balloontip</artifactId>
             <version>1.2.4.1</version>
