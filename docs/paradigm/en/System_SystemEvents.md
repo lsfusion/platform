@@ -187,6 +187,8 @@ A ping record stores per-computer memory readings over an interval, keyed by `(C
 
 `customize[STRING, STRING]` opens the `customizeForm` dialog for adjusting a form: the base code and the `EXTEND FORM` code held in `dataExtendCode[Form]` (for all users) and `dataExtendCode[Form, User]` (for the current user). `formCustomizeBackground[]` and `formCustomizeShowIf[]` tint and gate the customization entry. The two code fragments are joined with a line break and compiled on every form open; if the result does not compile, the error is reported and the form is opened without the customization, so the dialog stays reachable to fix or drop the code.
 
+Since `customizeForm` always edits the code of the current user, someone else's customization is reached from the `forms` metadata form instead: `hasExtendCodeAll[Form]` tells whether the selected form is customized for all users and `countExtendCode[Form]` counts the users who customized it for themselves, while the form's customization tab holds both code fragments and lets them be dropped - for one user or for the form as a whole.
+
 ### Logo
 
 `logo[]` is the navigator logo image; `logoAction[]` is the logo navigator entry, which shows the current version and user. The module places `logoAction` in the `logo` window of the navigator.

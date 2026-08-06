@@ -1193,6 +1193,86 @@ customize(STRING sid, STRING code) {
     }
 }
 
+// customizations are written by the users themselves, so the administrator needs a way to see and drop them
+// without impersonating every user (customizeForm always edits the code of currentUser())
+
+hasExtendCodeAll '{action.form.customize.has.all.users}' (Form f) = TRUE IF dataExtendCode(f);
+countExtendCode '{action.form.customize.users}' (Form f) = GROUP SUM 1 IF dataExtendCode(f, User u);
+
+resetExtendCode '{action.form.customize.reset}' (Form f, User u) {
+    dataExtendCode(f, u) <- NULL;
+}
+resetExtendCode '{action.form.customize.reset.all}' (Form f) {
+    ASK '{action.form.customize.reset.all.ask}' DO {
+        dataExtendCode(f) <- NULL;
+        FOR dataExtendCode(f, User u) DO
+            dataExtendCode(f, u) <- NULL;
+    }
+}
+
+// the administrator looks for the customizations of a form exactly here, next to its user preferences.
+// both indicators are needed: a form customized for everyone has no per user code, and showing only the user count
+// would answer "not customized" for it - the very conclusion this is meant to prevent
+EXTEND FORM forms
+    PROPERTIES(f) READONLY hasExtendCodeAll, countExtendCode
+    PROPERTIES(f) resetExtendCode
+    PROPERTIES PANEL extendCodeAll '{action.form.customize.all.users}' = jsonCode(dataExtendCode(f)) CUSTOM 'interpreter' ON CHANGE {
+        INPUT s = TEXT DO {
+            dataExtendCode(f) <- nullEmpty(fieldText(JSON((s)), 'text'));
+        }
+    }
+
+    // a plain filter and an own object, not a filter group on the existing user grid - filter groups combine, so a
+    // second default one there would show only the users that have both preferences and a customization
+    OBJECTS cu = User
+    // name[User] is built from the contact first / last name; the login fallback sits on name[CustomUser],
+    // so through a User object it is not picked up and an account without a name would show an empty row
+    PROPERTIES(cu) READONLY name
+    PROPERTIES loginExtendCode '{authentication.login}' = Authentication.login(cu AS CustomUser) READONLY
+    PROPERTIES(f, cu) resetExtendCode GRID
+    PROPERTIES PANEL extendCodeUser '{action.form.customize.current.user}' = jsonCode(dataExtendCode(f, cu)) CUSTOM 'interpreter' ON CHANGE {
+        INPUT s = TEXT DO {
+            dataExtendCode(f, cu) <- nullEmpty(fieldText(JSON((s)), 'text'));
+        }
+    }
+    FILTERS dataExtendCode(f, cu)
+;
+
+DESIGN forms {
+    // the indicators belong next to the form itself, the code and the resets to their own tab
+    leftPane {
+        MOVE PROPERTY(hasExtendCodeAll(f)) BEFORE BOX(g);
+        MOVE PROPERTY(countExtendCode(f)) BEFORE BOX(g);
+    }
+    rightPane {
+        NEW customization {
+            caption = '{action.form.customize}';
+            MOVE PROPERTY(resetExtendCode(f));
+            NEW customizationCode {
+                fill = 1;
+                horizontal = TRUE;
+                NEW customizationAll {
+                    fill = 1;
+                    MOVE PROPERTY(extendCodeAll) {
+                        fill = 1;
+                        captionVertical = TRUE;
+                        charHeight = 20;
+                    }
+                }
+                NEW customizationUser {
+                    fill = 1;
+                    MOVE BOX(cu);
+                    MOVE PROPERTY(extendCodeUser) {
+                        fill = 1;
+                        captionVertical = TRUE;
+                        charHeight = 20;
+                    }
+                }
+            }
+        }
+    }
+}
+
 //VAPID key gen: https://tools.reactpwa.com/vapid
 pushPublicKey '{system.events.push.notification.public.key}' = DATA STRING();
 pushPrivateKey '{system.events.push.notification.private.key}' = DATA STRING();
