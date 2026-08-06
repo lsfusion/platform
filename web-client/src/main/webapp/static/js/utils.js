@@ -250,7 +250,9 @@ function setCaptionHtmlOrText(element, value) {
     setHtmlOrText(element, value, html);
 }
 function setCaptionNodeText(node, value) {
-    setNodeText(node, fixHyphens(node.parentElement, value));
+    // the node can be detached by external DOM mutations (e.g. Google Translate replaces text nodes with font elements), then there is no parent to read the hyphenation flag from
+    let parentElement = node.parentElement;
+    setNodeText(node, parentElement != null ? fixHyphens(parentElement, value) : value);
 }
 function setDataHtmlOrText(element, value, html) {
     setHtmlOrText(element, value, html);
