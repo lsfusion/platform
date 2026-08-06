@@ -52,7 +52,6 @@ import lsfusion.interop.form.property.cell.IntervalValue;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.interop.session.ExternalHttpResponse;
-import org.olap4j.impl.Base64;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -65,6 +64,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -284,7 +284,7 @@ public class GwtToClientConverter extends ObjectConverter {
     public ReadUtils.ReadResult convertReadResult(GReadResult readResult) {
         if(readResult.error != null)
             throw new RuntimeException(readResult.error);
-        RawFileData file = new RawFileData(Base64.decode(readResult.fileBase64));
+        RawFileData file = new RawFileData(Base64.getDecoder().decode(readResult.fileBase64));
         return new ReadUtils.ReadResult(new NamedFileData(new FileData(file, readResult.extension), readResult.name), "file", null);
     }
 

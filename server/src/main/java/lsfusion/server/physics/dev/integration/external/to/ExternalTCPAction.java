@@ -9,11 +9,11 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ConnectionService;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import org.olap4j.impl.Base64;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.Base64;
 
 public class ExternalTCPAction extends ExternalSocketAction {
     public ExternalTCPAction(boolean clientAction, ImList<Type> params) {
@@ -29,7 +29,7 @@ public class ExternalTCPAction extends ExternalSocketAction {
             if(result instanceof byte[])
                 response = (byte[]) result;
             else
-                response = Base64.decode((String) result);
+                response = Base64.getMimeDecoder().decode((String) result);
         } else {
             Socket socket = null;
             ConnectionService connectionService = context.getConnectionService();
