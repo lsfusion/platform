@@ -90,6 +90,7 @@
                 <entry key="limitWrapComplexity" value="${settings.limitWrapComplexity:}"/>
                 <entry key="limitComplexityGrowthCoeff" value="${settings.limitComplexityGrowthCoeff:}"/>
                 <entry key="limitExclusiveCount" value="${settings.limitExclusiveCount:}"/>
+                <entry key="noOrderTopSplit" value="${settings.noOrderTopSplit:}"/>
                 <entry key="limitExclusiveSimpleCount" value="${settings.limitExclusiveSimpleCount:}"/>
                 <entry key="limitExclusiveSimpleComplexity" value="${settings.limitExclusiveSimpleComplexity:}"/>
                 <entry key="limitExclusiveComplexity" value="${settings.limitExclusiveComplexity:}"/>

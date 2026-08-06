@@ -123,6 +123,8 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
     }
     
     public KeyStat getKeyStat(final KeyStat keyStat) {
+        if(isEmpty()) // optimization
+            return keyStat;
         return (key, forJoin) -> {
             BaseExpr keyExpr = keyExprs.get(key);
             if(keyExpr!=null)

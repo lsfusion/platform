@@ -4,6 +4,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -40,6 +42,7 @@ import lsfusion.server.data.expr.join.query.PartitionJoin;
 import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.join.select.*;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.where.pull.ExclNullPullWheres;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
@@ -149,6 +152,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     protected boolean containsAll(WhereJoin who, WhereJoin what) {
         return BaseUtils.hashEquals(who,what) || (what instanceof InnerJoin && ((InnerJoin)what).getInnerExpr(who)!=null);
+    }
+
+    public WhereJoins and(KeyEqual keyEqual) {
+        return keyEqual.isEmpty() ? this : and(keyEqual.getWhereJoins()); // optimization
     }
 
     public WhereJoins and(WhereJoins set) {
@@ -1809,8 +1816,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             WhereJoins equalWhereJoins = keyEqual.getWhereJoins(equalUpWheres);
             adjWhereJoins = adjWhereJoins.and(equalWhereJoins);
             upWheres = adjWhereJoins.andUpWheres(upWheres, equalUpWheres.result); // можно было бы по идее просто слить addExcl, но на всякий случай сделаем в общем случае
-            keyStat = keyEqual.getKeyStat(keyStat);
         }
+        // note that the key stat is wrapped here and NOT inside the branch above : getKeyStat is not idempotent, the mapped expression asks for the key statistics itself (ParamExpr.getTypeStat), so a second wrapper resolves the chain one step further than the first
         return adjWhereJoins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyEqual.getKeyStat(keyStat), type, (Result<Pair<ImRevMap<Z,KeyExpr>,Where>>) null, debugInfoWriter);
     }
 
@@ -1819,10 +1826,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, StatType type, final KeyEqual keyEqual, DebugInfoWriter debugInfoWriter) {
-        if(!keyEqual.isEmpty()) { // для оптимизации
-            return and(keyEqual.getWhereJoins()).getStatKeys(groups, keyEqual.getKeyStat(keyStat), type, (Result<CompileInfo>)null, debugInfoWriter);
-        } else
-            return getStatKeys(groups, keyStat, type, (Result<CompileInfo>)null, debugInfoWriter);
+        return and(keyEqual).getStatKeys(groups, keyEqual.getKeyStat(keyStat), type, (Result<CompileInfo>)null, debugInfoWriter);
     }
 
     // virtualizes every join argument that references the removed join : the argument is replaced AS A WHOLE with a fresh key ("iterate over any value", one key per distinct argument), so the introduced key always stands at a join argument position - the only position that sources a key and gives it a class (see InnerSelect.JoinSelect); the join still sources its keys through the remaining arguments, while the removeJoin dependency (and with it the push recursion) is severed
@@ -2066,6 +2070,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         int i=0,size=orders.size();
         for(;i<size;i++) {
             Expr order = orders.get(i);
+            // ordering by something constant across rows is no ordering at all (PartitionExpr drops such orders outright). for NULL this is load bearing rather than an optimization :
+            // NULL is a value in exactly this sense yet is not a BaseExpr, so otherwise it would break out below and void the whole estimate - and the pull injects a NULL branch itself for "no case matched"
+            if(order.isValue())
+                continue;
             if(order instanceof BaseExpr) {
                 whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
                 statKeys = whereJoins.getStatKeys(keys, keyStat, statType, (Result<CompileInfo>) null, debugInfoWriter != null ? debugInfoWriter.pushPrefix("LIMIT ORDER " + i + " of "  + size +" - " + order) : null);
@@ -2093,6 +2101,48 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             newBaseCost = null;
         }
         return newBaseCost;
+    }
+
+    // getOrderCost needs a BaseExpr, so it does not take an ordering by a set of exclusive cases at all - and that is exactly what a session change of the ordering key looks like :
+    // IF(changed key, new value, the expression itself). but the compiler splits such an ORDER under a LIMIT into exclusive branches (Query.compile -> Query.getWhereJoins),
+    // and in each branch the expression itself is what is left (CompiledQuery.getInnerSelect - followTrue) - so we price it branch by branch, expanding them with the very machinery that performs the split.
+    // pricing a branch by its own condition rather than by the whole input is the point : otherwise a branch that really needs a join would be priced as a clean index walk
+    public static <K extends BaseExpr> Cost getLimitOrderCost(WhereJoins whereJoins, ImSet<K> keys, StatKeys<K> statKeys, KeyStat keyStat, ImOrderSet<Expr> orders, StatType statType, Cost minCost, DebugInfoWriter debugInfoWriter) {
+        // optimization : an ordering with no case has no branch condition, so the walk below would decompose a true condition into a single alternative with no joins and no key equalities and
+        // arrive at this very call again. and when splitting is off there is no split to count on at all. note the call is not made before this test on purpose : one case anywhere in the
+        // ordering always breaks getOrderCost's loop, so on a splitting ordering it could only ever have returned null
+        if(orders.getSet().filterFn(order -> !(order instanceof BaseExpr) && !order.isValue()).isEmpty() || Settings.get().isNoOrderTopSplit())
+            return getOrderCost(whereJoins, keys, statKeys, keyStat, orders, statType, minCost, debugInfoWriter);
+
+        Cost caseCost = new ExclNullPullWheres<Cost, Expr, Where>() {
+            protected Cost proceedNullBase(Where data, ImMap<Expr, ? extends Expr> map) {
+                ImOrderSet<Expr> caseOrders = orders.mapMergeOrderSetValues(map::get); // hoisted out of the loop below, it does not depend on the alternative
+
+                // the branch condition does not turn into a single WhereJoins - it decomposes into alternatives with their own keyEqual, and each one's statistics have to be recomputed from its joins,
+                // its key equalities and the incoming key statistics (its residual where is left out, see below)
+                Cost result = null;
+                for(GroupJoinsWhere branch : data.getPushedWhereJoins(keys, statType)) {
+                    WhereJoins branchJoins = whereJoins.and(branch.joins).and(branch.keyEqual); // keyEqual lives apart from joins
+                    // the residual where is deliberately NOT folded into the key statistics the way GroupJoinsWhere.getStatKeys does : there it REPLACES the KeyStat, while here the incoming one
+                    // is real information arriving from the GroupJoin/PartitionJoin above, and the two cannot be merged soundly - the residual reports ALOT for a key it says nothing about, and
+                    // ALOT sits below Stat.MAX, so "no information" would silently cap the incoming statistic. leaving it out can move the estimate either way (a bigger key statistic makes an
+                    // equality look more selective), but it does not fabricate a constraint out of ALOT
+                    KeyStat branchKeyStat = branch.keyEqual.getKeyStat(keyStat);
+                    StatKeys<K> branchStatKeys = branchJoins.getStatKeys(keys, branchKeyStat, statType);
+
+                    Cost branchCost = getOrderCost(branchJoins, keys, branchStatKeys, branchKeyStat, caseOrders, statType, minCost, debugInfoWriter);
+                    if(branchCost == null) // fallback : no index plan in this branch means no reduction, so it costs its whole input - and that input already counts the branch's joins and key equalities
+                        branchCost = branchStatKeys.getCost();
+                    result = result == null ? branchCost : result.or(branchCost);
+                }
+                return result != null ? result : minCost; // fallback : the condition is unreachable (pulling several cases makes some combinations false), and the max above ignores the minimum
+            }
+            protected Cost add(Cost op1, Cost op2) {
+                return op1.or(op2);
+            }
+        }.proceed(Where.TRUE(), orders.getSet().toRevMap());
+        // if the split did not lower the cost there is nothing to count on : the compiler will not keep it either (Query.compile compares both compilations), and the ORDER will reach SQL unsplit
+        return caseCost.less(statKeys.getCost()) ? caseCost : null;
     }
 
     public ImSet<ParamExpr> getOuterKeys() {

@@ -40,17 +40,15 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
 
             WhereJoins adjJoins = joins.pushStatKeys(partitionStats);
 
-            if(!keyEqual.isEmpty()) {
-                adjJoins = adjJoins.and(keyEqual.getWhereJoins());
-                keyStat = keyEqual.getKeyStat(keyStat);
-            }
+            adjJoins = adjJoins.and(keyEqual);
+            keyStat = keyEqual.getKeyStat(keyStat);
 
             StatKeys<KeyExpr> result = adjJoins.getStatKeys(allKeys, keyStat, type);
 
             if (!orders.isEmpty()) {
                 ImSet<KeyExpr> partitionKeys = SetFact.filter(group, allKeys);
                 if (partitionKeys.size() == allKeys.size() && WhereJoins.isPushedAll(BaseUtils.immutableCast(mapExprs), statKeys.getKeys())) {
-                    Cost newCost = WhereJoins.getOrderCost(adjJoins, partitionKeys, result, keyStat, orders.keyOrderSet(), type, new Cost(result.getRows()), null);
+                    Cost newCost = WhereJoins.getLimitOrderCost(adjJoins, partitionKeys, result, keyStat, orders.keyOrderSet(), type, new Cost(result.getRows()), null);
                     if (newCost != null)
                         result = result.replaceCost(newCost);
                 }
@@ -71,15 +69,15 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
 
             ImSet<BaseExpr> group = mapExprs.values().toSet();
 
-            if(!keyEqual.isEmpty()) {
-                adjJoins = adjJoins.and(keyEqual.getWhereJoins());
-                keyStat = keyEqual.getKeyStat(keyStat);
-            }
+            adjJoins = adjJoins.and(keyEqual);
+            keyStat = keyEqual.getKeyStat(keyStat);
 
             StatKeys<BaseExpr> result = adjJoins.getStatKeys(group, keyStat, type);
 
             if(statKeys != StatKeys.<K>NOPUSH() && !orders.isEmpty() && WhereJoins.isPushedAll(mapExprs, statKeys.getKeys())) {
-                Cost newCost = WhereJoins.getOrderCost(adjJoins, group, result, keyStat, orders, type, new Cost(result.getRows()), null);
+                // getLimitOrderCost : what is being priced is the plan that pushing all the keys opens up - a per key ORDER ... LIMIT 1 (GroupSelect.getLastExprSources),
+                // and that one is compiled with a real LIMIT, that is with the ORDER split into exclusive branches
+                Cost newCost = WhereJoins.getLimitOrderCost(adjJoins, group, result, keyStat, orders, type, new Cost(result.getRows()), null);
                 if (newCost != null)
                     result = result.replaceCost(newCost);
             }

@@ -2,6 +2,25 @@
 
 ## 7.0
 
+### An ordered aggregation keeps its index plan when the session has unsaved changes
+
+A `GROUP LAST` / `PARTITION` ordered by an indexed column used to degrade from an index lookup per
+key to a full scan of the whole table as soon as the session held an unsaved change of the property
+the aggregation is ordered by. The unsaved change is applied by substitution, so the ordering stopped
+being the plain column, the planner saw no index for it, concluded that restricting the aggregation
+to the requested keys buys nothing, and computed it for all keys over the whole history. Measured on
+a 111M row table read for 25 keys: fractions of a second before the edit, minutes and over 8 GB of
+temporary files after it - on a server with `temp_file_limit` set, a postgres error.
+
+Such an ordering is in fact compiled per branch (the changed rows and the rest), and in each branch
+the ordering is the plain column again. The planner now takes that into account when estimating, so
+the per-key index plan is chosen as it is for a clean session.
+
+What an upgrading application can notice: plans change for aggregations of this shape - ordered by a
+column that has an index, read while the session holds unsaved changes of that column. There is no
+dedicated setting; `settings.noOrderTopSplit=true` disables the order splitting itself and with it
+this estimate, restoring the previous behaviour.
+
 ### A window's `CUSTOM` accepts more, a `DESIGN` container's is checked, and the client must match
 
 A React component can now draw the window the forms open in and the window the messages
