@@ -32,7 +32,7 @@ In each of the three cases above, if the parameter value is `NULL`, `null` is su
 
 Parameters of classes that differ from those of files are converted into strings and are passed as a `text/plain` content type. `NULL` values are passed as empty strings.
 
-Custom request [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be supplied with the call.
+Custom request [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be supplied with the call. Declare a separate local property for the outgoing headers rather than the system property `System.headers[TEXT]`: in an action called [from an external system](Access_from_an_external_system.md#request) it is already filled with the headers of the incoming request, and all of them, including service ones (such as `Content-Length`), will go into the outgoing request — usually resulting in a runtime error. If `System.headers[TEXT]` is used anyway, clear it before the call.
 
 The literal text of the connection string and of any body template is URL-encoded before the request is sent (suppressible); parameter values substituted via `$N` are URL-encoded independently.
 
