@@ -29,7 +29,13 @@ public class KillJavaProcessAction extends InternalAction {
             Integer id = Integer.parseInt((String) findProperty("idThreadProcess[STRING[10]]").read(context, currentObject));
             Thread thread = ThreadUtils.getThreadById(id);
             if (thread != null) {
-                thread.stop();
+                // Thread.stop() is degraded since JDK 20 and removed in JDK 26; reflection keeps this compiling on any JDK,
+                // the call still works on older JVMs, on newer ones fall back to cooperative interrupt
+                try {
+                    Thread.class.getMethod("stop").invoke(thread);
+                } catch (ReflectiveOperationException e) {
+                    ThreadUtils.interruptThread(context, thread);
+                }
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
