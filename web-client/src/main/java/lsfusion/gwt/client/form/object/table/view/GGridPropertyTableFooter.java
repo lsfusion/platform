@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.view.MainFrame.v5;
 
@@ -30,6 +31,8 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     protected PValue prevValue;
     protected PValue value;
+    private String pattern;
+    private String prevPattern;
     private final boolean sticky;
 
     private final GFormController form;
@@ -58,6 +61,10 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     public void setValue(PValue value) {
         this.value = value;
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
     }
 
     public void setFooterElementClass(String footerElementClass) {
@@ -103,13 +110,15 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
         renderedFooterElementClass = footerElementClass;
 
         prevValue = value;
+        prevPattern = pattern;
     }
 
     @Override
     public void updateDom(TableCellElement th) {
-        if (!nullEquals(this.value, prevValue)) {
+        if (!nullEquals(this.value, prevValue) || !nullEquals(this.pattern, prevPattern)) {
             GPropertyTableBuilder.update(property, th, this);
             prevValue = value;
+            prevPattern = pattern;
         }
         if (!nullEquals(this.footerElementClass, renderedFooterElementClass)) {
             renderFooterElementClass(renderedFooterElement, footerElementClass);
@@ -133,7 +142,7 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     @Override
     public String getPattern() {
-        return property.getPattern();
+        return nvl(pattern, property.getPattern());
     }
 
     @Override

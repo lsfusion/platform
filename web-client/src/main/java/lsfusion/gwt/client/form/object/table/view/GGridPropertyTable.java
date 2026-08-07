@@ -681,6 +681,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if(footer != null) {
             footer.setValue(getPropertyFooter(property, columnKey));
             footer.setFooterElementClass(getFooterElementClass(property, columnKey));
+            footer.setPattern(getFooterPattern(property));
         }
     }
 
@@ -731,6 +732,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected String getFooterElementClass(GPropertyDraw property, GGroupObjectValue columnKey) {
         return getFooterElementClass(footerElementClasses.get(property), property, columnKey);
+    }
+
+    protected String getFooterPattern(GPropertyDraw property) {
+        NativeHashMap<GGroupObjectValue, PValue> propPatterns = patterns.get(property);
+        if (propPatterns != null) {
+            PValue pattern = propPatterns.firstValue();
+            if (pattern != null)
+                return PValue.getStringValue(pattern);
+        }
+        return null;
     }
 
     protected GInputBindingEvent getChangeKey(GPropertyDraw property, GGroupObjectValue columnKey) {
