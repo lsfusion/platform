@@ -3205,8 +3205,8 @@
       "stale": false
     },
     "language/ACTION_plus_statement.md": {
-      "file_hash": "sha256:34fd4ae6ba3339b740538e3c4716ac66dc77ec8a3b678c5ccb4f0d76002f65a7",
-      "indexed_at": "2026-05-22T23:46:15Z",
+      "file_hash": "sha256:c09527272876d20f30edd8051800a45c3a6ad5215d47b52c5840d43b91177b49",
+      "indexed_at": "2026-08-07T10:08:52Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -3234,9 +3234,9 @@
           "source_file": "language/ACTION_plus_statement.md"
         },
         "ACTION_plus_statement::syntax+description": {
-          "file_id": "file-BdDrdx4xAwRjnH9dt6o4pZ",
+          "file_id": "file-3qx7y1xqVpEQXUTHFspooa",
           "heading_path": "ACTION+ statement > Syntax + Description",
-          "section_payload_hash": "sha256:4e882997f092d6cc0a0cff7568a65ec248e2501e3a0910adfb42f2c6f1d14bbc",
+          "section_payload_hash": "sha256:1dbcfbe03b9a58cbc90f29721efc235b069997f63d1bbce885c887c6b298df8f",
           "source_file": "language/ACTION_plus_statement.md"
         }
       },
@@ -8283,8 +8283,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:027ade4b19e3d31fb159287f00e15be0032f75de5d76549b52dd5af04560fd8f",
-      "indexed_at": "2026-07-31T08:10:20Z",
+      "file_hash": "sha256:d260ce1a39a13d3c16419849939826a04252070ad32b8ee95e29a0846d3c99fd",
+      "indexed_at": "2026-08-07T10:09:01Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8348,15 +8348,15 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-01": {
-          "file_id": "file-GPk9tcN1ppE52vxwoUb6xZ",
+          "file_id": "file-4Jk4SVYdLaHNQTPERE5uPj",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:b4b119c860dc9d51c3356781867ad77147f43c0bc2501396926610824d1afaff",
+          "section_payload_hash": "sha256:4ff789f9eb15de34818df925ce41dbbd5ad982e6dc07a0edb33d5a8e7d94c58d",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
-          "file_id": "file-MVhojrbqVnbes57qQatenf",
+          "file_id": "file-LCtty11C8BL9DMcy4iuJhR",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:4ed197a9b417e3ee68d9b5caed1ae25753826e823deef15ac5ac77003ad5655e",
+          "section_payload_hash": "sha256:16b906eacca9b2e0636a9b2c299d87339c3c1bb45600ad2085bb36b2505d292f",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::reading-a-file": {
@@ -8401,8 +8401,8 @@
       "stale": false
     },
     "paradigm/Access_to_an_external_system_EXTERNAL.md": {
-      "file_hash": "sha256:b9b6bb76e73941884731990d4eb9f70de41d75e26e90b31a61cf35b653fbc9c5",
-      "indexed_at": "2026-06-05T16:14:28Z",
+      "file_hash": "sha256:d0696b0f400b7356616eb10e14af922d3eeab739085bc1c1b58dd290c7bbc2bf",
+      "indexed_at": "2026-08-07T10:09:11Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8430,9 +8430,9 @@
           "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
         },
         "Access_to_an_external_system_EXTERNAL::http---web-server-http-request-http": {
-          "file_id": "file-PxtezYfUnQeKFJJ4X15hAA",
+          "file_id": "file-TwaR6kQ9rFfJ9zWE7pKNNi",
           "heading_path": "Access to an external system (EXTERNAL) > Types of interactions / protocols > HTTP - web server HTTP request {#http}",
-          "section_payload_hash": "sha256:e1118ce360c19e2ea2b96eaa7d59fed2df85a99a310c548a7c52dbda033afd02",
+          "section_payload_hash": "sha256:dd94747ac6a7acaeb84e031a0a348ed989eda2e31d1ee2e5f3006e79c28a40f0",
           "source_file": "paradigm/Access_to_an_external_system_EXTERNAL.md"
         },
         "Access_to_an_external_system_EXTERNAL::language": {
@@ -9977,8 +9977,8 @@
       "stale": false
     },
     "paradigm/Events.md": {
-      "file_hash": "sha256:6a5c815afbd989a2e4d052d90318f2822ea3ea76c806893254268a8282644a90",
-      "indexed_at": "2026-06-04T07:59:17Z",
+      "file_hash": "sha256:579e34579f886e32931a9d960229e26555fe46ff149efe8910720c942caafabb",
+      "indexed_at": "2026-08-07T10:09:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -10003,6 +10003,12 @@
           "file_id": "file-MgWCz7pJEYxarcPAQjqi3q",
           "heading_path": "Events",
           "section_payload_hash": "sha256:8dce9a1b6f8aae676a9fe88cd51449f9e017998fe6a4de5409ac74894dfa8d4d",
+          "source_file": "paradigm/Events.md"
+        },
+        "Events::executing-local-events-local": {
+          "file_id": "file-W2ZN3Rrmit77ZuuFR7imAp",
+          "heading_path": "Events > Executing local events {#local}",
+          "section_payload_hash": "sha256:4b19495ca6b961b81404d09e1bfeb7c43a84856a493da2abbc5af58b3ebcd705",
           "source_file": "paradigm/Events.md"
         },
         "Events::language+examples": {
@@ -15345,7 +15351,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "09e7ec60ea928c0f858a3de48d2d04be5a6fb44a",
+  "last_indexed_docs_commit": "a0b73bb20b632e6b37818651fef0375730bc203c",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
