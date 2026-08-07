@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class SendMessageRabbitMQAction extends InternalAction {
     private final ClassPropertyInterface channelInterface;
     private final ClassPropertyInterface messageInterface;
@@ -42,6 +44,7 @@ public class SendMessageRabbitMQAction extends InternalAction {
             boolean local = findProperty("local[Channel]").read(context, channelObject) != null;
             boolean durable = findProperty("isDurable[Channel]").read(context, channelObject) != null;
             boolean persistentDeliveryMode = findProperty("persistentDeliveryMode[Channel]").read(context, channelObject) != null;
+            String exchange = (String) findProperty("exchange[Channel]").read(context, channelObject);
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
@@ -51,9 +54,13 @@ public class SendMessageRabbitMQAction extends InternalAction {
             try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
                 if(local) { //it's local channel, we create it
                     channel.queueDeclare(queue, durable, false, false, null);
+                    if (exchange != null) {
+                        channel.exchangeDeclare(exchange, "direct", durable);
+                        channel.queueBind(queue, exchange, queue);
+                    }
                 }
                 AMQP.BasicProperties props = durable && persistentDeliveryMode ? MessageProperties.PERSISTENT_TEXT_PLAIN : null;
-                channel.basicPublish("", queue, props, message.getBytes(StandardCharsets.UTF_8));
+                channel.basicPublish(nvl(exchange, ""), queue, props, message.getBytes(StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

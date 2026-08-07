@@ -36,8 +36,9 @@ public class StartConsumerRabbitMQAction extends InternalAction {
             String virtualHost = (String) findProperty("vHost[Channel]").read(context, channelObject);
             Integer threadCount = (Integer) findProperty("threadCount[Channel]").read(context, channelObject);
             Integer prefetchCount = (Integer) findProperty("prefetchCount[Channel]").read(context, channelObject);
+            String exchange = (String) findProperty("exchange[Channel]").read(context, channelObject);
 
-            context.getLogicsInstance().getRabbitMQServer().startConsume(host, queue, user, password, local, durable, virtualHost, threadCount, prefetchCount);
+            context.getLogicsInstance().getRabbitMQServer().startConsume(host, queue, user, password, local, durable, virtualHost, threadCount, prefetchCount, exchange);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
