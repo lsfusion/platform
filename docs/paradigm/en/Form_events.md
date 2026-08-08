@@ -19,10 +19,12 @@ While the application is running, there is a number of events for each form that
 
 -   `FILTER` - the filter applied to the object group has changed.
 -   `ORDER` - the order applied to the object group has changed.
+-   `SELECT` - what the [selection](Selection_SELECT.md) property of the object group reports has changed - the selected rows, or the current row it returns when there is no selection.
 -   `FILTERS` - the user changed the custom filters of the object group.
 -   `ORDERS` - the user changed the custom orders of the object group.
 -   `FILTERGROUPS` - the user changed the filter selected in a [filter group](Interactive_view.md#filtergroup).
 -   `FILTERS PROPERTY` - the user changed the value of a property filter.
+-   `SELECT PROPERTY` - the [selection](Selection_SELECT.md) of the property as a column has changed.
 
 #### For properties or actions on the form {#property}
 

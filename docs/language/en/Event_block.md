@@ -31,6 +31,7 @@ CHANGE objName
 [CHANGE] groupObjectEvent groupObjectName
 [CHANGE] FILTERGROUPS filterGroupName
 [CHANGE] FILTERS PROPERTY formPropertyName
+[CHANGE] SELECT PROPERTY formPropertyName
 [CHANGE] PROPERTY [eventPhase] formPropertyName
 QUERYOK
 QUERYCLOSE
@@ -50,6 +51,8 @@ eventActionId(param1, ..., paramK)
 The event block allows to define handlers for form events that occur as the result of certain user actions. Each block can have an arbitrary number of comma-separated event handlers. If several handlers are defined for an event, they are guaranteed to be executed in the order they are defined. 
 
 The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filtering: `FILTERGROUPS` — when the user changes the active filter in the specified filter group; `FILTERS PROPERTY` — when the user sets or changes a user filter on the specified form property.
+
+The `SELECT PROPERTY` event occurs when the [selection](../paradigm/Selection_SELECT.md) of the columns of the specified form property changes - when the user selects a column or unselects it, including by moving the cursor into it or out of it. If the property is drawn by several columns, the event occurs when any of them changes. Each of the two selection events follows its own property: `SELECT` follows the row selection of an object group, `SELECT PROPERTY` follows the selection of the columns of a form property.
 
 ### Parameters 
 
@@ -79,6 +82,7 @@ The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filter
 
     - `FILTER` - occurs when the filter applied to the group object changes, for any reason (a change to data affecting the filter condition, a programmatic change, or a user action).
     - `ORDER` - occurs when the order applied to the group object changes, for any reason.
+    - `SELECT` - occurs when what the [selection](../paradigm/Selection_SELECT.md) property of the group object returns changes: the selected rows, and also the current row that it returns when there is no selection. The selected rows are kept as a range in the current order and are intersected with the form filters, so while a selection is active the event also occurs when the order or the filter changes. The column selection does not belong to this event - `SELECT PROPERTY` is the one for it.
     - `FILTERS` - occurs when the user interactively changes the group object's filters.
     - `ORDERS` - occurs when the user interactively changes the group object's orders.
 

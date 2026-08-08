@@ -911,7 +911,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void selectAll(GroupObjectInstance group, List<ColumnSelection> columnSelections, ExecutionStack stack) throws SQLException, SQLHandledException {
         group.selectAll(this);
 
-        changeSelection(columnSelections);
+        changeSelection(columnSelections, stack);
     }
 
     public void changeValue(ObjectInstance object, ObjectValue changeValue, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -2048,11 +2048,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void changePropertyActive(PropertyDrawEntity property, ImMap<ObjectInstance, DataObject> columnKey, boolean focused,
-                                     List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
+                                     List<ColumnSelection> changeSelectionColumns, ExecutionStack stack) throws SQLException, SQLHandledException {
         updateActiveProperty(property, columnKey, focused);
 
         if(changeSelectionColumns != null)
-            changeSelection(changeSelectionColumns);
+            changeSelection(changeSelectionColumns, stack);
     }
     
     // a user hid a component: a collapsed container, or a CUSTOM REACT component hiding an lsf child. A non-user-
@@ -2080,9 +2080,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             newActiveProperty.updateActiveProperty(session, focused ? true : null);
         activeProperty = newActiveProperty;
     }
-    private void changeSelection(List<ColumnSelection> changeSelectionColumns) throws SQLException, SQLHandledException {
-        for(ColumnSelection columnSelection : changeSelectionColumns)
+    private void changeSelection(List<ColumnSelection> changeSelectionColumns, ExecutionStack stack) throws SQLException, SQLHandledException {
+        for(ColumnSelection columnSelection : changeSelectionColumns) // the whole selection the client sent is applied first, so that a handler that fails doesn't leave the rest of the columns unselected on the server while the client shows them selected
             columnSelection.property.updateSelectProperty(session, columnSelection.columnKey, columnSelection.set ? true : null);
+
+        for(ColumnSelection columnSelection : changeSelectionColumns)
+            fireEvent(new UserEventObject(columnSelection.property.getSID(), UserEventObject.Type.SELECTPROPERTY), stack);
     }
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
@@ -2416,6 +2419,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     GroupObjectInstance updatedGroup = updateGroupObject.group;
                     updatedGroup.update(result, this, updateGroupObject.value, stack);
                     updateGroupObject = null;
+
+                    if ((updatedGroup.updated & GroupObjectInstance.UPDATED_OBJECT) != 0 && !updatedGroup.hasRowSelection()) // the current object changed during this cycle (a seek, the filter dropping the current row), and the select property returns it when nothing is selected
+                        fireOnUpdateKeys(stack, updatedGroup, GroupObjectEventObject.Type.SELECT); // no dedup with the fire from updateKeys - one gesture may give two events, and a handler of a change event has to be idempotent anyway
 
                     if (updatedGroup != group)
                         updateContainersShowIfs(updatedGroup.entity, changeProps.result);
@@ -2895,6 +2901,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             public void onOrderChanged() throws SQLException, SQLHandledException {
                 fireOnUpdateKeys(stack, group, GroupObjectEventObject.Type.ORDER);
+            }
+
+            public void onSelectChanged() throws SQLException, SQLHandledException {
+                fireOnUpdateKeys(stack, group, GroupObjectEventObject.Type.SELECT);
             }
         };
     }

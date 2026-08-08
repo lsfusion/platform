@@ -29,6 +29,6 @@ public class GroupObjectEventObject extends FormServerEvent<GroupObjectEventObje
     }
     
     public enum Type {
-        ORDER, FILTER
+        ORDER, FILTER, SELECT
     }
 }

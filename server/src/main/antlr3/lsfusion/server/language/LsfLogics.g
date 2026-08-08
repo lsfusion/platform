@@ -1442,11 +1442,13 @@ changeEventDeclaration returns [FormServerEvent type]
         ('OBJECT' objectId=ID { $type = new ObjectEventObject($objectId.text); }
         |  'FILTER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.FILTER); }
         |  'ORDER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.ORDER); }
+        |  'SELECT' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.SELECT); }
         |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER); }
         |  'ORDERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER); }
         |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
         |  'FILTERGROUPS' filterGroupId=ID { $type = new UserEventObject($filterGroupId.text, UserEventObject.Type.FILTERGROUP); }
         |  'FILTERS' 'PROPERTY' prop=formPropertyDraw { if (inMainParseState()) { $type = new UserEventObject($prop.property.getSID(), UserEventObject.Type.FILTERPROPERTY); } }
+        |  'SELECT' 'PROPERTY' prop=formPropertyDraw { if (inMainParseState()) { $type = new UserEventObject($prop.property.getSID(), UserEventObject.Type.SELECTPROPERTY); } }
         )
      )
     ;

@@ -985,8 +985,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         }
     }
+    public boolean hasRowSelection() {
+        return selectionDir != 0;
+    }
+
     public void selectAll(FormInstance eventForm) throws SQLException, SQLHandledException {
         assert !isInTree();
+
+        if(selectionDir == -1 && startSelection == SEEK_HOME && endSelection == SEEK_END) // everything is already selected, otherwise we'd get a select change event on every repeated select all
+            return;
 
         Property<?> isSelectProperty = entity.getIsSelectProperty();
 
@@ -1154,6 +1161,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public interface ChangeEvents {
         void onFilterChanged() throws SQLException, SQLHandledException;
         void onOrderChanged() throws SQLException, SQLHandledException;
+        void onSelectChanged() throws SQLException, SQLHandledException;
     }
 
     @StackMessage("{message.form.update.group.keys}")
@@ -1227,6 +1235,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if(updateSelect)
             updateSelectProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
+
+        // with a selection the select property is the selected range intersected with the filter, so the filter matters and the current object does not;
+        // without one it is the current object itself, which the property returns then
+        if(updateSelect || (selectionDir != 0 ? updateFilters : (updated & UPDATED_OBJECT) != 0))
+            changeEvents.onSelectChanged();
 
         updateFilters = refresh || updateFilters;
         boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);

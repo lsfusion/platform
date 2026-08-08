@@ -29,6 +29,6 @@ public class UserEventObject extends FormServerEvent<UserEventObject> {
     }
 
     public enum Type {
-        ORDER, FILTER, FILTERGROUP, FILTERPROPERTY
+        ORDER, FILTER, FILTERGROUP, FILTERPROPERTY, SELECTPROPERTY
     }
 }

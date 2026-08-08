@@ -800,7 +800,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 changeSelectionColumns = convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
 
             form.changePropertyActive(propertyID >= 0 ? form.entity.getPropertyDraw(propertyID) : null,
-                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelectionColumns);
+                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelectionColumns, stack);
         });
     }
 
