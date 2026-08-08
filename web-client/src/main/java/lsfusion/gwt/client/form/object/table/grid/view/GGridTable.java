@@ -211,8 +211,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         for (int i = 0; i < rowCount; i++)
             changeSelectionRows.put(getRowValue(i).getKey(), PValue.getPValue(true));
 
+        int selectedFrom = Math.min(startSelectColumn, endSelectColumn); // the selection keeps the direction it was made in, so the bounds can be reversed
+        int selectedTo = Math.max(startSelectColumn, endSelectColumn);
+
         ArrayList<ColumnSelection> changeSelectionColumns = new ArrayList<>();
-            for (int i = 0; i < colCount; i++)
+        for (int i = 0; i < colCount; i++)
+            if(!(startSelectColumn >= 0 && i >= selectedFrom && i <= selectedTo)) // not sending the columns that are already selected, otherwise a repeated select all would look like a select change
                 addSelectedColumn(i, changeSelectionColumns, true);
 
         startSelectColumn = 0;
