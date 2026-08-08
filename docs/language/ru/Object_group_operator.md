@@ -29,7 +29,7 @@ SELECT PROPERTY formPropertyId
 
 Оператор `SELECT` создаёт свойство, значением которого будет являться `TRUE`, если переданный в качестве параметров набор объектов выделен (отмечен) пользователем в группе объектов, иначе значением свойства будет являться `NULL`.
 
-Оператор `SELECT ACTIVE` создаёт свойство без параметров, значением которого будет являться `TRUE`, если в группе объектов сейчас включено выделение нескольких строк, иначе `NULL`.
+Оператор `SELECT ACTIVE` создаёт свойство без параметров, значением которого будет являться `TRUE`, если в группе объектов выделены строки, иначе `NULL`. Выделение считается заданным с того момента, как пользователь его начал, даже если выделена одна строка. Пока это свойство равно `NULL`, свойство, создаваемое оператором `SELECT`, возвращает текущую строку.
 
 Оператор `VIEWTYPE` создаёт свойство без параметров, значением которого является текущий вид отображения группы объектов — объект системного класса `ListViewType` (`grid`, `pivot`, `map`, `custom` или `calendar`).
 
@@ -59,8 +59,8 @@ countF 'Кол-во фильтр. складов' = GROUP SUM 1 IF [ VIEW stores
 orderF 'Порядок в группе объектов' (Store s) = PARTITION SUM 1 IF [ FILTER stores.s](s) ORDER [ ORDER stores.s](s), s;
 isPivot 'Склады в виде сводной таблицы' () = [ VIEWTYPE stores.s]() == ListViewType.pivot;
 selectedCount 'Количество выделенных складов' () = GROUP SUM 1 IF [ SELECT stores.s](Store s);
-multiSelectActive 'Включено выделение нескольких строк' () = [ SELECT ACTIVE stores.s]();
-nameSelected 'Свойство name выделено' () = [ SELECT PROPERTY stores.name]();
+selectActive 'Выделение задано' () = [ SELECT ACTIVE stores.s]();
+nameSelected 'Свойство name выделено' () = [ SELECT PROPERTY stores.name(s)]();
 setNameX 'Добавить X к имени'()  {
     LOCAL k = INTEGER ();
     k() <- 0;

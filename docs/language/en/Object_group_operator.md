@@ -29,7 +29,7 @@ The `ORDER` operator creates a property which value determines the relative orde
 
 The `SELECT` operator creates a property which value is `TRUE` if the object collection passed as parameters is currently selected (checked) by the user in the object group, otherwise the property value will be `NULL`.
 
-The `SELECT ACTIVE` operator creates a parameterless property which value is `TRUE` if multiple-row selection is currently active for the object group, otherwise `NULL`.
+The `SELECT ACTIVE` operator creates a parameterless property which value is `TRUE` if rows are selected in the object group, otherwise `NULL`. The selection counts from the moment the user starts it, even if a single row is selected. While this property is `NULL`, the property created by the `SELECT` operator returns the current row.
 
 The `VIEWTYPE` operator creates a parameterless property whose value is the current view type of the object group — an object of the `ListViewType` system class (`grid`, `pivot`, `map`, `custom`, or `calendar`).
 
@@ -59,8 +59,8 @@ countF 'Number of filtered warehouses' = GROUP SUM 1 IF [ VIEW stores.s](Store s
 orderF 'Order in an object group' (Store s) = PARTITION SUM 1 IF [ FILTER stores.s](s) ORDER [ ORDER stores.s](s), s;
 isPivot 'Stores shown as pivot' () = [ VIEWTYPE stores.s]() == ListViewType.pivot;
 selectedCount 'Number of selected stores' () = GROUP SUM 1 IF [ SELECT stores.s](Store s);
-multiSelectActive 'Multiple-row selection is on' () = [ SELECT ACTIVE stores.s]();
-nameSelected 'Name property is selected' () = [ SELECT PROPERTY stores.name]();
+selectActive 'The selection is set' () = [ SELECT ACTIVE stores.s]();
+nameSelected 'Name property is selected' () = [ SELECT PROPERTY stores.name(s)]();
 setNameX 'Add X to name'()  {
     LOCAL k = INTEGER ();
     k() <- 0;
