@@ -17,6 +17,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // the issue of this property is that if it is materialized, property should also be considered materialized
@@ -84,9 +85,14 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
 
     @Override
     protected void fillDepends(MSet<Property> depends, boolean events) {
-        // same reasoning as getParseOldDepends() above : called before finalizeLazyInit(), nothing to report yet
-        if (property != null)
-            depends.add(property.property);
+        if (property == null) { // same reasoning as getParseOldDepends() above : called before finalizeLazyInit(), nothing to report yet
+            // finalizeLazyTask now runs before anything reads the dependency graph, so nobody should get here : reporting no depends would silently
+            // truncate that graph, and getRecDepends caches what it builds forever
+            ServerLoggers.assertLog(false, "LAZY PROPERTY DEPENDS BEFORE FINALIZE : " + this);
+            return;
+        }
+
+        depends.add(property.property);
     }
 
     protected abstract PropertyMapImplement<?, ClassPropertyInterface> createProperty();

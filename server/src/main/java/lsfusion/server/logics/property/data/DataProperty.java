@@ -185,8 +185,9 @@ public abstract class DataProperty extends AbstractDataProperty {
 
     @Override
     public void calculateCheckRecursions(Set<Property<?>> path, Set<Property<?>> localMarks, Set<Property<?>> marks, boolean usePrev) {
-        if (event != null && !usePrev)
-            event.where.property.calculateCheckRecursions(path, localMarks, marks, false);
+        if (!usePrev) // has to walk exactly what fillDepends reports (writeFrom included : that's how a property gets recalculated from itself), otherwise
+            for (Property<?> depend : getDepends(true)) // getRecDepends can still find a cycle this check has passed - and then it recurses until the stack ends
+                depend.checkRecursions(path, localMarks, marks, false);
     }
 
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {

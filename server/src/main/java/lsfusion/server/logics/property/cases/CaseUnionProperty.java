@@ -145,11 +145,6 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return abs.type;
     }
 
-    public void checkRecursions(Set<Property<?>> propertyMarks, boolean usePrev) {
-        assert isAbstract();
-        checkRecursions(new LinkedHashSet<>(), new HashSet<>(), propertyMarks, usePrev);
-    }
-
     @Override
     public boolean canBeHeurChanged(boolean global) {
         for(CalcCase<Interface> operand : getCases()) // считаем where сиблингов и потом ими xor'им change

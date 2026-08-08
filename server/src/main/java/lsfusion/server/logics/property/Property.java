@@ -134,9 +134,9 @@ import lsfusion.server.physics.exec.db.table.TableFactory;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -904,52 +904,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getRecDepends().size();
     }
 
-    // guards the two recursions below against a cyclic property dependency (e.g. a property recalculated,
-    // directly or through other properties, from itself) - without it a cycle blows the stack with an
-    // uninformative, hundreds-of-frames-deep StackOverflowError instead of naming the properties involved
-    private static final ThreadLocal<Deque<Property>> recDependsPath = ThreadLocal.withInitial(ArrayDeque::new);
-
-    private static void checkNotOnRecDependsPath(Property property) {
-        Deque<Property> path = recDependsPath.get();
-        if (path.contains(property)) {
-            StringBuilder cycle = new StringBuilder();
-            for (Property step : path) {
-                cycle.insert(0, step + " -> ");
-                if (step == property)
-                    break;
-            }
-            throw new RuntimeException("Cyclic property dependency : " + cycle + property);
-        }
-    }
-
     public ImSet<Property> calculateRecDepends() {
-        checkNotOnRecDependsPath(this);
-        Deque<Property> path = recDependsPath.get();
-        path.push(this);
-        try {
-            MSet<Property> mResult = SetFact.mSet();
-            for(Property<?> depend : getDepends())
-                mResult.addAll(depend.getRecDepends());
-            mResult.add(this);
-            return mResult.immutable();
-        } finally {
-            path.pop();
-        }
+        MSet<Property> mResult = SetFact.mSet();
+        for(Property<?> depend : getDepends())
+            mResult.addAll(depend.getRecDepends());
+        mResult.add(this);
+        return mResult.immutable();
     }
 
     public ImSet<Property> calculateRecDepends(boolean events) {
-        checkNotOnRecDependsPath(this);
-        Deque<Property> path = recDependsPath.get();
-        path.push(this);
-        try {
-            MSet<Property> mResult = SetFact.mSet();
-            for(Property<?> depend : getDepends(events))
-                mResult.addAll(depend.calculateRecDepends(events));
-            mResult.add(this);
-            return mResult.immutable();
-        } finally {
-            path.pop();
-        }
+        MSet<Property> mResult = SetFact.mSet();
+        for(Property<?> depend : getDepends(events))
+            mResult.addAll(depend.calculateRecDepends(events));
+        mResult.add(this);
+        return mResult.immutable();
     }
 
     private MCol<Pair<ActionOrProperty<?>, LinkType>> actionChangeProps; // только у Data и IsClassProperty, чисто для лексикографики
@@ -2779,6 +2747,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return SetFact.EMPTY();
     }
     
+    public void checkRecursions(Set<Property<?>> propertyMarks, boolean usePrev) {
+        checkRecursions(new LinkedHashSet<>(), new HashSet<>(), propertyMarks, usePrev);
+    }
+
     // Cycles are detected using a modified depth-first search.
     // The modification adds global markers because the algorithm runs from different graph vertices simultaneously in
     // multiple threads. Once a vertex is fully processed, it is marked globally, preventing other threads from

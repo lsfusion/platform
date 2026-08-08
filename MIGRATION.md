@@ -2,6 +2,30 @@
 
 ## 7.0
 
+### A property that depends on itself is now reported at startup
+
+The check that looks for recursive properties used to start only from abstract properties, and it
+did not follow the value an event writes (`<- ... WHEN`), only its condition. A property recalculated
+from itself - directly or through other properties - therefore passed startup and only failed later,
+the first time a session computed it.
+
+The check now walks, from every property, the same dependencies the platform itself walks when it
+computes one, and it runs during startup. (Its other half, the one that follows `PREV`, is a
+different relation that nothing computes in that order, and it keeps looking only at abstract
+properties, as before.) An application with such a cycle no longer starts: it fails with
+`Property ... is recursive. One of the paths: [...]`, naming the properties on the cycle and, for
+those declared in `.lsf`, the position they are declared at.
+
+`dryRun` runs the same check - it is the same task now, not a copy: it and the finalization of the
+JSON properties of forms moved out of the database-side part of startup, which they never needed.
+
+What an upgrading application can notice: logic that used to start can now be rejected at startup.
+This only happens where the cycle is real, and such logic was already broken - it crashed the first
+session that computed the property. But nothing computed it until then: the pass that would build the
+dependencies of every property at startup is off by default (`settings.disablePrereadCaches`), so a
+cyclic property that no one uses could sit in an application for years without being noticed. There
+is no setting to switch the check off - the cycle has to be removed from the logic.
+
 ### An ordered aggregation keeps its index plan when the session has unsaved changes
 
 A `GROUP LAST` / `PARTITION` ordered by an indexed column used to degrade from an index lookup per

@@ -71,6 +71,12 @@ public class EvalUtils {
             module.markFormsForFinalization();
             for(FormEntity form : module.getAllModuleForms())
                 form.finalizeAndPreread();
+            // an evaluated script is the only thing that could add a cyclic property dependency after checkRecursionsTask has already run, and then
+            // getRecDepends would recurse until the stack ends instead of naming anything. it can't today : events are rejected here, and an abstract
+            // is unusable in an eval module (its cases are never finalized, so reading them fails) - which is why there is no check around this.
+            // when that abstract limitation is lifted, bring one back : catch StackOverflowError here and run checkRecursions over the module's own
+            // properties (BL.getProperties() will not do, an evaluated module is not added to the business logics) - it throws naming the cycle,
+            // and if it finds none the overflow was about something else and has to be rethrown as it is
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);
