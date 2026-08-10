@@ -302,13 +302,12 @@ public class ResourceUtils {
 
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
 
-                Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourcePathes.get(template);
-                if(cachedResources == null) {
-                    Pattern pattern = Pattern.compile(".*/" + template);
-                    List<String> resources = ResourceUtils.getResources(pattern);
-                    cachedResources = new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
-                    cachedFoundResourcePathes.put(template, cachedResources);
-                }
+                // computeIfAbsent, and not get + put : the walk below reads every entry of every jar on the classpath, so a plain
+                // check-then-act lets every module-parsing thread that misses at the same moment repeat the same half-second scan
+                Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourcePathes.computeIfAbsent(template, t -> {
+                    List<String> resources = ResourceUtils.getResources(Pattern.compile(".*/" + t));
+                    return new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
+                });
 
                 if(simpleFile)
                     return cachedResources.second.get(fileName);
