@@ -186,10 +186,31 @@ public class ImplementTable extends DBTable { // последний интерф
 //        });
     }
 
+    public static class DuplicateFieldNameException extends RuntimeException {
+        private DuplicateFieldNameException(String message) {
+            super(message);
+        }
+    }
+
     @NFLazy
     public void addField(PropertyField field,ClassWhere<Field> classes) { // кривовато конечно, но пока другого варианта нет
+        checkDuplicateFieldName(field); // inside this monitor : the check reads the very set the line below adds to, and stored
+                                        // properties are initialized in parallel, so from outside it could miss a name added meanwhile
         properties = properties.addExcl(field);
         propertyClasses = propertyClasses.addExcl(field, classes);
+    }
+
+    private void checkDuplicateFieldName(PropertyField addedField) {
+        assert addedField.getName() != null;
+
+        for (PropertyField field : properties) {
+            if (addedField.getName().equals(field.getName())) {
+                throw new DuplicateFieldNameException(String.format("Field '%s' was already added to '%s' table. The reason might be that the field " +
+                        "names are limited in length, and as a result two different canonical names are converted " +
+                        "to the same field name due to length truncation. In this case you can either change " +
+                        "the property name(s) or change the naming policy (see documentation for details)", addedField.getName(), this));
+            }
+        }
     }
 
     @NFLazy
