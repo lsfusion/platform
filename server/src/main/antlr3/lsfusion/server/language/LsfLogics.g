@@ -6341,7 +6341,7 @@ T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
 NULL_LITERAL	:	'NULL';
 ID				:	ID_META_FRAGMENT;
 STRING_LITERAL	:	STRING_META_FRAGMENT;
-WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
+WS				:	(NEWLINE | SPACE)+ { $channel=HIDDEN; }; // a whole run in one token : without the + every single space and tab became its own token, which is a third of the stream - 759k of them for the tree, 493k with it
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
 RAW_STRING_LITERAL:		('r'|'R') '\'' SIMPLE_RAW_STR_LITERAL_CHAR* '\''
 				  |  	(   {(input.LA(1) == 'r' || input.LA(1) == 'R') && isRawStringSpecialChar(input.LA(2)) && input.LA(3) == '\''}?=>
