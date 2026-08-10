@@ -2,13 +2,17 @@ package lsfusion.server.physics.exec.db.table;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -80,15 +84,37 @@ public class TableFactory implements FullTablesInterface {
         return getImplementTables().mapRevKeys((Function<ImplementTable, String>) ImplementTable::getName);
     }
 
-    public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
+    // the table a property lands in is decided by its interface classes alone - recCompare assigns key fields by walking the class
+    // sequence and carries the caller's interfaces along positionally - and an application has an order of magnitude fewer distinct
+    // signatures than stored properties, while every miss walks all tables of that arity running the backtracking compare.
+    // So the answer is computed for the positions of a signature and remapped onto whichever interfaces asked for it.
+    // getClassMapTable and getFullMapTables are deliberately not cached : they select differently (full/class markers, parent
+    // traversal, several results), so a signature does not determine their answer
+    @IdentityStartLazy
+    protected MapKeysTable<Integer> getSignatureMapTable(ImList<ValueClass> signature, DBNamingPolicy policy) {
+        MOrderExclMap<Integer, ValueClass> mFindItem = MapFact.mOrderExclMap(signature.size());
+        for (int i = 0, size = signature.size(); i < size; i++)
+            mFindItem.exclAdd(i, signature.get(i));
+
+        ImOrderMap<Integer, ValueClass> findItem = mFindItem.immutableOrder();
+
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null)
             for (ImplementTable implementTable : tables.getListIt()) {
-                MapKeysTable<T> mapTable = implementTable.getSingleMapTable(findItem, false);
+                MapKeysTable<Integer> mapTable = implementTable.getSingleMapTable(findItem, false);
                 if (mapTable != null) return mapTable;
             }
 
         return getAutoMapTable(findItem, policy);
+    }
+
+    public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
+        MapKeysTable<Integer> byPosition = getSignatureMapTable(findItem.valuesList(), policy);
+
+        MRevMap<T, KeyField> mMapKeys = MapFact.mRevMap(findItem.size());
+        for (int i = 0, size = findItem.size(); i < size; i++)
+            mMapKeys.revAdd(findItem.getKey(i), byPosition.mapKeys.get(i));
+        return new MapKeysTable<>(byPosition.table, mMapKeys.immutableRev());
     }
 
     public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
