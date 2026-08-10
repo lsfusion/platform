@@ -23,8 +23,13 @@ public class DefaultLocalizer extends AbstractLocalizer {
         for (String bundleName : resourceBundleNames) {
             try {
                 ResourceBundle bundle = LocalizeUtils.getBundle(bundleName, locale);
-                return bundle.getString(key);
-            } catch (MissingResourceException | ClassCastException ignored) {}
+                if (bundle.containsKey(key)) { // asking instead of catching : with a bundle per module a key that lives in the last one, or in none,
+                    Object value = bundle.getObject(key); // used to cost one thrown exception per bundle before it - thousands of them over a startup
+                    if (value instanceof String)
+                        return (String) value;
+                }
+            } catch (MissingResourceException ignored) { // the bundle itself may be missing for this locale
+            }
         }
         return key;
     }
