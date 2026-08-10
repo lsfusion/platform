@@ -15,7 +15,9 @@ public class DefaultLocalizer extends AbstractLocalizer {
 
     public static List<String> getBundlesNames() {
         Pattern pattern = Pattern.compile("/([^/]*ResourceBundle)\\.properties"); // () will be returned, i.e. without extension
-        return ResourceUtils.getResources(pattern);
+        // the pattern matches the whole path, so anything it accepts ends with the suffix - checking that first keeps the regex
+        // away from the hundred thousand classpath entries that cannot match
+        return ResourceUtils.getResources(Collections.singletonList(pattern), false, "ResourceBundle.properties");
     }
 
     @Override
