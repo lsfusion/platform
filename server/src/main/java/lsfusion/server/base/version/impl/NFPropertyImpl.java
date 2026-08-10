@@ -9,14 +9,11 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
 
     public NFPropertyImpl() {
+        setChanges(new NFListImpl<>()); // this one cannot be lazy : null is a legal final value here, see the comment in getNF below
     }
 
     public NFPropertyImpl(K changes) {
         super(changes);
-    }
-
-    protected NFList<K> initMutable() {
-        return new NFListImpl<>();
     }
 
     public K getNF(Version version) {

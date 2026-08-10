@@ -17,19 +17,15 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
         super(changes);
     }
 
-    protected TreeMap<Version, MList<CH>> initMutable() {
-        return new TreeMap<>();
-    }
-
     // an NF cell that was never written is the common case by far - a form component alone carries dozens of them - and materializing one
     // means allocating an accumulator, walking an empty map's entry set and building an immutable copy of nothing
     protected boolean isEmptyChanges(Version version) {
         if(version != Version.last()) { // same monitor proceedChanges takes below : a write that completed before this read has to be visible to it
             synchronized (this) {
-                return getChanges().isEmpty();
+                return getChanges() == null;
             }
         }
-        return getChanges().isEmpty();
+        return getChanges() == null; // addChange is the only thing that creates the map, and it always puts something in it
     }
 
     protected interface ChangeProcessor<CH> {
@@ -46,7 +42,11 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
     }
 
     private void syncProceedChanges(ChangeProcessor<CH> processor, Version version) {
-        for(Map.Entry<Version, MList<CH>> change : getChanges().entrySet()) {
+        TreeMap<Version, MList<CH>> changes = getChanges();
+        if(changes == null)
+            return;
+
+        for(Map.Entry<Version, MList<CH>> change : changes.entrySet()) {
             if(change.getKey().compareTo(version) > 0) // если более поздняя версия
                 break;
             if(!version.canSee(change.getKey()))
@@ -59,12 +59,19 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
     }
 
     protected synchronized void addChange(CH change, Version version) {
-        TreeMap<Version, MList<CH>> mChanges = getChanges();
+        TreeMap<Version, MList<CH>> mChanges = getChanges(); // still goes through getChanges so a restarted collection is caught
+        boolean created = mChanges == null;
+        if(created)
+            mChanges = new TreeMap<>();
+
         MList<CH> mList = mChanges.get(version);
         if(mList == null) {
             mList = ListFact.mList();
             mChanges.put(version, mList);
         }
         mList.add(change);
+
+        if(created) // published only once it holds the change : the readers that skip the monitor for Version.last() synchronize on this write
+            setChanges(mChanges);
     }
 }

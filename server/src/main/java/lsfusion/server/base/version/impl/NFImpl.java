@@ -5,7 +5,9 @@ import lsfusion.server.base.version.Version;
 
 public abstract class NFImpl<M, F> extends MutableObject implements NF {
 
-    private Object changes;
+    // volatile : addChange publishes the change map late (it is created on the first write), and both the finalization check below
+    // and the last-version read paths look at this field without holding the monitor
+    private volatile Object changes;
     protected String getDebugInfo() {
         return null;
     }
@@ -21,6 +23,9 @@ public abstract class NFImpl<M, F> extends MutableObject implements NF {
     protected Object getChangesAsIs() {
         return changes;
     }
+    protected void setChanges(M changes) {
+        this.changes = changes;
+    }
 
     protected F proceedVersionFinal(Version version, boolean allowRead) {
         if(checkVersionFinal(version, allowRead))
@@ -32,15 +37,13 @@ public abstract class NFImpl<M, F> extends MutableObject implements NF {
         return allowRead && checkFinal(changes);
     }
 
-    protected NFImpl() {
-        changes = initMutable();
+    protected NFImpl() { // no accumulator until something is actually written - most cells never are
     }
 
     protected NFImpl(F changes) {
         this.changes = changes;
     }
 
-    protected abstract M initMutable();
     public abstract F getNF(Version version);
     protected abstract boolean checkFinal(Object object);
     
