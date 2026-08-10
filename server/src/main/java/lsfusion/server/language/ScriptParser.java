@@ -163,12 +163,14 @@ public class ScriptParser {
 
     public void enterMetaDeclState() {
         insideMetaDecl = true;
-        metaTokens = new ArrayList<>();
+        // only the metaclass pass declares the fragment, the main one harvested the body and threw it away : it is left
+        // without a list at all, so a consumer that forgets to check the pass gets an NPE and not a silently empty body
+        metaTokens = currentState == State.META_CLASS_TABLE ? new ArrayList<>() : null;
 
         markMetaDeclCode(")");
     }
     public void grabMetaDeclCode() {
-        if(!insideMetaDecl)
+        if(!insideMetaDecl || metaTokens == null)
             return;
 
         Parser curParser = getCurrentParser();
@@ -214,12 +216,13 @@ public class ScriptParser {
     private List<String> formOrDesignStatementTokens;
     public void enterFormOrDesignStatementState() {
         insideFormOrDesignStatement = true;
-        formOrDesignStatementTokens = new ArrayList<>();
+        // same as for the metacode body above : only the main pass keeps the statement text
+        formOrDesignStatementTokens = currentState == State.MAIN ? new ArrayList<>() : null;
         markFormOrDesignStatementCode();
     }
 
     public void grabFormOrDesignStatementCode() {
-        if(!insideFormOrDesignStatement)
+        if(!insideFormOrDesignStatement || formOrDesignStatementTokens == null)
             return;
 
         Parser curParser = getCurrentParser();

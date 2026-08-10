@@ -382,7 +382,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     @Override
     @IdentityLazy
     public int getModuleComplexity() {
-        return createStream().size();
+        return code.length(); // ANTLRStringStream's size is the length of the string it copied, and the copy was the whole module text
     }
 
     public ScriptingErrorLog getErrLog() {
