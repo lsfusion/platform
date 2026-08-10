@@ -100,8 +100,8 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    protected void finalizeChanges() {
+        super.finalizeChanges();
         hierarchicalWidth.finalizeChanges();
         hierarchicalCaption.finalizeChanges();
         propertyHierarchicalCaption.finalizeChanges();

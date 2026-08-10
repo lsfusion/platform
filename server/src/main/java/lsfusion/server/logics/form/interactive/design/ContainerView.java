@@ -694,8 +694,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    protected void finalizeChanges() {
+        super.finalizeChanges();
 
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();

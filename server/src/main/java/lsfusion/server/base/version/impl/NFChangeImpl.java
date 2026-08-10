@@ -21,6 +21,17 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
         return new TreeMap<>();
     }
 
+    // an NF cell that was never written is the common case by far - a form component alone carries dozens of them - and materializing one
+    // means allocating an accumulator, walking an empty map's entry set and building an immutable copy of nothing
+    protected boolean isEmptyChanges(Version version) {
+        if(version != Version.last()) { // same monitor proceedChanges takes below : a write that completed before this read has to be visible to it
+            synchronized (this) {
+                return getChanges().isEmpty();
+            }
+        }
+        return getChanges().isEmpty();
+    }
+
     protected interface ChangeProcessor<CH> {
         void proceed(CH change, CH nextChange);
     }

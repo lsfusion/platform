@@ -674,7 +674,24 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         return container.getNF(version);
     }
 
+    private volatile boolean finalizedChanges; // volatile : the check outside the monitor has to see everything finalizeChanges wrote
+
+    // a form finalizes its property draws, then walks its container tree, then all its components again - each pass reaching the same component,
+    // and each pass walking the dozens of versioned cells below. the same guard ActionOrProperty and FormEntity already carry
     public void finalizeAroundInit() {
+        if(finalizedChanges)
+            return;
+
+        synchronized (this) {
+            if(finalizedChanges)
+                return;
+
+            finalizeChanges();
+            finalizedChanges = true;
+        }
+    }
+
+    protected void finalizeChanges() {
         elementClass.finalizeChanges();
         propertyElementClass.finalizeChanges();
         width.finalizeChanges();

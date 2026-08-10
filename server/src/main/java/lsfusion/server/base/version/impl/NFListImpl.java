@@ -36,6 +36,8 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
         ImList<T> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
+        if(isEmptyChanges(version))
+            return ListFact.EMPTY();
             
         final MList<T> mList = ListFact.mList();
         proceedChanges((change, nextChange) -> change.proceedList(mList, version), version);

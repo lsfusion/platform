@@ -27,7 +27,7 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
         if(checkVersionFinal(version, allowRead)) // не proceedVersionFinal, так как результат может быть null и его не отличишь
             return getFinalChanges();
         
-        ImList<K> list = getChanges().getNFList(version);
+        ImList<K> list = getChanges().getNFList(version); // an empty one is the canonical singleton, the list itself has the fast path
         int last = list.size();
         if(last == 0)
             return null;

@@ -25,6 +25,8 @@ public abstract class NFAColImpl<T, CH extends NFColChange<T>, F extends Iterabl
         F result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return getFinalCol(result);
+        if(isEmptyChanges(version))
+            return ListFact.<T>EMPTY().getCol();
         
         final MCol<T> mCol = ListFact.mCol();
         proceedChanges((change, nextChange) -> change.proceedCol(mCol, version), version);

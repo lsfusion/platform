@@ -106,8 +106,8 @@ public class GridView extends GridPropertyView<GridView, GroupObjectView>{
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    protected void finalizeChanges() {
+        super.finalizeChanges();
 
         tabVertical.finalizeChanges();
         quickSearch.finalizeChanges();

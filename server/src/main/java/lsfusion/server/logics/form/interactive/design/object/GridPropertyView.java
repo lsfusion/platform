@@ -55,8 +55,8 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    protected void finalizeChanges() {
+        super.finalizeChanges();
 
         toolbarSystem.finalizeAroundInit();
         filtersContainer.finalizeAroundInit();

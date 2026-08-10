@@ -107,8 +107,8 @@ public class ToolbarView<AddGridParent extends GridPropertyView<AddGridParent, ?
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    protected void finalizeChanges() {
+        super.finalizeChanges();
         visible.finalizeChanges();
         showViews.finalizeChanges();
         showFilters.finalizeChanges();

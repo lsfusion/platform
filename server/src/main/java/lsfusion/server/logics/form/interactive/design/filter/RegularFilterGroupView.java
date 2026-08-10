@@ -56,9 +56,9 @@ public class RegularFilterGroupView extends BaseComponentView<RegularFilterGroup
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
-        
+    protected void finalizeChanges() {
+        super.finalizeChanges();
+
         filters.finalizeChanges();
     }
 

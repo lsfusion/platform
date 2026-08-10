@@ -28,6 +28,8 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
         ImOrderSet<T> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
+        if(isEmptyChanges(version))
+            return SetFact.EMPTYORDER();
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
         proceedChanges((change, nextChange) -> change.proceedOrderSet(mSet, version), version);

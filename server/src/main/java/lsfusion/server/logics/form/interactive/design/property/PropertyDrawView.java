@@ -1727,8 +1727,8 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
+    protected void finalizeChanges() {
+        super.finalizeChanges();
         if(filter != null)
             filter.finalizeAroundInit();
         changeOnSingleClick.finalizeChanges();
