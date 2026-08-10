@@ -46,7 +46,7 @@ public class ElementResolver<T, P> {
 
     protected List<FoundItem<T>> finalizeNamespaceResult(List<FoundItem<T>> result, String name, P param) throws ResolvingError {
         FoundItem<T> finalRes = finalizeResult(result, name, param);
-        return finalRes.value == null ? new ArrayList<>() : Collections.singletonList(finalRes);
+        return finalRes.value == null ? Collections.emptyList() : Collections.singletonList(finalRes);
     }
 
     // реализация по умолчанию, предполагающая, что не может быть более одного подходящего объекта
@@ -70,16 +70,18 @@ public class ElementResolver<T, P> {
             }
         }
 
-        List<FoundItem<T>> resultList = new ArrayList<>();
+        List<FoundItem<T>> resultList = null;
         for (List<LogicsModule> modules : startModule.getNamespaceToModules().values()) {
             for (LogicsModule module : modules) {
                 List<T> moduleResult = finder.resolveInModule(module, name, param);
                 for (T obj : moduleResult) {
+                    if (resultList == null)
+                        resultList = new ArrayList<>();
                     resultList.add(new FoundItem<>(obj, module));
                 }
             }
         }
-        return finalizeResult(resultList, name, param).value;
+        return finalizeResult(resultList == null ? Collections.emptyList() : resultList, name, param).value;
     }
 
     private void checkNamespace(String namespaceName) throws ResolvingError {

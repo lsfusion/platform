@@ -4,6 +4,7 @@ import lsfusion.server.logics.LogicsModule;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,16 +42,18 @@ public class NamespaceElementFinder<T, P> {
     }
     
     public List<FoundItem<T>> findInNamespace(String namespaceName, String name, P param) {
-        List<FoundItem<T>> result = new ArrayList<>();
+        List<FoundItem<T>> result = null;
         for (LogicsModule module : modules) {
             if (namespaceName.equals(module.getNamespace())) {
                 List<T> moduleResult = finder.resolveInModule(module, name, param);
                 for (T element : moduleResult) {
+                    if (result == null)
+                        result = new ArrayList<>();
                     result.add(new FoundItem<>(element, module));
                 }
             }
         }
-        return finalizeResult(result);
+        return finalizeResult(result == null ? Collections.emptyList() : result);
     }
 
     protected List<FoundItem<T>> finalizeResult(final List<FoundItem<T>> result) {

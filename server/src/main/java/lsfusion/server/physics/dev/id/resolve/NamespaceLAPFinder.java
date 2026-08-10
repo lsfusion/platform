@@ -24,6 +24,9 @@ public class NamespaceLAPFinder<L extends LAP<?, ?>> extends NamespaceElementFin
     }
     
     public static <L extends LAP<?,?>> List<FoundItem<L>> filterFoundProperties(List<FoundItem<L>> result) {
+        if (result.isEmpty())
+            return result;
+
         int cnt = result.size();
         List<FoundItem<L>> finalResult = new ArrayList<>();
         for (int i = 0; i < cnt; i++) {
