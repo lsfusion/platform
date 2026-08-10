@@ -16,6 +16,7 @@ import lsfusion.server.logics.classes.user.set.ResolveOrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 
 import java.util.HashMap;
+import java.util.regex.Pattern;
 import java.util.Map;
 
 public final class ClassCanonicalNameUtils {
@@ -110,12 +111,17 @@ public final class ClassCanonicalNameUtils {
         put("HTML", HTMLStringClass.instance);
     }};
 
+    // every alternative below is a name followed by a bracket, so a name without one cannot match : this is the common case,
+    // since findClass asks about every user class name here first and the pattern used to be compiled and run for each of them
+    private static final Pattern PARAMETRIZED_DATA_CLASS = Pattern.compile("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])" +
+            "|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\])|(TIME\\[\\d+\\])|(DATETIME\\[\\d+\\])|(ZDATETIME\\[\\d+\\]))$");
+
     public static DataClass<?> getScriptedDataClass(String name) {
         assert !name.contains(" ");
-        if (scriptedSimpleDataClassNames.containsKey(name)) {
-            return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])" +
-                "|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\])|(TIME\\[\\d+\\])|(DATETIME\\[\\d+\\])|(ZDATETIME\\[\\d+\\]))$")) {
+        DataClass<?> simpleDataClass = scriptedSimpleDataClassNames.get(name);
+        if (simpleDataClass != null) {
+            return simpleDataClass;
+        } else if (name.indexOf('[') >= 0 && PARAMETRIZED_DATA_CLASS.matcher(name).matches()) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
