@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct.group;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -20,6 +21,8 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -123,6 +126,8 @@ public class Group extends AbstractNode {
 
     public void cleanAllActionOrPropertiesCaches() {
         actionOrProperties = null;
+        properties = null;
+        actions = null;
 
         for (AbstractNode child : getChildrenListIt())
             if(child instanceof Group)
@@ -130,6 +135,8 @@ public class Group extends AbstractNode {
     }
     public void cleanParentActionOrPropertiesCaches(Version version) {
         actionOrProperties = null;
+        properties = null;
+        actions = null;
 
         Group parent = getNFParent(version, true);
         if(parent != null)
@@ -153,6 +160,34 @@ public class Group extends AbstractNode {
         return result;
     }
     
+    // the two views of the set above : both walk every action and property of the group, and the whole application is asked
+    // for them repeatedly while it starts. Memoized beside it and dropped by the same two methods
+    private ImOrderSet<Property> properties;
+
+    @ManualLazy
+    public ImOrderSet<Property> getProperties() {
+        ImOrderSet<Property> result = properties; // the same scheme as above, so the cache cannot be dropped between the read and the return
+        if (result == null) {
+            result = BaseUtils.immutableCast(getActionOrProperties().filterOrder(element -> element instanceof Property));
+            properties = result;
+        }
+
+        return result;
+    }
+
+    private ImOrderSet<Action> actions;
+
+    @ManualLazy
+    public ImOrderSet<Action> getActions() {
+        ImOrderSet<Action> result = actions;
+        if (result == null) {
+            result = BaseUtils.immutableCast(getActionOrProperties().filterOrder(element -> element instanceof Action));
+            actions = result;
+        }
+
+        return result;
+    }
+
     public ImList<Group> getParentGroups() {
         MList<Group> mResult = ListFact.mList();
         fillParentGroups(mResult);

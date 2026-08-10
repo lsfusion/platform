@@ -634,7 +634,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<Property> getOrderProperties() {
-        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(element -> element instanceof Property));
+        return LM.getRootGroup().getProperties();
     }
 
     public ImSet<Property> getProperties() {
@@ -642,7 +642,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<Action> getOrderActions() {
-        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(element -> element instanceof Action));
+        return LM.getRootGroup().getActions();
     }
 
     public Iterable<LP<?>> getNamedProperties() {
