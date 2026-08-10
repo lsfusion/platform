@@ -49,6 +49,8 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
         Pair<ImOrderSet<T>, ImList<Integer>> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
+        if(isEmptyChanges(version)) // both halves are the canonical empties, the Pair around them is the one allocation left
+            return new Pair<>(SetFact.EMPTYORDER(), ListFact.EMPTY());
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
         final List<Integer> mGroup = SetFact.mAddRemoveOrderSet();

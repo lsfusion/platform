@@ -37,6 +37,8 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
         ImOrderMap<K, V> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
+        if(isEmptyChanges(version)) // MapFact.fromJavaOrderMap returns exactly this for an empty map
+            return MapFact.EMPTYORDER();
 
         final List<K> mKeys = SetFact.mAddRemoveOrderSet();
         final List<V> mValues = SetFact.mAddRemoveOrderSet();

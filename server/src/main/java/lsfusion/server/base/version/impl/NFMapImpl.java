@@ -29,6 +29,8 @@ public class NFMapImpl<K, V> extends NFChangeImpl<NFMapChange<K, V>, ImMap<K, V>
         ImMap<K, V> result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return result;
+        if(isEmptyChanges(version)) // an empty MMap immutable()s to exactly this
+            return MapFact.EMPTY();
 
         final MMap<K, V> mMap = MapFact.mMap(MapFact.override());
         proceedChanges((change, nextChange) -> change.proceedMap(mMap, version), version);

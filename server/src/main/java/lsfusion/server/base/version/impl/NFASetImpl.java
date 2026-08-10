@@ -40,6 +40,8 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
         R result = proceedVersionFinal(version, allowRead);
         if(result!=null)
             return getFinalSet(result);
+        if(isEmptyChanges(version)) // SetFact.fromJavaSet returns exactly this for an empty accumulator
+            return SetFact.EMPTY();
 
         final Set<T> mSet = SetFact.mAddRemoveSet(); 
         proceedChanges((change, nextChange) -> change.proceedSet(mSet, version), version);
