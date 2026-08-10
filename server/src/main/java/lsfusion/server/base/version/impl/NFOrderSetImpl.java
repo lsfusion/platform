@@ -12,7 +12,8 @@ import lsfusion.server.base.version.impl.changes.NFRemoveAll;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrderSet<T>> implements NFOrderSet<T> {
@@ -31,7 +32,9 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
         if(isEmptyChanges(version))
             return SetFact.EMPTYORDER();
 
-        final List<T> mSet = SetFact.mAddRemoveOrderSet();
+        // a set, not a list : the replay used to ask "does the list already contain this element" on every single add,
+        // so materializing a cell with C accumulated changes cost O(C * size) - LinkedHashSet gives the same order for free
+        final Set<T> mSet = new LinkedHashSet<>();
         proceedChanges((change, nextChange) -> change.proceedOrderSet(mSet, version), version);
         return SetFact.fromJavaOrderSet(mSet);
     }

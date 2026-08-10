@@ -16,10 +16,6 @@ public class NFRemove<T> implements NFOrderSetChange<T>, NFComplexOrderSetChange
         mSet.remove(element);
     }
 
-    public void proceedOrderSet(List<T> list, Version version) {
-        list.remove(element);
-    }
-
     @Override
     public T getRemoveElement() {
         return element;

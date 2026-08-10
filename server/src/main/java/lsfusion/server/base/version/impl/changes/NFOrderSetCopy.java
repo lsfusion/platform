@@ -4,7 +4,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFCol;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 
-import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 public class NFOrderSetCopy<K> extends NFASetCopy<NFOrderSet<K>, K> implements NFOrderSetChange<K> {
@@ -14,11 +14,9 @@ public class NFOrderSetCopy<K> extends NFASetCopy<NFOrderSet<K>, K> implements N
     }
 
     @Override
-    public void proceedOrderSet(List<K> list, Version version) {
+    public void proceedOrderSet(Set<K> set, Version version) {
         for(K element : col.getNFCopyOrderSet(version)) {
-            K mappedElement = this.mapping.apply(element);
-            if(!list.contains(mappedElement))
-                list.add(mappedElement);
+            set.add(this.mapping.apply(element));
         }
     }
 

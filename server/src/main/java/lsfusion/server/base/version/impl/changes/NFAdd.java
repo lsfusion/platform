@@ -4,7 +4,6 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.version.Version;
 
-import java.util.List;
 import java.util.Set;
 
 public class NFAdd<T> implements NFListChange<T>, NFOrderSetChange<T> {
@@ -19,16 +18,10 @@ public class NFAdd<T> implements NFListChange<T>, NFOrderSetChange<T> {
     }
     
     public void proceedSet(Set<T> mSet, Version version) {
-        mSet.add(element);
+        mSet.add(element); // LinkedHashSet.add keeps the position of an element that is already there, which is what the ordered replay needs
     }
 
     public void proceedList(MList<T> list, Version version) {
         list.add(element);
-    }
-
-    public void proceedOrderSet(List<T> list, Version version) {
-        if (!list.contains(element)) {
-            list.add(element);
-        }
     }
 }

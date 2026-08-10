@@ -416,7 +416,7 @@ public class SetFact {
         return mSet.immutable();
     }
 
-    public static <T> ImOrderSet<T> fromJavaOrderSet(List<T> set) {
+    public static <T> ImOrderSet<T> fromJavaOrderSet(Collection<T> set) {
         MOrderExclSet<T> mSet = SetFact.mOrderExclSet(set.size());
         for(T element : set)
             mSet.exclAdd(element);

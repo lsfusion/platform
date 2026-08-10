@@ -44,6 +44,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -733,14 +734,6 @@ public class BaseUtils {
             if (!remove.test(property))
                 removeList.add(property);
         return removeList;
-    }
-
-    public static <K> Set<K> removeSet(Set<K> set, Predicate<K> remove) {
-        Set<K> removeSet = new HashSet<>();
-        for (K property : set)
-            if (!remove.test(property))
-                removeSet.add(property);
-        return removeSet;
     }
 
     public static <K> List<K> removeList(List<K> list, int index) {
@@ -1590,6 +1583,16 @@ public class BaseUtils {
         return extension != null && !extension.isEmpty() ? (name + "." + extension) : name;
     }
 
+    // hoisted : humanize is called for every declaration that has no explicit caption, and each call used to compile
+    // three patterns for the string plus two more for every word in it
+    private static final Pattern HUMANIZE_SEPARATORS = Pattern.compile("[-_]+");
+    private static final Pattern HUMANIZE_BOUNDARIES = Pattern.compile(
+            "(?<=[A-Z])(?=[A-Z][a-z])"   // URL|Value
+                    + "|(?<=[a-z])(?=[A-Z])"       // document|Header
+                    + "|(?<=[A-Za-z])(?=\\d)"      // Version|2
+                    + "|(?<=\\d)(?=[A-Za-z])");    // 2|FA
+    private static final Pattern HUMANIZE_SPACES = Pattern.compile("\\s+");
+
     /**
      * Converts a technical identifier (camelCase, PascalCase, snake_case, kebab-case)
      * into a human-readable caption in sentence case.
@@ -1612,22 +1615,16 @@ public class BaseUtils {
         if (input == null || input.isEmpty()) return input;
 
         // 1) Normalize separators (underscores/dashes) to spaces.
-        String s = input.trim().replaceAll("[-_]+", " ");
+        String s = HUMANIZE_SEPARATORS.matcher(input.trim()).replaceAll(" ");
 
         // 2) Insert spaces at camel/pascal/number boundaries.
         //    - Between lower->upper (documentHeader -> document Header)
         //    - Between acronym->capitalized word (URLValue -> URL Value)
         //    - Between letters<->digits (Version2 -> Version 2, 2FA -> 2 FA)
-        s = s.replaceAll(
-                "(?<=[A-Z])(?=[A-Z][a-z])"   // URL|Value
-                        + "|(?<=[a-z])(?=[A-Z])"       // document|Header
-                        + "|(?<=[A-Za-z])(?=\\d)"      // Version|2
-                        + "|(?<=\\d)(?=[A-Za-z])",     // 2|FA
-                " "
-        );
+        s = HUMANIZE_BOUNDARIES.matcher(s).replaceAll(" ");
 
         // 3) Collapse multiple spaces to single spaces.
-        s = s.replaceAll("\\s+", " ").trim();
+        s = HUMANIZE_SPACES.matcher(s).replaceAll(" ").trim();
         if (s.isEmpty()) return s;
 
         // 4) Build sentence case while preserving acronyms.
@@ -1636,11 +1633,18 @@ public class BaseUtils {
         for (int i = 0; i < parts.length; i++) {
             String w = parts[i];
 
-            // Detect acronym: length ≥ 2, all uppercase letters/digits, and contains at least one letter.
-            boolean isAcronym = w.length() >= 2
-                    && w.replaceAll("[A-Za-z0-9]", "").isEmpty()
-                    && w.equals(w.toUpperCase(Locale.ROOT))
-                    && w.matches(".*[A-Za-z].*");
+            // Detect acronym: length >= 2, all uppercase letters/digits, and contains at least one letter.
+            // one pass instead of two regexes : the word cannot hold whitespace here, so this is the same test
+            boolean allAlphanumeric = true;
+            boolean hasLetter = false;
+            for (int j = 0; j < w.length(); j++) {
+                char c = w.charAt(j);
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+                    hasLetter = true;
+                else if (!(c >= '0' && c <= '9'))
+                    allAlphanumeric = false;
+            }
+            boolean isAcronym = w.length() >= 2 && allAlphanumeric && hasLetter && w.equals(w.toUpperCase(Locale.ROOT));
 
             String normalized;
             if (isAcronym) {
