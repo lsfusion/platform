@@ -146,7 +146,10 @@ public class CacheAspect {
             if (invocation == null) return false;
             Object thisTarget = targetRef.get();
             Object otherTarget = invocation.targetRef.get();
-            return thisTarget != null && thisTarget == otherTarget && method.equals(invocation.method) && Arrays.equals(args, invocation.args);
+            // == first : aspectj resolves the Method once per join point and hands back the same instance, while Method.equals
+            // compares the declaring class, the name, the return type and every parameter type
+            return thisTarget != null && thisTarget == otherTarget
+                    && (method == invocation.method || method.equals(invocation.method)) && Arrays.equals(args, invocation.args);
         }
 
         @Override
