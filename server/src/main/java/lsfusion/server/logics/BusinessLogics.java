@@ -123,6 +123,7 @@ import lsfusion.server.physics.dev.integration.external.to.file.ClearCacheWatche
 import lsfusion.server.physics.dev.integration.external.to.file.SynchronizeSourcesWatcher;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
+import lsfusion.server.physics.dev.integration.internal.to.InternalCompiler;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
@@ -363,6 +364,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             MapCacheAspect.cleanClassCaches();
             AbstractNode.cleanPropCaches();
             cleanPropCaches();
+            InternalCompiler.cleanCaches();
         }, "Cleaning obsolete caches");
 
     }

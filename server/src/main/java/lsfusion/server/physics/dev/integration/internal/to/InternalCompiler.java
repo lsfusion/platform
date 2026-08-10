@@ -39,6 +39,13 @@ public class InternalCompiler {
         return cachedClasses.computeIfAbsent(className, name -> compile(name, source));
     }
 
+    // the decoded readers are worth a few megabytes and are only there to keep the INTERNAL blocks of one startup from each
+    // re-reading the same imports; a later EVAL that compiles something warms whatever it needs again. The compiled classes
+    // are deliberately kept : several INTERNAL declarations of the same class have to go on sharing one Class identity
+    public static void cleanCaches() {
+        ClassLoaderEnvironment.readTypes.clear();
+    }
+
     public static Class<?> compile(String className, String source) {
         Map<String, byte[]> classBytes = compileToBytes(className, source);
 
@@ -122,13 +129,26 @@ public class InternalCompiler {
             return findType(packagePrefix.isEmpty() ? new String(typeName) : packagePrefix + "." + new String(typeName));
         }
 
+        // the readers are shared across compilations : every INTERNAL block pulls in the same fixed set of imported types and
+        // their supertypes, and reading and decoding those class files again per block is what makes each compile cost like a cold one.
+        // Only types that exist are kept : a name that resolves to nothing costs one getResourceAsStream returning null, while caching
+        // those would grow with the qualified-name probes ECJ makes for every unresolved identifier - and an identifier is whatever
+        // the author of an EVAL script typed
+        private static final ConcurrentHashMap<String, ClassFileReader> readTypes = new ConcurrentHashMap<>();
+
         private NameEnvironmentAnswer findType(String name) {
             if (name.equals(mainClassName))
                 return new NameEnvironmentAnswer(unit, null);
+
+            ClassFileReader reader = readTypes.computeIfAbsent(name, ClassLoaderEnvironment::readType); // stores nothing when it reads nothing
+            return reader == null ? null : new NameEnvironmentAnswer(reader, null);
+        }
+
+        private static ClassFileReader readType(String name) {
             try (InputStream classStream = InternalCompiler.class.getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class")) {
                 if (classStream == null)
                     return null;
-                return new NameEnvironmentAnswer(new ClassFileReader(IOUtils.toByteArray(classStream), name.toCharArray(), true), null);
+                return new ClassFileReader(IOUtils.toByteArray(classStream), name.toCharArray(), true);
             } catch (IOException | ClassFormatException e) {
                 throw new RuntimeException(e);
             }
