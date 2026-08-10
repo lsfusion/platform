@@ -26,6 +26,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
@@ -329,6 +330,8 @@ public abstract class LogicsModule {
         }
     }
     
+    @NFLazy // the name maps below are plain HashMaps, and after startup this is reached concurrently from every task that generates
+            // properties or actions (policy forms, drill-down, logging) - the lock belongs here, on the module, not on the whole BusinessLogics
     protected void addModuleLAP(LAP<?, ?> lap, String name, List<ResolveClassSet> signature) {
         assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
 

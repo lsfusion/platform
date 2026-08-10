@@ -41,16 +41,22 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceUtils {
 
-    public static List<String> getResources(final List<Pattern> patterns) {
-        return getResources(patterns, false);
+    public static List<String> getResources(final List<Pattern> patterns, boolean fullPaths) {
+        return getResources(patterns, fullPaths, null);
     }
 
-    public static List<String> getResources(final List<Pattern> patterns, boolean fullPaths) {
+    // requiredSuffix, when the caller knows one, is checked while walking and before the regex : with a pattern like "everything"
+    // the caller would otherwise get every entry of every jar on the classpath - a hundred thousand of them - collected and sorted
+    // only to keep the few hundred it wanted, and matching ".*/.*\.html" against each of them costs about two microseconds
+    public static List<String> getResources(final List<Pattern> patterns, boolean fullPaths, String requiredSuffix) {
+        if (patterns.isEmpty())
+            return new ArrayList<>();
+
         final ArrayList<String> retval = new ArrayList<>();
         for (final String element : getClassPathElements()) {
             if (!isRedundantString(element)) {
                 assert !element.endsWith("/"); // нужен для другого использования getClassPathElements
-                retval.addAll(getResources(element, patterns, fullPaths));
+                retval.addAll(getResources(element, patterns, fullPaths, requiredSuffix));
             }
         }
         retval.sort(new Comparator<String>() {
@@ -75,7 +81,7 @@ public class ResourceUtils {
         return getResources(Collections.singletonList(pattern), fullPaths);
     }
 
-    private static Collection<String> getResources(final String element, final List<Pattern> patterns, boolean fullPaths) {
+    private static Collection<String> getResources(final String element, final List<Pattern> patterns, boolean fullPaths, String requiredSuffix) {
         final ArrayList<String> retval = new ArrayList<>();
 
         if (element.endsWith("*")) {
@@ -86,7 +92,7 @@ public class ResourceUtils {
                 if (childFiles != null) {
                     for (File childFile : childFiles) {
                         if (childFile.getName().endsWith(".jar")) {
-                            retval.addAll(getResourcesFromJarFile(childFile, patterns, fullPaths));
+                            retval.addAll(getResourcesFromJarFile(childFile, patterns, fullPaths, requiredSuffix));
                         }
                     }
                 }
@@ -94,15 +100,15 @@ public class ResourceUtils {
         } else {
             final File file = new File(element);
             if (file.isDirectory()) {
-                retval.addAll(getResourcesFromDirectory(file, "/", patterns, fullPaths));
+                retval.addAll(getResourcesFromDirectory(file, "/", patterns, fullPaths, requiredSuffix));
             } else {
-                retval.addAll(getResourcesFromJarFile(file, patterns, fullPaths));
+                retval.addAll(getResourcesFromJarFile(file, patterns, fullPaths, requiredSuffix));
             }
         }
         return retval;
     }
 
-    private static Collection<String> getResourcesFromJarFile(final File file, final List<Pattern> patterns, boolean fullPaths) {
+    private static Collection<String> getResourcesFromJarFile(final File file, final List<Pattern> patterns, boolean fullPaths, String requiredSuffix) {
         final ArrayList<String> retval = new ArrayList<>();
         ZipFile zf;
         try {
@@ -115,7 +121,7 @@ public class ResourceUtils {
             final ZipEntry ze = (ZipEntry) e.nextElement();
             final String fileName = ze.getName();
             assert !fileName.startsWith("/");
-            if (!ze.isDirectory()) {
+            if (!ze.isDirectory() && (requiredSuffix == null || fileName.endsWith(requiredSuffix))) {
                 fillResourcesResult((fullPaths ? "jar:" + file.toURI() + "!" : "") + ("/" + fileName), patterns, retval, fullPaths);
             }
         }
@@ -127,14 +133,14 @@ public class ResourceUtils {
         return retval;
     }
 
-    private static Collection<String> getResourcesFromDirectory(final File directory, final String relativePath, final List<Pattern> patterns, boolean fullPaths) {
+    private static Collection<String> getResourcesFromDirectory(final File directory, final String relativePath, final List<Pattern> patterns, boolean fullPaths, String requiredSuffix) {
         final ArrayList<String> result = new ArrayList<>();
         final File[] fileList = directory.listFiles();
         if (fileList != null) {
             for (final File file : fileList) {
                 if (file.isDirectory()) {
-                    result.addAll(getResourcesFromDirectory(file, relativePath + file.getName() +"/", patterns, fullPaths));
-                } else {
+                    result.addAll(getResourcesFromDirectory(file, relativePath + file.getName() +"/", patterns, fullPaths, requiredSuffix));
+                } else if (requiredSuffix == null || file.getName().endsWith(requiredSuffix)) {
                     final String fileName = (fullPaths ? directory.toURI() : "") + relativePath + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
                     fillResourcesResult(fileName, patterns, result, fullPaths);
                 }

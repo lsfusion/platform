@@ -36,7 +36,6 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.exception.ApplyCanceledException;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
-import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
@@ -412,19 +411,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private Set<String> findLSFFiles(List<String> paths) {
         List<Pattern> patterns = new ArrayList<>();
         for (String filePath : paths) {
+            if (isRedundantString(filePath)) // an empty exclude list used to walk the whole classpath to match nothing
+                continue;
             String pathRegex = convertPathToRegex(prependPathWithSlash(filePath));
             patterns.add(Pattern.compile(pathRegex));
         }
 
-        Collection<String> list = ResourceUtils.getResources(patterns);
-            
-        Set<String> resFiles = new HashSet<>();
-        for (String filename : list) {
-            if (isLSFFile(filename)) {
-                resFiles.add(filename);
-            }
-        }
-        return resFiles;
+        // the .lsf test goes into the walk : the default include path is "*", so without it every entry of every jar is collected and sorted here
+        return new HashSet<>(ResourceUtils.getResources(patterns, false, ".lsf"));
     }
 
     private static String convertPathToRegex(String path) {
@@ -443,10 +437,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    private static boolean isLSFFile(String fileName) {
-        return fileName.endsWith(".lsf");
-    }
-    
     private void addModuleFromResource(String path) throws IOException {
         addModule(new ScriptingLogicsModule(LM, this, path));
     }
@@ -590,7 +580,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    @NFLazy
+    // the lock this used to take was the whole BusinessLogics : every named property and every named action in the application went through it
+    // one at a time, while the only shared state underneath is the module's name maps - which addModuleLAP now guards itself, and which
+    // setupDrillDownProperty was writing beside this with no lock at all
     public void setupPropertyPolicyForms(LA<?> setupPolicyForPropByCN, ActionOrProperty property, boolean actions) {
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
