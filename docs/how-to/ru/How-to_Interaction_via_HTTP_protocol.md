@@ -416,6 +416,7 @@ FORM orderAttachments
 
     OBJECTS attachments = Attachment
     PROPERTIES id = VALUE(attachments), name(attachments)
+    FILTERS order(attachments) == o
 ;
 
 getOrderAttachments (LONG orderId) {

@@ -63,7 +63,7 @@ NEW [alias =] className [AUTOSET] action
 
 ```lsf
 // множественная форма: создать три объекта Sku и записать каждый в addedSkus(i)
-newSku ()  {
+newSkus ()  {
     LOCAL addedSkus = Sku (INTEGER);
     NEW Sku WHERE iterate(i, 1, 3) TO addedSkus(i);
     FOR Sku s = addedSkus(i) DO {

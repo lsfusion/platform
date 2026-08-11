@@ -27,7 +27,7 @@ NEWCONNECTION action
 test {
     NEWCONNECTION {
         EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'UPDATE stock SET qty = qty + 1';  // открывает подключение и не закрывает его
-        EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'INSERT INTO audit (msg) VALUES (''sync'')'; // переиспользует уже открытое подключение
+        EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'INSERT INTO audit (msg) VALUES (\'sync\')'; // переиспользует уже открытое подключение
     }
     // все подключения закрыты здесь
 }

@@ -28,6 +28,9 @@ outcome 'Остаток (неотрицательный)' (Item i) = MAX balance
 
 
 ```lsf
+CLASS Book;
+price1 = DATA NUMERIC[10,2] (Book);
+price2 = DATA NUMERIC[10,2] (Book);
 minPrice(Book b) = MIN price1(b), price2(b);
 
 date (INTEGER i) = DATA DATE (INTEGER);

@@ -73,8 +73,9 @@ distributeDiscount 'Распределить скидку' (Order o, NUMERIC[14,
         FOR OrderDetail d == [ GROUP LAST OrderDetail od ORDER leftSum(od), od BY order(od)](o) DO { 
             discountSum(d) <- MIN leftSum(d), discount();
             discount() <- discount() (-) discountSum(d);
+            leftSum(d) <- leftSum(d) (-) discountSum(d);
         }
-        IF (GROUP SUM 1 IF leftSum(OrderDetail d) > 0) THEN
+        IF NOT (GROUP SUM 1 IF leftSum(OrderDetail d) > 0) THEN
             BREAK; // не осталось больше чего расписывать
     }
 }

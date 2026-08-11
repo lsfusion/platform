@@ -18,6 +18,7 @@ To declare a property that implements partition/order, use the [`PARTITION` oper
 ```lsf
 // determines the place of the team in the conference
 CLASS Conference;
+CLASS Team;
 conference = DATA Conference (Team);
 points = DATA INTEGER (Team);
 gamesWon = DATA INTEGER (Team);

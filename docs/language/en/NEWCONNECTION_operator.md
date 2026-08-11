@@ -27,7 +27,7 @@ The `NEWCONNECTION` operator creates an action inside which every `EXTERNAL SQL`
 test {
     NEWCONNECTION {
         EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'UPDATE stock SET qty = qty + 1';  // opens a connection and keeps it open
-        EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'INSERT INTO audit (msg) VALUES (''sync'')'; // reuses the already opened connection
+        EXTERNAL SQL 'jdbc:postgresql://erp/main' EXEC 'INSERT INTO audit (msg) VALUES (\'sync\')'; // reuses the already opened connection
     }
     // all connections are closed here
 }

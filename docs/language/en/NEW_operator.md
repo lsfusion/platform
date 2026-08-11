@@ -63,7 +63,7 @@ To create one object per iteration of a loop, use the `NEW` option of the [`FOR`
 
 ```lsf
 // bulk form: create three Sku objects and write each one into addedSkus(i)
-newSku ()  {
+newSkus ()  {
     LOCAL addedSkus = Sku (INTEGER);
     NEW Sku WHERE iterate(i, 1, 3) TO addedSkus(i);
     FOR Sku s = addedSkus(i) DO {

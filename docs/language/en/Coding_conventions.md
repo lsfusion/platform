@@ -48,7 +48,7 @@ title: 'Coding conventions'
 
 - Every new property or action declaration starts on a new line. If there is another code after the `;`, then a space is placed after the character.
     ```lsf
-    runAction1 (X x) = { f(x) <- 1; g(x) <- 1; }
+    runAction1 (X x) { f(x) <- 1; g(x) <- 1; }
     ```
 
 - When declaring a property or action, a space is inserted between the name or type and the symbol `(`. When using a property, there is no space.

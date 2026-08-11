@@ -130,7 +130,7 @@ It is important to check that the `book` property for the order line is set beca
 
 ### Task
 
-Identical to [**Example 4**](#example-4).
+Similar to [**Example 5**](#example-5).
 
 We need to prohibit the entry of books that are unavailable to the buyer for the order line, but only for posted orders.
 

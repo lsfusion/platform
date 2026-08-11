@@ -59,11 +59,11 @@ readFiles()  {
     //reading from HTTPS
     READ 'https://www.lsfusion.org/file.xlsx' TO importFile;
     //reading from FTP
-    READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
+    READ 'ftp://username:password@ftp.lsfusion.org/file.xlsx' TO importFile;
     //reading from FTPS
-    READ 'ftps://ftps.lsfusion.org/file.xlsx' TO importFile;
+    READ 'ftps://username:password@ftps.lsfusion.org/file.xlsx' TO importFile;
     //reading from SFTP
-    READ 'sftp://sftp.lsfusion.org/file.xlsx' TO importFile;
+    READ 'sftp://username:password@sftp.lsfusion.org/file.xlsx' TO importFile;
     //reading from FILE
     READ 'D://lsfusion/file.xlsx' TO importFile;
     READ 'file://D://lsfusion/file.xlsx' TO importFile;

@@ -108,6 +108,7 @@ LIMIT [STRICT]
 ```lsf
 // определяет место команды в конференции
 CLASS Conference;
+CLASS Team;
 conference = DATA Conference (Team);
 points = DATA INTEGER (Team);
 gamesWon = DATA INTEGER (Team);

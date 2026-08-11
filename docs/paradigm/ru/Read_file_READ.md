@@ -23,11 +23,11 @@ readFiles()  {
     //чтение из HTTPS
     READ 'https://www.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FTP
-    READ 'ftp://ftp.lsfusion.org/file.xlsx' TO importFile;
+    READ 'ftp://username:password@ftp.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FTPS
-    READ 'ftps://ftps.lsfusion.org/file.xlsx' TO importFile;
+    READ 'ftps://username:password@ftps.lsfusion.org/file.xlsx' TO importFile;
     //чтение из SFTP
-    READ 'sftp://sftp.lsfusion.org/file.xlsx' TO importFile;
+    READ 'sftp://username:password@sftp.lsfusion.org/file.xlsx' TO importFile;
     //чтение из FILE
     READ 'D://lsfusion/file.xlsx' TO importFile;
     READ 'file://D://lsfusion/file.xlsx' TO importFile;

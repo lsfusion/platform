@@ -35,7 +35,7 @@ RE_MD_IMG = re.compile(r"!\[[^\]]*\]\(\s*([^)\s]+)")
 RE_HTML_IMG = re.compile(r"<img[^>]*\bsrc=[\"']?([^\"'\s>]+)")
 RE_MDX_IMPORT = re.compile(r"""\bfrom\s+['"](\.[^'"]+)['"]""")  # relative imports only
 RE_MD_LINK = re.compile(r"(?<!\!)\[[^\]]*\]\(\s*([^)\s]+\.md[^)\s]*)")
-RE_FENCED_CODE = re.compile(r"^```.*?^```[ \t]*$", re.DOTALL | re.MULTILINE)
+RE_FENCED_CODE = re.compile(r"^ {0,3}```.*?^ {0,3}```[ \t]*$", re.DOTALL | re.MULTILINE)
 
 
 def _strip(ref: str) -> str:
