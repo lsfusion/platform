@@ -500,10 +500,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return IDTable.instance.generateID(idSession, IDTable.OBJECT);
     }
 
-    public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener, FormEntity form) throws SQLException, SQLHandledException {
         DataObject dataObject = addObject(customClass, object);
         if(classListener != null)
-            BL.resolveAutoSet(this, customClass, dataObject, classListener);
+            BL.resolveAutoSet(this, customClass, dataObject, classListener, form);
         return dataObject;
     }
 

@@ -654,14 +654,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutableOrder();                    
     }
 
-    public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
+    // form is the form the object is added on : its own current object is what the user means by the "current object" of that class
+    public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener, FormEntity form) throws SQLException, SQLHandledException {
 
         for (Property<P> property : getAutoSetProperties()) {
             ValueClass interfaceClass = property.getInterfaceClasses(ClassType.autoSetPolicy).singleValue();
             ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
             if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
                     customClass.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
-                Long obj = classListener.getObject((CustomClass) valueClass, null, null);
+                Long obj = classListener.getObject((CustomClass) valueClass, form, null);
                 if (obj != null)
                     property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
             }
