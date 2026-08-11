@@ -35,6 +35,7 @@ RE_MD_IMG = re.compile(r"!\[[^\]]*\]\(\s*([^)\s]+)")
 RE_HTML_IMG = re.compile(r"<img[^>]*\bsrc=[\"']?([^\"'\s>]+)")
 RE_MDX_IMPORT = re.compile(r"""\bfrom\s+['"](\.[^'"]+)['"]""")  # relative imports only
 RE_MD_LINK = re.compile(r"(?<!\!)\[[^\]]*\]\(\s*([^)\s]+\.md[^)\s]*)")
+RE_FENCED_CODE = re.compile(r"^```.*?^```[ \t]*$", re.DOTALL | re.MULTILINE)
 
 
 def _strip(ref: str) -> str:
@@ -73,6 +74,9 @@ def main() -> int:
                 if not fn.endswith(".md"):
                     continue
                 text = open(os.path.join(d, fn), encoding="utf-8").read()
+                # strip fenced code blocks: they show lsFusion source (e.g. $R{...} string
+                # syntax, <img> HTML built at runtime), not real page assets/links to check
+                text = RE_FENCED_CODE.sub("", text)
                 refs: list[str] = []
                 for rx in (RE_MD_IMG, RE_HTML_IMG, RE_MDX_IMPORT, RE_MD_LINK):
                     refs += rx.findall(text)
