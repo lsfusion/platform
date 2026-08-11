@@ -523,7 +523,7 @@
     <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.classes.controller.init.InitClassDataIndicesTask">
         <property name="dependencies">
             <set>
-                <ref bean="initReflectionEventsTask"/>  <!-- because of initStats hack-->
+                <ref bean="initIndicesTask"/> <!-- addIndex goes through the same DBManager as initIndicesTask does; it used to wait for initReflectionEventsTask "because of initStats hack", and that hack is gone : needIndex no longer looks at any statistic -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -752,7 +752,7 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dependencies">
             <set>
-                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
+                <!-- icons should be synchronized first : executeImportIconsTask is in initRLTask, which is over before this graph starts -->
             </set>
         </property>
     </bean>
@@ -812,7 +812,6 @@
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
-                <ref bean="prereadIconsTask"/>
             </set>
         </property>
     </bean>
@@ -967,6 +966,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="prereadSecurityPoliciesTask"/>
+                <ref bean="prereadIconsTask"/> <!-- warming a cache, like the two below : without it an auto icon is just resolved lazily, one query at a time -->
                 <ref bean="prereadCachesTask"/>
                 <ref bean="prereadPropertyCachesTask"/>
                 <ref bean="writeModulesHashTask"/>
