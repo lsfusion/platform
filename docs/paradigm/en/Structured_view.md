@@ -206,9 +206,9 @@ FORM exportSku
 
 exportSku (Store store) {
     // uploading to DBF all Sku for which in (Store, Sku) is specified for the desired warehouse
-    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866';
+    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
     EXPORT exportSku XML;
-    EXPORT exportSku OBJECTS st = store CSV ',';
+    EXPORT exportSku OBJECTS st = store CSV ',' TO s = exportFile;
 }
 ```
 

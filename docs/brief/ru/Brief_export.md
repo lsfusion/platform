@@ -80,7 +80,7 @@ exportSkus (Store store) {
 
 ```lsf
 exportSku (Store store) {
-    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866';
+    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
     EXPORT exportSku XML;
 }
 ```
