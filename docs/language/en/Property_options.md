@@ -131,7 +131,7 @@ annotationSetting
 
 - `AUTOSET`
 
-    Keyword marking a [data property](../paradigm/Data_properties_DATA.md) with an object parameter and an object value for automatic setting on object creation. When an object is created with the `AUTOSET` option (for example, `NEW ... AUTOSET`) and its class matches the property's parameter class or a subclass, the platform sets this property for it to the current object of the value class, if one is available.
+    Keyword marking a [data property](../paradigm/Data_properties_DATA.md) with an object parameter and an object value for automatic setting on object creation. When an object is created with the `AUTOSET` option (for example, `NEW ... AUTOSET`) and its class matches the property's parameter class or a subclass, the platform sets this property for it to the current object of the value class, if one is available. The current object is looked up first on the form on which the object is created, and only then among the objects of that class the user worked with most recently.
 
 ### Interactive view block
 

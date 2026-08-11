@@ -986,7 +986,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public boolean dataChanged = true;
 
     public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
-        DataObject dataObject = session.addObjectAutoSet(cls, pushed, BL, getClassListener());
+        DataObject dataObject = session.addObjectAutoSet(cls, pushed, BL, getClassListener(), entity);
 
         for (FilterInstance filter : object.groupTo.getFilters(true))
             filter.resolveAdd(this, object, dataObject, stack);
