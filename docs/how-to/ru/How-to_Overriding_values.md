@@ -71,9 +71,17 @@ overMarkup 'Надбавка перегруженная' (Book b) = OVERRIDE mar
 Наконец нарисуем форму, в которой пользователь сможет вводить надбавку для категорий и товаров одновременно. И для категории, и для товара выведем как первичную надбавку, так и переопределенную. При этом изменения в переопределенных свойствах на форме будут отображаться сразу, но сохраняться только в момент нажатия соответствующей кнопки.
 
 ```lsf
-markup 'Надбавка для товара' = DATA NUMERIC[8,2] (Book);
+FORM markups 'Надбавки'
+    OBJECTS c = Category
+    PROPERTIES(c) name, nameParent, markup, overMarkup
 
-overMarkup 'Надбавка перегруженная' (Book b) = OVERRIDE markup(b), overMarkup(category(b));
+    OBJECTS b = Book
+    PROPERTIES(b) name, nameCategory, markup, overMarkup
+;
+
+NAVIGATOR {
+    NEW markups;
+}
 ```
 
 В итоге форма с заполненным данными будет выглядеть следующим образом:

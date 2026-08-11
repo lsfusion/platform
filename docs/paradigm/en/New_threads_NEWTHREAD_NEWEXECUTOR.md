@@ -54,7 +54,7 @@ testNewThread () {
 
     // Periodic dispatch on the client side — runs while the connection stays alive
     NEWEXECUTOR {
-        NEWTHREAD MESSAGE 'tick'; SCHEDULE PERIOD 10000 DELAY 5000;
+        NEWTHREAD { MESSAGE 'tick'; } SCHEDULE PERIOD 10000 DELAY 5000;
     } CLIENT currentConnection() NOWAIT;
 
     // Collect a thread result with a wait timeout

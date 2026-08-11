@@ -71,9 +71,17 @@ overMarkup 'Overidden markup' (Book b) = OVERRIDE markup(b), overMarkup(category
 Finally, let's design a form that will allow the user to enter the markup for categories and products at the same time. Let's output both the data and the overridden markup for the category and the product. Note that changes in overridden properties on the form will be displayed immediately, but saved only when the corresponding button is clicked.
 
 ```lsf
-markup 'Product markup' = DATA NUMERIC[8,2] (Book);
+FORM markups 'Markups'
+    OBJECTS c = Category
+    PROPERTIES(c) name, nameParent, markup, overMarkup
 
-overMarkup 'Overidden markup' (Book b) = OVERRIDE markup(b), overMarkup(category(b));
+    OBJECTS b = Book
+    PROPERTIES(b) name, nameCategory, markup, overMarkup
+;
+
+NAVIGATOR {
+    NEW markups;
+}
 ```
 
 As a result, the form with the filled data will look like this:

@@ -50,5 +50,5 @@ author 'Автор' = DATA Author (Book);
 ```lsf
 countBooks 'Кол-во книг' (Author a, Category c) = GROUP SUM 1 BY author(Book b), category(b);
 
-authors 'Авторы' (Category c) = GROUP CONCAT name(Author a) IF countBooks(a, c) ORDER DESC countBooks(a, c), a;
+authors 'Авторы' (Category c) = GROUP CONCAT name(Author a) IF countBooks(a, c), ',' ORDER DESC countBooks(a, c), a;
 ```

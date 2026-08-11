@@ -39,5 +39,5 @@ CLASS Circle : Shape;
 message (Square s)  { MESSAGE 'Square'; }
 message (Circle c)  { MESSAGE 'Circle'; }
 
-message (Shape s) = MULTI message[Square](s), message[Circle](s);
+message (Shape s)  { MULTI { message[Square](s); }, { message[Circle](s); } }
 ```

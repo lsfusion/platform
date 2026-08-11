@@ -50,5 +50,5 @@ We need to retrieve a list of all authors by category separated by commas in des
 ```lsf
 countBooks 'Number of books' (Author a, Category c) = GROUP SUM 1 BY author(Book b), category(b);
 
-authors 'Authors' (Category c) = GROUP CONCAT name(Author a) IF countBooks(a, c) ORDER DESC countBooks(a, c), a;
+authors 'Authors' (Category c) = GROUP CONCAT name(Author a) IF countBooks(a, c), ',' ORDER DESC countBooks(a, c), a;
 ```

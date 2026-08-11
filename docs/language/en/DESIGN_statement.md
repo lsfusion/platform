@@ -366,10 +366,10 @@ DESIGN order { // customizing the design of the form, starting with the default 
                         caption = 'Date of the edited order'; 
                         // setting a hint for the order date property
                         tooltip = 'Input here the date the order was made'; 
-                        background = #00FFFF; // making the background red
+                        background = #FF0000; // making the background red
                     }
                     MOVE PROPERTY(time(o)) { // moving the order time property
-                        foreground = #FF00FF; // making the color green
+                        foreground = #00FF00; // making the color green
                     }
                     MOVE PROPERTY(number(o)) { // moving the order number property
                         // setting that the user should preferably be shown 5 characters

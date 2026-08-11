@@ -50,9 +50,8 @@ Recommendations for exporting data with the [`EXPORT` operator](../language/EXPO
 ## Examples
 
 ```lsf
-exportedFile = DATA LOCAL FILE ();
-
 exportShipments (Store store) {
+    LOCAL exportedFile = FILE ();
     EXPORT CSV ';' HEADER FROM number = number(Shipment s), date = date(s), sum = sum(s)
         WHERE store(s) = store AND shipped(s)
         ORDER date(s)
@@ -69,6 +68,7 @@ FORM exportOrders
 ;
 
 exportOrders (Store store) {
+    LOCAL exportedFile = FILE ();
     EXPORT exportOrders OBJECTS st = store JSON TO exportedFile;
 }
 ```

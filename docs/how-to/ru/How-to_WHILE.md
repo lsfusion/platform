@@ -34,7 +34,7 @@ messageCountOrders 'Посчитать кол-во заказов' (DATE dFrom, 
 
     // Вариант 2
     FOR iterate(DATE date, dFrom, dTo) DO
-        MESSAGE 'Кол-во заказов за ' + date + ' : ' + OVERRIDE countOrders(date()), 0.0;
+        MESSAGE 'Кол-во заказов за ' + date + ' : ' + OVERRIDE countOrders(date), 0.0;
 }
 ```
 

@@ -138,13 +138,13 @@ We need to prohibit the entry of books that are unavailable to the buyer for the
 
 ```lsf
 // Option 1
-CONSTRAINT (CHANGED(book(OrderDetail d)) OR CHANGED(price(d)) OR CHANGED(posted(order(d)))) AND posted(order(d))
-           AND price(d) > price(book(d)) * 1.1
-           MESSAGE 'The price in the order cannot exceed the price of the book by 10%';
+CONSTRAINT (CHANGED(book(OrderDetail d)) OR CHANGED(customer(d)) OR CHANGED(posted(order(d)))) AND posted(order(d))
+           AND book(d) AND NOT in(customer(d), book(d))
+           MESSAGE 'A book is selected in the order line that is not allowed for the customer';
 
 // Option 2
 constraintBook (OrderDetail d) =
-    (CHANGED(book(d)) OR CHANGED(price(d)) OR CHANGED(posted(order(d)))) AND posted(order(d)) AND price(d) > price(book(d)) * 1.1;
+    (CHANGED(book(d)) OR CHANGED(customer(d)) OR CHANGED(posted(order(d)))) AND posted(order(d)) AND book(d) AND NOT in(customer(d), book(d));
 WHEN (GROUP MAX constraintBook(OrderDetail d)) DO {
     MESSAGE 'A book is selected in the order line that is not allowed for the customer by lines: \n' +
             (GROUP CONCAT ('Date ' + date(order(OrderDetail d)) + '; Number ' + number(order(d))) IF constraintBook(d), ',') NOWAIT;

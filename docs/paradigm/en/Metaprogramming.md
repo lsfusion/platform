@@ -53,9 +53,9 @@ END
 Using the metacode `objectProperties` produces the following code:
 
 ```lsf
-DocumentName 'Document name' = DATA BPSTRING[100](Document);
-DocumentType 'Document type' = DATA Type (Document);
-DocumentValue 'Document cost' = DATA INTEGER (Document);
+DocumentName 'Name of the document' = DATA BPSTRING[100](Document);
+DocumentType 'Type of the document' = DATA Type (Document);
+DocumentValue 'Cost of the document' = DATA INTEGER (Document);
 ```
 
 There is also the special operation `###`. It is equivalent to operation `##`, except that in the second of the concatenated lexemes, the first character, if a letter, is converted to uppercase.

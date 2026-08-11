@@ -54,7 +54,7 @@ testNewThread () {
 
     // Периодическое выполнение на стороне клиента — пока соединение живо
     NEWEXECUTOR {
-        NEWTHREAD MESSAGE 'tick'; SCHEDULE PERIOD 10000 DELAY 5000;
+        NEWTHREAD { MESSAGE 'tick'; } SCHEDULE PERIOD 10000 DELAY 5000;
     } CLIENT currentConnection() NOWAIT;
 
     // Сбор результата из потока с тайм-аутом ожидания

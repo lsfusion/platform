@@ -138,13 +138,13 @@ CONSTRAINT book(OrderDetail d) AND NOT in(customer(d), book(d))
 
 ```lsf
 // Вариант 1
-CONSTRAINT (CHANGED(book(OrderDetail d)) OR CHANGED(price(d)) OR CHANGED(posted(order(d)))) AND posted(order(d))
-           AND price(d) > price(book(d)) * 1.1
-           MESSAGE 'Цена в заказе не может превышать цену книги на 10%';
+CONSTRAINT (CHANGED(book(OrderDetail d)) OR CHANGED(customer(d)) OR CHANGED(posted(order(d)))) AND posted(order(d))
+           AND book(d) AND NOT in(customer(d), book(d))
+           MESSAGE 'В строке заказа выбрана книга, которая не разрешена для покупателя';
 
 // Вариант 2
 constraintBook (OrderDetail d) =
-    (CHANGED(book(d)) OR CHANGED(price(d)) OR CHANGED(posted(order(d)))) AND posted(order(d)) AND price(d) > price(book(d)) * 1.1;
+    (CHANGED(book(d)) OR CHANGED(customer(d)) OR CHANGED(posted(order(d)))) AND posted(order(d)) AND book(d) AND NOT in(customer(d), book(d));
 WHEN (GROUP MAX constraintBook(OrderDetail d)) DO {
     MESSAGE 'В строке заказа выбрана книга, которая не разрешена для покупателя по строкам : \n' +
             (GROUP CONCAT ('Дата ' + date(order(OrderDetail d)) + '; Номер ' + number(order(d))) IF constraintBook(d), ',') NOWAIT;

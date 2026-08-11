@@ -47,7 +47,7 @@ in = DATA BOOLEAN (Sku, Stock);
 TABLE skuStock (Sku, Stock); // в ней будет храниться свойство in
 
 price = DATA NUMERIC[10,2] (Sku, DATE);
-TABLE skuDate (Sku, DATE); // в ней будет храниться свойство Sku
+TABLE skuDate (Sku, DATE); // в ней будет храниться свойство price
 
 TABLE sku (Sku) FULL;
 ```

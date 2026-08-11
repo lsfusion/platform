@@ -54,7 +54,7 @@ parent 'Родитель' = DATA Category (Category); // если значени
 ```lsf
 depth = DATA INTEGER (Category);
 fillDepth (Category c, INTEGER depth)  {
-    FOR parent(Category i) == c DO {
+    FOR (parent(Category i) == c OR (NOT parent(i) AND NOT c)) DO {
         depth(i) <- depth;
         fillDepth(i, depth + 1);
     }

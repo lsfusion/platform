@@ -270,7 +270,7 @@ FORM orders 'Orders'
 ;
 
 DESIGN orders {
-    board {
+    NEW board {
         custom = 'Board';
         MOVE BOX(o) { lsf = TRUE; }        // the standard grid, placed by the component
         MOVE PROPERTY(comment) { lsf = TRUE; }

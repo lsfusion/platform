@@ -77,7 +77,7 @@ testNewThread () {
 
     // Периодическое выполнение на стороне клиента
     NEWEXECUTOR {
-        NEWTHREAD MESSAGE 'tick'; SCHEDULE PERIOD 10000 DELAY 5000;
+        NEWTHREAD { MESSAGE 'tick'; } SCHEDULE PERIOD 10000 DELAY 5000;
     } CLIENT currentConnection() NOWAIT;
 
     // Регистрация клиентского уведомления, идентификатор которого сохраняется в notifId

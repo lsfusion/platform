@@ -34,7 +34,7 @@ messageCountOrders 'Count the number of orders' (DATE dFrom, DATE dTo)  {
 
     // Option 2
     FOR iterate(DATE date, dFrom, dTo) DO
-        MESSAGE 'Number of orders for ' + date + ' : ' + OVERRIDE countOrders(date()), 0.0;
+        MESSAGE 'Number of orders for ' + date + ' : ' + OVERRIDE countOrders(date), 0.0;
 }
 ```
 

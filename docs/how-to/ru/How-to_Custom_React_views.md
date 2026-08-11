@@ -270,7 +270,7 @@ FORM orders 'Orders'
 ;
 
 DESIGN orders {
-    board {
+    NEW board {
         custom = 'Board';
         MOVE BOX(o) { lsf = TRUE; }        // штатная таблица, размещаемая компонентом
         MOVE PROPERTY(comment) { lsf = TRUE; }

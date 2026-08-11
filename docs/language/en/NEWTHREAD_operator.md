@@ -76,7 +76,7 @@ testNewThread () {
 
     // Periodic dispatch on the client side
     NEWEXECUTOR {
-        NEWTHREAD MESSAGE 'tick'; SCHEDULE PERIOD 10000 DELAY 5000;
+        NEWTHREAD { MESSAGE 'tick'; } SCHEDULE PERIOD 10000 DELAY 5000;
     } CLIENT currentConnection() NOWAIT;
 
     // Register a client notification and save its id into notifId

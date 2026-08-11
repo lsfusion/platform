@@ -39,7 +39,7 @@ Format: **very concise**, for understanding and code generation. Detailed descri
 ### Constraints
 - **Analogy**: integrity constraints, time-independent invariants.
 - **Description**: checked on `APPLY`; types: general (`CONSTRAINT`), simple (`=>`, `NONULL`, uniqueness via `GROUP AGGR`).
-- **Syntax (search)**: `CONSTRAINT name 'Caption' CHECK condition(...);` or `premise(...) => consequence(...) [RESOLVE LEFT|RIGHT];`
+- **Syntax (search)**: `CONSTRAINT condition(...) [CHECKED [BY prop, ...]] MESSAGE 'text' [PROPERTIES prop, ...];` or `premise(...) => consequence(...) [RESOLVE [LEFT] [RIGHT]];`
 
 ### Aggregations
 - **Analogy**: aggregate objects maintained declaratively.

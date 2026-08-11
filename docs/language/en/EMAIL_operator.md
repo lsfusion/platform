@@ -51,7 +51,7 @@ In the `NAME` option within `attachDescription`, file names are specified withou
     Recipient types. At least one must be specified. Each of them is specified by one of the keywords:
 
     - `TO` - message recipient
-    - `СС` - secondary message recipient to whom a copy is sent
+    - `CC` - secondary message recipient to whom a copy is sent
     - `BCC` - message recipient whose address is not shown to other recipients
 
 - `recipientExpr1 ... recipientExprN`
