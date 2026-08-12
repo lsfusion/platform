@@ -13101,8 +13101,8 @@
       "stale": false
     },
     "paradigm/Security_policy.md": {
-      "file_hash": "sha256:0527864acc8e7f1ff7b54a371468548b6e3f14ba4c22905cc7e80831976ce80d",
-      "indexed_at": "2026-08-05T15:41:54Z",
+      "file_hash": "sha256:97259d11ff6fef0997391ca7f1df9269d334b03c514d9465a7c4667ab3866536",
+      "indexed_at": "2026-08-12T14:08:08Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13111,6 +13111,12 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "Security_policy::creating-users-and-roles-in-code": {
+          "file_id": "file-Typ2iBzhXe4x9U2dGPhPnK",
+          "heading_path": "Security policy > Creating users and roles in code",
+          "section_payload_hash": "sha256:38844d78ab8401b3cb994b6d8d4f072e857ab4b6c30319460a8b62f990297670",
+          "source_file": "paradigm/Security_policy.md"
+        },
         "Security_policy::customizing-user-roles": {
           "file_id": "file-Uk4roSWuXze7XwuxPkMynM",
           "heading_path": "Security policy > Customizing user roles",
@@ -15363,7 +15369,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "774bdd01d3ae8a8a962ae9787eaec4051ae894bb",
+  "last_indexed_docs_commit": "b2414b9dd080074ef2fc19a084a423be0b0cce58",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
