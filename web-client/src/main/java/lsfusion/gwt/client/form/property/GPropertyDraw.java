@@ -507,10 +507,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean hasFooter;
 
+    private String changeOrGroupChange() {
+        return changeOrGroupChange(false);
+    }
+    private String changeOrGroupChange(boolean noGroupChange) {
+        return GEditBindingMap.changeOrGroupChange(!isList || noGroupChange);
+    }
+
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if(isBinding)
-            return GEditBindingMap.changeOrGroupChange(GKeyStroke.isKeyEvent(editEvent) && FormsController.isForceGroupChangeMode()); // if binding has alt in it, it doesn't mean that we want group change
+            return changeOrGroupChange(GKeyStroke.isKeyEvent(editEvent) && FormsController.isForceGroupChangeMode()); // if binding has alt in it, it doesn't mean that we want group change
 
         if (editBindingMap != null) { // property bindings
             String actionSID = editBindingMap.getEventSID(editEvent);
@@ -521,7 +528,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         Integer inputActionIndex = getKeyInputActionIndex(getInputListActions(), editEvent, false);
         if(inputActionIndex != null) {
             contextAction.set(inputActionIndex);
-            return GEditBindingMap.changeOrGroupChange();
+            return changeOrGroupChange();
         }
 
         if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction, customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
@@ -536,15 +543,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
             GInputType inputType = InputBasedCellRenderer.getInputElementType(inputElement);
             if(inputType.isStretchText()) {
                 if (DataGrid.FOCUSIN.equals(editEvent.getType()) && !FocusUtils.isSuppressOnFocusChange(inputElement))
-                    return GEditBindingMap.changeOrGroupChange();
+                    return changeOrGroupChange();
 
                 if (InputBasedCellRenderer.isInputKeyEvent(editEvent, updateContext, inputType.isMultilineText()))
-                    return GEditBindingMap.changeOrGroupChange(isCharAddKeyEvent(editEvent)); // we don't want shift + char to be considered as group change
+                    return changeOrGroupChange(isCharAddKeyEvent(editEvent)); // we don't want shift + char to be considered as group change
             }
 
             if (!updateContext.isNavigateInput() && GKeyStroke.isKeyDownEvent(editEvent))
                 if (editEvent.getShiftKey() && (isCharNavigateHorzKeyEvent(editEvent) || isCharNavigateVertKeyEvent(editEvent))) {
-                    return GEditBindingMap.changeOrGroupChange();
+                    return changeOrGroupChange();
                 }
         }
 
@@ -554,7 +561,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
                 actionIndex = getDialogInputActionIndex();
             }
             contextAction.set(actionIndex);
-            return GEditBindingMap.changeOrGroupChange();
+            return changeOrGroupChange();
         }
 
         if (GKeyStroke.isGroupChangeKeyEvent(editEvent))
@@ -563,7 +570,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         GType changeType = getChangeType();
         if (isCharModifyKeyEvent(editEvent, changeType == null ? null : changeType.getEditEventFilter()) ||
                 isDropEvent(editEvent) || isChangeAppendKeyEvent(editEvent))
-            return GEditBindingMap.changeOrGroupChange(isCharAddKeyEvent(editEvent)); // we don't want shift + char to be considered as group change
+            return changeOrGroupChange(isCharAddKeyEvent(editEvent)); // we don't want shift + char to be considered as group change
 
         return null;
     }

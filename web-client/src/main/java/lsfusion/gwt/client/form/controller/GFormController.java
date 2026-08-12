@@ -1877,7 +1877,7 @@ public class GFormController implements EditManager {
         // noGroupChange is needed for custom renderers that use onBlur to change values:
         // a) when ALT+TAB pressed there is no keydown previewed to disable group change mode, which is not what we want
         // b) when binding with ALT calls check commit editing, we don't want it to be treated as the group change
-        String actionSID = forceGroupChange ? GEditBindingMap.GROUP_CHANGE : GEditBindingMap.changeOrGroupChange(MainFrame.switchedToAnotherWindow || forcedBlurCustom);
+        String actionSID = forceGroupChange ? GEditBindingMap.GROUP_CHANGE : GEditBindingMap.changeOrGroupChange(!editContext.getProperty().isList || MainFrame.switchedToAnotherWindow || forcedBlurCustom);
         executePropertyEventAction(null, editContext, actionSID, eventSource, changeValue == PValue.UNDEFINED ? null : GUserInputResult.singleValue(changeValue), requestIndex -> {
             setRemoteValue(editContext, changedRenderValue, requestIndex);
         });
