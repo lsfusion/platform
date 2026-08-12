@@ -137,3 +137,5 @@ It is possible to run the code snippets in lsfusion programming language [online
 
 ## License
 The platform is licensed under [LGPL v3](http://www.gnu.org/licenses/lgpl-3.0.en.html), which allows you to freely use, distribute, and modify the platform as you wish.
+
+The documentation in the `docs/` directory is licensed separately under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), and the code examples inside it are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — so you can copy them into your own applications without any conditions. See [LICENSING.md](LICENSING.md) for details.

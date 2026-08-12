@@ -1,0 +1,17 @@
+version = 1
+SPDX-PackageName = "lsFusion platform"
+SPDX-PackageDownloadLocation = "https://github.com/lsfusion/platform"
+
+# The CC0 dedication for the code examples applies inside documentation files.
+# REUSE can tag a snippet, but only through a comment, and the documentation is
+# rendered as MDX, which does not tolerate HTML comments. See LICENSING.md.
+
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "2013-2026 lsFusion Foundation"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = ["docs/*/en/**", "docs/*/ru/**"]
+SPDX-FileCopyrightText = "2013-2026 lsFusion Foundation"
+SPDX-License-Identifier = "CC-BY-4.0"
