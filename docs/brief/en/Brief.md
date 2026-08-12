@@ -73,6 +73,7 @@ Format: **very concise**, for understanding and code generation. Detailed descri
 ### Grouping (`GROUP`)
 - **Description**: value aggregates (sum/count/max/min/last/concat). Not object aggregates.
 - **Syntax (search)**: `GROUP SUM source(...) IF Condition;` or `GROUP SUM source(...) BY groupExprs...;`
+- **Result parameters**: the `BY` expressions plus the used upper parameters; a used upper parameter is not listed in `BY` — with an explicit parameter list on the left, the `BY` expressions are mapped in order to the unused parameters.
 
 ### Partition / window (`PARTITION`)
 - **Description**: window logic: ranks, previous value, cumulative.

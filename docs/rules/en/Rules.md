@@ -315,6 +315,17 @@ PROPERTY RULES
     To restrict the set to a class, the assistant MUST add
     an explicit `x IS SubClass` condition (or use a property
     declared on that subclass).
+
+18. In the `GROUP ... BY` operator the assistant MUST NOT
+    list in the `BY` block the upper parameters used
+    in the operator's expressions: each such parameter
+    is already implicitly a group — a parameter of the
+    created property — and keeps its place in the signature.
+
+    With an explicit parameter list on the left,
+    the `BY` expressions are mapped in order only
+    to the parameters not used in the expressions;
+    a mismatch in count or classes is an error.
 ----------------------------------------------------------------
 ACTION RULES
 

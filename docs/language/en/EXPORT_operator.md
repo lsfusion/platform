@@ -12,9 +12,28 @@ EXPORT [exportFormat] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] prop
   [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
   [TOP topExpr] [OFFSET offsetExpr] [TO propertyId]
 EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] 
-  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
-  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
-  [TO (propertyId | (groupId1 = propertyId1, ..., groupIdM = propertyIdM))]
+  [TOP topSelect]
+  [OFFSET offsetSelect]
+  [TO exportTo]
+```
+
+Where `topSelect` and `offsetSelect` are defined either as a single expression or as a mapping by object groups:
+
+```
+topExpr
+topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT
+```
+
+```
+offsetExpr
+offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF
+```
+
+And `exportTo` — either as a single destination property or as a mapping by object groups:
+
+```
+propertyId
+groupId1 = propertyId1, ..., groupIdM = propertyIdM
 ```
 
 `exportFormat` can be specified by one of the following options:
@@ -48,6 +67,8 @@ If the property to which the data is exported is of class `FILE`, then the exten
 |**TABLE**|table|
 
 When exporting a form in an `OBJECTS` block, it is possible to add extra filters to check for the equality of the objects on the form with [the values passed](../paradigm/Open_form.md#params). These objects [will not participate](../paradigm/Structured_view.md#objects) in building the object group hierarchy.
+
+When a form is exported to a hierarchical format (**JSON**, **XML**), a single file is generated and written to the `propertyId` property. For flat formats (**CSV**, **XLS**, **XLSX**, **DBF**, **TABLE**) each object group is exported to its own file, so the destinations are specified as a list per object group (`groupId = propertyId`) — not necessarily for all groups: groups not listed are not exported. A form cannot be exported to a single file in a flat format.
 
 ## Parameters
 
@@ -85,15 +106,29 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
     Keyword. Specifies reverse sort order. By default, ascending sort is used.
 
-- `TOP topExpr`
-- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+- `topExpr`
 
-    Export only first `n` records, where `n` is value of expression `topExpr` or `topPropertyExprT` for group object `topGroupIdT`.
+    Expression whose value limits the export to its first records.
 
-- `OFFSET offsetExpr`
-- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+- `topGroupId1 ... topGroupIdT`
 
-    Export only records with offset `m`, where `m` is value of expression `offsetExpr` or `offsetPropertyExprF` for group object `offsetGroupIdF`.
+    Form object group simple IDs for which the limit is set per group object instead of for the whole export.
+
+- `topPropertyExpr1 ... topPropertyExprT`
+
+    Expressions whose values limit the records of the corresponding group objects.
+
+- `offsetExpr`
+
+    Expression whose value skips that many leading records of the export.
+
+- `offsetGroupId1 ... offsetGroupIdF`
+
+    Form object group simple IDs for which the offset is set per group object instead of for the whole export.
+
+- `offsetPropertyExpr1 ... offsetPropertyExprF`
+
+    Expressions whose values set the offset of the corresponding group objects.
 
 ### Export format
 
@@ -141,7 +176,7 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
 - `propertyId`
 
-    [Property ID](IDs.md#propertyid) to which the generated file will be written. This property must not have parameters and its value must be of a file class (`FILE`, `RAWFILE`, `JSONFILE`, etc.). If this property is not specified, the `System.exportFile` property is used by default.
+    [Property ID](IDs.md#propertyid) to which the generated file will be written. This property must not have parameters and its value must be of a file class (`FILE`, `RAWFILE`, `JSONFILE`, etc.). If this property is not specified, the `System.exportFile` property is used by default. When exporting a form, applicable only for hierarchical formats (**JSON**, **XML**).
 
 - `groupId1, ..., groupIdM`
 
@@ -188,6 +223,7 @@ FORM exportSku
 
 exportSku (Store store)  {
     // uploading to DBF all Sku for which in (Store, Sku) is specified for the desired warehouse
+    // flat format: the file is specified for the object group s
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
     EXPORT exportSku XML;
     EXPORT exportSku OBJECTS st = store CSV ',' TO s = exportFile;

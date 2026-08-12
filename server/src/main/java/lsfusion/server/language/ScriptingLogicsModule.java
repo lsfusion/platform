@@ -4584,7 +4584,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (exportType.isPlain()) {
             if (exportFiles.isEmpty()) {
                 if (singleExportFile != null) {
-                    errLog.emitSimpleError(parser, String.format("EXPORT %s TO single file not supported", exportType));
+                    errLog.emitSimpleError(parser, String.format("EXPORT %s TO single file not supported. Specify a file per object group: TO groupObject = property, ... (or use EXPORT FROM)", exportType));
                 } else {
                     errLog.emitSimpleError(parser, "Output file(s) for export not specified");
                 }

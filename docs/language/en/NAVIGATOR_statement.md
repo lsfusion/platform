@@ -23,7 +23,7 @@ Each `navigatorStatement` describes a single navigator statement, and at the end
 NEW elementDescription [options] [{ ... }];
 MOVE name [caption] [options] [{ ... }];
 name [caption] [options] [{ ... }];
-SCHEDULE PERIOD intPeriod [FIXED] action;
+SCHEDULE PERIOD intPeriod [FIXED] actionOperator;
 ```
 
 where `elementDescription` in the `NEW` statement describes the type of element to be created, and can be in one of three types:
@@ -85,9 +85,13 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
     The form name or action ID for which the navigator element will be created. The platform will first attempt to find a form with that name, and if that fails, it will search for an action with that ID. The action must not take any parameters.
 
-- `SCHEDULE PERIOD intPeriod [FIXED] action`
+- `SCHEDULE PERIOD intPeriod [FIXED] actionOperator`
 
-    Creates a scheduler that executes `action` every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
+    Creates a scheduler that executes an action every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
+
+    - `actionOperator`
+
+        [Action operator](Action_operators.md) specifying the action to execute. No parameters are available in it.
 
 ### Options
 
@@ -238,6 +242,8 @@ NAVIGATOR {
         // before the hello element
         MOVE shipments BEFORE h; 
     }
+    // scheduler: the hello action is executed every 10 minutes
+    SCHEDULE PERIOD 600 hello();
 }
 ```
 

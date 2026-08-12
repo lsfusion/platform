@@ -40,7 +40,7 @@ And `orderClause` is defined as:
 
 The `GROUP` operator creates a property implementing grouping. The type of grouping is determined by the type of the [aggregate function](../paradigm/Set_operations.md). This operator differs from others in that it can implicitly declare its parameters in the expressions used (by analogy with the [`=` statement](=_statement.md) when the parameters are not defined explicitly). At the same time, it is important to understand that these "implicitly declared" parameters are not parameters of the created property (which are actually determined by the `BY` block and / or the upper parameters used)
 
-The `BY` block describes group expressions. Each expression corresponds to a parameter of the property being created. As in other operators, upper parameters can be used in this operator, and the used parameters also implicitly become groups of the created property. If the `BY` block is omitted and no upper parameters are used, all matching object collections form a single group and the created property has no parameters. Accordingly, when using the operator in the [`=` statement](=_statement.md) and explicitly defining the parameters on the left, the expressions from the `BY` block are mapped only for unused parameters. Moreover, if the classes or the number of these parameters do not match the number / classes of `BY` expressions then the platform will throw an error. 
+The `BY` block describes group expressions. Each expression corresponds to a parameter of the property being created. As in other operators, upper parameters can be used in this operator, and the used parameters also implicitly become groups of the created property. Such a used upper parameter is not listed in the `BY` block: it is already a parameter of the created property and keeps its place in the signature. If the `BY` block is omitted and no upper parameters are used, all matching object collections form a single group and the created property has no parameters. Accordingly, when using the operator in the [`=` statement](=_statement.md) and explicitly defining the parameters on the left, the expressions from the `BY` block are mapped in order only to the unused parameters. Moreover, if the classes or the number of these parameters do not match the number / classes of `BY` expressions then the platform will throw an error.
 
 :::info
 If a `BY` block is defined, this operator cannot be used inside [expressions](Expression.md): it is only allowed as the entire definition of a property — the right side of the [`=` statement](=_statement.md) — or as an inline definition in the brackets of the [`JOIN` operator](JOIN_operator.md). In the latter case the applied form `[GROUP ... BY ...](...)` is an ordinary expression again. Another way to use such a value inside an expression is to first write it into a separate (for example, [local](../paradigm/Data_properties_DATA.md#local)) property and use that property instead.
@@ -123,6 +123,9 @@ hostTeam = DATA Team (Game);
 date = DATA DATE (Game);
 hostGoalsScored(team) = GROUP SUM hostGoals(Game game) BY hostTeam(game);
 last3HostGoalsScored(team) = GROUP SUM hostGoals(Game game) ORDER DESC date(game), game TOP 3 BY hostTeam(game);
+// the date parameter is used in the expression, so it is itself a group of the created property and is not listed in BY;
+// the BY expression is mapped to the remaining parameter team
+hostGoalsScoredBefore(Team team, DATE date) = GROUP SUM hostGoals(Game game) IF date(game) < date BY hostTeam(game);
 
 name = DATA STRING[100] (Country);
 // property (STRING[100]) -> Country is obtained

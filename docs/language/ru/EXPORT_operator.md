@@ -12,9 +12,28 @@ EXPORT [exportFormat] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] prop
   [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
   [TOP topExpr] [OFFSET offsetExpr] [TO propertyId]
 EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] 
-  [TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))]
-  [OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))]
-  [TO (propertyId | (groupId1 = propertyId1, ..., groupIdM = propertyIdM))]
+  [TOP topSelect]
+  [OFFSET offsetSelect]
+  [TO exportTo]
+```
+
+Где `topSelect` и `offsetSelect` определяются либо как одно выражение, либо как отображение по группам объектов:
+
+```
+topExpr
+topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT
+```
+
+```
+offsetExpr
+offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF
+```
+
+А `exportTo` — либо как одно свойство-приемник, либо как отображение по группам объектов:
+
+```
+propertyId
+groupId1 = propertyId1, ..., groupIdM = propertyIdM
 ```
 
 `exportFormat` может задаваться одним из следующих вариантов:
@@ -49,6 +68,8 @@ TABLE
 |**TABLE** |table     |
 
 При экспорте формы в блоке `OBJECTS` можно объектам формы добавлять дополнительные фильтры на равенство этих объектов [переданным значениям](../paradigm/Open_form.md#params). Также эти объекты [не будут участвовать](../paradigm/Structured_view.md#objects) в построении иерархии групп объектов.
+
+При экспорте формы в иерархический формат (**JSON**, **XML**) формируется один файл, который записывается в свойство `propertyId`. В плоские форматы (**CSV**, **XLS**, **XLSX**, **DBF**, **TABLE**) каждая группа объектов выгружается отдельным файлом, поэтому приемники задаются списком по группам объектов (`groupId = propertyId`) — не обязательно для всех групп: группы, не указанные в списке, не выгружаются. Экспортировать форму в плоском формате в один файл нельзя.
 
 ## Параметры
 
@@ -86,15 +107,29 @@ TABLE
 
     Ключевое слово. Указывает на обратный порядок сортировки. По умолчанию используется сортировка по возрастанию.
 
-- `TOP topExpr`
-- `TOP (topExpr | (topGroupId1 = topPropertyExpr1, ..., topGroupIdT = topPropertyExprT))`
+- `topExpr`
 
-    Экспорт только первых `n` записей, где `n` - значение выражения `topExpr` или `topPropertyExprT` для группы объектов `topGroupIdT`.
+    Выражение, значение которого ограничивает экспорт его первыми записями.
 
-- `OFFSET offsetExpr`
-- `OFFSET (offsetExpr | (offsetGroupId1 = offsetPropertyExpr1, ..., offsetGroupIdF = offsetPropertyExprF))`
+- `topGroupId1 ... topGroupIdT`
 
-    Экспорт только записей со смещением `m`, где `m` - значение выражения `offsetExpr` или `offsetPropertyExprF` для группы объектов `offsetGroupIdF`.
+    Простые идентификаторы групп объектов формы, для которых ограничение задается по группам объектов, а не для всего экспорта.
+
+- `topPropertyExpr1 ... topPropertyExprT`
+
+    Выражения, значения которых ограничивают записи соответствующих групп объектов.
+
+- `offsetExpr`
+
+    Выражение, значение которого пропускает столько первых записей экспорта.
+
+- `offsetGroupId1 ... offsetGroupIdF`
+
+    Простые идентификаторы групп объектов формы, для которых смещение задается по группам объектов, а не для всего экспорта.
+
+- `offsetPropertyExpr1 ... offsetPropertyExprF`
+
+    Выражения, значения которых задают смещение соответствующих групп объектов.
 
 ### Формат экспорта
 
@@ -142,7 +177,7 @@ TABLE
 
 - `propertyId`
 
-    [Идентификатор свойства](IDs.md#propertyid), в которое будет записан сформированный файл. У этого свойства не должно быть параметров и класс его значения должен быть файловым (`FILE`, `RAWFILE`, `JSONFILE` и т.д.). Если это свойство не указано, то по умолчанию используется свойство `System.exportFile`.
+    [Идентификатор свойства](IDs.md#propertyid), в которое будет записан сформированный файл. У этого свойства не должно быть параметров и класс его значения должен быть файловым (`FILE`, `RAWFILE`, `JSONFILE` и т.д.). Если это свойство не указано, то по умолчанию используется свойство `System.exportFile`. При экспорте формы применим только для иерархических форматов (**JSON**, **XML**).
 
 - `groupId1, ..., groupIdM`
 
@@ -189,6 +224,7 @@ FORM exportSku
 
 exportSku (Store store)  {
     // выгружаем в DBF все Sku, для которых задано in (Store, Sku) для нужного склада
+    // плоский формат: файл задается для группы объектов s
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
     EXPORT exportSku XML;
     EXPORT exportSku OBJECTS st = store CSV ',' TO s = exportFile;

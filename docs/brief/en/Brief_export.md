@@ -58,7 +58,7 @@ For **XML**, `HEADER` controls not a table header row but a line such as `<?xml 
 
 - `TO propertyId` — a property without parameters whose value class is a file class (`FILE`, `RAWFILE`, `JSONFILE` and so on).
 - If `TO` is not specified, the `System.exportFile` property is used.
-- When a form is exported to a flat format, the destination is set per object group: `TO (groupId1 = propertyId1, ...)`; the [empty object group](../paradigm/Static_view.md#empty) is named `root`.
+- When a form is exported to a flat format, the destinations are set per object group: `TO groupId1 = propertyId1, ...` — groups not listed are not exported, and exporting a form to a single file in a flat format is not supported; the [empty object group](../paradigm/Static_view.md#empty) is named `root`.
 
 ## Defaults that shape the result
 
@@ -80,6 +80,7 @@ exportSkus (Store store) {
 
 ```lsf
 exportSku (Store store) {
+    // flat format: the file is specified for the object group s
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
     EXPORT exportSku XML;
 }

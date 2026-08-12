@@ -207,6 +207,7 @@ FORM exportSku
 
 exportSku (Store store) {
     // выгружаем в DBF все Sku, для которых задано in (Store, Sku) для нужного склада
+    // плоский формат: файл задается для группы объектов s
     EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
     EXPORT exportSku XML;
     EXPORT exportSku OBJECTS st = store CSV ',' TO s = exportFile;
