@@ -542,6 +542,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
+                <ref bean="setupPropertyPolicyFormsTask"/> <!-- both register into simple groups while reading the whole element set, so they cannot overlap - see Group.getActionOrProperties -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

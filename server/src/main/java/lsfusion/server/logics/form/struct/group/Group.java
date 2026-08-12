@@ -143,6 +143,14 @@ public class Group extends AbstractNode {
             parent.cleanParentActionOrPropertiesCaches(version);
     }
 
+    // this memo and the two views below are not safe against a registration running beside a read : a reader that started before the
+    // registration publishes its result after the drop, and the group then lists the pre-registration set for good - for any reader, not
+    // only one that registers itself. The three startup tasks that both read the whole set and register into a simple group are ordered
+    // against each other for that reason (setupPropertyPolicyFormsTask -> setupDrillDownTask -> setupActionPolicyFormsTask in
+    // lsfusion.xml), and everything that reads afterwards waits for all three through finalizePropsTask. Adding another task that
+    // registers into a simple group means ordering it there too.
+    // Still open, and deliberately not paid for : checkAbstractTask and the finishLogInitTask branch read the whole set beside those
+    // three, and LazyDrillDownAction registers its action on first execution, long after startup
     private ImOrderSet<ActionOrProperty> actionOrProperties;
 
     @ManualLazy
