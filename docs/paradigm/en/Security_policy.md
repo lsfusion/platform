@@ -105,3 +105,31 @@ By default, there are 4 roles pre-installed in the platform:
 :::info
 Note that when set for a form or property, `Default` access applies permission or restriction, depending on the additional roles set. The set `Default` access does not apply the value specified in the Default role settings. To have the accesses configured in the Default role applied to a user, the user must be assigned that role.
 ::: 
+
+### Creating users and roles in code
+
+Users, roles, and role assignments are ordinary objects and properties of the system modules [`Authentication`](System_Authentication.md) and [`Security`](System_Security.md), so everything configured on the forms above can also be set up in application code — for example, when seeding initial or demo data. Such initialization is usually plugged into a [launch event](Launch_events.md) handler such as `onStarted[]`:
+
+```lsf
+IF NOT userRoleSID('manager') THEN
+    NEW r = UserRole {
+        name(r) <- 'Manager';
+        sid(r) <- 'manager';
+    }
+
+IF NOT customUserLogin('jsmith') THEN
+    NEW u = CustomUser {
+        login(u) <- 'jsmith';
+        firstName(u) <- 'John';
+        lastName(u) <- 'Smith';
+        email(u) <- 'jsmith@company.com';
+        setSHA256Password(u, 'secret');
+        mainRole(u) <- userRoleSID('manager');
+        in(u, userRoleSID('readonly')) <- TRUE;
+    }
+```
+
+- The user's name `name[Contact]` is computed as `firstName[Contact]` and `lastName[Contact]` joined by a space, so it is these two properties that are written, not the name itself.
+- The password is stored as a hash in `sha256Password[CustomUser]`; the action `setSHA256Password[CustomUser, STRING]` hashes the given password and writes the hash there.
+- The main role is written to `mainRole[User]`; an additional role is assigned by writing `TRUE` to `in[CustomUser, UserRole]`. `userRoleSID[STRING]` finds a role by its code, and `customUserLogin[ISTRING]` finds a user by login. When the changes are saved, a newly created user is also assigned the `default` additional role automatically (and the `admin` role too when the login is `admin`).
+- An application object (for example, an employee) is linked to its user by an ordinary data property declared in the application: `user = DATA CustomUser (Employee);`.
