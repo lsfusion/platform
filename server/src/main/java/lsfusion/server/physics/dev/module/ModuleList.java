@@ -7,13 +7,20 @@ import java.util.*;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ModuleList {
-    private static final String[] systemModulesNames = {"System", "Authentication", "Email", "Reflection",
-            "Scheduler", "Security", "Service", "SystemEvents", "Time", "Utils"};
-    
     private List<LogicsModule> modules = new ArrayList<>();
+
+    // the modules the platform itself registers (createModules), each backing a Java LogicsModule whose fields the
+    // platform reads at runtime. They are kept whatever the top module requires - dropping one leaves those fields
+    // null, and every feature built on them then fails with an NPE far from here. Held as the modules themselves,
+    // not their names: a module is named by its script, which is not parsed yet when they are registered.
+    private final Set<LogicsModule> systemModules = new HashSet<>();
 
     public void add(LogicsModule module) {
         modules.add(module);
+    }
+
+    public void markAddedAsSystem() {
+        systemModules.addAll(modules);
     }
     
     
@@ -55,9 +62,7 @@ public class ModuleList {
         Queue<LogicsModule> queue = new LinkedList<>();
 
         // First, we always add system modules
-        for (String systemModuleName : systemModulesNames) {
-            remainingModules.add(getModuleWithCheck(systemModuleName));
-        }
+        remainingModules.addAll(systemModules);
 
         // comma-separated list of (independent) top modules, same convention as db.allowDropTables / db.allowDropModules
         for (String topModuleName : topModuleNames.split(",")) {

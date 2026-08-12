@@ -395,6 +395,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         timeLM = addModule(new TimeLogicsModule(this, LM));
         utilsLM = addModule(new UtilsLogicsModule(this, LM));
         userEventsLM = addModule(new UserEventsLogicsModule(this, LM));
+
+        modules.markAddedAsSystem(); // everything registered above is the platform's own and is never filtered out
     }
 
     protected void addModulesFromResource(List<String> includePaths, List<String> excludePaths) throws IOException {
