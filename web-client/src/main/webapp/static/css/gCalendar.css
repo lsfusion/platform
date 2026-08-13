@@ -9,21 +9,22 @@
 }
 
 .fc-h-event, .fc-v-event, .fc-daygrid-event {
-    background-color: var(--component-background-color);
-    border: 1px solid var(--component-border-color);
+    background-color: var(--focus-color);
+    border: 1px solid var(--focus-color);
+    border-radius: 4px;
 }
 
 .fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title, .fc-daygrid-dot-event {
-    padding: 2px 3px;
+    padding: 2px 4px;
 }
 
 .event-highlight {
-    background-color: var(--selection-color);
-    border: 1px solid var(--focus-color);
+    background-color: var(--focus-color);
+    border: 2px solid var(--text-color);
 }
 
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
-    color: var(--text-color);
+    color: var(--component-background-color);
     display: flex;
 }
 
@@ -60,11 +61,7 @@
 }
 
 .fc-event:hover {
-    background-color: var(--component-background-color);
-}
-
-.event-highlight:hover { /* should come after .fc-event:hover */  
-    background-color: var(--selection-color);
+    filter: brightness(0.92);
 }
 
 .fc .fc-scrollgrid {
@@ -93,8 +90,8 @@
 }
 
 .fc .fc-toolbar-title {
-    font-weight: normal;
-    font-size: inherit;
+    font-weight: 600;
+    font-size: 1.15em;
 }
 
 .fc .fc-toolbar.fc-header-toolbar {
@@ -106,8 +103,13 @@
 }
 
 .fc .fc-col-header-cell-cushion {
-    font-weight: normal;
+    font-weight: 600;
+    padding: 6px 4px;
     color: var(--text-color);
+}
+
+.fc .fc-day-today {
+    background-color: var(--selection-color);
 }
 
 .fc .fc-col-header-cell-cushion:hover {
@@ -211,7 +213,8 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 
 .fc .fc-daygrid-day-number {
     text-decoration: none;
-    padding: 3px 4px;
+    padding: 4px 6px;
+    font-weight: 500;
 }
 
 .fc-direction-ltr .fc-daygrid-event .fc-event-time {
@@ -225,7 +228,13 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 
 .fc .fc-daygrid-more-link {
     font-size: inherit;
-    color: var(--text-color);
+    font-weight: 600;
+    color: var(--focus-color);
+    text-decoration: none;
+}
+
+.fc .fc-daygrid-more-link:hover {
+    text-decoration: underline;
 }
 
 .fc .fc-popover {
