@@ -16,6 +16,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -56,8 +57,13 @@ public abstract class FilesChangeWatcher {
         }
     }
 
+    // editors and other tools that save atomically (write to a temp file, then rename over the target) mark that
+    // temp file with a ".tmp.<pid>.<hash>" suffix; it's never a real source file, and the CREATE/MODIFY event for
+    // it races the rename that follows almost immediately, so there's no point trying to process it at all
+    private static final Pattern TEMP_FILE_PATTERN = Pattern.compile("\\.tmp\\.[0-9a-f.]+$");
+
     private boolean excludeFile(String fileName, String... excludedFileExtensions) {
-        boolean exclude = fileName.endsWith("~");
+        boolean exclude = fileName.endsWith("~") || TEMP_FILE_PATTERN.matcher(fileName).find();
         if (!exclude) {
             for (String extension : excludedFileExtensions) {
                 if (FilenameUtils.getExtension(fileName).equals(extension)) {
