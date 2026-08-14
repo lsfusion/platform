@@ -14,6 +14,13 @@
     border-radius: 4px;
 }
 
+/* padding on the day cell's own events container, rather than margin on each event - gives every event
+   the same breathing room from the day cell's border (left/right/bottom - FullCalendar already spaces
+   the top) without relying on margin on a per-event wrapper */
+.fc-daygrid-day-events {
+    padding: 0 3px 3px;
+}
+
 .fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title, .fc-daygrid-dot-event {
     padding: 2px 4px;
 }
@@ -133,6 +140,23 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 .fc .fc-calendar-date-prop {
     height: 22px;
     vertical-align: middle;
+    padding: 0 6px;
+    font-size: inherit;
+    font-family: inherit;
+    color: var(--text-color);
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--button-border-radius);
+    cursor: pointer;
+}
+
+.fc .fc-calendar-date-prop:hover {
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.fc .fc-calendar-date-prop:focus {
+    border: 1px solid var(--focus-color);
+    outline: none;
 }
 
 .fc .fc-button .fc-icon {
