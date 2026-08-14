@@ -1,8 +1,8 @@
 {
   "files": {
     "brief/Brief.md": {
-      "file_hash": "sha256:917f5bcaebfa7f91369c3580ce8633a76fa8f23a6c979ef9a6bc8647dbf9fee2",
-      "indexed_at": "2026-08-12T08:03:02Z",
+      "file_hash": "sha256:0c4f97876c523863b0fd08fb6c87e6260305687b3b6839878e0899c9a08faccf",
+      "indexed_at": "2026-08-14T09:41:04Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v3",
@@ -119,6 +119,12 @@
           "section_payload_hash": "sha256:63104ad73e2f820289eef78b86cd290f7a5f63780b0a72a1f8de1b0b026ab257",
           "source_file": "brief/Brief.md"
         },
+        "Brief::identification--ergonomics": {
+          "file_id": "file-VK7QMj32S4pHXKqt7mGH5z",
+          "heading_path": "lsFusion Brief > Identification & ergonomics",
+          "section_payload_hash": "sha256:e2ed85bf98ef7e23d67fd27743994394bbbb104ae9d1bceb52ca8a0eab70aa4c",
+          "source_file": "brief/Brief.md"
+        },
         "Brief::integration": {
           "file_id": "file-9DkAQQ6FyaesnyvEL9raya",
           "heading_path": "lsFusion Brief > Integration",
@@ -137,10 +143,10 @@
           "section_payload_hash": "sha256:adedd0f9ead0c5f1ed96fe905cedca9a32bd41175229c16ad1603797feabedf1",
           "source_file": "brief/Brief.md"
         },
-        "Brief::metaprogramming+identification--ergonomics": {
-          "file_id": "file-YNF9TDZEX25EJTse6zneZY",
-          "heading_path": "lsFusion Brief > Metaprogramming + Identification & ergonomics",
-          "section_payload_hash": "sha256:7292d768463054fe6ae61d0847241e97e904ac2d4a19df03fec70008eeeb75d0",
+        "Brief::metaprogramming": {
+          "file_id": "file-LdzKqE2G5CobPsqt9Jc6ic",
+          "heading_path": "lsFusion Brief > Metaprogramming",
+          "section_payload_hash": "sha256:28aaec7cb8fcd920d2aea8975033b099dce802b5aa592403bd61e30bbf9758a3",
           "source_file": "brief/Brief.md"
         },
         "Brief::migration+mini-map-for-ai": {
@@ -7059,8 +7065,8 @@
       "stale": false
     },
     "language/Pivot_block.md": {
-      "file_hash": "sha256:c7370a65f58a035dec9275820b4ccc3f0a5eae5abc7ab6a873340a7f359a75ac",
-      "indexed_at": "2026-07-08T10:47:56Z",
+      "file_hash": "sha256:09935458f91183082f068c37a7f509dc477350d6a7f802b44635e080b47416c1",
+      "indexed_at": "2026-08-14T09:41:11Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7070,9 +7076,9 @@
       },
       "sections": {
         "Pivot_block::description": {
-          "file_id": "file-HtbWWpMsQj1hEZLxxGhKN3",
+          "file_id": "file-GfM5eAn7gtzMdmSTL8E79E",
           "heading_path": "Pivot table settings block > Description",
-          "section_payload_hash": "sha256:dedcd64d1122841c01e6ccad92678d3b9b20b3853d2d9a99b2504e0f4f539600",
+          "section_payload_hash": "sha256:2e08a0e8d0e88ab2404c7f1f12003db169212b47f6a9871291c39525f327442e",
           "source_file": "language/Pivot_block.md"
         },
         "Pivot_block::example": {
@@ -15219,8 +15225,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:e593a95b7765f81d63ef7d7a01f60c7fa9d91be4fd4c4e890f06ae1c4de8c2f7",
-      "indexed_at": "2026-08-12T08:04:12Z",
+      "file_hash": "sha256:49d8ec88533cd810b33d108ea8b1ec66bb4f02a2c0c1d153acc6d9be3ca04def",
+      "indexed_at": "2026-08-14T09:41:20Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -15230,39 +15236,45 @@
       },
       "sections": {
         "Rules::lsfusion-rules::part-00": {
-          "file_id": "file-ToZ9KaTe3jP1mJreQC4CQf",
+          "file_id": "file-NsH6p1gsCNC7kGKogBmYXL",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:a5112f5126404654b9f5d99bd8d4ae97c40dc4e6244ce5965d2abe1e255dc75d",
+          "section_payload_hash": "sha256:a1f5db8f13db5bbe697eac2312159ea14e9919dbe116634aaa4871be6192d4bb",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
-          "file_id": "file-5rFaQGU2qQFVaw6kaik948",
+          "file_id": "file-8ivkhatmQPypHYxFHfUkMS",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:87ad5a85eab8f54635832a259d11616c9daf4479f3687cbfa8e1b2be2d69040c",
+          "section_payload_hash": "sha256:cce6c680172ce9df2ec5a9561a4ad37dc979ca1a11cb883e3c79c63cafc75c57",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-QBezDkSbQ2BpxeGrJ8RAWo",
+          "file_id": "file-H9eyD88Ey5rdcNUUokorkr",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:1166234f37e096c1eb1153c27a9def7ebafa559a920976ee3823ed4595deea56",
+          "section_payload_hash": "sha256:bb7e8d2e410358237677b8617a7fe47f4a00abfb5b8595dc8e637f5a04b5129a",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-T3trVBUoXbB2Hg8pZ5sUhY",
+          "file_id": "file-3fgaHjGy6Sjd19dUzyF2xi",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:7c70b45c03c26b40be80e0bd90d4005d556699d6385cae86ef84bef5b802e4c0",
+          "section_payload_hash": "sha256:942a922fb60760c5ce331146e8698c369ddf7441be9d8de2a77554f36e9311ac",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-04": {
-          "file_id": "file-JHMfaqswR8pkvSCiCpP93k",
+          "file_id": "file-U26WsTDN9cKzzUA7KxpQbB",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:7d7e12cc76c7122b002a9a5d1bcb74ba50a9f2ffcbf6d8182ffe7cc811b52b09",
+          "section_payload_hash": "sha256:88c2241273df44872c47887b60e564c4665ba99849b51b1047c5f629d1557e3a",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-05": {
-          "file_id": "file-5MM4NDxwu3j1M3wec4LqCM",
+          "file_id": "file-Sh4nDxVUGA2DtWtRdThbTX",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:e3edcfa3e90663788a89410684e905ca390801ce93685b96d198f88b71a1566a",
+          "section_payload_hash": "sha256:dae685eb4d0438fe72d7d0588ff6cf2e6f69443e94ba591f2c9448938223dd87",
+          "source_file": "rules/Rules.md"
+        },
+        "Rules::lsfusion-rules::part-06": {
+          "file_id": "file-9K4H8Jwec4Lm3o9Q7UCJDX",
+          "heading_path": "lsFusion Rules",
+          "section_payload_hash": "sha256:ca6acc099d694bddf11395e01af871b95cb0a36adb0df08519002b37803caf79",
           "source_file": "rules/Rules.md"
         }
       },
@@ -15369,7 +15381,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "b2414b9dd080074ef2fc19a084a423be0b0cce58",
+  "last_indexed_docs_commit": "2b4dda53f44b053b769187c55f5c555a0b8c36e5",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
