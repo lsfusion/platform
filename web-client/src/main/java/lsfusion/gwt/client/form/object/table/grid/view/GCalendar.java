@@ -179,6 +179,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                     calendar.view.activeStart, calendar.view.activeEnd, thisObj.@GCalendar::isDateTimeCurrentDateProp()());
             },
             eventClick: function (info) {
+                if (info.jsEvent.detail > 1) return; // 2nd+ click of a dblclick - that opens the record instead, see GSimpleStateTableView.onBrowserEvent
                 changeCurrentEvent(info.event, info.el);
             }
         });

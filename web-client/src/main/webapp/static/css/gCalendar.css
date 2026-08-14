@@ -10,7 +10,7 @@
 
 .fc-h-event, .fc-v-event, .fc-daygrid-event {
     background-color: var(--focus-color);
-    border: 1px solid var(--focus-color);
+    border: none;
     border-radius: 4px;
 }
 
@@ -18,9 +18,12 @@
     padding: 2px 4px;
 }
 
+/* a box-shadow ring rather than a wider border - a border adds to the element's own box size (which
+   shifted/resized the event and its neighbors the moment it got selected), a shadow just paints over
+   already-reserved space */
 .event-highlight {
     background-color: var(--focus-color);
-    border: 2px solid var(--text-color);
+    box-shadow: 0 0 0 2px var(--text-color);
 }
 
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
@@ -29,15 +32,15 @@
 }
 
 .fc .fc-timegrid .fc-col-header {
-    border-right: 1px solid var(--grid-separator-border-color);
+    border-right: 0.5px solid var(--component-border-color);
 }
 
 .fc .fc-timegrid .fc-daygrid-body {
-    border-right: 1px solid var(--grid-separator-border-color);
+    border-right: 0.5px solid var(--component-border-color);
 }
 
 .fc .fc-timegrid-body {
-    border-right: 1px solid var(--grid-separator-border-color);
+    border-right: 0.5px solid var(--component-border-color);
 }
 
 .fc .fc-timegrid-divider {
@@ -75,13 +78,13 @@
 }
 
 .fc-theme-standard th, .fc-theme-standard td {
-    border-width: 1px 0 0 1px;
+    border-width: 0.5px 0 0 0.5px;
     border-style: solid;
-    border-color: var(--grid-separator-border-color);
+    border-color: var(--component-border-color);
 }
 
 .fc-theme-standard th {
-    border-bottom: 1px solid var(--grid-separator-border-color);
+    border-bottom: 0.5px solid var(--component-border-color);
 }
 
 .fc-daygrid-dot-event .fc-event-title {

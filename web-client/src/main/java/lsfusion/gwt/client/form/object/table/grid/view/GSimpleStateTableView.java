@@ -16,6 +16,7 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -55,6 +56,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     public void onBrowserEvent(Element target, EventHandler eventHandler) {
 //        if((popupObject != null && getPopupElement().isOrHasChild(target))) // if there is a popupElement we'll consider it not to be part of this view (otherwise on mouse change event focusElement.focus works, and popup panel elements looses focus)
 //            return;
+
+        // a dblclick opens the full record below (via form.onPropertyBrowserEvent) - any popup already shown
+        // from the single click that preceded it would otherwise be left stuck on screen over the new form
+        if (popupObject != null && GMouseStroke.isDblClickEvent(eventHandler.event))
+            hidePopup();
 
         Element cellParent = getCellParent(target);
         form.onPropertyBrowserEvent(eventHandler, cellParent, cellParent != null, getTableDataFocusElement(),
