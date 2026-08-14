@@ -49,6 +49,8 @@ CONFIG configFunction
 
 Pivot table settings block allows you to set the initial settings for the form's pivot tables. It can be used to add properties on the form to the corresponding lists of columns (`COLUMNS` block), rows (`ROWS` block), and measures (`MEASURES` block) of the pivot table, as well as to specify initial values for some pivot table options.
 
+The block only sets these settings — it does not change the view type of the object group. For the group's properties to be displayed as a pivot table right away, the *pivot table* view type must be selected by the `PIVOT` [object group option](Object_blocks.md#objects). If this view type is not the initial one, the specified settings, except `settingsType`, take effect when the user first switches the group to it.
+
 ### Parameters
 
 - `formPropertyName`

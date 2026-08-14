@@ -201,8 +201,8 @@ Format: **very concise**, for understanding and code generation. Detailed descri
 
 ## Metaprogramming
 - **Analogy**: code generators/templates in language.
-- **Description**: `@` operator generates code from descriptions; IDE can auto-generate.
-- **Syntax (search)**: `@metaName { ... }`
+- **Description**: the `@` statement generates code from descriptions; IDE can auto-generate. A `META` body consists of module-level statements (not action operators); the `@` statement itself is module-level.
+- **Syntax (search)**: `META name(param1, ...) ... END`, `@name(arg1, ...);`
 
 ---
 
