@@ -6741,8 +6741,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:33e758ca261d0ab6e8ffd128e758e71d8f1ad30e8a88050357d64fbae2cfaa73",
-      "indexed_at": "2026-07-21T10:27:58Z",
+      "file_hash": "sha256:a769812b2df1c45458fe37de47171c6f5d40bf5c9ed308a189d5c8cffdb5f37d",
+      "indexed_at": "2026-08-17T10:40:24Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6812,9 +6812,9 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-01": {
-          "file_id": "file-81LMqXE1zoEpakmJYjQUpp",
+          "file_id": "file-VP5bUJAH2AUCCYBJzV2jiv",
           "heading_path": "Object blocks > Object block {#objects} > Object group options",
-          "section_payload_hash": "sha256:f16f9fd4895272df67df64ed0e9afb2b31be78b63d59dadc3703399d09f6a88e",
+          "section_payload_hash": "sha256:cc5ab4b25d66c4d954ad1966dc5b0e892bd2207274eb5273f38f67598dbe58bc",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-options": {
@@ -13653,8 +13653,8 @@
       "stale": false
     },
     "paradigm/Structured_view.md": {
-      "file_hash": "sha256:c9e154ae81edfc2a38cf98d16499df1f4c805c9e9b6cdf585bd359580460e1ae",
-      "indexed_at": "2026-08-12T08:04:04Z",
+      "file_hash": "sha256:afd473563911614f337ec98b6abe13623603cc3be461fcb07b0d8b2a50046b16",
+      "indexed_at": "2026-08-17T10:40:31Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13675,10 +13675,10 @@
           "section_payload_hash": "sha256:238ea2c3229a0b7ee290ab1dd26fee1e2a52414e90a9d73af2bb464dc59523d2",
           "source_file": "paradigm/Structured_view.md"
         },
-        "Structured_view::flat-view": {
-          "file_id": "file-9oez72yUS9CyaKvFaSUCF8",
-          "heading_path": "Structured view > Flat view",
-          "section_payload_hash": "sha256:d194fb81ba23439e5d6104a07848ef194582bec11044b9068d668c0ef3d916e6",
+        "Structured_view::flat-view-flat": {
+          "file_id": "file-PK3w19pMbYS6QHLZn7FdTB",
+          "heading_path": "Structured view > Flat view {#flat}",
+          "section_payload_hash": "sha256:8cdd048d08baf6f24b51996d76f676bab4e9f485c748edbfa3e28983751dd362",
           "source_file": "paradigm/Structured_view.md"
         },
         "Structured_view::hierarchical-view-hierarchy": {
@@ -13691,6 +13691,12 @@
           "file_id": "file-9mZjXdFn2AbgbPCJasLX4M",
           "heading_path": "Structured view > Language + Open form",
           "section_payload_hash": "sha256:09c5b5490537bdc9a6a225ba80f1002b4a29ab896aa796249b2153c062556610",
+          "source_file": "paradigm/Structured_view.md"
+        },
+        "Structured_view::object-group-key-extkey": {
+          "file_id": "file-SK7TWURJyphgQ75oweCyAW",
+          "heading_path": "Structured view > Object group key {#extkey}",
+          "section_payload_hash": "sha256:fcad7a919e5b590132122943ad593a9c8a478e4f7edc72bbf5f32aa78e4ab3e5",
           "source_file": "paradigm/Structured_view.md"
         },
         "Structured_view::predefined-value-value": {
@@ -15381,7 +15387,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "2b4dda53f44b053b769187c55f5c555a0b8c36e5",
+  "last_indexed_docs_commit": "0cec37968256b9c295b681813eb164e0bf3eafeb",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
