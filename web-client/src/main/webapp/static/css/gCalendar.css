@@ -18,7 +18,7 @@
    the same breathing room from the day cell's border (left/right/bottom - FullCalendar already spaces
    the top) without relying on margin on a per-event wrapper */
 .fc-daygrid-day-events {
-    padding: 0 3px 3px;
+    padding: 0 3px 8px;
 }
 
 .fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title, .fc-daygrid-dot-event {
@@ -36,6 +36,18 @@
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
     color: var(--component-background-color);
     display: flex;
+    padding: 2px 6px;
+}
+
+/* the event's caption text had no line cap at all - with a long enough title (customer name etc.) its
+   height was unbounded and unpredictable, which is exactly what FullCalendar's dayMaxEvents "how many
+   events fit this row" measurement can't reliably budget around. Capping it to 3 lines, like we did for
+   DayPilot's month view, gives it a fixed, predictable per-event height to measure against instead. */
+.fc-h-event .fc-event-main > *, .fc-v-event .fc-event-main > * {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .fc .fc-timegrid .fc-col-header {
@@ -114,7 +126,7 @@
 
 .fc .fc-col-header-cell-cushion {
     font-weight: 600;
-    padding: 6px 4px;
+    padding: 4px 4px;
     color: var(--text-color);
 }
 
@@ -240,7 +252,7 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 
 .fc .fc-daygrid-day-number {
     text-decoration: none;
-    padding: 4px 6px;
+    padding: 2px 6px;
     font-weight: 500;
 }
 
@@ -250,7 +262,7 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 
 .fc .fc-daygrid-day-bottom {
     font-size: inherit;
-    margin: 4px 3px 0;
+    margin: 2px 3px 0;
 }
 
 .fc .fc-daygrid-more-link {
