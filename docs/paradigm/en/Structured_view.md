@@ -64,16 +64,16 @@ Before directly proceeding with the form export/import, the platform builds a hi
     -   [property groups](Groups_of_properties_and_actions.md) that all `X` descendants belong to are determined, then these property groups and their ancestors are automatically included in the hierarchy. Also:
         -   property groups become the parents of `X` descendants that belong to those groups
         -   the hierarchy of property groups is preserved
-        -   the `X` object group becomes the parent of the uppermost (i.e., that without parents) of the used property groups.
+        -   the `X` object group becomes the parent of the uppermost (i.e., those without parents) of the used property groups.
 
 
 :::info
-In a hierarchical view, object groups can be included in property groups as well as properties. 
+In a hierarchical view, object groups, like properties, can be included in property groups.
 :::
 
 
 :::info
-The described algorithm is very similar to the algorithm for building property containers in the [default design](Form_design.md#defaultDesign) (with the only difference being that it does not use the hierarchy of object groups). Like in the container building mechanism, the same property group can be included in the hierarchy several times for different groups of objects.
+The described algorithm is very similar to the algorithm for building property containers in the [default design](Form_design.md#defaultDesign) (with the only difference being that it does not use the hierarchy of object groups). As in the container building mechanism, the same property group can be included in the hierarchy several times for different groups of objects.
 :::
 
 After the hierarchy is built, the form is exported/imported recursively according to the following rules: 
@@ -129,7 +129,7 @@ XML of the object group ::=
 
 <a className="lsdoc-anchor" id="innerjson"/>
 
-When exporting to JSON, a string property value that is itself JSON (starts and ends with a square or curly bracket), for example a value of the `JSON` or `JSONTEXT` class, is embedded into the result as a nested object or array rather than as a string. If such a value cannot be parsed as JSON, it is exported as a plain string. The parsing is lenient: unquoted tokens are accepted, and text after the first parsed value is discarded, so a string value that merely resembles JSON (for example, `'[AA] [BB]'`) is embedded in altered form (`["AA"]`). The embedding can be disabled for an individual property with the ':escapeInnerJSON' postfix in the [export name](#extid); for string values that may begin with a bracket it should be disabled explicitly. When importing from JSON, conversely, if a nested object or array corresponds to a property in the imported document, its text representation is written to the property.
+When exporting to JSON, a string property value that is itself JSON (starts and ends with a square or curly bracket), for example a value of the `JSON` or `JSONTEXT` class, is embedded into the result as a nested object or array rather than as a string. If such a value cannot be parsed as JSON, it is exported as a plain string. The parsing is lenient: unquoted tokens are accepted, and text after the first parsed value is discarded, so a string value that merely resembles JSON (for example, `'[AA] [BB]'`) is embedded in altered form (`["AA"]`). The embedding can be disabled for an individual property with the ':escapeInnerJSON' postfix in the [export name](#extid). For string values that may begin with a bracket it should be disabled explicitly. When importing from JSON, conversely, if a nested object or array corresponds to a property in the imported document, its text representation is written to the property.
 
 When exporting/importing to XML, the special `ATTR` option can be specified for a property on the form. Thus, when exporting/importing that property, its value will be stored not in a separate tag, but in the attribute of the parent tag:
 
@@ -139,7 +139,7 @@ When exporting/importing to XML, the special `ATTR` option can be specified for 
 
 When importing from XML, the name of the uppermost tag (in the rule) is ignored (according to the XML specification, there should be only one such tag).
 
-On import, the file is matched against this hierarchy by names: the value of each property, property group, or object group is read from the element under its [export/import name](#extid). Elements of the file that do not correspond to any name in the hierarchy are ignored. The reverse situation raises no error either: an object group or property group with no matching element imports nothing (its entire subtree is skipped), while a property whose own element is missing from an imported record — with its parent element present — is imported as `NULL`. In particular, when importing from JSON, the records of an object group are read only from an array under a key equal to that group's export/import name; a root-level array is converted to `{ "value" : [ ... ] }` (see [Predefined value](#value)) and is therefore read only by an object group with the export/import name `value`.
+On import, the file is matched against this hierarchy by names: the value of each property, property group, or object group is read from the element under its [export/import name](#extid). Elements of the file that do not correspond to any name in the hierarchy are ignored. The reverse situation raises no error either: an object group or property group with no matching element imports nothing (its entire subtree is skipped), while a property whose own element is missing from an imported record — with its parent element present — is imported as `NULL`. In particular, when importing from JSON, the records of an object group are read only from an array under a key equal to that group's export/import name. A root-level array is converted to `{ "value" : [ ... ] }` (see [Predefined value](#value)) and is therefore read only by an object group with the export/import name `value`.
 
 An empty string in the file is imported into a string property as follows: JSON keeps it as an empty non-`NULL` string — thus a value distinct from an absent field and from an explicit `null`, both of which are imported as `NULL` — while CSV and XML import it as `NULL`.
 
@@ -203,15 +203,15 @@ That is, the price values will be written for the barcodes read from the keys of
 
 ### Predefined value {#value}
 
-When importing JSON, if for an object group an array ( `[ ]` ) of values contains not an object ( `{ }` ), but a specific value (for example, a number or a string), then this value is automatically converted to an object `{ "value" : value }`. A similar conversion is performed when exporting an object group to JSON: if the object contains exactly one `value` key (i.e., it has the form `{ "value" : value}`), then instead of it, the value for this `value` key is substituted to the resulting JSON. In addition to "ordinary" object groups, the same conversions are also performed for the empty root object group, i.e., for example JSON `["ab","vv"]` is processed as JSON `{ "value" : ["ab","vv"] }`.
+When importing JSON, if for an object group an array ( `[ ]` ) of values contains not an object ( `{ }` ), but a specific value (for example, a number or a string), then this value is automatically converted to an object `{ "value" : value }`. A similar conversion is performed when exporting an object group to JSON: if the object contains exactly one `value` key (i.e., it has the form `{ "value" : value}`), then instead of it, the value for this `value` key is substituted to the resulting JSON. In addition to "ordinary" object groups, the same conversions are also performed for the empty root object group, i.e., for example, JSON `["ab","vv"]` is processed as JSON `{ "value" : ["ab","vv"] }`.
 
 When importing/exporting XML, if the property is named `value`, then the value of this property will be stored not in a separate tag, but inside (in the text) the parent tag (i.e., as if the parent tag itself was a property view). This behavior is usually used if the parent tag has other tags/attributes in it (XML specification allows this).
 
-When importing XML, if the object group is named `value`, then all tags are read (with any name). 
+When importing XML, if the object group is named `value`, then all tags are read (with any name).
 
 ### XML namespaces
 
-Unlike other formats, XML supports a concept of namespaces for tags and attributes.
+Unlike other formats, XML supports the concept of namespaces for tags and attributes.
 
 For example, in **lsFusion** to export a property to a tag with a specified namespace, you must specify the name of this property using a special syntax:
 
@@ -226,7 +226,7 @@ For example, `h:table` or `h=http://www.w3.org/TR/html4:table`. The namespace na
 It is not possible to specify the property name described above (for example, `h:table`) in the lsFusion syntax (since the name cannot contain a colon), therefore, to specify such an export name, you should use the [described above](#extid) `EXTID` option.
 :::
 
-If a namespace must be declared in a tag , but the tag itself should not belong to it, you must add a property marked `ATTR` and named `xmlns:namespace` to the export. It is assumed that the value of this property will contain the URI of the declared namespace.
+If a namespace must be declared in a tag, but the tag itself should not belong to it, you must add a property marked `ATTR` and named `xmlns:namespace` to the export. It is assumed that the value of this property will contain the URI of the declared namespace.
 
 Working with namespaces is similar when importing properties, as well as when working with object groups/property groups.
 
@@ -235,11 +235,11 @@ Working with namespaces is similar when importing properties, as well as when wo
 Each file for an object group in flat view is a table in which:
 
 -   Rows are object collections of this object group.
--   Columns are properties, which display groups are equal to this object group.
+-   Columns are properties whose display groups are equal to this object group.
 
 If a [key](#extkey) is specified for the object group, columns with the values of the objects of this object group are added to these columns - one for each object, before the property columns (that is, after the `parent` column, if there is one). They are named, like the other elements of the file, by the [export/import name](#extid) of the object.
 
-In CSV format (when there is no first header line), the columns are named similarly to XLS (i.e., `A` is the first, `B` is the second, etc.)
+In CSV format (when there is no first header line), the columns are named similarly to XLS (i.e., `A` is the first, `B` is the second, etc.).
 
 If a column with the form property name is not found when importing the form, then the column next to the column of the previous property in the list of form properties is selected for import (in this case, the `parent` column is considered the first).
 
