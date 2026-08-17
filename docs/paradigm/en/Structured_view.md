@@ -145,6 +145,62 @@ An empty string in the file is imported into a string property as follows: JSON 
 
 Properties with `NULL` values, as well as property groups that do not have any tags inside as a result of export, are not exported (ignored).
 
+### Object group key {#extkey}
+
+By default, the object collections of an object group are determined in the file by their position: in the hierarchical view, by the order of the records, in the [flat](#flat) one, by the order of the rows in the table. The values of the objects themselves are not written to the file, and on import the platform determines them itself: for an object of a [concrete custom class](User_classes.md), a new object is created, for an object of a numerical class, the sequence number of the object collection is used, starting from zero, and for a nested object group the numbering is continuous - it does not restart for each record of the parent group. Accordingly, an object group imported this way must consist of exactly one object of a concrete custom or numerical class.
+
+If the corresponding option (`EXTKEY`) is specified for an object group, its object collections are determined in the file not by position, but by the values of their objects: on export these values are written to the file, on import they are read from it. In the hierarchical view, such an object group is represented not as a list, but as key-value pairs, where the key is the value of the object:
+
+*JSON*:
+```json
+JSON of the object group ::=
+    "object group name" : {
+        "object value 1" : { JSON with child properties, groups of properties/objects 1 },
+        "object value 2" : { JSON with child properties, groups of properties/objects 2 },
+        ...
+        "object value N" : { JSON with child properties, groups of properties/objects N },
+    }
+```
+
+*XML*:
+```xml
+XML of the object group ::=
+    <object group name>
+        <object value 1> XML with child properties, groups of properties/objects 1 </object value 1>
+        <object value 2> XML with child properties, groups of properties/objects 2 </object value 2>
+        ...
+        <object value N> XML with child properties, groups of properties/objects N </object value N>
+    </object group name>
+```
+
+In the hierarchical view, an object group with a key must consist of exactly one object of a [built-in class](Built-in_classes.md), whose value is written as the key (in XML, as a tag name, so it must be a valid tag name). In the [flat view](#flat) there are no restrictions on the composition of the object group, and the values of the objects are written to separate columns of the table.
+
+On import, object collections with the same key are considered one object collection, and the property values for it are taken from the last such record in the file.
+
+For example, for the form:
+
+```lsf
+price = DATA NUMERIC[14,2] (STRING[13]);
+
+FORM importPrices
+    OBJECTS barcode = STRING[13] EXTKEY
+    PROPERTIES(barcode) price
+;
+```
+
+the imported file will look as follows:
+
+```json
+{
+    "barcode" : {
+        "4600000000017" : { "price" : 12.5 },
+        "4600000000024" : { "price" : 9.9 }
+    }
+}
+```
+
+That is, the price values will be written for the barcodes read from the keys of the file.
+
 ### Predefined value {#value}
 
 When importing JSON, if for an object group an array ( `[ ]` ) of values contains not an object ( `{ }` ), but a specific value (for example, a number or a string), then this value is automatically converted to an object `{ "value" : value }`. A similar conversion is performed when exporting an object group to JSON: if the object contains exactly one `value` key (i.e., it has the form `{ "value" : value}`), then instead of it, the value for this `value` key is substituted to the resulting JSON. In addition to "ordinary" object groups, the same conversions are also performed for the empty root object group, i.e., for example JSON `["ab","vv"]` is processed as JSON `{ "value" : ["ab","vv"] }`.
@@ -174,12 +230,14 @@ If a namespace must be declared in a tag , but the tag itself should not belong 
 
 Working with namespaces is similar when importing properties, as well as when working with object groups/property groups.
 
-### Flat view
+### Flat view {#flat}
 
 Each file for an object group in flat view is a table in which:
 
 -   Rows are object collections of this object group.
 -   Columns are properties, which display groups are equal to this object group.
+
+If a [key](#extkey) is specified for the object group, columns with the values of the objects of this object group are added to these columns - one for each object, before the property columns (that is, after the `parent` column, if there is one). They are named, like the other elements of the file, by the [export/import name](#extid) of the object.
 
 In CSV format (when there is no first header line), the columns are named similarly to XLS (i.e., `A` is the first, `B` is the second, etc.)
 

@@ -282,7 +282,9 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
 - `EXTKEY`
 
-    When keyword `EXTKEY` is specified the values of objects and properties of this object group are represented in a structured view as key-value pairs, where the key is the value of the object (set of objects) and the value is the property values. By default, they are represented as an array with lists of property values.
+    When this keyword is specified, the object collections of this object group are determined in the [structured view](../paradigm/Structured_view.md#extkey) by the values of their objects: on export these values are written to the file, on import they are read from it. In the hierarchical view, such an object group is represented as key-value pairs, where the key is the value of the object and the value is the property values. By default, object collections are determined by their position, and the values of the objects are not written to the file.
+
+    In the hierarchical view, an object group with this option must consist of exactly one object of a [built-in class](../paradigm/Built-in_classes.md).
 
 - `SUBREPORT [subReportExpression]`
 
