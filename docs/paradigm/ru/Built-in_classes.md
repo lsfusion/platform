@@ -10,60 +10,68 @@ title: 'Встроенные классы'
 |`INTEGER`            |Четырехбайтное целое число|`5`, `23`, `1000000000`|
 |`LONG`               |Восьмибайтное целое число |`5l`, `23L`, `10000000000000L`|
 |`DOUBLE`             |Восьмибайтное число с плавающей точкой|`5.0d`, `2.35D`|
-|`NUMERIC[ , ]`       |Число с фиксированной разрядностью и точностью|`5.0`, `2.35`|
+|`NUMERIC`, `NUMERIC[ , ]`|Число с фиксированной разрядностью и точностью|`5.0`, `2.35`|
 |`BOOLEAN`            |Логический тип данных     |`TRUE`, `NULL`|
-|`TBOOLEAN`           |Расширенный логический тип данных |`TTRUE`, `TFALSE`, `NULL`|
-|`DATE`               |Дата                      |`13_07_1982`|
-|`DATETIME`, `DATETIME[ ]`|Дата и время, при необходимости с точностью до долей секунды (от 0 до 6)|`13_07_1982_18:00`, `13_07_1982_18:00:00`|
+|`TBOOLEAN`           |Логический тип данных с отдельным значением «ложь»|`TTRUE`, `TFALSE`, `NULL`|
+|`DATE`               |Дата                      |`1982_07_13`|
+|`DATETIME`, `DATETIME[ ]`|Дата и время, при необходимости с точностью до долей секунды (от 0 до 6)|`1982_07_13_18:00`, `1982_07_13_18:00:00`|
 |`ZDATETIME`, `ZDATETIME[ ]`|Дата и время с часовым поясом, при необходимости с точностью до долей секунды (от 0 до 6)||
 |`TIME`, `TIME[ ]`    |Время, при необходимости с точностью до долей секунды (от 0 до 6)|`18:00`, `18:00:00`|
 |`YEAR`               |Год                       ||
 |`INTERVAL[DATE]`, `INTERVAL[DATETIME]`, `INTERVAL[TIME]`, `INTERVAL[ZDATETIME]`|Интервал — пара граничных значений (от / до) соответствующего класса даты / времени||
-|`STRING`, `STRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, зависимый от регистра||
+|`STRING`, `STRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, зависимый от регистра|`'text'`, `'text with\nbreak'`|
 |`ISTRING`, `ISTRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, независимый от регистра||
-|`BPSTRING[]`         |Строковый тип данных с максимальной длиной, зависимый от регистра, с пробелами в конце|`'text'`, `'text with\nbreak'`|
-|`BPISTRING[]`        |Строковый тип данных с максимальной длиной, независимый от регистра, с пробелами в конце||
+|`BPSTRING`, `BPSTRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, зависимый от регистра, хранящийся в базе данных строкой фиксированной длины||
+|`BPISTRING`, `BPISTRING[ ]`|Строковый тип данных, при необходимости с максимальной длиной, независимый от регистра, хранящийся в базе данных строкой фиксированной длины||
 |`TEXT`               |Строковый тип данных произвольной длины, независимый от регистра||
 |`RICHTEXT`           |Строковый тип данных произвольной длины с форматированием, независимый от регистра||
 |`HTMLTEXT`           |Строковый тип данных произвольной длины с HTML-разметкой, независимый от регистра||
 |`COLOR`              |Цвет|`#00ccff`, `#AA55CC`, `RGB(0, 255, 0)`|
-|`JSON`               |JSON|`{"a":["x","y","z"]}`|
-|`JSONTEXT`           |JSON, хранящийся в виде текстовой строки||
-|`XML`                |XML|`<tag>value</tag>`|
+|`JSON`               |JSON в нормализованном виде (порядок ключей, дубликаты ключей и форматирование не сохраняются)||
+|`JSONTEXT`           |JSON, хранящийся в виде текстовой строки как есть||
+|`XML`                |XML||
 |`HTML`               |HTML-разметка, хранящаяся в виде строки||
 |`TSVECTOR`           |Вектор полнотекстового поиска||
 |`TSQUERY`            |Запрос полнотекстового поиска||
 |`FILE`               |Файл динамического типа (содержимое файла вместе с его расширением)||
 |`NAMEDFILE`          |Файл динамического типа (содержимое файла вместе с его именем и расширением)||
 |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
-|`LINK`               |Символьный идентификатор-ссылка на файл (URI)||
-|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Символьный идентификатор-ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
+|`LINK`               |Ссылка на файл (URI)||
+|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
 
 ## Наследование {#inheritance}
 
-Среди всех встроенных классов можно выделить четыре *семейства* классов (будем считать, что каждый из остальных классов образует свое семейство классов)
+Среди всех встроенных классов можно выделить семь *семейств* классов (будем считать, что каждый из остальных классов образует свое семейство классов)
 
-|Семейство классов                 |Описание                                    |
+|Семейство классов                 |Классы                                      |
 |----------------------------------|--------------------------------------------|
-|Числа                             |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC [ , ]`|
-|Строки                            |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`, `RICHTEXT`, `HTMLTEXT`|
-|Файлы конкретного типа            |`RAWFILE,` `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
+|Числа                             |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC`, `NUMERIC[ , ]`, `YEAR`|
+|Строки                            |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[ ]`, `BPSTRING`, `BPSTRING[ ]`, `BPISTRING`, `BPISTRING[ ]`, `TEXT`, `RICHTEXT`, `HTMLTEXT`|
+|Дата и время                      |`DATETIME`, `DATETIME[ ]`|
+|Время                             |`TIME`, `TIME[ ]`|
+|Дата и время с часовым поясом     |`ZDATETIME`, `ZDATETIME[ ]`|
+|Файлы конкретного типа            |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
 |Ссылки на файлы конкретного типа  |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
-Встроенные классы наследуют друг друга только в рамках одного семейства и не могут наследовать / наследоваться от пользовательских классов. Наследование в рамках одного семейства строится по принципу: более узкий класс наследуется от более широкого.
+Встроенные классы наследуют друг друга только в рамках одного семейства и не могут наследовать / наследоваться от пользовательских классов. Наследование в рамках одного семейства строится по принципу: более узкий класс наследуется от более широкого. Если классы семейства различаются сразу по нескольким характеристикам (для строк — дополнение пробелами, независимость от регистра и максимальная длина, для чисел — целая часть и точность), класс наследуется от другого только тогда, когда он не шире ни по одной из них; классы, которые шире по одной характеристике и уже по другой, друг от друга не наследуются, и их общим предком является третий класс того же семейства. В семействах `DATETIME`, `TIME` и `ZDATETIME` точность до долей секунды такой характеристикой не является: любой класс такого семейства наследуется от любого другого класса того же семейства.
 
 Класс, образующий собственное семейство, несовместим с классами других семейств и не имеет с ними общего предка. В частности, класс `HTML` (в отличие от `HTMLTEXT`, входящего в семейство строк) несовместим со строковыми классами: [выбор](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) с ветками классов `HTML` и `STRING` не имеет общего предка, поэтому такое свойство не может принимать значений, и сервер при старте выдаёт ошибку `property '...' is always NULL`. Сложение (`+`) значения класса `HTML` со строкой при этом не является ошибкой, но возвращает обычную строку: результат теряет класс `HTML`, и разметка при отображении будет экранирована.
 
 ## Общий предок {#commonparentclass}
 
-В соответствии с описанным механизмом наследования, общий предок двух встроенных классов (например для операции [выбора](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md)) определяется следующим образом:
+В соответствии с описанным механизмом наследования, общий предок двух встроенных классов (например для операции [выбора](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md)) определяется следующим образом. Если классов больше двух, они объединяются попарно, по очереди. В правилах ниже два объединяемых класса записаны в том порядке, в котором их объединяет платформа; этот порядок имеет значение только там, где каждый из двух классов наследуется от другого — в таких случаях результатом является один из двух классов, и определяется он не самой парой классов.
 
 ### Строки
 
 ```
-result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded, 
-                caseInsensitive = s1.caseInsensitive OR s2.caseInsensitive, 
-                length = MAX(s1.length, s2.length)]
+IF s1 is TEXT, RICHTEXT or HTMLTEXT
+    result = s1
+ELSE IF s2 is TEXT, RICHTEXT or HTMLTEXT
+    result = s2
+ELSE
+    result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded, 
+                    caseInsensitive = s1.caseInsensitive OR s2.caseInsensitive, 
+                    length = MAX(s1.length, s2.length)]
 ```
 
 где `blankPadded`, `caseInsensitive` и `length`, в свою очередь, определяются как:
@@ -74,9 +82,10 @@ result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded,
 |`ISTRING[n]`  |false      |true           |n     |
 |`BPSTRING[n]` |true       |false          |n     |
 |`BPISTRING[n]`|true       |true           |n     |
-|`TEXT`        |false      |true           |infinite|
-|`RICHTEXT`    |false      |true           |infinite|
-|`HTMLTEXT`    |false      |true           |infinite|
+
+Имя класса, записанное без длины, означает неограниченную длину, которая больше любого `n`; если длина результата неограниченна, результатом является класс, записанный без длины (`STRING`, `ISTRING`, `BPSTRING`, `BPISTRING`).
+
+Классы `TEXT`, `RICHTEXT` и `HTMLTEXT` не дополняются пробелами, независимы от регистра и имеют неограниченную длину, а дополнение пробелами, зависимость от регистра и максимальная длина второго класса не учитываются: общим предком `BPSTRING[10]` и `TEXT` является `TEXT`, который не дополняется пробелами. Порядок двух классов имеет значение, только если оба они входят в тройку `TEXT`, `RICHTEXT`, `HTMLTEXT`: эти три класса наследуются друг от друга в обе стороны, поэтому результатом является первый из двух, и такого сочетания следует избегать.
 
 ### Числа
 
@@ -96,9 +105,15 @@ ELSE
 |Имя класса    |integerPart|precision|
 |--------------|-----------|---------|
 |`INTEGER`     |10         |0        |
+|`YEAR`        |10         |0        |
 |`DOUBLE`      |99999      |99999    |
 |`LONG`        |20         |0        |
-|`NUMERIC[l,p]`|length-precision|precision|
+|`NUMERIC[l,p]`|l - p      |p        |
+|`NUMERIC`     |95         |32       |
+
+У классов `INTEGER` и `YEAR` целая часть и точность совпадают, поэтому каждый из них наследуется от другого, и результатом является первый из двух.
+
+В любом классе `NUMERIC` общая разрядность (`integerPart` + `precision`) не может превышать 127, а точность — 32; если формула даёт бо́льшую разрядность, она урезается до 127, что уменьшает целую часть результата.
 
 ### Файлы конкретного типа
 
@@ -118,24 +133,35 @@ ELSE
     result = RAWLINK
 ```
 
-Отметим, что иногда в программировании определение общего родительского класса принято ассоциировать с *неявным приведением типов*.
+`FILE`, `NAMEDFILE` и `LINK` не входят ни в одно из этих семейств: они не являются более широкими классами для файлов и ссылок конкретного типа и не имеют общего предка ни с ними, ни друг с другом. Два встроенных класса, у которых нет общего предка, не могут быть возможными результатами одного свойства — например, [выбора](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) или [экстремума](Extremum_MAX_MIN.md); значение одного из них получается из другого только [преобразованием типа](Type_conversion.md), которое пишет разработчик или выполняет сама платформа — как при преобразовании файла конкретного типа к `FILE` или `NAMEDFILE`, когда он [получает расширение](#extension).
 
 ## Значение по умолчанию {#defaultvalue}
 
-В некоторых случаях для встроенного класса необходимо использовать некоторое значение, которое будет заведомо отличаться от `NULL` (например, в условии импорта при [импорте данных](Data_import_IMPORT.md)). Это значение будем называть *значением по умолчанию*, и определяется оно следующим образом:
+В некоторых случаях для встроенного класса необходимо использовать некоторое значение, которое будет заведомо отличаться от `NULL`. Это значение будем называть *значением по умолчанию*. Оно используется:
+
+-   при [импорте данных](Data_import_IMPORT.md) - в условии импорта, а также в колонках, `NULL` значения которых заменяются
+-   при [импорте формы](In_a_structured_view_EXPORT_IMPORT.md#importForm) - в фильтрах импортируемой формы
+-   при автоматическом разрешении [простых ограничений](Simple_constraints.md)
+-   при [добавлении объекта](Interactive_view.md#objectoperators) на форму, к которой применяются фильтры
+
+Определяется значение по умолчанию следующим образом:
 
 |Имя класса            |Значение по умолчанию|
 |----------------------|---------------------|
 |Числовые классы       |`0`                  |
 |Строковые классы      |`''` (пустая строка) |
-|`DATE`, `TIME`, `DATETIME`|Текущие дата, время, дата / время|
-|`BOOLEAN`             |`TRUE`               |
+|`HTML`, `LINK`, ссылки на файлы конкретного типа|`''` (пустая строка)|
+|`DATE`, `TIME`, `DATETIME`, `ZDATETIME`|Текущие дата, время, дата / время, дата / время с часовым поясом|
+|`YEAR`                |Текущий год          |
+|Интервальные классы   |Интервал от текущего момента до текущего момента|
+|`BOOLEAN`             |`TRUE` (единственное значение этого класса, отличное от `NULL`)|
 |`TBOOLEAN`            |`TTRUE`              |
 |`COLOR`               |Белый цвет           |
-|`JSON`                |`{}`                 |
+|`JSON`, `JSONTEXT`    |`{}`                 |
 |Файлы конкретного типа|Пустой файл          |
 |`FILE`                |Пустой файл с пустым расширением|
 |`NAMEDFILE`           |Пустой файл с пустым именем и расширением|
+|`XML`, `TSVECTOR`, `TSQUERY`|Отсутствует    |
 
 ## Расширения файлов конкретного типа {#extension}
 
@@ -157,14 +183,87 @@ ELSE
 |`IMAGEFILE` |jpg          |
 |`TABLEFILE` |table        |
 
-## Порядок определения результирующего свойства при [обращении из внешней системы](Access_from_an_external_system.md#httpresult) {#export}
+Для классов `WORDFILE`, `EXCELFILE` и `IMAGEFILE` расширение дополнительно зависит от содержимого файла:
+
+|Имя класса  |Расширение   |
+|------------|-------------|
+|`WORDFILE`  |docx, если файл имеет формат Office Open XML|
+|`EXCELFILE` |xlsx, если файл имеет формат Office Open XML|
+|`IMAGEFILE` |png / bmp, если файл имеет формат PNG / BMP|
+
+Содержимое учитывается только тогда, когда значение файла передается как есть - показывается пользователю на форме, отправляется во внешнюю систему или добавляется вложением в [письмо](Send_mail_EMAIL.md). Если файл преобразуется к файлу динамического типа свойством, а также если содержимое не соответствует перечисленным форматам, используется расширение из первой таблицы.
+
+К файлу динамического типа могут преобразовываться и значения классов, не являющихся файлами конкретного типа; в этом случае расширение определяется следующим образом:
+
+|Имя класса  |Расширение   |
+|------------|-------------|
+|`HTML`      |html         |
+|`XML`       |xml          |
+|`JSON`, `JSONTEXT`|json   |
+|Строковые классы, `LINK`, ссылки на файлы конкретного типа|Пустая строка|
+
+## Результирующие свойства {#export}
+
+Для каждого встроенного класса в платформе объявлено *результирующее свойство* - свойство без параметров, хранящее значение этого класса. Через них действие, [вызванное из внешней системы](Access_from_an_external_system.md#httpresult), передаёт свой результат в ответ: если в запросе не указаны возвращаемые свойства и у самого действия нет результата, в ответ попадает значение первого свойства из списка ниже, не равное `NULL`; список просматривается сверху вниз. Если значения всех этих свойств равны `NULL`, ответ будет пустым.
 
 |Имя класса|Имя свойства|
-|----------|------------|
-|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `TEXTFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportTextFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
-|`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
-|`DATETIME`, `DATE`, `TIME`, `YEAR`| `exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
-|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `TEXTLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
-|`BOOLEAN`, `TBOOLEAN`, `COLOR`, `JSON`, `XML`|`exportBoolean`, `exportTBoolean`, `exportColor`, `exportJSON`, `exportXML`|
-|[Пользовательские классы](User_classes.md)|`exportObject`|
+|---|---|
+|`FILE`|`exportFile[]`|
+|`RAWFILE`|`exportRawFile[]`|
+|`WORDFILE`|`exportWordFile[]`|
+|`IMAGEFILE`|`exportImageFile[]`|
+|`PDFFILE`|`exportPdfFile[]`|
+|`VIDEOFILE`|`exportVideoFile[]`|
+|`DBFFILE`|`exportDbfFile[]`|
+|`EXCELFILE`|`exportExcelFile[]`|
+|`TEXTFILE`|`exportTextFile[]`|
+|`CSVFILE`|`exportCsvFile[]`|
+|`HTMLFILE`|`exportHtmlFile[]`|
+|`JSONFILE`|`exportJsonFile[]`|
+|`XMLFILE`|`exportXmlFile[]`|
+|`TABLEFILE`|`exportTableFile[]`|
+|`NAMEDFILE`|`exportNamedFile[]`|
+|`TEXT`|`exportText[]`|
+|`RICHTEXT`|`exportRichText[]`|
+|`HTMLTEXT`|`exportHTMLText[]`|
+|`STRING`|`exportString[]`|
+|`BPSTRING`|`exportBpString[]`|
+|`NUMERIC`|`exportNumeric[]`|
+|`LONG`|`exportLong[]`|
+|`INTEGER`|`exportInteger[]`|
+|`DOUBLE`|`exportDouble[]`|
+|`DATETIME`|`exportDateTime[]`|
+|`ZDATETIME`|`exportZDateTime[]`|
+|`INTERVAL[DATE]`|`exportIntervalDate[]`|
+|`INTERVAL[DATETIME]`|`exportIntervalDateTime[]`|
+|`INTERVAL[TIME]`|`exportIntervalTime[]`|
+|`INTERVAL[ZDATETIME]`|`exportIntervalZDateTime[]`|
+|`DATE`|`exportDate[]`|
+|`TIME`|`exportTime[]`|
+|`YEAR`|`exportYear[]`|
+|`LINK`|`exportLink[]`|
+|`RAWLINK`|`exportRawLink[]`|
+|`WORDLINK`|`exportWordLink[]`|
+|`IMAGELINK`|`exportImageLink[]`|
+|`PDFLINK`|`exportPdfLink[]`|
+|`VIDEOLINK`|`exportVideoLink[]`|
+|`DBFLINK`|`exportDbfLink[]`|
+|`EXCELLINK`|`exportExcelLink[]`|
+|`TEXTLINK`|`exportTextLink[]`|
+|`CSVLINK`|`exportCsvLink[]`|
+|`HTMLLINK`|`exportHtmlLink[]`|
+|`JSONLINK`|`exportJsonLink[]`|
+|`XMLLINK`|`exportXmlLink[]`|
+|`TABLELINK`|`exportTableLink[]`|
+|`BOOLEAN`|`exportBoolean[]`|
+|`TBOOLEAN`|`exportTBoolean[]`|
+|`COLOR`|`exportColor[]`|
+|`JSON`|`exportJSON[]`|
+|`JSONTEXT`|`exportJSONText[]`|
+|`XML`|`exportXML[]`|
+|[Пользовательские классы](User_classes.md)|`exportObject[]`|
+|`TSVECTOR`|`exportTSVectorLink[]`|
+
+## Язык
+
+Встроенный класс записывается в коде как [идентификатор класса](../language/IDs.md#classid) - ключевое слово, обозначающее этот класс. Значения встроенных классов записываются в виде [литералов](../language/Literals.md), каждый из которых имеет свою форму и ограничения.
