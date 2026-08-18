@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.async.map;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -73,6 +74,21 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
 
     public <P extends PropertyInterface> AsyncMapInputListAction<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
         return new AsyncMapInputListAction<>(action, id, asyncExec != null ? asyncExec.mapJoin(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList, check, index);
+    }
+
+    // the image is not compared - it is a reader created per action, but it follows the id (fixed for the platform actions, the image file name for the scripted ones)
+    public AsyncMapInputListAction<T> merge(AsyncMapInputListAction<T> mergeAction) {
+        if(!BaseUtils.nullEquals(id, mergeAction.id) || !BaseUtils.nullEquals(keyStroke, mergeAction.keyStroke) ||
+                !BaseUtils.nullEquals(bindingModesMap, mergeAction.bindingModesMap) || !BaseUtils.nullEquals(priority, mergeAction.priority) ||
+                !quickAccessList.equals(mergeAction.quickAccessList))
+            return null;
+
+        // the action is shown only if it's allowed in all branches
+        Predicate<SecurityPolicy> mergedCheck = check == null ? mergeAction.check : (mergeAction.check == null ? check : check.and(mergeAction.check));
+
+        // the async exec of the branches is dropped: it opens the form of the branch, and the merged one is not necessarily the form (and the window type) the executed branch will open -
+        // the client would then pre-open a window that never gets its form and stays loading next to the real one (seen on the stand). It is just an optimization, the action is executed on the server anyway
+        return new AsyncMapInputListAction<>(action, id, null, keyStroke, bindingModesMap, priority, quickAccessList, mergedCheck, index);
     }
 
     public AsyncMapInputListAction<T> replace(String replaceAction, AsyncMapEventExec<T> asyncExec) {

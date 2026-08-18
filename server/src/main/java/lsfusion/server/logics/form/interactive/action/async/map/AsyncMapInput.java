@@ -3,9 +3,11 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.file.AppImage;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
@@ -114,14 +116,44 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
             return null;
 
         AsyncMapInput<T> dataInput = ((AsyncMapInput<T>)input);
-        if(list != null || dataInput.list != null) // later it maybe makes sense to "or" this lists
+        if((list == null) != (dataInput.list == null)) // later it maybe makes sense to "or" this lists
             return null;
+
+        InputContextListEntity<?, T> mergedList = null;
+        ImList<AsyncMapInputListAction<T>> mergedActions = null;
+        if(list != null) {
+            // the branches of the same abstract usually have the very same list (for example the object-id input list, added for an object input without an explicit LIST),
+            // and everything the client builds the editor from has to match, since it is chosen before the executed branch is known
+            if(strict != dataInput.strict || !list.equalsList(dataInput.list) || !BaseUtils.nullEquals(customEditorFunction, dataInput.customEditorFunction))
+                return null;
+
+            mergedActions = mergeActions(actions, dataInput.actions);
+            if(mergedActions == null)
+                return null;
+
+            mergedList = list;
+        }
 
         DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
         if(compatibleType != null)
-            return new AsyncMapInput<>(compatibleType, null, null, false, multipleInput || dataInput.multipleInput, hasDrawOldValue || dataInput.hasDrawOldValue,
+            return new AsyncMapInput<>(compatibleType, mergedList, mergedActions, strict, multipleInput || dataInput.multipleInput, hasDrawOldValue || dataInput.hasDrawOldValue,
                     oldValue == null || dataInput.oldValue == null || oldValue.equals(dataInput.oldValue) ? BaseUtils.nvl(oldValue, dataInput.oldValue) : null, customEditorFunction);
         return null;
+    }
+
+    // the actions are matched one by one, since the executed branch resolves the chosen action by its index (see InputAction.executeInternal)
+    private static <T extends PropertyInterface> ImList<AsyncMapInputListAction<T>> mergeActions(ImList<AsyncMapInputListAction<T>> actions1, ImList<AsyncMapInputListAction<T>> actions2) {
+        if(actions1.size() != actions2.size())
+            return null;
+
+        MList<AsyncMapInputListAction<T>> mResult = ListFact.mList(actions1.size());
+        for(int i = 0, size = actions1.size(); i < size; i++) {
+            AsyncMapInputListAction<T> mergedAction = actions1.get(i).merge(actions2.get(i));
+            if(mergedAction == null)
+                return null;
+            mResult.add(mergedAction);
+        }
+        return mResult.immutableList();
     }
 
     @Override

@@ -42,6 +42,11 @@ public abstract class InputListEntity<P extends PropertyInterface, V extends Pro
             return (InputListEntity<P, V, T>) new InputActionListEntity<>((Action<P>) property, mapValues);
     }
 
+    // the property is compared by reference - in the branches it's the same instance (for example the object-id input cast)
+    public boolean equalsList(InputListEntity<?, V, ?> list) {
+        return property == list.property && newSession == list.newSession && mapValues.equals(list.mapValues);
+    }
+
     public P singleInterface() {
         return getInterfaces().single();
     }

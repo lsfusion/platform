@@ -34,6 +34,11 @@ public class InputActionListEntity<P extends PropertyInterface, V extends Proper
         return mapValues.valuesSet();
     }
 
+    @Override
+    public boolean equalsList(InputContextListEntity<?, V> list) {
+        return list instanceof InputActionListEntity && super.equalsList((InputActionListEntity<?, V>) list);
+    }
+
     public InputActionListEntity<P, V> newSession() {
         return new InputActionListEntity<>(property, mapValues, true);
     }

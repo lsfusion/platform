@@ -72,6 +72,32 @@ public class InputContextPropertyListEntity<P extends PropertyInterface, V exten
         return view.isDisableInputList();
     }
 
+    @Override
+    public boolean equalsList(InputContextListEntity<?, V> list) {
+        if(!(list instanceof InputContextPropertyListEntity))
+            return false;
+
+        InputContextPropertyListEntity<?, V> propertyList = (InputContextPropertyListEntity<?, V>) list;
+        if(!view.equalsList(propertyList.view) || (filter == null) != (propertyList.filter == null))
+            return false;
+
+        return filter == null || // the filter and the orders are set together (see the constructor)
+                (filter.property == propertyList.filter.property && filter.mapValues.equals(propertyList.filter.mapValues) && equalsOrders(orders, propertyList.orders));
+    }
+
+    private static <V extends PropertyInterface> boolean equalsOrders(ImOrderMap<InputOrderEntity<?, V>, Boolean> orders1, ImOrderMap<InputOrderEntity<?, V>, Boolean> orders2) {
+        if(orders1.size() != orders2.size())
+            return false;
+
+        for(int i = 0, size = orders1.size(); i < size; i++) {
+            InputOrderEntity<?, V> order1 = orders1.getKey(i);
+            InputOrderEntity<?, V> order2 = orders2.getKey(i);
+            if(order1.property != order2.property || !order1.mapValues.equals(order2.mapValues) || !orders1.getValue(i).equals(orders2.getValue(i)))
+                return false;
+        }
+        return true;
+    }
+
     public boolean isNewSession() {
         return view.newSession;
     }
