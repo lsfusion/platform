@@ -50,6 +50,10 @@
     overflow: hidden;
 }
 
+.fc .fc-daygrid-body {
+    overflow: hidden;
+}
+
 .fc .fc-timegrid .fc-col-header {
     border-right: 0.5px solid var(--component-border-color);
 }
@@ -117,7 +121,7 @@
 }
 
 .fc .fc-toolbar.fc-header-toolbar {
-    margin-bottom: 5px;
+    margin-bottom: 0.3125rem;
 }
 
 .fc table {
@@ -143,16 +147,15 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
 }
 
 .fc .fc-button {
-    height: 22px;
-    padding: 0 14px;
+    padding: 0 0.75rem;
     font-size: inherit;
     tab-index: 0;
 }
 
 .fc .fc-calendar-date-prop {
-    height: 22px;
     vertical-align: middle;
-    padding: 0 6px;
+    padding: 0 0.375rem;
+    text-align: start;
     font-size: inherit;
     font-family: inherit;
     color: var(--text-color);

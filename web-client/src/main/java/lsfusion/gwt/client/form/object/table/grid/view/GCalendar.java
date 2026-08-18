@@ -184,9 +184,17 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             }
         });
 
+        function applyStandardButtonClass() {
+            var buttons = element.querySelectorAll('.fc-button');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.add('btn');
+            }
+        }
+
         thisObj.@GCalendar::setCurrentDateProp(Ljava/lang/String;)(calendarDateProp);
         calendar.render();
         setupDatePropSelector();
+        applyStandardButtonClass();
 
         // the problem is that in onPointerDown there is heuristics:
         // prevent links from being visited if there's an eventual drag.
@@ -240,7 +248,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             }
 
             var datePropSelect = $doc.createElement('select');
-            datePropSelect.className = 'fc-calendar-date-prop';
+            datePropSelect.className = 'fc-calendar-date-prop btn';
 
             for (var i = 0; i < calendarDateProps.length; i++) {
                 var option = $doc.createElement('option');
@@ -254,6 +262,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 thisObj.@GCalendar::setCurrentDateProp(Ljava/lang/String;)(newCalendarDateProp);
                 calendar.setOption('headerToolbar', getHeaderToolbar());
                 setupDatePropSelector();
+                applyStandardButtonClass();
                 if (!thisObj.@GCalendar::isDateTimeCurrentDateProp()() && calendar.view.type === 'timeGridDay') {
                     calendar.changeView('dayGridMonth');
                 }
