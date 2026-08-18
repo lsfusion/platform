@@ -351,7 +351,7 @@ public class AnyValuePropertyHolder {
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, videoLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
-                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, jsonTextProperty, xmlProperty, objectProperty, tsVectorProperty
+                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, jsonTextProperty, xmlProperty, htmlStringProperty, objectProperty, tsVectorProperty
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
 
