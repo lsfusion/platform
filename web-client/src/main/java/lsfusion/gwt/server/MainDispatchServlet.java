@@ -1,5 +1,6 @@
 package lsfusion.gwt.server;
 
+import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.base.ExceptionUtils;
@@ -180,6 +181,22 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     @Override
     protected SerializationPolicy doGetSerializationPolicy(HttpServletRequest request, String moduleBaseURL, String strongName) {
+        SerializationPolicy serializationPolicy = readSerializationPolicy(request, moduleBaseURL, strongName);
+        if (serializationPolicy == null) {
+            String codeServerPolicyUrl = getCodeServerPolicyUrl(strongName);
+            if (codeServerPolicyUrl != null)
+                serializationPolicy = loadPolicyFromCodeServer(codeServerPolicyUrl);
+        }
+
+        // if we return null, gwt silently falls back to the legacy 1.3.3 policy, and then any DispatchException (which is not IsSerializable) fails to serialize,
+        // so instead of the exception itself the client gets a bare HTTP 500 (which it doesn't retry and shows as an unknown error)
+        if (serializationPolicy == null)
+            throw new IncompatibleRemoteServiceException("serialization policy '" + strongName + "' for module '" + moduleBaseURL + "' was not found, the client is running an outdated version and has to be reloaded");
+
+        return serializationPolicy;
+    }
+
+    private SerializationPolicy readSerializationPolicy(HttpServletRequest request, String moduleBaseURL, String strongName) {
         if (rpcPolicyLocation == null) {
             return super.doGetSerializationPolicy(request, moduleBaseURL, strongName);
         } else {

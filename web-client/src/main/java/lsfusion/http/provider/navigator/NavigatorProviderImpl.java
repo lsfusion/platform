@@ -170,7 +170,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     private AtomicInteger nextSessionId = new AtomicInteger(0);
     private String nextSessionID() {
-        return "session" + servSID + nextSessionId.getAndIncrement();
+        return "session" + nextSessionId.getAndIncrement();
     }
 
     private final Map<String, NavigatorSessionObject> currentLogicsAndNavigators = new ConcurrentHashMap<>();
