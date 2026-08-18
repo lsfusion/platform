@@ -10,7 +10,7 @@ Rows, in turn, are mapped during import to objects of specified classes (let's c
 -   for numeric classes: all imported rows are numbered in the order in which they appear in the file (starting from 0).
 -   for specific user-defined classes: [a new object](New_object_NEW.md) of the specified class is created for each row.
 
-You can also define an import *condition*: this is a property in which the [default value](Built-in_classes.md) of the property value class is written for each row (as opposed to import destination in which column values are written).
+You can also define an import *condition*: this is a property in which the [default value](Built-in_classes.md#defaultvalue) of the property value class is written for each row (as opposed to import destination in which column values are written).
 
 ### General case
 
