@@ -93,6 +93,7 @@ public final class ClassCanonicalNameUtils {
         put("DATEINTERVAL", DateIntervalClass.instance);
         put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
         put("TIMEINTERVAL", TimeIntervalClass.instance);
+        put("ZDATETIMEINTERVAL", ZDateTimeIntervalClass.instance);
         put("TIME", defaultTimeClassObj);
         put("YEAR", YearClass.instance);
         put("FILE", DynamicFormatFileClass.get());
@@ -167,6 +168,7 @@ public final class ClassCanonicalNameUtils {
         put("DATEINTERVAL", DateIntervalClass.instance);
         put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
         put("TIMEINTERVAL", TimeIntervalClass.instance);
+        put("ZDATETIMEINTERVAL", ZDateTimeIntervalClass.instance);
         put("TIME", defaultTimeClassObj);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
