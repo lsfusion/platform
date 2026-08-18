@@ -269,7 +269,12 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }-*/;
 
     private static String getEndEventFieldName(String calendarDateProp) {
-        return calendarDateProp.contains("From") ? calendarDateProp.replace("From", "To") : null;
+        // only the two reserved period SIDs have a paired end (checked at server startup) - an arbitrary date property with "From" in its SID is a regular event date
+        if (calendarDateProp.equals("dateFrom"))
+            return "dateTo";
+        if (calendarDateProp.equals("dateTimeFrom"))
+            return "dateTimeTo";
+        return null;
     }
 
     private final NativeHashMap<GGroupObjectValue, Event> events = new NativeHashMap<>();
@@ -387,7 +392,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         if (oldEvent.start != null && !GwtClientUtils.jsDateEquals(oldEvent.start, event.start))
             updateAction = addUpdateAction(calendarEvent -> updateStart(event.start, calendarEvent), updateAction);
 
-        if (oldEvent.end != null && !oldEvent.end.equals(event.end))
+        if (!GwtClientUtils.nullEquals(oldEvent.end, event.end)) // the end can be null (open period)
             updateAction = addUpdateAction(calendarEvent -> updateEnd(event.end, calendarEvent), updateAction);
 
         if (oldEvent.editable != event.editable)
@@ -570,6 +575,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     protected native JavaScriptObject getEnd(JavaScriptObject object, String endEventFieldName, boolean allDay)/*-{
         var end = object[endEventFieldName];
+        if (end == null) // dateTo(dateTimeTo) can be null - the event is then rendered without an end
+            return null;
         if (allDay)
             end.setDate(end.getDate() + 1); //adding time to Date causes that it will be impossible to change event on calendar-view even if "allDay" option is "true"
 

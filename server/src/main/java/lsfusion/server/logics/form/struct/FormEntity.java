@@ -1324,14 +1324,11 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return priorityProps;
     }
 
-    @IdentityLazy
-    public boolean isCalendarPeriod(GroupObjectEntity entity) {
-        return getField(entity, "dateFrom", "dateTimeFrom") != null;
-    }
-
-    @IdentityLazy
-    public boolean isCalendarCompletePeriod(GroupObjectEntity entity) {
-        return getField(entity, "dateTo", "dateTimeTo") != null;
+    private static boolean hasCalendarDateProp(List<PropertyDrawEntity> calendarDateProps, String integrationSID) {
+        for (PropertyDrawEntity property : calendarDateProps)
+            if (integrationSID.equals(property.getIntegrationSID()))
+                return true;
+        return false;
     }
 
     public PropertyDrawEntity getField(GroupObjectEntity entity, String... fields) {
@@ -1387,10 +1384,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
         for(GroupObjectEntity group : getGroupsIt()) {
             if(group.getListViewTypeValue().isCalendar()) {
-                if (getCalendarDateProps(group).isEmpty())
+                List<PropertyDrawEntity> calendarDateProps = getCalendarDateProps(group);
+                if (calendarDateProps.isEmpty())
                     throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
-                if (isCalendarPeriod(group) && !isCalendarCompletePeriod(group)) // If dateFrom/dateTimeFrom are added to the form, but dateTo/dateTimeTo are not added, an error occurs when setting viewFilters
-                    throw new RuntimeException(getCreationPath() + " none of required CALENDAR period propertyDraws found (dateTo or dateTimeTo)");
+                // the client pairs the period start with the same-type end (dateFrom - dateTo, dateTimeFrom - dateTimeTo), so an unpaired start would fail when the events / view filters are built
+                if (hasCalendarDateProp(calendarDateProps, "dateFrom") && !hasCalendarDateProp(calendarDateProps, "dateTo"))
+                    throw new RuntimeException(getCreationPath() + " required CALENDAR period propertyDraw dateTo (paired with dateFrom) not found");
+                if (hasCalendarDateProp(calendarDateProps, "dateTimeFrom") && !hasCalendarDateProp(calendarDateProps, "dateTimeTo"))
+                    throw new RuntimeException(getCreationPath() + " required CALENDAR period propertyDraw dateTimeTo (paired with dateTimeFrom) not found");
             }
         }
 
