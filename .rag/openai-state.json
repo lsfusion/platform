@@ -6741,8 +6741,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:a769812b2df1c45458fe37de47171c6f5d40bf5c9ed308a189d5c8cffdb5f37d",
-      "indexed_at": "2026-08-17T10:40:24Z",
+      "file_hash": "sha256:662a417d4e7e67caeaf841831135c01920faa4d485ebf75bf6a3dc9e0d645834",
+      "indexed_at": "2026-08-18T11:08:39Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6806,15 +6806,15 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-00": {
-          "file_id": "file-VDKa6Jdp7SahEfdLh4YYqL",
+          "file_id": "file-TWLGt8ANnVE5uUMvubmCTz",
           "heading_path": "Object blocks > Object block {#objects} > Object group options",
-          "section_payload_hash": "sha256:e101630069ece00abd8599067d9ae476e71c04c4da43a87a32c0ef6dd4419243",
+          "section_payload_hash": "sha256:6ed9f972fb5af00c8bebb5e45a50dc249b50ff615c459dc81af8b82d14eea1f0",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-01": {
-          "file_id": "file-VP5bUJAH2AUCCYBJzV2jiv",
+          "file_id": "file-W3NemfNLNnWQ1PrzBuprwe",
           "heading_path": "Object blocks > Object block {#objects} > Object group options",
-          "section_payload_hash": "sha256:cc5ab4b25d66c4d954ad1966dc5b0e892bd2207274eb5273f38f67598dbe58bc",
+          "section_payload_hash": "sha256:b2986a05bd98d9ca3b16c64772fcbf743e560680dc785d39f4d5dc2979226c11",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-options": {
@@ -15399,7 +15399,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "dc0d8025cd7442656c4dac5fab4e8d3ad6af39e5",
+  "last_indexed_docs_commit": "7f831ff99fd96f4dd172714b07d0854316197668",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
