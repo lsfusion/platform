@@ -188,7 +188,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `CLASS propertyExpression`
 
-    Specifies a property whose value determines the CSS classes (separated by spaces) of the value element of the property being added. Similar to the `valueClass` property in the [`DESIGN` statement](DESIGN_statement.md).
+    Specifies a property whose value determines the CSS classes (separated by spaces) of the value element of the property being added. Similar to the `valueClass` property in the [`DESIGN` statement](DESIGN_statement.md): an explicit value fully replaces the default value classes, and in a table, for a typical text cell, the value element is the cell itself (`td`), so the classes end up on it (see the `valueClass` description for details).
 
     - `propertyExpression`
 

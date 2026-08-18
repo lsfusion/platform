@@ -32,7 +32,7 @@ title: 'Выбор (CASE, IF, MULTI, OVERRIDE, EXCLUSIVE)'
 
 ### Класс результата
 
-Результирующий класс — общий предок ([встроенный](Built-in_classes.md#commonparentclass) или [пользовательский](User_classes.md#commonparentclass)) его возможных результатов.
+Результирующий класс — общий предок ([встроенный](Built-in_classes.md#commonparentclass) или [пользовательский](User_classes.md#commonparentclass)) его возможных результатов. Если у возможных результатов нет общего предка (например, класс `HTML` и строковый класс), свойство не может принимать значений, и сервер при старте выдаёт ошибку `property '...' is always NULL`.
 
 ### Язык
 

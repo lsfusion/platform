@@ -52,6 +52,8 @@ The builtin classes can be divided into four class *families* (assuming that eac
 
 The builtin classes inherit only from one another within a single family, and cannot inherit from or be inherited by user classes. Inheritance within each family works on the principle that the narrower class inherits from the broader one.
 
+A class that forms its own family is incompatible with the classes of other families and has no common ancestor with them. In particular, the `HTML` class (unlike `HTMLTEXT`, which belongs to the string family) is incompatible with the string classes: a [selection](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) with branches of the `HTML` and `STRING` classes has no common ancestor, so such a property cannot take any values, and the server reports the `property '...' is always NULL` error at startup. Adding (`+`) an `HTML` class value to a string is not an error, but returns a plain string: the result loses the `HTML` class, and the markup is escaped when displayed.
+
 ## Common ancestor {#commonparentclass}
 
 According to this inheritance mechanism, the common ancestor of two builtin classes (e.g. for the [selection](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) operation) is determined as follows:

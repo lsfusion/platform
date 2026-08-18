@@ -51,6 +51,8 @@ The difference between the two keywords is the class of the returned value. `JSO
 
 A property value of the `JSON` or `JSONTEXT` class (for example, one built by another property with this operator) is embedded into the resulting JSON as a nested object or array rather than as a string. This allows assembling a document with nested structures from separate JSON properties.
 
+Date and time class values are written to JSON as strings, by default in ISO 8601 formats (for example, `2026-08-17`, `2026-08-17T12:34:56`; `ZDATETIME` values — the instant in UTC with the `Z` suffix). This behavior is defined by the `useISOTimeFormatsInIntegration` [working parameter](../paradigm/Working_parameters.md): when it is off, the formats of the current locale are used.
+
 When building JSON from a form, the `OBJECTS` block fixes form objects to given values: each such object is constrained to equal [the value passed](../paradigm/Open_form.md#params) and [does not participate](../paradigm/Structured_view.md#objects) in building the object group hierarchy. The `FILTERS` block adds further filter conditions to the form before the build.
 
 ### Parameters
@@ -73,7 +75,7 @@ When building JSON from a form, the `OBJECTS` block fixes form objects to given 
 
 - `orderExpr1, ..., orderExprL`
 
-    A list of [expressions](Expression.md) by which the built data is sorted. Only properties present in the list `propertyExpr1, ..., propertyExprN` can be used.
+    A list of [expressions](Expression.md) by which the built data is sorted. The expressions are arbitrary: they do not have to be present in the list `propertyExpr1, ..., propertyExprN`. A sort expression is added to the internal query as a hidden column and does not appear in the resulting JSON.
 
 - `DESC`
 

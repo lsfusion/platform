@@ -184,7 +184,7 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
     - `key`
 
-        [String literal](Literals.md#strliteral) describing the key combination.
+        [String literal](Literals.md#strliteral) describing the key combination. The mode parameters (`editing=`, `showing=`, etc.) allowed after `;` in the combinations of [properties and actions](Property_options.md) are not applied to navigator elements in the web client. The combination is handled globally, but after the handlers of the open form: an identical combination of a form property or action takes priority.
 
     - `showSetting`
 

@@ -7,6 +7,8 @@ title: 'Calculated events'
 
 For each property, there can only be one calculated event that changes this property.  
 
+The condition and the value of a calculated event cannot depend on the changed property itself: it would then depend on its own change, and at server startup such a cycle leads to the `Property ... is recursive` error. A guard against overwriting an explicit change is not needed here anyway — an explicit change already takes priority over the event. When the value must be set only while the property is not yet filled, use a [simple](Simple_event.md) event: there the write is performed by the handler action, and no cycle arises (see the example below).
+
 ### Language
 
 To define calculated events, use the [`<- WHEN` statement](../language/lt-_WHEN_statement.md).
@@ -24,4 +26,15 @@ price = DATA NUMERIC[10,2] (OrderDetail);
 sum = DATA NUMERIC[10,2] (OrderDetail);
 
 sum(OrderDetail d) <- quantity(d) * price(d) WHEN CHANGED(quantity(d)) OR CHANGED(price(d));
+```
+
+```lsf
+defaultBonus = DATA NUMERIC[6,2] ();
+bonus = DATA NUMERIC[6,2] (Customer);
+
+// wrong: the condition of the calculated event depends on the changed property - the 'is recursive' error at server startup
+// bonus(Customer c) <- defaultBonus() WHEN SET(c IS Customer) AND NOT bonus(c);
+
+// to set the bonus only for clients whose bonus is not filled yet, a simple event is used
+WHEN SET(Customer c IS Customer) AND NOT bonus(c) DO bonus(c) <- defaultBonus();
 ```

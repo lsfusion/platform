@@ -141,7 +141,7 @@ To access design components, you can use their names or address property compone
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
 |`captionFont`|The font to be used for displaying caption of the component|String literal|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[Expression](Expression.md)(string value)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`class`|CSS classes of the component (separated by spaces)|Expression (string value)|`NULL`|`some-class-one some-class-two`|
+|`class`|CSS classes of the component (separated by spaces). Not applied to the form's main (root) container in the web client|Expression (string value)|`NULL`|`some-class-one some-class-two`|
 |`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
 |`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|The color to be used for the component background|Expression ([COLOR](Literals.md#colorliteral) value)|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
@@ -159,7 +159,7 @@ To access design components, you can use their names or address property compone
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`caption`|Container header|Expression (string value)|`NULL`|`'Caption'`|
+|`caption`|Container header. An empty string is equivalent to `NULL`: no header is created (and the container stops being `collapsible` by default)|Expression (string value)|`NULL`|`'Caption'`|
 |`captionClass`|CSS-classes of container header (separated by space)|Expression (string value)|`NULL`|`'some-caption-class'`|
 |`valueClass`|CSS-classes of container value (separated by space)|Expression (string value)|`NULL`|`'some-value-class'`|
 |`image`|Image shown in the container caption: a path relative to the `images` folder, or a property expression yielding the image|Expression (string value)|`NULL`|`'image.png'`|
@@ -172,7 +172,7 @@ To access design components, you can use their names or address property compone
 |`childrenAlignment`|Alignment of child components inside a container. Acceptable values: `START`, `CENTER`, `END`|Alignment type|`START`|`CENTER`|
 |`alignCaptions`|Aligns child property captions into a shared column so their values line up|Logical literal|depends on the container|`TRUE`<br/>`FALSE`|
 |`grid`|Lays children out as a grid (using `lines` as the number of tracks and each child's `span`) instead of a plain linear flow|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`wrap`|Allows children to wrap onto several lines when they do not fit in one|Logical literal|depends on the container|`TRUE`<br/>`FALSE`|
+|`wrap`|Allows children to wrap onto several lines when they do not fit in one. The default is `TRUE` if the container is horizontal or has several lines (both characteristics account for the `reversed` option), otherwise `FALSE`|Logical literal|depends on the container|`TRUE`<br/>`FALSE`|
 |`resizeOverflow`|Allows the container to grow beyond the available space when its content overflows (acts as a maximum size)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`custom`|Renders the container with a custom client-side view (web client only). The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` (a bare identifier starting with an uppercase letter) names a React component; an empty string `''` lays the children out in order like a plain panel; an HTML template string, or a property computing one, draws the container from that markup — given together, the literal is the markup the container starts with and the property replaces it from its first value on, while a React component cannot be paired with a property, since the component draws the container itself. In an HTML template, `<Lsf:name>` is the place the child component with that name is put into, named by its component identifier - `PROPERTY(qty)` for a property, as the design names it; a child the template gives no place is not shown, a place naming nothing the form has at all is an error when the form is built, and so is a name placed twice. A place is written open, without a closing tag; closing it, or writing it self-closed, is an error. The `Lsf:` prefix may be written in any case; the name after it is matched exactly. A literal that is neither a component name nor markup, and a container that is `tabbed` as well, are errors when the form is built. The places of a template a property computes are read as it is drawn: a place written twice, one with no name and one naming nothing the container has are reported in the place itself and in the browser console, and the two wrong spellings in the console alone, since the browser has already erased the element they would be written into|Expression (string value)|`NULL`|`'OrderBoard'`<br/>`'<div><Lsf:gridWrap></div>'`|
 |`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
@@ -210,7 +210,7 @@ To access design components, you can use their names or address property compone
 |`panelColumnVertical`|In a panel, stacks the property's column-group columns vertically instead of horizontally|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`class`|CSS-classes for property (separated by space)|Expression (string value)|`NULL`|`some-class-one some-class-two`|
 |`footerClass`|CSS-classes for property footer (separated by space)|Expression (string value)|`NULL`|`some-footer-class`|
-|`valueClass`|CSS-classes for the property value (separated by space)|Expression (string value)|`NULL`|`some-value-class`|
+|`valueClass`|CSS-classes for the property value (separated by space). An explicit value fully replaces the default value classes (`form-control`, etc.). In a table, for a typical text cell the value element is the cell itself (`td`); selection elements (button group, dropdown) created for properties with a small number of options are its descendants, and the value classes are not propagated to them|Expression (string value)|`NULL`|`some-value-class`|
 |`captionClass`|CSS-classes for the property caption (separated by space)|Expression (string value)|`NULL`|`some-caption-class`|
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
 |`tag`|HTML tag used to render the value element (for example `input`, `a`, `button`, `select`); overrides the auto-chosen tag|String literal|`NULL`|`'a'`|

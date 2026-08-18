@@ -32,7 +32,7 @@ The mutual-exclusion option and implicit definition do not apply to the single f
 
 ### Result class
 
-The result class is the common ancestor ([built-in](Built-in_classes.md#commonparentclass) or [user-defined](User_classes.md#commonparentclass)) of its possible results.
+The result class is the common ancestor ([built-in](Built-in_classes.md#commonparentclass) or [user-defined](User_classes.md#commonparentclass)) of its possible results. If the possible results have no common ancestor (for example, the `HTML` class and a string class), the property cannot take any values, and the server reports the `property '...' is always NULL` error at startup.
 
 ### Language
 

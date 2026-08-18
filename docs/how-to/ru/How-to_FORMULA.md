@@ -44,6 +44,8 @@ EXTEND FORM orders
 
 Для решения задачи создаем свойство при помощи [оператора `FORMULA`](../language/FORMULA_operator.md), которое будет принимать на вход дату и возвращать значение в виде строки в формате `YYYY-MM-DD`. В выражении формулы используется стандартная функция PostgreSQL [`to_char`](https://www.postgresql.org/docs/11/functions-formatting.html).
 
+Заметим, что именно для формата ISO такое свойство не обязательно: по умолчанию даты в текстовых форматах [оператора `EXPORT`](../language/EXPORT_operator.md) и так записываются в форматах ISO 8601 ([рабочий параметр](../paradigm/Working_parameters.md) `useISOTimeFormatsInIntegration`). Приём остаётся полезным для любого другого формата вывода даты.
+
 ## Пример 2
 
 ### Условие

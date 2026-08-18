@@ -100,7 +100,7 @@ When a form is exported to a hierarchical format (**JSON**, **XML**), a single f
 
 - `orderExpr1, ..., orderExprL`
 
-    List of [expressions](Expression.md) by which the exported data is sorted. Only properties present in the list `propertyExpr1, ..., propertyExprN` can be used
+    List of [expressions](Expression.md) by which the exported data is sorted. The expressions are arbitrary: they do not have to be present in the list `propertyExpr1, ..., propertyExprN`. A sort expression is added to the internal query as a hidden column and does not appear in the export result.
 
 - `DESC`
 
@@ -171,6 +171,8 @@ When a form is exported to a hierarchical format (**JSON**, **XML**), a single f
 - `sheetExpr`
 
   Expression whose value is used as the name of the sheet in the exported file. It is used for `XLS` and `XLSX` export formats.
+
+Date and time class values in text formats (**JSON**, **XML**, **CSV**) are written as strings, by default in ISO 8601 formats (for example, `2026-08-17`, `2026-08-17T12:34:56`; `ZDATETIME` values — the instant in UTC with the `Z` suffix). This behavior is defined by the `useISOTimeFormatsInIntegration` [working parameter](../paradigm/Working_parameters.md): when it is off, the formats of the current locale are used. In the **XLS** and **XLSX** formats such values are written as typed date/time values, not as strings. In the **DBF** format, `DATE` and `DATETIME` values are written to a date field (the time part of `DATETIME` is lost), while `TIME` is written as an `HH:mm:ss` string.
 
 ### Export destination
 

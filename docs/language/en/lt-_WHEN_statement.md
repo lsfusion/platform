@@ -15,7 +15,7 @@ propertyId(param1, ..., paramN) <- valueExpr WHEN eventExpr;
 
 The `<- WHEN` statement creates a calculated event for the [property](../paradigm/Data_properties_DATA.md) specified on the left side of the statement. This operator can declare its own local parameters when specifying the property whose value will [change](../paradigm/Property_change_CHANGE.md). These parameters can then be used in expressions of the condition and value to which the property will change.
 
-Only one calculated event can be defined for a property. 
+Only one calculated event can be defined for a property. The condition and the value cannot depend on the changed property: such a dependency forms a cycle that leads to the `Property ... is recursive` error at server startup (see [calculated events](../paradigm/Calculated_events.md)).
 
 ### Parameters
 
