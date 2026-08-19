@@ -543,10 +543,6 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return false;
     }
 
-    public String getAnalyzeSessionTable(String tableName) {
-        throw new UnsupportedOperationException();
-    }
-
     public boolean supportsDisableNestedLoop() {
         return false;
     }
@@ -595,7 +591,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return false;
     }
 
-    public String getAnalyze(String table) {
+    public String getAnalyzeSessionTable(String table) {
         return "ANALYZE " + table;
     }
     public String getVacuumSessionTable(String table, int serverMajorVersion) {

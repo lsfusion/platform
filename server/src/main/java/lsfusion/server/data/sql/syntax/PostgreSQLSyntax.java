@@ -322,11 +322,6 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getAnalyzeSessionTable(String tableName) {
-        return "ANALYZE " + getSessionTableName(tableName);
-    }
-
-    @Override
     public boolean supportsDisableNestedLoop() {
         return true;
     }
@@ -440,9 +435,9 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getAnalyze(String table) {
+    public String getAnalyzeSessionTable(String table) {
 
-        String result = super.getAnalyze(table);
+        String result = super.getAnalyzeSessionTable(table);
         int tempStatisticsTarget = Settings.get().getTempStatisticsTarget();
         if(tempStatisticsTarget > 0)
             result = "SET default_statistics_target=" +tempStatisticsTarget + ";" + result + ";SET default_statistics_target=DEFAULT";

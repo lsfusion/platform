@@ -56,7 +56,7 @@ public class FirebirdSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getAnalyze(String table) {
+    public String getAnalyzeSessionTable(String table) {
         return "EXECUTE BLOCK AS " +
                 "DECLARE variable_index_name VARCHAR(31); " +
                 "BEGIN " +

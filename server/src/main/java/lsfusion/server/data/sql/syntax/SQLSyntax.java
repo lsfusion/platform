@@ -198,7 +198,6 @@ public interface SQLSyntax {
     String getNotZero(String expr, Type type, TypeEnvironment typeEnv);
 
     boolean supportsAnalyzeSessionTable();
-    String getAnalyzeSessionTable(String tableName);
 
     boolean supportsDisableNestedLoop();
     boolean supportsNoCount();
@@ -267,7 +266,7 @@ public interface SQLSyntax {
     String getDeadlockPriority(Long priority);
     boolean useFailedTimeInDeadlockPriority();
 
-    String getAnalyze(String table);
+    String getAnalyzeSessionTable(String table);
     String getVacuumSessionTable(String table, int serverMajorVersion);
     
     String getAnalyze();    
