@@ -34,7 +34,7 @@ public class MySQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getAnalyze(String table) {
+    public String getAnalyzeSessionTable(String table) {
         return "ANALYZE TABLE " + table;
     }
 

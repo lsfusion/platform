@@ -151,13 +151,13 @@ public class SQLTemporaryPool {
         assert (actual!=null)==(count==null);
         if(session.syntax.supportsAnalyzeSessionTable()) {
             if (Settings.get().isAutoAnalyzeTempStats())
-                session.vacuumAnalyzeSessionTable(table, owner);
+                session.analyzeSessionTable(table, owner);
             else {
                 assert false; // ??? с синхронизацией stats
                 Object actualStatistics = getDBStatistics(actual);
                 Object currentStat = stats.get(table);
                 if (!actualStatistics.equals(currentStat)) {
-                    session.vacuumAnalyzeSessionTable(table, owner);
+                    session.analyzeSessionTable(table, owner);
                     stats.put(table, actualStatistics);
                 }
             }

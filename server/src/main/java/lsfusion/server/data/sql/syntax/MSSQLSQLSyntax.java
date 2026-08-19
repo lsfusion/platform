@@ -95,7 +95,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getAnalyze(String table) {
+    public String getAnalyzeSessionTable(String table) {
         return "UPDATE STATISTICS " + table;
     }
 

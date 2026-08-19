@@ -1429,17 +1429,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return new Pair<>(command, env);
     }
 
-    private static Pair<String, StaticExecuteEnvironment> getVacuumAnalyzeDDL(String table, SQLSyntax syntax) {
-        return new Pair<>(syntax.getAnalyze(table), StaticExecuteEnvironmentImpl.NOREADONLY);
+    // the one place the pool's name is resolved for the analysis, the way truncate does it for the emptying. It used to be resolved by one of the two callers and not by the other, and the
+    // syntax could not tell the difference - on a syntax whose getSessionTableName is not the identity, the analysis after every fill named a table that does not exist
+    private static Pair<String, StaticExecuteEnvironment> getAnalyzeSessionTableDDL(String table, SQLSyntax syntax) {
+        return new Pair<>(syntax.getAnalyzeSessionTable(syntax.getSessionTableName(table)), StaticExecuteEnvironmentImpl.NOREADONLY);
     }
 
-    public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void analyzeSessionTable(String table, OperationOwner owner) throws SQLException, SQLHandledException {
 //        (isInTransaction()? "" :"VACUUM ") + по идее не надо так как TRUNCATE делается
-        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
+        Pair<String, StaticExecuteEnvironment> ddl = getAnalyzeSessionTableDDL(table, syntax);
         try {
             executeDDL(ddl.first, ddl.second, owner);
         } catch (SQLException throwable) {
-            handleAndPropagate(throwable, "VACUUM ANALYZE");
+            handleAndPropagate(throwable, "ANALYZE SESSION TABLE");
         }
     }
 
@@ -3473,11 +3475,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Pair<String, StaticExecuteEnvironment> result = getDropDDL(table, syntax);
         executeDDL(result, connection, NOTYPES, owner);
     }
-    private void vacuumAnalyzeSessionTable(Connection connection, String table, OperationOwner owner) throws SQLException {
-        vacuumAnalyzeSessionTable(table, connection, typePool, syntax, owner);
+    private void analyzeSessionTable(Connection connection, String table, OperationOwner owner) throws SQLException {
+        analyzeSessionTable(table, connection, typePool, syntax, owner);
     }
-    private static void vacuumAnalyzeSessionTable(String table, Connection connection, TypePool typePool, SQLSyntax syntax, OperationOwner owner) throws SQLException {
-        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(syntax.getSessionTableName(table), syntax);
+    private static void analyzeSessionTable(String table, Connection connection, TypePool typePool, SQLSyntax syntax, OperationOwner owner) throws SQLException {
+        Pair<String, StaticExecuteEnvironment> ddl = getAnalyzeSessionTableDDL(table, syntax);
         executeDDL(ddl, connection, typePool, owner);
     }
 
@@ -3566,7 +3568,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         readData(table, keys, properties, reader, owner);
 
-        vacuumAnalyzeSessionTable(sqlTo, table, owner);
+        analyzeSessionTable(sqlTo, table, owner);
     }
 
     private static TypePool NOTYPES = new TypePool() {
@@ -3599,7 +3601,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(value -> MapFact.singleton(keyCount, value), properties::crossJoin), owner);
 
-        vacuumAnalyzeSessionTable(table, sqlTo, typePool, syntax, owner);
+        analyzeSessionTable(table, sqlTo, typePool, syntax, owner);
     }
 
     private void readData(String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ResultHandler<KeyField, PropertyField> reader, OperationOwner owner) throws SQLException, SQLHandledException {
