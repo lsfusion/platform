@@ -1,9 +1,11 @@
 package lsfusion.server.logics.form.interactive.action.async.map;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.logics.action.Action;
@@ -83,6 +85,9 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
         AsyncMapInputListAction<T> action = actions.get(0);
 
         Predicate<SecurityPolicy> mergedCheck = action.check;
+        MList<AsyncMapEventExec<T>> mAsyncExecs = ListFact.mList(actions.size());
+        if(action.asyncExec != null)
+            mAsyncExecs.add(action.asyncExec);
         for(int i = 1, size = actions.size(); i < size; i++) {
             AsyncMapInputListAction<T> mergeAction = actions.get(i);
             if(!BaseUtils.nullEquals(action.id, mergeAction.id) || !BaseUtils.nullEquals(action.keyStroke, mergeAction.keyStroke) ||
@@ -92,11 +97,17 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
 
             // the action is shown only if it's allowed in all branches
             mergedCheck = mergedCheck == null ? mergeAction.check : (mergeAction.check == null ? mergedCheck : mergedCheck.and(mergeAction.check));
+
+            if(mergeAction.asyncExec != null)
+                mAsyncExecs.add(mergeAction.asyncExec);
         }
 
-        // the async exec of the branches is dropped: it opens the form of the branch, and the merged one is not necessarily the form (and the window type) the executed branch will open -
-        // the client would then pre-open a window that never gets its form and stays loading next to the real one (seen on the stand). It is just an optimization, the action is executed on the server anyway
-        return new AsyncMapInputListAction<>(action.action, action.id, null, action.keyStroke, action.bindingModesMap, action.priority, action.quickAccessList, mergedCheck, action.index);
+        // the execs are merged just like the branches themselves (for the dialogs of the different classes that gives the form of the common class), so that the client can still pre-open the form;
+        // it's only an optimization - the action is executed on the server anyway - so it's simply dropped when a branch has no exec, or when they don't merge
+        ImList<AsyncMapEventExec<T>> asyncExecs = mAsyncExecs.immutableList();
+        AsyncMapEventExec<T> mergedAsyncExec = asyncExecs.size() == actions.size() ? AsyncMapEventExec.merge(asyncExecs, wheres) : null;
+
+        return new AsyncMapInputListAction<>(action.action, action.id, mergedAsyncExec, action.keyStroke, action.bindingModesMap, action.priority, action.quickAccessList, mergedCheck, action.index);
     }
 
     public AsyncMapInputListAction<T> replace(String replaceAction, AsyncMapEventExec<T> asyncExec) {

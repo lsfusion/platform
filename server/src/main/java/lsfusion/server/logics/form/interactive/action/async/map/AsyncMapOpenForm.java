@@ -110,13 +110,13 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
 
         AsyncMapOpenForm<T> asyncOpenForm = (AsyncMapOpenForm<T>) input;
         
-        FormSelector mergedForm;
-        if(formSelector == null)
-            mergedForm = asyncOpenForm.formSelector;
-        else if(asyncOpenForm.formSelector == null)
-            mergedForm = formSelector;
-        else
-            mergedForm = formSelector.merge(asyncOpenForm.formSelector);
+        // the form is the point of the pre-opening, so without a common one there is nothing to pre-open : the client would get a window that never gets its form and stays loading
+        // (it also keeps the merge order independent - a failed merge can't be "filled" by the form of the next branch)
+        if(formSelector == null || asyncOpenForm.formSelector == null)
+            return null;
+        FormSelector mergedForm = formSelector.merge(asyncOpenForm.formSelector);
+        if(mergedForm == null)
+            return null;
 
         CustomClass mergedClass;
         if(propertyClass == null)
