@@ -598,7 +598,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     public String getAnalyze(String table) {
         return "ANALYZE " + table;
     }
-    public String getVacuum(String table) {
+    public String getVacuumSessionTable(String table, int serverMajorVersion) {
         return "VACUUM " + table;
     }
 

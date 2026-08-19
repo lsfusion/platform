@@ -2856,10 +2856,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(useDeleteFrom) {
                 executeDML("DELETE FROM " + tableName, owner, tableOwner, registerChange);
                 if(!isInTransaction())
-                    executeDML(syntax.getVacuum(tableName), owner, tableOwner, registerChange);
+                    executeDML(syntax.getVacuumSessionTable(tableName, getServerMajorVersion()), owner, tableOwner, registerChange);
             } else
                 executeDDL("TRUNCATE TABLE " + tableName, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
         }
+    }
+
+    // the driver parses it out of the startup packet, so this is a field read rather than a round trip - and it is the version of the server this session is actually on, which a global
+    // would not be : a master and its slaves can differ
+    private int getServerMajorVersion() throws SQLException {
+        return privateConnection != null ? privateConnection.sql.getMetaData().getDatabaseMajorVersion() : 0;
     }
 
     public int getSessionCount(String table, OperationOwner opOwner) throws SQLException {

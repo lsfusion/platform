@@ -170,6 +170,14 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
         return "VACUUM FULL";
     }
 
+    // every ordinary VACUUM finishes by recomputing the database-wide frozen xid, and that step reads all of pg_class. On an installation whose pg_class is bloated by exactly the temporary
+    // table churn this vacuum is part of, that scan - not the table - is what the command costs, and it serializes. SKIP_DATABASE_STATS drops that step and nothing else (PostgreSQL 16+)
+    // the version is the one of the server this statement runs on, not a global : a master and its slaves are separate connections, and an option a 16 accepts is a syntax error on a 15
+    @Override
+    public String getVacuumSessionTable(String table, int serverMajorVersion) {
+        return serverMajorVersion >= 16 ? "VACUUM (SKIP_DATABASE_STATS) " + table : super.getVacuumSessionTable(table, serverMajorVersion);
+    }
+
     @Override
     public String getBPTextType() {
         return "bpchar";
