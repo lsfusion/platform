@@ -7,6 +7,8 @@ slug: "/Brief"
 
 Format: **very concise**, for understanding and code generation. Detailed description and syntax is retrieved with tools via RAG in docs.
 
+Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. When unsure, omit the filter — the default searches all three.
+
 ---
 
 ## Core elements (from simpler to more complex)
@@ -57,12 +59,17 @@ Format: **very concise**, for understanding and code generation. Detailed descri
 - **Description**: unit of reuse; contains classes/properties/actions/forms/events/constraints; dependencies via `REQUIRE`.
 - **Syntax (search)**: `MODULE ModuleName;` `REQUIRE ModuleA, ModuleB;`
 
+### System modules (standard library)
+- **Analogy**: the platform's standard library — shipped with the server, not written by you.
+- **Description**: ready-made classes, properties and actions pulled in with `REQUIRE` (`System` is required implicitly when a module has no `REQUIRE`). `System` — base class `Object`, `apply`/`cancel`, `canceled`, `applyMessage`, HTTP request/response context (`headers`, `params`, `statusHttp`), `random`, `randomUUID`. `Utils` — strings (`lpad`, `substr`, `strpos`, `replace`, `trim`), numbers (`round`, `trunc`, `abs`), files, JSON, encoding, full-text search. `Time` — `currentDate` / `currentDateTime`, date arithmetic (`sum[DATE,INTEGER]`, `sumDay`, `sumSeconds`, `subtract`, `firstDayOfMonth`), extraction (`extractYear`), calendar classes (`Month`, `DOW`). `Authentication` — users and login context: classes `Contact`, `User` / `CustomUser`, `Computer`; `currentUser`, `currentComputer`, `login`, `email`, auth tokens, LDAP / OAuth settings. Also `Reflection`, `Security`, `Scheduler`, `Email`, `Numerator`.
+- **Syntax (search)**: ordinary `.lsf` declarations, not language primitives (the named functions are properties) — search `paradigm`, not `language`.
+
 ---
 
 ## Property operators
 
 ### Basic expressions
-- **Description**: arithmetic, logic, strings, comparisons, type tests (`IS`/`AS`), conditional (`IF ... ELSE`, postfix `f(a) IF g(a)`).
+- **Description**: arithmetic, logic, strings, comparisons, type tests (`IS`/`AS`), conditional (`IF ... ELSE`, postfix `f(a) IF g(a)`). String / date / number functions (`lpad`, `substr`, `currentDate`, `sum[DATE,INTEGER]`) are not operators — they are properties of `Utils` / `Time`, see System modules.
 - **Syntax (search)**: standard expression operators.
 
 ### Composition
@@ -236,3 +243,4 @@ Format: **very concise**, for understanding and code generation. Detailed descri
 9. `NEWSESSION / APPLY / canceled()` → transaction/session control.
 10. `EXTEND / ABSTRACT / += / +{` → extension & polymorphism points.
 11. `WHEN` → data-change event; `ON` → form event.
+12. `Utils` / `Time` / `System` / `Authentication` → standard library (system modules); string, number and date functions, `currentUser`, `currentDate` live there.
