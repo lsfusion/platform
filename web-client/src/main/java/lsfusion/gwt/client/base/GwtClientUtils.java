@@ -274,26 +274,37 @@ public class GwtClientUtils {
                 waiting[i].@lsfusion.gwt.client.base.GwtClientUtils.AsyncCallback::done(Ljava/lang/Object;)(agent);
         };
         // Always the loopback address: the agent runs on the machine the browser
-        // runs on, whatever machine the application server is on.
-        var url = 'http://127.0.0.1:8765';
-        try {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url + '/ping', true);
-            // the request hangs while the user reads the permission prompt, so this
-            // waits for a person rather than for a server
-            xhr.timeout = 120000;
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState !== 4) return;
-                var info = null;
-                if (xhr.status === 200) {
-                    try { info = JSON.parse(xhr.responseText); } catch (e) {}
-                }
-                finish(info ? { url: url, info: info } : null);
-            };
-            xhr.send();
-        } catch (e) {
-            finish(null);
-        }
+        // runs on, whatever machine the application server is on. Its port is not
+        // configurable — a page can only look where it was built to look — so it
+        // takes the first of these it can, and they are tried in that same order.
+        var ports = [21652, 24652, 27652];
+        var probe = function(i) {
+            if (i === ports.length) { finish(null); return; }
+            var url = 'http://127.0.0.1:' + ports[i];
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url + '/ping', true);
+                // the request hangs while the user reads the permission prompt, so this
+                // waits for a person rather than for a server
+                xhr.timeout = 120000;
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState !== 4) return;
+                    var info = null;
+                    if (xhr.status === 200) {
+                        try { info = JSON.parse(xhr.responseText); } catch (e) {}
+                    }
+                    // another program may hold the port and answer something of its own
+                    if (info && info.name === 'web-agent')
+                        finish({ url: url, info: info });
+                    else
+                        probe(i + 1);
+                };
+                xhr.send();
+            } catch (e) {
+                probe(i + 1);
+            }
+        };
+        probe(0);
     }-*/;
 
     public static native void executeAgent(JavaScriptObject agent, String command, Object[] arguments,
@@ -314,7 +325,7 @@ public class GwtClientUtils {
                 // Transport failed — agent likely stopped mid-session. Clearing the
                 // descriptor sends the next command looking for it again: it may
                 // have been restarted, and if it is really gone the probe costs
-                // one refused connection.
+                // three refused connections.
                 $wnd.lsfWebAgent = null;
                 data = { error: 'web-agent: not reachable' };
             } else if (xhr.status >= 400 && data.error === undefined) {
