@@ -1,8 +1,8 @@
 {
   "files": {
     "brief/Brief.md": {
-      "file_hash": "sha256:0c4f97876c523863b0fd08fb6c87e6260305687b3b6839878e0899c9a08faccf",
-      "indexed_at": "2026-08-14T09:41:04Z",
+      "file_hash": "sha256:08e11d29467cdf68cf8dd91a32c5fdb5368a844567d7be36f6ff1a369fa0ac97",
+      "indexed_at": "2026-08-19T08:47:43Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v3",
@@ -29,10 +29,10 @@
           "section_payload_hash": "sha256:38b09f2c962cb076fbfba89ec4bafc994e6d848387d1c64a509d4667c7f570ea",
           "source_file": "brief/Brief.md"
         },
-        "Brief::basic-expressions+composition": {
-          "file_id": "file-ALrkVYJcyojLNwKxpk8tZ9",
-          "heading_path": "lsFusion Brief > Property operators > Basic expressions + Composition",
-          "section_payload_hash": "sha256:8307360d262ce76d6c8e8ffcf1f423171f0877bfe203a1996ed0a10f7fb24e9b",
+        "Brief::basic-expressions": {
+          "file_id": "file-Kyvf5WkpS7G73jKA7RdH7S",
+          "heading_path": "lsFusion Brief > Property operators > Basic expressions",
+          "section_payload_hash": "sha256:a67962e718c8caa375558b3931a75521f438966653f202a545b34a081d7b9934",
           "source_file": "brief/Brief.md"
         },
         "Brief::basic-operators": {
@@ -48,9 +48,9 @@
           "source_file": "brief/Brief.md"
         },
         "Brief::brief-on-lsfusion-elements-for-ai-agents": {
-          "file_id": "file-WMrWUn39Yixv4WYNkGCZ7i",
+          "file_id": "file-Do9vod8D4EN7qCW53pxjoQ",
           "heading_path": "lsFusion Brief > Brief on lsFusion elements for AI agents",
-          "section_payload_hash": "sha256:6361bf5ca7731ccd1ed30da2d52d0e0a555b74261bff0b2819b6def2efec681b",
+          "section_payload_hash": "sha256:c987e73d6824b05138a3a83bc817ced1b584271b5ee3846728cd11116ea7a58d",
           "source_file": "brief/Brief.md"
         },
         "Brief::change-sessions": {
@@ -63,6 +63,12 @@
           "file_id": "file-NZiZmCc8221RFYX8Xcrmor",
           "heading_path": "lsFusion Brief > Core elements (from simpler to more complex) > Classes",
           "section_payload_hash": "sha256:6fd8eca85c66c6f34cf7d9d1dfe1af608941d355b8887701a12fc503ee375363",
+          "source_file": "brief/Brief.md"
+        },
+        "Brief::composition": {
+          "file_id": "file-BFSikmw6UH8itwTqcawdNp",
+          "heading_path": "lsFusion Brief > Property operators > Composition",
+          "section_payload_hash": "sha256:a1dd06140c78a2a749243d9a9398cb99fb59e9493e18d1fef7176ceb626ed49b",
           "source_file": "brief/Brief.md"
         },
         "Brief::constraints": {
@@ -150,15 +156,15 @@
           "source_file": "brief/Brief.md"
         },
         "Brief::migration+mini-map-for-ai": {
-          "file_id": "file-DLaqtSAmkBGyRV5YaRpPpR",
+          "file_id": "file-XUZHnGVbqp8Qn9Pzst8445",
           "heading_path": "lsFusion Brief > Migration + Mini map for AI",
-          "section_payload_hash": "sha256:a6a19fe72d52e088721351c1f6e05235ffce74f39fa3747375eda7d905814f59",
+          "section_payload_hash": "sha256:ebe2a7ad8b39cddf241babe710575a35c13aef127a7b654a60407b8b0099adcd",
           "source_file": "brief/Brief.md"
         },
         "Brief::modules": {
-          "file_id": "file-2Q8AAHqkgZEXL16gTB6Lcd",
+          "file_id": "file-BByfGFdTjZ1jsHjnTsSkMs",
           "heading_path": "lsFusion Brief > Core elements (from simpler to more complex) > Modules",
-          "section_payload_hash": "sha256:afa245a61eb9b25f0322b6c933585195988be9deb71fc5b155a5a892d3c96ec4",
+          "section_payload_hash": "sha256:a172eee5ca1fce82b776341b2e00e1e21a40d8f08c62ba082a1fe2a4ec79ec26",
           "source_file": "brief/Brief.md"
         },
         "Brief::operator-aggr": {
@@ -207,6 +213,12 @@
           "file_id": "file-KgsJjj1bESd2VE2xezuPJs",
           "heading_path": "lsFusion Brief > Form representations > Structured view",
           "section_payload_hash": "sha256:9649a3450158be20999e82f355b922b592c4e1b3f5015a65d38c4ccfd2207fb1",
+          "source_file": "brief/Brief.md"
+        },
+        "Brief::system-modules-standard-library": {
+          "file_id": "file-GbCKsVvToGWMFQkEmEtQgP",
+          "heading_path": "lsFusion Brief > Core elements (from simpler to more complex) > System modules (standard library)",
+          "section_payload_hash": "sha256:f0d4288067106823ee18c3cc97de9ea9ba2d7cd2cfc9f30f919accffcfd7deb5",
           "source_file": "brief/Brief.md"
         }
       },
@@ -15399,7 +15411,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "7f831ff99fd96f4dd172714b07d0854316197668",
+  "last_indexed_docs_commit": "25f9d45238f68113d87fcaf245e352e835081704",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
