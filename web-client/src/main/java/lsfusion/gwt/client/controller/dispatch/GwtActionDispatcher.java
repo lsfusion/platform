@@ -464,11 +464,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if (flutter != null) {
             return executeAsyncResult(onResult -> executeFlutter(flutter, command, arguments, res -> deliverNativeResult(res, getResult, onResult)));
         }
-        JavaScriptObject agent = getWebAgentObject();
-        if (agent != null) {
-            return executeAsyncResult(onResult -> executeAgent(agent, command, arguments, res -> deliverNativeResult(res, getResult, onResult)));
-        }
-        throw new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent");
+        return executeAsyncResult(onResult -> withWebAgent(agent -> {
+            if (agent != null)
+                executeAgent(agent, command, arguments, res -> deliverNativeResult(res, getResult, onResult));
+            else
+                onResult.accept(null, new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent"));
+        }));
     }
 
     // Converts an explicit {error: "..."} response from the flutter/agent bridge
@@ -504,15 +505,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             executeFlutter(flutter, command, arguments, callback);
             return;
         }
-        JavaScriptObject agent = getWebAgentObject();
-        if (agent != null) {
-            executeAgent(agent, command, arguments, callback);
-            return;
-        }
-        if (noNative == null)
-            throw new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent");
-
-        noNative.run();
+        // the agent is looked for here rather than at startup, so the error can no
+        // longer be thrown out of the dispatch — it is shown instead
+        withWebAgent(agent -> {
+            if (agent != null)
+                executeAgent(agent, command, arguments, callback);
+            else if (noNative != null)
+                noNative.run();
+            else
+                showErrorMessage(new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent"), PopupOwner.GLOBAL);
+        });
     }
 
     @Override

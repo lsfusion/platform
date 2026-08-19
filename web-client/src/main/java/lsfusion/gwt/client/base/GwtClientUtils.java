@@ -251,29 +251,49 @@ public class GwtClientUtils {
     // ({command, arguments, id}), so handlers in GwtActionDispatcher fall
     // through to it whenever there is no Flutter object on the window.
 
-    public static final String DEFAULT_WEB_AGENT_URL = "http://127.0.0.1:8765";
+    // Finds the agent on first use and hands it to the callback, or null when there
+    // is none. Deliberately not done at startup: a page served from a public host
+    // must be granted the browser's local network permission, and the browser asks
+    // the moment the first request is made. Asked on load, that question reaches a
+    // person who has just logged in and done nothing — asked when they press Print,
+    // it explains itself. The answer is the browser's to keep; ours is the descriptor,
+    // and one probe per page load serves every command that follows.
+    public static native void withWebAgent(AsyncCallback<JavaScriptObject> callback) /*-{
+        if ($wnd.lsfWebAgent) { callback.@lsfusion.gwt.client.base.GwtClientUtils.AsyncCallback::done(Ljava/lang/Object;)($wnd.lsfWebAgent); return; }
+        if ($wnd.lsfWebAgentMissing) { callback.@lsfusion.gwt.client.base.GwtClientUtils.AsyncCallback::done(Ljava/lang/Object;)(null); return; }
+        // a probe is already on its way (the permission prompt can hold it for a
+        // while); everything asked meanwhile waits for that same answer
+        if ($wnd.lsfWebAgentWaiting) { $wnd.lsfWebAgentWaiting.push(callback); return; }
+        $wnd.lsfWebAgentWaiting = [callback];
 
-    public static native JavaScriptObject getWebAgentObject() /*-{
-        return $wnd.lsfWebAgent || null;
-    }-*/;
-
-    // Fire-and-forget GET /ping at startup; if the agent answers, store its
-    // descriptor on $wnd.lsfWebAgent so subsequent getWebAgentObject() succeeds.
-    public static native void probeWebAgent(String url, String token) /*-{
+        var finish = function(agent) {
+            if (agent) $wnd.lsfWebAgent = agent; else $wnd.lsfWebAgentMissing = true;
+            var waiting = $wnd.lsfWebAgentWaiting;
+            $wnd.lsfWebAgentWaiting = null;
+            for (var i = 0; i < waiting.length; i++)
+                waiting[i].@lsfusion.gwt.client.base.GwtClientUtils.AsyncCallback::done(Ljava/lang/Object;)(agent);
+        };
+        // Always the loopback address: the agent runs on the machine the browser
+        // runs on, whatever machine the application server is on.
+        var url = 'http://127.0.0.1:8765';
         try {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url + '/ping', true);
-            xhr.timeout = 1500;
+            // the request hangs while the user reads the permission prompt, so this
+            // waits for a person rather than for a server
+            xhr.timeout = 120000;
             xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try {
-                        var info = JSON.parse(xhr.responseText);
-                        $wnd.lsfWebAgent = { url: url, token: token, info: info };
-                    } catch (e) {}
+                if (xhr.readyState !== 4) return;
+                var info = null;
+                if (xhr.status === 200) {
+                    try { info = JSON.parse(xhr.responseText); } catch (e) {}
                 }
+                finish(info ? { url: url, info: info } : null);
             };
             xhr.send();
-        } catch (e) {}
+        } catch (e) {
+            finish(null);
+        }
     }-*/;
 
     public static native void executeAgent(JavaScriptObject agent, String command, Object[] arguments,
@@ -291,10 +311,10 @@ public class GwtClientUtils {
                 data = { error: 'web-agent: invalid response (HTTP ' + xhr.status + ')' };
             }
             if (xhr.status === 0) {
-                // Transport failed — agent likely stopped mid-session. Clear the
-                // descriptor so subsequent calls take the no-agent path fast
-                // instead of paying the XHR timeout each time. Probe re-runs on
-                // page reload.
+                // Transport failed — agent likely stopped mid-session. Clearing the
+                // descriptor sends the next command looking for it again: it may
+                // have been restarted, and if it is really gone the probe costs
+                // one refused connection.
                 $wnd.lsfWebAgent = null;
                 data = { error: 'web-agent: not reachable' };
             } else if (xhr.status >= 400 && data.error === undefined) {
