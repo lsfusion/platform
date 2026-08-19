@@ -732,6 +732,11 @@ public class MainFrame implements EntryPoint {
                 enableShowingRecentlyLogMessages = gClientSettings.enableShowingRecentlyLogMessages;
                 pushNotificationPublicKey = gClientSettings.pushNotificationPublicKey;
 
+                // What to present to the local web-agent (see github.com/lsfusion/web-agent);
+                // the agent itself is only looked for when a ClientAction actually needs
+                // it, see GwtClientUtils.withWebAgent.
+                GwtClientUtils.setWebAgentToken(gClientSettings.webAgentToken);
+
                 maxStickyLeft = gClientSettings.maxStickyLeft;
 
                 jasperReportsIgnorePageMargins = gClientSettings.jasperReportsIgnorePageMargins;

@@ -62,7 +62,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
                 localePreferences.timeZone, localePreferences.dateFormat, localePreferences.timeFormat, localePreferences.twoDigitYearStart,
                 servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator,
                 clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.enableShowingRecentlyLogMessages,
-                clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins, clientSettings.cssBackwardCompatibilityLevel,
+                clientSettings.pushNotificationPublicKey, clientSettings.webAgentToken, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins, clientSettings.cssBackwardCompatibilityLevel,
                 clientSettings.useClusterizeInPivot);
     }
 

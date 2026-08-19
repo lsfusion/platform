@@ -251,6 +251,10 @@ public class GwtClientUtils {
     // ({command, arguments, id}), so handlers in GwtActionDispatcher fall
     // through to it whenever there is no Flutter object on the window.
 
+    public static native void setWebAgentToken(String token) /*-{
+        $wnd.lsfWebAgentToken = token || null;
+    }-*/;
+
     // Finds the agent on first use and hands it to the callback, or null when there
     // is none. Deliberately not done at startup: a page served from a public host
     // must be granted the browser's local network permission, and the browser asks
@@ -295,7 +299,7 @@ public class GwtClientUtils {
                     }
                     // another program may hold the port and answer something of its own
                     if (info && info.name === 'web-agent')
-                        finish({ url: url, info: info });
+                        finish({ url: url, token: $wnd.lsfWebAgentToken || null, info: info });
                     else
                         probe(i + 1);
                 };

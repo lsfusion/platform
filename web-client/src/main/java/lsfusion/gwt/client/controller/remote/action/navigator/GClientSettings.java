@@ -39,7 +39,8 @@ public class GClientSettings implements Serializable, IsSerializable {
     public boolean disableActionsIfReadonly;
     public boolean enableShowingRecentlyLogMessages;
     public String pushNotificationPublicKey;
-    
+    public String webAgentToken;
+
     public double maxStickyLeft;
 
     public boolean jasperReportsIgnorePageMargins;
@@ -59,7 +60,7 @@ public class GClientSettings implements Serializable, IsSerializable {
                            GColorPreferences colorPreferences, String language, String timeZone, String dateFormat,
                            String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
-                           boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey,
+                           boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey, String webAgentToken,
                            double maxStickyLeft, boolean jasperReportsIgnorePageMargins, double cssBackwardCompatibilityLevel,
                            boolean useClusterizeInPivot) {
         this.busyDialogTimeout = busyDialogTimeout;
@@ -91,6 +92,7 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.disableActionsIfReadonly = disableActionsIfReadonly;
         this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
         this.pushNotificationPublicKey = pushNotificationPublicKey;
+        this.webAgentToken = webAgentToken;
         this.maxStickyLeft = maxStickyLeft;
         this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
