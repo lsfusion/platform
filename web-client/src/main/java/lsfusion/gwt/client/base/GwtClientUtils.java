@@ -193,6 +193,24 @@ public class GwtClientUtils {
         }
     }
 
+    // Both bridges send the same JSON envelope, and a boxed java.lang.Integer is an
+    // object here, which JSON.stringify writes out as GWT keeps it ({"a":29101})
+    // instead of as a number; its toString is the number itself, so that is what goes
+    // into the envelope. Strings and booleans are already what JSON.stringify wants,
+    // and go through untouched - and so does an array, an object here as well, whose
+    // toString is its elements' and would send [5] as 5 and [] as 0.
+    private static native JavaScriptObject convertArguments(Object[] args) /*-{
+        var convertedArgs = [];
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (typeof arg === 'object' && arg !== null && !Array.isArray(arg)
+                    && arg.toString && !isNaN(Number(arg.toString())))
+                arg = Number(arg.toString());
+            convertedArgs.push(arg);
+        }
+        return convertedArgs;
+    }-*/;
+
     /*--- flutter methods ---*/
 
     public static native JavaScriptObject getFlutterObject() /*-{
@@ -223,24 +241,7 @@ public class GwtClientUtils {
     }
 
     private static native void executeFlutterNative(JavaScriptObject flutter, String command, Object[] arguments, String id) /*-{
-        var convertedArgs = [];
-
-        for (var i = 0; i < arguments.length; i++) {
-            var arg = arguments[i];
-            if (typeof arg === 'object' && arg !== null) {
-                if (arg.toString && !isNaN(Number(arg.toString()))) {
-                    convertedArgs.push(Number(arg.toString()));
-                }
-                else if (Array.isArray(arg)) {
-                    convertedArgs.push(arg);
-                }
-                else {
-                    convertedArgs.push(arg);
-                }
-            } else {
-                convertedArgs.push(arg);
-            }
-        }
+        var convertedArgs = @lsfusion.gwt.client.base.GwtClientUtils::convertArguments([Ljava/lang/Object;)(arguments);
         flutter.postMessage(JSON.stringify({command: command, arguments: convertedArgs, id: id}));
     }-*/;
 
@@ -343,7 +344,7 @@ public class GwtClientUtils {
             }
             callback.@lsfusion.gwt.client.base.GwtClientUtils.AsyncCallback::done(Ljava/lang/Object;)(data);
         };
-        xhr.send(JSON.stringify({ command: command, arguments: arguments }));
+        xhr.send(JSON.stringify({ command: command, arguments: @lsfusion.gwt.client.base.GwtClientUtils::convertArguments([Ljava/lang/Object;)(arguments) }));
     }-*/;
 
     /*--- web-agent methods end ---*/
