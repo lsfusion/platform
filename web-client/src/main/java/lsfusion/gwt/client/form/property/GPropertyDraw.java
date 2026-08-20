@@ -556,11 +556,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         }
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
-            Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
-            if(actionIndex == null) {
-                actionIndex = getDialogInputActionIndex();
-            }
-            contextAction.set(actionIndex);
+            contextAction.set((Integer) GEditBindingMap.getToolbarAction(editEvent));
             return changeOrGroupChange();
         }
 
@@ -587,14 +583,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
                     }
                 }
             }
-        }
-        return null;
-    }
-
-    public Integer getDialogInputActionIndex() {
-        GInputListAction[] inputListActions = getInputListActions();
-        if (inputListActions != null) {
-            return getDialogInputActionIndex(inputListActions);
         }
         return null;
     }

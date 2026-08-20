@@ -189,13 +189,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
 
-        if(GMouseStroke.isChangeEvent(handler.event)) {
-            Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
-            if (dialogInputActionIndex != null) {
-                commitFinish(oldValue, dialogInputActionIndex, CommitReason.FORCED);
-                return;
-            }
-        }
         started = true;
 
         super.start(handler, parent, renderContext, notFocusable, oldValue);

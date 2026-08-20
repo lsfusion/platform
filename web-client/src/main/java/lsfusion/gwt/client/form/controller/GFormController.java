@@ -1763,6 +1763,15 @@ public class GFormController implements EditManager {
         }
         GInputList inputList = asyncChange.inputList;
         GInputListAction[] inputListActions = asyncChange.inputListActions;
+
+        // when the value list is disabled the change type is not something to edit (for an object input without an explicit LIST it's the object's id), so the picker dialog is executed instead -
+        // a mouse change is resolved to that action already (see GPropertyDraw.getEditEventSID), any other trigger would edit the raw id
+        Integer dialogActionIndex = execContext.getProperty().getDialogInputActionIndex(inputListActions);
+        if(dialogActionIndex != null) {
+            executePropertyEventAction(handler, editContext, inputListActions, GUserInputResult.singleValue(null, dialogActionIndex), actionSID, eventSource, onExec);
+            return;
+        }
+
         edit(asyncChange.changeType, handler, false, null, asyncChange.multipleInput, inputList, inputListActions, (value, onRequestExec) ->
             executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, eventSource, requestIndex -> {
                 onExec.accept(requestIndex); // setLoading
