@@ -26,3 +26,6 @@
 
 /web-client/logs/
 .idea
+
+# working notes for GitHub issues, kept out of the repository
+/github_issue_*.md
