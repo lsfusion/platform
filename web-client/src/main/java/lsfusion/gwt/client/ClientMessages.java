@@ -291,6 +291,8 @@ public interface ClientMessages extends Messages {
 
     String copyToClipboard();
 
+    String cannotOpenFileWindow();
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
@@ -182,7 +183,12 @@ public class GwtClientUtils {
     public static void openFile(String name, boolean autoPrint, Integer autoPrintTimeout) {
         if (name != null) {
             JavaScriptObject window = openWindow(getAppDownloadURL(name));
-            if (autoPrint)
+            // no window came back: the popup was refused - the click that led here is
+            // several async hops back - or the host, a webview or a sandboxed frame,
+            // gives none at all; either way there is nothing to print or to close
+            if (window == null)
+                DialogBoxHelper.showMessageBox(messages.error(), messages.cannotOpenFileWindow(), PopupOwner.GLOBAL, null);
+            else if (autoPrint)
                 print(window, autoPrintTimeout);
         }
     }
