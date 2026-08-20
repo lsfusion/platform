@@ -209,7 +209,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             autoPrintTimeout = action.autoPrint && action.printType != FormPrintType.HTML ? fileData.getLength() / 15 : null;
         }
 
-        String base64 = action.printerName != null ? Base64.encode(fileData.getRawFile().getBytes()) : null;
+        // the bytes go to the client only when something there is going to print them itself:
+        // an explicit PRINTER, or NOPREVIEW, which prints with no dialog like the desktop client
+        // (the web-agent cannot download the url - no session cookie)
+        String base64 = action.printerName != null || action.autoPrint ? Base64.encode(fileData.getRawFile().getBytes()) : null;
         return new GReportAction(FileUtils.exportFile(fileData, action.formCaption), action.autoPrint, autoPrintTimeout, action.printerName, base64);
     }
 
