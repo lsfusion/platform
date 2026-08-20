@@ -625,6 +625,12 @@ public class GwtClientUtils {
                 && !userAgent.contains("crios") && !userAgent.contains("opr") && !userAgent.contains("edg");
     }
 
+    public static boolean isMacUserAgent() {
+        String userAgent = getUserAgent();
+        // "macintosh" - macOS, "mac os" - also iOS / iPadOS (hardware keyboards there use Cmd for shortcuts as well)
+        return userAgent.contains("macintosh") || userAgent.contains("mac os");
+    }
+
     public static boolean isShowing(Widget widget) {
         if (widget == null) {
             return false;

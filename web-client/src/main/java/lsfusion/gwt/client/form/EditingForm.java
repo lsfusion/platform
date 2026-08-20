@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
@@ -24,7 +25,7 @@ public abstract class EditingForm extends FormContainer {
     protected class CellEditor implements RequestCellEditor {
 
         public boolean checkEnterEvent(NativeEvent event) {
-            return event.getCtrlKey();
+            return GKeyStroke.isCommandKeyDown(event);
         }
 
         @Override

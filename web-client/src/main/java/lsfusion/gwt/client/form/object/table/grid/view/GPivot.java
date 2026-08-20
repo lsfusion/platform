@@ -1988,7 +1988,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             },
 
             colAttrHeaderClickHandler: function (event, element, colKeyValues, isSubtotal) {
-                instance.@GPivot::colAttrHeaderClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey, event.shiftKey, isOdd(event.detail));
+                instance.@GPivot::colAttrHeaderClickAction(*)(colKeyValues, element, isSubtotal, event.ctrlKey || (event.metaKey && @lsfusion.gwt.client.base.GwtClientUtils::isMacUserAgent()()), event.shiftKey, isOdd(event.detail));
             },
             
             colAxisHeaderDblClickHandler: function (event, element, attrName) {
@@ -1996,7 +1996,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             },
 
             rowAxisHeaderDblClickHandler: function (event, element, attrName) {
-                instance.@GPivot::rowAxisHeaderDblClickAction(*)(attrName, element, attrName, event.ctrlKey, event.shiftKey);
+                instance.@GPivot::rowAxisHeaderDblClickAction(*)(attrName, element, attrName, event.ctrlKey || (event.metaKey && @lsfusion.gwt.client.base.GwtClientUtils::isMacUserAgent()()), event.shiftKey);
             },
             
             renderValueCell: function (td, value, rowKeyValues, colKeyValues) {

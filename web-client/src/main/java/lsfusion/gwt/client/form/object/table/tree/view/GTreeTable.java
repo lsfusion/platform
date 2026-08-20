@@ -1240,7 +1240,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            if (!event.getCtrlKey() && getSelectedColumn() == 0) {
+            if (!GKeyStroke.isCommandKeyDown(event) && getSelectedColumn() == 0) {
                 if (keyCode == KeyCodes.KEY_RIGHT) {
                     if (keyboardNodeChangeState(true)) {
                         return true;

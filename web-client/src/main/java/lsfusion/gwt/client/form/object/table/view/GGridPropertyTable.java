@@ -470,13 +470,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
+            if (keyCode == KeyCodes.KEY_HOME && !GKeyStroke.isCommandKeyDown(event)) {
                 int i=0;
                 while (!isFocusable(i))
                     i++;
                 changeColumn(i, reason, event);
                 return true;
-            } else if (keyCode == KeyCodes.KEY_END && !event.getCtrlKey()) {
+            } else if (keyCode == KeyCodes.KEY_END && !GKeyStroke.isCommandKeyDown(event)) {
                 int i=display.getColumnCount()-1;
                 while (!isFocusable(i))
                     i--;

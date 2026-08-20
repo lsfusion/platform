@@ -23,6 +23,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GChangeSelection;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -1676,14 +1677,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
-            if (keyCode == 65 && event.getCtrlKey()) { // CTRL+A
+            if (keyCode == 65 && GKeyStroke.isCommandKeyDown(event)) { // CTRL+A (CMD+A on macOS)
                 selectAllCells();
                 return true;
             }
             Boolean toEnd = null;
-            if (keyCode == KeyCodes.KEY_HOME && event.getCtrlKey())
+            if (keyCode == KeyCodes.KEY_HOME && GKeyStroke.isCommandKeyDown(event))
                 toEnd = false;
-            else if (keyCode == KeyCodes.KEY_END && event.getCtrlKey())
+            else if (keyCode == KeyCodes.KEY_END && GKeyStroke.isCommandKeyDown(event))
                 toEnd = true;
 
             if(toEnd != null) {

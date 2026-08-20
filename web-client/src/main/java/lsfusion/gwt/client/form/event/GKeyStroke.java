@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.view.MainFrame;
@@ -285,10 +286,15 @@ public class GKeyStroke implements Serializable {
         return isCharAddKeyEvent(event);
     }
 
+    // on macOS standard clipboard / selection shortcuts use Cmd (metaKey) instead of Ctrl, which browsers don't report as ctrlKey
+    public static boolean isCommandKeyDown(NativeEvent event) {
+        return event.getCtrlKey() || (GwtClientUtils.isMacUserAgent() && event.getMetaKey());
+    }
+
     public static boolean isCopyToClipboardEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) &&
-                ((event.getKeyCode() == KEY_C && event.getCtrlKey()) ||
-                (event.getKeyCode() == KEY_INSERT && event.getCtrlKey()));
+                ((event.getKeyCode() == KEY_C && isCommandKeyDown(event)) ||
+                (event.getKeyCode() == KEY_INSERT && isCommandKeyDown(event)));
     }
 
     public static boolean isPasteFromClipboardEvent(Event event) {
@@ -308,9 +314,9 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isPlainPasteEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && 
-                event.getKeyCode() == KEY_V && 
-                event.getCtrlKey() && 
+        return KEYDOWN.equals(event.getType()) &&
+                event.getKeyCode() == KEY_V &&
+                isCommandKeyDown(event) &&
                 event.getShiftKey() &&
                 !event.getAltKey();
     }

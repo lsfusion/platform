@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -122,7 +123,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         if (DBLCLICK.equals(event.getType())) {
             stopPropagation(event);
-            table.headerClicked(childIndex.get(), event.getCtrlKey(), event.getShiftKey());
+            table.headerClicked(childIndex.get(), GKeyStroke.isCommandKeyDown(event), event.getShiftKey());
         }
 
         TableSectionElement cursorElement = table.getTableHeadElement();

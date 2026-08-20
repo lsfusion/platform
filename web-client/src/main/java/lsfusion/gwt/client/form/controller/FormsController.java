@@ -254,6 +254,12 @@ public abstract class FormsController {
 
     public void checkEditModeEvents(NativeEvent event) {
         Boolean ctrlKey = eventGetCtrlKey(event);
+        // on macOS Cmd (metaKey) is the standard link-opening modifier, so it should toggle LINK mode the same way Ctrl does
+        if (GwtClientUtils.isMacUserAgent()) {
+            Boolean metaKey = eventGetMetaKey(event);
+            if (metaKey != null)
+                ctrlKey = metaKey || (ctrlKey != null && ctrlKey);
+        }
         Boolean shiftKey = eventGetShiftKey(event);
         Boolean altKey = eventGetAltKey(event);
         boolean tab = isTabEvent(event);
@@ -289,6 +295,10 @@ public abstract class FormsController {
     // we need native method and not getCtrlKey, since some events (for example focus) have ctrlKey undefined and in this case we want to ignore them
     private native Boolean eventGetCtrlKey(NativeEvent evt) /*-{
         return evt.ctrlKey;
+    }-*/;
+
+    private native Boolean eventGetMetaKey(NativeEvent evt) /*-{
+        return evt.metaKey;
     }-*/;
 
     private native Boolean eventGetShiftKey(NativeEvent evt) /*-{
@@ -833,7 +843,7 @@ public abstract class FormsController {
     }
     // there is no event when the element is activated from code rather than by a click, and then no modifier is held
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
-        return executeNavigatorAction(actionSID, event != null && event.getCtrlKey(), sync, 1, null);
+        return executeNavigatorAction(actionSID, event != null && GKeyStroke.isCommandKeyDown(event), sync, 1, null);
     }
     public void executeNotificationAction(Integer id, String result, Runnable onRequestFinished) {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
