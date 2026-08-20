@@ -1,11 +1,14 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -16,6 +19,8 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.JoinProperty;
+import lsfusion.server.logics.property.cases.CalcCase;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -85,6 +90,70 @@ public class InputContextPropertyListEntity<P extends PropertyInterface, V exten
                 (filter.property == propertyList.filter.property && filter.mapValues.equals(propertyList.filter.mapValues) && equalsOrders(orders, propertyList.orders));
     }
 
+    // each branch is kept under its own condition : CASE WHEN condition THEN list, the first matching one wins as in the case action itself
+    // (the branches offer the different values because the value list of an object input carries the class filter of its dialog form, see GroupObjectEntity.getInputFilterEntity,
+    // and an explicit LIST with a condition keeps that condition in its view)
+    public static <V extends PropertyInterface, F extends PropertyInterface, W extends PropertyInterface> InputContextPropertyListEntity<?, V> mergeBranches(ImList<InputContextListEntity<?, V>> lists, ImList<PropertyInterfaceImplement<V>> wheres) {
+        if(wheres == null) // the conditions are not known (a FOR branch condition is over its own keys, so it is not passed)
+            return null;
+
+        MList<InputContextPropertyListEntity<?, V>> mPropertyLists = ListFact.mList(lists.size());
+        InputPropertyListEntity<?, V> view = null;
+        boolean sameViews = true;
+        boolean disableInputList = false;
+        // the orders of the branches can't be combined (they are lists of properties to sort by), and they are not that important, so they are kept only when they all match
+        ImOrderMap<InputOrderEntity<?, V>, Boolean> orders = null;
+        MSet<V> mUsedValues = SetFact.mSet();
+        for(int i = 0, size = lists.size(); i < size; i++) {
+            if(!(lists.get(i) instanceof InputContextPropertyListEntity))
+                return null;
+            InputContextPropertyListEntity<?, V> list = (InputContextPropertyListEntity<?, V>) lists.get(i);
+
+            if(view == null) {
+                view = list.view;
+                orders = list.getSelectOrderEntities();
+            } else {
+                if(view.newSession != list.view.newSession) // the session scope of the dialog is chosen before the executed branch is known
+                    return null;
+
+                sameViews = sameViews && view.equalsList(list.view);
+                if(!equalsOrders(orders, list.getSelectOrderEntities()))
+                    orders = MapFact.EMPTYORDER();
+            }
+            disableInputList = disableInputList || list.isDisableInputList(); // the picker wins over the inline list, it works for any branch
+
+            mPropertyLists.add(list);
+            mUsedValues.addAll(list.getValues());
+            mUsedValues.addAll(wheres.get(i).getInterfaces());
+        }
+        ImList<InputContextPropertyListEntity<?, V>> propertyLists = mPropertyLists.immutableList();
+
+        ImRevMap<PropertyInterface, V> mappedValues = mUsedValues.immutable().mapRevKeys(() -> new PropertyInterface<>());
+        PropertyInterface singleInterface = new PropertyInterface();
+
+        // a branch without a filter offers all the values of its view, that's exactly the filter the select rendering uses for it
+        PropertyMapImplement<F, PropertyInterface> orFilter = (PropertyMapImplement<F, PropertyInterface>) PropertyFact.createUnion(mappedValues.keys().addExcl(singleInterface), false,
+                propertyLists.mapListValues((i, list) -> new CalcCase<>(wheres.get(i).map(mappedValues.reverse()),
+                        mapFilter(list.getSelectFilterEntity(), mappedValues, singleInterface))));
+
+        ImRevMap<F, PropertyInterface> filterMapping = orFilter.mapping.removeValuesRev(singleInterface);
+        if(!orFilter.property.isValueFull(filterMapping.keys())) // the value has to be bound by the filter, otherwise reading the values is an "incorrect operation" (as in Property.getSelectProperty)
+            return null;
+
+        InputPropertyListEntity<?, V> mergedView = view;
+        if(!sameViews) { // the view is the value itself (that's what the client shows and what a pushed value is resolved with), so it is combined the same way
+            PropertyMapImplement<W, PropertyInterface> orView = (PropertyMapImplement<W, PropertyInterface>) PropertyFact.createUnion(mappedValues.keys().addExcl(singleInterface), false,
+                    propertyLists.mapListValues((i, list) -> new CalcCase<>(wheres.get(i).map(mappedValues.reverse()),
+                            mapView(list.view, mappedValues, singleInterface))));
+            orView.property.disableInputList = disableInputList;
+
+            ImRevMap<W, PropertyInterface> viewMapping = orView.mapping.removeValuesRev(singleInterface);
+            mergedView = new InputPropertyListEntity<>(orView.property, viewMapping.join(mappedValues), view.newSession);
+        }
+
+        return new InputContextPropertyListEntity<>(mergedView, new InputFilterEntity<>(orFilter.property, filterMapping.join(mappedValues)), orders);
+    }
+
     private static <V extends PropertyInterface> boolean equalsOrders(ImOrderMap<InputOrderEntity<?, V>, Boolean> orders1, ImOrderMap<InputOrderEntity<?, V>, Boolean> orders2) {
         if(orders1.size() != orders2.size())
             return false;
@@ -141,6 +210,10 @@ public class InputContextPropertyListEntity<P extends PropertyInterface, V exten
 
     private static <X extends PropertyInterface, V extends PropertyInterface, O extends PropertyInterface> PropertyMapImplement<O, X> mapOrder(InputOrderEntity<O, V> order, ImRevMap<X, V> mapValues, X singleInterface) {
         return new PropertyMapImplement<>(order.property, MapFact.addRevExcl(order.mapValues.innerCrossValues(mapValues), order.singleInterface(), singleInterface));
+    }
+
+    private static <P extends PropertyInterface, V extends PropertyInterface, X extends PropertyInterface> PropertyMapImplement<X, P> mapView(InputPropertyListEntity<X, V> view, ImRevMap<P, V> mapValues, P singleInterface) {
+        return new PropertyMapImplement<>(view.property, MapFact.addRevExcl(view.mapValues.innerCrossValues(mapValues), view.singleInterface(), singleInterface));
     }
 
     private static <P extends PropertyInterface, V extends PropertyInterface, X extends PropertyInterface> PropertyMapImplement<X, P> mapFilter(InputFilterEntity<X, V> filter, ImRevMap<P, V> mapValues, P singleInterface) {

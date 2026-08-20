@@ -105,9 +105,8 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     }
 
     @Override
-    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
-        if(!(input instanceof AsyncMapOpenForm))
-            return null;
+    protected AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
+        assert input.getClass() == getClass();
 
         AsyncMapOpenForm<T> asyncOpenForm = (AsyncMapOpenForm<T>) input;
         

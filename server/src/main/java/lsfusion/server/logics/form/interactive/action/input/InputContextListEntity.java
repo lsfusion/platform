@@ -23,7 +23,7 @@ public interface InputContextListEntity<P extends PropertyInterface, V extends P
 
     default boolean isDisableInputList() { return false; } // true when the list property disables its inline value list (the dedicated object-id input cast)
 
-    boolean equalsList(InputContextListEntity<?, V> list); // used when merging the branches, see AsyncMapInput.merge
+    boolean equalsList(InputContextListEntity<?, V> list); // structural, used when merging the branches
 
     <C extends PropertyInterface> InputContextListEntity<P, C> map(ImRevMap<V, C> map);
 

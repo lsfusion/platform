@@ -241,9 +241,8 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             }
 
             @Override
-            public AsyncMapEventExec<C> merge(AsyncMapEventExec<C> input) {
-                if(!(input instanceof AsyncMapJSONChange))
-                    return null;
+            protected AsyncMapEventExec<C> merge(AsyncMapEventExec<C> input) {
+                assert input.getClass() == getClass();
 
                 AsyncMapJSONChange<C> jsonInput = (AsyncMapJSONChange<C>) input;
                 if(!BaseUtils.hashEquals(map, jsonInput.map))

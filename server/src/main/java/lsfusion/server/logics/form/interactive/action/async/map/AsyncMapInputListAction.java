@@ -77,18 +77,26 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
     }
 
     // the image is not compared - it is a reader created per action, but it follows the id (fixed for the platform actions, the image file name for the scripted ones)
-    public AsyncMapInputListAction<T> merge(AsyncMapInputListAction<T> mergeAction) {
-        if(!BaseUtils.nullEquals(id, mergeAction.id) || !BaseUtils.nullEquals(keyStroke, mergeAction.keyStroke) ||
-                !BaseUtils.nullEquals(bindingModesMap, mergeAction.bindingModesMap) || !BaseUtils.nullEquals(priority, mergeAction.priority) ||
-                !quickAccessList.equals(mergeAction.quickAccessList))
-            return null;
+    public static <T extends PropertyInterface> AsyncMapInputListAction<T> merge(ImList<AsyncMapInputListAction<T>> actions, ImList<PropertyInterfaceImplement<T>> wheres) {
+        assert wheres == null || wheres.size() == actions.size();
 
-        // the action is shown only if it's allowed in all branches
-        Predicate<SecurityPolicy> mergedCheck = check == null ? mergeAction.check : (mergeAction.check == null ? check : check.and(mergeAction.check));
+        AsyncMapInputListAction<T> action = actions.get(0);
+
+        Predicate<SecurityPolicy> mergedCheck = action.check;
+        for(int i = 1, size = actions.size(); i < size; i++) {
+            AsyncMapInputListAction<T> mergeAction = actions.get(i);
+            if(!BaseUtils.nullEquals(action.id, mergeAction.id) || !BaseUtils.nullEquals(action.keyStroke, mergeAction.keyStroke) ||
+                    !BaseUtils.nullEquals(action.bindingModesMap, mergeAction.bindingModesMap) || !BaseUtils.nullEquals(action.priority, mergeAction.priority) ||
+                    !action.quickAccessList.equals(mergeAction.quickAccessList))
+                return null;
+
+            // the action is shown only if it's allowed in all branches
+            mergedCheck = mergedCheck == null ? mergeAction.check : (mergeAction.check == null ? mergedCheck : mergedCheck.and(mergeAction.check));
+        }
 
         // the async exec of the branches is dropped: it opens the form of the branch, and the merged one is not necessarily the form (and the window type) the executed branch will open -
         // the client would then pre-open a window that never gets its form and stays loading next to the real one (seen on the stand). It is just an optimization, the action is executed on the server anyway
-        return new AsyncMapInputListAction<>(action, id, null, keyStroke, bindingModesMap, priority, quickAccessList, mergedCheck, index);
+        return new AsyncMapInputListAction<>(action.action, action.id, null, action.keyStroke, action.bindingModesMap, action.priority, action.quickAccessList, mergedCheck, action.index);
     }
 
     public AsyncMapInputListAction<T> replace(String replaceAction, AsyncMapEventExec<T> asyncExec) {

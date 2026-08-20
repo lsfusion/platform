@@ -107,9 +107,8 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
     }
 
     @Override
-    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> exec) {
-        if(!(exec instanceof AsyncMapChange))
-            return null;
+    protected AsyncMapEventExec<T> merge(AsyncMapEventExec<T> exec) {
+        assert exec.getClass() == getClass();
 
         AsyncMapChange<?, T> change = (AsyncMapChange<?, T>) exec;
         if(!(BaseUtils.nullEquals(object, change.object) &&

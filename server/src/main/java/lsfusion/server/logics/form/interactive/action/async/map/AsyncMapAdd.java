@@ -67,9 +67,8 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapFormExec<T
     }
 
     @Override
-    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
-        if(!(input instanceof AsyncMapAdd))
-            return null;
+    protected AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
+        assert input.getClass() == getClass();
 
         AsyncMapAdd<T> asyncInput = (AsyncMapAdd<T>) input;
         return new AsyncMapAdd<>(ClassFormSelector.merge(customClass, asyncInput.customClass));

@@ -65,9 +65,12 @@ public class IfAction extends KeepContextAction {
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         ImList<ActionMapImplement<?, PropertyInterface>> list = ListFact.singleton(trueAction);
-        if(falseAction != null)
+        ImList<PropertyInterfaceImplement<PropertyInterface>> wheres = ListFact.singleton(ifProp);
+        if(falseAction != null) {
             list = list.addList(falseAction);
-        return getBranchAsyncEventExec(list, optimistic, recursiveAbstracts, false, falseAction != null);
+            wheres = wheres.addList(PropertyFact.createNot(ifProp));
+        }
+        return getBranchAsyncEventExec(list, wheres, optimistic, recursiveAbstracts, false, falseAction != null);
     }
 
     @Override

@@ -47,7 +47,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncMapEventExec<PropertyInterface> merge(AsyncMapEventExec<PropertyInterface> input) {
+        protected AsyncMapEventExec<PropertyInterface> merge(AsyncMapEventExec<PropertyInterface> input) {
             throw new UnsupportedOperationException();
         }
     };
@@ -83,7 +83,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncMapEventExec<PropertyInterface> merge(AsyncMapEventExec<PropertyInterface> input) {
+        protected AsyncMapEventExec<PropertyInterface> merge(AsyncMapEventExec<PropertyInterface> input) {
             throw new UnsupportedOperationException();
         }
     };

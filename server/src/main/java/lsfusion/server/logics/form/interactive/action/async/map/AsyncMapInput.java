@@ -15,6 +15,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContextListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
@@ -48,7 +49,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
         super(type);
 
         this.list = list;
-        this.actions = actions;
+        this.actions = actions; // the actions are never null (may be empty), unlike the list
         this.strict = strict;
         this.multipleInput = multipleInput;
 
@@ -59,7 +60,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
     }
 
     public AsyncMapInput<T> override(String action, AsyncMapEventExec<T> asyncExec) {
-        return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, multipleInput, hasDrawOldValue, oldValue, customEditorFunction);
+        return new AsyncMapInput<>(type, list, actions.mapListValues(a -> a.replace(action, asyncExec)), strict, multipleInput, hasDrawOldValue, oldValue, customEditorFunction);
     }
 
     private <P extends PropertyInterface> AsyncMapInput<P> override(InputContextListEntity<?, P> list, ImList<AsyncMapInputListAction<P>> actions, PropertyInterfaceImplement<P> oldValue) {
@@ -72,17 +73,17 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
     @Override
     public <P extends PropertyInterface> AsyncMapInput<P> map(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.map(mapping) : null, actions != null ? actions.mapListValues(action -> action.map(mapping)) : null, oldValue != null ? oldValue.map(mapping) : null);
+        return override(list != null ? list.map(mapping) : null, actions.mapListValues(action -> action.map(mapping)), oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapInner(mapping)) : null, oldValue != null ? oldValue.mapInner(mapping) : null);
+        return override(list != null ? list.mapInner(mapping) : null, actions.mapListValues(action -> action.mapInner(mapping)), oldValue != null ? oldValue.mapInner(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return override(list != null ? list.mapJoin(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapJoin(mapping)) : null, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
+        return override(list != null ? list.mapJoin(mapping) : null, actions.mapListValues(action -> action.mapJoin(mapping)), oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
     }
 
     @Override
@@ -92,7 +93,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
                 ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty.getAssertCellProperty((FormInstanceContext) context))))
             return null;
         return new AsyncInput(type, multipleInput, list != null ? new InputList(strict, list.isDisableInputList()) : null,
-                filter(((FormInstanceContext) context).securityPolicy, securityProperty, actions != null ? actions.mapListValues(action -> action.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]) : null), customEditorFunction);
+                filter(((FormInstanceContext) context).securityPolicy, securityProperty, actions.mapListValues(action -> action.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()])), customEditorFunction);
     }
 
     public static InputListAction[] filter(SecurityPolicy policy, ActionOrProperty securityProperty, InputListAction[] actions) {
@@ -111,44 +112,71 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
     }
 
     @Override
-    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
-        if(!(input instanceof AsyncMapInput))
-            return null;
+    protected AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
+        throw new UnsupportedOperationException(); // the inputs are merged all at once (see the merge above), so the pairwise fold never gets to them
+    }
 
-        AsyncMapInput<T> dataInput = ((AsyncMapInput<T>)input);
-        if((list == null) != (dataInput.list == null)) // later it maybe makes sense to "or" this lists
-            return null;
+    static <T extends PropertyInterface> AsyncMapEventExec<T> mergeInputs(ImList<AsyncMapInput<T>> inputs, ImList<PropertyInterfaceImplement<T>> wheres) {
+        AsyncMapInput<T> first = inputs.get(0);
 
-        InputContextListEntity<?, T> mergedList = null;
-        ImList<AsyncMapInputListAction<T>> mergedActions = null;
-        if(list != null) {
-            // the branches of the same abstract usually have the very same list (for example the object-id input list, added for an object input without an explicit LIST),
-            // and everything the client builds the editor from has to match, since it is chosen before the executed branch is known
-            if(strict != dataInput.strict || !list.equalsList(dataInput.list) || !BaseUtils.nullEquals(customEditorFunction, dataInput.customEditorFunction))
+        DataClass<?> mergedType = first.type;
+        boolean mergedMultipleInput = first.multipleInput;
+        boolean mergedHasDrawOldValue = first.hasDrawOldValue;
+        PropertyInterfaceImplement<T> mergedOldValue = first.oldValue;
+        boolean sameOldValues = true;
+        boolean sameLists = true;
+        for(int i = 1, size = inputs.size(); i < size; i++) {
+            AsyncMapInput<T> input = inputs.get(i);
+
+            // everything the client builds the editor from has to match, since it is chosen before the executed branch is known
+            if((first.list == null) != (input.list == null) || first.strict != input.strict || !BaseUtils.nullEquals(first.customEditorFunction, input.customEditorFunction))
                 return null;
 
-            mergedActions = mergeActions(actions, dataInput.actions);
-            if(mergedActions == null)
+            sameLists = sameLists && (first.list == null || first.list.equalsList(input.list));
+
+            mergedType = mergedType.getCompatible(input.type, true);
+            if(mergedType == null)
                 return null;
 
-            mergedList = list;
+            mergedMultipleInput = mergedMultipleInput || input.multipleInput;
+            mergedHasDrawOldValue = mergedHasDrawOldValue || input.hasDrawOldValue;
+            // the branches that have no old value don't conflict with the ones that have it, but once two of them disagree there is no common old value anymore
+            if(sameOldValues && input.oldValue != null) {
+                if(mergedOldValue == null)
+                    mergedOldValue = input.oldValue;
+                else if(!mergedOldValue.equals(input.oldValue)) {
+                    mergedOldValue = null;
+                    sameOldValues = false;
+                }
+            }
         }
 
-        DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
-        if(compatibleType != null)
-            return new AsyncMapInput<>(compatibleType, mergedList, mergedActions, strict, multipleInput || dataInput.multipleInput, hasDrawOldValue || dataInput.hasDrawOldValue,
-                    oldValue == null || dataInput.oldValue == null || oldValue.equals(dataInput.oldValue) ? BaseUtils.nvl(oldValue, dataInput.oldValue) : null, customEditorFunction);
-        return null;
+        ImList<AsyncMapInputListAction<T>> mergedActions = mergeActions(inputs, wheres);
+        if(mergedActions == null)
+            return null;
+
+        InputContextListEntity<?, T> mergedList = first.list;
+        if(first.list != null && !sameLists) {
+            // the lists are combined under the branch conditions, so that a row gets the values of the branch that applies to it
+            mergedList = InputContextPropertyListEntity.mergeBranches(inputs.mapListValues(input -> input.list), wheres);
+            if(mergedList == null)
+                return null;
+        }
+
+        return new AsyncMapInput<>(mergedType, mergedList, mergedActions, first.strict, mergedMultipleInput, mergedHasDrawOldValue, mergedOldValue, first.customEditorFunction);
     }
 
     // the actions are matched one by one, since the executed branch resolves the chosen action by its index (see InputAction.executeInternal)
-    private static <T extends PropertyInterface> ImList<AsyncMapInputListAction<T>> mergeActions(ImList<AsyncMapInputListAction<T>> actions1, ImList<AsyncMapInputListAction<T>> actions2) {
-        if(actions1.size() != actions2.size())
-            return null;
+    private static <T extends PropertyInterface> ImList<AsyncMapInputListAction<T>> mergeActions(ImList<AsyncMapInput<T>> inputs, ImList<PropertyInterfaceImplement<T>> wheres) {
+        ImList<AsyncMapInputListAction<T>> actions = inputs.get(0).actions;
+        for(int i = 1, size = inputs.size(); i < size; i++)
+            if(inputs.get(i).actions.size() != actions.size())
+                return null;
 
-        MList<AsyncMapInputListAction<T>> mResult = ListFact.mList(actions1.size());
-        for(int i = 0, size = actions1.size(); i < size; i++) {
-            AsyncMapInputListAction<T> mergedAction = actions1.get(i).merge(actions2.get(i));
+        MList<AsyncMapInputListAction<T>> mResult = ListFact.mList(actions.size());
+        for(int i = 0, size = actions.size(); i < size; i++) {
+            int index = i;
+            AsyncMapInputListAction<T> mergedAction = AsyncMapInputListAction.merge(inputs.mapListValues(input -> input.actions.get(index)), wheres);
             if(mergedAction == null)
                 return null;
             mResult.add(mergedAction);

@@ -258,7 +258,7 @@ public class CaseAction extends ListCaseAction {
 
     public Graph<ActionCase<PropertyInterface>> abstractGraph; 
 
-    private ImList<ActionMapImplement<?, PropertyInterface>> getAsyncListActions(Result<Boolean> allCases) {
+    private ImList<ActionCase<PropertyInterface>> getAsyncCases(Result<Boolean> allCases) {
         ImList<ActionCase<PropertyInterface>> cases = getCases();
 
         ImList<ActionCase<PropertyInterface>> optimisticCases = cases.filterList(element -> element.optimisticAsync);
@@ -272,7 +272,7 @@ public class CaseAction extends ListCaseAction {
                     (cases.size() == 2 && cases.get(1).where.mapIsNot(cases.get(0).where)))); // if else exclusive
         }
 
-        return cases.mapListValues(value -> value.implement);
+        return cases;
     }
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
@@ -282,7 +282,8 @@ public class CaseAction extends ListCaseAction {
         }
         
         Result<Boolean> rLastElse = new Result<>(false);
-        return getBranchAsyncEventExec(getAsyncListActions(rLastElse), optimistic, recursiveAbstracts, isExclusive, rLastElse.result);
+        ImList<ActionCase<PropertyInterface>> cases = getAsyncCases(rLastElse);
+        return getBranchAsyncEventExec(cases.mapListValues(value -> value.implement), cases.mapListValues(value -> value.where), optimistic, recursiveAbstracts, isExclusive, rLastElse.result);
     }
 
     /*

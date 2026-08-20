@@ -57,9 +57,8 @@ public class AsyncMapRemove<T extends PropertyInterface> extends AsyncMapFormExe
     }
 
     @Override
-    public AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
-        if(!(input instanceof AsyncMapRemove))
-            return null;
+    protected AsyncMapEventExec<T> merge(AsyncMapEventExec<T> input) {
+        assert input.getClass() == getClass();
 
         AsyncMapRemove<T> asyncInput = (AsyncMapRemove<T>) input;
         if (BaseUtils.hashEquals(propertyInterface, asyncInput.propertyInterface))

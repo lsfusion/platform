@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -571,9 +572,9 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return null;
     }
 
-    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursiveAbstracts, boolean isExclusive, boolean lastElse) {
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, ImList<PropertyInterfaceImplement<X>> wheres, boolean optimistic, ImSet<Action<?>> recursiveAbstracts, boolean isExclusive, boolean lastElse) {
 //        return getPrevBranchAsyncEventExec(actions, optimistic, recursive, isExclusive, lastElse);
-        return getNewBranchAsyncEventExec(actions, optimistic, recursiveAbstracts, lastElse);
+        return getNewBranchAsyncEventExec(actions, wheres, optimistic, recursiveAbstracts, lastElse);
 //        AsyncMapEventExec<X> newAsyncEventExec = getNewBranchAsyncEventExec(actions, optimistic, recursive, lastElse);
 //
 ////        differentResults(newAsyncEventExec, getPrevBranchAsyncEventExec(actions, optimistic, recursive, isExclusive, lastElse));
@@ -581,28 +582,33 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 //        return newAsyncEventExec;
     }
 
-    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursiveAbstracts, boolean optimisticCases) {
-        boolean firstNonRecursive = false;
-        AsyncMapEventExec<X> bestAsyncExec = null;
-        AsyncMapEventExec<X> mergedAsyncExec = null;
-        for (ActionMapImplement<?, X> action : actions) {
-            AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursiveAbstracts);
-            // first non-recursive we consider the most optimistic
-            if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
-                if(!firstNonRecursive) {
-                    firstNonRecursive = true;
-                    mergedAsyncExec = asyncActionExec;
-                } else {
-                    if(asyncActionExec == null)
-                        mergedAsyncExec = null;
-                    else if (mergedAsyncExec != null)
-                        mergedAsyncExec = mergedAsyncExec.merge(asyncActionExec);
-                }
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, ImList<PropertyInterfaceImplement<X>> wheres, boolean optimistic, ImSet<Action<?>> recursiveAbstracts, boolean optimisticCases) {
+        assert wheres == null || wheres.size() == actions.size();
 
-                if (asyncActionExec != null && !(!optimistic && asyncActionExec instanceof AsyncMapInput) && (bestAsyncExec == null || asyncActionExec.getOptimisticPriority() > bestAsyncExec.getOptimisticPriority()))
-                    bestAsyncExec = asyncActionExec;
+        AsyncMapEventExec<X> bestAsyncExec = null;
+        MList<AsyncMapEventExec<X>> mBranchExecs = ListFact.mList();
+        MList<PropertyInterfaceImplement<X>> mBranchWheres = wheres != null ? ListFact.mList() : null;
+        boolean hasNoAsyncExec = false;
+        for (int i = 0, size = actions.size(); i < size; i++) {
+            AsyncMapEventExec<X> asyncActionExec = actions.get(i).mapAsyncEventExec(optimistic, recursiveAbstracts);
+            if(asyncActionExec == AsyncMapExec.RECURSIVE())
+                continue;
+
+            if(asyncActionExec == null) { // a branch without an async makes the merge impossible, but the rest are still checked for the best one
+                hasNoAsyncExec = true;
+                continue;
             }
+
+            mBranchExecs.add(asyncActionExec);
+            if(mBranchWheres != null)
+                mBranchWheres.add(wheres.get(i));
+
+            if (!(!optimistic && asyncActionExec instanceof AsyncMapInput) && (bestAsyncExec == null || asyncActionExec.getOptimisticPriority() > bestAsyncExec.getOptimisticPriority()))
+                bestAsyncExec = asyncActionExec;
         }
+
+        AsyncMapEventExec<X> mergedAsyncExec = hasNoAsyncExec ? null :
+                AsyncMapEventExec.merge(mBranchExecs.immutableList(), mBranchWheres != null ? mBranchWheres.immutableList() : null);
 
         // we don't want to use Input when it's not in all branches, since it will break the flow
         if(mergedAsyncExec instanceof AsyncMapInput && !optimistic) {
