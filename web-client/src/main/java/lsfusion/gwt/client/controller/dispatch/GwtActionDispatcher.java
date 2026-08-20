@@ -543,8 +543,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     private GListFilesResult getListFilesResult(JSONValue res) {
+        JSONArray result = res == null ? null : res.isArray();
+        // no list where a list was promised - the agent answered with an error instead.
+        // Returning null rather than a result carrying our own parse failure is what
+        // lets deliverNativeResult show that error, which is the one worth reading
+        if (result == null)
+            return null;
         try {
-            JSONArray result =res.isArray();
             String[] namesArray = new String[result.size()];
             Boolean[] dirsArray = new Boolean[result.size()];
             GDateTimeDTO[] modifiedArray = new GDateTimeDTO[result.size()];
@@ -575,7 +580,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public GRunCommandActionResult execute(GRunCommandAction action) {
-        return executeAsyncResultNative("runCommand", new String[]{action.command}, res -> new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
+        // no exit code means nothing ran: built anyway, an error from the agent would
+        // read as a command that finished fine and printed nothing, and the server
+        // side judges it by that exit code alone
+        return executeAsyncResultNative("runCommand", new String[]{action.command}, res -> new JSONObject(res).get("exitValue") == null ? null
+                : new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
     }
 
     @Override
@@ -613,9 +622,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         return executeAsyncResultNative("ping", new String[] {action.host}, this::getJSONStringResult);
     }
 
-    private boolean getJSONBooleanResult(JavaScriptObject res) {
-        Boolean exists = getJSONBoolean(res, "result");
-        return exists != null && exists;
+    // Boolean, not boolean: false is an answer - "no such file" - and an agent that
+    // never got to look is not giving one. deliverNativeResult needs the null to tell
+    private Boolean getJSONBooleanResult(JavaScriptObject res) {
+        return getJSONBoolean(res, "result");
     }
 
     private String getJSONStringResult(JavaScriptObject res) {
