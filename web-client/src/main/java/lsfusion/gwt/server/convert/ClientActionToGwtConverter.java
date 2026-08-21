@@ -340,10 +340,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GWriteToPrinterAction(action.text, action.charset, action.printerName);
     }
 
-    //todo: directory, wait
     @Converter(from = RunCommandClientAction.class)
     public GRunCommandAction convertAction(RunCommandClientAction action) {
-        return new GRunCommandAction(action.command);
+        return new GRunCommandAction(action.command, action.directory, action.wait);
     }
 
     @Converter(from = TcpClientAction.class)

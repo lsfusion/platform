@@ -582,8 +582,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public GRunCommandActionResult execute(GRunCommandAction action) {
         // no exit code means nothing ran: built anyway, an error from the agent would
         // read as a command that finished fine and printed nothing, and the server
-        // side judges it by that exit code alone
-        return executeAsyncResultNative("runCommand", new String[]{action.command}, res -> new JSONObject(res).get("exitValue") == null ? null
+        // side judges it by that exit code alone. Without wait there is no exit code
+        // either, and no result is exactly right - that is what the desktop client
+        // returns when it does not wait, and the server side then leaves cmdOut/cmdErr
+        // alone instead of overwriting them with an outcome nobody waited for
+        return executeAsyncResultNative("runCommand", new Object[]{action.command, action.directory, action.wait},
+                res -> new JSONObject(res).get("exitValue") == null ? null
                 : new GRunCommandActionResult(getJSONString(res, "cmdOut"), getJSONString(res, "cmdErr"), getJSONInt(res, "exitValue")));
     }
 
