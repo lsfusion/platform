@@ -1,8 +1,8 @@
 {
   "files": {
     "brief/Brief.md": {
-      "file_hash": "sha256:08e11d29467cdf68cf8dd91a32c5fdb5368a844567d7be36f6ff1a369fa0ac97",
-      "indexed_at": "2026-08-19T08:47:43Z",
+      "file_hash": "sha256:ed7914f65ba2ec83865939e4f13062b3fae07e1b4cead2226450c760f57c43ca",
+      "indexed_at": "2026-08-21T10:04:27Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v3",
@@ -126,9 +126,9 @@
           "source_file": "brief/Brief.md"
         },
         "Brief::identification--ergonomics": {
-          "file_id": "file-VK7QMj32S4pHXKqt7mGH5z",
+          "file_id": "file-RykzuLAqY931bq3additf9",
           "heading_path": "lsFusion Brief > Identification & ergonomics",
-          "section_payload_hash": "sha256:e2ed85bf98ef7e23d67fd27743994394bbbb104ae9d1bceb52ca8a0eab70aa4c",
+          "section_payload_hash": "sha256:431ff27ecad891954e0e0d75560a30b135376ff087cd380bacb7289c29220f69",
           "source_file": "brief/Brief.md"
         },
         "Brief::integration": {
@@ -225,8 +225,8 @@
       "stale": false
     },
     "brief/Brief_export.md": {
-      "file_hash": "sha256:6cc8d8f1ca65c73a81b4e798997e7308f5e22c56b524181adef2d9064e798edf",
-      "indexed_at": "2026-08-12T08:03:10Z",
+      "file_hash": "sha256:3d32a84cf1fc7bd4aa30c109b7b982a10fcc7d44748fff9ae4d7602608e903d1",
+      "indexed_at": "2026-08-21T10:04:35Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v3",
@@ -242,9 +242,9 @@
           "source_file": "brief/Brief_export.md"
         },
         "Brief_export::defaults-that-shape-the-result": {
-          "file_id": "file-5C3mYX7xqnqpERBok3RVT8",
+          "file_id": "file-Qq9LSVTeU8wMY5kj4r8jUf",
           "heading_path": "Brief: data export > Defaults that shape the result",
-          "section_payload_hash": "sha256:ccf6d1cf0fd78ae59c5247f37a246a76c48a5c8067bdcb18f732c137b2f8991f",
+          "section_payload_hash": "sha256:5d4dcb6be3a15cfd358e6e8db2737aec0489e7e3e43fc85fc3b14b4d7e09be8d",
           "source_file": "brief/Brief_export.md"
         },
         "Brief_export::examples": {
@@ -5333,8 +5333,8 @@
       "stale": false
     },
     "language/Filters_and_sortings_block.md": {
-      "file_hash": "sha256:c729144f53c68026f6785a94636e733adfda27ecff5bc19f396bb57043499188",
-      "indexed_at": "2026-07-08T10:47:21Z",
+      "file_hash": "sha256:9b0bfe5449f1e81df63947cd490077473315618898ebebf88e842a6ad787f6ec",
+      "indexed_at": "2026-08-21T10:04:44Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -5386,9 +5386,9 @@
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters::dup-1": {
-          "file_id": "file-KsU3dEr2ooZrt8brtzpkJK",
+          "file_id": "file-XULAmAJWg3LeBNZzyKV5m4",
           "heading_path": "Filter and sorting blocks > Filter group block {#filtergroup} > Parameters",
-          "section_payload_hash": "sha256:3a87f35524f2cab36824c119bfd1c96ce39cd6e29d0b7ca4dbd6fe425b62ae61",
+          "section_payload_hash": "sha256:b6b3aa847975c8d8818544697ab141ae094e2ab47c5b24d38adcd97ec9701516",
           "source_file": "language/Filters_and_sortings_block.md"
         },
         "Filters_and_sortings_block::parameters::dup-2": {
@@ -11085,8 +11085,8 @@
       "stale": false
     },
     "paradigm/Interactive_view.md": {
-      "file_hash": "sha256:c86c6c04e6263eb58fc112fe93930227b248f8e13a9aa4494f460a4985013461",
-      "indexed_at": "2026-08-19T14:46:55Z",
+      "file_hash": "sha256:abecf63a11c8c042087da989a306e9485b8cc301bef70c78c19dca636ecea118",
+      "indexed_at": "2026-08-21T10:04:52Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11120,9 +11120,9 @@
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::filter-group-filtergroup": {
-          "file_id": "file-XVQYcyP134enpq2f8HL1KY",
+          "file_id": "file-AYsuvKQDYJa1A2Gyxi9QnH",
           "heading_path": "Interactive view > Filter group {#filtergroup}",
-          "section_payload_hash": "sha256:649dc08d263a2318f00f8291f1ed0137a22d4fcffe458ed6893b3cfd5bb49f36",
+          "section_payload_hash": "sha256:7c0f0cabba991f292d3435e18ec63f385115315db2f49b89afd86b8a4958ac19",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::interactive-view": {
@@ -15261,8 +15261,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:49d8ec88533cd810b33d108ea8b1ec66bb4f02a2c0c1d153acc6d9be3ca04def",
-      "indexed_at": "2026-08-14T09:41:20Z",
+      "file_hash": "sha256:74e529ff54088d30c93a786068017203f66c76567f3f3a00c92d75a14c8813f9",
+      "indexed_at": "2026-08-21T10:05:00Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -15272,53 +15272,53 @@
       },
       "sections": {
         "Rules::lsfusion-rules::part-00": {
-          "file_id": "file-NsH6p1gsCNC7kGKogBmYXL",
+          "file_id": "file-AHM1xqWuCQhu8iLPtA4nEs",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:a1f5db8f13db5bbe697eac2312159ea14e9919dbe116634aaa4871be6192d4bb",
+          "section_payload_hash": "sha256:8dd16e5e5f18d779bf686429cb4acb58f6e0d22deaad3fac0a98071b8bebb880",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-01": {
-          "file_id": "file-8ivkhatmQPypHYxFHfUkMS",
+          "file_id": "file-LUo6jMzwdhb4NNwfug53kd",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:cce6c680172ce9df2ec5a9561a4ad37dc979ca1a11cb883e3c79c63cafc75c57",
+          "section_payload_hash": "sha256:33d384edf47a1b9ec6b655867d9db9bb4647c6c399cdbf65c3a03897caec37c9",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-02": {
-          "file_id": "file-H9eyD88Ey5rdcNUUokorkr",
+          "file_id": "file-32Xq8KKNL8Hh8VSjRRxNbx",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:bb7e8d2e410358237677b8617a7fe47f4a00abfb5b8595dc8e637f5a04b5129a",
+          "section_payload_hash": "sha256:ccb2d9a17ae6983d20dac827a0d3425efc414d4eb40398ac235c9e4ad6c8592b",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-03": {
-          "file_id": "file-3fgaHjGy6Sjd19dUzyF2xi",
+          "file_id": "file-UYW18rMKLFMy5RphghDxSW",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:942a922fb60760c5ce331146e8698c369ddf7441be9d8de2a77554f36e9311ac",
+          "section_payload_hash": "sha256:33eb375730275434cb0221bf6f34bcb944a5fb67a6ea5c14727480e8be6e71ee",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-04": {
-          "file_id": "file-U26WsTDN9cKzzUA7KxpQbB",
+          "file_id": "file-582uF1NMxsJ2n48ynetud7",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:88c2241273df44872c47887b60e564c4665ba99849b51b1047c5f629d1557e3a",
+          "section_payload_hash": "sha256:e60f8fac68af1911bcd1b4ff62241bcffdf29938b721eb7ccf7f8958fa3a0975",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-05": {
-          "file_id": "file-Sh4nDxVUGA2DtWtRdThbTX",
+          "file_id": "file-7grqZiNm1S3hoSbyHhw3z4",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:dae685eb4d0438fe72d7d0588ff6cf2e6f69443e94ba591f2c9448938223dd87",
+          "section_payload_hash": "sha256:569bc397ac4846ec8ba8a875fea8421b08355a0d576b1b2011c2afb50299edac",
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules::part-06": {
-          "file_id": "file-9K4H8Jwec4Lm3o9Q7UCJDX",
+          "file_id": "file-QJHcDKBdvU6bxJVQ3psZiP",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:ca6acc099d694bddf11395e01af871b95cb0a36adb0df08519002b37803caf79",
+          "section_payload_hash": "sha256:d236569466c3131a1c89781637cd65bb76c3ce617f8a167a1171b75e5d6fbb55",
           "source_file": "rules/Rules.md"
         }
       },
       "stale": false
     },
     "rules/Rules_export.md": {
-      "file_hash": "sha256:09d3339dc88a3566abda8a05c54aa7981f4b6d822dab424b298d0d413bd84df5",
-      "indexed_at": "2026-08-11T10:44:06Z",
+      "file_hash": "sha256:d482b815e592d1ecaa0ad9044dc84aed5d91e4c136a9a4202d8d85d85b9b30b7",
+      "indexed_at": "2026-08-21T10:05:10Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v3",
@@ -15364,9 +15364,9 @@
           "source_file": "rules/Rules_export.md"
         },
         "Rules_export::stating-explicitly-what-shapes-the-result": {
-          "file_id": "file-UC2jAZCrqDuxZRqKe8BZKi",
+          "file_id": "file-8RWtMvjubzVZaCxiLRCBvW",
           "heading_path": "Rules: data export > Stating explicitly what shapes the result",
-          "section_payload_hash": "sha256:944d22abe21ac56a8faea981f8ed23649b01a953c22ab22e74d8f108d177a7b3",
+          "section_payload_hash": "sha256:5555dbf5e99399943cf700b062b4f8fcd5402a50f22fe979e8a9f4a7e3611d68",
           "source_file": "rules/Rules_export.md"
         }
       },
@@ -15417,7 +15417,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "65ed383a71aa7d79a5196a5d05243bd3ec6e3a23",
+  "last_indexed_docs_commit": "799919d4f5b07a76aa1c4846b4a572937201e8b7",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
