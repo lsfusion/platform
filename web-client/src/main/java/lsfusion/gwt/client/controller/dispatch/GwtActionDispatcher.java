@@ -607,9 +607,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         return executeAsyncResultNative("sendTCP", new Object[] {action.host, action.port, action.fileBytes, nvl(action.timeout, 3600000)}, this::getJSONStringResult);
     }
 
+    // awaited like its TCP twin above: the server sends this one with
+    // requestUserInteraction and waits, so a failure reaches the logic instead of
+    // only the screen. There is no result to read, hence res -> null.
     @Override
     public void execute(GUdpAction action) {
-        executeNoResultNative("sendUDP", new Object[]{action.host, action.port, action.fileBytes}, null);
+        executeAsyncResultNative("sendUDP", new Object[]{action.host, action.port, action.fileBytes}, res -> null);
     }
 
     @Override
