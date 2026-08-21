@@ -113,7 +113,8 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
         AsyncMapChange<?, T> change = (AsyncMapChange<?, T>) exec;
         if(!(BaseUtils.nullEquals(object, change.object) &&
                 (property == null ? change.property == null : change.property != null && property.equalsMap(change.property)) && // nullEquals
-                BaseUtils.nullEquals(value, change.value))) // later it maybe makes sense to "or" this lists
+                BaseUtils.nullEquals(value, change.value) && // later it maybe makes sense to "or" this lists
+                BaseUtils.nullEquals(valueInterface, change.valueInterface))) // the value is read from that interface, so the branches that read it from the different ones are not the same change
             return null;
 
         return this;

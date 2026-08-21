@@ -245,10 +245,16 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
                 assert input.getClass() == getClass();
 
                 AsyncMapJSONChange<C> jsonInput = (AsyncMapJSONChange<C>) input;
-                if(!BaseUtils.hashEquals(map, jsonInput.map))
+                // the value list is read from the json property this change belongs to (getAsyncValueList looks the drawn property up in its form), and the json type comes from it too,
+                // so the changes of the different json properties are not the same change even with the same mapping
+                if(jsonInput.getChangeAction() != ChangeAction.this || !BaseUtils.hashEquals(map, jsonInput.map))
                     return null;
 
                 return this;
+            }
+
+            private ChangeAction getChangeAction() {
+                return ChangeAction.this;
             }
 
             @Override
