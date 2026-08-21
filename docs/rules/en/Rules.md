@@ -197,6 +197,15 @@ SYNTAX RULES
    and cannot be used inside an action body. For
    parameterized object creation, declare an action
    with parameters and call it.
+
+7. The two declaration forms of a local property
+   belong to different levels and MUST NOT be mixed up:
+   the `LOCAL name = Class (...);` statement is valid
+   only inside an action body `{ ... }`,
+   while at module level a local property is declared
+   as a property definition `name = DATA LOCAL Class (...);`.
+   A module-level `LOCAL ...` line does not parse
+   (`missing EOF at 'LOCAL'`).
 ----------------------------------------------------------------
 BOOLEAN TYPE RULES
 
@@ -224,6 +233,8 @@ PROPERTY RULES
 
    Exceptions that do NOT nullify on a single `NULL` operand:
    `MIN` / `MAX`, the `NULL`-tolerant arithmetic `(+)` / `(-)`,
+   the `CONCAT` concatenation
+   (a `NULL` operand is skipped together with its separator),
    and `GROUP` aggregates (`GROUP SUM`, `GROUP MAX`, etc.) —
    a `NULL` operand or value is skipped instead of propagating.
 
@@ -1080,7 +1091,7 @@ CHANGE SESSION RULES (`NEWSESSION`, `NESTEDSESSION`, `APPLY`)
 
    A `LOCAL` value survives `APPLY` when EITHER:
    - the `LOCAL` is declared as `NESTED` at declaration
-     time (`LOCAL NESTED name = Type;` or
+     time (`LOCAL NESTED name = Type ();` or
      `name = DATA LOCAL NESTED Type (...);`), OR
    - the `APPLY` explicitly preserves it via
      `APPLY NESTED (name1, ..., nameN)`

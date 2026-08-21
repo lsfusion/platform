@@ -116,6 +116,8 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
     - `NULL` - the `(All)` filter is added to the group (default value)
     - `NONULL` - the `(All)` filter is not added to the group; when the group is declared, the first filter becomes selected by default (unless the `DEFAULT` option specifies another one)
 
+    Since the `(All)` filter is present in the group by default, a separate filter with an always-true condition should not be added to the group — it would only duplicate the `(All)` filter.
+
 - `caption1, ..., captionN`
 
     Captions that will be shown in the user interface for the corresponding filter being added. Each caption is defined with a [string literal](Literals.md#strliteral).

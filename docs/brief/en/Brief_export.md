@@ -64,6 +64,7 @@ For **XML**, `HEADER` controls not a table header row but a line such as `<?xml 
 
 - The format is **JSON**.
 - `WHERE` is the disjunction of all exported properties, so the exported sets of objects are those for which at least one of them is not `NULL`.
+- Properties with a `NULL` value are omitted from the **JSON** record (the key is absent) and written as empty cells in the flat formats; the record itself remains while the `WHERE` condition holds.
 - Column names are `expr1`, ..., `exprN` by the position of the expression in the list.
 - `ORDER` allows only expressions listed among the exported ones.
 - When a single value is exported without a column name, the **JSON** result contains the value itself rather than an object with a field.

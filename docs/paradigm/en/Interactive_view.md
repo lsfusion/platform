@@ -60,7 +60,7 @@ If such a composition through a link can be changed, and its outer part — the 
 
 ### Filter group {#filtergroup}
 
-In order to provide the user with an interface for choosing filters to apply, they can be combined into *filter groups*. For each of these groups, a special component will be created on the form: the user can use it to select one filter from the group as the current active filter. If several filters in one group are applied to different object groups, then the component will be displayed for the last of them.
+In order to provide the user with an interface for choosing filters to apply, they can be combined into *filter groups*. For each of these groups, a special component will be created on the form: the user can use it to select one filter from the group as the current active filter. If several filters in one group are applied to different object groups, then the component will be displayed for the last of them. Besides the specified filters, the component by default contains the `(All)` item, allowing the user not to apply any of the group's filters.
 
 The developer can specify a name for each filter group which can be used to access it in the future (for example, in form design).
 
