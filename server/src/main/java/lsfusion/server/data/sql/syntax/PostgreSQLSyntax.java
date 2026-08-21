@@ -303,7 +303,11 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv) {
-        return (max?"MAX":"MIN") + "(" + expr1 + "," + expr2 + ")";
+        // GREATEST / LEAST are native and polymorphic, and skip NULLs exactly like the MAX / MIN functions from aggf.sql.
+        // those functions take anyelement, so postgres requires both arguments to have the *same* actual type and never
+        // coerces them itself - which breaks whenever the SQL type of an operand is wider than its declared class
+        // (SUM(int4) is bigint, SUM(int8) and extract(epoch ...) are numeric, ...)
+        return (max?"GREATEST":"LEAST") + "(" + expr1 + "," + expr2 + ")";
     }
 
     @Override
