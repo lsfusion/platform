@@ -2,6 +2,31 @@
 
 ## 7.0
 
+### Seconds returned by the time formulas are whole, and `LONG`
+
+`subtractSeconds`, `secondsBetweenDates` and `toSeconds` were declared `INTEGER`, but the expression
+behind them (`extract(epoch ...)`) returns a fractional number on postgres, and nothing brought that
+number back to the declared class. Two things followed. The value kept its fractional part - the
+difference between `00:00:00.5` and `00:01:00` was `59.5`, not `59` - which showed up only where the
+value was finally written or read, and there it was rounded, so the property reported `60`. And every
+expression built on top of it was computed in that wider type, so `subtractSeconds(from, to) / 60`
+divided as a fraction instead of the whole division its declared class implies.
+
+These properties now truncate towards zero, and they are declared `LONG` - seconds between two dates
+fit in `INTEGER` only up to about 68 years on postgres (on MSSQL `DATEDIFF` still computes the
+difference in `int`, so the span it accepts is unchanged). `getMilliSeconds`, already `LONG`, truncates as well, and
+`extractWeek` / `extractDOWNumber` bring their result back to `INTEGER`, the way the other
+`extract`-based properties of `Time` already did.
+
+What an upgrading application can notice: expressions over these properties are computed in whole
+seconds now, so `subtractSeconds(...) / 60` gives whole minutes (`59 / 60` is `0`) where it used to
+give `0.98`; wrap the operand in `NUMERIC(...)` where the fraction is what is wanted. An interval
+shorter than a second is zero now rather than a fraction, which also holds for the durations the
+system modules themselves compute (the ones `SystemEvents` sums and weights). A value that
+was rounded on writing (`59.5` became `60`) is truncated now (`59`). Writing the result into a
+property declared `INTEGER` keeps working, the value is narrowed on writing, but a property *derived*
+from one of these has class `LONG`.
+
 ### A property that depends on itself is now reported at startup
 
 The check that looks for recursive properties used to start only from abstract properties, and it

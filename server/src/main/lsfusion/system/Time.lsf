@@ -14,7 +14,7 @@ toDateTime(DATE date) = DATETIME(date AS DATE);
 toZDateTime(DATE date) = ZDATETIME(date AS DATE);
 toDateTime(DATE date, TIME time) = [ FORMULA DATETIME '$1 + $2' ](date AS DATE, time AS TIME);
 
-toSeconds(TIME time) = [ FORMULA INTEGER 'extract(epoch from ($1))' ](time AS TIME);
+toSeconds(TIME time) = [ FORMULA LONG 'CAST(trunc(extract(epoch from ($1))) AS bigint)' ](time AS TIME);
 toTime(INTEGER seconds) = [ FORMULA TIME 'TIME \'00:00\' + INTERVAL \'1 second\' * $1' ](seconds AS INTEGER);
 
 toDateTime(LONG millis) = FORMULA DATETIME PG 'to_timestamp(CAST($1 AS NUMERIC),\'UTC\')::timestamp';
@@ -68,16 +68,16 @@ subtract(DATE date, LONG days) = [ FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd
 
 sumSeconds(TIME time, LONG secs) = [ FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
 sumMinutes(TIME time, LONG mins) = [ FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
-subtractSeconds(TIME timeFrom, TIME timeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](timeTo AS TIME, timeFrom AS TIME);
+subtractSeconds(TIME timeFrom, TIME timeTo) = [ FORMULA LONG PG 'trunc(extract (\'epoch\' from (($1)-($2))))::bigint', MS 'CAST(DATEDIFF(s, $2, $1) AS BIGINT)'](timeTo AS TIME, timeFrom AS TIME);
 
 sumDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
 subtractDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
 sumMinutes(DATETIME dateTime, LONG mins) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
 sumSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
 subtractSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
-subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
+subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA LONG PG 'trunc(extract (\'epoch\' from (($1)-($2))))::bigint', MS 'CAST(DATEDIFF(s, $2, $1) AS BIGINT)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-getMilliSeconds(ZDATETIME dateTime) = [ FORMULA LONG PG 'extract (\'epoch\' from ($1)) * 1000'](dateTime AS ZDATETIME);
+getMilliSeconds(ZDATETIME dateTime) = [ FORMULA LONG PG 'trunc(extract (\'epoch\' from ($1)) * 1000)::bigint'](dateTime AS ZDATETIME);
 getSeconds(ZDATETIME dateTime) = getMilliSeconds(dateTime) / 1000;
 
 resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
@@ -88,12 +88,12 @@ subtractDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)-($2)*
 sumMinutes(ZDATETIME dateTime, LONG mins) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS ZDATETIME, mins AS LONG);
 sumSeconds(ZDATETIME dateTime, LONG secs) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS ZDATETIME, secs AS LONG);
 subtractSeconds(ZDATETIME dateTime, LONG secs) = [ FORMULA ZDATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS ZDATETIME, secs AS LONG);
-subtractSeconds(ZDATETIME dateTimeFrom, ZDATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS ZDATETIME, dateTimeFrom AS ZDATETIME);
+subtractSeconds(ZDATETIME dateTimeFrom, ZDATETIME dateTimeTo) = [ FORMULA LONG PG 'trunc(extract (\'epoch\' from (($1)-($2))))::bigint', MS 'CAST(DATEDIFF(s, $2, $1) AS BIGINT)'](dateTimeTo AS ZDATETIME, dateTimeFrom AS ZDATETIME);
 
 dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')::timestamp',
                                       MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
 
-secondsBetweenDates(DATETIME dateTo, DATETIME dateFrom) = [ FORMULA INTEGER PG '(extract(epoch from ($1)) - extract(epoch from ($2)))', MS 'DATEDIFF(ss, $2, $1)'](dateTo AS DATETIME, dateFrom AS DATETIME);
+secondsBetweenDates(DATETIME dateTo, DATETIME dateFrom) = [ FORMULA LONG PG 'trunc(extract(epoch from ($1)) - extract(epoch from ($2)))::bigint', MS 'CAST(DATEDIFF(ss, $2, $1) AS BIGINT)'](dateTo AS DATETIME, dateFrom AS DATETIME);
 daysBetweenDates(DATE dateFrom, DATE dateTo) = [ FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
 daysInclBetweenDates (DATE date1, DATE date2) = daysBetweenDates(date2, date1) + 1;
 
@@ -217,14 +217,14 @@ FORM DOWs '{time.form.dows}'
 
 DOW '{time.dow.number}' (number) = GROUP AGGR DOW dow BY number(dow);
 
-extractDOWNumber = [ FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
+extractDOWNumber = [ FORMULA INTEGER PG '(extract(dow from ($1))::integer)', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
 extractDOW '{time.extract.dow}' (DATE date) = DOW(extractDOWNumber(date));
 extractDOWName '{time.extract.dow.name}' (DATE date) = name(extractDOW(date)) CHARWIDTH 12;
 
 distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) + (IF number(d2) < number(d1) THEN 7 ELSE 0);     
 
 // uses ISO 8601, where first week of the year contains January, 4th
-extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww, $1)'; 
+extractWeek = FORMULA INTEGER PG '(extract(week from ($1))::integer)', MS 'datepart(isoww, $1)'; 
 // changes extractWeek return value for first days of the year    
 extractWeekZeroBased(DATE date) = IF extractWeek(date) > 50 AND extractMonthNumber(date) == 1 THEN 0 ELSE extractWeek(date);
 
