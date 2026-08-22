@@ -2897,6 +2897,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public Pair<LPWithParams, LPWithParams> getIdentityLPPropertyUsageWithWhere(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext, Result<Integer> rExParams) throws ScriptingErrorLog.SemanticErrorException {
+        if(whereProperty != null) // <- skips patchExtendParams below when there are no extend params, and RECALCULATE never gets there
+            whereProperty = checkSingleParam(whereProperty);
+
         LP toPropertyLP = findLPByPropertyUsage(propertyUsage, propertyMapping, newContext);
 
         // to make change operator work with join property, we need identity parameters : 
@@ -3033,8 +3036,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedReturnProp(List<TypedParameter> context, ActionStatementContext actions, LPWithParams resultProperty, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         // we're patching it here to get missing classes for resultProperty
+        // (the list form on purpose - this is a result, not a condition, and the checks below rely on a bare parameter staying bare)
         if(resultProperty != null)
-            resultProperty = patchExtendParams(resultProperty, newContext, context.size(), debugPoint);
+            resultProperty = patchExtendParams(Collections.singletonList(resultProperty), newContext, context.size(), debugPoint);
 
         ValueClass returnClass = getValueClassByParamProperty(resultProperty, newContext);
         if (returnClass == null) {
@@ -3094,7 +3098,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private LAWithParams addScriptedChangeClassAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkChangeClassWhere(oldContextSize, param, whereProperty, newContext);
-        
+
         if(param.getLP() != null) {
             Result<LPWithParams> rWhereProperty = new Result<>(whereProperty);
             param = addVirtualParam(oldContextSize, param, rWhereProperty, oldContextSize, newContext);
@@ -3169,6 +3173,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedCaseAProp(List<LPWithParams> whenProps, List<LAWithParams> thenActions, LAWithParams elseAction, boolean isExclusive) {
         assert whenProps.size() > 0 && whenProps.size() == thenActions.size();
+
+        whenProps = checkSingleParams(whenProps);
 
         List<LAPWithParams> caseParams = new ArrayList<>();
         for (int i = 0; i < whenProps.size(); i++) {
@@ -5471,6 +5477,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
+        rightProp = checkSingleParam(rightProp); // getConstraintData needs it too, so not inline
+
         addScriptedFollows(mainProp, rightProp, resolveOptions, null, event,
                 getConstraintData("{logics.property.violated.consequence.from}", rightProp, mainProp, debugPoint));
     }
@@ -5491,7 +5499,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
-        List<Object> params = getParamsPlainList(asList(valueProp, whenProp));
+        List<Object> params = getParamsPlainList(asList(valueProp, checkSingleParam(whenProp)));
         mainProp.setWhenChange(this, action && !Settings.get().isDisableWhenCalcDo() ? Event.SESSION : null, params.toArray());
     }
 
@@ -6173,10 +6181,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return patchExtendParams(new LPWithParams(whereProp, true), newContext, 0, debugPoint).getLP();
     }
     private <T extends PropertyInterface> LPWithParams patchExtendParams(LPWithParams whereProp, List<TypedParameter> newContext, int oldContextSize, DebugInfo.DebugPoint debugPoint) {
-        return patchExtendParams(whereProp != null ? Collections.singletonList(whereProp) : Collections.emptyList(), newContext, oldContextSize, debugPoint);
+        return patchExtendParams(whereProp != null ? Collections.singletonList(checkSingleParam(whereProp)) : Collections.emptyList(), newContext, oldContextSize, debugPoint);
     }
     private <T extends PropertyInterface> LPWithParams patchExtendParams(LPWithParams whereProp, List<LPWithParams> lpsOrders, boolean ordersNotNull, List<TypedParameter> newContext, int oldContextSize, DebugInfo.DebugPoint debugPoint) {
-        return patchExtendParams(whereProp != null ? Collections.singletonList(whereProp) : Collections.emptyList(), lpsOrders, ordersNotNull, newContext, oldContextSize, debugPoint);
+        return patchExtendParams(whereProp != null ? Collections.singletonList(checkSingleParam(whereProp)) : Collections.emptyList(), lpsOrders, ordersNotNull, newContext, oldContextSize, debugPoint);
     }
     private <T extends PropertyInterface> LPWithParams patchExtendParams(LPWithParams whereProp, List<LPWithParams> whereProps, List<TypedParameter> newContext, int oldContextSize, DebugInfo.DebugPoint debugPoint) {
         return patchExtendParams(BaseUtils.mergeLists(whereProp != null ? Collections.singletonList(whereProp) : Collections.emptyList(), whereProps), newContext, oldContextSize, debugPoint);
