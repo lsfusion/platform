@@ -195,6 +195,13 @@ public interface SQLSyntax {
     String getAnyValueFunc();
     String getLastFunc();
     String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv);
+    // folded pairwise, the way the two-argument function requires; a syntax with an n-ary one overrides this
+    default String getMaxMin(boolean max, ImList<String> exprs, Type type, TypeEnvironment typeEnv) {
+        String result = exprs.get(0);
+        for(int i = 1; i < exprs.size(); i++)
+            result = getMaxMin(max, result, exprs.get(i), type, typeEnv);
+        return result;
+    }
     String getNotZero(String expr, Type type, TypeEnvironment typeEnv);
 
     boolean supportsAnalyzeSessionTable();

@@ -1,5 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -34,24 +36,23 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
     public String getSource(ExprSource source) {
         int exprCount = source.getExprCount();
         assert exprCount > 1;
-        if (exprCount == 0) {
+        if (exprCount == 0)
             return "";
-        }
 
         Type type = getType(source);
         SQLSyntax syntax = source.getSyntax();
         MStaticExecuteEnvironment env = source.getMEnv();
         boolean noMaxImplicitCast = syntax.noMaxImplicitCast();
 
-        String result = type.getCast(source.getSource(0), syntax, env, source.getType(0), Type.CastType.MAX); // чтобы когда NULL'ы тип правильно определило
-
+        MList<String> mSources = ListFact.mList(exprCount);
+        mSources.add(type.getCast(source.getSource(0), syntax, env, source.getType(0), Type.CastType.MAX)); // чтобы когда NULL'ы тип правильно определило
         for (int i = 1; i < exprCount; i++) {
             String exprSource = source.getSource(i);
             if(noMaxImplicitCast)
                 exprSource = type.getCast(exprSource, syntax, env, source.getType(i), Type.CastType.MAX);
-            result = syntax.getMaxMin(!isMin, result , exprSource, type, env);
+            mSources.add(exprSource);
         }
-        return result;
+        return syntax.getMaxMin(!isMin, mSources.immutableList(), type, env);
     }
 
     public boolean equals(Object o) {

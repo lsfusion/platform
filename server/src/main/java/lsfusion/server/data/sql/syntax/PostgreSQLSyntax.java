@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -303,11 +304,16 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv) {
-        // GREATEST / LEAST are native and polymorphic, and skip NULLs exactly like the MAX / MIN functions from aggf.sql.
-        // those functions take anyelement, so postgres requires both arguments to have the *same* actual type and never
-        // coerces them itself - which breaks whenever the SQL type of an operand is wider than its declared class
-        // (SUM(int4) is bigint, SUM(int8) and extract(epoch ...) are numeric, ...)
-        return (max?"GREATEST":"LEAST") + "(" + expr1 + "," + expr2 + ")";
+        return getMaxMin(max, ListFact.toList(expr1, expr2), type, typeEnv);
+    }
+
+    @Override
+    public String getMaxMin(boolean max, ImList<String> exprs, Type type, TypeEnvironment typeEnv) {
+        // GREATEST / LEAST are native, take any number of arguments, and skip NULLs exactly like the MAX / MIN
+        // functions from aggf.sql. those take anyelement, so postgres requires every argument to have the *same*
+        // actual type and never coerces them itself - which breaks whenever the SQL type of an operand is wider
+        // than its declared class (SUM(int4) is bigint, SUM(int8) and extract(epoch ...) are numeric, ...)
+        return (max?"GREATEST":"LEAST") + "(" + exprs.toString(",") + ")";
     }
 
     @Override
