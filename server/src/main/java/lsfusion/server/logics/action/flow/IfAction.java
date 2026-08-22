@@ -70,7 +70,7 @@ public class IfAction extends KeepContextAction {
             list = list.addList(falseAction);
             wheres = wheres.addList(PropertyFact.createNot(ifProp));
         }
-        return getBranchAsyncEventExec(list, wheres, optimistic, recursiveAbstracts, false, falseAction != null);
+        return getBranchAsyncEventExec(list, wheres, optimistic, recursiveAbstracts, falseAction != null);
     }
 
     @Override

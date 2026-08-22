@@ -550,7 +550,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         ImList<ActionMapImplement<?, I>> list = ListFact.singleton(action);
         if(elseAction != null)
             list = list.addList(elseAction);
-        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(list, null, optimistic, recursiveAbstracts, false, elseAction != null); // the condition is over the FOR keys, so it can't be used for the outer merge
+        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(list, null, optimistic, recursiveAbstracts, elseAction != null); // the condition is over the FOR keys, so it can't be used for the outer merge
         if(asyncExec != null)
             return asyncExec.mapInner(mapInterfaces.reverse());
         return null;

@@ -283,7 +283,7 @@ public class CaseAction extends ListCaseAction {
         
         Result<Boolean> rLastElse = new Result<>(false);
         ImList<ActionCase<PropertyInterface>> cases = getAsyncCases(rLastElse);
-        return getBranchAsyncEventExec(cases.mapListValues(value -> value.implement), cases.mapListValues(value -> value.where), optimistic, recursiveAbstracts, isExclusive, rLastElse.result);
+        return getBranchAsyncEventExec(cases.mapListValues(value -> value.implement), cases.mapListValues(value -> value.where), optimistic, recursiveAbstracts, rLastElse.result);
     }
 
     /*
