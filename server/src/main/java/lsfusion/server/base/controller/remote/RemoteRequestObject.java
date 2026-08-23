@@ -431,7 +431,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     private ClientAction runControllerChange(LP<?> lp, Object[] params, Object value, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
         return runControllerRequest(stack, (env, context) -> {
             DataObject[] keys = bindKeys(env, lp, params);
-            lp.change(bindObjectValue(env, lp.property.getValueClass(ClassType.editValuePolicy), value), env, keys);
+            lp.change(bindObjectValue(env, lp.property.getValueClass(ClassType.editValuePolicy), value, lp, -1), env, keys);
             return new ControllerResultClientAction(null, null); // change is a pure mutation, no value -> resolve(undefined)
         });
     }
@@ -442,7 +442,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
         ObjectValue[] values = new ObjectValue[classes.length];
         for(int i = 0; i < classes.length; i++)
-            values[i] = bindObjectValue(env, classes[i], (params != null && i < params.length) ? params[i] : null);
+            values[i] = bindObjectValue(env, classes[i], (params != null && i < params.length) ? params[i] : null, property, i);
         return values;
     }
 
@@ -453,11 +453,22 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return keys;
     }
 
-    private ObjectValue bindObjectValue(ExecutionEnvironment env, ValueClass valueClass, Object raw) throws SQLException, SQLHandledException, ParseException {
+    // names the bound position (parameter N of the action, the value for change), built only when a bind fails: the
+    // caller sees just its own JS argument list, and the type's message alone ("Number is required") does not say
+    // which of the arguments was rejected
+    private static String bindContext(LAP<?, ?> property, int index) {
+        return (index < 0 ? "value" : "parameter " + (index + 1)) + " of " + property.getActionOrProperty().getSID();
+    }
+
+    private ObjectValue bindObjectValue(ExecutionEnvironment env, ValueClass valueClass, Object raw, LAP<?, ?> property, int index) throws SQLException, SQLHandledException, ParseException {
         if(valueClass == null) // unconstrained interface -- getInterfaceClasses can return null entries
-            throw new RuntimeException("Unconstrained parameter type is not supported by the controller");
-        // raw == null -> parseJSON returns null -> getObjectValue returns NullValue; dates handled inside Type.parseJSON
-        return env.getSession().getObjectValue(valueClass, valueClass.getType().parseJSON(raw));
+            throw new RuntimeException("Unconstrained parameter type is not supported by the controller (" + bindContext(property, index) + ")");
+        try {
+            // raw == null -> parseJSON returns null -> getObjectValue returns NullValue; dates handled inside Type.parseJSON
+            return env.getSession().getObjectValue(valueClass, valueClass.getType().parseJSON(raw));
+        } catch (ParseException e) {
+            throw ParseException.propagateWithMessage("(" + bindContext(property, index) + ")", e);
+        }
     }
 
     private ObjectValue readControllerResult(ExecutionEnvironment env, Action<?> action) throws SQLException, SQLHandledException {

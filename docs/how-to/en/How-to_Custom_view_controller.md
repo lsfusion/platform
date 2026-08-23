@@ -179,6 +179,8 @@ controller.getPropertyValues('customer', text, 'objects', result => {
 
 Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter). An lsFusion object is passed as its numeric id; when an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
 
+That id is the `row.key` of the object's row (see [Row identity](#row-identity-contract)) or an id-valued property on the form. It has to be a number: a key read out of `data.<group>.byKey` or `data.<group>.keys` is a *string*, because keys of a JS object are always strings, and a string in a class-typed parameter is rejected with `Number is required`.
+
 ```js
 const total = await controller.exec('recalc', orderId);
 const doubled = await controller.eval('run(INTEGER a) { RETURN a * 2; }', 21); // 42
