@@ -1143,8 +1143,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:20bc48f23789e6e4ae1ab786d1e5a348edabdef73e838d5e9ff1c0497f7565ae",
-      "indexed_at": "2026-08-04T14:23:14Z",
+      "file_hash": "sha256:7be895bb319f324498e0bd75b6945d73feb1e12608d5cafe1d9f0c216ea70e92",
+      "indexed_at": "2026-08-23T16:42:41Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -1184,9 +1184,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
-          "file_id": "file-NoAjrZcWBh3GwUiAb349WX",
+          "file_id": "file-B24k6iH1FSAdV3s3mrC6Vu",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:0b3ea19553566766bda4b2ddb35001c5abfc3cc9dda4eafe1ae7d4f173c323fa",
+          "section_payload_hash": "sha256:9801f10bff5487c62d4021a450ffbb69a3bd5262cfe226e4dc26619cbf0d2568",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-navigator-controller-navigator-controller": {
@@ -15417,7 +15417,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "799919d4f5b07a76aa1c4846b4a572937201e8b7",
+  "last_indexed_docs_commit": "3ad5e29fb48e7b2e738e3cbe2bd122d30eb6d891",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
