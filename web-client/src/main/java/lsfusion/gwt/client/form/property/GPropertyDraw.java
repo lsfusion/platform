@@ -370,13 +370,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         String result = "";
         for(GInputBindingEvent bindingEvent : bindingEvents)
             if(bindingEvent.inputEvent instanceof GMouseInputEvent) {
-                result = (result.isEmpty() ? "" : result + ",") + ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent;
+                result = (result.isEmpty() ? "" : result + ",") + ((GMouseInputEvent) bindingEvent.inputEvent).getText();
             }
         return result;
     }
 
     public String getMouseBindingText(GInputBindingEvent changeMouse) {
-        return ((GMouseInputEvent) changeMouse.inputEvent).mouseEvent;
+        return ((GMouseInputEvent) changeMouse.inputEvent).getText();
     }
 
     public boolean drawAsync;

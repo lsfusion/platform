@@ -625,10 +625,16 @@ public class GwtClientUtils {
                 && !userAgent.contains("crios") && !userAgent.contains("opr") && !userAgent.contains("edg");
     }
 
-    public static boolean isMacUserAgent() {
+    // parsed once, since it is checked on the hot path - every event goes through GFormController.getTargetAndPreview and every keydown through the bindings
+    private static final boolean isMac;
+    static {
         String userAgent = getUserAgent();
         // "macintosh" - macOS, "mac os" - also iOS / iPadOS (hardware keyboards there use Cmd for shortcuts as well)
-        return userAgent.contains("macintosh") || userAgent.contains("mac os");
+        isMac = userAgent.contains("macintosh") || userAgent.contains("mac os");
+    }
+
+    public static boolean isMacUserAgent() {
+        return isMac;
     }
 
     public static boolean isShowing(Widget widget) {

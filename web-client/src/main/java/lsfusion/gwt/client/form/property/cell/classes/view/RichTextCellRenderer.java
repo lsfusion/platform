@@ -110,7 +110,7 @@ public class RichTextCellRenderer extends CellRenderer {
                 var link = links[i];
                 if (link.onclick == null) {
                     link.onclick = function (e) {
-                        if (e.ctrlKey || (e.metaKey && @lsfusion.gwt.client.base.GwtClientUtils::isMacUserAgent()()))
+                        if (@lsfusion.gwt.client.form.event.GKeyStroke::isCommandKeyDown(*)(e))
                             window.open(this.href, "_blank");
                     }
                 }

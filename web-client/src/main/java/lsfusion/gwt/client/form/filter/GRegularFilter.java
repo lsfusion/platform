@@ -54,7 +54,7 @@ public class GRegularFilter implements Serializable {
         String result = "";
         for(GInputBindingEvent bindingEvent : bindingEvents)
             if(bindingEvent.inputEvent instanceof GMouseInputEvent) {
-                result = (result.isEmpty() ? "" : result + ",") + ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent;
+                result = (result.isEmpty() ? "" : result + ",") + ((GMouseInputEvent) bindingEvent.inputEvent).getText();
             }
         return result;
     }

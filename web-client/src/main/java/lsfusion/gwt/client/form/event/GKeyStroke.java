@@ -87,8 +87,12 @@ public class GKeyStroke implements Serializable {
     @Override
     public String toString() {
         return (altPressed ? "alt " : "") +
-               (ctrlPressed ? "ctrl " : "") +
+               (ctrlPressed ? getCommandKeyText() : "") +
                (shiftPressed ? "shift " : "") + getKeyText();
+    }
+
+    public static String getCommandKeyText() {
+        return GwtClientUtils.isMacUserAgent() ? "cmd " : "ctrl ";
     }
 
     private String getKeyText() {
@@ -124,13 +128,15 @@ public class GKeyStroke implements Serializable {
         return keyString;
     }
 
+    // the declared ctrl modifier is matched against the command key (see isCommandKeyDown), otherwise on macOS a 'ctrl X' binding would be
+    // unreachable, and a binding without modifiers would match cmd + X (metaKey is not checked at all when comparing modifiers)
     public boolean isEvent(Event event) {
-        return BrowserEvents.KEYDOWN.equals(event.getType()) && event.getKeyCode() == keyCode && event.getShiftKey() == shiftPressed && event.getAltKey() == altPressed && event.getCtrlKey() == ctrlPressed;
+        return BrowserEvents.KEYDOWN.equals(event.getType()) && event.getKeyCode() == keyCode && event.getShiftKey() == shiftPressed && event.getAltKey() == altPressed && isCommandKeyDown(event) == ctrlPressed;
     }
 
     public static GKeyStroke getKeyStroke(NativeEvent e) {
         assert BrowserEvents.KEYDOWN.equals(e.getType());
-        return new GKeyStroke(e.getKeyCode(), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+        return new GKeyStroke(e.getKeyCode(), e.getAltKey(), isCommandKeyDown(e), e.getShiftKey());
     }
 
     public static boolean isSpaceKeyEvent(NativeEvent event) {
@@ -289,6 +295,19 @@ public class GKeyStroke implements Serializable {
     // on macOS standard clipboard / selection shortcuts use Cmd (metaKey) instead of Ctrl, which browsers don't report as ctrlKey
     public static boolean isCommandKeyDown(NativeEvent event) {
         return event.getCtrlKey() || (GwtClientUtils.isMacUserAgent() && event.getMetaKey());
+    }
+
+    // mac keyboards have no HOME / END keys, there CMD + UP / DOWN is the standard "to the beginning / end of the document" shortcut,
+    // so it is translated to HOME / END and then handled by the same navigation logic
+    public static int getNavigateKeyCode(NativeEvent event) {
+        int keyCode = event.getKeyCode();
+        if (GwtClientUtils.isMacUserAgent() && isCommandKeyDown(event)) {
+            if (keyCode == KEY_UP)
+                return KEY_HOME;
+            if (keyCode == KEY_DOWN)
+                return KEY_END;
+        }
+        return keyCode;
     }
 
     public static boolean isCopyToClipboardEvent(NativeEvent event) {

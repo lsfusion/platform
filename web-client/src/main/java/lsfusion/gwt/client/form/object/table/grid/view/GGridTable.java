@@ -1676,7 +1676,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            int keyCode = event.getKeyCode();
+            int keyCode = GKeyStroke.getNavigateKeyCode(event);
             if (keyCode == 65 && GKeyStroke.isCommandKeyDown(event)) { // CTRL+A (CMD+A on macOS)
                 selectAllCells();
                 return true;

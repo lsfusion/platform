@@ -2101,7 +2101,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         }
 
         public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
-            int keyCode = event.getKeyCode();
+            int keyCode = GKeyStroke.getNavigateKeyCode(event);
             switch (keyCode) {
                 case KeyCodes.KEY_RIGHT:
                     nextColumn(true, reason, event);

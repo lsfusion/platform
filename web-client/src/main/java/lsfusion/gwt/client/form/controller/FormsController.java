@@ -254,12 +254,11 @@ public abstract class FormsController {
 
     public void checkEditModeEvents(NativeEvent event) {
         Boolean ctrlKey = eventGetCtrlKey(event);
-        // on macOS Cmd (metaKey) is the standard link-opening modifier, so it should toggle LINK mode the same way Ctrl does
-        if (GwtClientUtils.isMacUserAgent()) {
-            Boolean metaKey = eventGetMetaKey(event);
-            if (metaKey != null)
-                ctrlKey = metaKey || (ctrlKey != null && ctrlKey);
-        }
+        // on macOS Cmd (metaKey) is the standard link-opening modifier, so it should switch to LINK mode the same way Ctrl does
+        // it can only raise the flag - undefined has to stay undefined, since such events are ignored below
+        Boolean metaKey = GwtClientUtils.isMacUserAgent() ? eventGetMetaKey(event) : null;
+        if (metaKey != null && metaKey)
+            ctrlKey = true;
         Boolean shiftKey = eventGetShiftKey(event);
         Boolean altKey = eventGetAltKey(event);
         boolean tab = isTabEvent(event);

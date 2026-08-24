@@ -469,7 +469,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         public boolean handleKeyEvent(Event event, FocusUtils.Reason reason) {
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
-            int keyCode = event.getKeyCode();
+            int keyCode = GKeyStroke.getNavigateKeyCode(event);
             if (keyCode == KeyCodes.KEY_HOME && !GKeyStroke.isCommandKeyDown(event)) {
                 int i=0;
                 while (!isFocusable(i))

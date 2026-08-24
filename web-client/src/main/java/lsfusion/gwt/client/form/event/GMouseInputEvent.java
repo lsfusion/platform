@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.event;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
-
-import java.util.Map;
 
 public class GMouseInputEvent extends GInputEvent {
 
@@ -21,7 +18,9 @@ public class GMouseInputEvent extends GInputEvent {
     }
 
     public GMouseInputEvent(NativeEvent e, boolean dblClick) {
-        this(dblClick, e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
+        // the declared ctrl modifier is matched against the command key (see GKeyStroke.isCommandKeyDown), otherwise on macOS a 'ctrl CLK'
+        // binding would be dead - there ctrl + click is a right click
+        this(dblClick, e.getAltKey(), GKeyStroke.isCommandKeyDown(e), e.getShiftKey());
     }
 
     private GMouseInputEvent(boolean dblClick, boolean alt, boolean ctrl, boolean shift) {
@@ -36,6 +35,11 @@ public class GMouseInputEvent extends GInputEvent {
             event += "shift ";
         }
         this.mouseEvent = event + (dblClick ? DBLCLK : CLK);
+    }
+
+    // mouseEvent itself is matched against the declared binding, so only its presentation is adapted
+    public String getText() {
+        return mouseEvent.replace("ctrl ", GKeyStroke.getCommandKeyText());
     }
 
     @Override
