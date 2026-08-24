@@ -26,6 +26,8 @@ public class DialogModalWindow extends ModalWindow {
 
         GwtClientUtils.addClassName(getBody().getElement(), "dialog-modal-body");
 
+        dialog.getElement().setTabIndex(-1); // to be able to move the focus to the dialog itself when there is nothing focusable inside it (isTabFocusable keeps it out of the tab order)
+
         if(backgroundClass !=null)
             GwtClientUtils.addClassName(body, backgroundClass);
 
@@ -68,6 +70,14 @@ public class DialogModalWindow extends ModalWindow {
         if (GKeyStroke.isEscapeKeyEvent(nativeEvent)) {
             GwtClientUtils.stopPropagation(nativeEvent);
             topmost.closeOnEscape();
+        } else if (GKeyStroke.isPlainTabEvent(nativeEvent)) { // trap the focus in the dialog, otherwise tab would move it to the elements behind the modal
+            GwtClientUtils.stopPropagation(nativeEvent);
+            Element nextFocusElement = FocusUtils.getNextFocusElement(topmost.getElement(), !nativeEvent.getShiftKey(), FocusUtils.DIALOG_FOCUS_SELECTOR, true);
+            if (nextFocusElement != null) {
+                FocusUtils.focus(nextFocusElement, FocusUtils.Reason.FOCUSNAVIGATE);
+                GwtClientUtils.scrollIntoViewNearest(nextFocusElement); // FOCUSNAVIGATE focuses with preventScroll, and the native tab scrolling is prevented above
+            } else // there is nothing to focus in the dialog (for example all its buttons are still disabled), but the focus shouldn't stay behind the modal
+                FocusUtils.focus(topmost.dialog.getElement(), FocusUtils.Reason.FOCUSNAVIGATE);
         }
     }
 

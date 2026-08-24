@@ -135,17 +135,44 @@ public class FocusUtils {
         return element.tabIndex >= "0";
     }-*/;
 
-    public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
-        var elements = Array.prototype.filter.call(
-            formController.querySelectorAll('.nav-item,.tableContainer,button,input,.panel-renderer-value'), function (item) {
+    public static final String FORM_FOCUS_SELECTOR = ".nav-item,.tableContainer,button,input,.panel-renderer-value";
+    // dialogs have no form navigation, so all the natively focusable / explicitly tab-indexed content should be reachable by the focus trap
+    public static final String DIALOG_FOCUS_SELECTOR = FORM_FOCUS_SELECTOR + ",textarea,select,a,[tabindex]";
+
+    // skipContainers is for the dialogs: their content can be wrapped into a focusable container (a gwt FocusPanel), which shouldn't be a tab stop of its own
+    public static native Element getNextFocusElement(Element container, boolean forward, String selector, boolean skipContainers) /*-{
+        var candidates = Array.prototype.filter.call(
+            container.querySelectorAll(selector), function (item) {
                 //if element or one of its ancestors has display:none, offsetParent is null, so it's a sort of visibility check
-                return @FocusUtils::isTabFocusable(*)(item) && item.offsetParent !== null
+                //disabled elements keep tabIndex 0, but focus() on them is a no-op, so they have to be skipped explicitly (:disabled also covers the ones disabled by their fieldset)
+                return @FocusUtils::isTabFocusable(*)(item) && item.offsetParent !== null && !item.matches(":disabled")
+            });
+        //a radio group is a single tab stop - the checked radio, or the first one if none is checked
+        var elements = candidates.filter(function (item) {
+            if (item.type !== "radio" || !item.name)
+                return true;
+            var group = candidates.filter(function (other) { return other.type === "radio" && other.name === item.name; });
+            var checked = group.filter(function (other) { return other.checked; });
+            return item === (checked.length > 0 ? checked[0] : group[0]);
+        });
+        if (skipContainers)
+            elements = elements.filter(function (item) {
+                return !elements.some(function (other) { return other !== item && item.contains(other); });
             });
         if(elements.length === 0)
             return null;
         var index = elements.indexOf($doc.activeElement);
         return forward ? (elements[index + 1] || elements[0]) : (elements[index - 1] || elements[elements.length - 1]);
     }-*/;
+
+    public static boolean focusNextElement(Element container, Reason reason, boolean forward) {
+        Element nextFocusElement = getNextFocusElement(container, forward, FORM_FOCUS_SELECTOR, false);
+        if (nextFocusElement != null) {
+            focus(nextFocusElement, reason);
+            return true;
+        }
+        return false;
+    }
 
     public static Element getParentFocusElement(Element element) {
         Element parentElement = element.getParentElement();

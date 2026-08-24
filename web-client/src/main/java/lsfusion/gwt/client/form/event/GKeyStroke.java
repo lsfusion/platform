@@ -153,6 +153,11 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_TAB;
     }
 
+    // ctrl+tab / alt+tab and the like are the browser / os shortcuts, and shift is the direction
+    public static boolean isPlainTabEvent(NativeEvent event) {
+        return isTabEvent(event) && !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey();
+    }
+
     public static boolean isAltEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ALT;
     }

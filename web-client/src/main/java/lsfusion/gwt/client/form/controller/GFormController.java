@@ -2558,12 +2558,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean focusNextElement(FocusUtils.Reason reason, boolean forward) {
-        Element nextFocusElement = FocusUtils.getNextFocusElement(formLayout.getElement(), forward);
-        if(nextFocusElement != null) {
-            FocusUtils.focus(nextFocusElement, reason);
-            return true;
-        }
-        return false;
+        return FocusUtils.focusNextElement(formLayout.getElement(), reason, forward);
     }
 
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {

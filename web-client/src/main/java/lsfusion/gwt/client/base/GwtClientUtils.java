@@ -1737,6 +1737,12 @@ public class GwtClientUtils {
     public static boolean isTDorTH(Element element) {
         return TableCellElement.is(element);
     }
+    // the gwt Element.scrollIntoView writes the scroll offsets of all the ancestors up to html (so it scrolls the page behind the modal too),
+    // and bottom-aligns the elements that are taller than their scroll parent
+    public static native void scrollIntoViewNearest(Element element) /*-{
+        element.scrollIntoView({block: "nearest", inline: "nearest"});
+    }-*/;
+
     public static boolean isInput(Element element) {
         return InputElement.is(element) || TextAreaElement.is(element);
     }
