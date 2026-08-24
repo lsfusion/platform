@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.base.exception;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.TextArea;
@@ -16,7 +13,6 @@ import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class ErrorDialog extends DialogModalWindow {
-    private HandlerRegistration nativePreviewHandlerRegistration;
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private final FormButton closeButton;
@@ -80,15 +76,11 @@ public class ErrorDialog extends DialogModalWindow {
             FormButton moreButton = new FormButton(messages.more(), FormButton.ButtonStyle.SECONDARY, event -> stacks.setVisible(!stacks.isVisible()));
             addFooterWidget(moreButton);
         }
+    }
 
-        nativePreviewHandlerRegistration = Event.addNativePreviewHandler(event -> {
-            if (Event.ONKEYDOWN == event.getTypeInt()) {
-                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
-                    GwtClientUtils.stopPropagation(event.getNativeEvent());
-                    hide();
-                }
-            }
-        });
+    @Override
+    protected void closeOnEscape() {
+        hide();
     }
 
     @Override
@@ -100,13 +92,5 @@ public class ErrorDialog extends DialogModalWindow {
 
     public static void show(String caption, String message, String javaStack, String lsfStack, String asyncStacks, PopupOwner popupOwner) {
         new ErrorDialog(caption, message, javaStack, lsfStack, asyncStacks).show(popupOwner);
-    }
-
-    @Override
-    public void hide() {
-        super.hide();
-        if (nativePreviewHandlerRegistration != null) {
-            nativePreviewHandlerRegistration.removeHandler();
-        }
     }
 }

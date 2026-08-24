@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -151,16 +150,15 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         }
 
         focusPanel = new FocusPanel(preferencesPanel);
-        focusPanel.addKeyDownHandler(event -> {
-            if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-                GwtClientUtils.stopPropagation(event);
-                hide();
-            }
-        });
 
         setBodyWidget(focusPanel);
 
         refreshValues(mergeFont());
+    }
+
+    @Override
+    protected void closeOnEscape() {
+        hide();
     }
 
     public void showDialog() {

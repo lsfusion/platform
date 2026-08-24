@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -87,9 +84,9 @@ public class DialogBoxHelper {
 
     @SuppressWarnings("GWTStyleCheck")
     public static final class MessageBox extends DialogModalWindow {
-        private final HandlerRegistration nativePreviewHandlerRegistration;
         private final CloseCallback closeCallback;
         private FormButton activeButton;
+        private Timer timeoutTimer;
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
             this(caption, contents, null, timeout, closeCallback, activeOption, options);
@@ -111,27 +108,32 @@ public class DialogBoxHelper {
             createButtonsPanel(activeOption, options);
 
             if (timeout != 0) {
-                final Timer timer = new Timer() {
+                timeoutTimer = new Timer() {
                     @Override
                     public void run() {
                         hide(activeOption);
                     }
                 };
-                timer.schedule(timeout);
+                timeoutTimer.schedule(timeout);
             }
 
             if (!MainFrame.useBootstrap)
                 GwtClientUtils.addShowCollapsedContainerEvent(getElement(),
                         "span.text-primary.highlight-text", "span#collapseTextId", "collapsible-text");
+        }
 
-            nativePreviewHandlerRegistration = Event.addNativePreviewHandler(event -> {
-                if (Event.ONKEYDOWN == event.getTypeInt()) {
-                    if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
-                        GwtClientUtils.stopPropagation(event.getNativeEvent());
-                        hide(OptionType.CLOSE);
-                    }
-                }
-            });
+        @Override
+        protected void closeOnEscape() {
+            hide(OptionType.CLOSE);
+        }
+
+        @Override
+        public void hide() {
+            if (timeoutTimer != null) {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
+            }
+            super.hide();
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options) {
@@ -156,13 +158,6 @@ public class DialogBoxHelper {
             hide();
             if (closeCallback != null) {
                 closeCallback.closed(option);
-            }
-        }
-
-        public void hide() {
-            super.hide();
-            if (nativePreviewHandlerRegistration != null) {
-                nativePreviewHandlerRegistration.removeHandler();
             }
         }
 

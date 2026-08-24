@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -124,6 +125,36 @@ public class ModalWindow extends ResizableComplexPanel {
         dialog.getElement().getStyle().setLeft((modal.getOffsetWidth() - dialog.getOffsetWidth()) >> 1, Style.Unit.PX);
         dialog.getElement().getStyle().setTop((modal.getOffsetHeight() - dialog.getOffsetHeight()) >> 1, Style.Unit.PX);
     }
+
+    public static ModalWindow getTopmostModal() {
+        ModalWindow topmost = null;
+        int topmostZIndex = 0;
+        RootPanel rootPanel = RootPanel.get();
+        for (int i = 0, size = rootPanel.getWidgetCount(); i < size; i++) {
+            Widget widget = rootPanel.getWidget(i);
+            if (widget instanceof ModalWindow) {
+                int zIndex = getZIndex(widget.getElement());
+                if (topmost == null || zIndex > topmostZIndex
+                        || (zIndex == topmostZIndex && isPaintedAfter(widget.getElement(), topmost.getElement()))) {
+                    topmost = (ModalWindow) widget;
+                    topmostZIndex = zIndex;
+                }
+            }
+        }
+        return topmost;
+    }
+
+    private static native boolean isPaintedAfter(Element element, Element other) /*-{
+        return !!(other.compareDocumentPosition(element) & 4);
+    }-*/;
+
+    private static native int getZIndex(Element element) /*-{
+        var style = $wnd.getComputedStyle(element);
+        if (style.position === "static")
+            return -1;
+        var zIndex = parseInt(style.zIndex);
+        return isNaN(zIndex) ? 0 : zIndex;
+    }-*/;
 
     public void hide() {
         GwtClientUtils.removeClassName(modal, "show");

@@ -49,6 +49,11 @@ public class GClassDialog extends DialogModalWindow {
         }
     }
 
+    @Override
+    protected void closeOnEscape() {
+        chooseClass(null);
+    }
+
     private void chooseClass(GObjectClass chosenClass) {
         if (chosenClass == null || !concreate || chosenClass.concreate) {
             this.chosenClass = chosenClass;

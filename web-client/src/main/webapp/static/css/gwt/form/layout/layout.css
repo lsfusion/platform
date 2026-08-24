@@ -260,6 +260,9 @@
     /* actually needed only for bootstrap because it has no position, but for z-index position should be different from static */
     position: fixed;
 }
+.modal-form:not(.dialog-block) {
+    z-index: 1;
+}
 .popup-partner {
     z-index: 1 !important;
 }
