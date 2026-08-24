@@ -2,6 +2,20 @@
 
 ## 7.0
 
+### A temporary table returned inside a transaction is emptied with `DELETE`
+
+Inside a transaction `TRUNCATE` is the expensive way to empty a session (temporary) table: it holds an
+exclusive lock on the relation until the commit, and on postgres such a lock suppresses the fast path
+of the lock manager for the whole cluster for as long as it is held. A table returned inside a
+transaction is now emptied with `DELETE` unless it holds more rows than
+`deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold` (100000 - a starting point, not a
+measured optimum). Outside a transaction nothing changes.
+
+What an upgrading application can notice: a pooled temporary table holds the rows those `DELETE`s
+leave dead until it is next truncated, so its size on disk can exceed its row count. Set the setting
+to `0` for the previous behaviour.
+
+
 ### Seconds returned by the time formulas are whole, and `LONG`
 
 `subtractSeconds`, `secondsBetweenDates` and `toSeconds` were declared `INTEGER`, but the expression

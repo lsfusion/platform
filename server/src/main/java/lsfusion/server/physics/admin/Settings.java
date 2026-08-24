@@ -1378,7 +1378,18 @@ public class Settings implements Cloneable {
     }
 
     private int deleteFromInsteadOfTruncateForTempTablesThreshold = 0; // less then - use deleteFrom
+    // the same, inside a transaction, where TRUNCATE is the expensive form : its lock is held until the commit, and on postgres a strong lock suppresses the fast path of the lock manager
+    // for the whole cluster for as long as it is held, while DELETE takes an ordinary write lock
+    private int deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold = 100000;
     private boolean deleteFromInsteadOfTruncateForTempTablesUnknown = false; // unknown - use deleteFrom
+
+    public int getDeleteFromInsteadOfTruncateForTempTablesInTransactionThreshold() {
+        return deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold;
+    }
+
+    public void setDeleteFromInsteadOfTruncateForTempTablesInTransactionThreshold(int deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold) {
+        this.deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold = deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold;
+    }
 
     public int getDeleteFromInsteadOfTruncateForTempTablesThreshold() {
         return deleteFromInsteadOfTruncateForTempTablesThreshold;

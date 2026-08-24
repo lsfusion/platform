@@ -2847,7 +2847,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         checkTableOwner(table, tableOwner);
 
 //        lastOwner.put(table, tableOwner instanceof SessionTableUsage ? ((SessionTableUsage) tableOwner).stack + '\n' + ExceptionUtils.getStackTrace(): null);
-        boolean useDeleteForm = count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < Settings.get().getDeleteFromInsteadOfTruncateForTempTablesThreshold();
+        // inside a transaction TRUNCATE is the expensive form (see the setting), so its threshold is its own
+        int threshold = isInTransaction() ? Settings.get().getDeleteFromInsteadOfTruncateForTempTablesInTransactionThreshold() : Settings.get().getDeleteFromInsteadOfTruncateForTempTablesThreshold();
+        boolean useDeleteForm = count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < threshold;
         truncate(syntax.getSessionTableName(table), owner, tableOwner, useDeleteForm, registerSession(table, tableOwner,  useDeleteForm ? TableChange.DELETE : TableChange.REMOVE));
     }
 
