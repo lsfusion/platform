@@ -158,6 +158,10 @@ public class GKeyStroke implements Serializable {
         return isTabEvent(event) && !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey();
     }
 
+    public static boolean isSelectAllKeyEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_A && event.getCtrlKey();
+    }
+
     public static boolean isAltEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ALT;
     }

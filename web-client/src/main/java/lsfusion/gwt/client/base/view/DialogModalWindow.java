@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
@@ -78,6 +79,15 @@ public class DialogModalWindow extends ModalWindow {
                 GwtClientUtils.scrollIntoViewNearest(nextFocusElement); // FOCUSNAVIGATE focuses with preventScroll, and the native tab scrolling is prevented above
             } else // there is nothing to focus in the dialog (for example all its buttons are still disabled), but the focus shouldn't stay behind the modal
                 FocusUtils.focus(topmost.dialog.getElement(), FocusUtils.Reason.FOCUSNAVIGATE);
+        } else if (GKeyStroke.isSelectAllKeyEvent(nativeEvent)) {
+            EventTarget target = nativeEvent.getEventTarget();
+            Element targetElement = Element.is(target) ? Element.as(target) : null;
+            // select only the dialog's content instead of the whole document
+            if (targetElement == null || targetElement == RootPanel.getBodyElement()
+                    || topmost.getElement().isOrHasChild(targetElement)) {
+                GwtClientUtils.stopPropagation(nativeEvent);
+                CopyPasteUtils.selectElement(topmost.getBody().getElement());
+            }
         }
     }
 

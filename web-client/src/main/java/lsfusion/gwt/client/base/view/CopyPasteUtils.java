@@ -72,12 +72,17 @@ public class CopyPasteUtils {
 
     private static final Selection selection = Selection.getSelection();
 
+    public static Range selectElement(Element element) {
+        Range range = new Range(element);
+        selection.setRange(range);
+        return range;
+    }
+
     // actually it justs sets selection, since we don't consume event default handler does the rest
     public static void putIntoClipboard(Element element) {
         if (element != null && (selection.getRange() == null || selection.getRange().getText().isEmpty())) {
             GwtClientUtils.addClassName(element, "copy-paste-selection");
-            Range range = new Range(element);
-            selection.setRange(range);
+            Range range = selectElement(element);
             putSelectionIntoClipboard();
             //DELAY
             Scheduler.get().scheduleFixedDelay(() -> {
