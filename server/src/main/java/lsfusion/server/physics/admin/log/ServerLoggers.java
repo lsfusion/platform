@@ -38,6 +38,8 @@ public class ServerLoggers {
 
     public static final Logger sqlConnectionLogger = Logger.getLogger("SQLConnectionLogger");
 
+    public static final Logger tempTableLogger = Logger.getLogger("TempTableLogger");
+
     public static final Logger lruLogger = Logger.getLogger("LRULogger");
 
     public static final Logger cacheLogger = Logger.getLogger("CacheLogger");

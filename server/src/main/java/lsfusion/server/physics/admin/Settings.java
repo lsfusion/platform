@@ -1377,11 +1377,22 @@ public class Settings implements Cloneable {
         this.queryRowCountPessLimit = queryRowCountPessLimit;
     }
 
+    // log every operation on a session table, and a summary of what each transaction did to them - what the lock manager pays for is the operations taken INSIDE a transaction, and how
+    // many tables one transaction touches, neither of which any other log shows
+    private boolean logTempTables = false;
     private int deleteFromInsteadOfTruncateForTempTablesThreshold = 0; // less then - use deleteFrom
     // the same, inside a transaction, where TRUNCATE is the expensive form : its lock is held until the commit, and on postgres a strong lock suppresses the fast path of the lock manager
     // for the whole cluster for as long as it is held, while DELETE takes an ordinary write lock
     private int deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold = 100000;
     private boolean deleteFromInsteadOfTruncateForTempTablesUnknown = false; // unknown - use deleteFrom
+
+    public boolean isLogTempTables() {
+        return logTempTables;
+    }
+
+    public void setLogTempTables(boolean logTempTables) {
+        this.logTempTables = logTempTables;
+    }
 
     public int getDeleteFromInsteadOfTruncateForTempTablesInTransactionThreshold() {
         return deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold;

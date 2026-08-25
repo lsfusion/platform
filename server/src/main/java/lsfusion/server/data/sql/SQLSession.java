@@ -643,6 +643,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     pushVolatileStats(owner);
 
                 transStartTime = System.currentTimeMillis();
+                logTempTables = Settings.get().isLogTempTables();
 
                 slaveTransaction = !needServer.isMaster();
 
@@ -710,6 +711,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             inTransaction--;
             if(inTransaction == 0)
                 threadTransactions.get().removeIf(sqlSession -> sqlSession == this); // by identity : List.remove(Object) would call equals, and MutableObject.equals is an assert (identity only contract)
+        }, firstException);
+
+        runSuppressed(() -> {
+            if(inTransaction == 0)
+                logTempTableTransaction();
         }, firstException);
 
         runSuppressed(() -> tryCommon(owner, true), firstException);
@@ -1294,6 +1300,50 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             totalSessionTablesCount = transactionTotalSessionTablesCount;
     }
 
+    public enum TempTableOperation { CREATE, TRUNCATE, DELETE, VACUUM, DROP, ANALYZE, HIT, MISS }
+    private final int[] tempTableOperations = new int[TempTableOperation.values().length]; // what the CURRENT transaction did, see logTempTable
+    private int tempTablePeak; // the most tables it held at once
+    // latched at the outer start of the transaction : the setting can be switched while one runs, and a summary that counts only the second half of a transaction is worse than none
+    private boolean logTempTables;
+
+    // the callers ask before building what they would log : with the setting off this has to cost a field read
+    public boolean logTempTables() {
+        return isInTransaction() ? logTempTables : Settings.get().isLogTempTables();
+    }
+
+    // one line per operation on a session table plus one summary per transaction (Settings.logTempTables). The operations inside a transaction are the ones that cost : on postgres a
+    // TRUNCATE, a CREATE and a DROP take a lock that is held until the commit and suppresses the fast path of the lock manager cluster-wide while it is - and how many of them one
+    // transaction takes is what no other log shows
+    public void logTempTable(TempTableOperation operation, String table, String detail) {
+        boolean inTransaction = isInTransaction();
+        if(!(inTransaction ? logTempTables : Settings.get().isLogTempTables()))
+            return;
+
+        if(inTransaction) {
+            tempTableOperations[operation.ordinal()]++;
+            tempTablePeak = Math.max(tempTablePeak, sessionTablesMap.size());
+        }
+
+        ServerLoggers.tempTableLogger.info(operation + " " + table + (inTransaction ? " IN TRANSACTION" : "") + (detail != null ? " " + detail : "") + " : " + this);
+    }
+
+    private void logTempTableTransaction() {
+        if(!logTempTables) // nothing was counted either, the counting rides on the same latch
+            return;
+
+        StringBuilder summary = new StringBuilder();
+        for(TempTableOperation operation : TempTableOperation.values()) {
+            int count = tempTableOperations[operation.ordinal()];
+            tempTableOperations[operation.ordinal()] = 0;
+            if(count > 0)
+                summary.append(' ').append(operation).append('=').append(count);
+        }
+
+        if(summary.length() > 0) // the duration says whether those locks were held for a moment or for a minute, the peak how many of them at once
+            ServerLoggers.tempTableLogger.info("TRANSACTION" + summary + " peak=" + tempTablePeak + " ms=" + (System.currentTimeMillis() - transStartTime) + " : " + this);
+        tempTablePeak = 0;
+    }
+
     public void addTTLog(String log, OperationOwner owner) {
         assert privateConnection != null;
         privateConnection.temporary.addLog(log, null, owner);
@@ -1562,6 +1612,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void dropTemporaryTableFromDB(String tableName) throws SQLException {
         Pair<String, StaticExecuteEnvironment> result = getDropDDL(tableName, syntax);
         executeDDL(result.first, result.second);
+        logTempTable(TempTableOperation.DROP, tableName, null);
     }
     private static Pair<String, StaticExecuteEnvironment> getDropDDL(String name, SQLSyntax syntax) {
         return new Pair<>(syntax.getDropSessionTable(name), StaticExecuteEnvironmentImpl.NOREADONLY);
@@ -1574,6 +1625,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
         Pair<String, StaticExecuteEnvironment> result = getCreateDDL(name, keys, properties, syntax);
         executeDDL(result.first, result.second, owner);
+        if(logTempTables())
+            logTempTable(TempTableOperation.CREATE, name, "keys=" + keys.size() + " properties=" + properties.size());
     }
 
     private static Pair<String, StaticExecuteEnvironment> getCreateDDL(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, SQLSyntax syntax) {
@@ -1600,6 +1653,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Pair<String, StaticExecuteEnvironment> ddl = getAnalyzeSessionTableDDL(table, syntax);
         try {
             executeDDL(ddl.first, ddl.second, owner);
+            logTempTable(TempTableOperation.ANALYZE, table, null);
         } catch (SQLException throwable) {
             handleAndPropagate(throwable, "ANALYZE SESSION TABLE");
         }
@@ -2848,16 +2902,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             String tableName = syntax.getSessionTableName(table);
             if(useDeleteFrom) {
                 int deleted = executeDML("DELETE FROM " + tableName, owner, tableOwner, registerChange);
+                if(logTempTables())
+                    logTempTable(TempTableOperation.DELETE, table, "rows=" + deleted);
                 // a rollback can leave this count stale in either direction - a rolled back DELETE did not really leave those rows dead, a rolled back TRUNCATE did not really reset the
                 // storage. Both errors are bounded and correct themselves at the next crossing of the threshold, which is why the count is not made transaction aware for it
                 if(isInTransaction()) // the VACUUM below can not run here, so what this emptying leaves dead stays dead until the storage is reset
                     privateConnection.temporary.addDeadRows(table, deleted);
                 else {
                     executeDML(syntax.getVacuumSessionTable(tableName, getServerMajorVersion()), owner, tableOwner, registerChange);
+                    logTempTable(TempTableOperation.VACUUM, table, null);
                     privateConnection.temporary.resetDeadRows(table);
                 }
             } else {
                 executeDDL("TRUNCATE TABLE " + tableName, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+                logTempTable(TempTableOperation.TRUNCATE, table, null);
                 privateConnection.temporary.resetDeadRows(table);
             }
         }

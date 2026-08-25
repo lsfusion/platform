@@ -130,11 +130,13 @@ public class SQLTemporaryPool {
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);
                 isNew.set(false);
                 CacheStats.incrementHit(CacheStats.CacheType.TEMP_TABLE);
+                session.logTempTable(SQLSession.TempTableOperation.HIT, matchTable, null);
                 return matchTable;
             }
 
         // если нет, "создаем" таблицу
         CacheStats.incrementMissed(CacheStats.CacheType.TEMP_TABLE);
+        String missReason = session.logTempTables() ? (matchTables.isEmpty() ? "reason=no table of that shape" : "reason=all " + matchTables.size() + " of that shape are owned") : null;
         String table = getTableName(counter);
         assert !used.containsKey(table);
         used.put(table, new WeakReference<>(owner)); // до всех sql, см. выше
@@ -145,6 +147,7 @@ public class SQLTemporaryPool {
         matchTables.add(table);
         isNew.set(true);
         structs.put(table, fieldStruct);
+        session.logTempTable(SQLSession.TempTableOperation.MISS, table, missReason);
         return table;
     }
 
