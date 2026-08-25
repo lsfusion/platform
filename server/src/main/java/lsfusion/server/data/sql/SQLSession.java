@@ -1507,7 +1507,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 addTTLog("RETURN " + truncate, table, owner, opOwner);
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
-                runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
+                // in an aborted transaction the emptying is a deliberate no-op (see truncate), so the table keeps its rows. Today the quarantine keeps that name out of the pool until the
+                // transaction ends, and such a transaction can only roll back - but the moment the quarantine goes, the name would be handed to the next owner as if it were empty
+                if(problemInTransaction != null)
+                    runSuppressed(() -> removeTemporaryTableFromPool(table, owner, false), firstException);
+                else
+                    runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
                 // only a database failure says anything about the table : an assertion (assertLog throws under -ea, and the accounting asserts fire on a perfectly healthy table) or any other
                 // throwable from this side would otherwise take a live table out of the pool and physically drop it
                 if(firstException.result instanceof SQLException) {
