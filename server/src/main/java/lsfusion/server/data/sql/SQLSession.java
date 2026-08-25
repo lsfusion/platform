@@ -2757,7 +2757,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(!params.isEmpty())
             return executeDML(new SQLDML(stringCommand, Cost.MIN, MapFact.EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), opOwner, owner, params, DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, owner, tableChange));
         else
-            return executeDML(stringCommand, opOwner, owner, register(table, owner, TableChange.INSERT));
+            return executeDML(stringCommand, opOwner, owner, register(table, owner, tableChange));
     }
 
     public <X> int deleteKeyRecords(StoredTable table, ImMap<KeyField, DataObject> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
