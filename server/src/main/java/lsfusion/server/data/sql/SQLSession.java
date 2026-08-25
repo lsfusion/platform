@@ -2840,29 +2840,41 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void truncate(DBTable table, OperationOwner owner) throws SQLException {
-        truncate(table.getName(syntax), owner, TableOwner.global, false, register(table, TableOwner.global, TableChange.REMOVE));
+        if(problemInTransaction == null)
+            executeDDL("TRUNCATE TABLE " + table.getName(syntax), StaticExecuteEnvironmentImpl.NOREADONLY, owner, register(table, TableOwner.global, TableChange.REMOVE));
     }
     
     public void truncateSession(String table, OperationOwner owner, Long count, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
 
 //        lastOwner.put(table, tableOwner instanceof SessionTableUsage ? ((SessionTableUsage) tableOwner).stack + '\n' + ExceptionUtils.getStackTrace(): null);
-        // inside a transaction TRUNCATE is the expensive form (see the setting), so its threshold is its own
+        // inside a transaction TRUNCATE is the expensive form (see the setting), so its threshold is its own - and the rows the earlier emptyings left dead count towards it, since
+        // nothing reclaims them until the storage is reset (see SQLTemporaryPool.deadRows)
         int threshold = isInTransaction() ? Settings.get().getDeleteFromInsteadOfTruncateForTempTablesInTransactionThreshold() : Settings.get().getDeleteFromInsteadOfTruncateForTempTablesThreshold();
-        boolean useDeleteForm = count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < threshold;
-        truncate(syntax.getSessionTableName(table), owner, tableOwner, useDeleteForm, registerSession(table, tableOwner,  useDeleteForm ? TableChange.DELETE : TableChange.REMOVE));
+        long dead = privateConnection.temporary.getDeadRows(table);
+        boolean useDeleteForm = dead < threshold // the debt alone rules the DELETE form out, whether or not this count is known
+                && (count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < threshold - dead);
+        truncateSession(table, owner, tableOwner, useDeleteForm, registerSession(table, tableOwner,  useDeleteForm ? TableChange.DELETE : TableChange.REMOVE));
     }
 
-    public void truncate(String table, OperationOwner owner, TableOwner tableOwner, boolean useDeleteFrom, RegisterChange registerChange) throws SQLException {
+    private void truncateSession(String table, OperationOwner owner, TableOwner tableOwner, boolean useDeleteFrom, RegisterChange registerChange) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         if(problemInTransaction == null) {
             String tableName = syntax.getSessionTableName(table);
             if(useDeleteFrom) {
-                executeDML("DELETE FROM " + tableName, owner, tableOwner, registerChange);
-                if(!isInTransaction())
+                int deleted = executeDML("DELETE FROM " + tableName, owner, tableOwner, registerChange);
+                // a rollback can leave this count stale in either direction - a rolled back DELETE did not really leave those rows dead, a rolled back TRUNCATE did not really reset the
+                // storage. Both errors are bounded and correct themselves at the next crossing of the threshold, which is why the count is not made transaction aware for it
+                if(isInTransaction()) // the VACUUM below can not run here, so what this emptying leaves dead stays dead until the storage is reset
+                    privateConnection.temporary.addDeadRows(table, deleted);
+                else {
                     executeDML(syntax.getVacuumSessionTable(tableName, getServerMajorVersion()), owner, tableOwner, registerChange);
-            } else
+                    privateConnection.temporary.resetDeadRows(table);
+                }
+            } else {
                 executeDDL("TRUNCATE TABLE " + tableName, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+                privateConnection.temporary.resetDeadRows(table);
+            }
         }
     }
 
@@ -3704,6 +3716,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(struct == null) // the name was taken out of the pool because its table no longer exists (see evictNotExistingTable) : there is nothing to migrate, and its owner returns it as usual
                 continue;
             uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
+            privateConnection.temporary.resetDeadRows(table); // it is a brand new relation on the new connection
         }
 
         Set<String> tables = new HashSet<>(privateConnection.temporary.getTables());

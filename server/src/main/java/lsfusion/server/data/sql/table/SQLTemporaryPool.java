@@ -35,6 +35,11 @@ public class SQLTemporaryPool {
     private final Map<FieldStruct, Set<String>> tables = MapFact.mAddRemoveMap();
     private final Map<String, Object> stats = MapFact.mAddRemoveMap();
     private final Map<String, FieldStruct> structs = MapFact.mAddRemoveMap(); // чтобы удалять таблицы, не имея структры
+    // the rows the emptyings of that table left dead since its storage was last reset - what one owner hands over to the next, not what an owner does to the table while it holds it.
+    // Inside a transaction the VACUUM that would reclaim them can not run, and autovacuum does not reach another backend's temporary relations, so a table that is only ever emptied
+    // with a DELETE would grow for the whole life of the connection, heap and primary key alike. Past a threshold the emptying goes back to TRUNCATE, which resets the storage :
+    // one strong lock once in a while instead of unbounded growth
+    private final Map<String, Long> deadRows = MapFact.mAddRemoveMap();
     private int counter = 0;
 
     public SQLTemporaryPool() {
@@ -61,6 +66,19 @@ public class SQLTemporaryPool {
 
     public int getCounter() {
         return counter;
+    }
+
+    // SQLSession.assertLock
+    public long getDeadRows(String table) {
+        return deadRows.getOrDefault(table, 0L);
+    }
+    // SQLSession.assertLock
+    public void addDeadRows(String table, long rows) {
+        deadRows.merge(table, rows, Long::sum);
+    }
+    // SQLSession.assertLock
+    public void resetDeadRows(String table) {
+        deadRows.remove(table);
     }
 
     public void setCounter(int counter) {
@@ -174,6 +192,7 @@ public class SQLTemporaryPool {
     public void removeTable(String table) { // SQLSession.assertLock - либо temporaryTables.lock() + lockRead либо lockWrite
         if(!Settings.get().isAutoAnalyzeTempStats())
             stats.remove(table);
+        deadRows.remove(table);
         FieldStruct fieldStruct = structs.remove(table);
         if(fieldStruct == null) // idempotent : the name can be removed twice - the failure branch of the return drops it from the pool without touching transactionTables, and then the rollback compensation repeats it (see SQLSession.rollbackTransaction)
             return;

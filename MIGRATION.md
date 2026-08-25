@@ -9,11 +9,16 @@ exclusive lock on the relation until the commit, and on postgres such a lock sup
 of the lock manager for the whole cluster for as long as it is held. A table returned inside a
 transaction is now emptied with `DELETE` unless it holds more rows than
 `deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold` (100000 - a starting point, not a
-measured optimum). Outside a transaction nothing changes.
+measured optimum). Outside a transaction the old threshold (`0`, always `TRUNCATE`) still applies, so
+what is chosen there changes only for an installation that raised it.
 
-What an upgrading application can notice: a pooled temporary table holds the rows those `DELETE`s
-leave dead until it is next truncated, so its size on disk can exceed its row count. Set the setting
-to `0` for the previous behaviour.
+The rows an emptying leaves dead are counted per table until its storage is reset, and count towards
+the same threshold, so a table emptied that way over and over goes back to `TRUNCATE` rather than
+growing for the life of the connection.
+
+What an upgrading application can notice: a pooled temporary table holds those dead rows until the
+debt crosses the threshold, so its size on disk can exceed its row count. Set
+`deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold` to `0` for the previous behaviour.
 
 
 ### Seconds returned by the time formulas are whole, and `LONG`
