@@ -48,6 +48,10 @@ public class WriteAction extends SystemAction {
                         if (append && dialog) {
                             throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
                         } else {
+                            // an APPEND of xls/xlsx/docx/pdf is a document merge, and only the
+                            // desktop client carries POI and PDFBox for it - the web-agent and
+                            // the flutter client refuse those extensions rather than concatenate
+                            // bytes into a file no reader will open
                             context.requestUserInteraction(new WriteClientAction(fileData, path, append, dialog));
                         }
                     } else {

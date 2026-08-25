@@ -460,6 +460,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     private <T> T executeAsyncResultNative(String command, Object[] arguments, Function<JavaScriptObject, T> getResult) {
+        return executeAsyncResultNative(command, arguments, getResult, null);
+    }
+
+    // noNative is the stand-in for "neither flutter nor an agent", the same one
+    // executeNoResultNative takes; without one that case is the failure itself
+    private <T> T executeAsyncResultNative(String command, Object[] arguments, Function<JavaScriptObject, T> getResult, Runnable noNative) {
         JavaScriptObject flutter = getFlutterObject();
         if (flutter != null) {
             return executeAsyncResult(onResult -> executeFlutter(flutter, command, arguments, res -> deliverNativeResult(res, getResult, onResult)));
@@ -467,7 +473,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         return executeAsyncResult(onResult -> withWebAgent(agent -> {
             if (agent != null)
                 executeAgent(agent, command, arguments, res -> deliverNativeResult(res, getResult, onResult));
-            else
+            else if (noNative != null) {
+                noNative.run();
+                onResult.accept(null, null);
+            } else
                 onResult.accept(null, new UnsupportedOperationException(command + " is supported only in flutter client or via web-agent"));
         }));
     }
@@ -572,9 +581,34 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GWriteAction action) {
         if (action.fileUrl != null) {
             String downloadURL = getAppDownloadURL(action.fileUrl);
-            // the agent writes fileData and ignores the url (it can't download it - no
-            // session cookie, 401); flutter still downloads the url and ignores fileData
-            executeNoResultNative("writeFile", new Object[]{getFullUrl(downloadURL), action.filePath, action.fileData}, () -> fileDownload(downloadURL));
+            // the agent and flutter write fileData, not the url - neither can download it
+            // (no session cookie, 401). The url rides along for the fallback, and for a
+            // caller that sends no bytes
+            Object[] arguments = new Object[]{getFullUrl(downloadURL), action.filePath, action.fileData, action.append};
+            if (action.dialog) {
+                // DIALOG asks the user where to put the file, and a browser has its own
+                // answer to that - its download. That is what WRITE CLIENT DIALOG did
+                // before the agent claimed this path, and still does wherever no agent is
+                // running. Not in flutter: there fileOpenInterceptor catches the download
+                // and gives the url to the OS instead, and the CEF path injects no
+                // interceptor at all
+                if (getFlutterObject() == null) {
+                    fileDownload(downloadURL);
+                    return;
+                }
+                // not awaited, although WriteAction does wait for a WRITE CLIENT DIALOG:
+                // nothing here tells that one from the backup and the heap dump, which
+                // also come with dialog set but through delayUserInteraction - pausing on
+                // one of those would hold a batch that is not waiting for it. So a failure
+                // of a dialog write can only be shown
+                executeNoResultNative("writeFile", arguments, () -> fileDownload(downloadURL));
+                return;
+            }
+            // WriteAction sends this one with requestUserInteraction and waits for it, so
+            // a failure can stop the action instead of only reaching the screen - which is
+            // what it does on the desktop, where WriteUtils simply throws. There is no
+            // result to read, hence res -> null
+            executeAsyncResultNative("writeFile", arguments, res -> null, () -> fileDownload(downloadURL));
         }
     }
 

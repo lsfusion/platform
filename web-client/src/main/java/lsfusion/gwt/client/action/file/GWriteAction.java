@@ -7,14 +7,18 @@ public class GWriteAction extends GExecuteAction {
     public String fileUrl;
     public String filePath;
     public String fileData;
+    public boolean append;
+    public boolean dialog;
 
     @SuppressWarnings("UnusedDeclaration")
     public GWriteAction() {}
 
-    public GWriteAction(String fileUrl, String filePath, String fileData) {
+    public GWriteAction(String fileUrl, String filePath, String fileData, boolean append, boolean dialog) {
         this.fileUrl = fileUrl;
         this.filePath = filePath;
         this.fileData = fileData;
+        this.append = append;
+        this.dialog = dialog;
     }
 
     @Override
