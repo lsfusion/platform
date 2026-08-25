@@ -16,6 +16,10 @@ The rows an emptying leaves dead are counted per table until its storage is rese
 the same threshold, so a table emptied that way over and over goes back to `TRUNCATE` rather than
 growing for the life of the connection.
 
+Such a table is genuinely empty from the moment it is returned, so its name is handed out again right
+away; it used to be kept out of the pool until the end of the transaction, which cost one extra
+`CREATE TEMPORARY TABLE` per table shape per transaction.
+
 What an upgrading application can notice: a pooled temporary table holds those dead rows until the
 debt crosses the threshold, so its size on disk can exceed its row count. Set
 `deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold` to `0` for the previous behaviour.

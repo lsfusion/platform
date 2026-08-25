@@ -706,13 +706,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 popVolatileStats(owner);
         }, firstException);
 
-        // its own step, and before the counter goes down : sharing the block above would mean a failure there (setACID and the like) leaves the quarantine behind - and it belongs to the session
-        // while the pool belongs to the connection, so a leftover name would keep excluding that name on whatever connection this session works with next
-        runSuppressed(() -> {
-            if(inTransaction == 1) // released only at the OUTER end : the names stay out of the pool for as long as the physical transaction that can bring their rows back is still there
-                transactionReturnedTables.clear();
-        }, firstException);
-
         runSuppressed(() -> {
             inTransaction--;
             if(inTransaction == 0)
@@ -783,13 +776,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(!(problemInTransaction == Problem.CLOSED))
                 runSuppressed(() -> privateConnection.sql.rollback(), firstException);
             problemInTransaction = null;
-
-            // the rollback brought the rows of the names returned in this transaction back (or they were never emptied at all - see transactionReturnedTables). The ones their owners took back
-            // meanwhile (rollData does that before this point) are theirs again and will be returned properly; nobody is going to empty the rest, so they leave the pool instead of being
-            // handed out dirty. Their physical tables stay until the connection is dropped, which is the price of not handing out somebody else's rows
-            for(String returnedTable : transactionReturnedTables)
-                if(!sessionTablesMap.containsKey(returnedTable))
-                    runSuppressed(() -> removeTemporaryTableFromPool(returnedTable, TableOwner.none, false), firstException);
         }
 
         if(isExplainTemporaryTablesEnabled())
@@ -1269,10 +1255,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
-    // the names given back INSIDE a transaction : their emptying is transactional (and inside an aborted transaction it did not happen at all), so they are only empty until the rollback -
-    // they are kept out of the pool until the transaction ends, otherwise the next owner gets the previous owner's rows back the moment the transaction rolls back. Only the names that were
-    // NOT created in this transaction matter here : the ones that were are dropped by the rollback compensation anyway
-    private final Set<String> transactionReturnedTables = SetFact.mAddRemoveSet();
     private Integer transactionCounter = null;
     private Integer transactionTotalSessionTablesCount = null;
     private final Map<String, Integer> transactionSessionTablesCount = MapFact.mAddRemoveMap();
@@ -1337,7 +1319,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 removeUnusedTemporaryTables(false, opOwner);
 
                 // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-                table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, transactionReturnedTables, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
+                table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
 
                 registerSessionChange(table, owner, -1, TableChange.ADD);
                 if(isNew.result && isInTransaction()) { // пометим как transaction
@@ -1507,8 +1489,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 addTTLog("RETURN " + truncate, table, owner, opOwner);
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
-                // in an aborted transaction the emptying is a deliberate no-op (see truncate), so the table keeps its rows. Today the quarantine keeps that name out of the pool until the
-                // transaction ends, and such a transaction can only roll back - but the moment the quarantine goes, the name would be handed to the next owner as if it were empty
+                // in an aborted transaction the emptying is a deliberate no-op (see truncate), so the table keeps its rows - and with nothing to keep the name out of the pool it would be
+                // handed to the next owner as if it were empty
                 if(problemInTransaction != null)
                     runSuppressed(() -> removeTemporaryTableFromPool(table, owner, false), firstException);
                 else
@@ -1524,8 +1506,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
     
             sessionTablesMap.remove(table); // the registration and its owner were validated at the top, under the same temporaryTablesLock that serializes the issuing
-            if(isInTransaction() && !transactionTables.contains(table)) // see transactionReturnedTables : until the transaction ends this name must not be handed out again
-                transactionReturnedTables.add(table);
     
             runSuppressed(() -> tryCommon(opOwner, true), firstException);
 

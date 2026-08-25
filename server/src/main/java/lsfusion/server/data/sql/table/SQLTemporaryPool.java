@@ -106,7 +106,7 @@ public class SQLTemporaryPool {
 
     // SQLSession.assertLock : temporaryTables.lock + read
     @AssertSynchronized
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count, Map<String, WeakReference<TableOwner>> used, Set<String> returnedInTransaction, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count, Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 
         Set<String> matchTables = tables.get(fieldStruct);
@@ -116,9 +116,7 @@ public class SQLTemporaryPool {
         }
 
         for(String matchTable : matchTables) // ищем нужную таблицу
-            // returnedInTransaction : the table was given back inside a transaction, so it is empty only until that transaction rolls back - the TRUNCATE goes back with it, and in an aborted
-            // transaction it did not even run (see SQLSession.truncate). Handing such a name out now is what fills the next owner's table with the rows of the previous one
-            if(!used.containsKey(matchTable) && !returnedInTransaction.contains(matchTable)) { // если не используется
+            if(!used.containsKey(matchTable)) { // если не используется
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<>(owner));
                 debugInfo.put(matchTable, owner.getDebugInfo());
