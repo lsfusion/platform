@@ -158,8 +158,10 @@ NAVIGATOR {
     }
 }
 
-loadDefaultData () + {     
-    createScheduledTask ('{backup.backuping}',dateTimeToDateTime(currentDate(), 01:00), 86400, SchedulerStartType.afterStart);
-    createScheduledTaskDetail ('{backup.backuping}', 1, 'Backup.makeBackup[]');
-    createScheduledTaskDetail ('{backup.backuping}', 2, 'Backup.decimateBackups[]');        
+loadDefaultData () + {
+    IF NOT scheduledTask('{backup.backuping}') THEN {
+        createScheduledTask ('{backup.backuping}',dateTimeToDateTime(currentDate(), 01:00), 86400, SchedulerStartType.afterStart);
+        createScheduledTaskDetail ('{backup.backuping}', 1, 'Backup.makeBackup[]');
+        createScheduledTaskDetail ('{backup.backuping}', 2, 'Backup.decimateBackups[]');
+    }
 }
