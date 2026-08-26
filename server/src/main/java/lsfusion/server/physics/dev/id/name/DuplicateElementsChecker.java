@@ -26,15 +26,18 @@ public class DuplicateElementsChecker {
     }
     
     public void check() {
-        checkForDuplicateElement(new DuplicatePropertyChecker());
-        checkForDuplicateElement(new DuplicateActionChecker());
-        checkForDuplicateElement(new DuplicateCustomClassChecker());
-        checkForDuplicateElement(new DuplicateNavigatorElementChecker());
-        checkForDuplicateElement(new DuplicateFormChecker());
-        checkForDuplicateElement(new DuplicateTableChecker());
+        String errText = checkForDuplicateElement(new DuplicatePropertyChecker())
+                + checkForDuplicateElement(new DuplicateActionChecker())
+                + checkForDuplicateElement(new DuplicateCustomClassChecker())
+                + checkForDuplicateElement(new DuplicateNavigatorElementChecker())
+                + checkForDuplicateElement(new DuplicateFormChecker())
+                + checkForDuplicateElement(new DuplicateTableChecker());
+
+        if (!errText.isEmpty())
+            throw new DuplicateElementsFound(errText);
     }
 
-    private <E> void checkForDuplicateElement(Checker<E> helper) {
+    private <E> String checkForDuplicateElement(Checker<E> helper) {
         Map<String, List<FoundItem<E>>> canonicalNameToElement = new HashMap<>();
         for (LogicsModule module : modules) {
             for (E element : helper.getElements(module)) {
@@ -44,19 +47,9 @@ public class DuplicateElementsChecker {
                 }
                 canonicalNameToElement.get(cn).add(new FoundItem<>(element, module));
             }
-            
-            if (hasDuplicateElements(canonicalNameToElement)) {
-                String errText = buildDuplicateElementErrorMessage(canonicalNameToElement, helper);
-                throw new DuplicateElementsFound(errText);
-            }
         }
-    }
 
-    private <E> boolean hasDuplicateElements(Map<String, List<E>> canonicalNameToProp) {
-        for (List list : canonicalNameToProp.values()) {
-            if (list.size() > 1) return true;
-        }
-        return false;
+        return buildDuplicateElementErrorMessage(canonicalNameToElement, helper);
     }
 
     private <E> String buildDuplicateElementErrorMessage(Map<String, List<FoundItem<E>>> canonicalNameToProp, Checker<E> helper) {
