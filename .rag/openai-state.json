@@ -2415,8 +2415,8 @@
       "stale": false
     },
     "how-to/How-to_Numbering.md": {
-      "file_hash": "sha256:987daac9344f91b25548d79cebcc99230d56240a899906a20b0102b0c7f7519a",
-      "indexed_at": "2026-07-24T09:47:05Z",
+      "file_hash": "sha256:f58187bb87b5261908c5e8ab7c9b479d8edc8ef306cc9657dec36f454f56fed8",
+      "indexed_at": "2026-08-26T13:44:17Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v3",
@@ -2432,9 +2432,9 @@
           "source_file": "how-to/How-to_Numbering.md"
         },
         "How-to_Numbering::numbering-by-hand": {
-          "file_id": "file-8ENC9NBx9L36KaBLnszHZx",
+          "file_id": "file-A9soC2a7ukGrazwMfEUSf8",
           "heading_path": "How-to: Numbering > Numbering by hand",
-          "section_payload_hash": "sha256:656ba1cc2917894392742bee7cf6a2b4abc32c922e8a16b7e2054bdd526c41eb",
+          "section_payload_hash": "sha256:d1bf2c35f5214bb81f11c0c1fca8e073c3af79cdc4e2214dc93f47809f2b2ffa",
           "source_file": "how-to/How-to_Numbering.md"
         },
         "How-to_Numbering::separate-sequence-per-document-type": {
@@ -8931,8 +8931,8 @@
       "stale": false
     },
     "paradigm/Built-in_classes.md": {
-      "file_hash": "sha256:e756de751e3d516368e09eaeb5061edf7c7be558e352a2c161573cbec0ed6211",
-      "indexed_at": "2026-08-19T14:46:31Z",
+      "file_hash": "sha256:fcd72af63a19591520fc253e636e3fab3cfb73e4f71d5dab59b1ae446d6afb6f",
+      "indexed_at": "2026-08-26T13:44:25Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -8954,9 +8954,9 @@
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::default-value-defaultvalue": {
-          "file_id": "file-1h1DBDugG6RMCFVsdnRqsW",
+          "file_id": "file-J6A41CUZv1PEBYsBzNzjyL",
           "heading_path": "Built-in classes > Default value {#defaultvalue}",
-          "section_payload_hash": "sha256:59b969c709fddc2192001141227fded5a7619de70c30309adf6d3cc39aeb88d2",
+          "section_payload_hash": "sha256:81aae34295cb4c6202ee34adf1d8a03a992d81dad14c2edd53061aee4888bf22",
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::extensions-of-specific-type-files-extension": {
@@ -11085,8 +11085,8 @@
       "stale": false
     },
     "paradigm/Interactive_view.md": {
-      "file_hash": "sha256:abecf63a11c8c042087da989a306e9485b8cc301bef70c78c19dca636ecea118",
-      "indexed_at": "2026-08-21T10:04:52Z",
+      "file_hash": "sha256:783d11b7a8546f1dc34c9b6e7cc85b1e5a159efda0bd97db96be3d894667985b",
+      "indexed_at": "2026-08-26T13:44:36Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -11108,9 +11108,9 @@
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::default-objects-selection-defaultobject": {
-          "file_id": "file-V8ygoADchAR8RvnALZCbPu",
+          "file_id": "file-Fw1XY34uxPub5ZgX8kUYML",
           "heading_path": "Interactive view > Default objects selection {#defaultobject}",
-          "section_payload_hash": "sha256:494786dbe228cf9231fdb2d349eb6a49f5faaf4ed3874c402e9a1ffb84df67fb",
+          "section_payload_hash": "sha256:37f77c76f1d20cbbda44636ae8e777675deb59bf401bf3daa31f7d00f98d7cc1",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::examples": {
@@ -12751,8 +12751,8 @@
       "stale": false
     },
     "paradigm/Property_change_CHANGE.md": {
-      "file_hash": "sha256:45f265885b4c0d3304f70fcc504d3e59a0cf8d03b4ffd14ff1822a3603902493",
-      "indexed_at": "2026-07-31T08:10:49Z",
+      "file_hash": "sha256:77fb026c2883d2a84ca5a4fc9fddf35998e29e4c73ee111ee9a551e1267c2592",
+      "indexed_at": "2026-08-26T13:44:44Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -12774,9 +12774,9 @@
           "source_file": "paradigm/Property_change_CHANGE.md"
         },
         "Property_change_CHANGE::property-change-change": {
-          "file_id": "file-GVpGkeQaUHBVJz7t7xS7Ua",
+          "file_id": "file-JZeyquAVRiJz8Uan85h3LU",
           "heading_path": "Property change (CHANGE)",
-          "section_payload_hash": "sha256:0e1a5492e98c9121a8a1224104c42670194ca03424985fd213417d04b9160607",
+          "section_payload_hash": "sha256:ba54ba80fe51172a129d04a860c214dd1d928e22c7fc6e2340664358b8aa8372",
           "source_file": "paradigm/Property_change_CHANGE.md"
         }
       },
@@ -13485,8 +13485,8 @@
       "stale": false
     },
     "paradigm/Simple_event.md": {
-      "file_hash": "sha256:33ca995042266b4e7c56d9584e86565754a18b3019c5e5782a52a463f230d984",
-      "indexed_at": "2026-08-05T16:05:17Z",
+      "file_hash": "sha256:62033ff69dd6025de8197fef7d25d5770e06ab4ac18f6f31c2a01c1bfedf6ecf",
+      "indexed_at": "2026-08-26T13:44:51Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v3",
@@ -13502,9 +13502,9 @@
           "source_file": "paradigm/Simple_event.md"
         },
         "Simple_event::simple-event": {
-          "file_id": "file-AytVaKEZVYo8ABL9nfBspd",
+          "file_id": "file-WhC7o5XDtC8tPAPfmBM1Dp",
           "heading_path": "Simple event",
-          "section_payload_hash": "sha256:80cf81385e629d51dfbc466580c7c210163f424c0adce2812e2b1756e0fcd969",
+          "section_payload_hash": "sha256:3d3d7bd23b47e88f0a0ad0cd6a432bb791efdef681770c1b1af8b5479f8008c4",
           "source_file": "paradigm/Simple_event.md"
         }
       },
@@ -15417,7 +15417,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "39636cf52eb3c2121409ffa710050b1c622ad223",
+  "last_indexed_docs_commit": "06d91484f79aa3d5782f531b96e9fd07287d03cd",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
