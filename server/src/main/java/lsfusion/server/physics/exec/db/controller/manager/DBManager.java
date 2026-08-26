@@ -2873,45 +2873,50 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void recalculateClassesExclusiveness(final SQLSession sql, boolean isolatedTransactions) throws SQLException, SQLHandledException {
         runClassesExclusiveness(sql, isolatedTransactions, query -> {
             SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>("recexcl", ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), key -> key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED));
+            try {
 
-            table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
+                table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
 
-            MExclMap<ConcreteCustomClass, MExclSet<String>> mRemoveClasses = MapFact.mExclMap();
-            for (Object distinct : table.readDistinct("agg", sql, OperationOwner.unknown)) { // разновидности agg читаем
-                String classes = (String) distinct;
-                ConcreteCustomClass keepClass = null;
-                for (String singleClass : classes.split(",")) {
-                    ConcreteCustomClass customClass = LM.baseClass.findConcreteClassID(Long.parseLong(singleClass));
-                    if (customClass != null) {
-                        if (keepClass == null)
-                            keepClass = customClass;
-                        else {
-                            ConcreteCustomClass removeClass;
-                            if (keepClass.isChild(customClass)) {
-                                removeClass = keepClass;
+                MExclMap<ConcreteCustomClass, MExclSet<String>> mRemoveClasses = MapFact.mExclMap();
+                for (Object distinct : table.readDistinct("agg", sql, OperationOwner.unknown)) { // разновидности agg читаем
+                    String classes = (String) distinct;
+                    ConcreteCustomClass keepClass = null;
+                    for (String singleClass : classes.split(",")) {
+                        ConcreteCustomClass customClass = LM.baseClass.findConcreteClassID(Long.parseLong(singleClass));
+                        if (customClass != null) {
+                            if (keepClass == null)
                                 keepClass = customClass;
-                            } else
-                                removeClass = customClass;
+                            else {
+                                ConcreteCustomClass removeClass;
+                                if (keepClass.isChild(customClass)) {
+                                    removeClass = keepClass;
+                                    keepClass = customClass;
+                                } else
+                                    removeClass = customClass;
 
-                            MExclSet<String> mRemoveStrings = mRemoveClasses.get(removeClass);
-                            if (mRemoveStrings == null) {
-                                mRemoveStrings = SetFact.mExclSet();
-                                mRemoveClasses.exclAdd(removeClass, mRemoveStrings);
+                                MExclSet<String> mRemoveStrings = mRemoveClasses.get(removeClass);
+                                if (mRemoveStrings == null) {
+                                    mRemoveStrings = SetFact.mExclSet();
+                                    mRemoveClasses.exclAdd(removeClass, mRemoveStrings);
+                                }
+                                mRemoveStrings.exclAdd(classes);
                             }
-                            mRemoveStrings.exclAdd(classes);
                         }
                     }
                 }
-            }
-            ImMap<ConcreteCustomClass, ImSet<String>> removeClasses = MapFact.immutable(mRemoveClasses);
+                ImMap<ConcreteCustomClass, ImSet<String>> removeClasses = MapFact.immutable(mRemoveClasses);
 
-            for (int i = 0, size = removeClasses.size(); i < size; i++) {
-                KeyExpr key = new KeyExpr("key");
-                Expr aggExpr = table.join(key).getExpr("agg");
-                Where where = Where.FALSE();
-                for (String removeString : removeClasses.getValue(i))
-                    where = where.or(aggExpr.compare(new DataObject(removeString, StringClass.text), Compare.EQUALS));
-                removeClasses.getKey(i).dataProperty.dropInconsistentClasses(sql, LM.baseClass, key, where, OperationOwner.unknown);
+                for (int i = 0, size = removeClasses.size(); i < size; i++) {
+                    KeyExpr key = new KeyExpr("key");
+                    Expr aggExpr = table.join(key).getExpr("agg");
+                    Where where = Where.FALSE();
+                    for (String removeString : removeClasses.getValue(i))
+                        where = where.or(aggExpr.compare(new DataObject(removeString, StringClass.text), Compare.EQUALS));
+                    removeClasses.getKey(i).dataProperty.dropInconsistentClasses(sql, LM.baseClass, key, where, OperationOwner.unknown);
+                }
+            } finally { // the only owner of a temporary table that never gave it back : it was left to the weak reference sweep, which does not run inside a transaction, so a recalculation
+                        // in one held the table for the rest of the connection's life
+                table.drop(sql, OperationOwner.unknown);
             }
         }, LM.baseClass);
     }
