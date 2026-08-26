@@ -82,6 +82,8 @@ In the interactive form view, object group filters can change as a result of var
 
 If none of these options is explicitly specified, the platform will try to determine whether the permanent filters in the group of objects are a) mutually exclusive for different values of the upper objects (if any), and/or b) the filter selects a very small percentage of the total number of objects of the specified classes. In both of these cases, it makes no sense to search for the previous object and, by default, the first object is selected (`FIRST`); in all other cases, the previous object (`PREV`).
 
+For an object of a [built-in class](Built-in_classes.md) in a panel, whose values are not restricted by the filters of the object group, for any default objects type other than `NULL`, if the object value is not [passed](Open_form.md#params) when the form is opened and it has no previous value kept by the `PREV` type, the current value is set to the [default value](Built-in_classes.md#defaultvalue) of its class: for example, an object of the `DATE` class is initialized with the current date when the form is opened. To leave such an object equal to `NULL`, the `NULL` default objects type is set for the object group.
+
 
 :::info
 It is worth noting that the selection of objects by default is pretty the same as the [object search](Activation_ACTIVATE.md#search) operation, where the search objects are:

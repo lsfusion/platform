@@ -143,6 +143,7 @@ It is sometimes necessary to use some value for a built-in class which will diff
 -   with [form import](In_a_structured_view_EXPORT_IMPORT.md#importForm) - in the filters of the imported form
 -   in the automatic resolution of [simple constraints](Simple_constraints.md)
 -   when an object is [added](Interactive_view.md#objectoperators) on a form to which filters are applied
+-   when [default objects are selected](Interactive_view.md#defaultobject) in the interactive form view - as the current value of a form object of a built-in class in a panel, when it is not determined otherwise
 
 The default value is defined as follows:
 

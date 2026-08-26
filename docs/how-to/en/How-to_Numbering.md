@@ -38,6 +38,8 @@ WHEN SET(Book b IS Book) AND NOT number(b) DO {
 
 The event will be triggered at the moment of saving a book to the database in the same transaction. This also holds when several new books are saved in one session (batch creation, import): the event is executed for the new books one by one, so each receives its own next number.
 
+The next number here is derived from the already saved numbers, so the numbering does not diverge from the data: books that arrive with the number already filled (import, copying) are skipped by the event thanks to its condition, but the maximum takes their numbers into account, and the next generated value does not collide with them. A separate stored counter not derived from the data would not advance when such books are added — it could fall behind the stored maximum, and the generated numbers would collide with existing ones.
+
 In some situations, you may need to apply different numbering for the same object. For this purpose, you can add a special `Numerator` class.
 
 ```lsf

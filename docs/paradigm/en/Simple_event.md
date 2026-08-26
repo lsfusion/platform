@@ -8,7 +8,7 @@ title: 'Simple event'
 -   event [type](Events.md#type), which determines the point in time when this simple event will occur (including checking the condition).
 -   event [handler](Events.md) - an [action](Actions.md) to be executed upon the occurrence of this simple event
 
-Compared to a basic event, a simple event merely runs its handler for every object collection that satisfies the event condition. However, simple events have a number of important additional features:
+Compared to a basic event, a simple event merely runs its handler for every object collection that satisfies the event condition. The handler follows the same execution rules as a [loop](Loop_FOR.md): the set of such object collections is fixed before the handling starts, and the action is executed once for each collection sequentially, each execution seeing the changes made by the earlier ones. By default the collections are iterated in arbitrary order, which can be set explicitly as in a loop. However, simple events have a number of important additional features:
 
 -   If the condition does not contain the [previous value operator (`PREV`)](Previous_value_PREV.md), the platform itself wraps the specified condition in a [change operator (`SET`)](Change_operators_SET_CHANGED_etc.md). This significantly reduces the risk of creating incorrect handling (which will have consequences if the change session is empty)
 -   Such events are more understandable and readable, as they reflect the classic cause-effect relationship (when one thing occurs, another is done)

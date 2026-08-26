@@ -7,6 +7,8 @@ The *property change* operator creates an [action](Actions.md) that writes the v
 
 The source and the condition share the same arguments as the destination property. If the source evaluates to `NULL` for a set of arguments matched by the condition, `NULL` is written for that set, which erases the previously stored value.
 
+The change is performed as one [set operation](Set_operations.md): the source and the condition are computed for all argument sets at once, over the values before the write, after which the write happens — the value written for one argument set does not affect the values computed for the others.
+
 ### Changeable properties {#changeable}
 
 The destination property must be a *mutable* property. Mutable properties are:
