@@ -24,7 +24,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 
 // Maintains the @lsfusion/core-shaped `data` snapshot for CUSTOM REACT containers,
 // accumulated incrementally from each GFormChanges delta, built into a JS object on demand.
-// data = { <groupSID>: { list:[{key, isCurrent, <propSID>:{value,...}}], byKey, keys, count, <propSID>:{caption} }, <formPropSID>:{value,...}, <containerSID>:{caption,image} }
+// data = { <groupSID>: { list:[{key, isCurrent, <propSID>:{value,...}}], byKey, keys, properties, <propSID>:{caption} }, <formPropSID>:{value,...}, <containerSID>:{caption,image} }
 public class GReactFormData {
 
     private final GForm form;
@@ -36,6 +36,9 @@ public class GReactFormData {
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridRows = new NativeSIDMap<>(); // ordered row keys per group
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyDraw, Boolean> droppedProperties = new NativeSIDMap<>(); // SHOWIF/static visibility removed the whole draw
+    private final NativeSIDMap<GGroupObject, ArrayList<String>> lastPropertyNames = new NativeSIDMap<>(); // what `properties` last said, to hand back the SAME array when it still says it
+    private final NativeSIDMap<GGroupObject, JavaScriptObject> lastProperties = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, NativeHashMap<String, Boolean>> unnameable = new NativeSIDMap<>(); // already reported, so the node rebuild does not repeat itself
     private final NativeSIDMap<GGroupObject, ArrayList<GContainer>> groupScopes = new NativeSIDMap<>(); // the react scopes each group's node appears in
 
     // ===== structural sharing: build() returns the SAME JS refs for unchanged subtrees, so React.memo'd components skip.
@@ -57,7 +60,8 @@ public class GReactFormData {
     //     grouped property's COLUMN attributes (caption/image, once) live at data.<group>.<prop>; its per-CELL value +
     //     attributes at data.<group>.list[i].<prop>. A form-level property is one object at data.<prop>. Each attribute
     //     is at ONE point (effective = dynamic else static design default), so a consumer never merges.
-    //   a GROUP's own attributes (count, options) are direct on its node, beside list/byKey/keys.
+    //   a GROUP's own attributes (its options, and what a feature on top of this states about it) are direct on its
+    //     node, beside list/byKey/keys.
     //   a CONTAINER is data.<containerSID> = { caption, image }, direct in data like a group or a property.
     // Ownership excludes an LSF subtree (the chain that answers it stops at the lsf child): the platform draws such a
     // subtree whole, and React only labels its boundary. An LSF property/container projects caption/image only.
@@ -347,7 +351,7 @@ public class GReactFormData {
         GGroupObject group = reader.getAttributeGroup(form); // the attribute of the GROUP itself: rowBackground/rowForeground/rowSelect, or options
         if (group == null)
             return;
-        // a per-row attribute -> the list + each changed row; a group-scoped one (options / count) -> the node only
+        // a per-row attribute -> the list + each changed row; a group-scoped one (options) -> the node only
         boolean perRow = reader.getAttributeScope() == GGroupAttributeScope.ROW;
         markGroupDirty(group, perRow ? GroupDirty.ROWS : GroupDirty.NODE);
         if (perRow)
@@ -564,9 +568,10 @@ public class GReactFormData {
         setGroupSID(node, group.getSID());
         if (current != null) // the group's panel properties (shown once, for the current object)
             fillSingles(node, group, current, null);
-        // the group's own attributes, DIRECT on the node: the loaded row count + its GROUP-scoped readers (options, at
-        // EMPTY). No meta wrapper - `count`/`options` sit beside `list`/the column property objects, rebuilt with the node.
-        fillGroupAttributes(node, group, rows); // what the GROUP itself is: count, options
+        // the group's own attributes, DIRECT on the node: the names it draws, and its
+        // GROUP-scoped readers (options, at EMPTY). No meta wrapper - they sit beside `list` and the column property
+        // objects, rebuilt with the node.
+        fillGroupAttributes(node, group); // what the GROUP itself is
         // and what is the same down each COLUMN. Reading node.<prop> for the caption and row.<prop>.value for the value is
         // the column/cell split without a merge - each attribute lives at exactly one point. Rebuilt with the node (a
         // column reader marks only the node dirty), so it doesn't churn row refs.
@@ -584,13 +589,94 @@ public class GReactFormData {
                 emitAttribute(row, reader, rowKey, null);
     }
 
-    // the GROUP's own attributes, direct on its node beside list/byKey/keys: how many rows are loaded, and its
+    // the GROUP's own attributes, direct on its node beside list/byKey/keys: the names of what it draws, and its
     // group-scoped readers (options, read once at EMPTY). The mirror of fillRowAttributes, one level up.
-    private void fillGroupAttributes(JavaScriptObject node, GGroupObject group, ArrayList<GGroupObjectValue> rows) {
-        setField(node, "count", rows != null ? rows.size() : 0);
+    private void fillGroupAttributes(JavaScriptObject node, GGroupObject group) {
+        setField(node, "properties", buildProperties(group));
         for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
             if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.GROUP)
                 emitAttribute(node, reader, GGroupObjectValue.EMPTY, null);
+    }
+
+    // the names of what the group draws, in the form's own order - the one thing a property's own entry cannot say,
+    // because `data.<group>` is a flat namespace and nothing in it marks which keys are properties. Everything ABOUT a
+    // property (its type, what it can be compared with) is IN its entry, beside its caption: one place, and it exists
+    // exactly when the entry does. This is only the index into them.
+    private JavaScriptObject buildProperties(GGroupObject group) {
+        ArrayList<String> names = getEntryNames(group); // the same three questions the entries are written by
+        // the node is rebuilt for anything that changes on it - one caption, one option - and this list changes for
+        // almost none of that. Handing back a new array each time would re-render every component that selects it,
+        // which is the one thing structural sharing is for, so it is rebuilt only when it says something else
+        JavaScriptObject cached = lastProperties.get(group);
+        if (cached != null && names.equals(lastPropertyNames.get(group)))
+            return cached;
+        JavaScriptObject array = newArray();
+        for (String name : names)
+            push(array, name);
+        lastPropertyNames.put(group, names);
+        lastProperties.put(group, array);
+        return array;
+    }
+
+    // the names this group's node carries RIGHT NOW, by the SAME two predicates the entries are built by - fillColumns
+    // for a list draw, fillSingles for a panel one, which is emitted for the CURRENT object and not at all without
+    // one. Asking either of them at another key would list a property that has no entry, or hide one that has.
+    // Also what the CONTROLLER carries a member for: a change is the form's own ON CHANGE event, so a property that
+    // is not shown has nobody to call it on
+    public ArrayList<String> getEntryNames(GGroupObject group) {
+        ArrayList<String> names = new ArrayList<>();
+        GGroupObjectValue current = currentObjects.get(group);
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && (hasColumnEntry(draw) || getSingleEntryKey(draw, current) != null))
+                names.add(draw.integrationSID);
+        return names;
+    }
+
+    // WHAT HAS AN ENTRY HERE, said once. The list that names them and the writes that fill them ask the same three
+    // questions, or the index would name what is not there - or hide what is - and the controller, which builds its
+    // members from that same list, would carry a member for a cell nobody wrote.
+    // A LIST draw is a column on the node, for the group's rows as a whole
+    private boolean hasColumnEntry(GPropertyDraw draw) {
+        return draw.isList && isProjectedListDraw(draw) && isShownProperty(draw, GGroupObjectValue.EMPTY);
+    }
+    // ... and a cell in each row, unless the platform draws it: an LSF list property has its column and no cell
+    private boolean hasCellEntry(GPropertyDraw draw, GGroupObjectValue rowKey) {
+        return draw.isList && isProjectedListDraw(draw) && !draw.isLsfView() && isShownProperty(draw, rowKey);
+    }
+    // a PANEL draw is one value, for the key it is asked at - the group's current object, or EMPTY at the form level -
+    // and none at all without one. The key it is written under is the answer, so asking and writing say one thing
+    private GGroupObjectValue getSingleEntryKey(GPropertyDraw draw, GGroupObjectValue key) {
+        if (draw.isList || key == null)
+            return null;
+        GGroupObjectValue valueKey = draw.filterColumnKeys(key);
+        return valueKey != null && isShownProperty(draw, key) ? valueKey : null;
+    }
+
+    // what a property IS, written into its own entry beside its caption - the entry is where everything about a
+    // property already lives, so this is one more thing it says rather than a second place to look.
+    // `type` names the kind the projected value was converted by - a number, a boolean, a string, a date, or JSON
+    // that has been parsed into whatever it held - so a view can tell them apart without knowing the property's class.
+    private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw draw) {
+        setField(entry, "type", GSimpleStateTableView.getJSTypeName(draw.getRenderType(RendererType.SIMPLE)));
+    }
+
+    // a thing on a property the projection cannot name (no integration SID) leaves the list that states it describing
+    // less than the group really has. Report it - once per property per group, since the node rebuilds on every change
+    // - rather than let a short list read as "there is nothing here". Here with no caller for the same reason the
+    // state reader in GFormController is: the branches that add `filters` and `orders` both report through it
+    private void reportUnnameable(GGroupObject group, GPropertyDraw property, String node, String what) {
+        String name = property != null ? property.sID : "?";
+        NativeHashMap<String, Boolean> reported = unnameable.get(group);
+        if (reported == null) {
+            reported = new NativeHashMap<>();
+            unnameable.put(group, reported);
+        }
+        String key = node + ":" + name;
+        if (reported.get(key) == null) {
+            reported.put(key, Boolean.TRUE);
+            GwtClientUtils.consoleError("data." + group.getSID() + "." + node + ": the group is " + what + " by '" + name
+                    + "', which the projection does not name (no integration SID), so that one is not listed");
+        }
     }
 
     public void clearDirty() {
@@ -609,8 +695,7 @@ public class GReactFormData {
     // draw has no cell (the platform draws it in the row), and a grouped-in-columns draw is not projected at all.
     private void fillCells(JavaScriptObject row, GGroupObject group, GGroupObjectValue rowKey) {
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && draw.isList && isProjectedListDraw(draw) && !draw.isLsfView()
-                    && isShownProperty(draw, rowKey))
+            if (draw.groupObject == group && hasCellEntry(draw, rowKey))
                 setField(row, draw.integrationSID, buildCellEntry(draw, rowKey));
     }
 
@@ -625,12 +710,12 @@ public class GReactFormData {
     // the scope's top object - each one entry with its value and all its attributes
     private void fillSingles(JavaScriptObject target, GGroupObject group, GGroupObjectValue key, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws) {
-            if (draw.groupObject != group || draw.isList)
+            if (draw.groupObject != group)
                 continue;
             if (group == null && getTopLevelScope(draw) != scope) // a form-level property belongs to the scope it sits in
                 continue;
-            GGroupObjectValue valueKey = draw.filterColumnKeys(key);
-            if (valueKey != null && isShownProperty(draw, key))
+            GGroupObjectValue valueKey = getSingleEntryKey(draw, key);
+            if (valueKey != null)
                 setField(target, draw.integrationSID, buildSingleEntry(draw, valueKey));
         }
     }
@@ -638,8 +723,7 @@ public class GReactFormData {
     // the COLUMNS of a group: every list property contributes what is the same down its whole column, once, on the node
     private void fillColumns(JavaScriptObject node, GGroupObject group) {
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && draw.isList && isProjectedListDraw(draw)
-                    && isShownProperty(draw, GGroupObjectValue.EMPTY))
+            if (draw.groupObject == group && hasColumnEntry(draw))
                 setField(node, draw.integrationSID, buildColumnEntry(draw));
     }
 
@@ -660,13 +744,17 @@ public class GReactFormData {
     // the COLUMN entry of a list property: what is the same down the whole column (caption / image / footer / comment /
     // tooltip / default). No value - the values are in the cells.
     private JavaScriptObject buildColumnEntry(GPropertyDraw draw) {
+        JavaScriptObject entry;
         if (draw.isLsfView())
-            return buildDescriptorEntry(draw, GGroupObjectValue.EMPTY);
-        JavaScriptObject entry = newObject();
-        for (GPropertyReader reader : draw.getPresentationReaders())
-            if (reader != null && reader.isColumnAttribute(draw))
-                emitAttribute(entry, reader, GGroupObjectValue.EMPTY, draw);
-        return entry;
+            entry = buildDescriptorEntry(draw, GGroupObjectValue.EMPTY);
+        else {
+            entry = newObject();
+            for (GPropertyReader reader : draw.getPresentationReaders())
+                if (reader != null && reader.isColumnAttribute(draw))
+                    emitAttribute(entry, reader, GGroupObjectValue.EMPTY, draw);
+        }
+        emitPropertyFacts(entry, draw); // an LSF column is filtered and sorted like any other: the platform draws
+        return entry;                   // its VALUE, which says nothing about what the value is
     }
 
     // one ROW's cell of a list property: its value, and the attributes that can differ from row to row (background /
@@ -683,13 +771,17 @@ public class GReactFormData {
     // the single entry of a property with ONE value (form-level, or a group's panel property): the value and ALL its
     // attributes together - with one value there is nothing to split between a column and a cell
     private JavaScriptObject buildSingleEntry(GPropertyDraw draw, GGroupObjectValue key) {
+        JavaScriptObject entry;
         if (draw.isLsfView())
-            return buildDescriptorEntry(draw, key); // its own key, like any single entry - not EMPTY, which is a column's key
-        JavaScriptObject entry = newObject();
-        emitValue(entry, draw, key);
-        for (GPropertyReader reader : draw.getPresentationReaders())
-            if (reader != null)
-                emitAttribute(entry, reader, key, draw);
+            entry = buildDescriptorEntry(draw, key); // its own key, like any single entry - not EMPTY, which is a column's key
+        else {
+            entry = newObject();
+            emitValue(entry, draw, key);
+            for (GPropertyReader reader : draw.getPresentationReaders())
+                if (reader != null)
+                    emitAttribute(entry, reader, key, draw);
+        }
+        emitPropertyFacts(entry, draw);
         return entry;
     }
 

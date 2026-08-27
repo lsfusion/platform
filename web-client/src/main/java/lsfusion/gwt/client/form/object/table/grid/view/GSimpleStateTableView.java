@@ -264,6 +264,25 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         return fromString(PValue.getCustomStringValue(value));
     }
+    // the KIND the value above was converted BY - read off the SAME switch, so the name and the value cannot drift.
+    // Not `typeof` of the result in every case: "date" is the platform's date-and-time family, and "json" says the
+    // value was PARSED, so what it lands as is whatever the JSON held. Every remaining case converts to a string (a
+    // text, an image src, a file url), which is what "string" says here.
+    public static String getJSTypeName(GType type) {
+        if (type == null)
+            return null;
+        type = type.getDataType();
+        if (type instanceof GLogicalType)
+            return "boolean";
+        if (type instanceof GIntegralType)
+            return "number";
+        if (type instanceof GJSONType)
+            return "json";
+        if (type instanceof GADateType)
+            return "date";
+        return "string";
+    }
+
     public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType, boolean imageToHTML) {
         return convertToJSValue(property.getRenderType(rendererType), property, imageToHTML, value);
     }
