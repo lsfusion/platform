@@ -41,6 +41,7 @@ import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
+import lsfusion.server.data.sql.table.TemporaryTableStruct;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.TableStatKeys;
@@ -562,7 +563,7 @@ public class SessionTable extends StoredTable implements ValuesContext<SessionTa
 
     public SessionTable updateStatistics(final SQLSession session, long prevCount, int updated, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
 //        assert statKeys == null && statProps == null;
-        if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount)) || (updated >= 1 && new Stat(Settings.get().getUpdateStatisticsLimit()).lessEquals(new Stat(updated)))) { // проблема в том, что может появиться много записей с field = n, а СУБД этого не будет знать и будет сильно ошибаться со статистикой
+        if(!TemporaryTableStruct.getDBStatistics(count).equals(TemporaryTableStruct.getDBStatistics(prevCount)) || (updated >= 1 && new Stat(Settings.get().getUpdateStatisticsLimit()).lessEquals(new Stat(updated)))) { // проблема в том, что может появиться много записей с field = n, а СУБД этого не будет знать и будет сильно ошибаться со статистикой
             return session.createTemporaryTable(keys, properties, count, null, null, new FillTemporaryTable() {
                 public Long fill(String name) throws SQLException, SQLHandledException {
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(SessionTable.this);

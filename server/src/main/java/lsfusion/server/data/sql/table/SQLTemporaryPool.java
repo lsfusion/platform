@@ -1,6 +1,5 @@
 package lsfusion.server.data.sql.table;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -14,7 +13,6 @@ import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.FillTemporaryTable;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
@@ -31,10 +29,11 @@ import java.util.Map;
 import java.util.Set;
 
 // выделяется в отдельный объект так как синхронизироваться должен
+// an inventory of what this connection created, by shape : whether one of them is free is answered elsewhere, by the calling session's sessionTablesMap
 public class SQLTemporaryPool {
-    private final Map<FieldStruct, Set<String>> tables = MapFact.mAddRemoveMap();
+    private final Map<TemporaryTableStruct, Set<String>> tables = MapFact.mAddRemoveMap();
     private final Map<String, Object> stats = MapFact.mAddRemoveMap();
-    private final Map<String, FieldStruct> structs = MapFact.mAddRemoveMap(); // чтобы удалять таблицы, не имея структры
+    private final Map<String, TemporaryTableStruct> structs = MapFact.mAddRemoveMap(); // чтобы удалять таблицы, не имея структры
     // the rows the emptyings of that table left dead since its storage was last reset - what one owner hands over to the next, not what an owner does to the table while it holds it.
     // Inside a transaction the VACUUM that would reclaim them can not run, and autovacuum does not reach another backend's temporary relations, so a table that is only ever emptied
     // with a DELETE would grow for the whole life of the connection, heap and primary key alike. Past a threshold the emptying goes back to TRUNCATE, which resets the storage :
@@ -92,7 +91,7 @@ public class SQLTemporaryPool {
     public void checkAliveTables(SQLSession session, Map<String, WeakReference<TableOwner>> used) {
         try {
             ServerLoggers.sqlLogger.info("START " + SQLSession.getCurrentTimeStamp() + " " + session);
-            for(Map.Entry<FieldStruct, Set<String>> table : tables.entrySet())
+            for(Map.Entry<TemporaryTableStruct, Set<String>> table : tables.entrySet())
                 for(String tab : table.getValue()) {
 //                    if(!used.containsKey(tab)) {
                         ServerLoggers.sqlLogger.info("CHECK "  + SQLSession.getCurrentTimeStamp() + " " + tab + " " + session);
@@ -106,9 +105,7 @@ public class SQLTemporaryPool {
 
     // SQLSession.assertLock : temporaryTables.lock + read
     @AssertSynchronized
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count, Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
-        FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
-
+    public String getTable(SQLSession session, TemporaryTableStruct fieldStruct, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
         Set<String> matchTables = tables.get(fieldStruct);
         if(matchTables==null) {
             matchTables = SetFact.mAddRemoveSet();
@@ -161,7 +158,7 @@ public class SQLTemporaryPool {
     }
 
     // assert synchronized
-    public FieldStruct getStruct(String table) {
+    public TemporaryTableStruct getStruct(String table) {
         return structs.get(table);
     }
 
@@ -175,7 +172,7 @@ public class SQLTemporaryPool {
                 session.analyzeSessionTable(table, owner);
             else {
                 assert false; // ??? с синхронизацией stats
-                Object actualStatistics = getDBStatistics(actual);
+                Object actualStatistics = TemporaryTableStruct.getDBStatistics(actual);
                 Object currentStat = stats.get(table);
                 if (!actualStatistics.equals(currentStat)) {
                     session.analyzeSessionTable(table, owner);
@@ -194,7 +191,7 @@ public class SQLTemporaryPool {
         if(!Settings.get().isAutoAnalyzeTempStats())
             stats.remove(table);
         deadRows.remove(table);
-        FieldStruct fieldStruct = structs.remove(table);
+        TemporaryTableStruct fieldStruct = structs.remove(table);
         if(fieldStruct == null) // idempotent : the name can be removed twice - the failure branch of the return drops it from the pool without touching transactionTables, and then the rollback compensation repeats it (see SQLSession.rollbackTransaction)
             return;
 
@@ -202,38 +199,5 @@ public class SQLTemporaryPool {
         structTables.remove(table);
         if(structTables.isEmpty())
             tables.remove(fieldStruct);
-    }
-
-    public static class FieldStruct {
-
-        public final ImOrderSet<KeyField> keys;
-        public final ImSet<PropertyField> properties;
-
-        private final Object statistics;
-
-        public FieldStruct(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Long count) {
-            this.keys = keys;
-            this.properties = properties;
-
-            if(Settings.get().isAutoAnalyzeTempStats() || count==null)
-                this.statistics = null;
-            else
-                this.statistics = getDBStatistics(count);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof FieldStruct && keys.equals(((FieldStruct) o).keys) && properties.equals(((FieldStruct) o).properties) && BaseUtils.nullEquals(statistics, ((FieldStruct) o).statistics);
-
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * (31 * keys.hashCode() + properties.hashCode()) + BaseUtils.nullHash(statistics);
-        }
-    }
-
-    public static Object getDBStatistics(long count) {
-        return new Stat(count);
     }
 }

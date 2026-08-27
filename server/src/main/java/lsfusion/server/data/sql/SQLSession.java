@@ -49,6 +49,7 @@ import lsfusion.server.data.sql.statement.ParsedStatement;
 import lsfusion.server.data.sql.statement.PreParsedStatement;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
+import lsfusion.server.data.sql.table.TemporaryTableStruct;
 import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
@@ -1369,7 +1370,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 removeUnusedTemporaryTables(false, opOwner);
 
                 // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-                table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
+                // the shape is worked out by the caller, not by the pool : it is the question "which table will do", and the answer does not belong to any one pool of them
+                TemporaryTableStruct struct = new TemporaryTableStruct(keys, properties, count);
+                table = privateConnection.temporary.getTable(this, struct, keys, properties, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
 
                 registerSessionChange(table, owner, -1, TableChange.ADD);
                 if(isNew.result && isInTransaction()) { // пометим как transaction
@@ -3755,7 +3758,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private EConsumer<Connection, SQLException> restartConnection(Connection newConnection) throws SQLException, SQLHandledException {
         for (String table : sessionTablesMap.keySet()) {
-            SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
+            TemporaryTableStruct struct = privateConnection.temporary.getStruct(table);
             if(struct == null) // the name was taken out of the pool because its table no longer exists (see evictNotExistingTable) : there is nothing to migrate, and its owner returns it as usual
                 continue;
             uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
@@ -3866,7 +3869,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         finishExceptions(firstException);
     }
 
-    public void uploadTableToConnection(final String table, SQLTemporaryPool.FieldStruct fieldStruct, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
+    public void uploadTableToConnection(final String table, TemporaryTableStruct fieldStruct, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         uploadTableToConnection(table, fieldStruct.keys, fieldStruct.properties, sqlTo, owner);
     }
 
