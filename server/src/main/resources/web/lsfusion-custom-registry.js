@@ -419,6 +419,10 @@
         var makeBucketStore = function (formStore, groupSID, bucketOf) {
             // ref-diff index: O(rows) ref-compares per form change, re-bucketing only the changed rows (see the JSNI twin)
             var listeners = new Set(), buckets = Object.create(null), rowCache = Object.create(null), lastNode, lastKeys = EMPTY, formUnsub = null, pending = false;
+            // an ARRAY means several buckets, not a composite key: each element is coerced on its own and nothing is
+            // ever joined. The coercion is `'' + value` because a bucket is an object key, so a cell named 1 and one
+            // named '1' are one cell - the keys are the author's own values, not the platform's row identities.
+            // Bucketing BY a row key composes anyway: String(row.key) IS the row's canonical key string.
             var norm = function (bk) { // bucketOf result -> deduped string[] | null (null = the row lands nowhere)
                 if (bk == null) return null;
                 if (!Array.isArray(bk)) return ['' + bk];
