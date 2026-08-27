@@ -59,8 +59,14 @@ public class GReactController implements GFormGroupController, GFormPropertyCont
 
     @Override
     public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
+        // the ROW key, asked of the GROUP - a grid's own objects, a tree's whole path - and not of the grid rule
+        // restated here, which on a tree gives a key no row is found by. It has to be narrowed HERE and not left to
+        // the projection: this key is what is RETURNED, and the caller keys the pending change/loading requests by
+        // it, comparing them with the keys the server's own delta carries. `fullCurrentKey` is every group's current
+        // object plus the edited cell's key (GFormController.getFullCurrentKey), so what is dropped is the other
+        // groups' objects and a column key - and null (the key holds no row of this group) is "no cell", as before.
         GGroupObjectValue cellKey = property.isList
-                ? (fullCurrentKey.isEmpty() ? getSelectedKey() : property.groupObject.filterRowKeys(fullCurrentKey))
+                ? (fullCurrentKey.isEmpty() ? getSelectedKey() : property.groupObject.getRowKey(fullCurrentKey))
                 : property.filterColumnKeys(fullCurrentKey);
         if (cellKey == null)
             return null;

@@ -268,9 +268,11 @@ public class GReactFormData {
         return (typeof token === 'string' || typeof token === 'number') ? byKey[String(token)] : null;
     }-*/;
 
+    // `key` is the cell's key as a caller has it - a row key, or a column key for a single-valued draw. Turned here by
+    // the ONE rule the store is written by, so no caller has to know it, and none can apply it twice
     public PValue getValue(GPropertyDraw draw, GGroupObjectValue key) {
         NativeHashMap<GGroupObjectValue, PValue> store = values.get(draw);
-        return store == null || key == null ? null : store.get(key);
+        return store == null || key == null ? null : store.get(getValueKey(draw, key));
     }
     public int getRowIndex(GGroupObject group, GGroupObjectValue key) {
         ArrayList<GGroupObjectValue> rows = gridRows.get(group);
@@ -350,10 +352,20 @@ public class GReactFormData {
             keyValues.foreachEntry((k, v) -> markRowDirty(group, k));
     }
 
+    // the key a VALUE is stored and read under: the same one the ROW it sits on is keyed by, or the two never meet -
+    // so it is the group's own row-key rule that is asked (GGroupObject.getRowKey), not a rule restated here. Keying a
+    // tree's value by one group's objects instead would store every parent's value in one slot (last write wins for a
+    // property over two of the tree's groups) and would mark a key no row is ever found by, so a changed cell would
+    // keep its old object and never re-project.
     private GGroupObjectValue getValueKey(GPropertyDraw draw, GGroupObjectValue key) {
-        if (draw.groupObject == null || !draw.isList) // grouped-in-columns draws never get here (isProjectedListDraw gates every caller)
+        GGroupObject group = draw.groupObject;
+        if (group == null || !draw.isList) // grouped-in-columns draws never get here (isProjectedListDraw gates every caller)
             return key;
-        GGroupObjectValue rowKey = draw.groupObject.filterRowKeys(key);
+        GGroupObjectValue rowKey = group.getRowKey(key);
+        // ... and where the key holds no row of this group at all, it is left as it is: every caller narrows by this
+        // same rule before it gets here (an already-narrow key turns into itself), so the fallback is for a key that
+        // is not a cell of this draw in the first place, and inventing a row key for it would be worse than storing
+        // it where nothing reads it
         return rowKey != null ? rowKey : key;
     }
 
@@ -675,8 +687,10 @@ public class GReactFormData {
     }
 
     // the value field of an entry, always present for a react-owned property (null value included, so the entry exists)
+    // getValueKey, because a value is stored under the key its ROW is keyed by, and the server delivers it under a key
+    // that can carry more than that (a column key, a tree path beyond this group)
     private void emitValue(JavaScriptObject entry, GPropertyDraw draw, GGroupObjectValue key) {
-        setField(entry, "value", GSimpleStateTableView.convertToJSValue(draw, readerValue(draw, key), RendererType.SIMPLE, true));
+        setField(entry, "value", GSimpleStateTableView.convertToJSValue(draw, readerValue(draw, getValueKey(draw, key)), RendererType.SIMPLE, true));
     }
 
     // the ONE attribute emitter, shared by every entry (a property's, a container's, a group's, a row's): the EFFECTIVE

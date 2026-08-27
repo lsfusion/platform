@@ -59,7 +59,11 @@ public class GRowPanelController extends GAbstractPanelController {
 
     @Override
     public GGroupObjectValue getRendererKey(GPropertyDraw property, GGroupObjectValue fullCurrentKey) {
-        return property.groupObject.filterRowKeys(fullCurrentKey);
+        // the group's own ROW key - which for a group of a TREE is the whole path down to it. The renderers are
+        // registered under getRows(), i.e. under exactly those keys, so narrowing to the group's own objects here
+        // made every lookup miss - and a missed renderer records no optimistic value and no loading state, so a lost
+        // edit reads as a slow server rather than as a bug
+        return property.groupObject.getRowKey(fullCurrentKey);
     }
 
     @Override
