@@ -335,11 +335,16 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
         return new PivotOptions(pivotType.get(), pivotAggregation.get(), pivotShowSettings.get(), pivotConfigFunction.get());
     }
 
+    // options are set separately, so that the group object option and the pivot block don't overwrite each other (an option that is not specified is null and is skipped)
     public void setPivotOptions(PivotOptions pivotOptions, Version version) {
-        pivotType.set(pivotOptions.getType(), version);
-        pivotAggregation.set(pivotOptions.getAggregation(), version);
-        pivotShowSettings.set(pivotOptions.getShowSettings(), version);
-        pivotConfigFunction.set(pivotOptions.getConfigFunction(), version);
+        if(pivotOptions.getType() != null)
+            pivotType.set(pivotOptions.getType(), version);
+        if(pivotOptions.getAggregation() != null)
+            pivotAggregation.set(pivotOptions.getAggregation(), version);
+        if(pivotOptions.getShowSettings() != null)
+            pivotShowSettings.set(pivotOptions.getShowSettings(), version);
+        if(pivotOptions.getConfigFunction() != null)
+            pivotConfigFunction.set(pivotOptions.getConfigFunction(), version);
     }
 
     public String getCustomRenderFunction() {
