@@ -813,7 +813,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     protected double getColumnFlex(int i) {
         if(i == 0)
-            return hierarchicalWidth.getValueFlexSize();
+            return 0;
         return super.getColumnFlex(i);
     }
 
