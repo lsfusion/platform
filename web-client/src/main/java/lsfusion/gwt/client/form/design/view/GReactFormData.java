@@ -512,7 +512,7 @@ public class GReactFormData {
                         fillRowAttributes(row, group, rowKey, current); // what the ROW itself is: isCurrent, background, foreground, selected
                         fillCells(row, group, rowKey);                  // what is ON the row: one entry per list property
                     }
-                    GGroupObjectValue.registerRow(row, rowKey); // the public row.key + the non-enumerable `objects` handle
+                    GGroupObjectValue.registerRow(row, rowKey); // the public row.key + the `objects` handle beside it
                     setField(byKey, rowKey.toKeyString(), row);
                     newRows.put(rowKey, row);
                     push(list, row);
