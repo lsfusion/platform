@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import java.util.ArrayList;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -346,7 +347,7 @@ public class GReactFormData {
                 node = buildGroupEntry(group);
                 lastGroups.put(group, node);
             }
-            setValue(data, group.getSID(), node);
+            setField(data, group.getSID(), node);
         }
         fillSingles(data, null, GGroupObjectValue.EMPTY, scope); // the form-level properties, on the new top
         fillContainers(data, scope);
@@ -377,7 +378,7 @@ public class GReactFormData {
     private void fillContainers(JavaScriptObject data, GContainer scope, GComponent component) {
         if (component instanceof GContainer) {
             if (getProjectedContainerScope(component) == scope)
-                setValue(data, component.sID, buildDescriptorEntry(component, GGroupObjectValue.EMPTY));
+                setField(data, component.sID, buildDescriptorEntry(component, GGroupObjectValue.EMPTY));
             for (GComponent child : ((GContainer) component).children)
                 fillContainers(data, scope, child);
         }
@@ -482,7 +483,7 @@ public class GReactFormData {
                         fillCells(row, group, rowKey);                  // what is ON the row: one entry per list property
                     }
                     GGroupObjectValue.registerRow(row, rowKey); // the public row.key + the non-enumerable `objects` handle
-                    setValue(byKey, rowKey.toKeyString(), row);
+                    setField(byKey, rowKey.toKeyString(), row);
                     newRows.put(rowKey, row);
                     push(list, row);
                 }
@@ -496,8 +497,8 @@ public class GReactFormData {
             lastLists.put(group, list);
             lastByKey.put(group, byKey);
         }
-        setValue(node, "list", list);
-        setValue(node, "byKey", byKey);
+        setField(node, "list", list);
+        setField(node, "byKey", byKey);
         // a referentially-STABLE keys array (rebuilt only on membership/order) + a non-enumerable group SID:
         // the <List> row-subscription path maps these keys and each row subscribes by byKey[key], so a value/current
         // change re-renders only the changed row (the keys array ref is unchanged -> the outer map is skipped).
@@ -506,11 +507,11 @@ public class GReactFormData {
             keys = newArray();
             if (rows != null) {
                 for (GGroupObjectValue rowKey : rows)
-                    pushString(keys, rowKey.toKeyString());
+                    push(keys, rowKey.toKeyString());
             }
             lastKeys.put(group, keys);
         }
-        setValue(node, "keys", keys);
+        setField(node, "keys", keys);
         setGroupSID(node, group.getSID());
         if (current != null) // the group's panel properties (shown once, for the current object)
             fillSingles(node, group, current, null);
@@ -528,7 +529,7 @@ public class GReactFormData {
     // reader self-declares its field + converter (COLOR / FLAG). No meta wrapper; the field names are reserved so a
     // property cannot take them (checkReactProjectionNames).
     private void fillRowAttributes(JavaScriptObject row, GGroupObject group, GGroupObjectValue rowKey, GGroupObjectValue current) {
-        setBoolean(row, "isCurrent", current != null && rowKey.equals(current)); // declarative current-row marker
+        setField(row, "isCurrent", current != null && rowKey.equals(current)); // declarative current-row marker
         for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
             if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.ROW)
                 emitAttribute(row, reader, rowKey, null);
@@ -537,7 +538,7 @@ public class GReactFormData {
     // the GROUP's own attributes, direct on its node beside list/byKey/keys: how many rows are loaded, and its
     // group-scoped readers (options, read once at EMPTY). The mirror of fillRowAttributes, one level up.
     private void fillGroupAttributes(JavaScriptObject node, GGroupObject group, ArrayList<GGroupObjectValue> rows) {
-        setInt(node, "count", rows != null ? rows.size() : 0);
+        setField(node, "count", rows != null ? rows.size() : 0);
         for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
             if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.GROUP)
                 emitAttribute(node, reader, GGroupObjectValue.EMPTY, null);
@@ -561,7 +562,7 @@ public class GReactFormData {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && draw.isList && isProjectedListDraw(draw) && !draw.isLsfView()
                     && isShownProperty(draw, rowKey))
-                setValue(row, draw.integrationSID, buildCellEntry(draw, rowKey));
+                setField(row, draw.integrationSID, buildCellEntry(draw, rowKey));
     }
 
     // a list draw the projection carries at all. Grouped-in-columns draws are a follow-up: their attributes are keyed by
@@ -581,7 +582,7 @@ public class GReactFormData {
                 continue;
             GGroupObjectValue valueKey = draw.filterColumnKeys(key);
             if (valueKey != null && isShownProperty(draw, key))
-                setValue(target, draw.integrationSID, buildSingleEntry(draw, valueKey));
+                setField(target, draw.integrationSID, buildSingleEntry(draw, valueKey));
         }
     }
 
@@ -590,7 +591,7 @@ public class GReactFormData {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && draw.isList && isProjectedListDraw(draw)
                     && isShownProperty(draw, GGroupObjectValue.EMPTY))
-                setValue(node, draw.integrationSID, buildColumnEntry(draw));
+                setField(node, draw.integrationSID, buildColumnEntry(draw));
     }
 
     // a draw reaches the projection at all: it has a name there, and it is not hidden right now
@@ -645,13 +646,13 @@ public class GReactFormData {
 
     // the value field of an entry, always present for a react-owned property (null value included, so the entry exists)
     private void emitValue(JavaScriptObject entry, GPropertyDraw draw, GGroupObjectValue key) {
-        setValue(entry, "value", GSimpleStateTableView.convertToJSValue(draw, readerValue(draw, key), RendererType.SIMPLE, true));
+        setField(entry, "value", GSimpleStateTableView.convertToJSValue(draw, readerValue(draw, key), RendererType.SIMPLE, true));
     }
 
     // the ONE attribute emitter, shared by every entry (a property's, a container's, a group's, a row's): the EFFECTIVE
     // value of one attribute - the dynamic reader value if delivered (converted by the reader's own converter), else the
     // static design default - written under the field name the reader declares. Absent attributes are simply not written.
-    // GWT represents java.lang.Boolean as a native JS boolean, so setValue stores a String / boolean / JS object all as
+    // GWT represents java.lang.Boolean as a native JS boolean, so setField stores a String / boolean / JS object all as
     // their primitive JS form (a Boolean lands as a real true/false, not a truthy wrapper) — one path fits all.
     private void emitAttribute(JavaScriptObject entry, GPropertyReader reader, GGroupObjectValue key, GComponent owner) {
         PValue pvalue = readerValue(reader, key);
@@ -660,7 +661,7 @@ public class GReactFormData {
         Object value = isPresent(dynamic) ? dynamic : (owner != null ? reader.getStaticAttribute(owner) : null); // dynamic wins; else the static design default (also when a delivered image was cleared)
         String field = reader.getAttributeField(pvalue); // the no-value case is the reader's own default
         if (field != null && isPresent(value))
-            setValue(entry, field, value);
+            setField(entry, field, value);
     }
 
     private boolean isPropertyShown(GPropertyDraw draw, GGroupObjectValue key) {
@@ -675,9 +676,6 @@ public class GReactFormData {
         return columnKey != null && PValue.getBooleanValue(showIfs.get(columnKey));
     }
 
-    // JS-level "has a value": unlike a GWT-generated Java `!= null` (which the falsy-primitive trap misfires on, dropping a delivered
-    // false / 0 / "" — e.g. a JSON options or a readOnly false), this only treats a real null/undefined as absent.
-    private static native boolean isPresent(Object v) /*-{ return v !== undefined && v !== null; }-*/;
 
     private PValue readerValue(GPropertyReader reader, GGroupObjectValue key) {
         if (reader == null || key == null)
@@ -697,12 +695,5 @@ public class GReactFormData {
             dirtyScopes.put(scope, Boolean.TRUE);
     }
 
-    private static native JavaScriptObject newObject() /*-{ return {}; }-*/;
-    private static native JavaScriptObject newArray() /*-{ return []; }-*/;
-    private static native void push(JavaScriptObject arr, JavaScriptObject v) /*-{ arr.push(v); }-*/;
-    private static native void pushString(JavaScriptObject arr, String v) /*-{ arr.push(v); }-*/;
     private static native void setGroupSID(JavaScriptObject obj, String sid) /*-{ Object.defineProperty(obj, "__groupSID", { value: sid }); }-*/; // non-enumerable: stable selector path, not user-visible data
-    private static native void setValue(JavaScriptObject obj, String key, Object v) /*-{ obj[key] = v; }-*/;
-    private static native void setBoolean(JavaScriptObject obj, String key, boolean v) /*-{ obj[key] = v; }-*/;
-    private static native void setInt(JavaScriptObject obj, String key, int v) /*-{ obj[key] = v; }-*/;
 }

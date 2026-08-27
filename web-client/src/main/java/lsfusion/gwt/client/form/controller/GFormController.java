@@ -551,29 +551,26 @@ public class GFormController implements EditManager {
     // integration SID), so controller[group][prop] lines up with the rows in data[group]. Panel and list properties are both
     // addressable; the top-level `props` are the form-level (no-group) properties, exposed directly as controller[prop].
     private JavaScriptObject getControllerStructure() {
-        JavaScriptObject groups = newJSArray();
+        JavaScriptObject groups = newArray();
         for (GGroupObject group : form.groupObjects) {
-            JavaScriptObject props = newJSArray();
+            JavaScriptObject props = newArray();
             for (GPropertyDraw draw : form.propertyDraws)
                 if (draw.groupObject == group && draw.integrationSID != null)
-                    pushJSString(props, draw.integrationSID);
-            JavaScriptObject entry = newJSArray();
-            pushJSString(entry, group.getSID());
-            pushJSObject(entry, props);
-            pushJSObject(groups, entry);
+                    push(props, draw.integrationSID);
+            JavaScriptObject entry = newArray();
+            push(entry, group.getSID());
+            push(entry, props);
+            push(groups, entry);
         }
-        JavaScriptObject formProps = newJSArray();
+        JavaScriptObject formProps = newArray();
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == null && draw.integrationSID != null)
-                pushJSString(formProps, draw.integrationSID);
+                push(formProps, draw.integrationSID);
         JavaScriptObject result = GwtClientUtils.newObject();
         GwtClientUtils.setField(result, "groups", groups);
         GwtClientUtils.setField(result, "props", formProps);
         return result;
     }
-    private static native JavaScriptObject newJSArray() /*-{ return []; }-*/;
-    private static native void pushJSObject(JavaScriptObject array, JavaScriptObject value) /*-{ array.push(value); }-*/;
-    private static native void pushJSString(JavaScriptObject array, String value) /*-{ array.push(value); }-*/;
 
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): resolve the draw by
     // "integrationSID" or "groupSID.integrationSID"; rows/handles resolve via GGroupObjectValue.resolveObject (the
