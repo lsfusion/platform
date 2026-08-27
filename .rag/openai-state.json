@@ -6753,8 +6753,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:a9a65d6b17c2de75e4d023ccb721a7f5795f62996b717253ea706457b4693521",
-      "indexed_at": "2026-08-27T08:21:02Z",
+      "file_hash": "sha256:593f7946c1d82c8061359cce89f428a93851232502d042db8917d8d6dd4874db",
+      "indexed_at": "2026-08-27T09:11:40Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -6818,9 +6818,9 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-00": {
-          "file_id": "file-AqAVEvVe9cA9bMCaWtzYSH",
+          "file_id": "file-MFAwXnDaZAUW6WpwmsfwPB",
           "heading_path": "Object blocks > Object block {#objects} > Object group options",
-          "section_payload_hash": "sha256:9d9442057455a769facbbf779c1465d384fe4a9873dfb81d9cd503e470b861cf",
+          "section_payload_hash": "sha256:419c6a060801448bf42b48036c9208de1ba5410444e079c20012f11e9ab1242e",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::object-group-options::part-01": {
@@ -7077,8 +7077,8 @@
       "stale": false
     },
     "language/Pivot_block.md": {
-      "file_hash": "sha256:69bb9cc7b67d023bbc244caf2a30b8af0657567ffa344f81a9588c21619b6b54",
-      "indexed_at": "2026-08-27T08:21:09Z",
+      "file_hash": "sha256:9f6ec9ad9eb6887c8e99cfeaa498ff9d63b8a72c9d720523fb99bb777a454358",
+      "indexed_at": "2026-08-27T09:11:48Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v3",
@@ -7088,9 +7088,9 @@
       },
       "sections": {
         "Pivot_block::description": {
-          "file_id": "file-UYiD62sqzGNWLw8ed4rpFU",
+          "file_id": "file-9yBphrVxR9XZcQhuMbMDG6",
           "heading_path": "Pivot table settings block > Description",
-          "section_payload_hash": "sha256:ef3f0be19d9f1470ed0f4f4b826703c1054529822efa5b24595c8380d1e0c1dc",
+          "section_payload_hash": "sha256:287ea73d7763a598c133aa594cb5d9a209a562cea69abf92e7e4d3e61b6ab889",
           "source_file": "language/Pivot_block.md"
         },
         "Pivot_block::example": {
@@ -15417,7 +15417,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "dbb751d56ef32e4367c3f1270619af5f6275c6a7",
+  "last_indexed_docs_commit": "cf90061f9f4b51653792d91f844552ce1664a85c",
   "pipeline_versions": {
     "chunker_version": "v3",
     "glossary_version": "v0",
