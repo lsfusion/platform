@@ -259,6 +259,49 @@ grammar LsfLogics;
 		return self.new TypedParameter((ValueClass)null, paramName);
 	}
 
+	// A top level statement ends with a semicolon, and the semicolons that are not its end are all inside braces. END and
+	// a brace closing at depth zero stop the skip too, so that unwinding out of a metacode declaration cannot resync into
+	// the middle of its body. The text is compared rather than the token type on purpose: the numeric types are
+	// renumbered whenever the grammar changes, and comparing them would break silently
+	private void resyncToNextStatement(int statementStartIndex) {
+		int braceDepth = 0;
+		for (int i = statementStartIndex; i < input.index(); i++) {
+			String consumed = input.get(i).getText();
+			if ("{".equals(consumed))
+				braceDepth++;
+			else if ("}".equals(consumed))
+				braceDepth--;
+		}
+		Token lastRead = input.LT(-1); // LT, not the loop above: the loop walks the hidden tokens too, and the last of them is a space
+		// An error raised in a rule's @after is thrown after the terminator was consumed, so there is nothing left to
+		// skip and skipping would swallow the statement that follows
+		if (braceDepth == 0 && lastRead != null && (";".equals(lastRead.getText()) || "END".equals(lastRead.getText())))
+			return;
+
+		while (true) {
+			Token token = input.LT(1);
+			if (token == null || token.getType() == Token.EOF)
+				break;
+
+			String text = token.getText();
+			if ("{".equals(text)) {
+				braceDepth++;
+			} else if ("}".equals(text)) {
+				if (braceDepth <= 0)
+					break;
+				braceDepth--;
+			} else if (braceDepth <= 0 && (";".equals(text) || "END".equals(text))) {
+				break;
+			}
+			input.consume();
+		}
+
+		// The token stopped at is left for the statement loop to read, but that loop has to move on: if nothing of this
+		// statement was consumed, drop one token rather than loop forever
+		if (input.index() == statementStartIndex && input.LA(1) != Token.EOF)
+			input.consume();
+	}
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || inPreParseState()) { 
@@ -314,6 +357,13 @@ moduleHeader
 
 
 statement
+@init {
+	int statementStartIndex = input.index();
+	int savedFsp = state._fsp;
+	ScriptParser.State savedParseState = parseState;
+	boolean savedRecursion = insideRecursion;
+	ScriptParser.RecoveryPoint recoveryPoint = self.getParser().markRecoveryPoint(self);
+}
 	:	(	classStatement
 		|	extendClassStatement
 		|	groupStatement
@@ -338,6 +388,24 @@ statement
 		|	emptyStatement
 		)
 	;
+	// The only place a semantic error can be recovered at: it unwinds every rule between where it was thrown and here, and
+	// a statement returns nothing and has no @after, so nothing goes on to read a null from it
+	catch [ScriptingErrorLog.SemanticErrorException e] {
+		if (!self.getErrLog().recoverSemanticError(e))
+			throw e;
+
+		state._fsp = savedFsp; // pushFollow increments before each call and the matching decrement is skipped when the call unwinds
+		state.errorRecovery = false;
+		state.lastErrorIndex = -1;
+		parseState = savedParseState;
+		insideRecursion = savedRecursion;
+		self.getParser().restoreRecoveryPoint(recoveryPoint, self);
+		resyncToNextStatement(statementStartIndex);
+	}
+	catch [RecognitionException re] {
+		reportError(re);
+		recover(input, re);
+	}
 
 metaCodeParsingStatement  // metacode parsing rule
 	:

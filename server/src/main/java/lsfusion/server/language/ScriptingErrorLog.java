@@ -3,6 +3,7 @@ package lsfusion.server.language;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.RecognitionException;
@@ -10,13 +11,20 @@ import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
 
 import java.io.StringWriter;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.String.format;
 
 public class ScriptingErrorLog {
     public static class SemanticErrorException extends RecognitionException {
         private String msg;
+
+        // The message without its position header, so that the same complaint raised at several places is recognized as
+        // one; null for the errors built outside emitSimpleError, which arrive already formatted whole
+        private String rawMessage;
+        private String position;
+        private String declaredName;
+        private String referencedName;
 
         public SemanticErrorException(TokenStream input) {
             super(input);
@@ -57,17 +65,42 @@ public class ScriptingErrorLog {
     }
 
     public String toString() {
-        return errWriter.toString();
+        StringBuilder result = new StringBuilder(errWriter.toString());
+
+        for (Map.Entry<String, List<String>> error : errorPositionsByMessage.entrySet()) {
+            List<String> positions = error.getValue();
+            result.append("[error]:\n\t").append(positions.get(0)).append(" ").append(error.getKey()).append("\n");
+
+            // One per line rather than a list: a position inside an expanded metacode is itself several lines, the chain
+            // of the calls that got there, and joining those into a list makes both unreadable
+            List<String> shown = positions.subList(1, Math.min(positions.size(), 1 + ALSO_AT_SHOWN));
+            for (String position : shown)
+                result.append("\t\talso at ").append(position).append("\n");
+            int rest = positions.size() - 1 - shown.size();
+            if (rest > 0)
+                result.append("\t\tand ").append(rest).append(" more\n");
+        }
+
+        if (suppressedErrors > 0)
+            result.append(suppressedErrors).append(" more error(s) are not shown: they are about elements that were not declared because of the errors above\n");
+
+        return result.toString();
     }
 
     private String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
-        return getRecognitionErrorText(parser, "error", msg, e) + "Subsequent errors (if any) could not be found.";
+        String text = getRecognitionErrorText(parser, "error", msg, e);
+        if (Settings.get().isBatchScriptErrors()) // the run keeps looking, so promising nothing more would be a lie
+            return text;
+        return text + "Only the first error is reported: set 'batchScriptErrors' (or run with 'dryRun') to report several errors at once.";
     }
 
     private String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
+        return "[" + errorType + "]:\n\t" + getPosition(parser, e) + " " + msg;
+    }
+
+    private String getPosition(ScriptParser parser, RecognitionException e) {
         String module = moduleId.isEmpty() ? getModulePath(parser) : moduleId;
-        String hdr = parser.getLsfConsoleLink(module, e.line - lineNumberShift, e.charPositionInLine + 1);
-        return "[" + errorType + "]:\n\t" + hdr + " " + msg;
+        return parser.getLsfConsoleLink(module, e.line - lineNumberShift, e.charPositionInLine + 1);
     }
 
     //If the error occurs in the moduleHeader rule, moduleId is not yet set
@@ -86,8 +119,66 @@ public class ScriptingErrorLog {
         throw e;
     }
 
+    private static final int ALSO_AT_SHOWN = 3;
+
+    private final Map<String, List<String>> errorPositionsByMessage = new LinkedHashMap<>();
+    private final Set<String> failedDeclarations = new HashSet<>();
+    private int suppressedErrors = 0;
+    private int reportedErrors = 0;
+
+    /** Called from the statement rule of the grammar when a semantic error has unwound it; returning false means the
+     * caller has to rethrow and the module stops here. The message goes into the log directly rather than through the
+     * parser's emitErrorMessage, which keeps only what the first full parse reports while these come from the main pass. */
+    public boolean recoverSemanticError(SemanticErrorException e) {
+        if (!Settings.get().isBatchScriptErrors())
+            return false;
+
+        // Asked before the statement registers its own name, so that a statement failing on a reference to itself - a
+        // property defined through itself, say - still reports it
+        boolean consequence = e.referencedName != null && failedDeclarations.contains(baseName(e.referencedName));
+
+        if (e.declaredName != null)
+            failedDeclarations.add(e.declaredName);
+
+        if (consequence) {
+            suppressedErrors++;
+            return true;
+        }
+
+        if (e.rawMessage == null) { // built and thrown outside emitSimpleError, so it is already formatted whole
+            String message = e.getMessage();
+            write(message.endsWith("\n") ? message : message + "\n");
+            reportedErrors++;
+        } else {
+            List<String> positions = errorPositionsByMessage.get(e.rawMessage);
+            if (positions == null) {
+                positions = new ArrayList<>();
+                errorPositionsByMessage.put(e.rawMessage, positions);
+                reportedErrors++;
+            }
+            positions.add(e.position);
+        }
+
+        int limit = Settings.get().getMaxScriptErrorsPerModule();
+        if (reportedErrors < limit)
+            return true;
+
+        // Only the note is left on the exception: runInit appends it after the whole log, so anything kept here would
+        // come out past the log's closing lines
+        e.setMessage("This module is not checked further: the limit of " + limit + " errors (maxScriptErrorsPerModule) is reached.");
+        return false;
+    }
+
+    // A message names an element as it was written - with a signature in brackets, possibly with a namespace - while a
+    // declaration is known by its own name alone
+    private static String baseName(String name) {
+        int bracket = name.indexOf('[');
+        String result = bracket < 0 ? name : name.substring(0, bracket);
+        return result.substring(result.lastIndexOf('.') + 1).trim();
+    }
+
     public void emitNotFoundError(ScriptParser parser, String objectName, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("%s '%s' is not found", objectName, name));
+        emitSimpleError(parser, format("%s '%s' is not found", objectName, name), name);
     }
 
     public void emitClassNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
@@ -690,10 +781,20 @@ public class ScriptingErrorLog {
     }
 
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
+        emitSimpleError(parser, message, null);
+    }
+
+    public void emitSimpleError(ScriptParser parser, String message, String referencedName) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
-            String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
-            emitSemanticError(msg, e);
+            e.rawMessage = message;
+            e.position = getPosition(parser, e);
+            // Still readable here: the rules whose dynamic scope holds topName are unwound only once this exception is
+            // on its way out
+            String topName = parser.getCurrentParser().getCurrentDebugPoint().topName;
+            e.declaredName = topName != null ? topName : parser.getDeclaredName();
+            e.referencedName = referencedName;
+            emitSemanticError(getSemanticRecognitionErrorText(message + "\n", parser, e), e);
         } else {
             throw new ScriptErrorException(message);
         }

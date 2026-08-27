@@ -614,6 +614,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedClass(String className, LocalizedString captionStr, String image, boolean isAbstract,
                                  List<String> instNames, List<LocalizedString> instCaptions, List<String> images, List<String> parentNames, boolean isComplex,
                                  DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
+        parser.setDeclaredName(className);
         checks.checkDuplicateClass(className);
         checks.checkStaticClassConstraints(isAbstract, instNames, instCaptions);
         checks.checkClassParents(parentNames);
@@ -877,6 +878,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        parser.setDeclaredName(groupName);
         checks.checkDuplicateGroup(groupName);
         LocalizedString caption = (captionStr == null ? LocalizedString.create(groupName) : captionStr);
         Group parentGroup = (parentName == null ? null : findGroup(parentName));
@@ -886,6 +888,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon) throws ScriptingErrorLog.SemanticErrorException {
+        parser.setDeclaredName(formName);
         checks.checkDuplicateForm(formName);
         
         Version version = getVersion();
@@ -4722,6 +4725,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedMetaCodeFragment(String name, List<String> params, List<Pair<String, Boolean>> tokens, int lineNumber) throws RecognitionException {
+        parser.setDeclaredName(name);
         checks.checkDuplicateMetaCodeFragment(name, params.size());
         checks.checkDistinctParameters(params);
 
@@ -5426,6 +5430,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         prevScope = null;
     }
 
+    // For the snapshot a recovered statement is put back from, see ScriptParser.RecoveryPoint. Put back rather than
+    // cleared, because an evaluated module holds one open across its whole parse
+    PrevScope getPrevScope() {
+        return prevScope;
+    }
+
+    void restorePrevScope(PrevScope scope) {
+        prevScope = scope;
+    }
+
     public LPWithParams addScriptedSessionProp(IncrementType type, LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkSessionPropertyParameter(property);
         LP newProp;
@@ -5557,6 +5571,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedTable(String name, String dbName, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
+        parser.setDeclaredName(name);
         checks.checkDuplicateTable(name);
 
         // todo [dale]: Hack. Class CustomObjectClass is created after all in InitObjectClassTask 
@@ -5657,6 +5672,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedWindow(boolean isNative, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        parser.setDeclaredName(name);
         checks.checkDuplicateWindow(name);
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
@@ -5835,6 +5851,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
                                                            NamedPropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
+        parser.setDeclaredName(name);
         LA<?> action = null;
         FormEntity form = null;
         if (formName != null) {

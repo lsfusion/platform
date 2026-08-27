@@ -5,6 +5,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
+import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.antlr.runtime.*;
@@ -40,6 +41,77 @@ public class ScriptParser {
      * то не нужно создавать делегаты для отладчика */
     private boolean insideNonEnabledMeta = false;
 
+    /** What the statement being parsed declares, read when an error is raised. Only the statements with no dynamic scope
+     * of their own report it here - a property or an action statement keeps the name in its grammar rule instead. */
+    private String declaredName = null;
+
+    public void setDeclaredName(String name) {
+        declaredName = name;
+    }
+
+    public String getDeclaredName() {
+        return declaredName;
+    }
+
+    /** A semantic error unwinds the whole ANTLR rule stack in one throw, leaving everything kept outside those rule
+     * frames wherever the error found it. Recovering at the next statement without putting it back would report every
+     * later error of the module at the wrong file and line, or trip the asserts in leaveMetaDeclState and dropPrevScope. */
+    public static class RecoveryPoint {
+        private final PrevScope prevScope;
+        private final String declaredName;
+        private final int parsersSize;
+        private final State currentState;
+        private final int globalExpandedLines;
+        private final int currentExpandedLines;
+        private final int currentExpansionLine;
+        private final boolean insideMetaDecl;
+        private final int prevMetaToken;
+        private final List<Pair<String, Boolean>> metaTokens;
+        private final boolean insideNonEnabledMeta;
+        private final boolean insideFormOrDesignStatement;
+        private final int prevFormOrDesignStatementToken;
+        private final List<String> formOrDesignStatementTokens;
+
+        private RecoveryPoint(ScriptParser parser, ScriptingLogicsModule LM) {
+            prevScope = LM.getPrevScope();
+            declaredName = parser.declaredName;
+            parsersSize = parser.parsers.size();
+            currentState = parser.currentState;
+            globalExpandedLines = parser.globalExpandedLines;
+            currentExpandedLines = parser.currentExpandedLines;
+            currentExpansionLine = parser.currentExpansionLine;
+            insideMetaDecl = parser.insideMetaDecl;
+            prevMetaToken = parser.prevMetaToken;
+            metaTokens = parser.metaTokens;
+            insideNonEnabledMeta = parser.insideNonEnabledMeta;
+            insideFormOrDesignStatement = parser.insideFormOrDesignStatement;
+            prevFormOrDesignStatementToken = parser.prevFormOrDesignStatementToken;
+            formOrDesignStatementTokens = parser.formOrDesignStatementTokens;
+        }
+    }
+
+    public RecoveryPoint markRecoveryPoint(ScriptingLogicsModule LM) {
+        return new RecoveryPoint(this, LM);
+    }
+
+    public void restoreRecoveryPoint(RecoveryPoint point, ScriptingLogicsModule LM) {
+        LM.restorePrevScope(point.prevScope);
+        declaredName = point.declaredName;
+        while (parsers.size() > point.parsersSize)
+            parsers.pop();
+        currentState = point.currentState;
+        globalExpandedLines = point.globalExpandedLines;
+        currentExpandedLines = point.currentExpandedLines;
+        currentExpansionLine = point.currentExpansionLine;
+        insideMetaDecl = point.insideMetaDecl;
+        prevMetaToken = point.prevMetaToken;
+        metaTokens = point.metaTokens;
+        insideNonEnabledMeta = point.insideNonEnabledMeta;
+        insideFormOrDesignStatement = point.insideFormOrDesignStatement;
+        prevFormOrDesignStatementToken = point.prevFormOrDesignStatementToken;
+        formOrDesignStatementTokens = point.formOrDesignStatementTokens;
+    }
+
     public void initParseStep(ScriptingLogicsModule LM, CharStream stream, State state) throws RecognitionException {
         LsfLogicsLexer lexer = new LsfLogicsLexer(stream);
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
@@ -64,9 +136,10 @@ public class ScriptParser {
             DebugInfo.DebugPoint cdg = parser.getCurrentDebugPoint();
             ExecutionStackAspect.setExceptionStackString("Error during parsing at " + getLsfConsoleLink(cdg.moduleName, cdg.line, cdg.offset));
             throw ExceptionUtils.propagate(t, RecognitionException.class);
+        } finally {
+            parsers.pop();
+            currentState = null;
         }
-        parsers.pop();
-        currentState = null;
     }
 
     public String getLsfConsoleLink(String moduleId, int line, int position) {
@@ -143,8 +216,11 @@ public class ScriptParser {
         ParserInfo lastParser = new ParserInfo(parser, metaLineNumber, metaModuleName, callString, lineNumberBefore);
 
         parsers.push(lastParser);
-        consumer.accept(parser);
-        parsers.pop();
+        try {
+            consumer.accept(parser);
+        } finally {
+            parsers.pop();
+        }
     }
     
     private int linesCount(String code) {

@@ -132,6 +132,8 @@
                 <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
                 <entry key="startServerAnyWay" value="${settings.startServerAnyWay:}"/>
                 <entry key="dryRun" value="${settings.dryRun:}"/>
+                <entry key="batchScriptErrors" value="${settings.batchScriptErrors:}"/>
+                <entry key="maxScriptErrorsPerModule" value="${settings.maxScriptErrorsPerModule:}"/>
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
                 <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>

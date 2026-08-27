@@ -2027,6 +2027,27 @@ public class Settings implements Cloneable {
         this.dryRun = dryRun;
     }
 
+    // Keeps checking the rest of the module after a semantic error, so that one run reports several. dryRun implies it
+    private boolean batchScriptErrors = false;
+
+    public boolean isBatchScriptErrors() {
+        return batchScriptErrors || dryRun;
+    }
+
+    public void setBatchScriptErrors(boolean batchScriptErrors) {
+        this.batchScriptErrors = batchScriptErrors;
+    }
+
+    private int maxScriptErrorsPerModule = 10;
+
+    public int getMaxScriptErrorsPerModule() {
+        return maxScriptErrorsPerModule;
+    }
+
+    public void setMaxScriptErrorsPerModule(int maxScriptErrorsPerModule) {
+        this.maxScriptErrorsPerModule = maxScriptErrorsPerModule;
+    }
+
     private boolean disableAntiJoinOptimization = false;
 
     public boolean isDisableAntiJoinOptimization() {
