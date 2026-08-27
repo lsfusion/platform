@@ -3405,6 +3405,12 @@ public class GFormController implements EditManager {
         return property.font != null ? property.font : renderContext.getFont();
     }
 
+    // in the inputs the native select all is scoped to the input itself, so there it shouldn't be overridden
+    private static boolean isTextTarget(EventHandler handler) {
+        EventTarget target = handler.event.getEventTarget();
+        return Element.is(target) && GwtClientUtils.isInput(Element.as(target));
+    }
+
     public void onPropertyBrowserEvent(EventHandler handler, Element renderElement, boolean isCell, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer, boolean focusable) {
@@ -3456,6 +3462,9 @@ public class GFormController implements EditManager {
                 onCut.accept(handler);
             } else if (GKeyStroke.isPasteFromClipboardEvent(handler.event)) {
                 onPaste.accept(handler);
+            } else if (panel && renderElement != null && GKeyStroke.isSelectAllKeyEvent(handler.event) && !isTextTarget(handler)) {
+                handler.consume();
+                CopyPasteUtils.selectElement(renderElement);
             }
         }
 
