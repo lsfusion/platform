@@ -2938,7 +2938,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", ValueExpr.COUNTCLASS), MapFact.<String, String>EMPTYREV(), MapFact.EMPTY()).singleKey().singleValue();
+            return ((Number)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", ValueExpr.COUNTCLASS), MapFact.<String, String>EMPTYREV(), MapFact.EMPTY()).singleKey().singleValue()).intValue(); // the count reads as a long
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
