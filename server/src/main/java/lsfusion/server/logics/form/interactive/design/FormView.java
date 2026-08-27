@@ -714,7 +714,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // There is no `meta` object: everything sits directly in one flat namespace at each level, so a projected name
         // that takes an infrastructure key, or that two projected things share, silently overwrites. Reject it here.
         Map<ContainerView, Set<String>> topNames = new HashMap<>();     // data.*           : groups + form-level props + containers
-        Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*    : list/byKey/keys/count/options + column & panel props
+        Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*    : list/byKey/keys/options/properties + column & panel props
         Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();  // data.<group>.list[i].* : key/isCurrent/objects/background/foreground/selected + cell props
 
         // a group is projected as data.<groupSID> on every scope that sees it - asked of the group, not of a box, so
@@ -756,7 +756,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 String source = "property '" + group.getSID() + "." + integrationSID + "'";
                 // __groupSID: written on the node by GReactFormData.setGroupSID - non-enumerable, and non-writable, so a
                 // property taking that name would either vanish from the node or throw when the node is built
-                claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "count", "options", "__groupSID");
+                claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "options", "properties", "__groupSID");
                 if (property.entity.isList(entity) && !lsf) // an LSF list property has no per-row cell, only its column
                     claimProjectionName(rowNames, group, integrationSID, source, "key", "isCurrent", "objects", "background", "foreground", "selected");
             }
