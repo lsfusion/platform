@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql.adapter;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.lambda.EConsumer;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
@@ -17,6 +18,7 @@ import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.sql.table.GlobalTempTablePool;
 import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -27,6 +29,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.postgresql.replication.LogSequenceNumber;
@@ -168,6 +171,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     public void initProctab(Server server){
     }
 
+    // the tables of this database that are handed out instead of creating temporary ones. Per adapter rather than per process : what the pool owns are relations of ONE database
+    public final GlobalTempTablePool tempTablePool = new GlobalTempTablePool(this);
+
     protected DataAdapter(SQLSyntax syntax, String dataBase, String server, String user, String password, Long connectTimeout) throws Exception {
 
         Class.forName(syntax.getClassName());
@@ -184,6 +190,48 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.connectTimeout = connectTimeout;
 
         ServerLoggers.startLog("Database connection: server: " + server + "; database: " + dataBase);
+    }
+
+    // this server's number among those working on this database, or -1 when it could not take one. Held by the master ensure connection for as long as the server runs
+    private int nodeId = -1;
+    private boolean nodeIdClaimed;
+    private final Object nodeIdLock = new Object();
+
+    // claimed when something first asks for it rather than at startup : it is an advisory lock, and those share their numbers with whatever the application takes its own with - a server that
+    // never keeps session tables of its own should not be holding one at all. On the master's ensure connection, the one connection opened once and never given back, so the claim lives exactly
+    // as long as the process; and once, whether or not a number came of it
+    public int getNodeId() {
+        synchronized (nodeIdLock) {
+            if(!nodeIdClaimed) {
+                nodeIdClaimed = true;
+                try {
+                    nodeId = claimNodeId(master.ensureConnection);
+                } catch (Throwable t) { // a number is optional : whatever wanted one works without it
+                    ServerLoggers.startLog("Could not take a node number : " + ExceptionUtils.getStackTrace(t));
+                }
+            }
+            return nodeId;
+        }
+    }
+
+    // takes a number on that connection and returns it, or -1 when this syntax has no way to claim one and when every number is taken
+    protected int claimNodeId(Connection connection) throws SQLException {
+        return -1;
+    }
+
+    // a connection of its own for work that must not sit inside somebody else's transaction and must leave nothing of itself behind : it is opened for the job and closed after it, so a timeout
+    // or a lock set on the way is gone with it. The ensure connection is not the place for this - runtime monitoring reads from that one, and two users of one jdbc connection is one too many
+    public void runMaintenance(EConsumer<Connection, SQLException> run) throws SQLException {
+        runMaintenance(master, run);
+    }
+    public void runMaintenance(Server server, EConsumer<Connection, SQLException> run) throws SQLException {
+        Connection connection = startConnection(server);
+        try {
+            connection.setAutoCommit(true);
+            run.accept(connection);
+        } finally {
+            stopConnection(connection);
+        }
     }
 
     public void startEnsureConnection(Server server) throws SQLException {

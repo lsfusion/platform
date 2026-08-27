@@ -1386,6 +1386,42 @@ public class Settings implements Cloneable {
     private int deleteFromInsteadOfTruncateForTempTablesInTransactionThreshold = 100000;
     private boolean deleteFromInsteadOfTruncateForTempTablesUnknown = false; // unknown - use deleteFrom
 
+    // hand out a table from a pool the whole node shares, instead of creating a temporary one : creating a table takes a lock that suppresses the fast path of the lock manager for the whole
+    // cluster until the transaction ends, and a pooled table is created once for the node rather than once for every connection that needs that shape
+    private boolean useGlobalTempTablePool = false;
+    // the tables one node may hold in the pool at once, over all their shapes ; past it a request falls back to an ordinary temporary table. A pool never gives a healthy table back, so an
+    // application that keeps meeting new shapes would grow it without bound
+    private int globalTempTablePoolMaxTables = 2000;
+
+    // where the pool puts its tables. Empty means the database default, which is where an ordinary table goes - and NOT where a temporary one goes on an installation that set
+    // temp_tablespaces, since postgres picks that one only for temporary relations. A pool table is permanent, so this must name a tablespace that survives a restart : the scratch
+    // tablespace a temp_tablespaces setting points at is often not one
+    private String globalTempTablePoolTablespace = "";
+
+    public boolean isUseGlobalTempTablePool() {
+        return useGlobalTempTablePool;
+    }
+
+    public void setUseGlobalTempTablePool(boolean useGlobalTempTablePool) {
+        this.useGlobalTempTablePool = useGlobalTempTablePool;
+    }
+
+    public int getGlobalTempTablePoolMaxTables() {
+        return globalTempTablePoolMaxTables;
+    }
+
+    public void setGlobalTempTablePoolMaxTables(int globalTempTablePoolMaxTables) {
+        this.globalTempTablePoolMaxTables = globalTempTablePoolMaxTables;
+    }
+
+    public String getGlobalTempTablePoolTablespace() {
+        return globalTempTablePoolTablespace;
+    }
+
+    public void setGlobalTempTablePoolTablespace(String globalTempTablePoolTablespace) {
+        this.globalTempTablePoolTablespace = globalTempTablePoolTablespace;
+    }
+
     public boolean isLogTempTables() {
         return logTempTables;
     }

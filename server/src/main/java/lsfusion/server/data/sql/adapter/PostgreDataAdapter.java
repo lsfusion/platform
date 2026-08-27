@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
+import lsfusion.server.data.sql.table.GlobalTempTablePool;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -104,6 +105,21 @@ public class PostgreDataAdapter extends DataAdapter {
         }
 
         return "host=" + host + (port != null ? " port=" + port : "") + " dbname=" + dataBase.toLowerCase(Locale.ROOT) + " user=" + user + " password=" + password;
+    }
+
+    private static final int MAX_NODES = 64; // how many application servers may work on one database at once
+    private static final long NODE_LOCK_BASE = 7134290000L;
+
+    // an advisory lock lives exactly as long as the database session that took it, so the first number this connection can take is one no live server is using
+    @Override
+    protected int claimNodeId(Connection connection) throws SQLException {
+        for(int node = 0; node < MAX_NODES; node++)
+            try (Statement statement = connection.createStatement();
+                 ResultSet result = statement.executeQuery("SELECT pg_try_advisory_lock(" + (NODE_LOCK_BASE + node) + ")")) {
+                if(result.next() && result.getBoolean(1))
+                    return node;
+            }
+        return -1;
     }
 
     public void initProctab(Server server){
@@ -389,6 +405,11 @@ public class PostgreDataAdapter extends DataAdapter {
         for(String excludeTable : excludeTables) {
             commandLine.addArgument("--exclude-table-data="+excludeTable.toLowerCase());
         }
+
+        // the node's session tables are ordinary relations, so pg_dump takes them and their rows along with everything else - where a temporary table was never in a dump at all. What is in
+        // one of them is the scratch of a run that is over, and restoring it would leave relations carrying a node number that nothing on that database sweeps : the sweep is a node's own,
+        // for its own names. Unconditional, because the setting may have been on when the dump's leftovers were made, and a pattern matching nothing is not an error here (only --table is)
+        commandLine.addArgument("--exclude-table=" + GlobalTempTablePool.getNamePattern());
         
         commandLine.addArgument("-F");
         if(threadCount > 1) {
