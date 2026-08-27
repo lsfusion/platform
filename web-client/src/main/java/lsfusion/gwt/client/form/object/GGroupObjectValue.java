@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
@@ -261,6 +262,17 @@ public class GGroupObjectValue implements Serializable {
         }
         return b.toString();
     }
+    // the identity of a key held OUTSIDE a group: the canonical string says what the key's values ARE, which tells two
+    // rows apart within ONE group - every use that has a group (`byKey`, `keys`, the React key). A list an author
+    // builds is scoped to nothing and can hold rows of several groups, and two of those can carry the same value; so
+    // this names the objects the values are OF as well. Built ON the canonical string, so the two cannot part.
+    public String toIdentityString() {
+        StringBuilder b = new StringBuilder().append(size).append(':'); // how many ids follow, or an id could be read as part of the string
+        for (int i = 0; i < size; i++)
+            b.append(getKey(i)).append(':');
+        return b.append(toKeyString()).toString();
+    }
+
     // the EXACT JS String(number) — the canonical string must match what a caller-passed native number coerces
     // to, incl. -0/exponent edge cases Java formatting would diverge on
     private static native String jsNumberString(double value) /*-{ return String(value); }-*/;
@@ -281,6 +293,28 @@ public class GGroupObjectValue implements Serializable {
     private static JavaScriptObject getRowObjects(JavaScriptObject row) {
         return readField(row, ROW_OBJECTS);
     }
+    // a fabricated row: the template cloned, then keyed by whatever `objects` resolves to - the ONE place a custom
+    // surface mints a row, so its public `key` and its `objects` handle cannot end up saying different things
+    // (replacing the handle alone leaves the key it was cloned with, pointing at another row entirely)
+    public static JavaScriptObject createRow(JavaScriptObject template, JavaScriptObject objects) {
+        GGroupObjectValue key = resolveObject(objects); // a raw handle or a row of this form; anything else stays unkeyed
+        JavaScriptObject created = GwtClientUtils.copyObject(template);
+        if (key != null)
+            registerRow(created, key);
+        else
+            clearRowIdentity(created); // the clone copied the template's key AND handle; a row that resolves to nothing
+                                       // must not answer with the template's identity to a diff or to a lookup
+        return created;
+    }
+
+    // both halves of a row's identity at once: the handle resolution reads, and the public key a diff and an index
+    // compare by. Dropping one and keeping the other is what lets a fabricated row say it is its template
+    private static void clearRowIdentity(JavaScriptObject row) {
+        clearRowObjects(row);
+        clearRowKey(row);
+    }
+    private static native void clearRowKey(JavaScriptObject row) /*-{ delete row[@lsfusion.gwt.client.form.object.GGroupObjectValue::KEY]; }-*/;
+
     public static void clearRowObjects(JavaScriptObject row) { // drop the handle a clone inherited from its template (enumerable → copied by Object.assign)
         deleteField(row, ROW_OBJECTS);
     }
