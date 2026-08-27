@@ -713,7 +713,10 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     private void checkReactProjectionNames() {
         // There is no `meta` object: everything sits directly in one flat namespace at each level, so a projected name
         // that takes an infrastructure key, or that two projected things share, silently overwrites. Reject it here.
-        Map<ContainerView, Set<String>> topNames = new HashMap<>();     // data.*           : groups + form-level props + containers
+        // data.* : groups + form-level props + containers - and, since a group and a form-level property are named on
+        // that container's CONTROLLER too (controller.<name>), one claim per scope says both. Their reserved list is
+        // the controller's, which contains the projection's; a container's descriptor is data-only and takes the shorter
+        Map<ContainerView, Set<String>> topNames = new HashMap<>();
         Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*    : list/byKey/keys/options/properties + column & panel props
         Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();  // data.<group>.list[i].* : key/isCurrent/objects/background/foreground/selected + cell props
 
@@ -721,8 +724,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // the groups of a tree (which share one box, named by none of them) are claimed too
         for (GroupObjectView groupObject : getGroupObjectsIt()) {
             GroupObjectEntity group = groupObject.entity;
-            for (ContainerView scope : getGroupScopes(group))
-                claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'");
+            List<ContainerView> scopes = getGroupScopes(group);
+            if (!scopes.isEmpty())
+                checkProjectedGroupSID(group);
+            for (ContainerView scope : scopes)
+                claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'", CONTROLLER_NAMES);
         }
 
         for (ComponentView component : getComponents()) {
@@ -733,7 +739,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 ContainerView<?> container = (ContainerView<?>) component;
                 ContainerView descriptorScope = getProjectedContainerScope(container);
                 if (descriptorScope != null)
-                    claimProjectionName(topNames, descriptorScope, container.getSID(), "container '" + container.getSID() + "'");
+                    claimProjectionName(topNames, descriptorScope, container.getSID(), "container '" + container.getSID() + "'", TOP_NAMES);
             }
         }
         for (PropertyDrawView property : getPropertiesIt()) {
@@ -742,25 +748,25 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 continue;
             boolean lsf = property.isLsfView(); // the platform draws its value: not projected, only its caption/image are
             GroupObjectEntity group = property.entity.getToDraw(entity);
+            boolean columns = !property.entity.getColumnGroupObjects().isEmpty();
             if (group == null) { // a form-level property: one object at data.<integrationSID>
-                if (!property.entity.getColumnGroupObjects().isEmpty()) // ... unless it is grouped in columns: not projected here either
-                    continue;
                 ContainerView scope = lsf ? property.getContainer() // an LSF draw's parent IS react (checkLsfViews ran first)
                         : getOwningReactContainer(property);
-                if (scope != null)
-                    claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'");
-            } else if (isProjectedGroup(group) && property.entity.getColumnGroupObjects().isEmpty()) {
-                // grouped-in-columns draws are not projected (buildGroupEntry skips them); everything else is an object keyed by
-                // its integration sid at the NODE (a list column's caption, or a panel value) and, for a react-owned list
-                // cell, at the ROW too
+                if (scope == null) // nothing projects it, so nothing here has to be able to name it
+                    continue;
+                checkProjectedDraw(columns, integrationSID, "form property");
+                claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'", CONTROLLER_NAMES);
+            } else if (isProjectedGroup(group)) {
+                checkProjectedDraw(columns, integrationSID, "property of object group '" + group.getSID() + "'");
+                // everything projected is an object keyed by its integration sid at the NODE (a list column's caption,
+                // or a panel value) and, for a react-owned list cell, at the ROW too
                 String source = "property '" + group.getSID() + "." + integrationSID + "'";
-                // __groupSID: written on the node by GReactFormData.setGroupSID - non-enumerable, and non-writable, so a
-                // property taking that name would either vanish from the node or throw when the node is built
-                claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "options", "properties", "__groupSID");
+                claimProjectionName(nodeNames, group, integrationSID, source, GROUP_NODE_NAMES);
                 if (property.entity.isList(entity) && !lsf) // an LSF list property has no per-row cell, only its column
-                    claimProjectionName(rowNames, group, integrationSID, source, "key", "isCurrent", "objects", "background", "foreground", "selected");
+                    claimProjectionName(rowNames, group, integrationSID, source, ROW_NAMES);
             }
         }
+
     }
 
     // the scope whose data carries this container's entry, or null when it has none: only a container the author
@@ -774,14 +780,69 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
 
+    // the controller carries the same names the projection does - a group is controller.<groupSID> exactly as it is
+    // data.<groupSID> - plus what only it has: the members every level answers to. A name is claimed at BOTH ends here,
+    // so a collision is a form that does not build rather than an accessor that is silently missing at run time (the
+    // controller can only skip a colliding member, and there would be nothing left to address the group with).
+    // `__proto__` is not a name JS lets an object have: `obj["__proto__"] = v` calls the legacy prototype SETTER, so
+    // the entry is not written and the object's prototype is replaced instead - the projection would silently lose the
+    // property and hand the view an object whose members come from somewhere else. Refused at every level it could be
+    // written at, like any other name this surface owns
+    private static final String PROTO = "__proto__";
+    private static final String[] TOP_NAMES = {PROTO};
+    // what the controller object itself carries today: the four verbs every controller has (GController.extendController)
+    // plus the form-level mutation methods (GFormController.initController). A projected name equal to one of them
+    // would have to be dropped, since the method is what everything else addresses the form through
+    private static final String[] CONTROLLER_NAMES = {"exec", "eval", "evalAction", "change",
+            "changeProperty", "changeProperties", "changeObject", "getPropertyValues", PROTO};
+    private static final String[] GROUP_NODE_NAMES = {"list", "byKey", "keys", "options", "properties", "change", PROTO,
+            "__groupSID"}; // written on the node by GReactFormData.setGroupSID - non-enumerable, and non-writable, so a
+                           // property taking that name would either vanish from the node or throw when it is written
+    private static final String[] ROW_NAMES = {"key", "isCurrent", "objects", "background", "foreground", "selected", PROTO};
+
+    // a property GROUPED IN COLUMNS is one cell per row AND column, and every name a react view has - in `data`, on
+    // the controller - means one ROW, so such a cell is nothing a name can reach. Where the projection CARRIES the
+    // name, that is not a runtime surprise to report but a form that cannot mean what it says, so it is refused here.
+    // Only there: a columns draw on a group no react container sees is nobody's business - no projection carries it,
+    // so no controller names it, and the classic surface that still can (its own stringly-typed changeProperty, #1655)
+    // refuses it when the call is made. What this DOES settle is what the projection itself hands out: inside it a
+    // name means one ordinary draw, and a react view's own state reads those names without asking again.
+    // a group of SEVERAL objects that the author did not name has no SID of its own: it is synthesized from the object
+    // names joined with dots (`OBJECTS (d = X, t = Y)` is `d.t`). That is a legal form everywhere else, but here the
+    // name would be `data['d.t']` on one side and `controller['d.t'].name` on the other, and every qualified name a
+    // view writes would carry two dots. A projected group is asked to have a name of its own instead - `OBJECTS
+    // pair = (d = X, t = Y)` - which the form language already allows.
+    private void checkProjectedGroupSID(GroupObjectEntity group) {
+        if (group.getSID().indexOf('.') >= 0)
+            throw new IllegalStateException(formErrorPrefix() + "cannot project object group '" + group.getSID()
+                    + "': it is a group of several objects with no name of its own, so its SID is their names joined"
+                    + " with dots - and a react view names a group as one word. Name the group: OBJECTS <name> = ("
+                    + group.getSID().replace('.', ',') + ")");
+    }
+
+    private void checkProjectedDraw(boolean columns, String integrationSID, String source) {
+        // a qualified name on the controller - `<groupSID>.<integrationSID>` - splits at its LAST dot, which is what
+        // makes a group of SEVERAL objects addressable: its own SID is all of them joined with dots. That reading
+        // rests on the PROPERTY half carrying none, and an EXTID is an arbitrary string, so a dot in one would be
+        // read as a group prefix and the name would ask for a group that does not exist
+        if (integrationSID.indexOf('.') >= 0)
+            throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " '" + integrationSID
+                    + "': its integration name carries a dot, and a name is read as '<object group>.<property>' -"
+                    + " everything before the LAST dot is the group. Give it an EXTID without a dot");
+        if (columns)
+            throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " '" + integrationSID
+                    + "': it is grouped in COLUMNS - one cell per row AND column - and a react view names one ROW."
+                    + " Draw it as an ordinary property, or keep it out of what a react container projects");
+    }
+
     private <K> void claimProjectionName(Map<K, Set<String>> names, K owner, String name, String source, String... reserved) {
         for (String reservedName : reserved)
             if (reservedName.equals(name))
                 throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " into the react component: '" + name
-                        + "' is a reserved name at this data level. Give the property an explicit EXTID");
+                        + "' is a reserved name at this data level. Give it an explicit EXTID, or rename it");
         if (!names.computeIfAbsent(owner, k -> new HashSet<>()).add(name))
             throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " into the react component: '" + name
-                    + "' is already projected at this data level. Give one of them an explicit EXTID");
+                    + "' is already projected at this data level. Give one of them an explicit EXTID, or rename it");
     }
 
     // this throws while the logics is being built, so the message is all the developer gets: name the form

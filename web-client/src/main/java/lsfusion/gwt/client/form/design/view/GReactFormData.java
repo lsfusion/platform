@@ -128,9 +128,8 @@ public class GReactFormData {
     // keyed the same way (the property cell key), and mark it dirty like markPropertyDirty — so the react container shows
     // the edit immediately, reconciled later when the server fc.properties arrives. Returns false if the draw isn't projected.
     public boolean setPropertyValue(GPropertyDraw draw, GGroupObjectValue fullKey, PValue value) {
-        if (draw.integrationSID == null || !formController.isReactOwned(draw) // the SAME ownership answer build() uses,
-                || (draw.isList && !isProjectedListDraw(draw))) // so an optimistic value is never stored for a draw whose entry the projection would not build
-            return false;
+        if (draw.integrationSID == null || !formController.isReactOwned(draw)) // the SAME ownership answer build() uses,
+            return false;                                                      // so a value is stored only where an entry is built
         NativeHashMap<GGroupObjectValue, PValue> store = getOrCreateValues(draw);
         GGroupObjectValue valueKey = getValueKey(draw, fullKey);
         boolean changed = !GwtClientUtils.nullEquals(store.get(valueKey), value);
@@ -172,7 +171,11 @@ public class GReactFormData {
     // mark the draw's node dirty (form-level -> scope; panel -> node only). Returns true if it's a LIST draw whose changed
     // rows still need markRowDirty (the only difference between the two markPropertyDirty overloads below).
     private boolean markPropertyEntryDirty(GPropertyDraw draw) {
-        if (draw.isList && !isProjectedListDraw(draw)) // not projected -> its delta changes nothing to rebuild
+        // the one place a columns draw still reaches: `update` walks every reader the server sent, for the whole form.
+        // Nothing the projection carries is one - such a form is not built (FormView.checkProjectedDraw) - so a draw
+        // that gets here is one nothing projects, and its delta has no entry to rebuild. Said for a LIST draw, which
+        // is the one that would go on to rebuild rows; a form-level one falls through to a scope that is null anyway
+        if (draw.isList && draw.hasColumnGroupObjects())
             return false;
         GGroupObject group = draw.groupObject;
         if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillSingles reads)
@@ -365,7 +368,7 @@ public class GReactFormData {
     // keep its old object and never re-project.
     private GGroupObjectValue getValueKey(GPropertyDraw draw, GGroupObjectValue key) {
         GGroupObject group = draw.groupObject;
-        if (group == null || !draw.isList) // grouped-in-columns draws never get here (isProjectedListDraw gates every caller)
+        if (group == null || !draw.isList) // a grouped-in-columns draw never gets here: a projected group draws none
             return key;
         GGroupObjectValue rowKey = group.getRowKey(key);
         // ... and where the key holds no row of this group at all, it is left as it is: every caller narrows by this
@@ -508,8 +511,8 @@ public class GReactFormData {
         if (rows != null) {
             if (list == null || dirtyLists.get(group) != null) { // rebuild the list only if its rows/order/values changed
                 NativeHashMap<GGroupObjectValue, JavaScriptObject> prevRows = lastRows.get(group);
-                // every dirty key is row-shaped by construction: composite (grouped-in-columns) draws never reach the
-                // dirty paths (isProjectedListDraw), so an unchanged row is ALWAYS safe to reuse by its key
+                // every dirty key is row-shaped by construction: a projected group draws no grouped-in-columns
+                // property, so an unchanged row is ALWAYS safe to reuse by its key
                 NativeHashMap<GGroupObjectValue, Boolean> dirtyKeys = dirtyRowKeys.get(group);
                 NativeHashMap<GGroupObjectValue, JavaScriptObject> newRows = new NativeHashMap<>();
                 // canonical key string -> row, rebuilt WITH the list (row refs shared with it): selectors subscribe
@@ -637,11 +640,11 @@ public class GReactFormData {
     // members from that same list, would carry a member for a cell nobody wrote.
     // A LIST draw is a column on the node, for the group's rows as a whole
     private boolean hasColumnEntry(GPropertyDraw draw) {
-        return draw.isList && isProjectedListDraw(draw) && isShownProperty(draw, GGroupObjectValue.EMPTY);
+        return draw.isList && isShownProperty(draw, GGroupObjectValue.EMPTY);
     }
     // ... and a cell in each row, unless the platform draws it: an LSF list property has its column and no cell
     private boolean hasCellEntry(GPropertyDraw draw, GGroupObjectValue rowKey) {
-        return draw.isList && isProjectedListDraw(draw) && !draw.isLsfView() && isShownProperty(draw, rowKey);
+        return draw.isList && !draw.isLsfView() && isShownProperty(draw, rowKey);
     }
     // a PANEL draw is one value, for the key it is asked at - the group's current object, or EMPTY at the form level -
     // and none at all without one. The key it is written under is the answer, so asking and writing say one thing
@@ -697,13 +700,6 @@ public class GReactFormData {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && hasCellEntry(draw, rowKey))
                 setField(row, draw.integrationSID, buildCellEntry(draw, rowKey));
-    }
-
-    // a list draw the projection carries at all. Grouped-in-columns draws are a follow-up: their attributes are keyed by
-    // a COLUMN tuple that one node entry cannot hold (and one row key cannot address), so they are skipped EVERYWHERE -
-    // the build (no entry), the dirty paths and the optimistic write (nothing to rebuild) - by this one predicate.
-    private boolean isProjectedListDraw(GPropertyDraw draw) {
-        return !draw.hasColumnGroupObjects();
     }
 
     // the SINGLE-valued properties on a target: a group's panel properties on its node, or the form-level properties on
@@ -852,7 +848,7 @@ public class GReactFormData {
 
     // whether any react view sees this group at all - the one gate every accumulator mutator asks, so a group nobody
     // projects costs nothing and a group somebody projects is kept up to date whoever draws its rows
-    private boolean isProjectedGroup(GGroupObject group) {
+    public boolean isProjectedGroup(GGroupObject group) {
         return group != null && !getGroupScopes(group).isEmpty();
     }
 
