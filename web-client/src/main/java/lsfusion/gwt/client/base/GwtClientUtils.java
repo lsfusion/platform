@@ -2132,11 +2132,20 @@ public class GwtClientUtils {
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;
+    public static native void push(JavaScriptObject array, Object value)/*-{
+        array.push(value);
+    }-*/;
+    // has a value at all - unlike a GWT-generated Java `!= null`, which the falsy-primitive trap misfires on, dropping
+    // a delivered false / 0 / "" - so only a real null/undefined is absent
+    public static native boolean isPresent(Object value)/*-{ return value !== undefined && value !== null; }-*/;
     public static native JsArray emptyArray()/*-{
         return [];
     }-*/;
-    public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
-        return object[field] = value;
+    // the one setter: a JS object lands as itself, and so do a String, a Boolean and a Double - GWT hands those three
+    // to JS as primitives, so a Boolean is a real true/false rather than a truthy wrapper. An int/Integer is NOT
+    // unboxed by JSNI; it goes in as a Double or a String
+    public static native void setField(JavaScriptObject object, String field, Object value)/*-{
+        object[field] = value;
     }-*/;
 
     public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
