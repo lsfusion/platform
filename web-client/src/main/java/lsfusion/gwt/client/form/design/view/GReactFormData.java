@@ -245,6 +245,29 @@ public class GReactFormData {
     // the group's rows in order - the same list an optimistic add or delete maintains, so a caller reading it here sees
     // a new row before the server has confirmed it
     public ArrayList<GGroupObjectValue> getRows(GGroupObject group) { return gridRows.get(group); }
+    // a row of this group named by whatever a view has: the row itself, its `objects` handle, or the KEY the
+    // projection gave it - `row.key`, a member of `keys`, a key out of `byKey`. The last is the one that used to be
+    // a dead end: `byKey` is a JS object, so its keys are strings by the language's rule, and a key that has been
+    // through it has lost the type it was written with. It is still this group's key, and this group's rows are
+    // right here, so it is looked up rather than refused. Grid or tree alike: the canonical string is exactly what
+    // both `byKey` and `keys` are keyed by, whether the row's key is one object or a whole tree path.
+    public GGroupObjectValue resolveRowKey(GGroupObject group, JavaScriptObject keyOrRow) {
+        GGroupObjectValue resolved = GGroupObjectValue.resolveObject(keyOrRow); // a row, a clone of one, or a handle
+        if (resolved != null)
+            return resolved;
+        // ... or the canonical key string the projection handed out - which is exactly what `byKey` is keyed by, so
+        // the group's own index answers it in one lookup. It is rebuilt WITH the rows, so a key whose row has gone
+        // finds nothing, rather than a row that is no longer there
+        JavaScriptObject byKey = lastByKey.get(group);
+        return byKey == null ? null : GGroupObjectValue.resolveObject(keyedRow(byKey, keyOrRow));
+    }
+
+    // a token is the two shapes a projected key is written in: a number for a single object, the canonical string
+    // otherwise - anything else is not a key this group handed out
+    private static native JavaScriptObject keyedRow(JavaScriptObject byKey, JavaScriptObject token) /*-{
+        return (typeof token === 'string' || typeof token === 'number') ? byKey[String(token)] : null;
+    }-*/;
+
     public PValue getValue(GPropertyDraw draw, GGroupObjectValue key) {
         NativeHashMap<GGroupObjectValue, PValue> store = values.get(draw);
         return store == null || key == null ? null : store.get(key);
