@@ -414,8 +414,14 @@ public class MCPDispatcher {
     // — keep in sync; `remoteToolResult` forwards `args` verbatim, so only this schema needs it.
     private static JSONObject retrieveDocsDescriptor() {
         JSONObject typeProp = new JSONObject()
-                .put("type", "string")
-                .put("enum", new JSONArray().put("language").put("paradigm").put("how-to").put("brief").put("rules"))
+                // anyOf, not a bare enum: the description offers `null` as a way to
+                // say "search everything", and a strict client validating against a
+                // string-only enum would reject exactly that.
+                .put("anyOf", new JSONArray()
+                        .put(new JSONObject()
+                                .put("type", "string")
+                                .put("enum", new JSONArray().put("language").put("paradigm").put("how-to").put("brief").put("rules")))
+                        .put(new JSONObject().put("type", "null")))
                 .put("description",
                         "Optional sourceType filter (the docs folder). Omit (or pass null) to search all five branches and merge; only the two TOP articles (`Brief`, `Rules`) are excluded, because get_guidance already delivers them in full. `language` = syntax / operator reference; `paradigm` = concepts / abstractions; `how-to` = task recipes; `brief` = concise capability map; `rules` = coding constraints for one area — unlike the other branches this lookup is not optional: perform it before working in an area.");
         JSONObject input = new JSONObject()
@@ -447,7 +453,7 @@ public class MCPDispatcher {
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_GET_GUIDANCE)
-                .put("description", "Fetch the brief overview and the CORE rules for working with lsFusion. The assistant MUST call this at the start of ANY lsFusion-related task — writing, modifying or reviewing lsFusion code, or answering questions about its syntax or semantics — MUST read what it returns, and MUST apply each rule according to that rule's stated strength (MUST / MUST NOT are binding; SHOULD / SHOULD NOT are recommendations). Once per session is enough. This is the top level only: the rules for a specific area are separate articles, retrieved with `lsfusion_retrieve_docs(type='rules')`.")
+                .put("description", "Fetch the brief overview and the CORE rules for working with lsFusion. The assistant MUST call this at the start of ANY lsFusion-related task — writing, modifying or reviewing lsFusion code, or answering questions about its syntax or semantics — and MUST then read what it returns and apply each rule according to that rule's stated strength (MUST / MUST NOT are binding; SHOULD / SHOULD NOT are recommendations). Once per session is enough. This is the top level only: the rules for a specific area are separate articles, retrieved with `lsfusion_retrieve_docs(type='rules')`.")
                 .put("inputSchema", input);
     }
 
