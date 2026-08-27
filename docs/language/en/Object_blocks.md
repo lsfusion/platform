@@ -170,6 +170,8 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
         - `CONFIG configFunction`
 
             Specifying the name of a client JavaScript function that overrides the pivot table display options; `configFunction` is a [string literal](Literals.md#strliteral). Similar to the same option in the [pivot block](Pivot_block.md).
+
+        The same options can also be specified for the group in the [pivot table settings block](Pivot_block.md); each of the two specifications sets all the options at once, and the later one takes effect.
  
     - `MAP [tileProvider]`
 

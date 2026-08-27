@@ -73,7 +73,7 @@ The `(ISTRING path, ...)` actions run on the server by default; the `isClient = 
 
 ### Strings
 
-Almost all of these properties are declared with `FORMULA` and, on PostgreSQL, translate into a same-named SQL function or operator. Where a property maps directly to a PostgreSQL expression, it is given at the end of the description after `; PG` (`$1`, `$2`, … are the parameters in order).
+Almost all of these properties are declared with `FORMULA` and, on PostgreSQL, translate into a same-named SQL function or operator. Where a property maps directly to a PostgreSQL expression, it is given at the end of the description after `; PG` (`$1`, `$2`, … are the parameters in order). The properties whose result is a string return it in an unlimited string class regardless of the argument classes: for most of them it is `TEXT`; for `substring[STRING, STRING]`, `splitPart[STRING, STRING, INTEGER]`, `regexpReplace[STRING, STRING, STRING, STRING]` and `array[STRING, STRING, INTEGER]` it is `STRING` with no length limit.
 
 | Property                                                  | What it does                                                                                                                          |
 |-----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|

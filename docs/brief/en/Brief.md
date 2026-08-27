@@ -61,7 +61,7 @@ Which branch: `language` — statement / operator syntax; `paradigm` — concept
 
 ### System modules (standard library)
 - **Analogy**: the platform's standard library — shipped with the server, not written by you.
-- **Description**: ready-made classes, properties and actions pulled in with `REQUIRE` (`System` is required implicitly when a module has no `REQUIRE`). `System` — base class `Object`, `apply`/`cancel`, `canceled`, `applyMessage`, HTTP request/response context (`headers`, `params`, `statusHttp`), `random`, `randomUUID`. `Utils` — strings (`lpad`, `substr`, `strpos`, `replace`, `trim`), numbers (`round`, `trunc`, `abs`), files, JSON, encoding, full-text search. `Time` — `currentDate` / `currentDateTime`, date arithmetic (`sum[DATE,INTEGER]`, `sumDay`, `sumSeconds`, `subtract`, `firstDayOfMonth`), extraction (`extractYear`), calendar classes (`Month`, `DOW`). `Authentication` — users and login context: classes `Contact`, `User` / `CustomUser`, `Computer`; `currentUser`, `currentComputer`, `login`, `email`, auth tokens, LDAP / OAuth settings. Also `Reflection`, `Security`, `Scheduler`, `Email`, `Numerator`.
+- **Description**: ready-made classes, properties and actions pulled in with `REQUIRE` (`System` is required implicitly when a module has no `REQUIRE`). `System` — base class `Object`, `apply`/`cancel`, `canceled`, `applyMessage`, HTTP request/response context (`headers`, `params`, `statusHttp`), `random`, `randomUUID`. `Utils` — strings (`lpad`, `substr`, `strpos`, `replace`, `trim`), numbers (`round`, `trunc`, `abs`, `mod`), files, JSON, encoding, full-text search. `Time` — `currentDate` / `currentDateTime`, date arithmetic (`sum[DATE,INTEGER]`, `sumDay`, `sumSeconds`, `subtract`, `firstDayOfMonth`), extraction (`extractYear`), calendar classes (`Month`, `DOW`). `Authentication` — users and login context: classes `Contact`, `User` / `CustomUser`, `Computer`; `currentUser`, `currentComputer`, `login`, `email`, auth tokens, LDAP / OAuth settings. Also `Reflection`, `Security`, `Scheduler`, `Email`, `Numerator`.
 - **Syntax (search)**: ordinary `.lsf` declarations, not language primitives (the named functions are properties) — search `paradigm`, not `language`.
 
 ---
@@ -69,7 +69,7 @@ Which branch: `language` — statement / operator syntax; `paradigm` — concept
 ## Property operators
 
 ### Basic expressions
-- **Description**: arithmetic, logic, strings, comparisons, type tests (`IS`/`AS`), conditional (`IF ... ELSE`, postfix `f(a) IF g(a)`). String / date / number functions (`lpad`, `substr`, `currentDate`, `sum[DATE,INTEGER]`) are not operators — they are properties of `Utils` / `Time`, see System modules.
+- **Description**: arithmetic, logic, strings, comparisons, type tests (`IS`/`AS`), conditional (`IF ... ELSE`, postfix `f(a) IF g(a)`). String / date / number functions (`lpad`, `substr`, `mod`, `currentDate`, `sum[DATE,INTEGER]`) are not operators — they are properties of `Utils` / `Time`, see System modules.
 - **Syntax (search)**: standard expression operators.
 
 ### Composition

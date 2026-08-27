@@ -716,9 +716,20 @@ FORM RULES
 
 3. The assistant MUST NOT use `INPUT` inside actions
    added directly to a form through `PROPERTIES`,
-   unless that action is used in an `ON CHANGE` handler.
+   unless that action is used in an `ON CHANGE` handler:
+   a built-in-class value is entered in the editor of the
+   property whose change is being handled, so outside
+   a change handler there is nowhere to render it.
+   The exceptions are file and color values, which are
+   entered through a separate dialog and MAY be requested
+   from any form action.
 
-   `INPUT` is allowed only in form property change handlers.
+   To request values from a button instead, the assistant
+   SHOULD either place the input properties on the form
+   itself (data properties, including local ones, in a
+   panel) and read them in the action, or open a dialog
+   form returning the entered values (`DIALOG` with
+   `INPUT`-marked objects).
 
 4. The assistant MUST NOT display internal object identifiers
    on a form, including through object-valued properties:
@@ -865,7 +876,14 @@ FORM DESIGN RULES
 
 7. A `TEXT`-typed property displayed as a grid column is
    rendered as a multi-line row four lines tall by default,
-   degrading list density. On list forms, the assistant
+   degrading list density. Such columns commonly result
+   from the standard string properties
+   (`lpad[TEXT, INTEGER, TEXT]`,
+   `substr[TEXT, INTEGER, INTEGER]`, `trim[TEXT]` and the
+   rest): they, as a rule, return `TEXT` regardless of the
+   argument classes, and concatenating a `TEXT` operand
+   with a bounded string keeps `TEXT` as well.
+   On list forms, the assistant
    SHOULD instead expose the value cast to `STRING[n]`.
    The cast entry follows the expression-entry rules:
    in a `PROPERTIES` block without a common-parameter

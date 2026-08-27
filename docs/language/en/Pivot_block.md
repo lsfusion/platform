@@ -51,6 +51,8 @@ Pivot table settings block allows you to set the initial settings for the form's
 
 The block only sets these settings — it does not change the view type of the object group. For the group's properties to be displayed as a pivot table right away, the *pivot table* view type must be selected by the `PIVOT` [object group option](Object_blocks.md#objects). If this view type is not the initial one, the specified settings, except `settingsType`, take effect when the user first switches the group to it.
 
+An `objectGroupId pivotOptions` entry specifies all the pivot table options of the object group at once: the options not listed in it are reset to their default values, including those previously specified in the `PIVOT` object group option. Of several such specifications — in the object group option and in settings blocks — the last one declared takes effect.
+
 ### Parameters
 
 - `formPropertyName`

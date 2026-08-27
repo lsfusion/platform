@@ -61,7 +61,7 @@ slug: "/Brief"
 
 ### Системные модули (стандартная библиотека)
 - **Аналогия**: стандартная библиотека платформы — поставляется с сервером, а не пишется разработчиком.
-- **Описание**: готовые классы, свойства и действия, подключаемые через `REQUIRE` (`System` подключается неявно, если у модуля нет `REQUIRE`). `System` — базовый класс `Object`, `apply`/`cancel`, `canceled`, `applyMessage`, контекст HTTP-запроса/ответа (`headers`, `params`, `statusHttp`), `random`, `randomUUID`. `Utils` — строки (`lpad`, `substr`, `strpos`, `replace`, `trim`), числа (`round`, `trunc`, `abs`), файлы, JSON, кодирование, полнотекстовый поиск. `Time` — `currentDate` / `currentDateTime`, арифметика дат (`sum[DATE,INTEGER]`, `sumDay`, `sumSeconds`, `subtract`, `firstDayOfMonth`), извлечение частей (`extractYear`), календарные классы (`Month`, `DOW`). `Authentication` — пользователи и контекст входа: классы `Contact`, `User` / `CustomUser`, `Computer`; `currentUser`, `currentComputer`, `login`, `email`, токены аутентификации, настройки LDAP / OAuth. Также `Reflection`, `Security`, `Scheduler`, `Email`, `Numerator`.
+- **Описание**: готовые классы, свойства и действия, подключаемые через `REQUIRE` (`System` подключается неявно, если у модуля нет `REQUIRE`). `System` — базовый класс `Object`, `apply`/`cancel`, `canceled`, `applyMessage`, контекст HTTP-запроса/ответа (`headers`, `params`, `statusHttp`), `random`, `randomUUID`. `Utils` — строки (`lpad`, `substr`, `strpos`, `replace`, `trim`), числа (`round`, `trunc`, `abs`, `mod`), файлы, JSON, кодирование, полнотекстовый поиск. `Time` — `currentDate` / `currentDateTime`, арифметика дат (`sum[DATE,INTEGER]`, `sumDay`, `sumSeconds`, `subtract`, `firstDayOfMonth`), извлечение частей (`extractYear`), календарные классы (`Month`, `DOW`). `Authentication` — пользователи и контекст входа: классы `Contact`, `User` / `CustomUser`, `Computer`; `currentUser`, `currentComputer`, `login`, `email`, токены аутентификации, настройки LDAP / OAuth. Также `Reflection`, `Security`, `Scheduler`, `Email`, `Numerator`.
 - **Синтаксис (поиск)**: обычные объявления в `.lsf`, а не примитивы языка (перечисленные функции — свойства) — искать в `paradigm`, а не в `language`.
 
 ---
@@ -69,7 +69,7 @@ slug: "/Brief"
 ## Операторы свойств
 
 ### Базовые выражения
-- **Описание**: арифметика, логика, строки, сравнения, проверки типа (`IS`/`AS`), условные (`IF ... ELSE`, постфиксное `f(a) IF g(a)`). Строковые, числовые функции и функции дат (`lpad`, `substr`, `currentDate`, `sum[DATE,INTEGER]`) — не операторы, а свойства модулей `Utils` / `Time`, см. «Системные модули».
+- **Описание**: арифметика, логика, строки, сравнения, проверки типа (`IS`/`AS`), условные (`IF ... ELSE`, постфиксное `f(a) IF g(a)`). Строковые, числовые функции и функции дат (`lpad`, `substr`, `mod`, `currentDate`, `sum[DATE,INTEGER]`) — не операторы, а свойства модулей `Utils` / `Time`, см. «Системные модули».
 - **Синтаксис (поиск)**: стандартные операторы выражений.
 
 ### Композиция (Composition)
