@@ -409,26 +409,37 @@ public class MCPDispatcher {
                 .put("inputSchema", input);
     }
 
+    // Proxied to the central server (A). Descriptions mirror
+    // mcp/server.py::lsfusion_retrieve_docs (branch semantics in mcp/tools/rag_retrieve.py)
+    // — keep in sync; `remoteToolResult` forwards `args` verbatim, so only this schema needs it.
     private static JSONObject retrieveDocsDescriptor() {
         JSONObject typeProp = new JSONObject()
                 .put("type", "string")
                 .put("enum", new JSONArray().put("language").put("paradigm").put("how-to").put("brief").put("rules"))
                 .put("description",
-                        "Optional sourceType filter (the docs folder). Omit (or pass null) to search language, paradigm and how-to and merge; `brief` and `rules` are searched only when requested explicitly (their full text already arrives via get_guidance). `language` = syntax / operator reference; `paradigm` = concepts / abstractions; `how-to` = task recipes; `brief` = concise capability map; `rules` = code conventions.");
+                        "Optional sourceType filter (the docs folder). Omit (or pass null) to search all five branches and merge; only the two TOP articles (`Brief`, `Rules`) are excluded, because get_guidance already delivers them in full. `language` = syntax / operator reference; `paradigm` = concepts / abstractions; `how-to` = task recipes; `brief` = concise capability map; `rules` = coding constraints for one area — unlike the other branches this lookup is not optional: perform it before working in an area.");
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
                         .put("query", strProp("Short topical phrase. Semantic match (not literal); rephrase rather than retry the same query if results are weak."))
-                        .put("type", typeProp))
+                        .put("type", typeProp)
+                        // Must be DECLARED even though remoteToolResult forwards `args` verbatim:
+                        // `additionalProperties:false` above would otherwise make it unpassable by
+                        // a strict client.
+                        .put("exclude_ids", arrProp(new JSONObject().put("type", "string"),
+                                "Chunk `id` values already received in this session. They are excluded server-side, so a follow-up lookup returns new material instead of repeating what you have. Pass the accumulated ids when continuing a lookup on the same topic; leave empty on the first call.")))
                 .put("required", new JSONArray().put("query"))
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_RETRIEVE_DOCS)
                 .put("description",
-                        "Search official lsFusion documentation (language, paradigm, how-to; plus brief/rules on explicit request) for chunks relevant to a query. Returns `{docs:[{source,text,score}]}` sorted by descending score. Use `type` to narrow to one branch when known; omit to search the default branches and merge. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
+                        "Search official lsFusion documentation for chunks relevant to a query. Returns `{docs:[{id,source,text,score}]}` sorted by descending score. Use `type` to narrow to one branch when known; omit to search all five branches and merge (the two top guidance articles are always excluded — get_guidance serves those in full). Pass the `id` values you already received in `exclude_ids` when continuing a lookup, so the same chunks are not returned twice. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
                 .put("inputSchema", input);
     }
 
+    // Proxied to the central server (A). Description mirrors mcp/server.py::lsfusion_get_guidance
+    // — keep in sync. No "if not already in context" escape hatch (it invites skipping the call),
+    // and no "follow all rules" flattening (the guidance carries both MUST and SHOULD).
     private static JSONObject getGuidanceDescriptor() {
         JSONObject input = new JSONObject()
                 .put("type", "object")
@@ -436,7 +447,7 @@ public class MCPDispatcher {
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_GET_GUIDANCE)
-                .put("description", "Fetch the brief overview and mandatory rules for working with lsFusion. The assistant MUST call this at the start of ANY lsFusion-related task if the guidance isn't already in context, and MUST then read and strictly follow all rules it returns.")
+                .put("description", "Fetch the brief overview and the CORE rules for working with lsFusion. The assistant MUST call this at the start of ANY lsFusion-related task — writing, modifying or reviewing lsFusion code, or answering questions about its syntax or semantics — MUST read what it returns, and MUST apply each rule according to that rule's stated strength (MUST / MUST NOT are binding; SHOULD / SHOULD NOT are recommendations). Once per session is enough. This is the top level only: the rules for a specific area are separate articles, retrieved with `lsfusion_retrieve_docs(type='rules')`.")
                 .put("inputSchema", input);
     }
 
