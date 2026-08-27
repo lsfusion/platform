@@ -719,6 +719,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             boolean lsf = property.isLsfView(); // the platform draws its value: not projected, only its caption/image are
             GroupObjectEntity group = property.entity.getToDraw(entity);
             if (group == null) { // a form-level property: one object at data.<integrationSID>
+                if (!property.entity.getColumnGroupObjects().isEmpty()) // ... unless it is grouped in columns: not projected here either
+                    continue;
                 ContainerView scope = lsf ? property.getContainer() // an LSF draw's parent IS react (checkLsfViews ran first)
                         : getOwningReactContainer(property);
                 if (scope != null)
@@ -728,7 +730,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 // its integration sid at the NODE (a list column's caption, or a panel value) and, for a react-owned list
                 // cell, at the ROW too
                 String source = "property '" + group.getSID() + "." + integrationSID + "'";
-                claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "count", "options");
+                // __groupSID: written on the node by GReactFormData.setGroupSID - non-enumerable, and non-writable, so a
+                // property taking that name would either vanish from the node or throw when the node is built
+                claimProjectionName(nodeNames, group, integrationSID, source, "list", "byKey", "keys", "count", "options", "__groupSID");
                 if (property.entity.isList(entity) && !lsf) // an LSF list property has no per-row cell, only its column
                     claimProjectionName(rowNames, group, integrationSID, source, "key", "isCurrent", "objects", "background", "foreground", "selected");
             }
