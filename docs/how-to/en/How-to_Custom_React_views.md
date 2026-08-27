@@ -51,7 +51,7 @@ export function OrderBoard(props) {
 
 A property grouped in columns (`COLUMNS`) is not projected at all: it has neither a column entry nor a cell entry, and nothing is reported — its values are addressed by a row-and-column key the projection has no place for. Declare an ordinary property if the view has to read those values.
 
-`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names; `list`, `byKey`, `keys`, `count` and `options` are reserved on the group. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built.
+`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names; `list`, `byKey`, `keys`, `count`, `options` and `__groupSID` are reserved on the group. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built.
 
 A property's `value` is converted to a JS value depending on the property's class:
 
