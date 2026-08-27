@@ -190,7 +190,8 @@ public class GGroupObjectValue implements Serializable {
     // one public `key`: a JS PRIMITIVE wherever identity works out of the box (===, Map keys, property-name
     // coercion, React key=), otherwise the canonical injective string. NULL is 'n', not JS null (React key= /
     // byKey coercion footguns).
-    public static final String KEY = "key"; // the public row-key field name (DISPLAY / React-key / diff-equality token; resolution uses the `objects` handle, not this)
+    public static final String KEY = "key"; // the public row-key field name (DISPLAY / React-key / diff-equality token;
+                                            // resolvable too, but only where the group to look it up in is known)
     // ===== the ONE place that decides what a key IS in JS, so the canonical string below is built from the same
     // decision - which makes `String(row.key) === toKeyString()` true by construction rather than by argument.
     // A feature that writes a key SOMEWHERE ELSE (a field pointing at another row, an element of an array) writes it
@@ -223,8 +224,8 @@ public class GGroupObjectValue implements Serializable {
     // ===== the canonical string (one-way) =====
     // ENCODE computes: toKeyString() == String(row.key) — single: digits / the string itself / 'n'; multi: parts
     // joined with '|', each self-delimiting left-to-right (digits, 'n', or "len:value"). There is NO decode (the
-    // string omits the object-instance identity): it is a DISPLAY / React-key / diff-equality token only, never a
-    // resolution input — resolution uses the row handle or a raw GGV.
+    // string omits the object-instance identity), so nothing turns it back into a key: it resolves only by being
+    // LOOKED UP among the rows of a known group - a row handle or a raw GGV is what resolves on its own.
     // The parts of a MULTI-value key cannot be misread for one another; a SINGLE value is written raw, so it is only
     // unambiguous against keys OF THE SAME SIZE - which is every row of one group, and hence every use that matters
     // (`byKey`, `keys`, the React key, row equality). Comparing across sizes is a tree's `parent` / `path`, and there
