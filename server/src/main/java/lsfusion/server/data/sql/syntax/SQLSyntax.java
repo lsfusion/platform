@@ -37,6 +37,15 @@ public interface SQLSyntax {
     String getSessionTableName(String tableName);
     String getQueryName(String tableName, SessionTable.TypeStruct type, StringBuilder envString, boolean usedRecursion, EnsureTypeEnvironment typeEnv);
     String getCreateSessionTable(String tableName, String declareString);
+    // a session table whose storage belongs to the node rather than to the connection : an ordinary table, outliving every backend that ever uses it, so creating it is not something each
+    // connection repeats. Only the syntaxes that say so support it - the others encode the temporariness in the name itself or in a create form of their own, and none of that survives
+    // being made permanent
+    default boolean supportsGlobalSessionTables() {
+        return false;
+    }
+    default String getCreateGlobalSessionTable(String tableName, String declareString, String tablespace) {
+        throw new UnsupportedOperationException();
+    }
     String getDropSessionTable(String tableName);
 
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается

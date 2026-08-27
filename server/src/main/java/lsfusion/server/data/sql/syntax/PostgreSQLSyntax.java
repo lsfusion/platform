@@ -327,6 +327,19 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
+    public boolean supportsGlobalSessionTables() {
+        return true;
+    }
+
+    // UNLOGGED : the contents are not written to the WAL, take part in no ordinary checkpoint and are not decoded logically - a pool table holds nothing worth surviving a crash, and a
+    // permanent one would flood the replication of an installation that publishes all tables. It is emptied on startup anyway, so losing it to a crash is the state we want
+    public String getCreateGlobalSessionTable(String tableName, String declareString, String tablespace) {
+        // a temporary table is placed by temp_tablespaces and an ordinary one by default_tablespace, so a table kept this way does NOT land where this installation puts its temporary ones
+        // unless it is told to. Quoted, because the name comes from a setting - and empty means say nothing, which is the database default
+        return "CREATE UNLOGGED TABLE " + tableName + " (" + declareString + ")" +
+                (tablespace.isEmpty() ? "" : " TABLESPACE \"" + tablespace.replace("\"", "\"\"") + "\"");
+    }
+
     public boolean supportsAnalyzeSessionTable() {
         return true;
     }
