@@ -470,7 +470,14 @@ public class GReactFormData {
                 // by STABLE key (s.i.byKey[row.key] — property lookup coerces a numeric key to the same string) so
                 // surviving rows after a delete keep their selected identity; cached like the list, so a node-only
                 // change (panel prop) keeps byKey identity too
-                byKey = newObject();
+                // keyed by DATA, not by a name this surface owns: a STRING-valued object key can be any string at
+                // all, "__proto__" included, and `obj["__proto__"] = row` would replace the map's prototype instead
+                // of indexing the row. No prototype, no setter - and no inherited answer either: `byKey["constructor"]`
+                // used to hand back Object's own, and now says what it means, which is that there is no such row.
+                // Reading an ORDINARY row is unchanged (byKey[key] / `in` / Object.keys / spreading / JSON all say
+                // what they said); a row whose key is `__proto__` is now among them, which is the point. The methods
+                // that came with the prototype are gone, byKey.hasOwnProperty included
+                byKey = newBareObject();
                 list = newArray();
                 for (GGroupObjectValue rowKey : rows) {
                     JavaScriptObject prev = prevRows != null ? prevRows.get(rowKey) : null;
@@ -493,7 +500,7 @@ public class GReactFormData {
             }
         } else if (list == null) { // never had rows: materialize stable empty defaults once (list/byKey are always cached together)
             list = newArray();
-            byKey = newObject();
+            byKey = newBareObject(); // the same shape as the filled one, empty
             lastLists.put(group, list);
             lastByKey.put(group, byKey);
         }

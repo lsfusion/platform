@@ -2132,6 +2132,11 @@ public class GwtClientUtils {
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;
+    // an object with NO prototype, for a map whose keys are DATA: `obj["__proto__"] = v` on an ordinary object calls
+    // the legacy prototype setter instead of adding an entry, and `obj["constructor"]` answers with Object's own
+    public static native JavaScriptObject newBareObject()/*-{
+        return Object.create(null);
+    }-*/;
     public static native JavaScriptObject newArray()/*-{
         return [];
     }-*/;
