@@ -191,23 +191,47 @@ public class GGroupObjectValue implements Serializable {
     // coercion, React key=), otherwise the canonical injective string. NULL is 'n', not JS null (React key= /
     // byKey coercion footguns).
     public static final String KEY = "key"; // the public row-key field name (DISPLAY / React-key / diff-equality token; resolution uses the `objects` handle, not this)
+    // ===== the ONE place that decides what a key IS in JS, so the canonical string below is built from the same
+    // decision - which makes `String(row.key) === toKeyString()` true by construction rather than by argument.
+    // A feature that writes a key SOMEWHERE ELSE (a field pointing at another row, an element of an array) writes it
+    // through here too, or `row.<field> === other.key` would not hold.
     public static void setKey(JavaScriptObject row, GGroupObjectValue key) {
-        Object single = key.size() == 1 ? key.getValue(0) : null;
-        if (single instanceof GCustomObjectValue)
-            setKeyNum(row, KEY, ((GCustomObjectValue) single).id); // ids are sequence-generated, nowhere near the 2^53 JS precision bound
-        else if (single instanceof Number) // a numeric (non-object) key value is a native JS number too
-            setKeyNum(row, KEY, ((Number) single).doubleValue());
-        else
-            setKeyStr(row, KEY, key.toKeyString());
+        writeKey(row, KEY, key);
     }
-    private static native void setKeyNum(JavaScriptObject obj, String field, double v) /*-{ obj[field] = v; }-*/;
-    private static native void setKeyStr(JavaScriptObject obj, String field, String v) /*-{ obj[field] = v; }-*/;
+    static void writeKey(JavaScriptObject target, String field, GGroupObjectValue key) {
+        if (isNumberKey(key))
+            writeKeyNum(target, field, numberKey(key));
+        else
+            writeKeyStr(target, field, key.toKeyString());
+    }
+    // a key of ONE object or ONE number is that number in JS; anything else is its canonical string. Asked and
+    // answered as two calls rather than as one nullable Double: a key of 0 is a perfectly good key, and a boxed
+    // number that has to be tested against null is the shape this codebase has been bitten by before
+    private static boolean isNumberKey(GGroupObjectValue key) {
+        Object single = key.size() == 1 ? key.getValue(0) : null;
+        return single instanceof GCustomObjectValue || single instanceof Number;
+    }
+    // an id is sequence-generated, nowhere near the 2^53 bound a double stops being exact at
+    private static double numberKey(GGroupObjectValue key) {
+        Object single = key.getValue(0);
+        return single instanceof GCustomObjectValue ? ((GCustomObjectValue) single).id : ((Number) single).doubleValue();
+    }
+    // field == null -> the target is an array and the value is pushed onto it
+    private static native void writeKeyNum(JavaScriptObject t, String field, double v) /*-{ if (field == null) t.push(v); else t[field] = v; }-*/;
+    private static native void writeKeyStr(JavaScriptObject t, String field, String v) /*-{ if (field == null) t.push(v); else t[field] = v; }-*/;
 
     // ===== the canonical string (one-way) =====
     // ENCODE computes: toKeyString() == String(row.key) — single: digits / the string itself / 'n'; multi: parts
-    // joined with '|', each self-delimiting left-to-right (digits, 'n', or "len:value"), so distinct keys can't
-    // produce one string. There is NO decode (the string omits the object-instance identity): it is a DISPLAY /
-    // React-key / diff-equality token only, never a resolution input — resolution uses the row handle or a raw GGV.
+    // joined with '|', each self-delimiting left-to-right (digits, 'n', or "len:value"). There is NO decode (the
+    // string omits the object-instance identity): it is a DISPLAY / React-key / diff-equality token only, never a
+    // resolution input — resolution uses the row handle or a raw GGV.
+    // The parts of a MULTI-value key cannot be misread for one another; a SINGLE value is written raw, so it is only
+    // unambiguous against keys OF THE SAME SIZE - which is every row of one group, and hence every use that matters
+    // (`byKey`, `keys`, the React key, row equality). Comparing across sizes is a tree's `parent` / `path`, and there
+    // a single STRING-valued object key containing '|' could equal a composite of the same digits: an `OBJECTS s =
+    // STRING` group above another group of a tree, with a '|' in the data. Raw stays raw because `row.key` being the
+    // bare id is what every view reads; the alternative is length-prefixing every key to guard a case that needs a
+    // string-keyed object, a tree, and a pipe in the value all at once.
     private transient String keyString; // hot: computed per row per list rebuild + diff equality
     public String toKeyString() {
         if (keyString != null)
@@ -216,11 +240,9 @@ public class GGroupObjectValue implements Serializable {
     }
     private String buildKeyString() {
         if (size == 1) {
+            if (isNumberKey(this)) // the SAME decision the JS value is written by, so this is String() of it
+                return jsNumberString(numberKey(this));
             Object value = getValue(0);
-            if (value instanceof GCustomObjectValue)
-                return String.valueOf(((GCustomObjectValue) value).id); // == String(row.key) (a long id prints the same digits as the JS number)
-            if (value instanceof Number)
-                return jsNumberString(((Number) value).doubleValue()); // == String(key) of the JS number
             return value == null ? "n" : String.valueOf(value);
         }
         StringBuilder b = new StringBuilder();
