@@ -185,4 +185,12 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GGroupObjectValue filterRowKeys(GGroupObjectValue fullCurrentKey) {
         return fullCurrentKey.filter(Collections.singletonList(this));
     }
+
+    // the key a ROW of this group is keyed by, taken out of a fuller one. A grid keys its rows by the group's own
+    // objects; a TREE keys them by the path down to the group, every group above included - which is what its rows,
+    // its expand table and the projection all use. Anything that has a full key and wants a row must ask here, or it
+    // ends up with a key no row is found by, and the miss is silent.
+    public GGroupObjectValue getRowKey(GGroupObjectValue fullCurrentKey) {
+        return parent != null ? parent.filterRowKeys(this, fullCurrentKey) : filterRowKeys(fullCurrentKey);
+    }
 }
