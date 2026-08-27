@@ -36,6 +36,7 @@ public class GReactFormData {
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridRows = new NativeSIDMap<>(); // ordered row keys per group
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyDraw, Boolean> droppedProperties = new NativeSIDMap<>(); // SHOWIF/static visibility removed the whole draw
+    private final NativeSIDMap<GGroupObject, ArrayList<GContainer>> groupScopes = new NativeSIDMap<>(); // the react scopes each group's node appears in
 
     // ===== structural sharing: build() returns the SAME JS refs for unchanged subtrees, so React.memo'd components skip.
     // The cache holds the last-built objects; the dirty sets (per update, cleared after all scopes are built) decide what to rebuild.
@@ -108,7 +109,7 @@ public class GReactFormData {
     // set a group's current object (from a server fc.objects delta OR an optimistic changeGroupObject); idempotent —
     // returns true if it actually changed. The old + new current rows flip their isCurrent flag, so both rebuild.
     public boolean setCurrentObject(GGroupObject group, GGroupObjectValue key) {
-        if (getGroupOwningReactContainer(group) == null)
+        if (!isProjectedGroup(group))
             return false;
         GGroupObjectValue old = currentObjects.get(group);
         if (GwtClientUtils.nullEquals(old, key))
@@ -198,7 +199,7 @@ public class GReactFormData {
 
     // apply one optimistic ADD/REMOVE to the same row accumulator update(fc) replaces from fc.gridObjects later
     public boolean modifyGroupObject(GGroupObject group, GGroupObjectValue key, boolean add, int position) {
-        if (getGroupOwningReactContainer(group) == null)
+        if (!isProjectedGroup(group))
             return false;
         ArrayList<GGroupObjectValue> rows = gridRows.get(group);
         if (add) {
@@ -285,11 +286,12 @@ public class GReactFormData {
     private enum GroupDirty { NODE, ROWS, ORDER }
 
     private void markGroupDirty(GGroupObject group, GroupDirty level) {
-        GContainer scope = getGroupOwningReactContainer(group);
-        if (scope == null)
+        ArrayList<GContainer> scopes = getGroupScopes(group);
+        if (scopes.isEmpty())
             return;
         dirtyGroups.put(group, Boolean.TRUE);
-        markScopeDirty(scope);
+        for (GContainer scope : scopes)
+            markScopeDirty(scope);
         if (level != GroupDirty.NODE)
             dirtyLists.put(group, Boolean.TRUE);
         if (level == GroupDirty.ORDER)
@@ -301,7 +303,7 @@ public class GReactFormData {
     // NOT a GroupDirty level: ORDER still reuses surviving rows, while this preserves order but rebuilds them all.
     private void invalidateRows(GGroupObject group) {
         markGroupDirty(group, GroupDirty.ROWS);
-        lastRows.put(group, null);
+        lastRows.remove(group);
     }
 
     private void markRowDirty(GGroupObject group, GGroupObjectValue key) { // a row whose `value`/isCurrent/props changed must rebuild
@@ -375,12 +377,17 @@ public class GReactFormData {
             return cached;
         JavaScriptObject data = newObject();
         for (GGroupObject group : form.groupObjects) {
-            if (getGroupOwningReactContainer(group) != scope)
+            if (!getGroupScopes(group).contains(scope))
                 continue;
             JavaScriptObject node = lastGroups.get(group);
-            if (node == null || dirtyGroups.get(group) != null) { // rebuild only a changed (or first-seen) group node
+            // rebuild a changed (or first-seen) node ONCE per update, however many scopes show the group: the content
+            // is the same for all of them, and rebuilding per scope would hand each a different object - breaking the
+            // structural sharing every scope's React.memo depends on. The group leaves the dirty set as it is rebuilt,
+            // so the next scope of the same pass shares the node instead of making its own.
+            if (node == null || dirtyGroups.get(group) != null) {
                 node = buildGroupEntry(group);
                 lastGroups.put(group, node);
+                dirtyGroups.remove(group);
             }
             setField(data, group.getSID(), node);
         }
@@ -731,8 +738,33 @@ public class GReactFormData {
     private GContainer getGroupOwningReactContainer(GGroupObject group) {
         if (group == null)
             return null;
-        return formController.getOwningReactContainer(group.grid != null ? group.grid : group.parent);
+        return formController.getOwningReactContainer(formController.getGroupDrawComponent(group));
     }
+
+    // the react scope a group's node appears in: the container that DRAWS the group, and only it. A react view
+    // gets a group's data because it draws that group, never because it happens to stand next to it - a container
+    // beside a platform-drawn grid would otherwise be handed rows GWT is already rendering, two engines on one
+    // value. A list because the callers ask for one and because a component may serve several groups (a TREE);
+    // static (the design's react containers do not come and go), so it is computed once.
+    private ArrayList<GContainer> getGroupScopes(GGroupObject group) {
+        ArrayList<GContainer> scopes = groupScopes.get(group);
+        if (scopes == null) {
+            scopes = new ArrayList<>();
+            GContainer owner = getGroupOwningReactContainer(group);
+            if (owner != null)
+                scopes.add(owner); // it draws the group, and any react container below it is swallowed, not a scope
+            groupScopes.put(group, scopes);
+        }
+        return scopes;
+    }
+
+    // whether any react view sees this group at all - the one gate every accumulator mutator asks, so a group nobody
+    // projects costs nothing and a group somebody projects is kept up to date whoever draws its rows
+    private boolean isProjectedGroup(GGroupObject group) {
+        return group != null && !getGroupScopes(group).isEmpty();
+    }
+
+
 
     private void markScopeDirty(GContainer scope) {
         if (scope != null)

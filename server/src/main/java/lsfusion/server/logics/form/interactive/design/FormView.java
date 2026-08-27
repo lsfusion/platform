@@ -300,18 +300,40 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
     // into a JSON candidate list). A box marked lsf keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
-        for (ComponentView component : getComponents())
-            if (component instanceof ContainerView && ((ContainerView) component).groupObjectBox == group)
-                return isReactOwned((ContainerView) component);
-        return false;
+        return getOwningReactContainer(getGroupDrawComponent(group)) != null;
     }
-    private static boolean isReactOwned(ContainerView container) {
-        return container.isReact() || getReactContainer(container) != null;
+
+    // the component that actually DRAWS a group: the tree it belongs to, or its own grid. This is the same component
+    // the client asks about (GFormController.isReactOwned(GGroupObject): group.grid, else group.parent), so the two
+    // agree by construction. Asking the group's BOX instead does not work for a tree - one box draws all of the tree's
+    // groups, so groupObjectBox names none of them - and it answers for the box rather than for what draws the group,
+    // which differ once a design MOVEs the grid out of its box or marks the grid lsf.
+    private ComponentView getGroupDrawComponent(GroupObjectEntity group) {
+        if (group.isInTree()) // a group in a tree has no grid of its own (GroupObjectView builds one only outside a tree)
+            return get(group.treeGroup);
+        return get(group).grid;
+    }
+
+
+    // whether any react view sees this group at all (mirrors GReactFormData.isProjectedGroup)
+    private boolean isProjectedGroup(GroupObjectEntity group) {
+        return !getGroupScopes(group).isEmpty();
+    }
+
+    // the scope a group's node appears in, mirroring GReactFormData.getGroupScopes: the container that DRAWS the
+    // group, and only it - a react view gets a group's data because it draws that group, never because it stands
+    // next to it. A list because a component may serve several groups (a TREE) and because the caller claims names
+    // over whatever it returns.
+    private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
+        ContainerView owner = getOwningReactContainer(getGroupDrawComponent(group));
+        return owner != null ? Collections.singletonList(owner) : Collections.emptyList();
     }
 
     // the react container that RENDERS this component, null if a standard view is built for it (mirrors
     // GFormController.getReactContainer): a non-lsf child gets no view, so its owner swallows everything below it
     private static ContainerView getReactContainer(ComponentView component) {
+        if (component == null)
+            return null;
         ContainerView parent = component.getContainer();
         if (parent == null)
             return null;
@@ -695,14 +717,16 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*    : list/byKey/keys/count/options + column & panel props
         Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();  // data.<group>.list[i].* : key/isCurrent/objects/background/foreground/selected + cell props
 
+        // a group is projected as data.<groupSID> on every scope that sees it - asked of the group, not of a box, so
+        // the groups of a tree (which share one box, named by none of them) are claimed too
+        for (GroupObjectView groupObject : getGroupObjectsIt()) {
+            GroupObjectEntity group = groupObject.entity;
+            for (ContainerView scope : getGroupScopes(group))
+                claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'");
+        }
+
         for (ComponentView component : getComponents()) {
             if (component instanceof ContainerView) {
-                // a group box is projected as data.<groupSID> on the scope it is rendered by
-                GroupObjectEntity group = ((ContainerView) component).groupObjectBox;
-                ContainerView scope = group != null ? getOwningReactContainer(component) : null;
-                if (scope != null)
-                    claimProjectionName(topNames, scope, group.getSID(), "object group '" + group.getSID() + "'");
-
                 // a container the author DECLARED (`NEW <name>` in DESIGN) is data.<componentSID> = {caption, image},
                 // directly in data beside the groups and the form-level props (`{}` when it has neither). The generated
                 // boxes of a group are not projected and take no name here.
@@ -725,7 +749,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                         : getOwningReactContainer(property);
                 if (scope != null)
                     claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'");
-            } else if (isReactContainerGroup(group) && property.entity.getColumnGroupObjects().isEmpty()) {
+            } else if (isProjectedGroup(group) && property.entity.getColumnGroupObjects().isEmpty()) {
                 // grouped-in-columns draws are not projected (buildGroupEntry skips them); everything else is an object keyed by
                 // its integration sid at the NODE (a list column's caption, or a panel value) and, for a react-owned list
                 // cell, at the ROW too

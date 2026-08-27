@@ -1321,8 +1321,15 @@ public class GFormController implements EditManager {
         return getOwningReactContainer(component) != null;
     }
 
+    // the component that DRAWS a group: its own grid, or the TREE when it is part of one (a group of a tree has no
+    // grid of its own). Every question about where a group is projected starts here, on both sides - the server asks
+    // its own copy under the same name (FormView.getGroupDrawComponent)
+    public GComponent getGroupDrawComponent(GGroupObject group) {
+        return group == null ? null : (group.grid != null ? group.grid : group.parent);
+    }
+
     public boolean isReactOwned(GGroupObject group) {
-        return group != null && getOwningReactContainer(group.grid != null ? group.grid : group.parent) != null;
+        return group != null && getOwningReactContainer(getGroupDrawComponent(group)) != null;
     }
 
     public boolean isReactOwned(GPropertyDraw property) {
