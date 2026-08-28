@@ -2326,7 +2326,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getCleanTempTablesTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(stack -> SQLSession.cleanTemporaryTables(), false, Settings.get().getTempTablesTimeThreshold(), false, "Drop Temp Tables");
+        return scheduler.createSystemTask(stack -> SQLSession.cleanTemporaryTables(getDbManager().getAdapter()), false, Settings.get().getTempTablesTimeThreshold(), false, "Drop Temp Tables");
     }
 
     private Scheduler.SchedulerTask getFlushPendingTransactionCleanersTask(Scheduler scheduler) {

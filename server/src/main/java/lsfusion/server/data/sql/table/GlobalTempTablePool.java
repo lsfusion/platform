@@ -1,5 +1,14 @@
 package lsfusion.server.data.sql.table;
 
+import lsfusion.base.Result;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.server.base.caches.CacheStats;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.PropertyField;
+import lsfusion.server.data.table.TableOwner;
+import java.lang.ref.WeakReference;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
@@ -132,9 +141,53 @@ public class GlobalTempTablePool {
             ServerLoggers.serviceLogger.info("GLOBAL TEMP TABLE POOL : dropped " + tables.size() + " tables left by an earlier run of node " + node);
     }
 
+    // a slot for that shape, registered with its owner and created if it had to be minted, or null to go on with an ordinary temporary table - the job SQLTemporaryPool.getTable does for the
+    // tables of one connection. takenBack is a name the asking transaction already has a claim on, so it needs no stamp and nobody else could have taken it
+    public String getTable(SQLSession session, TemporaryTableStruct struct, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties,
+                           Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, String takenBack, Long startStamp, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException {
+        String table = takenBack;
+        boolean create = false;
+        if(table == null) {
+            table = acquire(struct, startStamp);
+            create = table == null;
+            if(create) {
+                table = reserveNew(struct);
+                if(table == null) // the node is at its limit : an ordinary temporary table it is
+                    return null;
+            }
+        }
+        isNew.set(create);
+
+        used.put(table, new WeakReference<>(owner)); // before any sql, as in SQLTemporaryPool.getTable
+        debugInfo.put(table, owner.getDebugInfo());
+
+        if(!create) // the counterpart of the check in SQLTemporaryPool.getTable, and after the registration for the same reason : it runs sql
+            ServerLoggers.assertLog(!Settings.get().isCheckSessionCount() || session.getSessionCount(table, opOwner) == 0, "GLOBAL POOL TABLE SHOULD BE EMPTY AT CACHE : " + table);
+
+        if(create) {
+            try {
+                session.createGlobalSessionTable(table, keys, properties, opOwner);
+            } catch (Throwable t) {
+                used.remove(table);
+                debugInfo.remove(table);
+                kill(table); // the name is burned whether or not the table is there : a slot this process failed to create is never asked about again
+                throw ExceptionUtils.propagate(t, SQLException.class);
+            }
+        }
+
+        if(create)
+            CacheStats.incrementMissed(CacheStats.CacheType.TEMP_TABLE);
+        else
+            CacheStats.incrementHit(CacheStats.CacheType.TEMP_TABLE);
+        session.logTempTable(create ? SQLSession.TempTableOperation.MISS : SQLSession.TempTableOperation.HIT, table,
+                create ? "reason=no free slot of that shape in the node pool" : (takenBack != null ? "reason=taken back from this transaction" : null));
+
+        return table;
+    }
+
     // a free slot of that shape, or null. A snapshot-based transaction may only take one that was already free when it started : its snapshot is older than a later emptying, so it would still
     // see the previous owner's rows - silently, since nothing about the table says they are there
-    public synchronized String acquire(TemporaryTableStruct struct, Long startStamp) {
+    private synchronized String acquire(TemporaryTableStruct struct, Long startStamp) {
         if(!ready)
             return null;
 
@@ -156,7 +209,7 @@ public class GlobalTempTablePool {
 
     // the name for a slot that is about to be created. It is burned whether or not the creation succeeds : a name this process has ever used physically is never handed out again, which is what
     // makes discarding a slot a complete answer on its own
-    public synchronized String reserveNew(TemporaryTableStruct struct) {
+    private synchronized String reserveNew(TemporaryTableStruct struct) {
         if(!ready || slots.size() >= Settings.get().getGlobalTempTablePoolMaxTables())
             return null;
 

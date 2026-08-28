@@ -48,6 +48,7 @@ import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.statement.ParsedStatement;
 import lsfusion.server.data.sql.statement.PreParsedStatement;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.sql.table.GlobalTempTablePool;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
 import lsfusion.server.data.sql.table.TemporaryTableStruct;
 import lsfusion.server.data.stat.Cost;
@@ -297,6 +298,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private final ConnectionPool connectionPool;
+    private final DataAdapter adapter;
     public final TypePool typePool;
 
     public ExConnection getConnection() throws SQLException {
@@ -390,6 +392,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public SQLSession(DataAdapter adapter, SQLSessionContextProvider contextProvider, SQLSessionLSNProvider lsnProvider) {
         syntax = adapter.syntax;
         connectionPool = adapter;
+        this.adapter = adapter;
         typePool = adapter;
         this.contextProvider = contextProvider;
         this.lsnProvider = lsnProvider;
@@ -429,8 +432,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             removeUnusedTemporaryTables(false, owner);
 
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-        if(inTransaction == 0 && sessionTablesMap.isEmpty() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
-            ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
+        // a table of the connection's own pool is a reason to keep the connection ; a slot of the node pool is not - it is a permanent relation, and any connection to the same server reads it.
+        // The needPrivate / tryCommon braces no longer match one to one because of that : a session that gave its connection back over a slot comes here again with nothing to give
+        if(privateConnection != null && inTransaction == 0 && !hasLocalTables() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
             connectionPool.returnConnection(this, privateConnection, false);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
 //            sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
@@ -639,6 +643,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         this.attemptCountMap = attemptCountMap;
         assert isInTransaction() || transactionTables.isEmpty();
         if(inTransaction == 0) {
+            poolTables.startStamp = null; // before anything that can throw : a start that failed would otherwise leave its stamp behind, and it would keep rejecting slots for every later transaction
             try {
                 if(Settings.get().isApplyVolatileStats())
                     pushVolatileStats(owner);
@@ -656,6 +661,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 if(serializable) {
                     prevIsolation = privateConnection.sql.getTransactionIsolation();
                     privateConnection.sql.setTransactionIsolation(trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_REPEATABLE_READ);
+                    // this transaction keeps one snapshot for all of its statements, so a slot emptied after it started would still show it the previous owner's rows - and say nothing about it.
+                    // Only a slot that was already free when the transaction started may be handed to it
+                    poolTables.startStamp = adapter.tempTablePool.nextStamp();
                 }
                 setACID(privateConnection.sql, true, syntax);
 
@@ -701,6 +709,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
             transactionCounter = null;
             transactionTables.clear();
+            if(inTransaction == 1) { // a nested level ends without ending the transaction : its slots are still the outer one's, to publish at its commit or discard at its rollback
+                poolTables.clear();
+            }
             endTransactionSessionTablesCount();
             endTransactionDBTables();
 
@@ -778,11 +789,34 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             } else
                 runSuppressed(() -> ServerLoggers.assertLog(transactionTables.size() == 0, "CONSEQUENT TRANSACTION TABLES"), firstException);
 
+            // the slots that cannot survive this rollback : the ones this transaction created, whose table is gone with the create, and the ones parked for a publication that is not
+            // going to happen, whose rows came back with the emptying and whose owner has let them go. What is left in either is not something this pool works out
+            for(String poolTable : poolTables.discarded())
+                runSuppressed(() -> {
+                    sessionTablesMap.remove(poolTable);
+                    // and its accounting with it : a parked slot keeps its rows counted until the commit hands it over, and the rollback that kills it here would otherwise leave this
+                    // session counting the rows of a table it does not hold and that is about to be dropped - which is what decides when its connection is restarted and rebalanced
+                    forgetPoolTableCount(poolTable);
+                    adapter.tempTablePool.kill(poolTable);
+                }, firstException);
+
+
             runSuppressed(this::rollbackTransactionSessionTablesCount, firstException);
 
             if(!(problemInTransaction == Problem.CLOSED))
                 runSuppressed(() -> privateConnection.sql.rollback(), firstException);
             problemInTransaction = null;
+
+            // AFTER the rollback : what it leaves empty goes back to the pool rather than out of it - the commit is not the only end a parked slot can have, and killing every one of them
+            // would churn the pool exactly under the contention it is there to help. Before the rollback these tables still hold this transaction's rows.
+            // Whether the rollback statement itself got through does not come into it. These slots were empty in the committed state when they were taken, so the only thing that could
+            // leave rows in one is a COMMIT of this transaction - and there is no ending here that commits, including the ones where the connection is gone and the server ends the
+            // transaction on its own
+            for(String poolTable : poolTables.released())
+                runSuppressed(() -> {
+                    forgetPoolTableCount(poolTable);
+                    adapter.tempTablePool.release(poolTable);
+                }, firstException);
         }
 
         if(isExplainTemporaryTablesEnabled())
@@ -814,6 +848,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
 
             commitTransactionDBTables();
+
+            // the emptyings of this transaction are final now, so the names it gave back are free for anybody. The ones it took and did not give back stay with their owners.
+            // Both sets are emptied in the same breath : anything after the commit can still throw, and the caller then goes through its rollback path - which would discard names another
+            // session may already be using
+            List<String> publish = poolTables.publish();
+            for(String returnedPoolTable : publish) {
+                forgetPoolTableCount(returnedPoolTable);
+                adapter.tempTablePool.release(returnedPoolTable);
+            }
         }
         if(!slaveTransaction)
             lsnProvider.updateLSN(connectionPool.getMasterLSN(privateConnection.sql)); // assert that it is write locked
@@ -1262,7 +1305,87 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
+    // what this transaction owes the node pool, in one place because the four move in lockstep : they are cleared together at the end of the outer transaction, and a rollback has to walk all
+    // three sets. Kept apart from each other because the give-back asks a different question of each
+    private class PoolTables {
+        // taken from the free set by this transaction : it was empty in the committed state when it was taken, so everything in it is this transaction's own and a rollback leaves it empty
+        private final Set<String> mine = SetFact.mAddRemoveSet();
+        // a slot a rollback leaves unusable : this transaction created it, so the create goes with the rollback and there is no table behind the name any more
+        private final Set<String> discard = SetFact.mAddRemoveSet();
+        // given back and not published yet : the pool gets them at the commit
+        private final Set<String> parked = SetFact.mAddRemoveSet();
+        // where this transaction sits in the pool's order of emptyings, for a snapshot based one : it may only take a slot that was already free when it started
+        private Long startStamp;
+
+        private void took(String table, boolean create) {
+            (create ? discard : mine).add(table);
+        }
+        private void park(String table) {
+            parked.add(table);
+        }
+        // a name this transaction parked, of that shape, handed out again. It joins the discard set : its emptiness is this transaction's own DELETE, and a rollback would hand its new owner
+        // back whatever the previous one left in it
+        private String takeBack(TemporaryTableStruct struct) {
+            for(String table : parked)
+                if(struct.equals(adapter.tempTablePool.getStruct(table))) { // null for a name the pool no longer owns, which is no shape at all and matches nothing
+                    parked.remove(table);
+                    discard.add(table);
+                    return table;
+                }
+            return null;
+        }
+        // the same, undoing a return rather than serving a new request : the slot goes back to the owner it came from, and that owner WANTS what a rollback restores in it, so this one does
+        // not join the discard set
+        private boolean takeBackParked(String table) {
+            return parked.remove(table);
+        }
+        // what a rollback discards. Not the slots this transaction took from the free set and still holds : those were empty in the committed state when they were taken (see the stamp rule
+        // in the pool), so the rollback undoes this transaction's rows and leaves the table exactly as it was handed over - present, empty, and still this owner's. That is what happens to a
+        // table of the connection's own pool that was REUSED inside a transaction, since only the ones created there go into transactionTables
+        private Set<String> discarded() {
+            Set<String> discarded = new HashSet<>(discard);
+            for(String table : parked)
+                if(!mine.contains(table)) // the rest are empty after the rollback and go back to the pool, see released
+                    discarded.add(table);
+            return discarded;
+        }
+        // parked slots this transaction had taken from the free set : the rollback undoes its rows and its emptying alike, and what is left is the empty table it was given. They are the ones
+        // a failed transaction would otherwise burn - a slot given back inside one is given back for good, and killing every one of them churns the pool exactly under contention
+        private Set<String> released() {
+            Set<String> released = new HashSet<>(parked);
+            released.retainAll(mine);
+            return released;
+        }
+        // the names the commit hands to the pool, taken and forgotten in one step : anything after the commit can still throw and send the caller through the rollback, which would then
+        // discard names another session already holds
+        private List<String> publish() {
+            List<String> publish = new ArrayList<>(parked);
+            clear();
+            return publish;
+        }
+        private void clear() {
+            mine.clear();
+            discard.clear();
+            parked.clear();
+            startStamp = null;
+        }
+    }
+    private final PoolTables poolTables = new PoolTables();
     private Integer transactionCounter = null;
+
+    // the dead rows a table carries belong to the pool it will go back to : the connection's for a local temporary table, the node's for a pooled one
+    private void addDeadRows(String table, long rows) {
+        if(GlobalTempTablePool.isPoolName(table))
+            adapter.tempTablePool.addDeadRows(table, rows);
+        else
+            privateConnection.temporary.addDeadRows(table, rows);
+    }
+    private void resetDeadRows(String table) {
+        if(GlobalTempTablePool.isPoolName(table))
+            adapter.tempTablePool.resetDeadRows(table);
+        else
+            privateConnection.temporary.resetDeadRows(table);
+    }
     private Integer transactionTotalSessionTablesCount = null;
     private final Map<String, Integer> transactionSessionTablesCount = MapFact.mAddRemoveMap();
     private void registerTransactionChange(String table) {
@@ -1273,6 +1396,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 transactionTotalSessionTablesCount = totalSessionTablesCount;
         }
     }
+    // what a slot has to leave behind when it goes back to the pool : the emptying registered a DELETE, which subtracts the rows but deliberately keeps a zero entry behind (see
+    // registerSessionChange) - and the table is about to belong to another session, whose rows this one would then find in a table it still thinks it accounts for. The entry goes without
+    // registering a change, the total was already corrected. And the saved count goes too : anything still to come in this transaction can throw and send the caller through the rollback,
+    // which would otherwise restore the accounting of a table this session no longer has
+    private void forgetPoolTableCount(String table) {
+        sessionTablesCount.remove(table);
+        forgetTransactionCount(table);
+    }
+
+    // the transaction saved this table's count to put it back on a rollback (see registerTransactionChange); null instead of the value makes that rollback drop the entry, the way it does for
+    // a table the transaction itself created, and the saved total is corrected by the same rows
+    private void forgetTransactionCount(String table) {
+        Integer rollbackCount = transactionSessionTablesCount.put(table, null);
+        if(rollbackCount != null)
+            transactionTotalSessionTablesCount -= rollbackCount;
+    }
+
     private void endTransactionSessionTablesCount() { // assert lockWrite
         transactionSessionTablesCount.clear();
         transactionTotalSessionTablesCount = null;
@@ -1345,37 +1485,73 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         tempTablePeak = 0;
     }
 
+    // this log belongs to the connection's own inventory, and a session holding only slots of the node pool has no connection of its own to write it to
     public void addTTLog(String log, OperationOwner owner) {
-        assert privateConnection != null;
-        privateConnection.temporary.addLog(log, null, owner);
+        if(privateConnection != null)
+            privateConnection.temporary.addLog(log, null, owner);
     }
     public void addTTLog(String log, String table, TableOwner owner, OperationOwner opOwner) {
-        assert privateConnection != null;
-        privateConnection.temporary.addLog(log + " " + owner, table, opOwner);
+        if(privateConnection != null)
+            privateConnection.temporary.addLog(log + " " + owner, table, opOwner);
     }
     public void addTTDSLog(String log, OperationOwner opOwner) {
 //        privateConnection.temporary.addFifo()
     }
 
+    // a slot of the node-wide pool, or null to go on with an ordinary temporary table. What is left here is what the TRANSACTION knows - which of its own returns it may take back, and what a
+    // rollback would then owe the pool; the rest is the pool's own and lives there, the way the connection's own pool answers for its own tables
+    private String getGlobalPoolTable(TemporaryTableStruct struct, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, TableOwner owner, OperationOwner opOwner) throws SQLException {
+        GlobalTempTablePool pool = adapter.tempTablePool;
+        if(!Settings.get().isUseGlobalTempTablePool() || !syntax.supportsGlobalSessionTables() || !pool.ensureReady())
+            return null; // before the take-back below : a name pulled out of the parked set for a pool that then refuses to serve would be owed to nobody
+
+        // first what this transaction gave back itself : it sees its own emptying, so no stamp applies and nobody else could have taken it
+        String takenBack = poolTables.takeBack(struct);
+
+        Result<Boolean> created = new Result<>();
+        String table = pool.getTable(this, struct, keys, properties, sessionTablesMap, sessionDebugInfo, takenBack, poolTables.startStamp, created, owner, opOwner);
+
+        // a rollback undoes the create of a minted slot and the emptying of a reused one alike, so the two are told apart : the name can never be handed out again, the table is left empty.
+        // A taken back one is in neither set, takeBack having already said what a rollback does with it; and outside a transaction there is nothing to undo and nothing to remember - which
+        // would only have the NEXT transaction's rollback act on a slot it never touched
+        if(table != null && takenBack == null && isInTransaction())
+            poolTables.took(table, created.result);
+
+        return table;
+    }
+
+    // the pool creates through the session, as the connection's own pool does : the DDL is the session's business, the table is the pool's
+    public void createGlobalSessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
+        createTable(name, keys, properties, owner, true);
+    }
+
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Long count, Result<Long> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         lockRead(opOwner);
         String table;
+        // the connection has to survive this whole method : a slot of the node pool is no longer a reason to keep it (see tryCommon), and the CREATE below carries NOREADONLY, whose
+        // popNoReadOnly ends in lockTryCommon - which would hand the connection back while the fill still needs it
+        boolean heldPrivate = false;
         try {
             temporaryTablesLock.lock();
             Result<Boolean> isNew = new Result<>();
 
             try {
                 needPrivate();
+                explicitNeedPrivate++;
+                heldPrivate = true;
 
                 removeUnusedTemporaryTables(false, opOwner);
 
                 // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                 // the shape is worked out by the caller, not by the pool : it is the question "which table will do", and the answer does not belong to any one pool of them
                 TemporaryTableStruct struct = new TemporaryTableStruct(keys, properties, count);
-                table = privateConnection.temporary.getTable(this, struct, keys, properties, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
+                table = getGlobalPoolTable(struct, keys, properties, owner, opOwner);
+                boolean fromGlobalPool = table != null;
+                if(!fromGlobalPool)
+                    table = privateConnection.temporary.getTable(this, struct, keys, properties, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
 
                 registerSessionChange(table, owner, -1, TableChange.ADD);
-                if(isNew.result && isInTransaction()) { // пометим как transaction
+                if(!fromGlobalPool && isNew.result && isInTransaction()) { // пометим как transaction
                     if(transactionCounter==null)
                         transactionCounter = privateConnection.temporary.getCounter() - 1;
                     transactionTables.add(table);
@@ -1395,7 +1571,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             }
         } finally {
-            unlockRead();
+            try {
+                if(heldPrivate)
+                    lockTryCommon(opOwner);
+            } finally {
+                unlockRead(); // its own bracket : a failure giving the connection back must not leave the session read locked for good
+            }
         }
 
         return table;
@@ -1412,24 +1593,27 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // so a failed TRUNCATE has already taken the count entry out, and registering the removal a second time would just assert TABLE WAS REMOVED BEFORE - which under assertions would throw
     // right here, leaving the name in the pool, exactly what this method exists to prevent. The entry does survive the DELETE FROM form of the truncate (see truncate) : that one registers a
     // row change rather than a removal, so the entry stays behind and only the removal here takes it out
-    private void removeTemporaryTableFromPool(String table, TableOwner tableOwner, boolean vanished) {
+    private void forgetTableAccounting(String table, TableOwner tableOwner, boolean vanished) {
         assertLock();
 
         if(sessionTablesCount.containsKey(table))
             registerSessionChange(table, tableOwner, -1, TableChange.REMOVE);
 
-        // only for a table that is physically gone : then the rollback must not restore its count either - the transaction saved it to put it back (see registerTransactionChange), and putting
-        // null there instead makes the rollback drop the entry, the way it does for a table the transaction itself created; the saved total is corrected by the same rows for the same reason
-        // any other failure (a timeout, a cancel) keeps the saved count : the table survives the rollback WITH its rows - and it survives even when the DROP that follows this call went
-        // through, since a DROP inside a transaction is rolled back with it
-        if(vanished && isInTransaction()) {
-            Integer rollbackCount = transactionSessionTablesCount.put(table, null);
-            if(rollbackCount != null)
-                transactionTotalSessionTablesCount -= rollbackCount;
-        }
+        // only for a table that is physically gone : any other failure (a timeout, a cancel) keeps the saved count, since the table survives the rollback WITH its rows - and it survives even
+        // when the DROP that follows this call went through, since a DROP inside a transaction is rolled back with it
+        if(vanished && isInTransaction())
+            forgetTransactionCount(table);
+    }
+
+    private void removeTemporaryTableFromPool(String table, TableOwner tableOwner, boolean vanished) {
+        forgetTableAccounting(table, tableOwner, vanished);
 
         lastReturnedStamp.remove(table);
-        privateConnection.temporary.removeTable(table);
+        // the caller drops the table itself when there is anything left to drop, exactly as for a table of the connection's own pool
+        if(GlobalTempTablePool.isPoolName(table))
+            adapter.tempTablePool.kill(table);
+        else
+            privateConnection.temporary.removeTable(table);
     }
 
     // the relation the error is ABOUT, from the SERVER's primary message : the exception's own message carries the detail, the hint and the failing query, and those name the live tables too.
@@ -1449,7 +1633,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(message == null)
             return null;
 
-        Matcher matcher = Pattern.compile("\"(t_\\d+)\"").matcher(message);
+        // postgres quotes the relation the way the statement spelt it, schema and all - so a slot comes back as the very string everything here keys on, and no rebuilding is needed
+        Matcher matcher = Pattern.compile("\"(lsfpool\\.n\\d+_t_\\d+|t_\\d+)\"").matcher(message);
         return matcher.find() ? matcher.group(1) : null;
     }
     // the pool believes the name is still there, so it hands it out again - and every reuse fails the same way : inside a transaction the return can not notice, because truncate is a silent
@@ -1457,6 +1642,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // every such return so the periodic cleaner does not either - the error is the only place that knows the table is gone
     // only the POOL side is taken away : the owner keeps its registration and returns the table its usual way (its accounting goes there, as always), it just will not be handed out again
     private void evictNotExistingTable(String table, ExConnection connection) {
+        if(GlobalTempTablePool.isPoolName(table)) { // what a missing relation of its own means is the pool's to decide
+            adapter.tempTablePool.notExists(table);
+            return;
+        }
+
         temporaryTablesLock.lock(); // the lock that serializes the issuing (lockRead -> temporaryTablesLock, as in returnTemporaryTable)
         try {
             // the pool belongs to the CONNECTION the statement ran on, which is not always this session's private one : on a common connection the name would otherwise stay in the pool and
@@ -1480,6 +1670,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             Map.Entry<String, WeakReference<TableOwner>> entry = iterator.next();
             TableOwner tableOwner = entry.getValue().get();
             if (force || tableOwner == null) {
+                // a slot of the node pool is never reclaimed on the strength of a weak reference : that its owner became unreachable says nothing about whether its statements have finished,
+                // and the slot would go to another session rather than back to this connection. It is discarded instead - the name is out of the pool for good and its table is dropped with
+                // the other killed ones, so what is lost is the slot, not the storage
+                if(GlobalTempTablePool.isPoolName(entry.getKey())) {
+                    logger.info("DISCARDING AN UNUSED POOL TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey()));
+                    removeTemporaryTableFromPool(entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner, false);
+                    iterator.remove();
+                    continue;
+                }
+
 //                    dropTemporaryTableFromDB(entry.getKey());
                 if(isExplainTemporaryTablesEnabled())
                     addTTLog("RU " + force, entry.getKey(), tableOwner == null ? TableOwner.none : tableOwner, opOwner);
@@ -1540,12 +1740,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             Result<Throwable> firstException = new Result<>();
             if(isExplainTemporaryTablesEnabled())
                 addTTLog("RETURN " + truncate, table, owner, opOwner);
-            lastReturnedStamp.put(table, System.currentTimeMillis());
+            if(!GlobalTempTablePool.isPoolName(table)) // read only by the idle cleaner, which walks the connection's own tables
+                lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
                 // in an aborted transaction the emptying is a deliberate no-op (see truncate), so the table keeps its rows - and with nothing to keep the name out of the pool it would be
-                // handed to the next owner as if it were empty
+                // handed to the next owner as if it were empty. A slot of the node pool has a moment coming where that is decided properly : the rollback gives back the ones this
+                // transaction took from the free set, which it leaves empty, and kills the rest. Only its accounting goes here, as it would for any give-back
                 if(problemInTransaction != null)
-                    runSuppressed(() -> removeTemporaryTableFromPool(table, owner, false), firstException);
+                    runSuppressed(() -> {
+                        if(GlobalTempTablePool.isPoolName(table))
+                            forgetTableAccounting(table, owner, false);
+                        else
+                            removeTemporaryTableFromPool(table, owner, false);
+                    }, firstException);
                 else
                     runSuppressed(() -> truncateSession(table, opOwner, count, owner), firstException);
                 // only a database failure says anything about the table : an assertion (assertLog throws under -ea, and the accounting asserts fire on a perfectly healthy table) or any other
@@ -1559,7 +1766,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
     
             sessionTablesMap.remove(table); // the registration and its owner were validated at the top, under the same temporaryTablesLock that serializes the issuing
-    
+
+            // what another session would find in the table decides when it goes back. Inside a transaction the emptying above is this transaction's own and nobody else sees it, so the slot
+            // is parked until the commit; outside one the emptying is committed as it runs, and it goes back at once. A table of the connection's own pool has no such wait - its next owner
+            // sits on THAT connection and sees the emptying as its own
+            if(GlobalTempTablePool.isPoolName(table)) {
+                if(isInTransaction()) {
+                    // only a name the pool still owns : undoing a return (takeBackParked) reads membership of this set as proof that the slot is still ours, without asking the pool again
+                    if(adapter.tempTablePool.getStruct(table) != null)
+                        poolTables.park(table);
+                } else
+                    adapter.tempTablePool.release(table);
+            }
+
             runSuppressed(() -> tryCommon(opOwner, true), firstException);
 
             finishExceptions(firstException);
@@ -1573,9 +1792,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         try {
             temporaryTablesLock.lock();
             try {
-                needPrivate();
-
                 String tableName = table.getName();
+
+                needPrivate();
 
                 // the roll back is speculative : SessionTableUsage.aspectException rolls the drop of a table that, on most of its paths, was never returned at all (a timeout in modifyRecord,
                 // in updateRecordsCount, in checkClasses - nothing gives the table back). Registering the ADD again would then reset its row count to zero WITHOUT taking those rows out of the
@@ -1585,6 +1804,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     if(assertNotExists) // rollData follows an actual drop, so unlike the speculative aspectException this is not expected there
                         ServerLoggers.assertLog(false, "ROLLBACK OF A TABLE THAT NEVER LEFT ITS OWNER : " + tableName + " " + owner);
                     return;
+                }
+
+                // the return is undone, so the slot goes back to this owner. Inside a transaction it was only parked, and taking it out of that set is the whole of it - publishing it at the
+                // commit would put two owners on one table. Outside a transaction the return published it at once, so it has to be asked for : another session may already have it
+                // the owner does not get it back : it must not go on holding a name that is now somebody else's, and failing loudly here is what stands between that and this owner writing
+                // into another session's table
+                if(GlobalTempTablePool.isPoolName(tableName) && !poolTables.takeBackParked(tableName) && !adapter.tempTablePool.reclaim(tableName)) {
+                    tryCommon(opOwner, false); // the connection above was taken for a slot this session is not getting back
+                    throw new SQLException("GLOBAL TEMP TABLE POOL : " + tableName + " could not be taken back by " + owner + ", it is no longer free");
                 }
 
                 registerSessionChange(tableName, owner, -1, TableChange.ADD);
@@ -1626,13 +1854,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
-        Pair<String, StaticExecuteEnvironment> result = getCreateDDL(name, keys, properties, syntax);
+        createTable(name, keys, properties, owner, false);
+    }
+
+    private void createTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner, boolean global) throws SQLException {
+        Pair<String, StaticExecuteEnvironment> result = getCreateDDL(name, keys, properties, syntax, global);
         executeDDL(result.first, result.second, owner);
         if(logTempTables())
-            logTempTable(TempTableOperation.CREATE, name, "keys=" + keys.size() + " properties=" + properties.size());
+            logTempTable(TempTableOperation.CREATE, name, "keys=" + keys.size() + " properties=" + properties.size() + (global ? " global" : ""));
     }
 
     private static Pair<String, StaticExecuteEnvironment> getCreateDDL(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, SQLSyntax syntax) {
+        return getCreateDDL(name, keys, properties, syntax, false);
+    }
+
+    private static Pair<String, StaticExecuteEnvironment> getCreateDDL(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, SQLSyntax syntax, boolean global) {
         MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv();
 
         if(keys.size()==0)
@@ -1640,7 +1876,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         String createString = SetFact.addExclSet(keys.getSet(), properties).toString(SQLSession.getDeclare(syntax, mEnv), ",");
         createString = createString + "," + getConstraintDeclare(name, keys, syntax);
         mEnv.addNoReadOnly();
-        String command = syntax.getCreateSessionTable(name, createString);
+        String command = global ? syntax.getCreateGlobalSessionTable(name, createString, Settings.get().getGlobalTempTablePoolTablespace()) : syntax.getCreateSessionTable(name, createString);
         StaticExecuteEnvironment env = mEnv.finish();
         return new Pair<>(command, env);
     }
@@ -2356,8 +2592,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //                fifoTC.add("INSERT " + getCurrentTimeStamp() + " " + table + " ADD " + delta + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             }
             totalSessionTablesCount += delta;
-            assert privateConnection != null;
-            if(privateConnection != null) {
+            if(privateConnection != null) { // the scores this feeds are the connection's, and a session holding only slots of the node pool has no connection of its own
                 if (totalSessionTablesCount > privateConnection.maxTotalSessionTablesCount)
                     privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
                 privateConnection.lastTempTablesActivity = System.currentTimeMillis();
@@ -2893,9 +3128,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         // inside a transaction TRUNCATE is the expensive form (see the setting), so its threshold is its own - and the rows the earlier emptyings left dead count towards it, since
         // nothing reclaims them until the storage is reset (see SQLTemporaryPool.deadRows)
         int threshold = isInTransaction() ? Settings.get().getDeleteFromInsteadOfTruncateForTempTablesInTransactionThreshold() : Settings.get().getDeleteFromInsteadOfTruncateForTempTablesThreshold();
-        long dead = privateConnection.temporary.getDeadRows(table);
-        boolean useDeleteForm = dead < threshold // the debt alone rules the DELETE form out, whether or not this count is known
-                && (count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < threshold - dead);
+        // a pooled table is emptied by WHERE it is emptied rather than by its size, so its debt is not read here at all. Inside a transaction only DELETE : the whole point of the pool is that
+        // nothing there takes a lock held until the commit. Outside one only TRUNCATE : it resets the storage and the debt at once
+        boolean useDeleteForm;
+        if(GlobalTempTablePool.isPoolName(table))
+            useDeleteForm = isInTransaction();
+        else {
+            long dead = privateConnection.temporary.getDeadRows(table);
+            useDeleteForm = dead < threshold // the debt alone rules the DELETE form out, whether or not this count is known
+                    && (count == null ? Settings.get().isDeleteFromInsteadOfTruncateForTempTablesUnknown() : count < threshold - dead);
+        }
         truncateSession(table, owner, tableOwner, useDeleteForm, registerSession(table, tableOwner,  useDeleteForm ? TableChange.DELETE : TableChange.REMOVE));
     }
 
@@ -2910,16 +3152,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 // a rollback can leave this count stale in either direction - a rolled back DELETE did not really leave those rows dead, a rolled back TRUNCATE did not really reset the
                 // storage. Both errors are bounded and correct themselves at the next crossing of the threshold, which is why the count is not made transaction aware for it
                 if(isInTransaction()) // the VACUUM below can not run here, so what this emptying leaves dead stays dead until the storage is reset
-                    privateConnection.temporary.addDeadRows(table, deleted);
+                    addDeadRows(table, deleted);
                 else {
                     executeDML(syntax.getVacuumSessionTable(tableName, getServerMajorVersion()), owner, tableOwner, registerChange);
                     logTempTable(TempTableOperation.VACUUM, table, null);
-                    privateConnection.temporary.resetDeadRows(table);
+                    resetDeadRows(table);
                 }
             } else {
                 executeDDL("TRUNCATE TABLE " + tableName, StaticExecuteEnvironmentImpl.NOREADONLY, owner, registerChange); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
                 logTempTable(TempTableOperation.TRUNCATE, table, null);
-                privateConnection.temporary.resetDeadRows(table);
+                resetDeadRows(table);
             }
         }
     }
@@ -3183,21 +3425,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         try {
             sqlSessionMap.remove(this);
 
+            try {
+                // unconditionally, because a session holding only slots of the node pool has no connection of its own and its tables would otherwise never be cleaned up
+                removeUnusedTemporaryTables(true, owner);
+            } finally {
             if(privateConnection !=null) {
-                try {
-                    removeUnusedTemporaryTables(true, owner);
-                } finally {
-                    // the pool takes the connection back with its temp tables in it, and hands them to the next session as free and empty. That holds only when the cleanup above went through :
-                    // it truncates the leftovers one by one and stops at the first failure it can not recover from, and then nothing says those tables are empty. A cancel is enough for that -
-                    // the close time truncate is registered as the executing statement, so the timeout killer can land right on it, on a perfectly live connection
-                    // such a connection is discarded instead : its tables go with it, which is what the next session would have assumed anyway
-                    connectionPool.returnConnection(this, privateConnection, !sessionTablesMap.isEmpty()); // discarded when they are not empty, see above
-//                    System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
-//                    sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
-                    privateConnection = null;
+                // the pool takes the connection back with its temp tables in it, and hands them to the next session as free and empty. That holds only when the cleanup above went through :
+                // it truncates the leftovers one by one and stops at the first failure it can not recover from, and then nothing says those tables are empty. A cancel is enough for that -
+                // the close time truncate is registered as the executing statement, so the timeout killer can land right on it, on a perfectly live connection
+                // such a connection is discarded instead : its tables go with it, which is what the next session would have assumed anyway
+                connectionPool.returnConnection(this, privateConnection, !sessionTablesMap.isEmpty()); // discarded when they are not empty, see above
+                privateConnection = null;
 
-                    ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this); // after the connection is dealt with : the assertion throws under -ea
-                }
+                ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this); // after the connection is dealt with : the assertion throws under -ea
+            }
             }
             ServerLoggers.exinfoLog("SQL SESSION CLOSE " + this);
         } finally {
@@ -3439,7 +3680,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return timeStamp;
     }
 
-    public static void cleanTemporaryTables() throws SQLException, SQLHandledException {
+    // the adapter is passed in rather than looked up : the pool whose leftovers this drops belongs to a database, and it still owes them at a moment when no session of that database is live
+    public static void cleanTemporaryTables(DataAdapter adapter) throws SQLException, SQLHandledException {
+
+        adapter.tempTablePool.dropPending(); // the node's own leftovers, on a connection of their own : this is the periodic cleaner, and a drop that waits out its lock timeout waits here
 
         List<TableUsage> notUsedTables = new ArrayList<>();
         Result<Integer> recentlyUsedTables = new Result<>(0);
@@ -3498,6 +3742,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void readNotUsedTables(final List<TableUsage> notUsedTables, final Result<Integer> recentlyUsedTables, final long beforeTime) throws SQLException, SQLHandledException {
         runLockReadOperation(() -> {
+            if(privateConnection == null) // the session holds nothing of this connection's own - it may hold slots of the node pool, which are not this cleaner's business
+                return;
             for(String table : privateConnection.temporary.getTables()) {
                 long timeStamp;
                 if (!sessionTablesMap.containsKey(table) && (timeStamp = getTimeStamp(table)) < beforeTime)
@@ -3754,6 +4000,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 connectionPool.closeRestartConnection(newConnection, newConnectionError ? null : cn -> {}); // error it's better to close the connection
         }
         return true;
+    }
+
+    private boolean hasLocalTables() {
+        for(String table : sessionTablesMap.keySet())
+            if(!GlobalTempTablePool.isPoolName(table))
+                return true;
+        return false;
     }
 
     private EConsumer<Connection, SQLException> restartConnection(Connection newConnection) throws SQLException, SQLHandledException {
