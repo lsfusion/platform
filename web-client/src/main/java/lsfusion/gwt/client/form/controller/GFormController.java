@@ -664,6 +664,42 @@ public class GFormController implements EditManager {
         changeGroupObject(group, rowKey, null, null);
     }
 
+    private static final String ORDER_FIELDS = "property,desc";
+
+    // what a condition and a sorting BOTH are, before they differ: an object, carrying only fields this call knows,
+    // naming a property of THIS group. Said once, or one of them would go on accepting what the other refuses - which
+    // is also why this reader and the field lists beside it live in the COMMON layer with no caller of their own:
+    // the user filters and the sortings each bring one, and a copy per branch would be two rules again
+    private GPropertyDraw readStateProperty(String errorPrefix, GGroupObject group, GContainer scope, JavaScriptObject item, String what, String fields) {
+        // a condition and a sorting are the state of ONE react view, so this is reached through a member of that
+        // view's controller - and a member of it exists only for a group that view PROJECTS. Said here rather than
+        // assumed, because what follows rests on it: inside a projection a name means one ordinary draw
+        checkProjectedGroup(errorPrefix, group, scope);
+        String fieldList = fields.replace(",", ", ");
+        if (!isJSObject(item))
+            throw new RuntimeException(errorPrefix + what + " must be an object {" + fieldList + "}");
+        String unknown = getUnknownField(item, fields);
+        if (unknown != null) // a typo'd `value` would otherwise read as "no value", i.e. silently remove the condition
+            throw new RuntimeException(errorPrefix + "unknown field '" + unknown + "'; " + what + " has " + fieldList);
+        String propertySID = getOwnString(item, "property");
+        if (propertySID == null) // absent, or there but not a name - the same distinction the batch entry makes
+            throw new RuntimeException(errorPrefix + (hasOwnField(item, "property")
+                    ? "'property' must be the property's name, as a string" : what + " has no 'property'"));
+        GPropertyDraw property = form.getPropertyDraw(group, propertySID);
+        if (property == null)
+            throw new RuntimeException(errorPrefix + "'" + propertySID + "' is not a property of this object group");
+        return property; // and nothing more to check: a PROJECTED group draws no property grouped in columns and no
+    }                    // two under one integration SID - such a form is refused when it is built (FormView)
+
+    // what a react view's own state rests on: the group is one the projection carries, and there the platform has
+    // already settled what the readers above do not ask - no draw grouped in COLUMNS, no integration SID answering
+    // for two of them. A verb wired to a group nothing projects would read a name nothing checked, so it is refused
+    private void checkProjectedGroup(String errorPrefix, GGroupObject group, GContainer scope) {
+        if (reactData == null || !reactData.isProjectedGroup(group, scope))
+            throw new RuntimeException(errorPrefix + "this react container does not project object group '"
+                    + group.getSID() + "', and this is the state of the view that does");
+    }
+
     // a group of a tree is named and resolved like any other: a tree holds all of its groups' state in one panel and
     // one header manager, and it is the tree's own controller that puts what goes in and out of them back among the
     // other groups', so one group's state stays its own
@@ -683,6 +719,22 @@ public class GFormController implements EditManager {
                     + " per row AND column, and this names a row, so it is not addressed here (nor projected)");
     }
 
+    private static final String FILTER_CONDITION_FIELDS = "property,compare,value,negation,or";
+
+    // a flag is a boolean or absent - a truthy string like "false" would otherwise mean true. A condition's and a
+    // sorting's alike: `negation`, `or`, `desc`
+    private boolean readFlag(String errorPrefix, JavaScriptObject entry, String field) {
+        if (!hasOwnField(entry, field)) // absent is false; anything PRESENT has to be the boolean it claims to be,
+            return false;                 // `null` and `undefined` included - they are given, and they are not flags
+        JavaScriptObject value = getOwnField(entry, field);
+        if (!isJSBoolean(value))
+            throw new RuntimeException(errorPrefix + "'" + field + "' must be true or false");
+        return toBoolean(value);
+    }
+
+    // no value at all - absent, null, or the empty string an emptied input gives: how a view says "not filtered by
+    // this" and "not sorted by this"
+    private static native boolean isNoValue(JavaScriptObject v) /*-{ return v === undefined || v === null || v === ''; }-*/;
     // resolves a controller-call draw. `name` is either "groupSID.integrationSID" (an explicit group prefix) or a
     // bare integration SID. an explicit prefix in the name has priority: it scopes the lookup directly (the passed
     // object's own group is not consulted). with no prefix, an explicit object's group scopes it; with neither, a
