@@ -811,9 +811,9 @@ public class GFormController implements EditManager {
         if (GwtClientUtils.isUndefinedOrNull(objectOrKey)) // raw JS key: a numeric 0 key reads as null under Java == null (GWT falsy-primitive collapse)
             return null;
 
+        GGroupObject nameGroup = getNameGroup(property, scope); // whose row the NAME says this is - both halves below ask it
         GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
-        if (objectKey == null) { // ... a KEY resolves too, wherever the NAME settles which group's rows to look in
-            GGroupObject nameGroup = getNameGroup(property, scope);
+        if (objectKey == null) { // ... a KEY resolves too, wherever the name settles which group's rows to look in
             if (nameGroup != null)
                 return resolveRow(controllerPrefix(surface), nameGroup, objectOrKey);
             // it does not settle it - the property is drawn on several groups, or on none - so the group is what the
@@ -822,6 +822,16 @@ public class GFormController implements EditManager {
                     + " pass one of those, or name the property as '<group>." + property + "' so its key can be looked up"
                     + " ('" + property + "' alone does not say which group's row is meant)");
         }
+        // ... and where the name says which group's row is meant, a row of ANOTHER group is refused - exactly as
+        // controllerChangeObject refuses it, and for the same reason: the key carries only that group's objects, so
+        // the rest are taken from the CURRENT ones and the call lands on a cell of this group that nobody named. A
+        // key was already looked up among the named group's own rows above; only a row/handle could get this far.
+        // Where the name settles no group - the property is drawn on several - there is nothing to check against, and
+        // the row's own group is what scopes the draw instead. In a TREE a row of a group BELOW passes, and should: its
+        // key is the path down to it, so it holds one row of every group above too - the same reading
+        // controllerChangeObject has always had, and the two say one thing.
+        if (nameGroup != null && !objectKey.isEmpty() && objectKey.filter(Collections.singletonList(nameGroup)) == null)
+            throw new RuntimeException(controllerPrefix(surface) + "that row is not a row of '" + nameGroup.getSID() + "'");
         return objectKey;
     }
 
