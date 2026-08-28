@@ -130,7 +130,8 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             },
-            form: formController // form controller ({changeProperty, exec, eval, change}); same bridge as CUSTOM grid/cell-renderer views
+            form: formController // the FORM's controller ({exec, eval, evalAction, change}: the members and the batch belong to a projection,
+            // and this is not one); same bridge as CUSTOM grid/cell-renderer views
         }
     }-*/;
 

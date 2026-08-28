@@ -216,8 +216,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             result.add(encodeUnknownJSValue(jsArrayGet(array, i)));
         return result;
     }
-    private static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
-    private static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
+    public static native boolean isJSArray(JavaScriptObject v) /*-{ return Array.isArray(v); }-*/;
+    public static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
+    public static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
     private static native boolean isBoolean(JavaScriptObject v) /*-{ return typeof v === 'boolean'; }-*/;
     private static native boolean isNumber(JavaScriptObject v) /*-{ return typeof v === 'number'; }-*/;
     private static native boolean isString(JavaScriptObject v) /*-{ return typeof v === 'string'; }-*/;
@@ -850,8 +851,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeProperty: function (property, object, newValue, type, index) {
                 if (!thisObj.@GSimpleStateTableView::isGridProperty(Ljava/lang/String;)(property))
                     // not a column of THIS grid (e.g. a PANEL action edit/delete): the form controller's job (#1655) -
-                    // forward to it; it resolves the property form-wide (any group, incl. form-level) and guesses/execs
-                    return formController.changeProperty(property, object, newValue);
+                    // forward to its property-change implementation; it resolves the property form-wide (any group,
+                    // incl. form-level) and makes the same (object, value) guess. Taken from the Java field and not
+                    // from the controller OBJECT: the form controller has no stringly-typed changeProperty member -
+                    // there a property is addressed as controller.<group>.<property>.change(...), and that surface
+                    // says only what its members say. This is the CLASSIC one, which names the whole form
+                    return (thisObj.@lsfusion.gwt.client.form.object.table.grid.view.GStateTableView::form.@lsfusion.gwt.client.form.controller.GFormController::classicChangeProperty)(property, "changeProperty('" + property + "')", object, newValue);
                 if(object !== undefined) {
                     if(newValue === undefined) { //object passed, newValue not passed
                         //guess if object is object or newValue

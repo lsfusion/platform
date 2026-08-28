@@ -136,6 +136,30 @@ public class GForm implements Serializable {
         return found;
     }
 
+    // how many draws of one object group answer to one integration name. An integration name is not unique, and the
+    // difference between "one" and "several" is what tells a name that can be addressed from one nothing singles out.
+    public int countPropertyDraws(GGroupObject group, String integrationSID) {
+        int count = 0;
+        for (GPropertyDraw property : propertyDraws)
+            if (property.groupObject == group && integrationSID.equals(property.integrationSID))
+                count++;
+        return count;
+    }
+
+    // the single object group a BARE integration name is drawn on, or null when it is drawn on several (only the
+    // object can say which is meant then), on none, or at the form level. Beside the two lookups above because it is
+    // the same question they answer, asked without knowing the group yet.
+    public GGroupObject getSingleDrawnGroup(String integrationSID) {
+        GGroupObject found = null;
+        for (GPropertyDraw property : propertyDraws)
+            if (integrationSID.equals(property.integrationSID) && property.groupObject != null) {
+                if (found != null && found != property.groupObject)
+                    return null;
+                found = property.groupObject;
+            }
+        return found;
+    }
+
     public GContainer findContainerByID(int id) {
         GContainer cache = idContainers.get(id);
         if(cache != null)

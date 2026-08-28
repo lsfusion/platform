@@ -2146,6 +2146,48 @@ public class GwtClientUtils {
     // has a value at all - unlike a GWT-generated Java `!= null`, which the falsy-primitive trap misfires on, dropping
     // a delivered false / 0 / "" - so only a real null/undefined is absent
     public static native boolean isPresent(Object value)/*-{ return value !== undefined && value !== null; }-*/;
+
+    // ===== reading a value an AUTHOR passed in: own fields only, and each field read once =====
+    // does the field exist as an OWN one - asked without reading it. hasOwnProperty does not run an accessor, so a
+    // getter is not invoked twice, and the answer cannot be confused with a falsy value the way a Java `!= null` on
+    // the value would be (GWT collapses a JS 0 / false / "" to null).
+    public static native boolean hasOwnField(JavaScriptObject object, String field)/*-{
+        return Object.prototype.hasOwnProperty.call(object, field);
+    }-*/;
+    // the own field, or null - a field off the PROTOTYPE is not one the object carries, and the unknown-field check
+    // below cannot see one, so reading through the chain would let a prototype supply what it never declared
+    public static native JavaScriptObject getOwnField(JavaScriptObject object, String field)/*-{
+        return Object.prototype.hasOwnProperty.call(object, field) ? object[field] : null;
+    }-*/;
+    // ... and the same answering with the UNDEFINED SENTINEL for an absent field, where a caller has to tell "absent"
+    // from "given as null". The sentinel, not a raw `undefined`: that is what the rest of this codebase means by
+    // "no value given", and a raw one converts as a value, which is a different instruction entirely
+    public static native JavaScriptObject getOwnFieldOrUndefined(JavaScriptObject object, String field)/*-{
+        return Object.prototype.hasOwnProperty.call(object, field) ? object[field]
+                : @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
+    }-*/;
+    // an own field that is really a string: String() would turn `false` into the name "false", and a name-shaped
+    // thing that is not a name is not a name
+    public static native String getOwnString(JavaScriptObject object, String field)/*-{
+        var value = Object.prototype.hasOwnProperty.call(object, field) ? object[field] : null;
+        return typeof value === 'string' ? value : null;
+    }-*/;
+    // the first OWN field that is not one of `known` (comma-separated) - own NAMES, enumerable or not, so a field
+    // defined quietly is still a field; and names compared whole, not as substrings of the joined list, or one
+    // literally called "a,b" would pass for two known ones at once
+    public static native String getUnknownField(JavaScriptObject object, String known)/*-{
+        var allowed = Object.create(null), list = known.split(',');
+        for (var k = 0; k < list.length; k++) allowed[list[k]] = true;
+        var names = Object.getOwnPropertyNames(object);
+        for (var i = 0; i < names.length; i++)
+            if (!allowed[names[i]])
+                return names[i];
+        return null;
+    }-*/;
+    public static native boolean isJSObject(JavaScriptObject value)/*-{ return value !== null && typeof value === 'object' && !Array.isArray(value); }-*/;
+    public static native boolean isJSBoolean(JavaScriptObject value)/*-{ return typeof value === 'boolean'; }-*/;
+    // the value ALREADY read and checked, not a second read of the field: an own accessor could answer differently
+    public static native boolean toBoolean(JavaScriptObject value)/*-{ return !!value; }-*/;
     public static native JsArray emptyArray()/*-{
         return [];
     }-*/;

@@ -95,11 +95,13 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
@@ -186,7 +188,6 @@ public class GFormController implements EditManager {
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
-        attachControllerSugar(); // needs `form` (just assigned) — must not run in the controller field initializer
 
         this.formId = formId;
         this.globalID = "" + (idCounter++);
@@ -418,154 +419,221 @@ public class GFormController implements EditManager {
         }
     };
 
-    // the form controller object: the form-level escape hatch (exec/eval/change + legacy changeProperty) PLUS the
-    // CUSTOM REACT mutation methods. The latter mirror the CUSTOM group-object view controller (GSimpleStateTableView)
-    // but form-level. a method accepts a data row, or a raw objects handle (from getObjects / async OBJECTS suggestions)
-    // — GGroupObjectValue.resolveObject; a bare key / spread clone does NOT resolve. Mutations go through the SAME classic interactive path as a normal
-    // edit (optimistic reconciliation + async exec); there is no return value (state flows back via the projection).
-    public final JavaScriptObject controller = initController();
-    private native JavaScriptObject initController() /*-{
+    // the controller: ONE way to address what the form SHOWS, and it mirrors props.data — what a view READS as
+    // data.<group>.<property> it CHANGES as controller.<group>.<property>.change(...). One PER PROJECTION, so the
+    // two say the same thing: a react view's controller carries exactly its own container's data, and what it
+    // cannot see it does not name. The FORM's controller - the classic surfaces' - has none of this: just the
+    // form-level verbs. The member IS the address, so
+    // there is no second, stringly-typed set of verbs saying the same thing by SID, and a name typed wrong is a member
+    // that does not exist rather than a string the platform has to validate.
+    //   controller.<group>.<property>.change(...) / .getValues(...)   a property drawn on an object group
+    //   controller.<property>.change(...) / .getValues(...)           a form-level (no-group) property
+    //   controller.<group>.change(row)                                the group's current object
+    //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
+    //   controller.properties.change([{property, object, value}])     the one batch — it belongs to no single member
+    // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
+    // group is known here, so the key can be looked up). Mutations go through the SAME classic interactive path as a
+    // normal edit (optimistic reconciliation + async exec); there is no return value, state flows back as the projection.
+    // the FORM's controller: what the classic surfaces are handed - a custom object group, a custom cell editor,
+    // an INTERNAL CLIENT action - and what `controller.form` is. Just the form-level verbs (exec / eval /
+    // evalAction / change), which take lsf names and code. The rest of this surface - the members and the batch
+    // that is a shortcut for them - belongs to a PROJECTION and exists only on one: a member says that
+    // `data.<group>.<property>` is there, and an object with no data beside it has nothing to say that about.
+    public final JavaScriptObject controller = initController(null);
+    // ... so the members live HERE, one controller per react container, beside its own `props.data` and naming
+    // exactly what that data carries. A view that cannot SEE its neighbour does not name it either; the rest of the
+    // form is reached the way anything outside this surface is - change / exec / eval / evalAction, which every
+    // controller carries and which are gated in their own right
+    private final Map<GContainer, JavaScriptObject> scopeControllers = new LinkedHashMap<>();
+    public JavaScriptObject createReactController(GContainer scope) {
+        JavaScriptObject scopeController = initController(scope);
+        scopeControllers.put(scope, scopeController);
+        syncControllerSugar(scopeController, scope);
+        return scopeController;
+    }
+
+    private JavaScriptObject getScopeController(GContainer scope) {
+        return scopeControllers.get(scope); // there is one wherever a member was called: it is what handed the member out
+    }
+
+    private native JavaScriptObject initController(GContainer scope) /*-{
         var thisObj = this;
-        var UNDEFINED = @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
-        var controller = {
-            // change a property value, or exec the action/property when the value is omitted — same shape as the CUSTOM
-            // group-view controller's changeProperty(property, object, value); `property` is "integrationSID" or
-            // "groupSID.integrationSID". An explicit group prefix has priority; with no prefix a passed object's own
-            // group scopes the lookup. An unknown prefix, an ambiguous bare SID, or a missing property throws.
-            //   changeProperty(property)                 - exec on the current object
-            //   changeProperty(property, value)          - set value on the current object
-            //   changeProperty(property, object)         - exec on the given row (a `data` row or a raw objects handle)
-            //   changeProperty(property, object, value)  - set value on the given row
-            changeProperty: function (property, object, value) {
-                if (object !== undefined) {
-                    if (value === undefined) { // (property, X): THE SAME guess shape as the classic controller — isChangeObject classifies, the normal explicit path below dispatches
-                        if (thisObj.@GFormController::isChangeObject(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object))
-                            value = UNDEFINED; // a row -> exec on it
-                        else { value = object; object = null; } // anything else -> set on current
-                    }
-                } else { value = UNDEFINED; object = null; } // (property) -> exec on current
-                return thisObj.@GFormController::controllerChangeProperty(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object === undefined ? null : object, value);
-            },
-            // batch (parallel arrays); objectsOrKeys entries may be null (current object / property-name-scoped lookup)
-            changeProperties: function (properties, objectsOrKeys, values) {
-                return thisObj.@GFormController::controllerChangeProperties(*)(properties, objectsOrKeys, values);
-            },
-            // set a group's current object to a row (a `data` row object, or a raw objects handle)
-            changeObject: function (groupSID, objectOrKey) {
-                return thisObj.@GFormController::controllerChangeObject(*)(groupSID, objectOrKey);
-            },
-            // async value lookup (autocomplete / suggestion list) for a property by "integrationSID" or
-            // "groupSID.integrationSID" — the form-level twin of the CUSTOM grid view's getPropertyValues. Mirrors
-            // changeProperty's object/group resolution: an explicit group prefix has priority over the passed object's
-            // group, and an ambiguous bare SID throws.
-            //   getPropertyValues(property,         value[, mode], ok, fail[, count]) - suggestions for the group's current object
-            //   getPropertyValues(property, object, value[, mode], ok, fail[, count]) - suggestions scoped to the given row (a data row / raw objects handle)
-            // ok gets {data:[{displayString,rawString,objects}], more}; mode picks the server lookup (default 'objects'):
-            //   'objects' - matching OBJECTS, each item's `objects` = a raw GGV handle (object picker)
-            //   'values'  - DISTINCT property values (item `objects` is null; just display/rawString)
-            //   'change'  - the edit-time value autocomplete (the property's change/input action; honors custom change logic)
-            // Positional parameter-guess (no options object — that's a future uniform cross-method migration): ok = the first
-            // function arg; the pre-callback args are read by (count, typeof first), unambiguous because object is always a JS
-            // object (row/handle, never a string), value is a string query, and mode is a string enum right after value.
-            getPropertyValues: function (property) {
-                var okIndex = -1;
-                for (var i = 1; i < arguments.length; i++)
-                    if (typeof arguments[i] === 'function') { okIndex = i; break; }
-                var object = null, value, mode = null;
-                var preCount = okIndex - 1; // args between property and ok: {value} | {object,value} | {value,mode} | {object,value,mode}
-                if (preCount === 1) {
-                    value = arguments[1];
-                } else if (preCount === 2) {
-                    if (typeof arguments[1] === 'string') { value = arguments[1]; mode = arguments[2]; } // value, mode
-                    else { object = arguments[1]; value = arguments[2]; } // object, value (object is never a string)
-                } else { // 3: object, value, mode
-                    object = arguments[1]; value = arguments[2]; mode = arguments[3];
+        var controller = scope == null ? {} : { // no projection, no members - and nothing for the batch to shorten
+            // the one mutation no single member can own — a batch spans properties, and groups — so it hangs at the
+            // level whose members those properties are: a list of {property, object, value}, or one of them alone. A `property` is "integrationSID" or
+            // "groupSID.integrationSID" (the ONLY names left that the platform has to resolve, since here there is no
+            // member to be the address); `object` omitted means the property's group current object, and `value`
+            // omitted execs it. One request for all of them, which is the whole point — otherwise it is
+            // controller.<group>.<property>.change(...)
+            properties: {
+                change: function (entries) {
+                    return thisObj.@GFormController::controllerChangeProperties(*)(entries, scope);
                 }
-                var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2];
-                thisObj.@GFormController::controllerGetPropertyValues(*)(property, object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
             }
         };
         return this.@GFormController::gController.@GController::extendController(Lcom/google/gwt/core/client/JavaScriptObject;)(controller);
     }-*/;
 
-    // structured WYSIWYG sugar that mirrors props.data: a form property is a member of the controller —
-    //   controller.<groupSID>.<propIntegrationSID>.change(...) / .getValues(...)   a property drawn on a group
-    //   controller.<propIntegrationSID>.change(...) / .getValues(...)              a form-level (no-group) property
-    //   controller.<groupSID>.change(row)                                          set the group's current object
-    // so an author writes controller.orders.sum.change(v) instead of the stringly-typed changeProperty('orders.sum', v).
-    // Pure forwarding over the flat methods above (same object/value/exec guess and the same async parsing); additive —
-    // the flat methods and the global exec/eval/change set above always win, so a group/property SID that collides with
-    // one of those keeps the method and the colliding accessor is skipped + logged.
-    // Attached from the constructor (NOT the controller field initializer): getControllerStructure reads `form`,
-    // which is assigned in the constructor body, after the field initializers have already run.
-    private native void attachControllerSugar() /*-{
+    // the (object, value) guess and the dispatch behind every property change. Held HERE rather than on the controller
+    // object because the PLATFORM needs it — the classic group view forwards a property that is none of its own
+    // columns to it (#1655) — while an author must not have it: a stringly-typed changeProperty on the controller is
+    // exactly the second interface this surface does without. A Java field is reachable from JSNI and invisible to a view.
+    public final JavaScriptObject classicChangeProperty = initChangeProperty(true);
+    private final JavaScriptObject memberChangeProperty = initChangeProperty(false);
+    private native JavaScriptObject initChangeProperty(boolean classic) /*-{
         var thisObj = this;
-        var controller = this.@GFormController::controller;
-        function makeProperty(qualified) { // a property accessor: .change([object,] [value]) and .getValues(...) forwarding the flat methods
-            return {
-                change: function () {
-                    var args = [qualified];
-                    for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
-                    return controller.changeProperty.apply(controller, args);
+        var UNDEFINED = @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
+        //   (property, surface)                - exec the property/action on the current row
+        //   (property, surface, value)         - set the value on the current row
+        //   (property, surface, row)           - exec it on that row
+        //   (property, surface, row, value)    - set the value on that row
+        return function (property, surface, object, value, callScope) {
+            var scope = classic ? null : callScope; // the classic grid's closure has no projection to be called from
+            if (object !== undefined) {
+                if (value === undefined) // one argument: decided by it ALONE, so the same argument always means the same
+                    if (thisObj.@GFormController::isChangeObject(Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Llsfusion/gwt/client/form/design/GContainer;)(surface, property, object, scope))
+                        value = UNDEFINED; // a row -> exec on it
+                    else { value = object; object = null; } // anything else (a value, or a bare key: they are indistinguishable) -> set on the current row
+            } else { value = UNDEFINED; object = null; } // no argument -> exec on the current row
+            object = object === undefined ? null : object;
+            // the same guess, two surfaces: the classic grid names the whole form, a member names what a member names
+            return classic ? thisObj.@GFormController::classicChangeProperty(*)(surface, property, object, value)
+                           : thisObj.@GFormController::controllerChangeProperty(*)(surface, property, object, value, scope);
+        };
+    }-*/;
+
+    // the members themselves, from the PROJECTION: what props.data has, the controller has - which is what makes the
+    // member the address instead of a string, and what makes it mean the same thing the form means. Run after every
+    // projection update rather than once, because that is when what the form shows changes; it is idempotent, so it
+    // adds what appeared and removes what went. Nothing here has to handle a name it cannot take: a projected name
+    // that would shadow a member of this surface is a form that was refused when it was built.
+    // every projection's controller, brought to what that projection shows now. The FORM's is not among them: it has
+    // no members to bring anywhere
+    private void syncControllers() {
+        for (Map.Entry<GContainer, JavaScriptObject> scope : scopeControllers.entrySet())
+            syncControllerSugar(scope.getValue(), scope.getKey());
+    }
+
+    private native void syncControllerSugar(JavaScriptObject controller, GContainer scope) /*-{
+        var thisObj = this;
+        var changeProperty = this.@GFormController::memberChangeProperty;
+        // "already taken" means an OWN member - the controller's own methods and what this loop has put there.
+        // Object.prototype's names (toString, constructor, ...) are not the controller's, and a group or property
+        // called one of them shadows nothing that belongs to this surface
+        // ... and `__proto__`, which is taken by the LANGUAGE: `obj["__proto__"] = v` calls the prototype setter, so
+        // the accessor would not be written and what the object inherits would be replaced by it
+        function taken(obj, name) { return name === "__proto__" || Object.prototype.hasOwnProperty.call(obj, name); }
+
+        // a property member, and MARKED as one: the sync removes what the projection stopped showing, and only what
+        // IT made - a group's own verbs, and whatever a feature puts beside them, are not its to take away.
+        // Non-enumerable, so nothing walking the controller sees the mark
+        function makeProperty(qualified) {
+            var member = {
+                //   .change()          exec on the group's current row      .change(row)         exec on that row
+                //   .change(value)     set it on the current row            .change(row, value)  set it on that row
+                change: function (object, value) {
+                    return changeProperty(qualified, qualified + ".change()", object, value, scope);
                 },
+                // .getValues([row,] value[, mode], ok, fail[, count]) — the suggestion list for the current row, or for
+                // the row given. ok gets {data:[{displayString,rawString,objects}], more}; mode picks the server lookup
+                // (default 'objects'): 'objects' (each item's `objects` is a raw handle — the object picker) | 'values'
+                // (DISTINCT property values) | 'change' (the edit-time autocomplete of the property's own change action).
+                // Positional guess (no options object — that's a future uniform cross-method migration): ok is the first
+                // function argument, and what precedes it is read by count and type. A row here must BE a row or a handle:
+                // a string is the value query, so a bare key would be read as one.
                 getValues: function () {
-                    var args = [qualified];
-                    for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
-                    return controller.getPropertyValues.apply(controller, args);
+                    var okIndex = -1;
+                    for (var i = 0; i < arguments.length; i++)
+                        if (typeof arguments[i] === 'function') { okIndex = i; break; }
+                    var object = null, value, mode = null;
+                    if (okIndex === 1) { // {value}
+                        value = arguments[0];
+                    } else if (okIndex === 2) { // {value, mode} | {row, value}
+                        if (typeof arguments[0] === 'string') { value = arguments[0]; mode = arguments[1]; }
+                        else { object = arguments[0]; value = arguments[1]; }
+                    } else { // {row, value, mode}
+                        object = arguments[0]; value = arguments[1]; mode = arguments[2];
+                    }
+                    var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2];
+                    thisObj.@GFormController::controllerGetPropertyValues(*)(qualified + ".getValues()", qualified, object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count, scope);
                 }
             };
+            Object.defineProperty(member, "__property", { value: true });
+            return member;
         }
-        var structure = thisObj.@GFormController::getControllerStructure()();
+
+        // the members of one level, brought to what the projection shows there NOW: what it stopped showing goes, what
+        // it started showing arrives. Only a marked property member is removed - a group's own verbs, and whatever a
+        // feature put beside them, are not this loop's to take away. Nothing here has to handle a name it cannot take:
+        // a projected name colliding with a controller verb, with a group's own member or with `__proto__` is a form
+        // that was refused when it was built (FormView.claimProjectionName)
+        function syncProperties(owner, names, prefix) {
+            var wanted = Object.create(null); // keyed by a property NAME, which is data: `{}` would inherit
+            for (var i = 0; i < names.length; i++)  // toString/constructor/valueOf from Object.prototype and keep
+                wanted[names[i]] = true;            // a member the projection stopped showing
+            var own = Object.getOwnPropertyNames(owner);
+            for (var oi = 0; oi < own.length; oi++) {
+                var name = own[oi], member = owner[name];
+                if (member && member.__property === true && !wanted[name])
+                    delete owner[name];
+            }
+            for (var i = 0; i < names.length; i++) {
+                var propSID = names[i];
+                if (!taken(owner, propSID)) // ... and what is already there, this loop put there
+                    owner[propSID] = makeProperty(prefix + propSID);
+            }
+        }
+
+        var structure = thisObj.@GFormController::getControllerStructure(Llsfusion/gwt/client/form/design/GContainer;)(scope);
         var groups = structure.groups;
         for (var gi = 0; gi < groups.length; gi++) {
             var groupSID = groups[gi][0];
-            if (controller[groupSID] !== undefined) { // group SID equal to a controller method name -> keep the method
-                @lsfusion.gwt.client.base.GwtClientUtils::consoleError(Ljava/lang/String;)("controller['" + groupSID + "']: object group SID collides with a controller method; address this group via changeProperty('" + groupSID + ".<property>', ...)");
-                continue;
+            var group = controller[groupSID];
+            if (!taken(controller, groupSID)) { // made once: a group is projected into this container or it is not
+                // the group's own state, named the way data.<group> names it: what the projection HAS is a member here
+                // too, and changing it is .change(...). A feature that states a LIST of things adds its member beside
+                // this one, where an array states them all and anything else states one
+                group = (function (g) { return {
+                    change: function (row) { return thisObj.@GFormController::controllerChangeObject(*)(g + ".change()", g, row, scope); }
+                }; })(groupSID);
+                controller[groupSID] = group;
             }
-            var group = { change: (function (g) { return function (row) { return controller.changeObject(g, row); }; })(groupSID) }; // controller.<group>.change(row) -> set current object
-            var props = groups[gi][1];
-            for (var pi = 0; pi < props.length; pi++) {
-                var propSID = props[pi];
-                if (group[propSID] !== undefined) { // property SID equal to the group method 'change' -> keep the method
-                    @lsfusion.gwt.client.base.GwtClientUtils::consoleError(Ljava/lang/String;)("controller['" + groupSID + "']['" + propSID + "']: property SID collides with the group method 'change'; use changeProperty('" + groupSID + "." + propSID + "', ...)");
-                    continue;
-                }
-                group[propSID] = makeProperty(groupSID + "." + propSID);
-            }
-            controller[groupSID] = group;
+            syncProperties(group, groups[gi][1], groupSID + ".");
         }
-        var formProps = structure.props; // form-level (no-group) properties sit directly on the controller
-        for (var fi = 0; fi < formProps.length; fi++) {
-            var formPropSID = formProps[fi];
-            if (controller[formPropSID] !== undefined) { // collides with a controller method or an object group SID -> keep that
-                @lsfusion.gwt.client.base.GwtClientUtils::consoleError(Ljava/lang/String;)("controller['" + formPropSID + "']: form property SID collides with a controller method or an object group; use changeProperty('" + formPropSID + "', ...)");
-                continue;
-            }
-            controller[formPropSID] = makeProperty(formPropSID);
-        }
+        syncProperties(controller, structure.props, ""); // form-level (no-group) properties sit directly on the controller
     }-*/;
 
-    // the schema backing the structured controller sugar above: { groups: [[groupSID, [propIntegrationSID, ...]], ...],
-    // props: [formPropIntegrationSID, ...] } — the same predicate as the React projection (a drawn property carrying an
-    // integration SID), so controller[group][prop] lines up with the rows in data[group]. Panel and list properties are both
-    // addressable; the top-level `props` are the form-level (no-group) properties, exposed directly as controller[prop].
-    private JavaScriptObject getControllerStructure() {
+    // WHAT THE CONTROLLER CARRIES: what `data` carries, and nothing else. A member's change() is the form's own ON
+    // CHANGE event for that property - the one a user fires by editing the cell - so a property the form is not
+    // showing has nobody to call it on, and a group no react container projects has no view to fire it from. The
+    // member list is therefore the projection's own: for a projected group the names of `data.<group>.properties`,
+    // and at the top level the form-level draws the scope they sit in is showing. It follows the data, so it is
+    // rebuilt whenever the data is (syncControllerSugar). Two things this settles that used to be checked here: a
+    // name the projection carries singles ONE ordinary draw out - two draws under one integration SID, or a
+    // grouped-in-columns one, is a form that is not built (FormView) - so there is nothing left to filter or report.
+    // The CLASSIC stringly-typed changeProperty is another surface and goes on naming the whole form.
+    private JavaScriptObject getControllerStructure(GContainer scope) {
         JavaScriptObject groups = newArray();
-        for (GGroupObject group : form.groupObjects) {
-            JavaScriptObject props = newArray();
-            for (GPropertyDraw draw : form.propertyDraws)
-                if (draw.groupObject == group && draw.integrationSID != null)
-                    push(props, draw.integrationSID);
-            JavaScriptObject entry = newArray();
-            push(entry, group.getSID());
-            push(entry, props);
-            push(groups, entry);
-        }
         JavaScriptObject formProps = newArray();
-        for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == null && draw.integrationSID != null)
-                push(formProps, draw.integrationSID);
+        if (reactData != null) { // it is a projection's structure, so there is one - a guard, not a case
+            for (GGroupObject group : form.groupObjects) {
+                if (!reactData.isProjectedGroup(group, scope))
+                    continue;
+                JavaScriptObject props = newArray();
+                for (String integrationSID : reactData.getEntryNames(group))
+                    push(props, integrationSID);
+                JavaScriptObject entry = newArray();
+                push(entry, group.getSID());
+                push(entry, props);
+                push(groups, entry);
+            }
+            NativeStringMap<Boolean> seen = new NativeStringMap<>(); // one member per name, whichever draw shows it
+            for (GPropertyDraw draw : form.propertyDraws)
+                if (reactData.isShownFormProperty(draw, scope) && seen.get(draw.integrationSID) == null) {
+                    seen.put(draw.integrationSID, Boolean.TRUE);
+                    push(formProps, draw.integrationSID);
+                }
+        }
         JavaScriptObject result = GwtClientUtils.newObject();
         GwtClientUtils.setField(result, "groups", groups);
         GwtClientUtils.setField(result, "props", formProps);
@@ -576,29 +644,82 @@ public class GFormController implements EditManager {
     // "integrationSID" or "groupSID.integrationSID"; rows/handles resolve via GGroupObjectValue.resolveObject (the
     // row-carried `objects` handle + raw-GGV accept). An explicit name prefix has priority; with none, the row's group scopes the draw.
     // Dispatch through the SAME classic path as a normal edit (executePropertyEventAction / changeGroupObject + setLoadingValueAt) =====
-    public void controllerChangeObject(String groupSID, JavaScriptObject objectOrKey) {
-        GGroupObject group = form.getGroupObject(groupSID);
-        if (group == null) return;
-        GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey); // a row or a raw objects handle
-        if (key != null)
-            changeGroupObject(group, key, null, null);
+    // what the author typed, as the message names it: every controller entry point is given the member path it was
+    // reached by ("g.change()", "g.qty.change()", "properties.change() entry 2 ('g.qty')"), so an error quotes the call
+    // that is in the view's source instead of a verb name the surface no longer has
+    private static String controllerPrefix(String surface) {
+        return "controller." + surface + ": ";
     }
+
+    public void controllerChangeObject(String surface, String groupSID, JavaScriptObject objectOrKey, GContainer scope) {
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = resolveGroup(errorPrefix, groupSID); // it alone used to answer a typo with silence
+        GGroupObjectValue key = resolveRow(errorPrefix, group, objectOrKey);
+        // ... narrowed to a row of THIS group, by the group's own rule - which both checks and cuts. A key that is
+        // not this group's row at all answers null, and it would otherwise set the objects it does carry and blank
+        // the rest, which the server only asserts about (so: nothing at all in production). And in a TREE a row of a
+        // group BELOW carries the path past this one: accepted (it holds one row of every group above), but what is
+        // SET is the path down to here - the deeper half names rows of other groups, which the server asserts about
+        // too, and the projection would keep as a current object no row of this group is found by
+        GGroupObjectValue rowKey = key.isEmpty() ? key : group.getRowKey(key);
+        if (rowKey == null)
+            throw new RuntimeException(errorPrefix + "that row is not a row of '" + groupSID + "'");
+        changeGroupObject(group, rowKey, null, null);
+    }
+
+    // a group of a tree is named and resolved like any other: a tree holds all of its groups' state in one panel and
+    // one header manager, and it is the tree's own controller that puts what goes in and out of them back among the
+    // other groups', so one group's state stays its own
+    private GGroupObject resolveGroup(String errorPrefix, String groupSID) {
+        GGroupObject group = form.getGroupObject(groupSID);
+        if (group == null)
+            throw new RuntimeException(errorPrefix + "unknown object group '" + groupSID + "'");
+        return group;
+    }
+
+    // a property grouped in COLUMNS is one cell per (row, column), and everything here names a ROW. The projection
+    // does not carry such a draw at all, so a call naming it would land on whatever column happens to be current -
+    // a different, real cell, and it would look like it worked. Refused with the reason, as `lsf` on one already is.
+    private void checkAddressableDraw(String errorPrefix, GPropertyDraw draw) {
+        if (draw.hasColumnGroupObjects())
+            throw new RuntimeException(errorPrefix + "'" + draw.integrationSID + "' is grouped in columns - it is one cell"
+                    + " per row AND column, and this names a row, so it is not addressed here (nor projected)");
+    }
+
     // resolves a controller-call draw. `name` is either "groupSID.integrationSID" (an explicit group prefix) or a
     // bare integration SID. an explicit prefix in the name has priority: it scopes the lookup directly (the passed
     // object's own group is not consulted). with no prefix, an explicit object's group scopes it; with neither, a
     // bare SID must be form-unique. throws a loud (JS-surfaced) RuntimeException on every author mistake: unknown
     // group, ambiguous bare SID, or missing property. `objectKey` is the already-resolved row key, or null/EMPTY
     // for the current object.
-    private GPropertyDraw resolveControllerDraw(String name, GGroupObjectValue objectKey) {
-        String errorPrefix = "changeProperty('" + name + "'): ";
-        int dot = name.indexOf('.');
-        String prefixGroupSID = dot >= 0 ? name.substring(0, dot) : null;
-        String integrationSID = dot >= 0 ? name.substring(dot + 1) : name;
+    // `scope` says which surface is asking - a projection's controller, or (null) the CLASSIC stringly-typed API -
+    // and it changes one thing: what a BARE name means. On a controller a bare name is a member, and a member with no
+    // group is the form-level property; the classic API has no members, so there a bare name goes on meaning "the one
+    // draw of the whole form that answers to it", and two of them are still an error it cannot resolve.
+    private GPropertyDraw resolveControllerDraw(String surface, String name, GGroupObjectValue objectKey, GContainer scope) {
+        String errorPrefix = controllerPrefix(surface);
+        // a qualified name splits at its LAST dot. A property's integration SID never carries one, so everything
+        // before the last dot is the group and everything after is the property - and splitting anywhere else would
+        // ask for a group that does not exist. It is the CLASSIC surface this is for: there a group of several
+        // objects is named by its SID, all of them joined with dots (`OBJECTS d = X, t = Y` is `d.t`). A PROJECTED
+        // group cannot be one of those - a form is refused at build time until such a group is given a name.
+        int dot = name.lastIndexOf('.');
+        String prefixGroupSID = dot > 0 ? name.substring(0, dot) : null;
+        String integrationSID = dot > 0 ? name.substring(dot + 1) : name;
+
+        // a bare name on THIS surface is the form-level member, and it stays that whatever object came with it: a row
+        // passed to a form-level property is meaningless, and letting the row's group scope the name would answer with
+        // a DIFFERENT property that happens to share it. Asked before the object, so both readings say one thing
+        if (scope != null && prefixGroupSID == null && reactData != null) {
+            GPropertyDraw formLevel = reactData.getShownFormProperty(integrationSID, scope); // the one that HAS the member
+            if (formLevel != null)
+                return formLevel; // what the projection carries is checked when the form is built, so nothing to add
+        }
 
         GGroupObject group = null;
         if (prefixGroupSID != null) { // an explicit group prefix in the name wins over the passed object's group
             group = form.getGroupObject(prefixGroupSID);
-            if (group == null)
+            if (group == null) // it is qualified and names no group of this form: say which half failed
                 throw new RuntimeException(errorPrefix + "unknown object group '" + prefixGroupSID + "'");
         } else if (objectKey != null && !objectKey.isEmpty()) { // no prefix: the explicit row's own group scopes the lookup
             group = form.getObject(objectKey.getKey(0)).groupObject; // a resolved row/handle is a same-form object
@@ -608,23 +729,66 @@ public class GFormController implements EditManager {
             GPropertyDraw draw = form.getPropertyDraw(group, integrationSID);
             if (draw == null)
                 throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");
+            if (form.countPropertyDraws(group, integrationSID) != 1) // the name singles none of them out - the same
+                throw new RuntimeException(errorPrefix + "'" + integrationSID + "' is drawn more than once on group '" // rule the member list is built by
+                        + group.getSID() + "', so this name does not say which of them is meant; give them explicit EXTIDs");
+            checkAddressableDraw(errorPrefix, draw);
             return draw;
         }
 
+        // ... and where the form level said nothing, a bare name means the one group that draws it - the convenience
+        // `properties.change({property: 'qty'})` rests on
         GPropertyDraw draw = form.getSinglePropertyDraw(integrationSID); // throws if ambiguous
         if (draw == null)
             throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' not found");
+        checkAddressableDraw(errorPrefix, draw);
         return draw;
     }
 
-    private GGroupObjectValue resolveControllerObject(String methodName, String property, JavaScriptObject objectOrKey) {
+    // a row of a KNOWN group, named however a view has it - the row, its handle, or the key the projection gave it.
+    // Where the group is known the key can be looked up, so a view can hand back what it was handed; where it is not
+    // (an unqualified changeProperty, whose group the object itself has to name) only a row or a handle can say which
+    // group it belongs to, and a bare key is still refused
+    private GGroupObjectValue resolveRow(String errorPrefix, GGroupObject group, JavaScriptObject objectOrKey) {
+        GGroupObjectValue key = reactData != null ? reactData.resolveRowKey(group, objectOrKey)
+                                                  : GGroupObjectValue.resolveObject(objectOrKey);
+        if (key == null)
+            throw new RuntimeException(errorPrefix + "expects a row of '" + group.getSID() + "', its objects handle,"
+                    + " or its key; that is none of them, or names no row the group has now");
+        return key;
+    }
+
+    private GGroupObjectValue resolveControllerObject(String surface, String property, JavaScriptObject objectOrKey, GContainer scope) {
         if (GwtClientUtils.isUndefinedOrNull(objectOrKey)) // raw JS key: a numeric 0 key reads as null under Java == null (GWT falsy-primitive collapse)
             return null;
 
         GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
-        if (objectKey == null) // an EXPLICIT object that is neither a row nor a raw handle: fail loudly
-            throw new RuntimeException(methodName + "('" + property + "'): the object argument is not a data row or an objects handle; pass one of those");
+        if (objectKey == null) { // ... a KEY resolves too, wherever the NAME settles which group's rows to look in
+            GGroupObject nameGroup = getNameGroup(property, scope);
+            if (nameGroup != null)
+                return resolveRow(controllerPrefix(surface), nameGroup, objectOrKey);
+            // it does not settle it - the property is drawn on several groups, or on none - so the group is what the
+            // object argument itself is being asked for, and a bare key names no group
+            throw new RuntimeException(controllerPrefix(surface) + "the object argument is not a data row or an objects handle;"
+                    + " pass one of those, or name the property as '<group>." + property + "' so its key can be looked up"
+                    + " ('" + property + "' alone does not say which group's row is meant)");
+        }
         return objectKey;
+    }
+
+    // the group a NAME settles ON ITS OWN, with no object to ask: the one its prefix names, or - for a bare name -
+    // the single group it is drawn on. A key can be looked up wherever this answers, which is what lets a view hand
+    // back `data.<g>.keys[i]` to `properties.change([{property: 'qty', object: <that key>}])`: the name says `qty`,
+    // `qty` is drawn on one group, so the key has somewhere to be looked up. It answers null only when the name
+    // genuinely cannot say - drawn on several groups, or form-level, or not drawn at all - and there the object
+    // itself has to name the group, so a bare key is still refused.
+    private GGroupObject getNameGroup(String name, GContainer scope) {
+        int dot = name.lastIndexOf('.'); // the same one split resolveControllerDraw reads the name with
+        if (dot > 0) // qualified: the prefix answers, or nothing does
+            return form.getGroupObject(name.substring(0, dot));
+        if (scope != null && reactData != null && reactData.getShownFormProperty(name, scope) != null) // the same reading the
+            return null;                    // draw is resolved by: a bare name is the FORM-LEVEL member, which has no group
+        return form.getSingleDrawnGroup(name); // drawn on more than one: only the object can say which is meant
     }
 
     private static GGroupObjectValue getControllerColumnKey(GGroupObjectValue objectKey) {
@@ -649,36 +813,72 @@ public class GFormController implements EditManager {
             return true;
         return draw.isAction();
     }
-    public boolean isChangeObject(String property, JavaScriptObject object) {
-        return isChangeObject(resolveControllerDraw(property, GGroupObjectValue.resolveObject(object)), object);
+    public boolean isChangeObject(String surface, String property, JavaScriptObject object, GContainer scope) {
+        return isChangeObject(resolveControllerDraw(surface, property, GGroupObjectValue.resolveObject(object), scope), object);
     }
-    public void controllerChangeProperty(String property, JavaScriptObject objectOrKey, JavaScriptObject value) {
-        controllerChangeProperties(new String[]{property}, new JavaScriptObject[]{objectOrKey}, new JavaScriptObject[]{value});
+    // a member's own change(): one property, and a member is what named it
+    public void controllerChangeProperty(String surface, String property, JavaScriptObject objectOrKey, JavaScriptObject value, GContainer scope) {
+        changeControllerProperties(new String[]{surface}, new String[]{property}, new JavaScriptObject[]{objectOrKey}, new JavaScriptObject[]{value}, scope);
     }
-    public void controllerChangeProperties(String[] properties, JavaScriptObject[] objectsOrKeys, JavaScriptObject[] values) {
-        ArrayList<GPropertyDraw> props = new ArrayList<>();
-        ArrayList<GGroupObjectValue> keys = new ArrayList<>();
-        ArrayList<PValue> pvalues = new ArrayList<>();
-        if (properties == null || objectsOrKeys == null || values == null
-                || objectsOrKeys.length < properties.length || values.length < properties.length) {
-            GwtClientUtils.consoleError("changeProperties: objects/values arrays must cover every property");
-            return;
+
+    // the CLASSIC grid view's stringly-typed changeProperty, which forwards a property that is none of its own
+    // columns (#1655). It has its OWN entry rather than a flag on the one above, because it is another surface with
+    // another rule: it names the whole FORM, member or no member, as it always has - that API is older than this one
+    // and is not a shortcut for its members. Everything else it does is the same, so it is the same three steps.
+    public void classicChangeProperty(String surface, String property, JavaScriptObject objectOrKey, JavaScriptObject value) {
+        GGroupObjectValue objectKey = resolveControllerObject(surface, property, objectOrKey, null); // no scope: the classic API
+        GPropertyDraw draw = resolveControllerDraw(surface, property, objectKey, null); // throws on ambiguity / conflict / not-found
+        changeProperties(new GPropertyDraw[]{draw}, new GGroupObjectValue[]{getControllerColumnKey(objectKey)},
+                new PValue[]{GSimpleStateTableView.convertFromJSUndefValue(draw, value)});
+    }
+    private static final String CHANGE_ENTRY_FIELDS = "property,object,value";
+
+    // the batch, whose names ARE its interface (no member can be one call for many properties): every entry says which
+    // of them it is, so a mistake in the fifth entry is not reported as a mistake in the call
+    public void controllerChangeProperties(JavaScriptObject entries, GContainer scope) {
+        String surface = "properties.change()";
+        String errorPrefix = controllerPrefix(surface);
+        boolean one = !GSimpleStateTableView.isJSArray(entries); // a list states them all, one entry states one
+        int size = one ? 1 : GSimpleStateTableView.jsArrayLength(entries);
+
+        String[] surfaces = new String[size], properties = new String[size];
+        JavaScriptObject[] objectsOrKeys = new JavaScriptObject[size], values = new JavaScriptObject[size];
+        for (int i = 0; i < size; i++) {
+            JavaScriptObject entry = one ? entries : GSimpleStateTableView.jsArrayGet(entries, i);
+            String entryPrefix = one ? errorPrefix : errorPrefix + "entry " + i + ": ";
+            if (!isJSObject(entry))
+                throw new RuntimeException(entryPrefix + "a change must be an object {property, object, value}");
+            String unknown = getUnknownField(entry, CHANGE_ENTRY_FIELDS);
+            if (unknown != null) // a typo'd `value` would otherwise read as "no value", i.e. exec the property instead of setting it
+                throw new RuntimeException(entryPrefix + "unknown field '" + unknown + "'; a change has property, object, value");
+            String property = getOwnString(entry, "property");
+            if (property == null) // absent, or there but not a name: a name-shaped thing that is not a name is not "none"
+                throw new RuntimeException(entryPrefix + (hasOwnField(entry, "property")
+                        ? "'property' must be the property's name, as a string" : "a change has no 'property'"));
+            surfaces[i] = one ? surface : surface + " entry " + i + " ('" + property + "')";
+            properties[i] = property;
+            objectsOrKeys[i] = getOwnField(entry, "object");
+            values[i] = getOwnFieldOrUndefined(entry, "value"); // absent -> UNDEFINED -> exec, as a member's change() with no argument does
         }
+        changeControllerProperties(surfaces, properties, objectsOrKeys, values, scope);
+    }
+    private void changeControllerProperties(String[] surfaces, String[] properties, JavaScriptObject[] objectsOrKeys, JavaScriptObject[] values, GContainer scope) {
+        if (properties.length == 0) // an empty batch is a no-op, not an empty request
+            return;
+        GPropertyDraw[] props = new GPropertyDraw[properties.length];
+        GGroupObjectValue[] keys = new GGroupObjectValue[properties.length];
+        PValue[] pvalues = new PValue[properties.length];
         for (int i = 0; i < properties.length; i++) {
-            GGroupObjectValue objectKey = resolveControllerObject("changeProperty", properties[i], objectsOrKeys[i]);
-            GPropertyDraw draw = resolveControllerDraw(properties[i], objectKey); // throws on ambiguity / conflict / not-found
-            props.add(draw);
-            keys.add(getControllerColumnKey(objectKey));
-            pvalues.add(GSimpleStateTableView.convertFromJSUndefValue(draw, values[i]));
+            GGroupObjectValue objectKey = resolveControllerObject(surfaces[i], properties[i], objectsOrKeys[i], scope);
+            GPropertyDraw draw = resolveControllerDraw(surfaces[i], properties[i], objectKey, scope); // throws on ambiguity / conflict / not-found
+            props[i] = draw;
+            keys[i] = getControllerColumnKey(objectKey);
+            pvalues[i] = GSimpleStateTableView.convertFromJSUndefValue(draw, values[i]);
         }
         changeProperties(props, keys, pvalues);
     }
     // the typed core: resolved draws/keys/values -> the same classic batch edit dispatch as a normal user edit
-    private void changeProperties(ArrayList<GPropertyDraw> props, ArrayList<GGroupObjectValue> keys, ArrayList<PValue> pvalues) {
-        if (props.isEmpty()) return;
-        GPropertyDraw[] pa = props.toArray(new GPropertyDraw[0]);
-        GGroupObjectValue[] ka = keys.toArray(new GGroupObjectValue[0]);
-        PValue[] va = pvalues.toArray(new PValue[0]);
+    private void changeProperties(GPropertyDraw[] pa, GGroupObjectValue[] ka, PValue[] va) {
         executePropertyEventAction(pa, ka, va, requestIndex -> {
             for (int i = 0; i < pa.length; i++)
                 // WYSIWYG guard (like GSimpleStateTableView.changeProperties): only overlay the optimistic value when the
@@ -693,11 +893,14 @@ public class GFormController implements EditManager {
     // exposed: it's only `values` + exact-match UX post-processing the platform derives from the filter operator, not an author
     // choice (add an `exactMatch` flag later if ever needed). Returns null for an unknown mode (caller rejects loudly).
     public static String getAsyncActionSID(String mode) {
+        return getAsyncActionSID("controller.<property>.getValues(): ", mode); // the classic grid view, which has no member path to quote
+    }
+    private static String getAsyncActionSID(String errorPrefix, String mode) {
         if (mode == null || mode.equals(ServerResponse.OBJECTS))
             return ServerResponse.OBJECTS;
         if (mode.equals(ServerResponse.VALUES) || mode.equals(ServerResponse.CHANGE))
             return mode;
-        GwtClientUtils.consoleError("getPropertyValues: unknown mode '" + mode + "'; expected 'objects' | 'values' | 'change'");
+        GwtClientUtils.consoleError(errorPrefix + "unknown mode '" + mode + "'; expected 'objects' | 'values' | 'change'");
         return null;
     }
     // async value lookup (autocomplete / suggestion list) for a form-level / CUSTOM REACT property — the form-level twin
@@ -707,15 +910,15 @@ public class GFormController implements EditManager {
     // group's current object). The mode picks the server lookup (OBJECTS suggestions vs distinct VALUES vs the edit-time
     // CHANGE autocomplete; CHANGE here targets THIS draw's own change action — no property:value concat, that's the
     // JSON-property cell-renderer's special case). Issues through the shared getAsyncValues.
-    public void controllerGetPropertyValues(String property, JavaScriptObject objectOrKey, String value, String mode, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) {
-        String actionSID = getAsyncActionSID(mode);
+    public void controllerGetPropertyValues(String surface, String property, JavaScriptObject objectOrKey, String value, String mode, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount, GContainer scope) {
+        String actionSID = getAsyncActionSID(controllerPrefix(surface), mode); // named by the member it was called on, like every other error here
         if (actionSID == null) { // unknown mode (already logged)
             if (failureCallback != null)
                 GwtClientUtils.call(failureCallback);
             return;
         }
-        GGroupObjectValue objectKey = resolveControllerObject("getPropertyValues", property, objectOrKey);
-        GPropertyDraw draw = resolveControllerDraw(property, objectKey); // throws on ambiguity / conflict / not-found
+        GGroupObjectValue objectKey = resolveControllerObject(surface, property, objectOrKey, scope);
+        GPropertyDraw draw = resolveControllerDraw(surface, property, objectKey, scope); // throws on ambiguity / conflict / not-found
         getAsyncValues(value, draw, getControllerColumnKey(objectKey), actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
     }
 
@@ -1039,6 +1242,9 @@ public class GFormController implements EditManager {
 
         if (reactData != null) { // CUSTOM REACT: project form state and push to the React container(s)
             reactData.update(fc);
+            // the controller carries what the projection carries, so it is brought along with it - a property the
+            // form stopped showing loses its member here, exactly as it loses its entry there
+            syncControllers();
             formLayout.updateReactContainers(reactData);
 
             updateRowRenderers(); // after the projection: the per-row renderers follow the rows it now holds
@@ -1342,7 +1548,7 @@ public class GFormController implements EditManager {
         // isLsfViewDescriptorReader. The predicate is isLsfView, not isLsfViewPerRow, so that it states the whole rule on its
         // own: an LSF PANEL draw of a react-owned group would otherwise fall through to the group answer below and
         // come back react-owned, and its readers would then be skipped here while the projection emits only caption/image.
-        // FormView.checkDelegate rejects that form at startup ("delegate the group's box instead"), so this is agreement
+        // FormView.checkLsfView rejects that form at startup ("mark the group's box instead"), so this is agreement
         // with the server rather than a case that reaches us - an LSF draw is platform-drawn, and that is the answer.
         if (property.isLsfView())
             return false;

@@ -655,6 +655,21 @@ public class GReactFormData {
         return valueKey != null && isShownProperty(draw, key) ? valueKey : null;
     }
 
+    // ... and the same question for a form-level draw, which has no group node: it is carried by the scope it sits
+    // in, at the top object, and only while it is shown - the predicate fillSingles emits it by
+    public boolean isShownFormProperty(GPropertyDraw draw, GContainer scope) {
+        return draw.groupObject == null && scope != null && getTopLevelScope(draw) == scope
+                && getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillSingles writes it under
+    }
+    // ... and the draw a BARE name means on the controller: the form-level one this projection is showing, which is
+    // the one that has the member. Asked of the projection and not of the form, or the name would answer with a draw
+    // that has no member - an unprojected form-level property, or one the form is not showing right now
+    public GPropertyDraw getShownFormProperty(String integrationSID, GContainer scope) {
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (integrationSID.equals(draw.integrationSID) && isShownFormProperty(draw, scope))
+                return draw;
+        return null;
+    }
     // what a property IS, written into its own entry beside its caption - the entry is where everything about a
     // property already lives, so this is one more thing it says rather than a second place to look.
     // `type` names the kind the projected value was converted by - a number, a boolean, a string, a date, or JSON
@@ -852,6 +867,11 @@ public class GReactFormData {
         return group != null && !getGroupScopes(group).isEmpty();
     }
 
+    // ... and whether THIS scope is the one that sees it: `data` is per react container, and so is the
+    // controller beside it - a view names what its own data carries
+    public boolean isProjectedGroup(GGroupObject group, GContainer scope) {
+        return group != null && getGroupScopes(group).contains(scope);
+    }
 
 
     private void markScopeDirty(GContainer scope) {

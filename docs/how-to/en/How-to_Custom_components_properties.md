@@ -530,7 +530,7 @@ The methods of the controller passed to the _update_ function, internal helpers 
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-The `ok` handler of `getValues` receives the result in the same format as the form controller's `getPropertyValues`. The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
+The `ok` handler of `getValues` receives the result in the same format as the form controller's `<group>.<property>.getValues`. The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
 
 ### Custom editor {#custom-editor}
 
