@@ -1,88 +1,80 @@
 ---
 slug: "/Brief_export"
-title: 'Brief: data export'
+title: 'Brief: data export (EXPORT)'
 ---
 
-## Data export map
+## Exporting properties and forms
 
-A detailed map of a single area — exporting data from the system to a file. The overall element map is in [Brief](Brief.md), the full syntax is in the [`EXPORT` operator](../language/EXPORT_operator.md), and the mechanism is described in [Data export](../paradigm/Data_export_EXPORT.md).
-
-This article is not part of the set always passed to the assistant; it is requested when needed.
-
-## Two export sources
-
-### Exporting properties
+The [`EXPORT` operator](../language/EXPORT_operator.md) creates an action that exports data to a file — either from a list of properties or from a form [opened in the structured view](../paradigm/In_a_structured_view_EXPORT_IMPORT.md):
 
 ```
-EXPORT [format] FROM [columnId =] expr, ... [WHERE expr] [ORDER expr [DESC], ...] [TOP expr] [OFFSET expr] [TO propertyId]
+EXPORT [exportFormat] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN
+  [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]]
+  [TOP topExpr] [OFFSET offsetExpr] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat]
+  [TOP topSelect]
+  [OFFSET offsetSelect]
+  [TO exportTo]
 ```
 
-Each listed expression becomes a column of the result. The result is always flat — a single table of rows.
-
-### Exporting a form
-
-```
-EXPORT formName [OBJECTS objName = expr, ...] [format] [TOP ...] [OFFSET ...] [TO ...]
-```
-
-The form is opened in the [structured view](../paradigm/Structured_view.md), so its object group hierarchy is carried into the result for **JSON** and **XML**. For the flat formats (**CSV**, **XLS**, **XLSX**, **DBF**, **TABLE**) each object group is exported to a separate file. Objects whose values are fixed in the `OBJECTS` block act as filters and do not participate in building the group hierarchy.
-
-## Formats and extensions
-
-If no format is specified, **JSON** is used. The extension of the resulting file is determined by the format when the value class of the destination property is `FILE`.
-
-| Format   | Extension |
-| -------- | --------- |
-| **JSON** | json      |
-| **XML**  | xml       |
-| **CSV**  | csv       |
-| **XLS**  | xls       |
-| **XLSX** | xlsx      |
-| **DBF**  | dbf       |
-| **TABLE**| table     |
-
-## Format options and their defaults
-
-| Format       | Options                                                     | Defaults                                    |
-| ------------ | ----------------------------------------------------------- | ------------------------------------------- |
-| **JSON**     | `CHARSET`                                                    | `UTF-8`                                     |
-| **XML**      | `HEADER` / `NOHEADER`, `ROOT`, `TAG`, `ATTR`, `CHARSET`      | `HEADER`, `UTF-8`; values in child tags     |
-| **CSV**      | separator, `HEADER` / `NOHEADER`, `ESCAPE` / `NOESCAPE`, `CHARSET` | `;`, `NOHEADER`, `ESCAPE`, `UTF-8`    |
-| **XLS**, **XLSX** | `SHEET`, `HEADER` / `NOHEADER`                          | `NOHEADER`                                  |
-| **DBF**      | `CHARSET`                                                    | `CP1251`                                    |
-| **TABLE**    | none                                                         | —                                           |
-
-For **XML**, `HEADER` controls not a table header row but a line such as `<?xml version="1.0" encoding="UTF-8"?>`. The name of the root element is set by `ROOT` (by default the name of the exported form, or `export` when properties are exported), and the name of the element wrapping each record by `TAG` (by default the name of the form's object group).
-
-## Result destination
-
-- `TO propertyId` — a property without parameters whose value class is a file class (`FILE`, `RAWFILE`, `JSONFILE` and so on).
-- If `TO` is not specified, the `System.exportFile` property is used.
-- When a form is exported to a flat format, the destinations are set per object group: `TO groupId1 = propertyId1, ...` — groups not listed are not exported, and exporting a form to a single file in a flat format is not supported; the [empty object group](../paradigm/Static_view.md#empty) is named `root`.
-
-## Defaults that shape the result
-
-- The format is **JSON**.
-- `WHERE` is the disjunction of all exported properties, so the exported sets of objects are those for which at least one of them is not `NULL`.
-- Properties with a `NULL` value are omitted from the **JSON** record (the key is absent) and written as empty cells in the flat formats; the record itself remains while the `WHERE` condition holds.
-- Column names are `expr1`, ..., `exprN` by the position of the expression in the list.
-- `ORDER` allows only expressions listed among the exported ones.
-- When a single value is exported without a column name, the **JSON** result contains the value itself rather than an object with a field.
-
-## Examples
+In the first form each listed expression becomes a column of the result, `WHERE` sets the rows, `ORDER` their order. In the second form the structure of the export is set by the form itself: its object groups, the properties shown for them, its filters; the objects fixed in the `OBJECTS` block act as additional filters. The mechanism is described in [data export](../paradigm/Data_export_EXPORT.md).
 
 ```lsf
 exportSkus (Store store) {
-    EXPORT DBF CHARSET 'CP866' FROM id(Sku s), name(s), weight(s) WHERE in(store, s);
-    EXPORT CSV NOHEADER NOESCAPE FROM id(Sku s), name(s), weight(s) WHERE in(store, s);
-    EXPORT FROM id(Sku s), name(s), weight(s) WHERE in(store, s) ORDER name(s) DESC;
+    EXPORT CSV FROM id = id(Sku s), name = name(s) WHERE in(store, s) ORDER name(s);
 }
 ```
 
+## Flat and hierarchical structure
+
+Exporting a list of properties always gives a flat result — a single table of rows.
+
+Exporting a form carries the hierarchy of its object groups into the result, but only in the **JSON** and **XML** formats. In the flat formats (**CSV**, **XLS**, **XLSX**, **DBF**, **TABLE**) each object group is exported to a separate file, and exporting a form to a single file in a flat format is not supported. The objects fixed in the `OBJECTS` block do not participate in building the group hierarchy.
+
+How a form turns into a data structure is described in the [structured view](../paradigm/Structured_view.md).
+
+## Formats and options
+
+The format is written before the list of exported data as one of the variants of the [`EXPORT` operator](../language/EXPORT_operator.md):
+
+```
+JSON [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+XLS [SHEET sheetExpr] [HEADER | NOHEADER]
+XLSX [SHEET sheetExpr] [HEADER | NOHEADER]
+DBF [CHARSET charsetStr]
+TABLE
+```
+
+| Format            | Options and their defaults                                                     |
+| ----------------- | ------------------------------------------------------------------------------ |
+| **JSON**          | `CHARSET` — `UTF-8`                                                             |
+| **XML**           | `HEADER` — the `<?xml ...?>` line; `ROOT` — the root element; `TAG` — the record element; `ATTR` — values as attributes; `CHARSET` — `UTF-8` |
+| **CSV**           | separator — `;`; `NOHEADER`; `ESCAPE`; `CHARSET` — `UTF-8`                       |
+| **XLS**, **XLSX** | `SHEET` — the sheet name; `NOHEADER`                                             |
+| **DBF**           | `CHARSET` — `CP1251`                                                             |
+| **TABLE**         | none                                                                             |
+
+## Where the result goes
+
+The `TO` block sets the property without parameters, of a file class (`FILE`, `RAWFILE`, `JSONFILE` and so on), that the result is written to. When a list of properties is exported, and when a form is exported to a hierarchical format (**JSON**, **XML**), a single file is produced, and without `TO` it goes into the `System.exportFile` property. When the value class of the destination is `FILE`, the file extension matches the name of the format in lower case (`json`, `xml`, `csv`, `xls`, `xlsx`, `dbf`, `table`).
+
+When a form is exported to a flat format, each object group produces its own file, so the destination is set separately for each group — `TO groupId1 = propertyId1, ...`. Groups not listed are not exported: there is no `System.exportFile` fallback here. The [empty object group](../paradigm/Static_view.md#empty) is named `root`.
+
 ```lsf
 exportSku (Store store) {
-    // flat format: the file is specified for the object group s
-    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportFile;
-    EXPORT exportSku XML;
+    LOCAL exportedFile = FILE ();
+    // flat format: the destination is set for the object group s of the exportSku form
+    EXPORT exportSku OBJECTS st = store DBF CHARSET 'CP866' TO s = exportedFile;
 }
 ```
+
+## Defaults that shape the result
+
+- The format, if not specified, is **JSON**.
+- `WHERE`, if not specified, is the disjunction of all exported properties: the exported object sets are those for which at least one of them is not `NULL`.
+- Column names, if not set, are `expr1`, ..., `exprN` by the position of the expression in the list.
+- A `NULL` value is omitted from the record in **JSON** and **XML** (the key or the element is absent) and is written as an empty cell in the flat formats; the record itself remains while the `WHERE` condition holds.
+- `ORDER` takes arbitrary expressions: an expression that is not among the exported ones is added to the internal query as a hidden column and does not appear in the result.
+- Exporting a single value without a column name gives the value itself in **JSON**, not an object with a field.

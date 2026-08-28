@@ -659,8 +659,42 @@ module.exports = {
           label: 'Brief',
           link: {type: 'doc', id: 'brief/Brief'},
           items: [
-            'brief/Brief_export',
-            'brief/Brief_physical_model',
+            {
+              type: 'category',
+              label: 'Domain logic',
+              items: [
+                'brief/Brief_properties',
+                'brief/Brief_actions',
+                'brief/Brief_import',
+                'brief/Brief_export',
+                'brief/Brief_sessions',
+                'brief/Brief_events',
+                'brief/Brief_constraints',
+              ]
+            },
+            {
+              type: 'category',
+              label: 'View logic',
+              items: [
+                'brief/Brief_forms',
+                'brief/Brief_design',
+                'brief/Brief_reports',
+                'brief/Brief_navigator',
+              ]
+            },
+            {
+              type: 'category',
+              label: 'Physical model',
+              items: [
+                'brief/Brief_identification',
+                'brief/Brief_modularity',
+                'brief/Brief_extensions',
+                'brief/Brief_metaprogramming',
+                'brief/Brief_integration',
+                'brief/Brief_i18n',
+                'brief/Brief_execution',
+              ]
+            },
           ]
         },
         {
@@ -668,8 +702,39 @@ module.exports = {
           label: 'Rules',
           link: {type: 'doc', id: 'rules/Rules'},
           items: [
-            'rules/Rules_export',
-            'rules/Rules_physical_model',
+            {
+              type: 'category',
+              label: 'Domain logic',
+              items: [
+                'rules/Rules_properties',
+                'rules/Rules_actions',
+                'rules/Rules_import',
+                'rules/Rules_export',
+                'rules/Rules_sessions',
+                'rules/Rules_events',
+                'rules/Rules_constraints',
+              ]
+            },
+            {
+              type: 'category',
+              label: 'View logic',
+              items: [
+                'rules/Rules_forms',
+                'rules/Rules_design',
+                'rules/Rules_reports',
+                'rules/Rules_navigator',
+              ]
+            },
+            {
+              type: 'category',
+              label: 'Physical model',
+              items: [
+                'rules/Rules_modularity',
+                'rules/Rules_migration',
+                'rules/Rules_i18n',
+                'rules/Rules_execution',
+              ]
+            },
           ]
         },
         {type: 'doc', id: 'paradigm/MCP_server'},

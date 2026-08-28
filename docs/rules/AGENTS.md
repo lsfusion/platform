@@ -5,14 +5,24 @@ docs/rules/en and docs/rules/ru).
 
 ----------------------------------------------------------------
 
-RULES — applies to docs/<lang>/rules/
+RULES — applies to docs/rules/<lang>/
 
 ----------------------------------------------------------------
 
-The `rules/` folder holds the lsFusion task rules / coding recommendations
-(`Rules.md` — the AI system-prompt task rules). This is the realization of the
-earlier "Guide" recommendation part: it states what should and should not be
-done when writing `.lsf`, distilled from Language / Paradigm / How-to.
+The `rules/` folder holds the lsFusion task rules / coding recommendations.
+This is the realization of the earlier "Guide" recommendation part: it states
+what should and should not be done when writing `.lsf`, distilled from
+Language / Paradigm / How-to.
+
+The folder has two kinds of article, and they have different budgets:
+- `Rules.md` is the CORE. It is served whole by `lsfusion_get_guidance`, so
+  every byte of it is spent on every task. It carries only what applies
+  regardless of area, and it MUST keep the requirement to fetch the rules of
+  the area being worked in. It deliberately does NOT list the areas that have
+  an article: the lookup is mandatory whether or not an area is on a list, and
+  a list is a second catalogue to keep in step for nothing.
+- `Rules_<area>.md` are the per-area articles. They reach the assistant only
+  through `lsfusion_retrieve_docs(type='rules', ...)`, never automatically.
 
 It MUST contain general recommendations:
 - what should be done
@@ -40,12 +50,32 @@ Rules article structure convention:
   but examples
   are secondary
   to the recommendations
-- keep the guidance
+- keep the CORE
   deliberately compact;
   it is primed into
-  the assistant's context,
-  so noise hurts
+  the assistant's context
+  on every task,
+  so noise there hurts
   more than missing edges
+- a per-area article
+  is retrieved, not primed:
+  it may be longer,
+  but it MUST start
+  with a `##` heading —
+  no preamble
+  and no `Scope` section.
+  Text before the first `##`
+  becomes a chunk of its own
+  in the retrieval index,
+  and a scope paragraph
+  repeated across articles
+  becomes near-duplicate noise
+- every `##`
+  is a chunk boundary
+  and a search signal;
+  name it
+  after its subject,
+  not `General`
 
 Cross-references:
 Rules articles

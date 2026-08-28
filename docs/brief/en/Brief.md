@@ -7,240 +7,92 @@ slug: "/Brief"
 
 Format: **very concise**, for understanding and code generation. Detailed description and syntax is retrieved with tools via RAG in docs.
 
-Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. When unsure, omit the filter — the default searches all three.
+Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes; `brief` — a per-area map, fetched with `lsfusion_retrieve_docs(type='brief', query='<area>')`; most areas named here have one, and a lookup that comes back with nothing means this article is all there is on it; `rules` — the coding constraints of one area. When unsure, omit the filter — by default the search goes over all five branches and merges them; only the two top articles (this one and `Rules`) are excluded, because `lsfusion_get_guidance` delivers them in full.
 
 ---
 
-## Core elements (from simpler to more complex)
+## Domain logic — the core elements (from simpler to more complex)
 
 ### Classes
-- **Analogy**: OOP classes, with multiple dispatch by parameter classes. Define object types; used in signatures of properties/actions/forms.
-- **Description**: base element — set of objects. Inheritance. Built-in vs user classes. Polymorphism via inheritance, `ABSTRACT` + `+=` / `ACTION+`, `MULTI`.
-- **Syntax (search)**: `CLASS ClassName ['Caption'] [: ParentClass];`
+- **Description**: base element — a set of objects. Defines object types; used in the signatures of properties and actions, and as the classes of a form's objects. Inheritance (may be multiple). Built-in vs user classes. Polymorphism via inheritance, `ABSTRACT` + `+=` / `ACTION+`, `MULTI`.
+- **Analogy**: OOP classes, with multiple dispatch by parameter classes.
+- **Statement** ([`CLASS`](../language/CLASS_statement.md)): `CLASS ABSTRACT name [caption] [imageSetting] [: parent1, ..., parentN];` and `CLASS [NATIVE] name [caption] [imageSetting] [{ objectName1 [objectCaption1] [imageSetting], ... }] [: parent1, ..., parentN];` for a class with static objects
 
 ### Properties
-- **Analogy**: math / pure functions. Compute facts, no state change. Declarative, close to SQL.
-- **Description**: DATA (stored) vs calculated (formulas, aggregates, compositions).
-- **Syntax (search)**: `name 'Caption' = DATA Type (Class1, ...);` or `name (Params...) = Expression;`
+- **Description**: compute facts, do not change state. DATA (stored in the database, unless declared `LOCAL` — those live in the session) vs calculated (formulas, aggregates, compositions).
+- **Analogy**: math / pure functions. Declarative, close to SQL.
+- **Statement** ([`=`](../language/=_statement.md)): `name [caption] [(param1, ..., paramN)] = expression [options];`; a stored one is `= DATA [LOCAL [NESTED [MANAGESESSION | NOMANAGESESSION]]] returnClass [(argumentClass1, ..., argumentClassN)]` ([`DATA`](../language/DATA_operator.md)).
 
 ### Actions
-- **Analogy**: procedures / methods. Change state (DB or external). Imperative, close to Java.
-- **Description**: dual to properties: properties = what; actions = how it evolves.
-- **Syntax (search)**: `actionName 'Caption' (Params...) { ActionOperators }`
-
-### Forms
-- **Analogy**: SQL query but broader (many tables at once). Universal data/UI element.
-- **Description**: `OBJECTS` (groups), `PROPERTIES` (what to show / actions), `FILTERS` (row filter). Views: interactive (`SHOW`), print (`PRINT`), structured (`EXPORT`/`IMPORT`). Extensible via `EXTEND FORM`.
-- **Syntax (search)**: `FORM FormName 'Caption' OBJECTS ... PROPERTIES ... FILTERS ... ;`
+- **Description**: change state (DB or external). Dual to properties: properties = what; actions = how it evolves.
+- **Analogy**: procedures / methods. Imperative, close to Java.
+- **Statement** ([`ACTION`](../language/ACTION_statement.md)): `name [caption] [(param1, ..., paramN)] { actionBody } [options]`
+- **Change sessions**: changes do not reach the database as they are made — they collect in the current session until `APPLY` writes them or `CANCEL` drops them; `NEWSESSION` and `NESTEDSESSION` run an action against a session of its own. In a nested session `APPLY` copies the changes to the parent instead of writing them, and during an apply transaction no session is created at all — the action is deferred into the current one.
 
 ### Events
-- **Analogy**: DB triggers but broader. Time-dependent reactions to data changes.
-- **Description**: main operator `WHEN`; session-change analyzers `CHANGED`, `SET`, `DROPPED`, `PREV`, etc. Form events: `ON CHANGE`/`ON EDIT`/`ON CONTEXTMENU`/`ON GROUPCHANGE`/`ON CHANGEWYS`. Block events: `BEFORE` / `AFTER`.
-- **Syntax (search)**: `prop(...) <- Expr WHEN CHANGED(...);` or `PROPERTIES(...) prop ON CHANGE action(...);`
+- **Description**: time-dependent reactions — a global event runs an action at a moment in the session's life, most often a data change; a form event runs one at a point in the form's life — `INIT`, `APPLY`, `CANCEL`, `CLOSE`, `DROP` — on what the user does, from a key to a tab or a row selection, or on a timer with `ON SCHEDULE`. Main statement `WHEN`; `<- WHEN` declares a calculated event: the value is derived when the property is read, and an explicit write to it wins; session-change analyzers `CHANGED`, `SET`, `DROPPED`, `PREV`, etc. Form events are attached with `ON`: `ON CHANGE`/`ON EDIT`/`ON CONTEXTMENU`/`ON GROUPCHANGE`/`ON CHANGEWYS`. The `BEFORE` / `AFTER` statements add an aspect action that runs before / after another action.
+- **Analogy**: DB triggers but broader.
+- **Statements** ([`WHEN`](../language/WHEN_statement.md), [`ON`](../language/ON_statement.md)): `WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;` and `ON eventClause eventAction;`
 
 ### Constraints
-- **Analogy**: integrity constraints, time-independent invariants.
-- **Description**: checked on `APPLY`; types: general (`CONSTRAINT`), simple (`=>`, `NONULL`, uniqueness via `GROUP AGGR`).
-- **Syntax (search)**: `CONSTRAINT condition(...) [CHECKED [BY prop, ...]] MESSAGE 'text' [PROPERTIES prop, ...];` or `premise(...) => consequence(...) [RESOLVE [LEFT] [RIGHT]];`
+- **Description**: time-independent invariants over the database. Checked at the event given by `eventClause`; with none given, on `APPLY`. Kinds: general (`CONSTRAINT`), simple — the consequence `=>`, which takes a `RESOLVE [LEFT] [RIGHT]` clause telling the platform which side to fix automatically, and the definiteness `NONULL [DELETE]`, which has no such clause; the uniqueness of aggregated objects is added by `GROUP AGGR` / `AGGR`.
+- **Analogy**: `CHECK` and `NOT NULL` in SQL, except that the condition is an arbitrary property over the whole database.
+- **Statement** ([`CONSTRAINT`](../language/CONSTRAINT_statement.md)): `CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr [PROPERTIES outExpr1, ..., outExprM];`
 
 ### Aggregations
-- **Analogy**: aggregate objects maintained declaratively.
-- **Description**: created via `AGGR` (see property operators). Platform maintains aggregate objects by rules.
-- **Syntax (search)**: see `AGGR` operator below.
+- **Description**: aggregated objects that the platform creates and deletes by rule — `AGGR` creates the object when the aggregated expression becomes not `NULL` and deletes it when it becomes `NULL` again, acting on changes rather than on data that already exists; `GROUP AGGR` returns the object of the group. See [Brief: properties](Brief_properties.md) and [Brief: constraints](Brief_constraints.md).
+- **Operator** ([`AGGR`](../language/AGGR_operator.md)): `AGGR [eventClause] aggrClass WHERE aggrExpr [NEW [newEventClause]] [DELETE [deleteEventClause]]`
 
-### Additional elements
+## View logic — the same model, shown to a user or to another system
+
+### Forms
+- **Description**: universal data/UI element. `OBJECTS` (groups), `PROPERTIES` (what to show / actions), `FILTERS` (row filter). Views: interactive (`SHOW`), print (`PRINT`), structured (`EXPORT`/`IMPORT`). Extensible via `EXTEND FORM`.
+- **Analogy**: SQL query but broader (many tables at once).
+- **Statement** ([`FORM`](../language/FORM_statement.md)): `FORM name [caption] formOptions formBlock1 ... formBlockN;`
+- **Design** (`DESIGN`): the interactive view is laid out from components the platform generates out of the form structure; `DESIGN` moves, hides and configures them.
+
+### Navigator and windows
 - **Navigator (`NAVIGATOR`)**: menu / routing binding forms and actions.
-- **Windows (`WINDOW`)**: layout of multiple forms/areas.
-- **Tables (`TABLE`)**: explicit DB tables (rare; low-level IN/integration).
-- **Indexes (`INDEX`)**: explicit DB indexes (mostly auto-generated).
+- **Windows (`WINDOW`)**: areas of the screen, each showing its own navigator elements.
+
+## Physical model — how a project is built and how it runs
+
+Three parts: development — the modules a project is made of and everything about writing them; execution — telling the platform how to store and process the data so it performs; management — running the result.
 
 ### Modules
-- **Analogy**: package / assembly (`.lsf` file).
-- **Description**: unit of reuse; contains classes/properties/actions/forms/events/constraints; dependencies via `REQUIRE`.
-- **Syntax (search)**: `MODULE ModuleName;` `REQUIRE ModuleA, ModuleB;`
+- **Description**: unit of reuse (one `.lsf` file); contains classes/properties/actions/forms/events/constraints; dependencies via `REQUIRE`.
+- **Analogy**: package / assembly.
+- **Statement** ([module header](../language/Module_header.md)): `MODULE name;` `[REQUIRE moduleName1, ..., moduleNameN;]` `[PRIORITY namespaceName1, ..., namespaceNameM;]` `[NAMESPACE namespaceName;]`
 
 ### System modules (standard library)
-- **Analogy**: the platform's standard library — shipped with the server, not written by you.
-- **Description**: ready-made classes, properties and actions pulled in with `REQUIRE` (`System` is required implicitly when a module has no `REQUIRE`). `System` — base class `Object`, `apply`/`cancel`, `canceled`, `applyMessage`, HTTP request/response context (`headers`, `params`, `statusHttp`), `random`, `randomUUID`. `Utils` — strings (`lpad`, `substr`, `strpos`, `replace`, `trim`), numbers (`round`, `trunc`, `abs`, `mod`), files, JSON, encoding, full-text search. `Time` — `currentDate` / `currentDateTime`, date arithmetic (`sum[DATE,INTEGER]`, `sumDay`, `sumSeconds`, `subtract`, `firstDayOfMonth`), extraction (`extractYear`), calendar classes (`Month`, `DOW`). `Authentication` — users and login context: classes `Contact`, `User` / `CustomUser`, `Computer`; `currentUser`, `currentComputer`, `login`, `email`, auth tokens, LDAP / OAuth settings. Also `Reflection`, `Security`, `Scheduler`, `Email`, `Numerator`.
-- **Syntax (search)**: ordinary `.lsf` declarations, not language primitives (the named functions are properties) — search `paradigm`, not `language`.
 
----
+The platform loads twelve of them itself, `System`, `Utils`, `Time`, `Authentication` among them — but loading is not depending: `REQUIRE` is what makes a module's declarations reachable, and only `System` is implicit. Which twelve those are and what each module is for is in [Brief: modules](Brief_modularity.md).
 
-## Property operators
+### Development and integration
+- **Identification, naming, migration**: an element is named by `<namespace>.<name>`, and a property or action by that plus the signature of its parameter classes; renaming it, or moving it to another namespace, changes that name — moving it to another module under the same `NAMESPACE` does not — and `migration.script` carries what a given kind of change preserves — a `PROPERTY` entry keeps the settings, the DATA of a property needs `STORED PROPERTY`.
+- **Extensions**: an already declared class, property, action or form is extended without editing its declaration — usually from another module, which is how a project is composed out of modules, but within one module too, where it is a way to order initialization.
+- **Metaprogramming** (`META`, `@`): parameterized metacode generates repeated declarations instead of copying them.
+- **Integration**: four directions — an external system calls in over HTTP; an internal one calls in through the Java API or straight against the SQL tables; `EXTERNAL` calls out to an external system; `INTERNAL` and `FORMULA` call out to an internal one, in the same JVM or database.
+- **Internationalization**: a caption is plain text unless it carries an `{id}` fragment, which is resolved against the ResourceBundle files of the current locale; reverse translation can insert that id for the author. User data is not translated.
 
-### Basic expressions
-- **Description**: arithmetic, logic, strings, comparisons, type tests (`IS`/`AS`), conditional (`IF ... ELSE`, postfix `f(a) IF g(a)`). String / date / number functions (`lpad`, `substr`, `mod`, `currentDate`, `sum[DATE,INTEGER]`) are not operators — they are properties of `Utils` / `Time`, see System modules.
-- **Syntax (search)**: standard expression operators.
+### Execution — telling the platform how to store and process
+- **Materializations** (`MATERIALIZED`): a calculated property can be stored in a table field instead of computed on read; the platform keeps it up to date as the data it depends on changes, and recomputes it on demand when the definition itself changed.
+- **Tables (`TABLE`)**: where stored values live — non-local `DATA` properties and materialized calculated ones; declared by the classes of its keys, and such a property without an explicit table is placed automatically.
+- **Indexes (`INDEX`)**: indexes on materialized properties and table key fields; the indexes on a table's own keys are created automatically.
 
-### Composition
-- **Analogy**: function call inside function / function composition in math. Using one property in another's expression.
-- **Description**: property-from-property. Usually implicit (simple property substitution in expression).
-- **Syntax (search)**: using properties in other properties' expressions.
-
-### Grouping (`GROUP`)
-- **Description**: value aggregates (sum/count/max/min/last/concat). Not object aggregates.
-- **Syntax (search)**: `GROUP SUM source(...) IF Condition;` or `GROUP SUM source(...) BY groupExprs...;`
-- **Result parameters**: the `BY` expressions plus the used upper parameters; a used upper parameter is not listed in `BY` — with an explicit parameter list on the left, the `BY` expressions are mapped in order to the unused parameters.
-
-### Partition / window (`PARTITION`)
-- **Description**: window logic: ranks, previous value, cumulative.
-- **Syntax (search)**: `PARTITION AggOp expression IF Condition ORDER orderExprs...;`
-
-### Aggregating objects (`GROUP AGGR`)
-- **Description**: maintains aggregate objects via `BY`.
-- **Syntax (search)**: `GROUP AGGR Class x WHERE BaseCondition BY groupExprs...;`
-
-### Operator `AGGR`
-- **Description**: creates/maintains aggregate objects automatically.
-- **BNF**: `aggrPropertyDefinition ::= AGGR baseEventPE customClassUsage WHERE propertyExpression (NEW baseEventNotPE)? (DELETE baseEventNotPE)?`
-- **Syntax (search)**: `AGGR Class x WHERE condition(...) [NEW newEvent] [DELETE deleteEvent] [MATERIALIZED] [INDEXED];`
-
-### OVERRIDE
-- **Description**: merge multiple sources with priority.
-- **Syntax (search)**: `OVERRIDE expr1, expr2, expr3;`
-
-### RECURSION
-- **Description**: recursive properties (trees/graphs/closures).
-- **Syntax (search)**: `RECURSION baseExpr THEN stepExpr;`
-
-### ABSTRACT
-- **Description**: declare abstract property; implementations via `+=` in other modules.
-- **Syntax (search)**: `ABSTRACT [MODIFIERS] Type (ParamClasses...);` and `prop[Context](Params...) += implExpr;`
-
----
-
-## Action operators
-
-### Basic operators
-- **Mutations**: assignment (`<-`), NEW, DELETE.
-- **Action call**: **Analogy** — function / procedure / method call. Simply action name with parameters. Not a mutation, executes another action.
-- **Syntax (search)**: `property(...) <- Expression [WHERE ...];`, `NEW alias = Class { ... }`, `DELETE ... WHERE ...;`, `actionName(params...);`
-
-### Sequence
-- **Description**: ordered block of actions.
-- **Syntax (search)**: `actionName(Params...) { op1; op2; }`
-
-### FOR loop
-- **Description**: iterate all tuples where condition property is not NULL; can create objects.
-- **Syntax (search)**: `FOR Expression [ORDER ...] [TOP n] [OFFSET m] [NEW alias = Class] DO { ... } [ELSE { ... }]`
-
-### WHILE loop
-- **Description**: repeat while condition property somewhere is true (not NULL).
-- **Syntax (search)**: `WHILE condition DO { ... }`
-
-### Branching
-- **Description**: `IF`, `CASE`, `MULTI` (polymorphic branching).
-- **Syntax (search)**: `IF ... THEN { ... } ELSE { ... }`, `CASE WHEN ...`, `MULTI impl1[p](p), impl2[p](p);`
-
-### Flow control
-- **Description**: `BREAK`, `CONTINUE`, `RETURN`, `TRY...CATCH`, `NEWTHREAD`, `NEWEXECUTOR`.
-- **Syntax (search)**: standard flow keywords.
-
-### Form actions
-- **Description**: `SHOW`, `DIALOG`, `ACTIVATE` (form / tab / property activation and object search), `EXPAND`, `COLLAPSE`.
-- **Syntax (search)**: `SHOW FormName [OBJECTS ...];`, `DIALOG FormName OBJECTS ... INPUT [FILTERS ...] DO { ... }`, `ACTIVATE FORM/TAB/PROPERTY name;`, `ACTIVATE [FIRST|LAST|NULL] group = obj;`
-
----
-
-## Change sessions
-- **Description**: isolated change set. Before `APPLY`, data is session-local. On `APPLY`: success → commit; failure → `canceled() = TRUE`, `applyMessage()` has error, data remains in session.
-- **Session ops**: `NEWSESSION action` (independent), `NESTEDSESSION` (dependent nested). Use for work units (dialog, import, file processing).
-
----
-
-## Form representations
-
-### Interactive view
-- **Analogy**: usual app pages but single execution flow (no split server/client language).
-- **Description**: `SHOW` opens interactive form; `DIALOG` modal with `INPUT` / `FILTERS`; `DESIGN` sets UI layout. `INPUT` — prompt user for value. Reactive updates; WYSIWYG.
-- **Syntax (search)**: `SHOW formName [OBJECTS ...] [DOCKED];`, `DIALOG formName OBJECTS ... INPUT [FILTERS ...] DO { ... }`, `DESIGN formName { ... }`, `INPUT var = Type DO { ... }`
-
-### Print view
-- **Analogy**: reports (jrxml + JasperReports).
-- **Description**: jrxml defines print layout; report initiated from lsFusion.
-- **Syntax (search)**: `PRINT formName [OBJECTS ...] TO FILE fileVar;`
-
-### Structured view
-- **Analogy**: structured data formats (JSON, XML, XLSX, DBF).
-- **Description**: `EXPORT` action outputs to file/stream; `JSON` property builds JSON; `IMPORT` loads back.
-- **Syntax (search)**: `EXPORT FROM expr1, expr2 TO fileVar;`, `prop(...) = JSON expr;`, `IMPORT JSON|CSV|XLS|XML FROM fileVar TO props...;`
-
----
-
-## Integration
-
-- **Idea**: same property/action paradigm for external and internal systems.
-
-### From current system to external (imperative, actions)
-- **Description**: `EXTERNAL` — HTTP/external code/SQL as actions.
-- **Syntax (search)**: `EXTERNAL Name 'id' [OPTIONS] (Params...);`
-
-### From current system to external (declarative, properties)
-- **Description**: `CUSTOM` UI components with JSON interface; `JSON` build structures for UI/API.
-- **Syntax (search)**: `OBJECTS alias = Class CUSTOM 'componentName' ...`, `prop(...) = JSON expr;`
-
-### From external systems to current
-- **Description**: Action API — call lsFusion actions via HTTP. Protocol HTTP (ports `7651`). Action modes: `EXEC` (by name), `EVAL` (code with action `run`), `EVAL ACTION` (action code). Form API — work with forms via HTTP for frontends. File API — browse the server classpath via HTTP (`list`/`read`/`search`), web server only. Actions marked `@@api` for API access.
-- **Syntax (search)**: action option `@@api`, URLs `/exec?action=...`, `/eval?script=...`, `/eval/action?script=...`, `/files/list`, `/files/read`, `/files/search`
-
-### From current system to internal (imperative)
-- **Description**: `INTERNAL` — call Java code; on Java side use `findProperty`, `read`, `change`.
-- **Syntax (search)**: `INTERNAL Name 'id' [OPTIONS] (Params...);`
-
-### From current system to internal (declarative)
-- **Description**: `FORMULA` — properties computed by SQL.
-- **Syntax (search)**: `prop(...) = FORMULA 'sql expression with $1, $2, ...';`
-
----
-
-## Physical model (DB structure)
-- **Analogy**: manual/dynamic DB schema control (tables, indexes, materialization).
-- **Description**: performance/open schema focus.
-- **Syntax (search)**: `TABLE tableName ['dbName'] (ClassOrParams...);`, `prop = DATA Type (Class) MATERIALIZED ['dbFieldName'] INDEXED ['indexName'];`
-
----
-
-## Extensions
-- **Description**: modularity/polymorphism at module level: `EXTEND CLASS`, `EXTEND FORM`, `ABSTRACT` + `+=`, `ACTION+`.
-- **Syntax (search)**: `EXTEND CLASS ClassName : ParentClass;`, `EXTEND FORM FormName ... ;`, `prop(...) += implExpr;`, `ACTION actionName(...) + { ... }`
-
----
-
-## Metaprogramming
-- **Analogy**: code generators/templates in language.
-- **Description**: the `@` statement generates code from descriptions; IDE can auto-generate. A `META` body consists of module-level statements (not action operators); the `@` statement itself is module-level.
-- **Syntax (search)**: `META name(param1, ...) ... END`, `@name(arg1, ...);`
-
----
-
-## Identification & ergonomics
-- **Namespaces**: control visible names. **Syntax (search)**: `NAMESPACE MyNamespace;`
-- **Explicit typing**: params/local props are typed. **Syntax (search)**: `LOCAL var = Type ();` (inside an action body only; at module level — `var = DATA LOCAL Type ();`)
-- **String interpolation**: build strings from identifiers/values (also for i18n). **Syntax (search)**: `'{namespace.element}'`
-
----
-
-## Internationalization
-- **Description**: captions via resource bundles (`*ResourceBundle.properties`). Use IDs like `{use.case.i18n.book}`; UI switches language automatically.
-- **Syntax (search)**: `CLASS Book '{use.case.i18n.book}';`
-
----
-
-## Migration
-- **Description**: migration files describe schema/data evolution; IDE auto-generates lines on renames; safe DB evolution.
-
----
+### Management — running the result
+- Launch parameters and working settings, the user interface, the [security policy](../paradigm/Security_policy.md), the interpreter, the scheduler, backups, monitoring, logs, the profiler and the chat. No brief article of its own: retrieve these from the `paradigm` branch.
 
 ## Mini map for AI
-1. `CLASS` → object type (table).
+1. `CLASS` → object type (a set of objects). A class is not mapped to a table: a table holds property values, its key fields hold object ids, and the parameter classes are what those key fields are typed by — a property without an explicit `TABLE` goes to the table whose key classes fit it.
 2. `= DATA` or `=` expression → property.
 3. `{ ... }` without `=` → action (imperative).
 4. `FORM` → UI/query/report definition.
 5. `SHOW / DIALOG / PRINT` → open/print form.
 6. `EXPORT / IMPORT` → external formats for properties/forms.
 7. `GROUP / PARTITION` → value aggregates.
-8. `GROUP AGGR / AGGR` → aggregate objects.
+8. `GROUP AGGR / AGGR` → aggregated objects.
 9. `NEWSESSION / APPLY / canceled()` → transaction/session control.
 10. `EXTEND / ABSTRACT / += / +{` → extension & polymorphism points.
-11. `WHEN` → data-change event; `ON` → form event.
+11. `WHEN`, `<- WHEN` → events on a data change; `ON` inside a `FORM` → a form event — a point in the form's life, a user action, or `ON SCHEDULE` on a timer.
 12. `Utils` / `Time` / `System` / `Authentication` → standard library (system modules); string, number and date functions, `currentUser`, `currentDate` live there.

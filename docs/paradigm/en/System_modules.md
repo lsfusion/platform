@@ -5,7 +5,7 @@ title: 'System modules'
 
 A *system module* is a [module](Modules.md) shipped with the platform. An application project pulls these modules in via `REQUIRE` and uses their declarations (classes, properties, actions, forms) as a ready-made standard library; the platform never expects them to be redefined.
 
-System modules live under `server/src/main/lsfusion/` in the platform repository: core modules under the `system/` subfolder, additional utility modules under `utils/`. The `System` module is pulled into every project build automatically; the rest require an explicit `REQUIRE`.
+System modules live under `server/src/main/lsfusion/` in the platform repository: core modules under the `system/` subfolder, additional utility modules under `utils/`. The platform loads the core modules itself, whatever the launch parameters say, and marks them as system ones; the utility modules are ordinary resources reached like any other. Being loaded is not being depended on: only `System` is an implicit dependency of every application module, and a declaration from any of the others is reached through a direct or transitive `REQUIRE`.
 
 ### Inventory
 

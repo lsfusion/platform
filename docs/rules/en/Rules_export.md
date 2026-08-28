@@ -1,17 +1,15 @@
 ---
 slug: "/Rules_export"
-title: 'Rules: data export'
+title: 'Rules: data export (EXPORT)'
 ---
-
-## Scope
-
-Recommendations for exporting data with the [`EXPORT` operator](../language/EXPORT_operator.md). The common mandatory rules are in [Rules](Rules.md); this article is not part of the set always passed to the assistant and is requested when needed.
 
 ## Choosing the export source
 
+Data is exported with the [`EXPORT` operator](../language/EXPORT_operator.md).
+
 1. Exporting a list of properties (`EXPORT FROM ...`) is used when the result is a single flat table of columns and its structure matches no existing form.
 
-2. Exporting a form (`EXPORT formName ...`) is used when the export repeats an already existing form or when the result needs the object group hierarchy. The hierarchy is preserved only in **JSON** and **XML**; in the flat formats each object group produces a separate file, so for them the destinations of all groups must be listed in the `TO` block.
+2. Exporting a form (`EXPORT formName ...`) is used when the export repeats an already existing form or when the result needs the object group hierarchy. The hierarchy is preserved only in **JSON** and **XML**; in the flat formats each object group produces a separate file, so for them the destinations are listed per group in the `TO` block — only for the groups that are wanted, since a group left out of the list is simply not exported.
 
 3. A form created solely for an export should be declared next to the export action and should not be added to the navigator.
 
@@ -23,7 +21,7 @@ Recommendations for exporting data with the [`EXPORT` operator](../language/EXPO
 
 3. Column identifiers should be given explicitly (`columnId = expr`). The default `expr1`, ..., `exprN` ties the field names in the external format to the order of the expressions, so inserting a column in the middle of the list silently changes the export contract.
 
-4. `ORDER` allows only expressions from the exported list, so a column needed for ordering should be included in the export.
+4. `ORDER` should be stated explicitly whenever the receiving side depends on the row order. Its expressions are arbitrary and need not be among the exported ones — a sorting expression is added to the internal query as a hidden column and does not reach the result — so a column should be added to the export only when the recipient needs it, not merely in order to sort by it.
 
 5. In the hierarchical formats a property with a `NULL` value is omitted from the record (in **JSON** the key is absent, in **XML** the element), while the flat formats (**CSV**, **XLS**, **XLSX**, **DBF**) keep the column and write an empty cell. So in **JSON** a missing key means `NULL`, not a failed export (for form properties with `SHOWIF` inclusion follows the `SHOWIF` value instead: a non-`NULL` value can be omitted and a `NULL` one emitted).
 
@@ -52,6 +50,11 @@ Recommendations for exporting data with the [`EXPORT` operator](../language/EXPO
 2. For regular exports, building the file should be done in a separate action with no user interaction, so that it can be called both from a form and on a schedule.
 
 ## Examples
+
+The first shows the property-list form: a flat result whose shape matches no
+form, with the columns aliased, the selection in `WHERE` and an explicit
+`ORDER`. The second shows the form form: an existing form exported to a
+hierarchical format, its outer object passed with `OBJECTS`.
 
 ```lsf
 exportShipments (Store store) {

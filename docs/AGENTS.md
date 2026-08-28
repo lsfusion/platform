@@ -21,8 +21,8 @@ translated content):
 - RULES    — docs/rules/AGENTS.md       (AI task rules / coding recommendations;
   this is the `rules/` folder — what the earlier "Guide" recommendation part
   is realized as)
-- BRIEF    — `brief/` is a derived AI capability map distilled from the above;
-  no per-type AGENTS.md (a common rule covers it)
+- BRIEF    — docs/brief/AGENTS.md       (the AI capability map distilled from
+  the above)
 
 Keep a rule that applies to only one type in that type's docs/<type>/AGENTS.md.
 
@@ -229,13 +229,16 @@ and the Rules / Brief guidance.
 GENERAL GUIDE
 
 There is also a general guide — the Brief at `brief/{en,ru}/Brief.md` —
-distilled from all documentation parts. It is served to the AI assistant by the
-MCP `lsfusion_get_guidance` tool (alongside the Rules at `rules/{en,ru}/Rules.md`),
-so its key information is always available in context.
+distilled from all documentation parts. That TOP article is served to the AI
+assistant by the MCP `lsfusion_get_guidance` tool (alongside the Rules top at
+`rules/{en,ru}/Rules.md`), so its map is always available in context. The
+per-area `brief/{en,ru}/Brief_*.md` articles are not: like the per-area rules,
+they are reached through retrieval.
 
-Brief, which has no per-type AGENTS.md, references Language / Paradigm
-(the primary documentation) and never the reverse — the same cross-reference
-direction that `how-to/AGENTS.md` and `rules/AGENTS.md` state for those types.
+Brief references Language / Paradigm (the primary documentation) and never the
+reverse — the same cross-reference direction that `how-to/AGENTS.md` and
+`rules/AGENTS.md` state for those types. Brief-specific rules live in
+`docs/brief/AGENTS.md`.
 
 ----------------------------------------------------------------
 
@@ -556,6 +559,22 @@ only if they are
 established terms
 in the platform
 or in the existing documentation.
+
+`docs/brief/` is the one exception:
+there an analogy
+to a familiar construction
+from another system
+is allowed
+and expected,
+because that branch
+exists to give an assistant
+a fast bearing
+on an unfamiliar platform.
+The analogy
+supplements the literal description,
+it does not replace it,
+and it does not travel
+to the other branches.
 
 Sibling section headings
 at the same depth
