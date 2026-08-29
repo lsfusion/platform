@@ -647,7 +647,7 @@ public class GReactFormData {
         if (draw.isLsfView()) // the platform draws it
             return false;
         if (draw.isList) // a cell exists where the grid's part is
-            return hasColumnEntry(draw) && partScope(formController.getGroupDrawComponent(draw.groupObject)) == scope;
+            return hasColumnEntry(draw) && partScope(draw.groupObject.getDrawComponent()) == scope;
         return getSingleEntryKey(draw, current) != null;
     }
 
@@ -889,7 +889,7 @@ public class GReactFormData {
         ArrayList<GContainer> scopes = groupScopes.get(group);
         if (scopes == null) {
             scopes = new ArrayList<>();
-            GContainer owner = partScope(formController.getGroupDrawComponent(group));
+            GContainer owner = partScope(group.getDrawComponent());
             if (owner != null)
                 scopes.add(owner); // it draws the group, and any react container below it is swallowed, not a scope
             groupScopes.put(group, scopes);

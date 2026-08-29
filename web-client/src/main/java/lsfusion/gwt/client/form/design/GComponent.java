@@ -109,6 +109,20 @@ public class GComponent implements Serializable {
         return lsf && isInReact();
     }
 
+    // the react container that DRAWS this component, walking up: a child with no view of its own is swallowed by its
+    // owner, so the answer is the OUTERMOST react ancestor that still renders it. Pure design data - no controller,
+    // no projection - so anything that has to answer a placement question at deserialization time can ask it here.
+    // (GFormController.getOwningReactContainer is this walk plus the guard that there is a projection at all.)
+    public static GContainer getDrawingReactContainer(GComponent component) {
+        GContainer parent = component != null ? component.container : null;
+        if (parent == null)
+            return null;
+        GContainer parentOwner = getDrawingReactContainer(parent);
+        if (parentOwner != null)
+            return parentOwner;
+        return component.isReactProjected() ? parent : null;
+    }
+
     // the complement of isLsfView within a react container: a child React DRAWS (from data), so GWT builds no view for
     // it and it is react-owned. A child outside a react container is neither an lsf view nor react-projected.
     public boolean isReactProjected() {
