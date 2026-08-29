@@ -661,6 +661,7 @@ module.exports = {
           items: [
             {
               type: 'category',
+              key: 'brief-domain-logic',
               label: 'Domain logic',
               items: [
                 'brief/Brief_properties',
@@ -674,6 +675,7 @@ module.exports = {
             },
             {
               type: 'category',
+              key: 'brief-view-logic',
               label: 'View logic',
               items: [
                 'brief/Brief_forms',
@@ -684,6 +686,7 @@ module.exports = {
             },
             {
               type: 'category',
+              key: 'brief-physical-model',
               label: 'Physical model',
               items: [
                 'brief/Brief_identification',
@@ -704,6 +707,7 @@ module.exports = {
           items: [
             {
               type: 'category',
+              key: 'rules-domain-logic',
               label: 'Domain logic',
               items: [
                 'rules/Rules_properties',
@@ -717,6 +721,7 @@ module.exports = {
             },
             {
               type: 'category',
+              key: 'rules-view-logic',
               label: 'View logic',
               items: [
                 'rules/Rules_forms',
@@ -727,6 +732,7 @@ module.exports = {
             },
             {
               type: 'category',
+              key: 'rules-physical-model',
               label: 'Physical model',
               items: [
                 'rules/Rules_modularity',
