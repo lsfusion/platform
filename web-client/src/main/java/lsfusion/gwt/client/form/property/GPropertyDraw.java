@@ -95,6 +95,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     // LSF on a grid property: the platform draws it once per ROW and a CUSTOM REACT view places each of those,
     // so its values feed real renderers instead of the view's data. isLsfView() already answers "is an lsf child
     // of a react container", which the property is, because LSF requires it to be MOVEd there.
+    // A GRID property has no place of its own in the design - the grid draws its cells - so `lsf` on one cannot mean
+    // "my direct parent is a react container" the way it does for a container or a panel draw. It means: the platform
+    // draws this cell, once per row, and the view that draws the ROWS places each renderer. That view is the container
+    // drawing the group, and nothing else could be: a second react container over one group has no rows to place them
+    // against. So the placement is DERIVED here rather than declared by a MOVE, which for such a property placed
+    // nothing anyway - it has no layout widget and its renderers attach to the form's own parking element.
+    @Override
+    public boolean isLsfView() {
+        if (!lsf)
+            return false;
+        return isList ? groupObject != null && getDrawingReactContainer(groupObject.getDrawComponent()) != null
+                      : super.isLsfView();
+    }
+
     public boolean isLsfViewPerRow() {
         return isLsfView() && isList;
     }

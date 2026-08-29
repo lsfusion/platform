@@ -98,13 +98,11 @@ public class ScriptingFormView {
         if (!(parentComponent instanceof ContainerView))
             errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
 
-        // a grid property is drawn by the grid itself, so it has no place of its own in the design - unless it is
-        // LSF, which means it is drawn once per row as a component that a CUSTOM REACT view places, and then where
-        // it is placed is exactly what the MOVE says. The option comes from the FORM statement, which is parsed before
-        // any DESIGN, so it is already known here; that the destination really is a react container can only be checked
-        // once the design is complete, and FormView.checkLsfViews does it there.
-        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)
-                && !Boolean.TRUE.equals(((PropertyDrawView) component).entity.getLsfView())) {
+        // a grid property is drawn by the grid itself, so it has no place of its own in the design - not even an LSF
+        // one: there the platform builds a renderer per ROW and the react component drawing those rows places each,
+        // which is derived from the group's place (GPropertyDraw.isLsfView) and not something a MOVE could say. A MOVE
+        // of one used to be allowed and placed nothing at all, silently, since such a property has no layout widget.
+        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)) {
             errLog.emitIllegalGridPropertyMoveError(parser, component.getSID());
         }
 
