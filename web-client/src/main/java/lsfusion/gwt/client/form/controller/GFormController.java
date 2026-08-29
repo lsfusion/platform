@@ -524,9 +524,6 @@ public class GFormController implements EditManager {
         // the accessor would not be written and what the object inherits would be replaced by it
         function taken(obj, name) { return name === "__proto__" || Object.prototype.hasOwnProperty.call(obj, name); }
 
-        // a property member, and MARKED as one: the sync removes what the projection stopped showing, and only what
-        // IT made - a group's own verbs, and whatever a feature puts beside them, are not its to take away.
-        // Non-enumerable, so nothing walking the controller sees the mark
         function makeProperty(qualified) {
             var member = {
                 //   .change()          exec on the group's current row      .change(row)         exec on that row
@@ -862,6 +859,36 @@ public class GFormController implements EditManager {
         }
         changeControllerProperties(surfaces, properties, objectsOrKeys, values, scope);
     }
+    // `properties.change` is a SHORTCUT for the members, not a second way in: it exists because a batch spans
+    // properties, and groups, so no single member can own it - and it therefore says exactly what a member says.
+    // Whatever it resolves to has to be reachable as controller.<group>.<property> (controller.<property> at the form
+    // level), so a draw the controller left WITHOUT a member - a name that would have shadowed a member of the level
+    // it sits on - is not addressable here either. Asked of the controller OBJECT rather than restated here: it is
+    // the one that hands the members out, so whatever a feature adds to it is covered by the same question, and
+    // there is one answer to "is there a way to say this" - including for a member captured before the form stopped
+    // showing that property, which is the one this normally meets.
+    private void checkControllerMember(String surface, GPropertyDraw draw, GContainer scope) {
+        String groupSID = draw.groupObject != null ? draw.groupObject.getSID() : null;
+        if (!hasControllerMember(getScopeController(scope), groupSID, draw.integrationSID))
+            throw new RuntimeException(controllerPrefix(surface) + "'" + (groupSID != null ? groupSID + "." : "")
+                    + draw.integrationSID + "' is not a member of this view's controller - the form is not showing it"
+                    + " now, or this react container does not project it. properties.change() is the members' batch,"
+                    + " not a way past them");
+    }
+    // an OWN member that IS a property member (syncControllerSugar marks them): a name off Object.prototype
+    // (toString, constructor) is nothing the controller gave out, and a group node, the batch and a group's own verb
+    // all answer to `change` without being a property - a form property whose SID is taken by one of those has no
+    // member of its own, which is the whole question here
+    private static native boolean hasControllerMember(JavaScriptObject controller, String groupSID, String name) /*-{
+        var owner = groupSID == null ? controller : controller[groupSID];
+        if (!owner || !Object.prototype.hasOwnProperty.call(owner, name))
+            return false;
+        var member = owner[name];
+        return !!member && member.__property === true;
+    }-*/;
+
+    // the controller's own surface, all of it: a member's change() and the batch that is a shortcut for the members.
+    // Both say what a member says, so the member is asked for HERE, once, rather than at each entry
     private void changeControllerProperties(String[] surfaces, String[] properties, JavaScriptObject[] objectsOrKeys, JavaScriptObject[] values, GContainer scope) {
         if (properties.length == 0) // an empty batch is a no-op, not an empty request
             return;
@@ -871,6 +898,7 @@ public class GFormController implements EditManager {
         for (int i = 0; i < properties.length; i++) {
             GGroupObjectValue objectKey = resolveControllerObject(surfaces[i], properties[i], objectsOrKeys[i], scope);
             GPropertyDraw draw = resolveControllerDraw(surfaces[i], properties[i], objectKey, scope); // throws on ambiguity / conflict / not-found
+            checkControllerMember(surfaces[i], draw, scope);
             props[i] = draw;
             keys[i] = getControllerColumnKey(objectKey);
             pvalues[i] = GSimpleStateTableView.convertFromJSUndefValue(draw, values[i]);
@@ -919,6 +947,7 @@ public class GFormController implements EditManager {
         }
         GGroupObjectValue objectKey = resolveControllerObject(surface, property, objectOrKey, scope);
         GPropertyDraw draw = resolveControllerDraw(surface, property, objectKey, scope); // throws on ambiguity / conflict / not-found
+        checkControllerMember(surface, draw, scope); // a member captured before the form stopped showing it asks like any other
         getAsyncValues(value, draw, getControllerColumnKey(objectKey), actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
     }
 
@@ -2383,7 +2412,8 @@ public class GFormController implements EditManager {
     // push the react projection to the containers right after an optimistic mutation (current/property); the server
     // applyRemoteChanges later reconciles through the same reactData.update(fc) + updateReactContainers path
     private void refreshReactOptimistic() {
-        formLayout.updateReactContainers(reactData);
+        syncControllers(); // an optimistic change can add or drop an entry too (a current object appearing, a
+        formLayout.updateReactContainers(reactData); // panel value with it), and the members go with the data
 
         updateRowRenderers(); // an optimistically added row gets its editors now, not when the server confirms it
     }
