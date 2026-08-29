@@ -221,9 +221,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     // a connection of its own for work that must not sit inside somebody else's transaction and must leave nothing of itself behind : it is opened for the job and closed after it, so a timeout
     // or a lock set on the way is gone with it. The ensure connection is not the place for this - runtime monitoring reads from that one, and two users of one jdbc connection is one too many
-    public void runMaintenance(EConsumer<Connection, SQLException> run) throws SQLException {
-        runMaintenance(master, run);
-    }
     public void runMaintenance(Server server, EConsumer<Connection, SQLException> run) throws SQLException {
         Connection connection = startConnection(server);
         try {
@@ -233,7 +230,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             stopConnection(connection);
         }
     }
-
     public void startEnsureConnection(Server server) throws SQLException {
         Connection connection = startConnection(server);
         connection.setAutoCommit(true);
@@ -298,6 +294,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         synchronizeDB.accept(server);
 
         ensureAndEnableSubscription(server, onFirstStart);
+
+        // before the server is registered, so that nothing of this node can be on it while its leftovers are swept
+        tempTablePool.sweepJoinedServer(server);
 
         // adding in the end to be used only after
         servers.add(server);

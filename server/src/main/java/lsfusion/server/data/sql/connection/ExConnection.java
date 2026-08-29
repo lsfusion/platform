@@ -27,6 +27,10 @@ public class ExConnection {
 
     private String timeZone;
     public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider) throws SQLException {
+        updateContext(noCache, contextProvider, sql);
+    }
+    // on a connection that is not this one's yet : a restart sets the context of the connection it is about to take over while it is still holding the old one
+    public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider, Connection sql) throws SQLException {
         LocalePreferences localePreferences = contextProvider.getLocalePreferences();
         String newTimeZone = localePreferences != null ? ("'" + localePreferences.timeZone + "'") : "DEFAULT";
         if (noCache || timeZone == null || !timeZone.equals(newTimeZone)) {
