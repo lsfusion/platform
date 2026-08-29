@@ -325,8 +325,20 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // next to it. A list because a component may serve several groups (a TREE) and because the caller claims names
     // over whatever it returns.
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
-        ContainerView owner = getOwningReactContainer(getGroupDrawComponent(group));
+        ContainerView owner = partScope(getGroupDrawComponent(group));
         return owner != null ? Collections.singletonList(owner) : Collections.emptyList();
+    }
+
+    // WHERE A COMPONENT'S PART GOES - only React draws parts, so its null for an `lsf` child is the answer, not a gap
+    // (mirrors GReactFormData.partScope)
+    private ContainerView partScope(ComponentView component) {
+        return getOwningReactContainer(component);
+    }
+
+    // ... and WHERE ITS DESCRIPTOR GOES - the container that labels the boundary it places
+    // (mirrors GReactFormData.descriptorScope)
+    private ContainerView descriptorScope(ComponentView component) {
+        return component != null && component.isLsfView() ? component.getContainer() : partScope(component);
     }
 
     // the react container that RENDERS this component, null if a standard view is built for it (mirrors
@@ -774,9 +786,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // it - the ownership walk stops at an lsf child. The client's statement of the same rule bears the same name
     // (GReactFormData.getProjectedContainerScope); this one reserves the names that one emits.
     private ContainerView getProjectedContainerScope(ContainerView container) {
-        if (container.isLsfView()) // an lsf child's parent IS a react container - checkLsfViews, which runs first, rejected anything else
-            return container.getContainer();
-        return container.declared ? getOwningReactContainer(container) : null; // declared OR lsf, nothing for the rest
+        return container.isLsfView() || container.declared ? descriptorScope(container) : null; // declared OR lsf, nothing for the rest
     }
 
 

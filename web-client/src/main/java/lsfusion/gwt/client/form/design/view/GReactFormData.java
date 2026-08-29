@@ -438,7 +438,7 @@ public class GReactFormData {
     // drift. The server asks its own copy of the same question under the same name (FormView.getProjectedContainerScope)
     // to reserve the names this emits. An LSF container is placed by the scope it sits in (getTopLevelScope).
     private GContainer getProjectedContainerScope(GComponent component) {
-        return isProjectedContainer(component) ? getTopLevelScope(component) : null;
+        return isProjectedContainer(component) ? descriptorScope(component) : null;
     }
 
     // what the platform computed about a COMPONENT itself (a container, or an lsf property whose value it draws):
@@ -493,7 +493,23 @@ public class GReactFormData {
     // platform draws it, but hands its caption to React. Anything else belongs to the scope that OWNS it, which by
     // construction is nothing inside an lsf subtree. (A GROUPED property's object lives in its group node, not here.)
     private GContainer getTopLevelScope(GComponent component) {
-        return component.isLsfView() ? component.container : formController.getOwningReactContainer(component);
+        return descriptorScope(component);
+    }
+
+    // WHERE A COMPONENT'S PART GOES - only React draws parts, so this is the one question, and its null for an
+    // `lsf` child is the ANSWER, not a gap: the platform draws that component, so nothing is produced for it here.
+    // Asked lazily, never at construction: getOwningReactContainer answers null for everything until GFormController
+    // has assigned its reactData, which happens after this object's constructor returns.
+    public GContainer partScope(GComponent component) {
+        return formController.getOwningReactContainer(component);
+    }
+
+    // ... and WHERE ITS DESCRIPTOR GOES - the container that must label the boundary it places. For an `lsf` child
+    // that is the container it sits in (the platform draws it, React only frames it); for anything React draws it is
+    // the container that draws it. The two answers are deliberately different functions: the previous version of this
+    // layer used this one for both and thereby sent an lsf component's DATA to the container that merely frames it.
+    public GContainer descriptorScope(GComponent component) {
+        return component.isLsfView() ? component.container : partScope(component);
     }
 
     public boolean isLsfViewDescriptorReader(GPropertyReader reader) {
@@ -838,11 +854,6 @@ public class GReactFormData {
         return store == null ? null : store.get(key);
     }
 
-    private GContainer getGroupOwningReactContainer(GGroupObject group) {
-        if (group == null)
-            return null;
-        return formController.getOwningReactContainer(formController.getGroupDrawComponent(group));
-    }
 
     // the react scope a group's node appears in: the container that DRAWS the group, and only it. A react view
     // gets a group's data because it draws that group, never because it happens to stand next to it - a container
@@ -853,7 +864,7 @@ public class GReactFormData {
         ArrayList<GContainer> scopes = groupScopes.get(group);
         if (scopes == null) {
             scopes = new ArrayList<>();
-            GContainer owner = getGroupOwningReactContainer(group);
+            GContainer owner = partScope(formController.getGroupDrawComponent(group));
             if (owner != null)
                 scopes.add(owner); // it draws the group, and any react container below it is swallowed, not a scope
             groupScopes.put(group, scopes);
