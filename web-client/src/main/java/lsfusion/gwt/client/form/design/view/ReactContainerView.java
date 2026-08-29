@@ -200,19 +200,20 @@ public class ReactContainerView extends ParkedContainerView {
         return -1;
     }
 
-    // an LSF grid property declared in this container, or null. Unlike an lsf CONTAINER child, it has one
-    // renderer per row rather than one view, so it is placed through its row panel controller instead of `hosts`
+    // an LSF grid property of a group THIS view draws, or null. Unlike an lsf CONTAINER child it has one renderer per
+    // row rather than one view, so it is placed through its row panel controller instead of `hosts` - and it is not a
+    // child of this container either: it is asked of the form, which derives its place from its group's (see
+    // GPropertyDraw.isLsfView). So `<Lsf name="PROPERTY(qty(d))" row/>` needs no MOVE of the property into here.
     private GPropertyDraw getRowLsfViewProperty(String sid) {
-        GComponent declared = findDeclared(sid); // by the design identifier, PROPERTY(qty) - the one spelling there is
-        return declared instanceof GPropertyDraw && ((GPropertyDraw) declared).isLsfViewPerRow() ? (GPropertyDraw) declared : null;
+        return formController.getRowLsfViewProperty(sid, container);
     }
 
     // a per-row mount that cannot be resolved: either the sid names no LSF grid property of this container, or
     // what was passed as the row is not one. Both would leave a silently empty cell, so both are shown in the page
     private void reportUnknownRow(String sid, Element host, boolean unknownSid) {
         if (unknownSid) {
-            GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not an LSF grid property");
-            GwtClientUtils.logLsfViewError("component '" + sid + "' of container '" + container.sID + "' is not a grid property marked LSF, so it is not drawn per row");
+            GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not an LSF grid property of this view");
+            GwtClientUtils.logLsfViewError("'" + sid + "' is not a grid property marked LSF of a group container '" + container.sID + "' draws, so nothing is drawn per row for it here");
         } else {
             GwtClientUtils.showLsfViewError(host, "the `row` given to '" + sid + "' is not a row");
             GwtClientUtils.logLsfViewError("the `row` passed to '" + sid + "' does not identify a row: pass the row object from the projected data, not its key");

@@ -352,7 +352,7 @@ These rules bound the placement:
 - The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
 - `lsf` may be set only on a direct child of a `CUSTOM REACT` container; anywhere else the form is rejected when it is built.
 
-A placement that cannot work says so in the host itself, not only in the console: a name that names no child of the container, a child without `lsf`, a second host for the same child, a name that is not an `LSF` grid property, and a `row` that is not a row each render their message into the host and mark it with the class `lsf-view-error`.
+A placement that cannot work says so in the host itself, not only in the console: a name that names no child of the container, a child without `lsf`, a second host for the same child, a name that is not an `LSF` grid property of a group this view draws, and a `row` that is not a row each render their message into the host and mark it with the class `lsf-view-error`.
 
 A child the component stops rendering is reported to the server as not shown, and the server stops reading that child's data — the same gating an inactive tab or a collapsed container gets. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still shown as far as the server knows, and goes on being read. For the same reason the visibility of an lsf child belongs to the component alone — its `collapsible` attribute is ignored, and a scripted `COLLAPSE` / `EXPAND` on it is an error.
 
@@ -371,13 +371,11 @@ DESIGN orders {
     NEW board {
         custom = 'OrderBoard';
         MOVE BOX(o);                  // React draws the rows, from data.o
-        MOVE PROPERTY(quantity(o));   // its per-row editors are placed by the component
-        MOVE PROPERTY(note(o));
     }
 }
 ```
 
-`LSF` says the property is a component rather than a value, and the `MOVE` says which container places it. The component names the property and the row:
+`LSF` says the property is a component rather than a value. Where it is placed is not said — and cannot be: a grid property has no place of its own in the design, and its renderers go into the rows, so the component drawing the rows is the one that places them. That is the component this `MOVE BOX(o)` gave the group to. The component names the property and the row:
 
 ```jsx
 {data.o.list.map(row => (
@@ -405,7 +403,7 @@ The declaration is refused, with the property named, when it cannot work: on a g
 Another module adds a child to the container from `DESIGN`:
 
 ```lsf
-EXTEND FORM orders PROPERTIES(o) rating;
+EXTEND FORM orders PROPERTIES() rating;
 DESIGN orders {
     board { MOVE PROPERTY(rating) { lsf = TRUE; } }
 }

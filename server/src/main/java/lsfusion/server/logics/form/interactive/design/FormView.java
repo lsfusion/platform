@@ -888,6 +888,15 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (!component.isLsfView())
             return;
 
+        // a GRID property is the one lsf component whose place is not its parent: it has no view of its own to place,
+        // the platform builds one renderer per ROW, and the react component that draws those rows places each of them.
+        // So it is not asked to be a child of a react container - nothing could be MOVEd there anyway - and what makes
+        // it work is only that its group's rows are drawn by a react component
+        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) {
+            checkLsfListView((PropertyDrawView) component);
+            return;
+        }
+
         ContainerView container = component.getContainer();
         if (container == null || !container.isReact())
             throw new IllegalStateException("lsf is set for '" + component.getSID() + "', which is not a child of a CUSTOM REACT container");
@@ -905,25 +914,28 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             GroupObjectEntity toDraw = property.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
             boolean reactGroup = toDraw != null && isReactContainerGroup(toDraw);
 
-            if (property.isList(entity)) {
-                // a GRID property is drawn once per ROW and the react component places each of those, so its group
-                // being rendered by that component is exactly what makes this work
-                if (!reactGroup)
-                    throw new IllegalStateException("LSF is set for property '" + component.getSID()
-                            + "', whose object group is not rendered by a CUSTOM REACT container — nothing would place the per-row renderers");
-
-                // per-row rendering rests on the renderer key being the ROW key. With column groups the full key joins
-                // row and column, so a value would be written under the joined key and read under the row key, and
-                // every edit would be lost without a word
-                if (!property.getColumnGroupObjects().isEmpty())
-                    throw new IllegalStateException("LSF is set for property '" + component.getSID()
-                            + "', which is grouped in columns — it draws one editor per ROW and cannot address a row-and-column cell");
-            } else if (reactGroup)
+            if (reactGroup)
                 // a PANEL property is drawn once, for its group's current object - and a group the react component
                 // renders has no client controller, so no view would ever be built and there would be nothing to place
                 throw new IllegalStateException("lsf is set for property '" + component.getSID() + "', whose object group is rendered by the react component '"
                         + container.getCustom() + "' — set lsf on the group's box instead");
         }
+    }
+
+    private void checkLsfListView(PropertyDrawView view) {
+        PropertyDrawEntity<?, ?> property = view.entity;
+        GroupObjectEntity toDraw = property.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
+
+        if (toDraw == null || !isReactContainerGroup(toDraw))
+            throw new IllegalStateException("LSF is set for property '" + view.getSID()
+                    + "', whose object group is not rendered by a CUSTOM REACT container — nothing would place the per-row renderers");
+
+        // per-row rendering rests on the renderer key being the ROW key. With column groups the full key joins
+        // row and column, so a value would be written under the joined key and read under the row key, and
+        // every edit would be lost without a word
+        if (!property.getColumnGroupObjects().isEmpty())
+            throw new IllegalStateException("LSF is set for property '" + view.getSID()
+                    + "', which is grouped in columns — it draws one editor per ROW and cannot address a row-and-column cell");
     }
 
     public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);

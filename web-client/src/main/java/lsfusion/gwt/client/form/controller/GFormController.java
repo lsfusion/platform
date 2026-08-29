@@ -1540,6 +1540,18 @@ public class GFormController implements EditManager {
         return treeControllers.get(group.parent);
     }
 
+    // the LSF grid property whose rows this react container draws, by the design identifier - PROPERTY(qty(d)).
+    // Asked of the FORM and not of the container's children: such a property is not a child of the react container,
+    // it stays in its group's panel wherever the design left it, and its place is derived from the group's (see
+    // GPropertyDraw.isLsfView). The container that draws the group's rows is the only one that could place its
+    // renderers, so matching on that container is exactly the containment check a child lookup used to be.
+    public GPropertyDraw getRowLsfViewProperty(String sid, GContainer scope) {
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.isLsfViewPerRow() && sid.equals(draw.sID) && getOwningReactContainer(getGroupDrawComponent(draw.groupObject)) == scope)
+                return draw;
+        return null;
+    }
+
     public GPropertyController getPropertyController(GPropertyDraw property) {
         // an LSF property is a grid property, so without this it would be routed to its group's controller - which
         // for a group React draws is a set of deliberate no-ops, and its values would be dropped on the way
@@ -1583,13 +1595,7 @@ public class GFormController implements EditManager {
     // container: the walk therefore climbs to the OUTERMOST react ancestor reachable through non-lsf hops
     // (resolving to an inner react container that never gets a ReactContainerView would silently produce no data).
     public GContainer getReactContainer(GComponent component) {
-        GContainer parent = component != null ? component.container : null;
-        if (parent == null)
-            return null;
-        GContainer parentOwner = getReactContainer(parent);
-        if (parentOwner != null) // parent has no GWT view of its own, so its owner swallows this component too
-            return parentOwner;
-        return component.isReactProjected() ? parent : null; // parent == component.container, which isReactProjected checks
+        return GComponent.getDrawingReactContainer(component); // the walk itself is pure design data, so it lives there
     }
 
     public GContainer getOwningReactContainer(GComponent component) {
@@ -1628,7 +1634,7 @@ public class GFormController implements EditManager {
     // grid of its own). Every question about where a group is projected starts here, on both sides - the server asks
     // its own copy under the same name (FormView.getGroupDrawComponent)
     public GComponent getGroupDrawComponent(GGroupObject group) {
-        return group == null ? null : (group.grid != null ? group.grid : group.parent);
+        return group == null ? null : group.getDrawComponent();
     }
 
     public boolean isReactOwned(GGroupObject group) {

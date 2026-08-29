@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -184,6 +185,13 @@ public class GGroupObject implements Serializable, HasNativeSID {
 
     public GGroupObjectValue filterRowKeys(GGroupObjectValue fullCurrentKey) {
         return fullCurrentKey.filter(Collections.singletonList(this));
+    }
+
+    // the component that DRAWS this group's rows - the grid, or, in a tree, the tree component that draws them all.
+    // Everything that asks where a group lives asks about this component and not about the group's box: a MOVE takes
+    // the grid out of its box, and then the box is somewhere the rows are not.
+    public GComponent getDrawComponent() {
+        return grid != null ? grid : parent;
     }
 
     // the key a ROW of this group is keyed by, taken out of a fuller one. A grid keys its rows by the group's own
