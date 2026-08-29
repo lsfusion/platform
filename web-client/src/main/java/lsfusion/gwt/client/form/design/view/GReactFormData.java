@@ -405,7 +405,7 @@ public class GReactFormData {
             }
             setField(data, group.getSID(), node);
         }
-        fillSingles(data, null, GGroupObjectValue.EMPTY, scope); // the form-level properties, on the new top
+        fillSingles(data, null, GGroupObjectValue.EMPTY, scope); // the form-level properties: their own producer, the scope's top object
         fillContainers(data, scope);
         lastData.put(scope, data);
         return data;
@@ -537,9 +537,29 @@ public class GReactFormData {
     }
 
     // build a group's node, reusing the unchanged list array and unchanged row objects
+    // the node a group has in `data` is ASSEMBLED out of the parts its base components produce - the grid produces the
+    // rows and the columns, the panel produces the single values - rather than written by one builder that knows about
+    // all of them. Each of them is drawn in one place, so what it produces is that place's, and the assembler is the
+    // only thing that knows they meet on one node.
+    // Copying is BY REFERENCE, so a part that did not change hands back the very objects it handed back last time.
+    // `__groupSID` is stamped HERE and never copied: it is non-enumerable (a copy loop drops it in silence) and
+    // non-configurable (re-stamping an object that already has it throws).
     private JavaScriptObject buildGroupEntry(GGroupObject group) {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
+
+        copyFields(node, buildGridPart(group, current));
+        if (current != null) // the panel draws the current object, and without one it draws nothing
+            copyFields(node, buildPanelPart(group, current));
+
+        setGroupSID(node, group.getSID());
+        return node;
+    }
+
+    // what the GRID produces: the rows, everything that is the same down a column, and the group's own attributes -
+    // the group SID apart, which is the assembler's. Read: what the view sees of a group whose rows React draws.
+    private JavaScriptObject buildGridPart(GGroupObject group, GGroupObjectValue current) {
+        JavaScriptObject node = newObject();
 
         ArrayList<GGroupObjectValue> rows = gridRows.get(group);
         JavaScriptObject list = lastLists.get(group);
@@ -604,9 +624,6 @@ public class GReactFormData {
             lastKeys.put(group, keys);
         }
         setField(node, "keys", keys);
-        setGroupSID(node, group.getSID());
-        if (current != null) // the group's panel properties (shown once, for the current object)
-            fillSingles(node, group, current, null);
         // the group's own attributes, DIRECT on the node: the names it draws, and its
         // GROUP-scoped readers (options, at EMPTY). No meta wrapper - they sit beside `list` and the column property
         // objects, rebuilt with the node.
@@ -616,6 +633,14 @@ public class GReactFormData {
         // column reader marks only the node dirty), so it doesn't churn row refs.
         fillColumns(node, group);
         return node;
+    }
+
+    // what the PANEL produces: one entry per property it shows, for the group's current object. A group with no current
+    // object has no panel values at all - not empty entries, none - so the part is asked for only when there is one.
+    private JavaScriptObject buildPanelPart(GGroupObject group, GGroupObjectValue current) {
+        JavaScriptObject part = newObject();
+        fillSingles(part, group, current, null);
+        return part;
     }
 
     // the group's own PER-ROW attributes (background / foreground / selected), DIRECT on the row beside `isCurrent` - each
@@ -943,6 +968,14 @@ public class GReactFormData {
         if (scope != null)
             dirtyScopes.put(scope, Boolean.TRUE);
     }
+
+    // by REFERENCE, and own enumerable keys only: a part's objects ARE the node's objects, so an unchanged part keeps
+    // every identity a React.memo downstream compares. Non-enumerable fields (__groupSID) are deliberately not copied.
+    private static native void copyFields(JavaScriptObject target, JavaScriptObject source) /*-{
+        for (var key in source)
+            if (Object.prototype.hasOwnProperty.call(source, key))
+                target[key] = source[key];
+    }-*/;
 
     private static native void setGroupSID(JavaScriptObject obj, String sid) /*-{ Object.defineProperty(obj, "__groupSID", { value: sid }); }-*/; // non-enumerable: stable selector path, not user-visible data
 }
