@@ -111,8 +111,8 @@
       "stale": false
     },
     "brief/Brief_actions.md": {
-      "file_hash": "sha256:4b13907db56d5036ff6b354e923c96d5cf9312ffec9c7bc19b3c8fd61219697e",
-      "indexed_at": "2026-08-28T16:29:12Z",
+      "file_hash": "sha256:9bdc54b67fcfbb8172dafd0338b881d99ffd1f7a1ba0e34455fae473691c1088",
+      "indexed_at": "2026-08-29T09:09:07Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v4",
@@ -152,9 +152,9 @@
           "source_file": "brief/Brief_actions.md"
         },
         "Brief_actions::state-changes---new-delete": {
-          "file_id": "file-WLgiE83odTGt4m9s812jMk",
-          "heading_path": "Brief: actions > State changes (<-, NEW, DELETE)",
-          "section_payload_hash": "sha256:e11003659d735bb11d4e0d99c1ee5337a5253a2490aee8ca24b011471e34bb86",
+          "file_id": "file-R4id1yaR8QhNb5nEoNJu27",
+          "heading_path": "Brief: actions > State changes (`<-`, NEW, DELETE)",
+          "section_payload_hash": "sha256:ae070231032aa80c5999047e728e8169cb3c2d04db6ba1c3baa3891014a325c1",
           "source_file": "brief/Brief_actions.md"
         }
       },
@@ -16211,7 +16211,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "3d1c03148469dc7f424a99c7fcef0a7fc24141b9",
+  "last_indexed_docs_commit": "09bce30e4b2b1e8a0ba5c0e5ca7f73f3b968c160",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
