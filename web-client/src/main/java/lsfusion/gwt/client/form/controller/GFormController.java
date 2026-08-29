@@ -1064,16 +1064,29 @@ public class GFormController implements EditManager {
                     break;
                 }
 
+            // ... and a group can be MIXED the other way too: GWT draws its rows, and a react container holds one of
+            // its panel properties. That property's values are routed to a react controller
+            // (getReactablePropertyController), so the group needs one whether or not React draws it.
             if (isReactOwned(group)) {
                 initializeReactController(group);
             } else {
                 if (group.parent == null) {
                     initializeGroupController(group);
                 }
+                if (hasReactOwnedDraw(group))
+                    initializeReactController(group);
             }
         }
 
         panelController = new GPanelController(this); // kept even for React: getPropertyController/update rely on it; it stays empty when only react-owned property readers are skipped, so no panel views are built
+    }
+
+    // any of the group's properties projected into a react container, its rows drawn where they are drawn
+    private boolean hasReactOwnedDraw(GGroupObject group) {
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && isReactOwned(draw))
+                return true;
+        return false;
     }
 
     private void initializeReactController(GGroupObject group) {
@@ -1656,10 +1669,14 @@ public class GFormController implements EditManager {
         if (property.isLsfView())
             return false;
 
-        // GROUP-based for any grouped draw (consistent with GReactFormData's projection ownership): a panel draw of a
-        // non-react group physically placed inside a react container stays classic — projecting it would require a
-        // react controller its group doesn't have (NPE), and the projection wouldn't pick it up anyway
-        return property.groupObject != null ? isReactOwned(property.groupObject) : getOwningReactContainer(property) != null;
+        // WHERE IT IS, for anything the platform does not draw once per row. A GRID property is drawn by the grid, so
+        // its cells are projected exactly where the grid is; a PANEL property is a component of its own, standing
+        // where the design put it, and it is projected there - even when its own group's rows are drawn by GWT in
+        // another container. That mixed group gets a react controller beside its GWT one (initializeControllers), so
+        // the value has somewhere to be routed; the projection carries the entry and nothing else of the group.
+        if (property.isList)
+            return isReactOwned(property.groupObject);
+        return getOwningReactContainer(property) != null;
     }
 
     // a reader React consumes (so GWT skips it): either it belongs to a react-owned component — its value is projected

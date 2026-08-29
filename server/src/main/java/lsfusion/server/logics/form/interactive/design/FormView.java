@@ -320,13 +320,22 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return !getGroupScopes(group).isEmpty();
     }
 
-    // the scope a group's node appears in, mirroring GReactFormData.getGroupScopes: the container that DRAWS the
-    // group, and only it - a react view gets a group's data because it draws that group, never because it stands
-    // next to it. A list because a component may serve several groups (a TREE) and because the caller claims names
-    // over whatever it returns.
+    // the scopes a group's node appears in, mirroring GReactFormData.getGroupScopes: every container that draws a PART
+    // of it - the grid where its rows are, and each of its panel properties where that property is. A react view gets
+    // a group's data because it draws something of that group, never because it stands next to it. Usually one
+    // container; two when the design put a panel property somewhere else, and then each node holds what its own
+    // container draws.
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
-        ContainerView owner = partScope(getGroupDrawComponent(group));
-        return owner != null ? Collections.singletonList(owner) : Collections.emptyList();
+        List<ContainerView> scopes = new ArrayList<>();
+        addGroupScope(scopes, partScope(getGroupDrawComponent(group)));
+        for (PropertyDrawView property : getPropertiesIt())
+            if (!property.entity.isList(entity) && group.equals(property.entity.getToDraw(entity)))
+                addGroupScope(scopes, partScope(property));
+        return scopes;
+    }
+    private static void addGroupScope(List<ContainerView> scopes, ContainerView scope) {
+        if (scope != null && !scopes.contains(scope))
+            scopes.add(scope);
     }
 
     // WHERE A COMPONENT'S PART GOES - only React draws parts, so its null for an `lsf` child is the answer, not a gap

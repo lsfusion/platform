@@ -37,8 +37,8 @@ public class GReactFormData {
     private final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridRows = new NativeSIDMap<>(); // ordered row keys per group
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyDraw, Boolean> droppedProperties = new NativeSIDMap<>(); // SHOWIF/static visibility removed the whole draw
-    private final NativeSIDMap<GGroupObject, ArrayList<String>> lastPropertyNames = new NativeSIDMap<>(); // what `properties` last said, to hand back the SAME array when it still says it
-    private final NativeSIDMap<GGroupObject, JavaScriptObject> lastProperties = new NativeSIDMap<>();
+    private final NativeStringMap<ArrayList<String>> lastPropertyNames = new NativeStringMap<>(); // what `properties` last said per (scope, group), to hand back the SAME array when it still says it
+    private final NativeStringMap<JavaScriptObject> lastProperties = new NativeStringMap<>();
     private final NativeSIDMap<GGroupObject, NativeHashMap<String, Boolean>> unnameable = new NativeSIDMap<>(); // already reported, so the node rebuild does not repeat itself
     private final NativeSIDMap<GGroupObject, ArrayList<GContainer>> groupScopes = new NativeSIDMap<>(); // the react scopes each group's node appears in
 
@@ -324,17 +324,10 @@ public class GReactFormData {
     }
 
     // a PANEL property is its own part: it is placed on its own, and what happens to it - a new value, a new current
-    // object, an appearance or a disappearance - concerns nothing else on the node. Its scope is asked of the group
-    // for now, since fillSingles still puts every panel draw of a group on that group's node.
+    // object, an appearance or a disappearance - concerns nothing else on the node. The placement asked here is the
+    // draw's own, the same one the assembler asks, or a change would be routed to a node the entry is not on.
     private boolean markPanelDirty(GPropertyDraw draw) {
-        GGroupObject group = draw.groupObject;
-        boolean marked = false;
-        for (GContainer scope : getGroupScopes(group)) {
-            dirtyParts.put(partKey(draw, group), Boolean.TRUE);
-            markNodeDirty(scope, group);
-            marked = true;
-        }
-        return marked;
+        return markPartDirty(draw, draw.groupObject);
     }
 
     // the one CROSS-part edge the base projection has: the current object is the group's, and it is read by parts that
@@ -462,7 +455,7 @@ public class GReactFormData {
             String key = nodeKey(scope, group);
             JavaScriptObject node = lastNodes.get(key);
             if (node == null || dirtyNodes.get(key) != null) {
-                node = buildGroupEntry(group);
+                node = buildGroupEntry(group, scope);
                 lastNodes.put(key, node);
             }
             setField(data, group.getSID(), node);
@@ -606,13 +599,16 @@ public class GReactFormData {
     // Copying is BY REFERENCE, so a part that did not change hands back the very objects it handed back last time.
     // `__groupSID` is stamped HERE and never copied: it is non-enumerable (a copy loop drops it in silence) and
     // non-configurable (re-stamping an object that already has it throws).
-    private JavaScriptObject buildGroupEntry(GGroupObject group) {
+    private JavaScriptObject buildGroupEntry(GGroupObject group, GContainer scope) {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
 
-        copyFields(node, getGridPart(group, current));
+        if (partScope(group.getDrawComponent()) == scope) // the rows and the columns, where the grid is
+            copyFields(node, getGridPart(group, current));
         if (current != null) // the panel draws the current object, and without one it draws nothing
-            copyFields(node, buildPanelPart(group, current));
+            copyFields(node, buildPanelPart(group, current, scope));
+        // the index of what THIS node carries - the assembler's, because only the assembler knows what it assembled
+        setField(node, "properties", buildProperties(group, scope));
 
         setGroupSID(node, group.getSID());
         return node;
@@ -714,10 +710,10 @@ public class GReactFormData {
     // object has no panel values at all - not empty entries, none - so the part is asked for only when there is one.
     // Each entry is a part of its own, cached under the draw that produces it: whether it EXISTS is asked here, every
     // pass, and only what it holds is cached - so an entry that comes and goes is never revived from the cache.
-    private JavaScriptObject buildPanelPart(GGroupObject group, GGroupObjectValue current) {
+    private JavaScriptObject buildPanelPart(GGroupObject group, GGroupObjectValue current, GContainer scope) {
         JavaScriptObject part = newObject();
         for (GPropertyDraw draw : form.propertyDraws) {
-            if (draw.groupObject != group)
+            if (draw.groupObject != group || partScope(draw) != scope) // each panel draw is placed on its own
                 continue;
             GGroupObjectValue valueKey = getSingleEntryKey(draw, current);
             if (valueKey != null)
@@ -747,32 +743,33 @@ public class GReactFormData {
                 emitAttribute(row, reader, rowKey, null);
     }
 
-    // the GROUP's own attributes, direct on its node beside list/byKey/keys: the names of what it draws, and its
-    // group-scoped readers (options, read once at EMPTY). The mirror of fillRowAttributes, one level up.
+    // the GROUP's own attributes, direct on its node beside list/byKey/keys: its group-scoped readers (options, read
+    // once at EMPTY). The mirror of fillRowAttributes, one level up. They belong to the GRID's part - a container
+    // showing only a panel property of the group has no rows for them to be about.
     private void fillGroupAttributes(JavaScriptObject node, GGroupObject group) {
-        setField(node, "properties", buildProperties(group));
         for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
             if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.GROUP)
                 emitAttribute(node, reader, GGroupObjectValue.EMPTY, null);
     }
 
-    // the names of what the group draws, in the form's own order - the one thing a property's own entry cannot say,
+    // the names THIS NODE carries, in the form's own order - the one thing a property's own entry cannot say,
     // because `data.<group>` is a flat namespace and nothing in it marks which keys are properties. Everything ABOUT a
     // property (its type, what it can be compared with) is IN its entry, beside its caption: one place, and it exists
     // exactly when the entry does. This is only the index into them.
-    private JavaScriptObject buildProperties(GGroupObject group) {
-        ArrayList<String> names = getEntryNames(group); // the same three questions the entries are written by
+    private JavaScriptObject buildProperties(GGroupObject group, GContainer scope) {
+        ArrayList<String> names = getEntryNames(group, scope); // the same questions the entries are written by
         // the node is rebuilt for anything that changes on it - one caption, one option - and this list changes for
         // almost none of that. Handing back a new array each time would re-render every component that selects it,
         // which is the one thing structural sharing is for, so it is rebuilt only when it says something else
-        JavaScriptObject cached = lastProperties.get(group);
-        if (cached != null && names.equals(lastPropertyNames.get(group)))
+        String key = nodeKey(scope, group);
+        JavaScriptObject cached = lastProperties.get(key);
+        if (cached != null && names.equals(lastPropertyNames.get(key)))
             return cached;
         JavaScriptObject array = newArray();
         for (String name : names)
             push(array, name);
-        lastPropertyNames.put(group, names);
-        lastProperties.put(group, array);
+        lastPropertyNames.put(key, names);
+        lastProperties.put(key, array);
         return array;
     }
 
@@ -791,7 +788,7 @@ public class GReactFormData {
             return false;
         if (draw.isList) // a cell exists where the grid's part is
             return hasColumnEntry(draw) && partScope(formController.getGroupDrawComponent(draw.groupObject)) == scope;
-        return getSingleEntryKey(draw, current) != null;
+        return getSingleEntryKey(draw, current) != null && partScope(draw) == scope; // a panel entry, where the draw is
     }
 
     // the names this container may CHANGE, as opposed to the names its node carries: the index keeps an lsf column,
@@ -805,13 +802,20 @@ public class GReactFormData {
         return names;
     }
 
-    public ArrayList<String> getEntryNames(GGroupObject group) {
+    public ArrayList<String> getEntryNames(GGroupObject group, GContainer scope) {
         ArrayList<String> names = new ArrayList<>();
         GGroupObjectValue current = currentObjects.get(group);
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && (hasColumnEntry(draw) || getSingleEntryKey(draw, current) != null))
+            if (draw.groupObject == group && hasEntry(draw, current, scope))
                 names.add(draw.integrationSID);
         return names;
+    }
+    // the index and the member set differ by exactly one thing - an `lsf` column has an entry (its caption, which the
+    // view draws over the renderers it places) and no value - so they are one predicate apart, side by side
+    private boolean hasEntry(GPropertyDraw draw, GGroupObjectValue current, GContainer scope) {
+        if (draw.isList)
+            return hasColumnEntry(draw) && partScope(formController.getGroupDrawComponent(draw.groupObject)) == scope;
+        return getSingleEntryKey(draw, current) != null && partScope(draw) == scope;
     }
 
     // WHAT HAS AN ENTRY HERE, said once. The list that names them and the writes that fill them ask the same three
@@ -1038,12 +1042,23 @@ public class GReactFormData {
         ArrayList<GContainer> scopes = groupScopes.get(group);
         if (scopes == null) {
             scopes = new ArrayList<>();
-            GContainer owner = partScope(formController.getGroupDrawComponent(group));
-            if (owner != null)
-                scopes.add(owner); // it draws the group, and any react container below it is swallowed, not a scope
+            // whoever PRODUCES a part of it, sees it - and that is the two kinds that produce one today: the drawing
+            // component and the panel draws. A base component whose part is not built yet (the toolbar, the filters,
+            // the calculations) draws nothing here, so placing one in a react container must not conjure a node with
+            // nothing on it and a controller for a group that container does not draw. Each of them joins this list
+            // in the commit that gives it a part - which is also where the server (FormView.getGroupScopes, the same
+            // question) starts answering with it, and the two answers have to be made to agree in one step.
+            addGroupScope(scopes, partScope(group.getDrawComponent()));
+            for (GPropertyDraw draw : form.propertyDraws)
+                if (draw.groupObject == group && !draw.isList)
+                    addGroupScope(scopes, partScope(draw));
             groupScopes.put(group, scopes);
         }
         return scopes;
+    }
+    private static void addGroupScope(ArrayList<GContainer> scopes, GContainer scope) {
+        if (scope != null && !scopes.contains(scope))
+            scopes.add(scope);
     }
 
     // whether any react view sees this group at all - the one gate every accumulator mutator asks, so a group nobody
