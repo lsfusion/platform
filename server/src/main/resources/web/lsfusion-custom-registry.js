@@ -203,8 +203,26 @@
             rowProps.row = row; rowProps.rowKey = p.rowKey; rowProps.index = p.index;
             return React.createElement(p.component, rowProps);
         });
+        // A group is projected into the container that DRAWS it, and the rows into the container that draws THEM. So a
+        // view handed `data.<g>` of a group whose rows the platform draws - MOVE GRID(g) { lsf = TRUE; } - gets a node
+        // with no rows on it, or no node at all, and every helper here would then render nothing at all, in silence.
+        // Said once per group, and never for a group that simply HAS no rows right now (keys is then [], not absent).
+        var noRows = Object.create(null);
+        var checkRows = function (data, what) {
+            var sid = (data && data.__groupSID) || null;
+            if (data && (data.keys !== undefined || data.list !== undefined))
+                return; // its rows are drawn here, however many of them there are (or this is not a group node at all)
+            var key = what + ':' + (sid || '?');
+            if (noRows[key]) return;
+            noRows[key] = true;
+            window.console.error("lsFusion custom view: " + what + " is given " + (data == null
+                ? "no data at all: this view is not the one this group is projected into"
+                : "'" + sid + "', whose rows this view does not draw - the platform draws them (lsf = TRUE on its grid),"
+                  + " so the data here carries only what this view does draw"));
+        };
         var KeysList = function (props) {
             var comp = props.component || props.children;
+            checkRows(props.data, "<List>");
             var data = props.data || {};
             var keys = data.keys || [];
             var groupSID = data.__groupSID;
@@ -221,6 +239,7 @@
         var simpleMemo = new WeakMap();
         var SimpleList = function (props) {
             var comp = props.component || props.children;
+            checkRows(props.data, "<List simple>");
             var rows = (props.data && props.data.list) || [];
             var memoComp = simpleMemo.get(comp);
             if (!memoComp) { memoComp = React.memo(comp); simpleMemo.set(comp, memoComp); }
@@ -486,6 +505,7 @@
         };
         ns.BucketScope = function (props) { // props: group (SID), bucketOf(row, rowKey) -> bucketKey | bucketKey[] | null, bucketDeps
             var formStore = React.useContext(Ctx).store;
+            checkRows(formStore.getSnapshot()[props.group], "<BucketScope group='" + props.group + "'>");
             // bucketOf is CAPTURED at store creation (see the JSNI twin for the full narrative)
             var bucketOf = props.bucketOf;
             var store = React.useMemo(function () {

@@ -38,9 +38,10 @@ public class ReactContainerView extends ParkedContainerView {
             if (declared == null)
                 return new PlacedViews.Problem("'" + sid + "' is not a child of '" + container.sID + "'",
                         "component '" + sid + "' is not a child of container '" + container.sID + "'");
-            if (!declared.isLsfView()) // a child of the container, but without lsf = TRUE, so React owns it
+            if (!declared.isLsfView()) // a child of the container, but without lsf = TRUE, so React draws it itself
                 return new PlacedViews.Problem("'" + sid + "' has no lsf = TRUE",
-                        "child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: React owns it, so there is no GWT view to place");
+                        "child '" + sid + "' of container '" + container.sID + "' has no `lsf = TRUE`: this view draws it"
+                                + " from its entry in `data`, so the platform builds no view of it to place here");
             return null;
         }
 

@@ -524,6 +524,11 @@ public class GFormController implements EditManager {
         // the accessor would not be written and what the object inherits would be replaced by it
         function taken(obj, name) { return name === "__proto__" || Object.prototype.hasOwnProperty.call(obj, name); }
 
+        // what a member IS, so one teardown loop can serve every kind and each kind can still be told apart: a
+        // property member is the projection's to remove when it stops showing the value, a group's verbs are not.
+        // Non-enumerable, so `for (var k in controller)` still lists exactly the names the view may say.
+        function mark(member, kind) { Object.defineProperty(member, "__member", { value: kind }); return member; }
+
         function makeProperty(qualified) {
             var member = {
                 //   .change()          exec on the group's current row      .change(row)         exec on that row
@@ -555,7 +560,7 @@ public class GFormController implements EditManager {
                     thisObj.@GFormController::controllerGetPropertyValues(*)(qualified + ".getValues()", qualified, object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count, scope);
                 }
             };
-            Object.defineProperty(member, "__property", { value: true });
+            mark(member, "property");
             return member;
         }
 
@@ -571,7 +576,7 @@ public class GFormController implements EditManager {
             var own = Object.getOwnPropertyNames(owner);
             for (var oi = 0; oi < own.length; oi++) {
                 var name = own[oi], member = owner[name];
-                if (member && member.__property === true && !wanted[name])
+                if (member && member.__member === "property" && !wanted[name])
                     delete owner[name];
             }
             for (var i = 0; i < names.length; i++) {
@@ -590,9 +595,9 @@ public class GFormController implements EditManager {
                 // the group's own state, named the way data.<group> names it: what the projection HAS is a member here
                 // too, and changing it is .change(...). A feature that states a LIST of things adds its member beside
                 // this one, where an array states them all and anything else states one
-                group = (function (g) { return {
+                group = mark((function (g) { return {
                     change: function (row) { return thisObj.@GFormController::controllerChangeObject(*)(g + ".change()", g, row, scope); }
-                }; })(groupSID);
+                }; })(groupSID), "group");
                 controller[groupSID] = group;
             }
             syncProperties(group, groups[gi][1], groupSID + ".");
@@ -655,7 +660,7 @@ public class GFormController implements EditManager {
     public void controllerChangeObject(String surface, String groupSID, JavaScriptObject objectOrKey, GContainer scope) {
         String errorPrefix = controllerPrefix(surface);
         GGroupObject group = resolveGroup(errorPrefix, groupSID); // it alone used to answer a typo with silence
-        GGroupObjectValue key = resolveRow(errorPrefix, group, objectOrKey);
+        GGroupObjectValue key = resolveRow(errorPrefix, group, objectOrKey, scope);
         // ... narrowed to a row of THIS group, by the group's own rule - which both checks and cuts. A key that is
         // not this group's row at all answers null, and it would otherwise set the objects it does carry and blank
         // the rest, which the server only asserts about (so: nothing at all in production). And in a TREE a row of a
@@ -802,12 +807,18 @@ public class GFormController implements EditManager {
     // Where the group is known the key can be looked up, so a view can hand back what it was handed; where it is not
     // (an unqualified changeProperty, whose group the object itself has to name) only a row or a handle can say which
     // group it belongs to, and a bare key is still refused
-    private GGroupObjectValue resolveRow(String errorPrefix, GGroupObject group, JavaScriptObject objectOrKey) {
-        GGroupObjectValue key = reactData != null ? reactData.resolveRowKey(group, objectOrKey)
+    private GGroupObjectValue resolveRow(String errorPrefix, GGroupObject group, JavaScriptObject objectOrKey, GContainer scope) {
+        GGroupObjectValue key = reactData != null ? reactData.resolveRowKey(group, objectOrKey, scope)
                                                   : GGroupObjectValue.resolveObject(objectOrKey);
-        if (key == null)
+        if (key == null) {
+            // a key STRING is the projection's own name for a row, looked up in the index built with the rows - so it
+            // is a name only where the rows are. A view that does not draw them was handed no key to hand back
+            if (reactData != null && scope != null && !reactData.drawsRows(group, scope))
+                throw new RuntimeException(errorPrefix + "expects a row of '" + group.getSID() + "' or its objects"
+                        + " handle: this view does not draw that group's rows, so a key string names nothing here");
             throw new RuntimeException(errorPrefix + "expects a row of '" + group.getSID() + "', its objects handle,"
                     + " or its key; that is none of them, or names no row the group has now");
+        }
         return key;
     }
 
@@ -819,7 +830,7 @@ public class GFormController implements EditManager {
         GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
         if (objectKey == null) { // ... a KEY resolves too, wherever the name settles which group's rows to look in
             if (nameGroup != null)
-                return resolveRow(controllerPrefix(surface), nameGroup, objectOrKey);
+                return resolveRow(controllerPrefix(surface), nameGroup, objectOrKey, scope);
             // it does not settle it - the property is drawn on several groups, or on none - so the group is what the
             // object argument itself is being asked for, and a bare key names no group
             throw new RuntimeException(controllerPrefix(surface) + "the object argument is not a data row or an objects handle;"
@@ -952,7 +963,7 @@ public class GFormController implements EditManager {
         if (!owner || !Object.prototype.hasOwnProperty.call(owner, name))
             return false;
         var member = owner[name];
-        return !!member && member.__property === true;
+        return !!member && member.__member === "property";
     }-*/;
 
     // the controller's own surface, all of it: a member's change() and the batch that is a shortcut for the members.
