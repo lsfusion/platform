@@ -642,6 +642,30 @@ public class GReactFormData {
     // one. Asking either of them at another key would list a property that has no entry, or hide one that has.
     // Also what the CONTROLLER carries a member for: a change is the form's own ON CHANGE event, so a property that
     // is not shown has nobody to call it on
+    // ... and what has a VALUE here, which is a different question and the one a CONTROLLER MEMBER answers to.
+    // An `lsf` draw's entry is a DESCRIPTOR - the platform draws its value in its own renderer, the projection writes
+    // no cell for it (hasCellEntry) and does not even take its delta (update) - so a member for it would be a second
+    // channel to that edit, going around the interface the platform already gives React (<Lsf name row/>). The
+    // question is asked of PLACEMENT, never of a cache: a value is here when the part that produces it is here.
+    private boolean hasValueEntry(GPropertyDraw draw, GGroupObjectValue current, GContainer scope) {
+        if (draw.isLsfView()) // the platform draws it
+            return false;
+        if (draw.isList) // a cell exists where the grid's part is
+            return hasColumnEntry(draw) && partScope(formController.getGroupDrawComponent(draw.groupObject)) == scope;
+        return getSingleEntryKey(draw, current) != null;
+    }
+
+    // the names this container may CHANGE, as opposed to the names its node carries: the index keeps an lsf column,
+    // because the view draws that column's header over renderers it places, and the member set does not
+    public ArrayList<String> getValueNames(GGroupObject group, GContainer scope) {
+        ArrayList<String> names = new ArrayList<>();
+        GGroupObjectValue current = currentObjects.get(group);
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && hasValueEntry(draw, current, scope))
+                names.add(draw.integrationSID);
+        return names;
+    }
+
     public ArrayList<String> getEntryNames(GGroupObject group) {
         ArrayList<String> names = new ArrayList<>();
         GGroupObjectValue current = currentObjects.get(group);

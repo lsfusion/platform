@@ -617,7 +617,8 @@ public class GFormController implements EditManager {
                 if (!reactData.isProjectedGroup(group, scope))
                     continue;
                 JavaScriptObject props = newArray();
-                for (String integrationSID : reactData.getEntryNames(group))
+                for (String integrationSID : reactData.getValueNames(group, scope)) // what this container may CHANGE,
+                                                                                     // not what its node names
                     push(props, integrationSID);
                 JavaScriptObject entry = newArray();
                 push(entry, group.getSID());
@@ -626,7 +627,10 @@ public class GFormController implements EditManager {
             }
             NativeStringMap<Boolean> seen = new NativeStringMap<>(); // one member per name, whichever draw shows it
             for (GPropertyDraw draw : form.propertyDraws)
-                if (reactData.isShownFormProperty(draw, scope) && seen.get(draw.integrationSID) == null) {
+                // isShownFormProperty is left alone deliberately: RESOLUTION must go on finding an lsf form-level
+                // draw (or a bare name would fall through to a group that happens to draw the same integration SID
+                // and silently change a cell), so the `lsf` exclusion belongs here, where the MEMBER is made
+                if (reactData.isShownFormProperty(draw, scope) && !draw.isLsfView() && seen.get(draw.integrationSID) == null) {
                     seen.put(draw.integrationSID, Boolean.TRUE);
                     push(formProps, draw.integrationSID);
                 }
@@ -933,9 +937,11 @@ public class GFormController implements EditManager {
         String groupSID = draw.groupObject != null ? draw.groupObject.getSID() : null;
         if (!hasControllerMember(getScopeController(scope), groupSID, draw.integrationSID))
             throw new RuntimeException(controllerPrefix(surface) + "'" + (groupSID != null ? groupSID + "." : "")
-                    + draw.integrationSID + "' is not a member of this view's controller - the form is not showing it"
-                    + " now, or this react container does not project it. properties.change() is the members' batch,"
-                    + " not a way past them");
+                    + draw.integrationSID + "' is not a member of this view's controller: the form is not showing it"
+                    + " now, this react container does not project it, or the PLATFORM draws it - an LSF property is"
+                    + " drawn and edited by its own renderer, which this view places with <Lsf name row/>; drop"
+                    + " lsf = TRUE if React should draw it. properties.change() is the members' batch, not a way past"
+                    + " them");
     }
     // an OWN member that IS a property member (syncControllerSugar marks them): a name off Object.prototype
     // (toString, constructor) is nothing the controller gave out, and a group node, the batch and a group's own verb
