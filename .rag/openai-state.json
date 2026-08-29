@@ -632,62 +632,6 @@
       },
       "stale": false
     },
-    "brief/Brief_physical_model.md": {
-      "file_hash": "sha256:2252fd67b424f34421a5ff06277576e07379a3c6125f7aec889b972ddb4f7b75",
-      "indexed_at": "2026-07-21T09:36:58Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_physical_model::examples": {
-          "file_id": "file-RjaAR7TjM42ZdtgeKT89TW",
-          "heading_path": "Brief: physical model > Examples",
-          "section_payload_hash": "sha256:4a6e4eed93de1461fa3d28367a39c967ff7faa99c6dfcbecb1a18a86a3790e56",
-          "source_file": "brief/Brief_physical_model.md"
-        },
-        "Brief_physical_model::indexes": {
-          "file_id": "file-2SNdtg9nc287krVkg2i5fu",
-          "heading_path": "Brief: physical model > Indexes",
-          "section_payload_hash": "sha256:5db74f3e0065c9da1c407b8581915a8fe4d0f6a02899bd61e2569cad26d70aaf",
-          "source_file": "brief/Brief_physical_model.md"
-        },
-        "Brief_physical_model::names-in-the-database": {
-          "file_id": "file-UvxiwYsVvYUF27A2NXZaTv",
-          "heading_path": "Brief: physical model > Names in the database",
-          "section_payload_hash": "sha256:30d93b1904f3b650dcbb637685132abc222e9045b76b861c7a8ad46189d5adcd",
-          "source_file": "brief/Brief_physical_model.md"
-        },
-        "Brief_physical_model::physical-model-map": {
-          "file_id": "file-JjpJDnVzjb1bQLW82ALEPo",
-          "heading_path": "Brief: physical model > Physical model map",
-          "section_payload_hash": "sha256:369042716c939f409de707e990515f9f0eba18974d5767994317a20292cf074b",
-          "source_file": "brief/Brief_physical_model.md"
-        },
-        "Brief_physical_model::recalculation": {
-          "file_id": "file-HUs8iCwKafdKDDTSq8saun",
-          "heading_path": "Brief: physical model > Recalculation",
-          "section_payload_hash": "sha256:c6199d4814e4d95e119931430b12265bfe7253274c568944a05c885d7ed2eb19",
-          "source_file": "brief/Brief_physical_model.md"
-        },
-        "Brief_physical_model::tables": {
-          "file_id": "file-77vDcmfruBkzLCSoCUfMsb",
-          "heading_path": "Brief: physical model > Tables",
-          "section_payload_hash": "sha256:1b5ae781cbc7c21dbbceed856221bd818d60dbfcce1a6bd355474dc6a00644ee",
-          "source_file": "brief/Brief_physical_model.md"
-        },
-        "Brief_physical_model::what-goes-into-the-database": {
-          "file_id": "file-9SrEMqLPtFTM1abEPJRGtW",
-          "heading_path": "Brief: physical model > What goes into the database",
-          "section_payload_hash": "sha256:9030cac71e5b6e173bcb848a92a39d93cc5a79d04938a15812be8fdd39eb8448",
-          "source_file": "brief/Brief_physical_model.md"
-        }
-      },
-      "stale": false
-    },
     "brief/Brief_properties.md": {
       "file_hash": "sha256:37ef78569861ab8d6cb71f176a3d4e22b5eb1fd58e4b918473917061240a7cca",
       "indexed_at": "2026-08-28T16:31:18Z",
@@ -16094,50 +16038,6 @@
       },
       "stale": false
     },
-    "rules/Rules_physical_model.md": {
-      "file_hash": "sha256:aabee65be9f93345b4769269c354c5968b8464ba1a32428137ce8301128e1198",
-      "indexed_at": "2026-07-21T09:37:55Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v3",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_physical_model::examples": {
-          "file_id": "file-LD1ySVw74usnxwuFz24Us6",
-          "heading_path": "Rules: physical model > Examples",
-          "section_payload_hash": "sha256:7e7c59e34e1a057d70e8e0034ba74624963565e1bd12d57233e7e0984eabce85",
-          "source_file": "rules/Rules_physical_model.md"
-        },
-        "Rules_physical_model::indexes": {
-          "file_id": "file-W7tcjLcuMqeZnNiLvmMVwW",
-          "heading_path": "Rules: physical model > Indexes",
-          "section_payload_hash": "sha256:853ab82bcf8f5cfc8fcf1c9aa6f8327fab8117df8333362e7d21adabd2e9e5f4",
-          "source_file": "rules/Rules_physical_model.md"
-        },
-        "Rules_physical_model::materializations": {
-          "file_id": "file-EdDngQ3TcKAbqzJk4K8hx1",
-          "heading_path": "Rules: physical model > Materializations",
-          "section_payload_hash": "sha256:2485358229374d67bafbd359e02359eeeadbe93e7b8d967c69ed1636a902f688",
-          "source_file": "rules/Rules_physical_model.md"
-        },
-        "Rules_physical_model::scope": {
-          "file_id": "file-6hBpZ3cRcWTnDHJkQhq7ZX",
-          "heading_path": "Rules: physical model > Scope",
-          "section_payload_hash": "sha256:2ec3da916c3b900defeea3bc21d40a366782fa4d1e14da1a66b59cd1a9698176",
-          "source_file": "rules/Rules_physical_model.md"
-        },
-        "Rules_physical_model::tables": {
-          "file_id": "file-HQh5GznCe7psPkHiPcCa24",
-          "heading_path": "Rules: physical model > Tables",
-          "section_payload_hash": "sha256:0e90396657d8cc95bc6d2b84d608aec112b694ddf7e6184045f4c24dbae2aae2",
-          "source_file": "rules/Rules_physical_model.md"
-        }
-      },
-      "stale": false
-    },
     "rules/Rules_properties.md": {
       "file_hash": "sha256:c8e832e3754e60dd63028ddf2f3804aaf3572c7cba16684cb5e704888feabe23",
       "indexed_at": "2026-08-28T17:31:27Z",
@@ -16211,7 +16111,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "09bce30e4b2b1e8a0ba5c0e5ca7f73f3b968c160",
+  "last_indexed_docs_commit": "adcd4528885eecd486251cc9b7321561c7f8a560",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
