@@ -3,7 +3,7 @@ slug: "/Brief_actions"
 title: 'Brief: actions'
 ---
 
-## State changes (<-, NEW, DELETE)
+## State changes (`<-`, NEW, DELETE)
 
 The [`CHANGE` operator](../language/CHANGE_operator.md) writes a value into a changeable property, the [`NEW` operator](../language/NEW_operator.md) adds an [object](../paradigm/New_object_NEW.md) of a concrete class, and the [`DELETE`](../language/DELETE_operator.md) and [`CHANGECLASS`](../language/CHANGECLASS_operator.md) operators delete an object or move it to another class:
 

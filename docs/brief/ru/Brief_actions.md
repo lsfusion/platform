@@ -3,7 +3,7 @@ slug: "/Brief_actions"
 title: 'Brief: действия'
 ---
 
-## Изменение состояния (<-, NEW, DELETE)
+## Изменение состояния (`<-`, NEW, DELETE)
 
 [Оператор `CHANGE`](../language/CHANGE_operator.md) пишет значение в изменяемое свойство, [оператор `NEW`](../language/NEW_operator.md) добавляет [объект](../paradigm/New_object_NEW.md) конкретного класса, операторы [`DELETE`](../language/DELETE_operator.md) и [`CHANGECLASS`](../language/CHANGECLASS_operator.md) удаляют объект или переводят его в другой класс:
 
