@@ -433,13 +433,13 @@ public class MCPDispatcher {
                         // `additionalProperties:false` above would otherwise make it unpassable by
                         // a strict client.
                         .put("exclude_ids", arrProp(new JSONObject().put("type", "string"),
-                                "Chunk `id` values already received in this session. They are excluded server-side, so a follow-up lookup returns new material instead of repeating what you have. Pass the accumulated ids when continuing a lookup on the same topic; leave empty on the first call.")))
+                                "Chunk `id` values you already hold. They are excluded server-side BEFORE ranking, so the quota is spent on material you do not have. Use this to page deeper on the same information need. Do NOT use it to rephrase a query for a better ranking, or to ask a different question about the same area: the filter ignores the new query, so a chunk that is now the most relevant one would be dropped before ranking. Leave empty on the first call.")))
                 .put("required", new JSONArray().put("query"))
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_RETRIEVE_DOCS)
                 .put("description",
-                        "Search official lsFusion documentation for chunks relevant to a query. Returns `{docs:[{id,source,text,score}]}` sorted by descending score. Use `type` to narrow to one branch when known; omit to search all five branches and merge (the two top guidance articles are always excluded — get_guidance serves those in full). Pass the `id` values you already received in `exclude_ids` when continuing a lookup, so the same chunks are not returned twice. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
+                        "Search official lsFusion documentation for chunks relevant to a query. Returns `{docs:[{id,source,text,score}]}` sorted by descending score. Use `type` to narrow to one branch when known; omit to search all five branches and merge (the two top guidance articles are always excluded — get_guidance serves those in full). To page deeper on one information need, pass the `id` values you already hold in `exclude_ids`; they are filtered out before ranking. Omit them when rephrasing for a better ranking or asking a different question, or the filter will drop the chunk that best answers it. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
                 .put("inputSchema", input);
     }
 
