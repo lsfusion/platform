@@ -744,6 +744,16 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         }
 
         for (ComponentView component : getComponents()) {
+            // every `lsf` component now carries a DESCRIPTOR entry of its own at the top level (the platform draws it,
+            // React labels the boundary it places), so its SID is a name in that flat namespace and must be claimed.
+            // A `lsf` LIST draw is the exception: React draws its group, so its descriptor is the column entry on the
+            // group's node, claimed with the other property names below
+            if (!(component instanceof ContainerView) && component.isLsfView()
+                    && !(component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity))) {
+                ContainerView descriptorScope = descriptorScope(component);
+                if (descriptorScope != null)
+                    claimProjectionName(topNames, descriptorScope, component.getSID(), "component '" + component.getSID() + "'", TOP_NAMES);
+            }
             if (component instanceof ContainerView) {
                 // a container the author DECLARED (`NEW <name>` in DESIGN) is data.<componentSID> = {caption, image},
                 // directly in data beside the groups and the form-level props (`{}` when it has neither). The generated

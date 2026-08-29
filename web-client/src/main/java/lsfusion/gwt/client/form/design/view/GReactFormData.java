@@ -177,8 +177,15 @@ public class GReactFormData {
         // is the one that would go on to rebuild rows; a form-level one falls through to a scope that is null anyway
         if (draw.isList && draw.hasColumnGroupObjects())
             return false;
+        // an LSF draw: what the projection carries for it is its DESCRIPTOR, which sits at its descriptor scope - not
+        // at a part scope, which it has none of (the platform draws it). Its caption, its image and its very presence
+        // are read from there, so that is what a change to it must rebuild, whether it has a group or not
+        if (draw.isLsfView()) {
+            markScopeDirty(descriptorScope(draw));
+            return false;
+        }
         GGroupObject group = draw.groupObject;
-        if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillSingles reads)
+        if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillFormSingles reads)
             markScopeDirty(getTopLevelScope(draw));
             return false;
         }
@@ -406,13 +413,27 @@ public class GReactFormData {
 
     // ===== containers ==========================================================================================
 
-    // a container with an entry in `data`: the author DECLARED it (DESIGN's `NEW <name>` - not "has a name", a group's
-    // generated BOX(g) is named too, for icons), OR it is an lsf child - whatever box that is. The lsf half is not a
-    // convenience: GWT skips an lsf child's caption/image for React to draw (the complement invariant), so a generated
-    // box marked lsf - MOVE BOX(o) { lsf = TRUE; }, the canonical case - MUST project its descriptor or its caption is
-    // drawn by nobody. What stays out is the boxes nobody wrote AND nobody placed: a group's toolbar/filter machinery.
+    // what has a DESCRIPTOR entry of its own: a container the author DECLARED (DESIGN's `NEW <name>` - not "has a
+    // name", a group's generated BOX(g) is named too, for icons), and every `lsf` component whatever kind it is - the
+    // platform draws it and React only labels the boundary it places, which is the whole of what crosses that seam.
+    // The lsf half is not a convenience: GWT skips an lsf component's caption/image for React to draw (the complement
+    // invariant), so a generated box marked lsf - MOVE BOX(o) { lsf = TRUE; }, the canonical case - MUST project its
+    // descriptor or its caption is drawn by nobody. What stays out is what nobody wrote AND nobody placed: a group's
+    // toolbar/filter machinery. And not an `lsf` LIST draw: React draws its group, so its descriptor IS its column
+    // entry on the group's node, where the view reads it beside the columns it draws itself.
     private boolean isProjectedContainer(GComponent component) {
-        return component instanceof GContainer && (((GContainer) component).declared || component.isLsfView());
+        if (component == null) // the delta path asks about a reader that names no component at all
+            return false;
+        if (component.isLsfView()) {
+            if (!(component instanceof GPropertyDraw))
+                return true;
+            GPropertyDraw draw = (GPropertyDraw) component;
+            // ... and a PROPERTY's descriptor comes and goes with the property, exactly as its value would: a draw the
+            // form is not showing (SHOWIF, a structure drop) has no entry, or the view would go on drawing a caption
+            // for a renderer that is not there - and a name the projection carries would resolve to a draw it does not
+            return !draw.isList && isShownProperty(draw, GGroupObjectValue.EMPTY);
+        }
+        return component instanceof GContainer && ((GContainer) component).declared;
     }
 
     // a projected container goes DIRECTLY in data, keyed by its design sid, with what the platform computed for it
@@ -425,12 +446,11 @@ public class GReactFormData {
         fillContainers(data, scope, form.mainContainer);
     }
     private void fillContainers(JavaScriptObject data, GContainer scope, GComponent component) {
-        if (component instanceof GContainer) {
-            if (getProjectedContainerScope(component) == scope)
-                setField(data, component.sID, buildDescriptorEntry(component, GGroupObjectValue.EMPTY));
+        if (getProjectedContainerScope(component) == scope)
+            setField(data, component.sID, buildDescriptorEntry(component, GGroupObjectValue.EMPTY));
+        if (component instanceof GContainer) // only a container has children; the recursion stays container-only
             for (GComponent child : ((GContainer) component).children)
                 fillContainers(data, scope, child);
-        }
     }
 
     // the scope whose data carries this container's entry, or null when it has none - THE statement of the container
@@ -691,6 +711,9 @@ public class GReactFormData {
     private GGroupObjectValue getSingleEntryKey(GPropertyDraw draw, GGroupObjectValue key) {
         if (draw.isList || key == null)
             return null;
+        if (draw.isLsfView()) // its descriptor is a TOP-LEVEL entry: the platform draws such a property, and its group
+            return null;      // is one the platform draws too (checkLsfView refuses it on a react-drawn group), so
+                              // the group has no node here to hang it on
         GGroupObjectValue valueKey = draw.filterColumnKeys(key);
         return valueKey != null && isShownProperty(draw, key) ? valueKey : null;
     }
@@ -698,8 +721,15 @@ public class GReactFormData {
     // ... and the same question for a form-level draw, which has no group node: it is carried by the scope it sits
     // in, at the top object, and only while it is shown - the predicate fillSingles emits it by
     public boolean isShownFormProperty(GPropertyDraw draw, GContainer scope) {
-        return draw.groupObject == null && scope != null && getTopLevelScope(draw) == scope
-                && getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillSingles writes it under
+        if (draw.groupObject != null || scope == null || getTopLevelScope(draw) != scope)
+            return false;
+        // an `lsf` one is SHOWN here too - its entry is the descriptor the platform's own renderer is labelled by -
+        // and it must go on being found, or a bare `controller.qty.change(v)` would stop resolving to it, fall through
+        // to a group that happens to draw the same integration SID, and change a cell nobody named. It has no MEMBER:
+        // that exclusion belongs to the member set (getControllerStructure), not here
+        if (draw.isLsfView())
+            return isShownProperty(draw, GGroupObjectValue.EMPTY);
+        return getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillFormSingles writes it under
     }
     // ... and the draw a BARE name means on the controller: the form-level one this projection is showing, which is
     // the one that has the member. Asked of the projection and not of the form, or the name would answer with a draw
