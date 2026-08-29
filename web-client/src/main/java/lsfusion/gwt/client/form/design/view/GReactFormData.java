@@ -9,6 +9,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -44,11 +45,20 @@ public class GReactFormData {
     // ===== structural sharing: build() returns the SAME JS refs for unchanged subtrees, so React.memo'd components skip.
     // The cache holds the last-built objects; the dirty sets (per update, cleared after all scopes are built) decide what to rebuild.
     private final NativeSIDMap<GContainer, JavaScriptObject> lastData = new NativeSIDMap<>(); // last built top object per React scope
-    private final NativeSIDMap<GGroupObject, JavaScriptObject> lastGroups = new NativeSIDMap<>();   // last built node per group
+    // a node belongs to a (scope, group): one group's parts can be drawn in different containers, and then each of
+    // them has a node of its own, holding what IT draws. Keyed by a string because the key is a pair.
+    private final NativeStringMap<JavaScriptObject> lastNodes = new NativeStringMap<>();   // last built node per (scope, group)
+    // ... and a PART belongs to a (component, group): the component is the producer, and one component can produce a
+    // part for several groups - a TREE draws them all - so a component-keyed cache would hand two groups one object
+    private final NativeStringMap<JavaScriptObject> lastParts = new NativeStringMap<>();   // last built part per (component, group)
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastLists = new NativeSIDMap<>();   // last built list array per group
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastKeys = new NativeSIDMap<>();   // last built STABLE keys array per group (ref changes only on membership/order, never on a value/current change) - the <List> subscription path
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, JavaScriptObject>> lastRows = new NativeSIDMap<>(); // last row obj per (group, key)
-    private final NativeSIDMap<GGroupObject, Boolean> dirtyGroups = new NativeSIDMap<>();      // group node must rebuild (current/list/prop changed)
+    private final NativeStringMap<Boolean> dirtyParts = new NativeStringMap<>();               // parts that must be rebuilt, by (component, group)
+    private final NativeStringMap<Boolean> dirtyNodes = new NativeStringMap<>();               // nodes that must be reassembled, by (scope, group)
+    // a dirty part is materialized ONCE per pass however many scopes ask for it - without this marker the second scope
+    // would rebuild it and hand out a different object for a part that did not change between the two questions
+    private final NativeStringMap<Boolean> builtParts = new NativeStringMap<>();               // parts already rebuilt in this pass
     private final NativeSIDMap<GGroupObject, Boolean> dirtyLists = new NativeSIDMap<>();      // group list (rows/order) changed
     private final NativeSIDMap<GGroupObject, Boolean> dirtyOrder = new NativeSIDMap<>();      // group membership/order changed (rebuild the stable keys array) - set ONLY by add/remove/reorder, NOT by value/current changes
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> dirtyRowKeys = new NativeSIDMap<>(); // rows whose values changed
@@ -303,13 +313,38 @@ public class GReactFormData {
         ArrayList<GContainer> scopes = getGroupScopes(group);
         if (scopes.isEmpty())
             return;
-        dirtyGroups.put(group, Boolean.TRUE);
+        markPartDirty(group.getDrawComponent(), group); // the grid part - the only one with a cache of its own so far
         for (GContainer scope : scopes)
-            markScopeDirty(scope);
+            markNodeDirty(scope, group);
         if (level != GroupDirty.NODE)
             dirtyLists.put(group, Boolean.TRUE);
         if (level == GroupDirty.ORDER)
             dirtyOrder.put(group, Boolean.TRUE);
+    }
+
+    // a PART must be rebuilt: the component that produces it drew something else. Its node has to be reassembled too -
+    // the node is where its fields are read - and the scope's top object rebuilt so the change reaches React.
+    private void markPartDirty(GComponent producer, GGroupObject group) {
+        GContainer scope = partScope(producer);
+        if (scope == null) // nothing projects it, so there is no part and nothing to rebuild
+            return;
+        dirtyParts.put(partKey(producer, group), Boolean.TRUE);
+        markNodeDirty(scope, group);
+    }
+
+    private void markNodeDirty(GContainer scope, GGroupObject group) {
+        dirtyNodes.put(nodeKey(scope, group), Boolean.TRUE);
+        markScopeDirty(scope);
+    }
+
+    // the identities the two caches are keyed by. A component's design ID is unique across the whole form, kinds
+    // included - one IDGenerator (FormEntity.genID) numbers the containers, the grids and the property draws alike -
+    // which is the same invariant GForm.findComponentByID already rests on
+    private static String partKey(GComponent producer, GGroupObject group) {
+        return producer.ID + ":" + group.getSID();
+    }
+    private static String nodeKey(GContainer scope, GGroupObject group) {
+        return scope.ID + ":" + group.getSID();
     }
 
     // rebuild the list AND forbid reusing any cached row: the change altered the SHAPE of every projected row (a
@@ -393,15 +428,15 @@ public class GReactFormData {
         for (GGroupObject group : form.groupObjects) {
             if (!getGroupScopes(group).contains(scope))
                 continue;
-            JavaScriptObject node = lastGroups.get(group);
-            // rebuild a changed (or first-seen) node ONCE per update, however many scopes show the group: the content
-            // is the same for all of them, and rebuilding per scope would hand each a different object - breaking the
-            // structural sharing every scope's React.memo depends on. The group leaves the dirty set as it is rebuilt,
-            // so the next scope of the same pass shares the node instead of making its own.
-            if (node == null || dirtyGroups.get(group) != null) {
+            // the node is this SCOPE's, so it is cached and rebuilt as this scope's: a pass asks for it once, and
+            // nothing has to be taken out of the dirty set as it goes. What is shared between scopes is one level
+            // down - the PARTS, which are materialized at most once per pass (getGridPart) - so a part that did not
+            // change hands every scope the same object and the structural sharing their React.memo depends on holds.
+            String key = nodeKey(scope, group);
+            JavaScriptObject node = lastNodes.get(key);
+            if (node == null || dirtyNodes.get(key) != null) {
                 node = buildGroupEntry(group);
-                lastGroups.put(group, node);
-                dirtyGroups.remove(group);
+                lastNodes.put(key, node);
             }
             setField(data, group.getSID(), node);
         }
@@ -548,12 +583,25 @@ public class GReactFormData {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
 
-        copyFields(node, buildGridPart(group, current));
+        copyFields(node, getGridPart(group, current));
         if (current != null) // the panel draws the current object, and without one it draws nothing
             copyFields(node, buildPanelPart(group, current));
 
         setGroupSID(node, group.getSID());
         return node;
+    }
+
+    // the grid's part, cached under its producer and rebuilt only when that producer's own dirty flag says so - and at
+    // most once per pass, so every scope asking for it in one pass is handed the same object
+    private JavaScriptObject getGridPart(GGroupObject group, GGroupObjectValue current) {
+        String key = partKey(group.getDrawComponent(), group);
+        JavaScriptObject part = lastParts.get(key);
+        if (part == null || (dirtyParts.get(key) != null && builtParts.get(key) == null)) {
+            part = buildGridPart(group, current);
+            lastParts.put(key, part);
+            builtParts.put(key, Boolean.TRUE);
+        }
+        return part;
     }
 
     // what the GRID produces: the rows, everything that is the same down a column, and the group's own attributes -
@@ -793,7 +841,9 @@ public class GReactFormData {
     }
 
     public void clearDirty() {
-        dirtyGroups.clear();
+        dirtyParts.clear();
+        dirtyNodes.clear();
+        builtParts.clear();
         dirtyLists.clear();
         dirtyOrder.clear();
         dirtyRowKeys.clear();
