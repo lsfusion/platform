@@ -64,7 +64,8 @@ public class GReactFormData {
     private final NativeSIDMap<GGroupObject, Boolean> dirtyOrder = new NativeSIDMap<>();      // group membership/order changed (rebuild the stable keys array) - set ONLY by add/remove/reorder, NOT by value/current changes
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> dirtyRowKeys = new NativeSIDMap<>(); // rows whose values changed
     private final NativeSIDMap<GContainer, Boolean> dirtyScopes = new NativeSIDMap<>();       // scopes whose top object must rebuild
-    private final NativeSIDMap<GContainer, Boolean> placedNotDrawn = new NativeSIDMap<>();    // already told this scope it places rows it does not draw
+    private final NativeSIDMap<GContainer, Boolean> saidNoRowsHere = new NativeSIDMap<>();    // already told this scope it places rows it does not draw
+    private final NativeSIDMap<GContainer, Boolean> saidNoPartHere = new NativeSIDMap<>();    // ... and that it draws no part of a group whose box it sits in
 
     // ===== there is NO `meta` namespace: every thing the platform computed is projected DIRECTLY, keyed as the thing is
     // keyed, with its value and attributes as sibling fields.
@@ -455,6 +456,7 @@ public class GReactFormData {
         }
         fillFormSingles(data, scope); // the form-level properties, each on the top object of the scope it sits in
         fillContainers(data, scope);
+        reportChromeScope(scope);
         lastData.put(scope, data);
         return data;
     }
@@ -503,18 +505,56 @@ public class GReactFormData {
     // rule and it is deliberate, but a view written against `data.d.list` meets it as silence - every helper defaults
     // to nothing at all on a missing node - so it is said once, here, where both halves are known.
     private void reportPlacedNotDrawn(GContainer scope, GComponent component) {
-        if (placedNotDrawn.get(scope) != null) // said once per scope, and asked first: the rest walks every group
+        if (saidNoRowsHere.get(scope) != null) // said once per scope, and asked first: the rest walks every group
             return;
         GGroupObject drawn = getDrawnGroup(component);
         if (drawn == null || isProjectedGroup(drawn, scope))
             return;
-        placedNotDrawn.put(scope, Boolean.TRUE);
+        saidNoRowsHere.put(scope, Boolean.TRUE);
         GwtClientUtils.consoleError("'" + scope.sID + "' places '" + component.sID + "' and the platform draws it, so"
                 + " data." + drawn.getSID() + " has no rows here (nor a controller for them); drop `lsf = TRUE` from '"
                 + component.sID + "' if React should draw them instead");
     }
 
     // the group whose rows this component draws, if it draws any - the inverse of getDrawComponent
+    // ... and the other shape of the same silence: the react view IS a chrome component of a group - MOVE FILTERS(d)
+    // is not even needed, a `custom` on FILTERS(d) itself is enough - and no chrome component produces a part yet, so
+    // it gets no `data.<g>` at all. Every helper defaults on a missing node, and a view that simply reads
+    // `data.d.something` gets a bare TypeError on its own line, which says nothing about where the view should be.
+    // Said at build time, where the relation is certain: this container is that group's chrome BY IDENTITY.
+    private void reportChromeScope(GContainer scope) {
+        if (saidNoPartHere.get(scope) != null)
+            return;
+        for (GGroupObject group : form.groupObjects) {
+            if (!isInGroupBox(scope, group))
+                continue;
+            if (isProjectedGroup(group, scope)) // it produces a part after all - a later branch gave chrome one
+                return;
+            saidNoPartHere.put(scope, Boolean.TRUE);
+            GwtClientUtils.consoleError("'" + scope.sID + "' sits inside the box of object group '" + group.getSID()
+                    + "' and draws no part of it, so this view gets no data." + group.getSID() + " and no controller."
+                    + group.getSID() + " either: only the grid and the panel properties produce projected data today,"
+                    + " so a view that needs this group must be where its rows are drawn (custom on the group's box)"
+                    + " or hold one of its panel properties (MOVE PROPERTY(...) into this container)");
+            return;
+        }
+    }
+
+    // whether this component sits inside a group's BOX - the container the group's drawing component is in, which is
+    // what everything generated for that group hangs under: its toolbars, its filter box, and any `NEW` container the
+    // author put there. Asked by the walk rather than by a flag, because the client is not told which box belongs to
+    // which group; the drawing component's own container IS that box.
+    private boolean isInGroupBox(GComponent component, GGroupObject group) {
+        GComponent draw = group.getDrawComponent();
+        GContainer box = draw != null ? draw.container : null;
+        if (box == null)
+            return false;
+        for (GComponent c = component; c != null; c = c.container)
+            if (c == box)
+                return true;
+        return false;
+    }
+
     private GGroupObject getDrawnGroup(GComponent component) {
         for (GGroupObject group : form.groupObjects)
             if (group.getDrawComponent() == component)
