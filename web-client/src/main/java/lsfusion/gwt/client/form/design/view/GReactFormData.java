@@ -980,16 +980,11 @@ public class GReactFormData {
     // the single entry of a property with ONE value (form-level, or a group's panel property): the value and ALL its
     // attributes together - nothing to split between a column and a cell
     private JavaScriptObject buildSingleEntry(GPropertyDraw draw, GGroupObjectValue key) {
-        JavaScriptObject entry;
-        if (draw.isLsfView())
-            entry = buildDescriptorEntry(draw, key); // its own key, like any single entry - not EMPTY, which is a column's key
-        else {
-            entry = newObject();
-            emitValue(entry, draw, key);
-            for (GPropertyReader reader : draw.getPresentationReaders())
-                if (reader != null)
-                    emitAttribute(entry, reader, key, draw);
-        }
+        JavaScriptObject entry = newObject(); // never an lsf draw: both callers ask getSingleEntryKey first, and that
+        emitValue(entry, draw, key);          // answers null for one - its entry is a top-level descriptor instead
+        for (GPropertyReader reader : draw.getPresentationReaders())
+            if (reader != null)
+                emitAttribute(entry, reader, key, draw);
         emitPropertyFacts(entry, draw);
         return entry;
     }
