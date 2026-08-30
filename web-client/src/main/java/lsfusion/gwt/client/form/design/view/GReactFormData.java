@@ -391,8 +391,10 @@ public class GReactFormData {
         if (owner instanceof GPropertyDraw) { // the attribute of a PROPERTY: where it is projected says what to rebuild
             GPropertyDraw draw = (GPropertyDraw) owner;
             if (draw.integrationSID != null) {
-                if (draw.isList && reader.isColumnAttribute(draw)) // a column attribute lives on the group -> rebuild the group only, DON'T churn the list/row refs
-                    markGridDirty(draw.groupObject, GridDirty.ENTRIES);
+                if (draw.isList && reader.isColumnAttribute(draw)) { // a column attribute lives on the group -> rebuild
+                    markPartDirty(draw, draw.groupObject);            // THIS column and the grid part that copies it,
+                    markGridDirty(draw.groupObject, GridDirty.ENTRIES); // and DON'T churn the list/row refs
+                }
                 else // a cell (or single-value) attribute -> the same marking as the value it sits with
                     markPropertyDirty(draw, keyValues);
             }
@@ -923,7 +925,7 @@ public class GReactFormData {
     private void fillColumns(JavaScriptObject node, GGroupObject group) {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && hasColumnEntry(draw))
-                setField(node, draw.integrationSID, buildColumnEntry(draw));
+                setField(node, draw.integrationSID, getPart(draw, group, () -> buildColumnEntry(draw)));
     }
 
     private boolean isShownProperty(GPropertyDraw draw, GGroupObjectValue key) {
