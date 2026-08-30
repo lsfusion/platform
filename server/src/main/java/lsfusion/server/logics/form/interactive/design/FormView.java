@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -329,6 +330,16 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             if (!property.entity.isList(entity) && group.equals(property.entity.getToDraw(entity)))
                 addGroupScope(scopes, partScope(property));
         return scopes;
+    }
+
+    // ... and what those producers WRITE on the node in this scope, which is what a projected name can collide with.
+    // Accumulated over the producers actually placed here rather than inferred from "is the grid in this scope",
+    // so a kind that lands in a container of its own brings its names with it instead of needing a test beside this.
+    private String[] getReservedNodeNames(GroupObjectEntity group, ContainerView scope) {
+        String[] reserved = NODE_OWN_NAMES;
+        if (partScope(getGroupDrawComponent(group)) == scope)
+            reserved = concat(reserved, GRID_PART_NAMES);
+        return reserved;
     }
     private static void addGroupScope(List<ContainerView> scopes, ContainerView scope) {
         if (scope != null && !scopes.contains(scope))
@@ -732,8 +743,10 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // that container's CONTROLLER too (controller.<name>), one claim per scope says both. Their reserved list is
         // the controller's, which contains the projection's; a container's descriptor is data-only and takes the shorter
         Map<ContainerView, Set<String>> topNames = new HashMap<>();
-        Map<GroupObjectEntity, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*    : list/byKey/keys/options/properties + column & panel props
-        Map<GroupObjectEntity, Set<String>> rowNames = new HashMap<>();  // data.<group>.list[i].* : key/isCurrent/objects/background/foreground/selected + cell props
+        // keyed by (scope, group), because that is what a node is: the same group has a different node in each
+        // container that draws a part of it, and a name collides only with what THAT node carries
+        Map<Pair<ContainerView, GroupObjectEntity>, Set<String>> nodeNames = new HashMap<>(); // data.<group>.*
+        Map<Pair<ContainerView, GroupObjectEntity>, Set<String>> rowNames = new HashMap<>();  // data.<group>.list[i].*
 
         // a group is projected as data.<groupSID> on every scope that sees it - asked of the group, not of a box, so
         // the groups of a tree (which share one box, named by none of them) are claimed too
@@ -767,12 +780,21 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'", CONTROLLER_NAMES);
             } else if (isProjectedGroup(group)) {
                 checkProjectedDraw(columns, integrationSID, "property of object group '" + group.getSID() + "'");
-                // everything projected is an object keyed by its integration sid at the NODE (a list column's caption,
-                // or a panel value) and, for a react-owned list cell, at the ROW too
+                boolean list = property.entity.isList(entity);
+                // a name is claimed WHERE ITS ENTRY LANDS, which is one container: a list draw's column entry where
+                // the grid's part is, a panel draw's entry where the draw itself is. An LSF PANEL draw lands nowhere
+                // on the node at all - its descriptor is a top-level entry, claimed with the components above.
+                ContainerView scope = list ? partScope(getGroupDrawComponent(group)) : (lsf ? null : partScope(property));
+                if (scope == null)
+                    continue;
                 String source = "property '" + group.getSID() + "." + integrationSID + "'";
-                claimProjectionName(nodeNames, group, integrationSID, source, GROUP_NODE_NAMES);
-                if (property.entity.isList(entity) && !lsf) // an LSF list property has no per-row cell, only its column
-                    claimProjectionName(rowNames, group, integrationSID, source, ROW_NAMES);
+                // ... and it collides with the names that SCOPE carries, not with the ones another container does: a
+                // container holding one panel property of the group has no `list` for a property called `list` to take,
+                // while a panel property MOVEd in beside the grid does meet it
+                claimProjectionName(nodeNames, Pair.create(scope, group), integrationSID, source,
+                        getReservedNodeNames(group, scope));
+                if (list && !lsf) // an LSF list property has no per-row cell, only its column
+                    claimProjectionName(rowNames, Pair.create(scope, group), integrationSID, source, ROW_NAMES);
             }
         }
 
@@ -806,10 +828,20 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // and the batch that is the members' shortcut. A projected name equal to one of them would have to be dropped,
     // and the verbs are how everything outside this surface is reached
     private static final String[] CONTROLLER_NAMES = {"exec", "eval", "evalAction", "change", "properties", PROTO};
-    private static final String[] GROUP_NODE_NAMES = {"list", "byKey", "keys", "options", "properties", "change", PROTO,
-            "__groupSID"}; // written on the node by GReactFormData.setGroupSID - non-enumerable, and non-writable, so a
-                           // property taking that name would either vanish from the node or throw when it is written
-    private static final String[] ROW_NAMES = {"key", "isCurrent", "objects", "background", "foreground", "selected", PROTO};
+    // what a group's node carries besides the properties, ONE LINE PER PRODUCER: a branch that gives a component a
+    // part of its own adds its line here rather than editing another's, so two of them merge instead of colliding.
+    // A name in this array is claimed for the node's DATA and for the group's controller MEMBERS alike - `change` is
+    // the group's own verb - so a feature that writes on the node has one array to update, not two.
+    private static final String[] GRID_PART_NAMES = {
+            "list", "byKey", "keys", "options",                 // the grid's part
+    };
+    private static final String[] NODE_OWN_NAMES = {
+            "properties", "change", PROTO, "__groupSID",        // the node's own: its index, its verb, and the stamp
+    };                     // __groupSID is written by GReactFormData.setGroupSID - non-enumerable, and non-writable, so
+                           // a property taking that name would either vanish from the node or throw when it is written
+    private static final String[] ROW_NAMES = {
+            "key", "isCurrent", "objects", "background", "foreground", "selected", PROTO, // the grid's part: a ROW
+    };
 
     // a property GROUPED IN COLUMNS is one cell per row AND column, and every name a react view has - in `data`, on
     // the controller - means one ROW, so such a cell is nothing a name can reach. Where the projection CARRIES the
@@ -844,6 +876,13 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + " '" + integrationSID
                     + "': it is grouped in COLUMNS - one cell per row AND column - and a react view names one ROW."
                     + " Draw it as an ordinary property, or keep it out of what a react container projects");
+    }
+
+    private static String[] concat(String[] first, String[] second) {
+        String[] both = new String[first.length + second.length];
+        System.arraycopy(first, 0, both, 0, first.length);
+        System.arraycopy(second, 0, both, first.length, second.length);
+        return both;
     }
 
     private <K> void claimProjectionName(Map<K, Set<String>> names, K owner, String name, String source, String... reserved) {
