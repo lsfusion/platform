@@ -641,6 +641,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         checkCustomValue();
         checkCustomTabbed();
         checkCustomReactProperty();
+        checkCustomReactSwallowed();
         checkCustomTemplatePlaces();
 
         checkLsfViews();
@@ -693,6 +694,24 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     throw new IllegalStateException(formErrorPrefix() + "custom of container '" + container.getSID()
                             + "' is both the React component '" + container.getCustom() + "' and a property; a component draws"
                             + " the container itself, so a computed template would never be drawn");
+            }
+    }
+
+    // a react container that is itself a non-lsf child of a react container is SWALLOWED: GFormLayout.addContainers
+    // skips the whole projected subtree, so no view is built for it, its `custom` is never read, and the outer
+    // component is left to draw it from `data`. Its component is therefore drawn by nobody, silently - and so is any
+    // lsf child it would have placed, which is why checkLsfView does not ask this again
+    private void checkCustomReactSwallowed() {
+        for (ComponentView component : getComponents())
+            if (component instanceof ContainerView) {
+                ContainerView container = (ContainerView) component;
+                ContainerView owner = container.isReact() ? getReactContainer(container) : null; // climbs, so a plain box in between does not hide it
+                if (owner != null)
+                    throw new IllegalStateException(formErrorPrefix() + "container '" + container.getSID() + "' is the React"
+                            + " component '" + container.getCustom() + "', but it is itself drawn by the React component '"
+                            + owner.getCustom() + "', which draws its children from data - so nothing would ever build it;"
+                            + " set lsf = TRUE on '" + container.getSID() + "' to give it a view of its own and place it"
+                            + " with <Lsf name=\"" + container.getSID() + "\"/>");
             }
     }
 
@@ -935,14 +954,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         ContainerView container = component.getContainer();
         if (container == null || !container.isReact())
             throw new IllegalStateException("lsf is set for '" + component.getSID() + "', which is not a child of a CUSTOM REACT container");
-
-        // a react container that is itself a non-lsf child of a react container is SWALLOWED - the outer component
-        // draws it from data and it never gets a view of its own - so nothing could place this child's view either
-        ContainerView owner = getReactContainer(container);
-        if (owner != null)
-            throw new IllegalStateException("lsf is set for '" + component.getSID() + "', but its container '" + container.getSID()
-                    + "' is itself rendered by the react component '" + owner.getCustom()
-                    + "' — nothing would place it; set lsf on '" + container.getSID() + "' as well to give it its own view");
 
         if (component instanceof PropertyDrawView) {
             PropertyDrawEntity<?, ?> property = ((PropertyDrawView) component).entity;
