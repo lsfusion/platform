@@ -564,25 +564,46 @@ public class GFormController implements EditManager {
             return member;
         }
 
+        // ... and the member of a property the PLATFORM draws: a name that is HERE and says what it cannot do, rather
+        // than a name that is missing and fails as a TypeError with no lsFusion word in it. Its own kind, "lsf": the
+        // teardown loop takes it away like a property member, and hasControllerMember goes on answering false for it,
+        // so properties.change() refuses it exactly where it always did
+        function makeLsfProperty(qualified) {
+            function refuse(call) { thisObj.@GFormController::refuseLsfMember(*)(qualified + call, qualified); }
+            var member = {
+                change: function () { refuse(".change()"); },
+                getValues: function () { refuse(".getValues()"); }
+            };
+            mark(member, "lsf");
+            return member;
+        }
+
         // the members of one level, brought to what the projection shows there NOW: what it stopped showing goes, what
         // it started showing arrives. Only a marked property member is removed - a group's own verbs, and whatever a
         // feature put beside them, are not this loop's to take away. Nothing here has to handle a name it cannot take:
         // a projected name colliding with a controller verb, with a group's own member or with `__proto__` is a form
         // that was refused when it was built (FormView.claimProjectionName)
-        function syncProperties(owner, names, prefix) {
+        function syncProperties(owner, names, lsfNames, prefix) {
             var wanted = Object.create(null); // keyed by a property NAME, which is data: `{}` would inherit
             for (var i = 0; i < names.length; i++)  // toString/constructor/valueOf from Object.prototype and keep
                 wanted[names[i]] = true;            // a member the projection stopped showing
+            for (var i = 0; i < lsfNames.length; i++)
+                wanted[lsfNames[i]] = true;
             var own = Object.getOwnPropertyNames(owner);
             for (var oi = 0; oi < own.length; oi++) {
                 var name = own[oi], member = owner[name];
-                if (member && member.__member === "property" && !wanted[name])
+                if (member && (member.__member === "property" || member.__member === "lsf") && !wanted[name])
                     delete owner[name];
             }
             for (var i = 0; i < names.length; i++) {
                 var propSID = names[i];
                 if (!taken(owner, propSID)) // ... and what is already there, this loop put there
                     owner[propSID] = makeProperty(prefix + propSID);
+            }
+            for (var i = 0; i < lsfNames.length; i++) {
+                var lsfSID = lsfNames[i];
+                if (!taken(owner, lsfSID))
+                    owner[lsfSID] = makeLsfProperty(prefix + lsfSID);
             }
         }
 
@@ -600,9 +621,9 @@ public class GFormController implements EditManager {
                 }; })(groupSID), "group");
                 controller[groupSID] = group;
             }
-            syncProperties(group, groups[gi][1], groupSID + ".");
+            syncProperties(group, groups[gi][1], groups[gi][2], groupSID + ".");
         }
-        syncProperties(controller, structure.props, ""); // form-level (no-group) properties sit directly on the controller
+        syncProperties(controller, structure.props, structure.lsfProps, ""); // form-level (no-group) properties sit directly on the controller
     }-*/;
 
     // WHAT THE CONTROLLER CARRIES: what `data` carries, and nothing else. A member's change() is the form's own ON
@@ -617,6 +638,7 @@ public class GFormController implements EditManager {
     private JavaScriptObject getControllerStructure(GContainer scope) {
         JavaScriptObject groups = newArray();
         JavaScriptObject formProps = newArray();
+        JavaScriptObject lsfFormProps = newArray();
         if (reactData != null) { // it is a projection's structure, so there is one - a guard, not a case
             for (GGroupObject group : form.groupObjects) {
                 if (!reactData.isProjectedGroup(group, scope))
@@ -625,25 +647,40 @@ public class GFormController implements EditManager {
                 for (String integrationSID : reactData.getValueNames(group, scope)) // what this container may CHANGE,
                                                                                      // not what its node names
                     push(props, integrationSID);
+                JavaScriptObject lsfProps = newArray(); // ... and what it may NOT, which gets a member too - see below
+                for (String integrationSID : reactData.getLsfNames(group, scope))
+                    push(lsfProps, integrationSID);
                 JavaScriptObject entry = newArray();
                 push(entry, group.getSID());
                 push(entry, props);
+                push(entry, lsfProps);
                 push(groups, entry);
             }
             NativeStringMap<Boolean> seen = new NativeStringMap<>(); // one member per name, whichever draw shows it
             for (GPropertyDraw draw : form.propertyDraws)
                 // isShownFormProperty is left alone deliberately: RESOLUTION must go on finding an lsf form-level
                 // draw (or a bare name would fall through to a group that happens to draw the same integration SID
-                // and silently change a cell), so the `lsf` exclusion belongs here, where the MEMBER is made
-                if (reactData.isShownFormProperty(draw, scope) && !draw.isLsfView() && seen.get(draw.integrationSID) == null) {
+                // and silently change a cell), so the two halves are told apart HERE, where the MEMBER is made
+                if (reactData.isShownFormProperty(draw, scope) && seen.get(draw.integrationSID) == null) {
                     seen.put(draw.integrationSID, Boolean.TRUE);
-                    push(formProps, draw.integrationSID);
+                    push(draw.isLsfView() ? lsfFormProps : formProps, draw.integrationSID);
                 }
         }
         JavaScriptObject result = GwtClientUtils.newObject();
         GwtClientUtils.setField(result, "groups", groups);
         GwtClientUtils.setField(result, "props", formProps);
+        GwtClientUtils.setField(result, "lsfProps", lsfFormProps);
         return result;
+    }
+
+    // the member an `lsf` property gets. It has no value here to change - the platform draws and edits it in its own
+    // renderer - but SAYING so is worth more than not being there: without this member `controller.o.qty.change(5)`
+    // is a bare TypeError on the author's own line, with no lsFusion word in it, and the message written for exactly
+    // that mistake is reachable only through properties.change or through a member captured before it went away
+    private void refuseLsfMember(String call, String qualified) {
+        throw new RuntimeException(call + ": '" + qualified + "' is drawn by the PLATFORM - an LSF property is drawn"
+                + " and edited by its own renderer, which this view places with <Lsf name row/>, so the projection"
+                + " carries its caption and not its value; drop lsf = TRUE if React should draw it");
     }
 
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): resolve the draw by
