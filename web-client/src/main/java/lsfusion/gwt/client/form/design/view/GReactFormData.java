@@ -61,9 +61,6 @@ public class GReactFormData {
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, JavaScriptObject>> lastRows = new NativeSIDMap<>(); // last row obj per (group, key)
     private final NativeStringMap<Boolean> dirtyParts = new NativeStringMap<>();               // parts that must be rebuilt, by (component, group)
     private final NativeStringMap<Boolean> dirtyNodes = new NativeStringMap<>();               // nodes that must be reassembled, by (scope, group)
-    // a dirty part is materialized ONCE per pass however many scopes ask for it - without this marker the second scope
-    // would rebuild it and hand out a different object for a part that did not change between the two questions
-    private final NativeStringMap<Boolean> builtParts = new NativeStringMap<>();               // parts already rebuilt in this pass
     private final NativeSIDMap<GGroupObject, Boolean> dirtyLists = new NativeSIDMap<>();      // group list (rows/order) changed
     private final NativeSIDMap<GGroupObject, Boolean> dirtyOrder = new NativeSIDMap<>();      // group membership/order changed (rebuild the stable keys array) - set ONLY by add/remove/reorder, NOT by value/current changes
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> dirtyRowKeys = new NativeSIDMap<>(); // rows whose values changed
@@ -666,16 +663,18 @@ public class GReactFormData {
         return node;
     }
 
-    // a part, cached under its producer and rebuilt only when that producer's own dirty flag says so - and at most
-    // once per pass, so every scope asking for it in one pass is handed the same object. Read and write spell the
-    // production identity the same way: this is markPartDirty's (component, group), asked back
+    // a part, cached under its producer and rebuilt only when that producer's own dirty flag says so. Read and write
+    // spell the production identity the same way: this is markPartDirty's (component, group), asked back.
+    // ONE PASS ASKS FOR A PART ONCE, and that is structural rather than guarded: a part's scope is partScope(producer),
+    // which is a function, so only one container can ask - the grid part under drawsRows (partScope of the draw
+    // component IS the scope), a panel part under buildPanelPart's `partScope(draw) != scope` skip, a column entry only
+    // from inside the grid part. A pass builds each container once (GFormLayout), so no key is reached twice
     private JavaScriptObject getPart(GComponent producer, GGroupObject group, Supplier<JavaScriptObject> build) {
         String key = partKey(producer, group);
         JavaScriptObject part = lastParts.get(key);
-        if (part == null || (dirtyParts.get(key) != null && builtParts.get(key) == null)) {
+        if (part == null || dirtyParts.get(key) != null) {
             part = build.get();
             lastParts.put(key, part);
-            builtParts.put(key, Boolean.TRUE);
         }
         return part;
     }
@@ -911,7 +910,6 @@ public class GReactFormData {
     public void clearDirty() {
         dirtyParts.clear();
         dirtyNodes.clear();
-        builtParts.clear();
         dirtyLists.clear();
         dirtyOrder.clear();
         dirtyRowKeys.clear();
