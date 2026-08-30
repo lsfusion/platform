@@ -702,7 +702,10 @@ public class GFormController implements EditManager {
 
     // what a react view's own state rests on: the group is one the projection carries, and there the platform has
     // already settled what the readers above do not ask - no draw grouped in COLUMNS, no integration SID answering
-    // for two of them. A verb wired to a group nothing projects would read a name nothing checked, so it is refused
+    // for two of them. A verb wired to a group nothing projects would read a name nothing checked, so it is refused.
+    // A STATE VERB CALLS THIS FIRST, before it looks at its payload, and does not rely on readStateProperty calling it
+    // per item: an EMPTY list reaches no item, so a `<verb>.change([])` on a group this view does not project would
+    // otherwise clear state the view has no business naming, and say nothing while doing it.
     private void checkProjectedGroup(String errorPrefix, GGroupObject group, GContainer scope) {
         if (reactData == null || !reactData.isProjectedGroup(group, scope))
             throw new RuntimeException(errorPrefix + "this react container does not project object group '"

@@ -170,7 +170,7 @@ controller.c.customer.getValues(text, 'objects', result => {
 
 `exec`, `eval`, `evalAction` and `change` each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls — see [Calling the server](How-to_Custom_components_objects.md#calling-the-server) for the gate, parameter binding, and the result-to-JS conversion table. An end-to-end example of these calls from a CUSTOM view is in [How-to: Custom Components (server calls)](How-to_Custom_components_server_calls.md).
 
-- `exec(action, ...params)` — runs a named action; resolves to its `RETURN` value.
+- `exec(action, ...params)` — runs a named action; resolves to its `RETURN` value. `action` is the action's [canonical name](../language/IDs.md) — its signature in brackets, `saveFilters[]` or `runReport[Order]` — not the `saveFilters()` a script would write; a name with the wrong shape answers "Action was not found".
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
 - `change(property, ...keyParams, value)` — changes a global property; the last argument is the value, the preceding ones are the keys. When the property's value is an object, the value is its id, and the platform assigns the object with that id — the object picker opens only for interactive editing.

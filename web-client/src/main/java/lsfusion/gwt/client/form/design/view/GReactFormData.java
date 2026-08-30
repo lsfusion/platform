@@ -879,6 +879,12 @@ public class GReactFormData {
     // property already lives, so this is one more thing it says rather than a second place to look.
     // `type` names the kind the projected value was converted by - a number, a boolean, a string, a date, or JSON
     // that has been parsed into whatever it held - so a view can tell them apart without knowing the property's class.
+    // WHAT MAY BE WRITTEN HERE IS A FACT FIXED FOR THE LIFE OF THE FORM. An entry is cached under its producer and
+    // rebuilt only when that producer says it changed, so a fact that could change at run time and has no producer to
+    // dirty would go stale here with nothing to notice. That is why a static, design-time answer belongs on the entry
+    // beside the value (react-orders' `noSort`, and whatever the filter panel's equivalent turns out to be) while
+    // anything that moves belongs on a part, with something that marks it. One line per fact; features merge beside
+    // each other rather than editing one line.
     private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw draw) {
         setField(entry, "type", GSimpleStateTableView.getJSTypeName(draw.getRenderType(RendererType.SIMPLE)));
     }
