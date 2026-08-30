@@ -300,7 +300,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
     // into a JSON candidate list). A box marked lsf keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
-        return getOwningReactContainer(getGroupDrawComponent(group)) != null;
+        return partScope(getGroupDrawComponent(group)) != null; // where its ROWS are drawn
     }
 
     // the component that actually DRAWS a group: the tree it belongs to, or its own grid. This is the same component
@@ -753,25 +753,10 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         }
 
         for (ComponentView component : getComponents()) {
-            // every `lsf` component now carries a DESCRIPTOR entry of its own at the top level (the platform draws it,
-            // React labels the boundary it places), so its SID is a name in that flat namespace and must be claimed.
-            // A `lsf` LIST draw is the exception: React draws its group, so its descriptor is the column entry on the
-            // group's node, claimed with the other property names below
-            if (!(component instanceof ContainerView) && component.isLsfView()
-                    && !(component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity))) {
-                ContainerView descriptorScope = descriptorScope(component);
-                if (descriptorScope != null)
-                    claimProjectionName(topNames, descriptorScope, component.getSID(), "component '" + component.getSID() + "'", TOP_NAMES);
-            }
-            if (component instanceof ContainerView) {
-                // a container the author DECLARED (`NEW <name>` in DESIGN) is data.<componentSID> = {caption, image},
-                // directly in data beside the groups and the form-level props (`{}` when it has neither). The generated
-                // boxes of a group are not projected and take no name here.
-                ContainerView<?> container = (ContainerView<?>) component;
-                ContainerView descriptorScope = getProjectedContainerScope(container);
-                if (descriptorScope != null)
-                    claimProjectionName(topNames, descriptorScope, container.getSID(), "container '" + container.getSID() + "'", TOP_NAMES);
-            }
+            ContainerView descriptorScope = getProjectedContainerScope(component);
+            if (descriptorScope != null) // named by its kind, since that is what the author sees in the error
+                claimProjectionName(topNames, descriptorScope, component.getSID(),
+                        (component instanceof ContainerView ? "container '" : "component '") + component.getSID() + "'", TOP_NAMES);
         }
         for (PropertyDrawView property : getPropertiesIt()) {
             String integrationSID = property.entity.getIntegrationSID();
@@ -781,8 +766,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             GroupObjectEntity group = property.entity.getToDraw(entity);
             boolean columns = !property.entity.getColumnGroupObjects().isEmpty();
             if (group == null) { // a form-level property: one object at data.<integrationSID>
-                ContainerView scope = lsf ? property.getContainer() // an LSF draw's parent IS react (checkLsfViews ran first)
-                        : getOwningReactContainer(property);
+                ContainerView scope = descriptorScope(property); // an LSF draw's entry is its descriptor, in its own container
                 if (scope == null) // nothing projects it, so nothing here has to be able to name it
                     continue;
                 checkProjectedDraw(columns, integrationSID, "form property");
@@ -800,12 +784,17 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     }
 
-    // the scope whose data carries this container's entry, or null when it has none: only a container the author
-    // DECLARED is projected, and an LSF-VIEW one is placed by the scope it sits in rather than by the scope that owns
-    // it - the ownership walk stops at an lsf child. The client's statement of the same rule bears the same name
-    // (GReactFormData.getProjectedContainerScope); this one reserves the names that one emits.
-    private ContainerView getProjectedContainerScope(ContainerView container) {
-        return container.isLsfView() || container.declared ? descriptorScope(container) : null; // declared OR lsf, nothing for the rest
+    // the scope whose data carries this component's DESCRIPTOR entry, or null when it has none: a container the author
+    // DECLARED, and every `lsf` component whatever kind it is - the platform draws it and React only labels the
+    // boundary it places. Not an `lsf` LIST draw: React draws its group, so its descriptor is the column entry on the
+    // group's node, claimed with the other property names. An LSF component is placed by the scope it SITS in rather
+    // than by the scope that owns it - the ownership walk stops at an lsf child. The client's statement of the same
+    // rule is GReactFormData.isProjectedContainer/getProjectedContainerScope; this one reserves the names that emits.
+    private ContainerView getProjectedContainerScope(ComponentView component) {
+        if (component.isLsfView())
+            return component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)
+                    ? null : descriptorScope(component);
+        return component instanceof ContainerView && ((ContainerView<?>) component).declared ? descriptorScope(component) : null;
     }
 
 

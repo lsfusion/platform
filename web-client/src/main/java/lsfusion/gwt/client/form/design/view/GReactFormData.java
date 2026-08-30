@@ -10,6 +10,7 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import java.util.function.Supplier;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -197,11 +198,11 @@ public class GReactFormData {
         }
         GGroupObject group = draw.groupObject;
         if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillFormSingles reads)
-            markScopeDirty(getTopLevelScope(draw));
+            markScopeDirty(descriptorScope(draw));
             return false;
         }
         if (!draw.isList) { // a panel property -> its own entry, and the node it is assembled into; the grid untouched
-            markPanelDirty(draw);
+            markPartDirty(draw, group);
             return false;
         }
         markGridDirty(group, GridDirty.ROWS); // a list cell -> the grid part, its list and the changed rows
@@ -327,13 +328,6 @@ public class GReactFormData {
             dirtyOrder.put(group, Boolean.TRUE);
     }
 
-    // a PANEL property is its own part: it is placed on its own, and what happens to it - a new value, a new current
-    // object, an appearance or a disappearance - concerns nothing else on the node. The placement asked here is the
-    // draw's own, the same one the assembler asks, or a change would be routed to a node the entry is not on.
-    private boolean markPanelDirty(GPropertyDraw draw) {
-        return markPartDirty(draw, draw.groupObject);
-    }
-
     // the one CROSS-part edge the base projection has: the current object is the group's, and it is read by parts that
     // do not otherwise know about each other. The grid's rows flip `isCurrent`; EVERY panel entry of the group is read
     // at the new key, so its value, and its very existence, change with it; and the index of what the node carries
@@ -342,7 +336,7 @@ public class GReactFormData {
         markGridDirty(group, GridDirty.ROWS);
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && !draw.isList)
-                markPanelDirty(draw);
+                markPartDirty(draw, group);
     }
 
     // a PART must be rebuilt: the component that produces it drew something else. Its node has to be reassembled too -
@@ -450,11 +444,11 @@ public class GReactFormData {
             return cached;
         JavaScriptObject data = newObject();
         for (GGroupObject group : form.groupObjects) {
-            if (!getGroupScopes(group).contains(scope))
+            if (!isProjectedGroup(group, scope))
                 continue;
             // the node is this SCOPE's, so it is cached and rebuilt as this scope's: a pass asks for it once, and
             // nothing has to be taken out of the dirty set as it goes. What is shared between scopes is one level
-            // down - the PARTS, which are materialized at most once per pass (getGridPart) - so a part that did not
+            // down - the PARTS, which are materialized at most once per pass (getPart) - so a part that did not
             // change hands every scope the same object and the structural sharing their React.memo depends on holds.
             String key = nodeKey(scope, group);
             JavaScriptObject node = lastNodes.get(key);
@@ -541,7 +535,7 @@ public class GReactFormData {
     // the scope whose data carries this container's entry, or null when it has none - THE statement of the container
     // rule, asked by the build (fillContainers) and by the delta path (getContainerReaderScope) alike, so the two cannot
     // drift. The server asks its own copy of the same question under the same name (FormView.getProjectedContainerScope)
-    // to reserve the names this emits. An LSF container is placed by the scope it sits in (getTopLevelScope).
+    // to reserve the names this emits. An LSF container is placed by the scope it sits in (descriptorScope).
     private GContainer getProjectedContainerScope(GComponent component) {
         return isProjectedContainer(component) ? descriptorScope(component) : null;
     }
@@ -597,10 +591,6 @@ public class GReactFormData {
     // top object, keyed as the thing is keyed). An LSF component is placed by the scope it is declared in: the
     // platform draws it, but hands its caption to React. Anything else belongs to the scope that OWNS it, which by
     // construction is nothing inside an lsf subtree. (A GROUPED property's object lives in its group node, not here.)
-    private GContainer getTopLevelScope(GComponent component) {
-        return descriptorScope(component);
-    }
-
     // WHERE A COMPONENT'S PART GOES - only React draws parts, so this is the one question, and its null for an
     // `lsf` child is the ANSWER, not a gap: the platform draws that component, so nothing is produced for it here.
     // Asked lazily, never at construction: getOwningReactContainer answers null for everything until GFormController
@@ -633,8 +623,8 @@ public class GReactFormData {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
 
-        if (partScope(group.getDrawComponent()) == scope) // the rows and the columns, where the grid is
-            copyFields(node, getGridPart(group, current));
+        if (drawsRows(group, scope)) // the rows and the columns, where the grid is
+            copyFields(node, getPart(group.getDrawComponent(), group, () -> buildGridPart(group, current)));
         if (current != null) // the panel draws the current object, and without one it draws nothing
             copyFields(node, buildPanelPart(group, current, scope));
         // the index of what THIS node carries - the assembler's, because only the assembler knows what it assembled
@@ -644,13 +634,14 @@ public class GReactFormData {
         return node;
     }
 
-    // the grid's part, cached under its producer and rebuilt only when that producer's own dirty flag says so - and at
-    // most once per pass, so every scope asking for it in one pass is handed the same object
-    private JavaScriptObject getGridPart(GGroupObject group, GGroupObjectValue current) {
-        String key = partKey(group.getDrawComponent(), group);
+    // a part, cached under its producer and rebuilt only when that producer's own dirty flag says so - and at most
+    // once per pass, so every scope asking for it in one pass is handed the same object. Read and write spell the
+    // production identity the same way: this is markPartDirty's (component, group), asked back
+    private JavaScriptObject getPart(GComponent producer, GGroupObject group, Supplier<JavaScriptObject> build) {
+        String key = partKey(producer, group);
         JavaScriptObject part = lastParts.get(key);
         if (part == null || (dirtyParts.get(key) != null && builtParts.get(key) == null)) {
-            part = buildGridPart(group, current);
+            part = build.get();
             lastParts.put(key, part);
             builtParts.put(key, Boolean.TRUE);
         }
@@ -747,20 +738,9 @@ public class GReactFormData {
                 continue;
             GGroupObjectValue valueKey = getSingleEntryKey(draw, current);
             if (valueKey != null)
-                setField(part, draw.integrationSID, getPanelEntry(draw, group, valueKey));
+                setField(part, draw.integrationSID, getPart(draw, group, () -> buildSingleEntry(draw, valueKey)));
         }
         return part;
-    }
-
-    private JavaScriptObject getPanelEntry(GPropertyDraw draw, GGroupObject group, GGroupObjectValue valueKey) {
-        String key = partKey(draw, group);
-        JavaScriptObject entry = lastParts.get(key);
-        if (entry == null || (dirtyParts.get(key) != null && builtParts.get(key) == null)) {
-            entry = buildSingleEntry(draw, valueKey);
-            lastParts.put(key, entry);
-            builtParts.put(key, Boolean.TRUE);
-        }
-        return entry;
     }
 
     // the group's own PER-ROW attributes (background / foreground / selected), DIRECT on the row beside `isCurrent` - each
@@ -813,39 +793,29 @@ public class GReactFormData {
     // no cell for it (hasCellEntry) and does not even take its delta (update) - so a member for it would be a second
     // channel to that edit, going around the interface the platform already gives React (<Lsf name row/>). The
     // question is asked of PLACEMENT, never of a cache: a value is here when the part that produces it is here.
-    private boolean hasValueEntry(GPropertyDraw draw, GGroupObjectValue current, GContainer scope) {
-        if (draw.isLsfView()) // the platform draws it
-            return false;
-        if (draw.isList) // a cell exists where the grid's part is
-            return hasColumnEntry(draw) && partScope(formController.getGroupDrawComponent(draw.groupObject)) == scope;
-        return getSingleEntryKey(draw, current) != null && partScope(draw) == scope; // a panel entry, where the draw is
-    }
-
     // the names this container may CHANGE, as opposed to the names its node carries: the index keeps an lsf column,
-    // because the view draws that column's header over renderers it places, and the member set does not
+    // because the view draws that column's header over renderers it places, and the member set does not. One list is
+    // the other minus what the PLATFORM draws, so they are one walk apart and cannot drift
     public ArrayList<String> getValueNames(GGroupObject group, GContainer scope) {
-        ArrayList<String> names = new ArrayList<>();
-        GGroupObjectValue current = currentObjects.get(group);
-        for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && hasValueEntry(draw, current, scope))
-                names.add(draw.integrationSID);
-        return names;
+        return getNames(group, scope, true);
     }
-
     public ArrayList<String> getEntryNames(GGroupObject group, GContainer scope) {
+        return getNames(group, scope, false);
+    }
+    private ArrayList<String> getNames(GGroupObject group, GContainer scope, boolean valuesOnly) {
         ArrayList<String> names = new ArrayList<>();
         GGroupObjectValue current = currentObjects.get(group);
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && hasEntry(draw, current, scope))
+            if (draw.groupObject == group && hasEntry(draw, current, scope) && !(valuesOnly && draw.isLsfView()))
                 names.add(draw.integrationSID);
         return names;
     }
     // the index and the member set differ by exactly one thing - an `lsf` column has an entry (its caption, which the
     // view draws over the renderers it places) and no value - so they are one predicate apart, side by side
     private boolean hasEntry(GPropertyDraw draw, GGroupObjectValue current, GContainer scope) {
-        if (draw.isList)
-            return hasColumnEntry(draw) && partScope(formController.getGroupDrawComponent(draw.groupObject)) == scope;
-        return getSingleEntryKey(draw, current) != null && partScope(draw) == scope;
+        if (draw.isList) // a column, where the grid's part is
+            return hasColumnEntry(draw) && drawsRows(draw.groupObject, scope);
+        return getSingleEntryKey(draw, current) != null && partScope(draw) == scope; // a panel entry, where the draw is
     }
 
     // WHAT HAS AN ENTRY HERE, said once. The list that names them and the writes that fill them ask the same three
@@ -874,14 +844,14 @@ public class GReactFormData {
     // ... and the same question for a form-level draw, which has no group node: it is carried by the scope it sits
     // in, at the top object, and only while it is shown - the predicate fillSingles emits it by
     public boolean isShownFormProperty(GPropertyDraw draw, GContainer scope) {
-        if (draw.groupObject != null || scope == null || getTopLevelScope(draw) != scope)
+        if (draw.groupObject != null || scope == null || descriptorScope(draw) != scope)
             return false;
         // an `lsf` one is SHOWN here too - its entry is the descriptor the platform's own renderer is labelled by -
         // and it must go on being found, or a bare `controller.qty.change(v)` would stop resolving to it, fall through
         // to a group that happens to draw the same integration SID, and change a cell nobody named. It has no MEMBER:
         // that exclusion belongs to the member set (getControllerStructure), not here
-        if (draw.isLsfView())
-            return isShownProperty(draw, GGroupObjectValue.EMPTY);
+        if (draw.isLsfView()) // its entry IS its descriptor, so ask the one function that emits descriptors
+            return getProjectedContainerScope(draw) == scope;
         return getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillFormSingles writes it under
     }
     // ... and the draw a BARE name means on the controller: the form-level one this projection is showing, which is
@@ -947,9 +917,9 @@ public class GReactFormData {
     // asked here, every pass, so a property that stops being shown stops having an entry.
     private void fillFormSingles(JavaScriptObject data, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws) {
-            if (draw.groupObject != null || getTopLevelScope(draw) != scope)
+            if (!isShownFormProperty(draw, scope)) // the same question the member set asks, so the two cannot drift
                 continue;
-            GGroupObjectValue valueKey = getSingleEntryKey(draw, GGroupObjectValue.EMPTY);
+            GGroupObjectValue valueKey = getSingleEntryKey(draw, GGroupObjectValue.EMPTY); // ... and null for an lsf
             if (valueKey != null)
                 setField(data, draw.integrationSID, buildSingleEntry(draw, valueKey));
         }
