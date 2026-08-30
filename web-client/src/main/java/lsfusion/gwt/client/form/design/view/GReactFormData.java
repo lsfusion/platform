@@ -804,20 +804,25 @@ public class GReactFormData {
         return array;
     }
 
-    // the names this node carries RIGHT NOW, and the names this container may CHANGE. One list is the other minus what
-    // the PLATFORM draws: an `lsf` draw's entry is a DESCRIPTOR, so a member for it would be a second channel to an
-    // edit the platform already offers through <Lsf name row/>. Both are asked of PLACEMENT, never of a cache.
+    // the names this node carries RIGHT NOW, and the two halves that make it up. The split is what the PLATFORM draws:
+    // an `lsf` draw's entry is a DESCRIPTOR, so a member that CHANGED it would be a second channel to an edit the
+    // platform already offers through <Lsf name row/>. The controller carries both halves and tells them apart - a
+    // value member changes, an lsf member says why it cannot. All three are asked of PLACEMENT, never of a cache.
     public ArrayList<String> getValueNames(GGroupObject group, GContainer scope) {
-        return getNames(group, scope, true);
+        return getNames(group, scope, Boolean.FALSE);
+    }
+    public ArrayList<String> getLsfNames(GGroupObject group, GContainer scope) {
+        return getNames(group, scope, Boolean.TRUE);
     }
     public ArrayList<String> getEntryNames(GGroupObject group, GContainer scope) {
-        return getNames(group, scope, false);
+        return getNames(group, scope, null); // null: both halves, which is what the node carries
     }
-    private ArrayList<String> getNames(GGroupObject group, GContainer scope, boolean valuesOnly) {
+    private ArrayList<String> getNames(GGroupObject group, GContainer scope, Boolean lsfOnly) {
         ArrayList<String> names = new ArrayList<>();
         GGroupObjectValue current = currentObjects.get(group);
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && hasEntry(draw, current, scope) && !(valuesOnly && draw.isLsfView()))
+            if (draw.groupObject == group && hasEntry(draw, current, scope)
+                    && (lsfOnly == null || lsfOnly == draw.isLsfView()))
                 names.add(draw.integrationSID);
         return names;
     }
