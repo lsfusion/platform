@@ -1030,9 +1030,6 @@ public class GFormController implements EditManager {
         getAsyncValues(value, draw, getControllerColumnKey(objectKey), actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
     }
 
-    // (row registration + resolution moved to GGroupObjectValue.registerRow / resolveObject — they use no controller
-    // state: public `key` is the display/diff token, the `objects` handle is resolution identity, raw GGV accepted)
-
     // terminal GControllerResult/ExceptionAction (delivered through GFormActionDispatcher) -> resolve/reject the promise
     public void controllerCallbackResult(long requestIndex, JavaScriptObject result) {
         gController.controllerCallbackResult(requestIndex, result);
@@ -1565,10 +1562,7 @@ public class GFormController implements EditManager {
     }
 
     // the LSF grid property whose rows this react container draws, by the design identifier - PROPERTY(qty(d)).
-    // Asked of the FORM and not of the container's children: such a property is not a child of the react container,
-    // it stays in its group's panel wherever the design left it, and its place is derived from the group's (see
-    // GPropertyDraw.isLsfView). The container that draws the group's rows is the only one that could place its
-    // renderers, so matching on that container is exactly the containment check a child lookup used to be.
+    // Asked of the FORM, not of the container's children: such a property is not a child of it (GPropertyDraw.isLsfView).
     public GPropertyDraw getRowLsfViewProperty(String sid, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.isLsfViewPerRow() && sid.equals(draw.sID) && reactData.drawsRows(draw.groupObject, scope))
@@ -1613,11 +1607,8 @@ public class GFormController implements EditManager {
         return reactControllers.get(group);
     }
 
-    // the react container that RENDERS this component, null if GWT does. A react container renders every child except
-    // an LSF one — which keeps its GWT view and is mounted into a React placeholder, so it (and its subtree) is
-    // rendered by GWT. A non-lsf child gets no GWT view at all, so everything below it is rendered by the same
-    // container: the walk therefore climbs to the OUTERMOST react ancestor reachable through non-lsf hops
-    // (resolving to an inner react container that never gets a ReactContainerView would silently produce no data).
+    // the react container that RENDERS this component (GComponent.getDrawingReactContainer, the walk), plus the one
+    // thing the walk cannot answer: a react container is itself react-owned
     public GContainer getOwningReactContainer(GComponent component) {
         if (reactData == null || component == null)
             return null;

@@ -123,8 +123,7 @@ public class GComponent implements Serializable {
         return component.isReactProjected() ? parent : null;
     }
 
-    // the complement of isLsfView within a react container: a child React DRAWS (from data), so GWT builds no view for
-    // it and it is react-owned. A child outside a react container is neither an lsf view nor react-projected.
+    // the complement of isLsfView within a react container: a child React DRAWS, so GWT builds no view for it
     public boolean isReactProjected() {
         return !lsf && isInReact();
     }

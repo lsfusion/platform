@@ -75,8 +75,6 @@ public class GReactFormData {
     //   a GROUP's own attributes (its options, and what a feature on top of this states about it) are direct on its
     //     node, beside list/byKey/keys.
     //   a CONTAINER is data.<containerSID> = { caption, image }, direct in data like a group or a property.
-    // Ownership excludes an LSF subtree (the chain that answers it stops at the lsf child): the platform draws such a
-    // subtree whole, and React only labels its boundary. An LSF property/container projects caption/image only.
 
     public GReactFormData(GForm form, GFormController formController) {
         this.form = form;
@@ -189,10 +187,7 @@ public class GReactFormData {
         // is the one that would go on to rebuild rows; a form-level one falls through to a scope that is null anyway
         if (draw.isList && draw.hasColumnGroupObjects())
             return false;
-        // an LSF draw: what the projection carries for it is its DESCRIPTOR, which sits at its descriptor scope - not
-        // at a part scope, which it has none of (the platform draws it). Its caption, its image and its very presence
-        // are read from there, so that is what a change to it must rebuild, whether it has a group or not
-        if (draw.isLsfView()) {
+        if (draw.isLsfView()) { // it has no part; what carries it is its DESCRIPTOR, at its descriptor scope
             markScopeDirty(descriptorScope(draw));
             return false;
         }
@@ -339,8 +334,8 @@ public class GReactFormData {
                 markPartDirty(draw, group);
     }
 
-    // a PART must be rebuilt: the component that produces it drew something else. Its node has to be reassembled too -
-    // the node is where its fields are read - and the scope's top object rebuilt so the change reaches React.
+    // a PART must be rebuilt: the component that produces it drew something else - and with it the node it is
+    // assembled into, and the scope's top object, so the change reaches React
     private boolean markPartDirty(GComponent producer, GGroupObject group) {
         GContainer scope = partScope(producer);
         if (scope == null) // nothing projects it, so there is no part and nothing to rebuild
@@ -467,13 +462,10 @@ public class GReactFormData {
     // ===== containers ==========================================================================================
 
     // what has a DESCRIPTOR entry of its own: a container the author DECLARED (DESIGN's `NEW <name>` - not "has a
-    // name", a group's generated BOX(g) is named too, for icons), and every `lsf` component whatever kind it is - the
-    // platform draws it and React only labels the boundary it places, which is the whole of what crosses that seam.
-    // The lsf half is not a convenience: GWT skips an lsf component's caption/image for React to draw (the complement
-    // invariant), so a generated box marked lsf - MOVE BOX(o) { lsf = TRUE; }, the canonical case - MUST project its
-    // descriptor or its caption is drawn by nobody. What stays out is what nobody wrote AND nobody placed: a group's
-    // toolbar/filter machinery. And not an `lsf` LIST draw: React draws its group, so its descriptor IS its column
-    // entry on the group's node, where the view reads it beside the columns it draws itself.
+    // name", a group's generated BOX(g) is named too, for icons), and every `lsf` component whatever kind it is.
+    // The lsf half is not a convenience: GWT skips an lsf component's caption/image for React to draw, so a generated
+    // box marked lsf - MOVE BOX(o) { lsf = TRUE; }, the canonical case - MUST project its descriptor or its caption is
+    // drawn by nobody. And not an `lsf` LIST draw: React draws its group, so its descriptor IS its column entry.
     private boolean isProjectedContainer(GComponent component) {
         if (component == null) // the delta path asks about a reader that names no component at all
             return false;
@@ -491,10 +483,8 @@ public class GReactFormData {
 
     // a projected container goes DIRECTLY in data, keyed by its design sid, with what the platform computed for it
     // (caption / image) - a container is a thing in `data` like a group or a property, no meta wrapper. ALWAYS, `{}`
-    // when it has neither, so nothing has to predict what the entry will hold. WHICH containers is isProjectedContainer
-    // (declared or lsf); the scope walk is what excludes an LSF SUBTREE: ownership climbs only through non-lsf hops, so
-    // nothing below an lsf child - declared or not - resolves to any scope. Only the boundary itself is projected;
-    // everything under it the platform draws whole, its captions consumed by its own native renderers.
+    // when it has neither, so nothing has to predict what the entry will hold. Only the boundary itself is
+    // projected; everything under it the platform draws whole, its captions consumed by its own native renderers.
     private void fillContainers(JavaScriptObject data, GContainer scope) {
         fillContainers(data, scope, form.mainContainer);
     }
@@ -532,10 +522,9 @@ public class GReactFormData {
         return null;
     }
 
-    // the scope whose data carries this container's entry, or null when it has none - THE statement of the container
-    // rule, asked by the build (fillContainers) and by the delta path (getContainerReaderScope) alike, so the two cannot
-    // drift. The server asks its own copy of the same question under the same name (FormView.getProjectedContainerScope)
-    // to reserve the names this emits. An LSF container is placed by the scope it sits in (descriptorScope).
+    // the scope whose data carries this component's entry, or null when it has none - asked by the build
+    // (fillContainers) and by the delta path (getContainerReaderScope) alike, so the two cannot drift. The server
+    // reserves the names it emits under the same name (FormView.getProjectedContainerScope).
     private GContainer getProjectedContainerScope(GComponent component) {
         return isProjectedContainer(component) ? descriptorScope(component) : null;
     }
@@ -543,10 +532,9 @@ public class GReactFormData {
     // what the platform computed about a COMPONENT itself (a container, or an lsf property whose value it draws):
     // caption and image, dynamic value first and the static design value as the fallback. `{}` when it has neither - an
     // entry is never withheld for being empty, so nothing has to predict emptiness (see fillContainers).
-    // For an LSF property this set is not a narrowing of its column attributes, it is the exact complement of what its
-    // platform renderer draws: GFormController.isReactOwned hands GWT every reader of an lsf draw and takes back only
-    // what isDescriptorAttribute + isProjectedDescriptorAttribute admit (isLsfViewDescriptorReader) - the rest stay with
-    // the renderer that renders them; projecting them would draw them twice. The two sides ask the same predicates.
+    // For an LSF property this set is the exact COMPLEMENT of what its platform renderer draws (the rest of its
+    // readers stay with that renderer; projecting them would draw them twice) - GFormController.isReactOwned takes
+    // back exactly what isProjectedDescriptorAttribute admits, so the two sides cannot disagree.
     private JavaScriptObject buildDescriptorEntry(GComponent component, GGroupObjectValue key) {
         JavaScriptObject entry = newObject();
         for (GPropertyReader reader : component.getDescriptorReaders())
@@ -558,8 +546,7 @@ public class GReactFormData {
     // whether this component attribute reaches the projection at all. An LSF LIST property has one entry for the
     // whole column, so a row-keyed attribute (an action's image) has no place in it - it stays with the per-row renderer,
     // which does key it by row, instead of being taken away from GWT and then dropped. Only a list has that problem: a
-    // single-valued draw's entry is read at its own key, so every component attribute of it fits. The same answer decides
-    // both sides, which is what keeps them from disagreeing: what GWT skips (getLsfViewDescriptorOwner) is exactly what is emitted.
+    // single-valued draw's entry is read at its own key, so every component attribute of it fits.
     private boolean isProjectedDescriptorAttribute(GPropertyReader reader, GComponent component) {
         if (reader == null)
             return false;
@@ -587,10 +574,6 @@ public class GReactFormData {
         return getProjectedContainerScope(getDescriptorOwner(reader));
     }
 
-    // the scope whose data carries this component - a container, or a form-level property (both live directly on the
-    // top object, keyed as the thing is keyed). An LSF component is placed by the scope it is declared in: the
-    // platform draws it, but hands its caption to React. Anything else belongs to the scope that OWNS it, which by
-    // construction is nothing inside an lsf subtree. (A GROUPED property's object lives in its group node, not here.)
     // WHERE A COMPONENT'S PART GOES - only React draws parts, so this is the one question, and its null for an
     // `lsf` child is the ANSWER, not a gap: the platform draws that component, so nothing is produced for it here.
     // Asked lazily, never at construction: getOwningReactContainer answers null for everything until GFormController
@@ -611,7 +594,6 @@ public class GReactFormData {
         return getLsfViewDescriptorOwner(reader) != null;
     }
 
-    // build a group's node, reusing the unchanged list array and unchanged row objects
     // the node a group has in `data` is ASSEMBLED out of the parts its base components produce - the grid produces the
     // rows and the columns, the panel produces the single values - rather than written by one builder that knows about
     // all of them. Each of them is drawn in one place, so what it produces is that place's, and the assembler is the
@@ -648,8 +630,7 @@ public class GReactFormData {
         return part;
     }
 
-    // what the GRID produces: the rows, everything that is the same down a column, and the group's own attributes -
-    // the group SID apart, which is the assembler's. Read: what the view sees of a group whose rows React draws.
+    // what the GRID produces: the rows, everything that is the same down a column, and the group's own attributes
     private JavaScriptObject buildGridPart(GGroupObject group, GGroupObjectValue current) {
         JavaScriptObject node = newObject();
 
@@ -703,7 +684,7 @@ public class GReactFormData {
         }
         setField(node, "list", list);
         setField(node, "byKey", byKey);
-        // a referentially-STABLE keys array (rebuilt only on membership/order) + a non-enumerable group SID:
+        // a referentially-STABLE keys array, rebuilt only on membership/order:
         // the <List> row-subscription path maps these keys and each row subscribes by byKey[key], so a value/current
         // change re-renders only the changed row (the keys array ref is unchanged -> the outer map is skipped).
         JavaScriptObject keys = lastKeys.get(group);
@@ -716,21 +697,13 @@ public class GReactFormData {
             lastKeys.put(group, keys);
         }
         setField(node, "keys", keys);
-        // the group's own attributes, DIRECT on the node: the names it draws, and its
-        // GROUP-scoped readers (options, at EMPTY). No meta wrapper - they sit beside `list` and the column property
-        // objects, rebuilt with the node.
         fillGroupAttributes(node, group); // what the GROUP itself is
-        // and what is the same down each COLUMN. Reading node.<prop> for the caption and row.<prop>.value for the value is
-        // the column/cell split without a merge - each attribute lives at exactly one point. Rebuilt with the node (a
-        // column reader marks only the node dirty), so it doesn't churn row refs.
-        fillColumns(node, group);
+        fillColumns(node, group);         // ... and what is the same down each COLUMN
         return node;
     }
 
-    // what the PANEL produces: one entry per property it shows, for the group's current object. A group with no current
-    // object has no panel values at all - not empty entries, none - so the part is asked for only when there is one.
-    // Each entry is a part of its own, cached under the draw that produces it: whether it EXISTS is asked here, every
-    // pass, and only what it holds is cached - so an entry that comes and goes is never revived from the cache.
+    // each panel entry is a part of its own, cached under the draw that produces it: whether it EXISTS is asked here,
+    // every pass, and only what it holds is cached - so an entry that comes and goes is never revived from the cache
     private JavaScriptObject buildPanelPart(GGroupObject group, GGroupObjectValue current, GContainer scope) {
         JavaScriptObject part = newObject();
         for (GPropertyDraw draw : form.propertyDraws) {
@@ -753,9 +726,8 @@ public class GReactFormData {
                 emitAttribute(row, reader, rowKey, null);
     }
 
-    // the GROUP's own attributes, direct on its node beside list/byKey/keys: its group-scoped readers (options, read
-    // once at EMPTY). The mirror of fillRowAttributes, one level up. They belong to the GRID's part - a container
-    // showing only a panel property of the group has no rows for them to be about.
+    // the GROUP's own attributes (options, read once at EMPTY). Part of the GRID's part: a container showing only a
+    // panel property of the group has no rows for them to be about.
     private void fillGroupAttributes(JavaScriptObject node, GGroupObject group) {
         for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
             if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.GROUP)
@@ -783,19 +755,9 @@ public class GReactFormData {
         return array;
     }
 
-    // the names this group's node carries RIGHT NOW, by the SAME two predicates the entries are built by - fillColumns
-    // for a list draw, fillSingles for a panel one, which is emitted for the CURRENT object and not at all without
-    // one. Asking either of them at another key would list a property that has no entry, or hide one that has.
-    // Also what the CONTROLLER carries a member for: a change is the form's own ON CHANGE event, so a property that
-    // is not shown has nobody to call it on
-    // ... and what has a VALUE here, which is a different question and the one a CONTROLLER MEMBER answers to.
-    // An `lsf` draw's entry is a DESCRIPTOR - the platform draws its value in its own renderer, the projection writes
-    // no cell for it (hasCellEntry) and does not even take its delta (update) - so a member for it would be a second
-    // channel to that edit, going around the interface the platform already gives React (<Lsf name row/>). The
-    // question is asked of PLACEMENT, never of a cache: a value is here when the part that produces it is here.
-    // the names this container may CHANGE, as opposed to the names its node carries: the index keeps an lsf column,
-    // because the view draws that column's header over renderers it places, and the member set does not. One list is
-    // the other minus what the PLATFORM draws, so they are one walk apart and cannot drift
+    // the names this node carries RIGHT NOW, and the names this container may CHANGE. One list is the other minus what
+    // the PLATFORM draws: an `lsf` draw's entry is a DESCRIPTOR, so a member for it would be a second channel to an
+    // edit the platform already offers through <Lsf name row/>. Both are asked of PLACEMENT, never of a cache.
     public ArrayList<String> getValueNames(GGroupObject group, GContainer scope) {
         return getNames(group, scope, true);
     }
@@ -842,7 +804,7 @@ public class GReactFormData {
     }
 
     // ... and the same question for a form-level draw, which has no group node: it is carried by the scope it sits
-    // in, at the top object, and only while it is shown - the predicate fillSingles emits it by
+    // in, at the top object, and only while it is shown - the predicate fillFormSingles emits it by
     public boolean isShownFormProperty(GPropertyDraw draw, GContainer scope) {
         if (draw.groupObject != null || scope == null || descriptorScope(draw) != scope)
             return false;
@@ -900,12 +862,7 @@ public class GReactFormData {
         dirtyScopes.clear();
     }
 
-    // group/property SID resolution lives on GForm (shared with the other integration controllers); row identity
-    // registration/resolution is centralized on GGroupObjectValue (registerRow/resolveObject)
-
-    // the CELLS of one row: every projected list property of the group contributes its {value, ...cell attributes}
-    // under its sid. EXISTENCE is decided here, where the row is enumerated - not by a builder returning null: an LSF
-    // draw has no cell (the platform draws it in the row), and a grouped-in-columns draw is not projected at all.
+    // the CELLS of one row. EXISTENCE is decided here, where the row is enumerated - not by a builder returning null
     private void fillCells(JavaScriptObject row, GGroupObject group, GGroupObjectValue rowKey) {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && hasCellEntry(draw, rowKey))
@@ -913,8 +870,7 @@ public class GReactFormData {
     }
 
     // the FORM-LEVEL properties, on the scope's top object: no group, so one value each, read at the empty key, and
-    // each belongs to the scope it sits in. The counterpart of buildPanelPart one level up - and like it, EXISTENCE is
-    // asked here, every pass, so a property that stops being shown stops having an entry.
+    // each belongs to the scope it sits in
     private void fillFormSingles(JavaScriptObject data, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws) {
             if (!isShownFormProperty(draw, scope)) // the same question the member set asks, so the two cannot drift
@@ -925,29 +881,22 @@ public class GReactFormData {
         }
     }
 
-    // the COLUMNS of a group: every list property contributes what is the same down its whole column, once, on the node
+    // the COLUMNS of a group, once each, on the node
     private void fillColumns(JavaScriptObject node, GGroupObject group) {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && hasColumnEntry(draw))
                 setField(node, draw.integrationSID, buildColumnEntry(draw));
     }
 
-    // a draw reaches the projection at all: it has a name there, and it is not hidden right now
     private boolean isShownProperty(GPropertyDraw draw, GGroupObjectValue key) {
         return draw.integrationSID != null && isPropertyShown(draw, key);
     }
 
-    // ===== a property's projected ENTRY. Projected AT ALL is decided before this (isShownProperty / delegation); once it
-    // is, the entry exists whatever it holds, so `data.<group>.<prop>` is there even for a column with no caption at all.
-    // A property drawn per row has TWO of them, because it genuinely has two: one
-    // caption for the whole column, one value and one background per row. A property with a single value has ONE, with
-    // everything in it. Each attribute is an EFFECTIVE value - the dynamic value at the key, else the static design
-    // default - so it is delivered at one point and a consumer never merges a column base with a row override.
-    // An LSF property hands React only caption/image (the platform draws its value WITH the rest of its
-    // presentation), so its column / single entry is a component descriptor and it has no cell at all.
+    // ===== a property's projected ENTRY. Whether it is projected at all is decided before this; once it is, the entry
+    // exists whatever it holds. Each attribute is an EFFECTIVE value - the dynamic one at the key, else the static
+    // design default - delivered at ONE point, so a consumer never merges a column base with a row override.
 
-    // the COLUMN entry of a list property: what is the same down the whole column (caption / image / footer / comment /
-    // tooltip / default). No value - the values are in the cells.
+    // the COLUMN entry of a list property: what is the same down the whole column. No value - those are in the cells
     private JavaScriptObject buildColumnEntry(GPropertyDraw draw) {
         JavaScriptObject entry;
         if (draw.isLsfView())
@@ -962,8 +911,7 @@ public class GReactFormData {
         return entry;                   // its VALUE, which says nothing about what the value is
     }
 
-    // one ROW's cell of a list property: its value, and the attributes that can differ from row to row (background /
-    // foreground / readOnly / placeholder / pattern / ...)
+    // one ROW's cell of a list property: its value, and the attributes that can differ from row to row
     private JavaScriptObject buildCellEntry(GPropertyDraw draw, GGroupObjectValue rowKey) {
         JavaScriptObject entry = newObject();
         emitValue(entry, draw, rowKey);
@@ -974,7 +922,7 @@ public class GReactFormData {
     }
 
     // the single entry of a property with ONE value (form-level, or a group's panel property): the value and ALL its
-    // attributes together - with one value there is nothing to split between a column and a cell
+    // attributes together - nothing to split between a column and a cell
     private JavaScriptObject buildSingleEntry(GPropertyDraw draw, GGroupObjectValue key) {
         JavaScriptObject entry;
         if (draw.isLsfView())
@@ -1033,11 +981,8 @@ public class GReactFormData {
     }
 
 
-    // the react scope a group's node appears in: the container that DRAWS the group, and only it. A react view
-    // gets a group's data because it draws that group, never because it happens to stand next to it - a container
-    // beside a platform-drawn grid would otherwise be handed rows GWT is already rendering, two engines on one
-    // value. A list because the callers ask for one and because a component may serve several groups (a TREE);
-    // static (the design's react containers do not come and go), so it is computed once.
+    // the react scopes a group's node appears in. A list, because a component may serve several groups (a TREE) and
+    // because a group's parts can be drawn in more than one container; static, so it is computed once.
     private ArrayList<GContainer> getGroupScopes(GGroupObject group) {
         ArrayList<GContainer> scopes = groupScopes.get(group);
         if (scopes == null) {
@@ -1073,8 +1018,7 @@ public class GReactFormData {
         return group != null && scope != null && partScope(group.getDrawComponent()) == scope;
     }
 
-    // ... and whether THIS scope is the one that sees it: `data` is per react container, and so is the
-    // controller beside it - a view names what its own data carries
+    // ... and whether THIS scope is one of them
     public boolean isProjectedGroup(GGroupObject group, GContainer scope) {
         return group != null && getGroupScopes(group).contains(scope);
     }
@@ -1086,7 +1030,7 @@ public class GReactFormData {
     }
 
     // by REFERENCE, and own enumerable keys only: a part's objects ARE the node's objects, so an unchanged part keeps
-    // every identity a React.memo downstream compares. Non-enumerable fields (__groupSID) are deliberately not copied.
+    // every identity a React.memo downstream compares
     private static native void copyFields(JavaScriptObject target, JavaScriptObject source) /*-{
         for (var key in source)
             if (Object.prototype.hasOwnProperty.call(source, key))

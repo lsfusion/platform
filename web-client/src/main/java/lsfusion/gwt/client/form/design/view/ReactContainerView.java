@@ -201,10 +201,8 @@ public class ReactContainerView extends ParkedContainerView {
         return -1;
     }
 
-    // an LSF grid property of a group THIS view draws, or null. Unlike an lsf CONTAINER child it has one renderer per
-    // row rather than one view, so it is placed through its row panel controller instead of `hosts` - and it is not a
-    // child of this container either: it is asked of the form, which derives its place from its group's (see
-    // GPropertyDraw.isLsfView). So `<Lsf name="PROPERTY(qty(d))" row/>` needs no MOVE of the property into here.
+    // an LSF grid property of a group THIS view draws, or null: one renderer per ROW rather than one view, so it is
+    // placed through its row panel controller instead of `hosts`
     private GPropertyDraw getRowLsfViewProperty(String sid) {
         return formController.getRowLsfViewProperty(sid, container);
     }

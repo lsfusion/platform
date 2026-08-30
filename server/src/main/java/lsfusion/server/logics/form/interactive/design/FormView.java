@@ -320,11 +320,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return !getGroupScopes(group).isEmpty();
     }
 
-    // the scopes a group's node appears in, mirroring GReactFormData.getGroupScopes: every container that draws a PART
-    // of it - the grid where its rows are, and each of its panel properties where that property is. A react view gets
-    // a group's data because it draws something of that group, never because it stands next to it. Usually one
-    // container; two when the design put a panel property somewhere else, and then each node holds what its own
-    // container draws.
+    // the scopes a group's node appears in - every container that draws a PART of it (mirrors
+    // GReactFormData.getGroupScopes, and must gain a kind at the same time that one does)
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
         List<ContainerView> scopes = new ArrayList<>();
         addGroupScope(scopes, partScope(getGroupDrawComponent(group)));
@@ -338,7 +335,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             scopes.add(scope);
     }
 
-    // WHERE A COMPONENT'S PART GOES - only React draws parts, so its null for an `lsf` child is the answer, not a gap
     // (mirrors GReactFormData.partScope)
     private ContainerView partScope(ComponentView component) {
         return getOwningReactContainer(component);
@@ -351,7 +347,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // the react container that RENDERS this component, null if a standard view is built for it (mirrors
-    // GFormController.getReactContainer): a non-lsf child gets no view, so its owner swallows everything below it
+    // GComponent.getDrawingReactContainer): a non-lsf child gets no view, so its owner swallows everything below it
     private static ContainerView getReactContainer(ComponentView component) {
         if (component == null)
             return null;
@@ -732,8 +728,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // checks: the whole form is then rejected once, when it is built, instead of failing in every browser that opens it.
     // The names below mirror what GReactFormData writes; keep them in sync with it.
     private void checkReactProjectionNames() {
-        // There is no `meta` object: everything sits directly in one flat namespace at each level, so a projected name
-        // that takes an infrastructure key, or that two projected things share, silently overwrites. Reject it here.
         // data.* : groups + form-level props + containers - and, since a group and a form-level property are named on
         // that container's CONTROLLER too (controller.<name>), one claim per scope says both. Their reserved list is
         // the controller's, which contains the projection's; a container's descriptor is data-only and takes the shorter
@@ -886,10 +880,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (!component.isLsfView())
             return;
 
-        // a GRID property is the one lsf component whose place is not its parent: it has no view of its own to place,
-        // the platform builds one renderer per ROW, and the react component that draws those rows places each of them.
-        // So it is not asked to be a child of a react container - nothing could be MOVEd there anyway - and what makes
-        // it work is only that its group's rows are drawn by a react component
+        // a GRID property is the one lsf component whose place is not its parent: its placement is DERIVED from its
+        // group's (GPropertyDraw.isLsfView), so it is not asked to be a child of a react container
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) {
             checkLsfListView((PropertyDrawView) component);
             return;
