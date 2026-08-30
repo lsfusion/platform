@@ -271,7 +271,7 @@ Use bucketing for placing one group's rows into derived cells where only the mem
 FORM orders 'Orders'
     OBJECTS o = Order
     PROPERTIES(o) READONLY number, date, sum
-    PROPERTIES() comment = orderComment      // a form-level property, so its entry is data.comment
+    PROPERTIES() comment = orderComment      // marked `lsf` below, so its entry is data['PROPERTY(comment)']
 ;
 
 DESIGN orders {
@@ -289,11 +289,11 @@ The entry holds `caption` and `image`, and it sits at the same place in `data` t
 
 | `lsf` child | Where its entry is | Key |
 | --- | --- | --- |
-| A property of an object group | `data.<g>.<integrationSID>`, alongside the group's other column attributes | The property's integration SID, `qty` |
-| A form-level (no-group) property | `data.<integrationSID>` | The property's integration SID, `note` |
-| A container | `data.<containerSID>`, always at the top level | The container's design component identifier, `BOX(o)` |
+| A **table** property of an object group | `data.<g>.<integrationSID>`, alongside the group's other column attributes | The property's integration SID, `qty` |
+| A **panel** property, or a form-level (no-group) property | `data.<componentSID>`, at the top level | The property's design component identifier, `PROPERTY(note)` |
+| A container | `data.<componentSID>`, always at the top level | The container's design component identifier, `BOX(o)` |
 
-A container is keyed by its design identifier because that is the only name it has; a property is keyed by its integration SID, the name its value is keyed by, not by the design identifier `PROPERTY(qty)`. The `name` passed to `<Lsf>` is a different name: it is the design identifier of the child in the container, so an `lsf` property is placed as `<Lsf name="PROPERTY(note)"/>` and read as `data.note`.
+A table property is the one keyed by its integration SID, and for the reason the whole table is: React draws that group, so the column's entry sits on the group's node beside the columns React draws itself, and is named the way they are. Everything else here is drawn by the platform whole, and the only name the projection has for it is the design identifier — the same name `<Lsf>` places it by. So one name does both: `<Lsf name="PROPERTY(note)"/>` places it and `data['PROPERTY(note)']` reads it. A panel property is on this row rather than the first because marking one `lsf` is only allowed on a group the platform draws, which has no node here to carry it.
 
 Every container the React scope owns or places gets an entry in `data` when it is declared in the design (`NEW <name>`) or marked `lsf` — except a container inside an `lsf` subtree, which the platform draws whole and the component never looks into. A generated box the component neither placed nor the author named (`TOOLBAR(g)`, `PANEL(g)`, …) gets none. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
 
@@ -307,7 +307,7 @@ export function Board(props) {
     return <div className="board">
         <h3>{data['BOX(o)'].caption}</h3>
         <Lsf name="BOX(o)"/>
-        <h3>{data.comment.caption}</h3>
+        <h3>{data['PROPERTY(comment)'].caption}</h3>
         <Lsf name="PROPERTY(comment)"/>
     </div>;
 }
