@@ -516,7 +516,9 @@ public class GReactFormData {
         if (saidNoRowsHere.get(scope) != null) // said once per scope, and asked first: the rest walks every group
             return;
         GGroupObject drawn = getDrawnGroup(component);
-        if (drawn == null || isProjectedGroup(drawn, scope))
+        // the question is about ROWS, so it is drawsRows that answers it: a scope that also holds a panel property of
+        // the group IS projecting the group, and would have silenced a warning that is still true of its rows
+        if (drawn == null || drawsRows(drawn, scope))
             return;
         saidNoRowsHere.put(scope, Boolean.TRUE);
         GwtClientUtils.consoleError("'" + scope.sID + "' places '" + component.sID + "' and the platform draws it, so"
