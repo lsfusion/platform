@@ -188,9 +188,9 @@ public class GReactFormData {
         // is the one that would go on to rebuild rows; a form-level one falls through to a scope that is null anyway
         if (draw.isList && draw.hasColumnGroupObjects())
             return false;
-        if (draw.isLsfView()) { // it has no part; what carries it is its DESCRIPTOR, at its descriptor scope
-            markScopeDirty(descriptorScope(draw));
-            return false;
+        if (draw.isLsfView() && !draw.isList) { // it has no part; what carries it is its DESCRIPTOR, at its own scope.
+            markScopeDirty(descriptorScope(draw)); // A LIST one is the exception: its descriptor IS its column entry
+            return false;                          // on the group's node, so it goes the column way below
         }
         GGroupObject group = draw.groupObject;
         if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillFormSingles reads)
@@ -395,8 +395,10 @@ public class GReactFormData {
         if (owner instanceof GPropertyDraw) { // the attribute of a PROPERTY: where it is projected says what to rebuild
             GPropertyDraw draw = (GPropertyDraw) owner;
             if (draw.integrationSID != null) {
-                if (draw.isList && reader.isColumnAttribute(draw)) // a column attribute lives on the group -> rebuild the group only, DON'T churn the list/row refs
-                    markGridDirty(draw.groupObject, GridDirty.ENTRIES);
+                if (draw.isList && reader.isColumnAttribute(draw)) { // a column attribute lives on the group -> rebuild
+                    markPartDirty(draw, draw.groupObject);            // THIS column and the grid part that copies it,
+                    markGridDirty(draw.groupObject, GridDirty.ENTRIES); // and DON'T churn the list/row refs
+                }
                 else // a cell (or single-value) attribute -> the same marking as the value it sits with
                     markPropertyDirty(draw, keyValues);
             }
@@ -925,7 +927,7 @@ public class GReactFormData {
     private void fillColumns(JavaScriptObject node, GGroupObject group) {
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && hasColumnEntry(draw))
-                setField(node, draw.integrationSID, buildColumnEntry(draw));
+                setField(node, draw.integrationSID, getPart(draw, group, () -> buildColumnEntry(draw)));
     }
 
     private boolean isShownProperty(GPropertyDraw draw, GGroupObjectValue key) {
