@@ -325,11 +325,22 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // GReactFormData.getGroupScopes, and must gain a kind at the same time that one does)
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
         List<ContainerView> scopes = new ArrayList<>();
-        addGroupScope(scopes, partScope(getGroupDrawComponent(group)));
+        for (ComponentView producer : getPartProducers(group))
+            addGroupScope(scopes, partScope(producer));
+        return scopes;
+    }
+
+    // THE list of components that produce a part of a group - the one place a KIND is enumerated on this side, and
+    // the twin of GReactFormData.getPartProducers: a branch that gives a component a part adds it to BOTH in one
+    // commit, or the two sides answer differently. Two kinds today: the component that draws the rows, and each
+    // panel draw. What is deliberately absent is the chrome (toolbar, filters, calculations) - it draws nothing yet.
+    private List<ComponentView> getPartProducers(GroupObjectEntity group) {
+        List<ComponentView> producers = new ArrayList<>();
+        producers.add(getGroupDrawComponent(group));
         for (PropertyDrawView property : getPropertiesIt())
             if (!property.entity.isList(entity) && group.equals(property.entity.getToDraw(entity)))
-                addGroupScope(scopes, partScope(property));
-        return scopes;
+                producers.add(property);
+        return producers;
     }
 
     // ... and what those producers WRITE on the node in this scope, which is what a projected name can collide with.

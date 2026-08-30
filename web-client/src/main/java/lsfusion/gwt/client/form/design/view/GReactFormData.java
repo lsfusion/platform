@@ -52,6 +52,10 @@ public class GReactFormData {
     // ... and a PART belongs to a (component, group): the component is the producer, and one component can produce a
     // part for several groups - a TREE draws them all - so a component-keyed cache would hand two groups one object
     private final NativeStringMap<JavaScriptObject> lastParts = new NativeStringMap<>();   // last built part per (component, group)
+    // ONE ROW PRODUCER PER GROUP. The caches below are keyed by the GROUP, not by (component, group) like the parts,
+    // because a group has one component drawing its rows - its grid, or the tree it is in. A second row producer over
+    // one group would share them, and with them the order, the paging and the row identities; giving a group two of
+    // them means keying all of these by the producer first. The chrome kinds need none of it, so it stays as it is.
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastLists = new NativeSIDMap<>();   // last built list array per group
     private final NativeSIDMap<GGroupObject, JavaScriptObject> lastKeys = new NativeSIDMap<>();   // last built STABLE keys array per group (ref changes only on membership/order, never on a value/current change) - the <List> subscription path
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, JavaScriptObject>> lastRows = new NativeSIDMap<>(); // last row obj per (group, key)
@@ -336,8 +340,10 @@ public class GReactFormData {
     }
 
     // a PART must be rebuilt: the component that produces it drew something else - and with it the node it is
-    // assembled into, and the scope's top object, so the change reaches React
-    private boolean markPartDirty(GComponent producer, GGroupObject group) {
+    // assembled into, and the scope's top object, so the change reaches React. THE general dirty route: it keeps the
+    // producer, which is what the part is keyed by. markGridDirty below is the row producer's shorthand, and a kind
+    // that is not the rows must come through here, or it would dirty the grid's node instead of its own.
+    boolean markPartDirty(GComponent producer, GGroupObject group) {
         GContainer scope = partScope(producer);
         if (scope == null) // nothing projects it, so there is no part and nothing to rebuild
             return false;
@@ -1029,19 +1035,27 @@ public class GReactFormData {
         ArrayList<GContainer> scopes = groupScopes.get(group);
         if (scopes == null) {
             scopes = new ArrayList<>();
-            // whoever PRODUCES a part of it, sees it - and that is the two kinds that produce one today: the drawing
-            // component and the panel draws. A base component whose part is not built yet (the toolbar, the filters,
-            // the calculations) draws nothing here, so placing one in a react container must not conjure a node with
-            // nothing on it and a controller for a group that container does not draw. Each of them joins this list
-            // in the commit that gives it a part - which is also where the server (FormView.getGroupScopes, the same
-            // question) starts answering with it, and the two answers have to be made to agree in one step.
-            addGroupScope(scopes, partScope(group.getDrawComponent()));
-            for (GPropertyDraw draw : form.propertyDraws)
-                if (draw.groupObject == group && !draw.isList)
-                    addGroupScope(scopes, partScope(draw));
+            for (GComponent producer : getPartProducers(group)) // whoever PRODUCES a part of it, sees it
+                addGroupScope(scopes, partScope(producer));
             groupScopes.put(group, scopes);
         }
         return scopes;
+    }
+
+    // THE list of components that produce a part of a group - the one place a KIND is enumerated on this side, so a
+    // branch that gives a component a part adds it here and scope discovery follows, instead of the four independent
+    // enumerations this layer used to have. Two kinds today: the component that draws the rows, and each panel draw.
+    // A base component whose part is not built yet (the toolbar, the filters, the calculations) is deliberately NOT
+    // here - placing one in a react container must not conjure a node with nothing on it, and a controller for a
+    // group that container draws nothing of. Each joins in the commit that gives it a part, and the server's twin
+    // (FormView.getPartProducers) has to gain it in the same commit, or the two sides answer differently.
+    private ArrayList<GComponent> getPartProducers(GGroupObject group) {
+        ArrayList<GComponent> producers = new ArrayList<>();
+        producers.add(group.getDrawComponent()); // the rows, the row cells, the columns and the group's own attributes
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && !draw.isList) // ... and one entry each, wherever each of them stands
+                producers.add(draw);
+        return producers;
     }
     private static void addGroupScope(ArrayList<GContainer> scopes, GContainer scope) {
         if (scope != null && !scopes.contains(scope))
