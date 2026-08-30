@@ -648,6 +648,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         checkCustomValue();
         checkCustomTabbed();
         checkCustomReactProperty();
+        checkCustomReactSwallowed();
         checkCustomTemplatePlaces();
 
         checkLsfViews();
@@ -692,6 +693,24 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // a literal `custom` beside a `custom` property is the pair the rest of the design uses (caption / propertyCaption):
     // the literal is what the container starts with, the property recomputes it. The one combination that is not a pair
     // is a React component, which draws the container itself and would never be handed a computed template
+    // a react container that is itself a non-lsf child of a react container is SWALLOWED: GFormLayout.addContainers
+    // skips the whole projected subtree, so no view is built for it, its `custom` is never read, and the outer
+    // component is left to draw it from `data`. Its component is therefore drawn by nobody, silently - the mirror
+    // image of the case checkLsfView already refuses, and until now the only one of the two that said nothing
+    private void checkCustomReactSwallowed() {
+        for (ComponentView component : getComponents())
+            if (component instanceof ContainerView) {
+                ContainerView container = (ContainerView) component;
+                ContainerView owner = container.isReact() ? getReactContainer(container) : null; // climbs, so a plain box in between does not hide it
+                if (owner != null)
+                    throw new IllegalStateException(formErrorPrefix() + "container '" + container.getSID() + "' is the React"
+                            + " component '" + container.getCustom() + "', but it is itself drawn by the React component '"
+                            + owner.getCustom() + "', which draws its children from data - so nothing would ever build it;"
+                            + " set lsf = TRUE on '" + container.getSID() + "' to give it a view of its own and place it"
+                            + " with <Lsf name=\"" + container.getSID() + "\"/>");
+            }
+    }
+
     private void checkCustomReactProperty() {
         for (ComponentView component : getComponents())
             if (component instanceof ContainerView) {
