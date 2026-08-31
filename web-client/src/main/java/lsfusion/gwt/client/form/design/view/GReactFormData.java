@@ -902,9 +902,9 @@ public class GReactFormData {
     private GGroupObjectValue getSingleEntryKey(GPropertyDraw draw, GGroupObjectValue key) {
         if (draw.isList || key == null)
             return null;
-        if (draw.isLsfView()) // its descriptor is a TOP-LEVEL entry: the platform draws such a property, and its group
-            return null;      // is one the platform draws too (checkLsfView refuses it on a react-drawn group), so
-                              // the group has no node here to hang it on
+        if (draw.isLsfView()) // the platform draws its VALUE, so there is none here to key - what the projection
+            return null;      // carries for it is a top-level descriptor, keyed by its component SID, whoever
+                              // happens to draw the rows of its group
         GGroupObjectValue valueKey = draw.filterColumnKeys(key);
         return valueKey != null && isShownProperty(draw, key) ? valueKey : null;
     }

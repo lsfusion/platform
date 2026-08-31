@@ -1694,9 +1694,10 @@ public class GFormController implements EditManager {
         // renderers instead of the projection. Its caption and image still reach its entry: taken earlier, by
         // isLsfViewDescriptorReader. The predicate is isLsfView, not isLsfViewPerRow, so that it states the whole rule on its
         // own: an LSF PANEL draw of a react-owned group would otherwise fall through to the group answer below and
-        // come back react-owned, and its readers would then be skipped here while the projection emits only caption/image.
-        // FormView.checkLsfView rejects that form at startup ("mark the group's box instead"), so this is agreement
-        // with the server rather than a case that reaches us - an LSF draw is platform-drawn, and that is the answer.
+        // come back react-owned, and its readers would then be skipped here while the projection emits only
+        // caption/image. That arrangement is legal - the platform draws such a property through the FORM's panel
+        // controller, which is nobody's group's - so this has to be the answer on its own merits, not by agreement
+        // with a build-time ban.
         if (property.isLsfView())
             return false;
 

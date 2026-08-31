@@ -973,17 +973,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     + "' is itself rendered by the react component '" + owner.getCustom()
                     + "' — nothing would place it; set lsf on '" + container.getSID() + "' as well to give it its own view");
 
-        if (component instanceof PropertyDrawView) {
-            PropertyDrawEntity<?, ?> property = ((PropertyDrawView) component).entity;
-            GroupObjectEntity toDraw = property.getToDraw(entity); // the no-arg form is unset when the group comes from the property context
-            boolean reactGroup = toDraw != null && isReactContainerGroup(toDraw);
-
-            if (reactGroup)
-                // a PANEL property is drawn once, for its group's current object - and a group the react component
-                // renders has no client controller, so no view would ever be built and there would be nothing to place
-                throw new IllegalStateException("lsf is set for property '" + component.getSID() + "', whose object group is rendered by the react component '"
-                        + container.getCustom() + "' — set lsf on the group's box instead");
-        }
+        // a PANEL property needs no permission from its GROUP: it is a base component of its own, drawn by the form's
+        // panel controller (GFormController.getPropertyController routes every non-list draw there), not by its
+        // group's. Whether React draws that group's ROWS is a question about another base component, and asking it
+        // here was the collapse P1 forbids - it refused the one arrangement the principle most obviously allows:
+        // React draws the rows, the platform draws one panel property of the same group, and React places it.
     }
 
     private void checkLsfListView(PropertyDrawView view) {
