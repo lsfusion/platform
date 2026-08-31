@@ -34,7 +34,20 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 // be MIXED - its grid drawn by one engine and one of its panel properties by the other - without either
 // engine knowing about the other's half.
 //
-// The projection half of this is true. The CONTROLLER half is not yet: GFormController.initializeControllers
+// ... and the second principle, which is what `lsf` MEANS:
+//
+//   `lsf` CUTS THE PROJECTION AT THAT COMPONENT and hands the platform component over as a BLACK BOX. What the
+//   box exposes OUTWARD - its caption, its image - goes out to whoever places it.
+//
+// Everything the descriptor does follows from that and needs no separate rule: the entry carries caption and
+// image and nothing else because that is the outward surface; GWT stops drawing them (the complement) because
+// they left the box; the entry does not follow the placement, because a box is a box whether or not it is on
+// screen; and geometry is not outward-going but IGNORED - width / height / fill / alignment describe a
+// position inside a standard container, and here the surrounding element is the placer's own markup, so the
+// placer decides. `collapsible` is ignored and a scripted COLLAPSE / EXPAND is an error for the same reason:
+// showing the box is the placer's business, and the placer says it by rendering the box or not.
+//
+// The projection half of P1 is true. The CONTROLLER half is not yet: GFormController.initializeControllers
 // still asks isReactOwned(GROUP), which is defined as isReactOwned(group.getDrawComponent()) - the answer for
 // ONE base component, the grid - and then creates or skips the whole group controller, panel included. Three
 // patches exist because of that collapse and would not be needed without it: rowPanelControllers, built
