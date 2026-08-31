@@ -66,7 +66,10 @@ public class MCPDispatcher {
     // (https://ai.lsfusion.org/mcp) via MCPRemoteClient. Sister tools
     // lsfusion_retrieve_howtos / lsfusion_retrieve_community were removed
     // together with the legacy Pinecone backend that fed them; the new OpenAI
-    // VS indexes all five doc folders (language, paradigm, how-to, brief, rules)
+    // The VS indexes the three reference doc folders (language, paradigm, how-to).
+    // `brief` and `rules` are published but NOT indexed: an article there is named
+    // and delivered whole by get_guidance, so chunking it would only recreate the
+    // partial-delivery problem that change removed.
     // under the single lsfusion_retrieve_docs tool.
     private static final Set<String> REMOTE_TOOLS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             TOOL_RETRIEVE_DOCS, TOOL_GET_GUIDANCE, TOOL_REPORT_FEEDBACK)));
@@ -420,10 +423,10 @@ public class MCPDispatcher {
                 .put("anyOf", new JSONArray()
                         .put(new JSONObject()
                                 .put("type", "string")
-                                .put("enum", new JSONArray().put("language").put("paradigm").put("how-to").put("brief").put("rules")))
+                                .put("enum", new JSONArray().put("language").put("paradigm").put("how-to")))
                         .put(new JSONObject().put("type", "null")))
                 .put("description",
-                        "Optional sourceType filter (the docs folder). Omit (or pass null) to search all five branches and merge; only the two TOP articles (`Brief`, `Rules`) are excluded, because get_guidance already delivers them in full. `language` = syntax / operator reference; `paradigm` = concepts / abstractions; `how-to` = task recipes; `brief` = concise capability map; `rules` = coding constraints for one area — unlike the other branches this lookup is not optional: perform it before working in an area.");
+                        "Optional sourceType filter (the docs folder); in a batch it applies to every query. Omit (or pass null) to search all three reference branches and merge. `language` = syntax / operator reference; `paradigm` = concepts / abstractions; `how-to` = task recipes. The `brief` and `rules` branches are not here at all: an area's capability map and its coding rules are read whole, by name, with `lsfusion_get_guidance`.");
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
@@ -448,7 +451,7 @@ public class MCPDispatcher {
         return new JSONObject()
                 .put("name", TOOL_RETRIEVE_DOCS)
                 .put("description",
-                        "Search official lsFusion documentation for chunks relevant to a query, or to several at once. Returns `{docs:[{id,source,text,score,query}]}` sorted by descending score; `query` names which of the submitted queries a chunk answers (null when one was submitted). Use `type` to narrow to one branch when known; omit to search all five branches and merge (the two top guidance articles are always excluded — get_guidance serves those in full). To page deeper on one information need, pass the `id` values you already hold in `exclude_ids`; they are filtered out before ranking. Omit them when rephrasing for a better ranking or asking a different question, or the filter will drop the chunk that best answers it. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
+                        "Search official lsFusion documentation for chunks relevant to a query, or to several at once. Returns `{docs:[{id,source,text,score,query}]}` sorted by descending score; `query` names which of the submitted queries a chunk answers (null when one was submitted). Use `type` to narrow to one branch when known; omit to search all three reference branches and merge. The `brief` and `rules` branches are NOT here — an area's capability map and its coding rules are read whole, by name, with `lsfusion_get_guidance`, and reading the rules of an area you are about to work in is mandatory. To page deeper on one information need, pass the `id` values you already hold in `exclude_ids`; they are filtered out before ranking. Omit them when rephrasing for a better ranking or asking a different question, or the filter will drop the chunk that best answers it. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
                 .put("inputSchema", input);
     }
 
