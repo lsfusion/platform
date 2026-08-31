@@ -28,8 +28,7 @@ strength (MUST / MUST NOT or SHOULD / SHOULD NOT).
 
 This article does NOT contain the rules below. Each row is a separate
 article, read whole with `lsfusion_get_guidance(rules='<name>')` using
-the name in the first column. The **Read it before** column is the
-obligation, not a suggestion.
+the name in the first column.
 
 | name | governs | read it before |
 |---|---|---|
@@ -40,37 +39,37 @@ obligation, not a suggestion.
 
 ## Reading an area's rules (MANDATORY)
 
-1. The summary in the table above is an index entry, not a rule. The
-   assistant MUST NOT infer what an article says from its summary, and
-   MUST NOT act on the summary in place of the article.
+1. The table is only an index used to select an article. The assistant
+   MUST NOT use a summary in it as a substitute for the article.
 
-2. Before doing anything a row's trigger describes, the assistant MUST
-   call `lsfusion_get_guidance(rules='<name>')` for that row, read what
-   comes back, and apply each rule at its stated strength. Once per area
-   per session is enough.
+2. When a row's trigger first applies in a session — including in the
+   middle of a task — the assistant MUST call
+   `lsfusion_get_guidance(rules='<name>')`, read the article, and apply
+   its rules before proceeding with the triggered work. It MUST NOT
+   defer this to a final review pass. Once per area per session.
 
-3. A trigger that fires in the middle of work is due at that moment. The
-   assistant MUST read the article before writing the construct, and
-   MUST NOT defer it to a review pass afterwards.
+3. As a final backstop, before presenting the result, the assistant MUST
+   compare the constructs it actually wrote against the table, and read
+   and apply any triggered article it missed.
 
-4. Before finishing a task, the assistant MUST check the constructs it
-   actually wrote against the table, and MUST read any article whose
-   trigger fired but which it has not read.
+4. The assistant MUST NOT claim that no rule applies to an area whose
+   article it has not read.
 
-5. An area the assistant did not read is not an area without rules. The
-   assistant MUST NOT state, imply, or act on the assumption that no
-   rule applies to an area whose article it has not read — and MUST NOT
-   report a documentation gap in an article it did not read.
+5. The assistant MUST NOT report a documentation gap in an article it
+   has not read.
 
-6. Each article arrives whole, between `=== BEGIN ... ===` and
-   `=== END ... ===`. If the END line is missing, the copy was
-   truncated: the assistant MUST recover the full text — reading the
-   saved file in full if the client saved one — before applying
-   anything from it.
+6. If a required rules article cannot be read, the assistant MUST tell
+   the user which area went unread, and MUST NOT present the result as
+   rule-checked.
 
-7. If the call fails, the assistant MUST retry it once. If it fails
-   again, the assistant MUST tell the user which area's rules could not
-   be read, and MUST NOT present the resulting code as rule-checked.
+## Reading an area's brief (RECOMMENDED)
+
+1. The first time a task matches an area in a session, the assistant
+   SHOULD call `lsfusion_get_guidance(brief='<name>')` for the areas it
+   matched, and read what comes back before choosing a construct. The
+   brief says what the platform already offers, which is what stops a
+   mechanism being reinvented; the map of its areas is in the top
+   `Brief` article.
 
 ## Mandatory workflow
 

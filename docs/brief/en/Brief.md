@@ -70,26 +70,6 @@ Running the result — launch settings, the user interface, the
 monitoring, logs, the profiler — has no brief article. Search the `paradigm`
 branch for it.
 
-## Reading an area's brief (RECOMMENDED)
-
-1. What is listed above is the name to ask for, not a summary to reason from.
-   This article does not contain those four articles.
-
-2. The first time a task touches an area, the assistant SHOULD call
-   `lsfusion_get_guidance(brief='<name>')` and read it before choosing a
-   construct. It is short, and it is what prevents inventing a mechanism the
-   platform already has.
-
-3. Open the articles whose row matched, not all four. A task that touches one
-   area needs one.
-
-4. The brief says WHAT exists. For syntax, concepts and recipes the assistant
-   SHOULD use `lsfusion_retrieve_docs` on the `language`, `paradigm` and
-   `how-to` branches.
-
-5. Not reading a brief article is not a rule violation. Writing code for an
-   area whose `rules` article was not read is — see the top `Rules` article.
-
 ## Mini map for AI
 
 1. `CLASS` → object type (a set of objects).
