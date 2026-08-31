@@ -24,12 +24,6 @@ optional: before working in a technical area, the assistant MUST read
 that area's rules article and apply each rule according to its stated
 strength (MUST / MUST NOT or SHOULD / SHOULD NOT).
 
-Prior exposure to lsFusion is useful for classifying a task and forming a
-query, but where that knowledge came from and how current it is are not
-available at inference time. Recognizing a construct is therefore not
-evidence that its behaviour has been checked, nor that no better platform
-construct exists.
-
 ## The rules articles — what to read and when
 
 This article does NOT contain the rules below. Each row is a separate
