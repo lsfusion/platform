@@ -1682,22 +1682,15 @@ public class GFormController implements EditManager {
         // an LSF property is drawn by the platform - once per row for a grid property, once for a panel one - so its
         // whole reader set (value, editability, colours, font, placeholder, pattern, tooltips and the rest) feeds those
         // renderers instead of the projection. Its caption and image still reach its entry: taken earlier, by
-        // isLsfViewDescriptorReader. The predicate is isLsfView, not isLsfViewPerRow, so that it states the whole rule on its
-        // own: an LSF PANEL draw of a react-owned group would otherwise fall through to the group answer below and
-        // come back react-owned, and its readers would then be skipped here while the projection emits only caption/image.
-        // FormView.checkLsfView rejects that form at startup ("mark the group's box instead"), so this is agreement
-        // with the server rather than a case that reaches us - an LSF draw is platform-drawn, and that is the answer.
+        // isLsfViewDescriptorReader. The predicate is isLsfView, not isLsfViewPerRow, so that it states the whole rule
+        // on its own: an LSF PANEL draw of a react-owned group has readers that are the renderer's too, whoever draws
+        // the rows of its group. FormView.checkLsfView rejects that form at startup ("mark the group's box instead"),
+        // so this is agreement with the server rather than a case that reaches us - an LSF draw is platform-drawn,
+        // and that is the answer.
         if (property.isLsfView())
             return false;
-
-        // WHERE IT IS, for anything the platform does not draw once per row. A GRID property is drawn by the grid, so
-        // its cells are projected exactly where the grid is; a PANEL property is a component of its own, standing
-        // where the design put it, and it is projected there - even when its own group's rows are drawn by GWT in
-        // another container. That mixed group gets a react controller beside its GWT one (initializeControllers), so
-        // the value has somewhere to be routed; the projection carries the entry and nothing else of the group.
-        if (property.isList)
-            return isReactOwned(property.groupObject);
-        return getOwningReactContainer(property) != null;
+        // ... and everything else is drawn WHERE ITS PART IS, which the projection states once (GReactFormData.partScope)
+        return reactData != null && reactData.partScope(property) != null;
     }
 
     // a reader React consumes (so GWT skips it): either it belongs to a react-owned component — its value is projected
