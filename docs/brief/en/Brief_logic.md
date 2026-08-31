@@ -3,11 +3,49 @@ slug: "/Brief_logic"
 title: 'Brief: domain logic'
 ---
 
+- [Classes](#classes)
 - [Properties](#properties)
 - [Actions](#actions)
 - [Events](#events)
 - [Constraints](#constraints)
 - [Change sessions](#change-sessions)
+
+## Classes
+
+### What a class is
+
+A [class](../paradigm/Classes.md) is a set of objects, and the base element
+everything else is typed by: the signature of a property or an action is the
+classes of its parameters, and a form's objects each have one. Classes may
+inherit, including from several parents at once.
+
+```
+CLASS [ABSTRACT] name [caption] [: parent1, ..., parentN];
+CLASS [NATIVE] name [caption] [{ objectName1 [objectCaption1], ... }] [: parent1, ..., parentN];
+```
+
+The second form declares a class with STATIC objects — a fixed, named set
+declared in the code rather than created at runtime.
+
+**Analogy**: OOP classes, except that dispatch is multiple — by the classes of
+all the parameters, not of one receiver.
+
+### A class is not a table
+
+This is the single most expensive misreading of the model, so it is worth
+stating plainly. A table does not hold a class's objects; it holds the values
+of properties. Its key fields hold object ids, and the parameter classes of
+those properties are what the key fields are typed by. A property declared
+without an explicit `TABLE` goes to the table whose key classes fit it. Which
+means the mapping from classes to tables is a consequence of how properties are
+declared, not something the class declaration decides. See
+[Brief: physical model](Brief_physical.md#execution).
+
+### Polymorphism
+
+Behaviour is specialized by class through `ABSTRACT` properties and actions
+with `+=` implementations, and through `MULTI`. See
+[abstract properties](#properties) and [extending classes](Brief_physical.md#extensions).
 
 ## Properties
 
