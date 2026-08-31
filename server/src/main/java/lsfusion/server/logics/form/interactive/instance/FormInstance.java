@@ -2678,12 +2678,23 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean update = toDraw == null || !isList || toDraw.toUpdate();
                 boolean updateCaption = update || (isList && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
                 boolean hidden = isUserHidden(drawProperty);
+                // ... and a DIFFERENT answer for the two readers that go OUTWARD. An `lsf` child is a black box the placer
+                // places, and its caption and image are what it exposes to that placer - so they must go on being read while
+                // the placer has the box UNMOUNTED, or a React tab strip's label freezes the moment its tab closes and snaps
+                // to the truth when it reopens. isHidden(ComponentView) already does exactly this for an lsf CONTAINER, in as
+                // many words ("a React component that can keep showing the caption while unmounting the body"); a property
+                // draw asked isUserHidden, which has no such redirect. Asked the same way that one asks it: skip the box's OWN
+                // membership and ask what CONTAINS it
+                boolean descriptorHidden = hidden;
+                ComponentView reactPlaced = getDrawComponent(drawProperty);
+                if (reactPlaced != null && reactPlaced.isReactHidable())
+                    descriptorHidden = isUserHidden(reactPlaced.getHiddenContainer());
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
                 ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
 
                 fillChangedReader(drawProperty, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, descriptorHidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerElementClassReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
@@ -2693,7 +2704,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.fontReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, descriptorHidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.commentElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.placeholderReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
