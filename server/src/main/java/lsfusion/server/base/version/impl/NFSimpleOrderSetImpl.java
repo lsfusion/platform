@@ -156,4 +156,9 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 
     public void finalizeChanges() {
     }
+
+    @Override
+    public boolean isFinal() {
+        return false;
+    }
 }

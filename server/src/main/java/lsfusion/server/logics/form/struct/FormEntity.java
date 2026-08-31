@@ -2045,7 +2045,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         }
 
         public T getNF(Version version) {
-            used.set(true, version);
+            if(!used.isFinal())
+                used.set(true, version);
             return supplier.getNF();
         }
 

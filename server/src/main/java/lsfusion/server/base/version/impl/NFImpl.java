@@ -23,6 +23,10 @@ public abstract class NFImpl<M, F> extends MutableObject implements NF {
     protected Object getChangesAsIs() {
         return changes;
     }
+
+    public boolean isFinal() {
+        return checkFinal(changes);
+    }
     protected void setChanges(M changes) {
         this.changes = changes;
     }

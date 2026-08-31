@@ -227,7 +227,9 @@ public class GroupObjectEntity extends IdentityEntity<GroupObjectEntity, ObjectE
     private final ImMap<GroupObjectRowProp, ExGroupProperty> props;
     private final ImMap<GroupObjectRowProp, NFProperty<Boolean>> isExplicitlyUsed = MapFact.toMap(GroupObjectRowProp.values(), type -> NFFact.property()); // optimization hack - there are a lot of FILTER usages by group change, but group change needs FILTER, etc. only when group (grid) is visible and refreshed, so we do filter update only if the latter condition is matched
     public PropertyObjectEntity<ClassPropertyInterface> getNFProperty(GroupObjectRowProp type, Version version) {
-        isExplicitlyUsed.get(type).set(true, version);
+        NFProperty<Boolean> used = isExplicitlyUsed.get(type);
+        if(!used.isFinal())
+            used.set(true, version);
         return props.get(type).getNF(version);
     }
     public PropertyObjectEntity<ClassPropertyInterface> getGroupProp(GroupObjectRowProp type) {

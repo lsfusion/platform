@@ -4,4 +4,6 @@ public interface NF {
 
     void finalizeChanges();
 
+    boolean isFinal();
+
 }
