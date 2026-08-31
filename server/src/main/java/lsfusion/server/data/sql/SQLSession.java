@@ -733,6 +733,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             transactionTables.clear();
             if(inTransaction == 1) { // a nested level ends without ending the transaction : its slots are still the outer one's, to publish at its commit or discard at its rollback
                 poolTables.clear();
+                transactionParked.clear();
+                transactionRetaken.clear();
             }
             endTransactionSessionTablesCount();
             endTransactionDBTables();
@@ -879,6 +881,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 forgetPoolTableCount(returnedPoolTable);
                 adapter.tempTablePool.release(returnedPoolTable);
             }
+            // the same breath for the connection's own : what this transaction handed on is committed now, and a restoration that came after this point would be taking a table from an owner
+            // whose rows are no longer going anywhere. Anything below can still throw and send the caller through its rollback, so the fact has to be gone before it can
+            transactionParked.clear();
+            transactionRetaken.clear();
         }
         if(!slaveTransaction)
             lsnProvider.updateLSN(connectionPool.getMasterLSN(privateConnection.sql)); // assert that it is write locked
@@ -1327,45 +1333,68 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
+    // the same two facts the pool keeps for its slots (PoolTables.parked and retaken), for the tables of the connection's own pool : what this transaction gave back, and what it gave back and
+    // then handed on to another owner. Nothing else needs them - a local table needs no parking, its next owner sits on the same connection and sees the emptying as its own - but the rollback
+    // restoration below asks the same question of both kinds, and this is where the answer for this kind lives
+    private final Set<String> transactionParked = SetFact.mAddRemoveSet();
+    private final Set<String> transactionRetaken = SetFact.mAddRemoveSet();
     // what this transaction owes the node pool, in one place because the four move in lockstep : they are cleared together at the end of the outer transaction, and a rollback has to walk all
     // three sets. Kept apart from each other because the give-back asks a different question of each
     private class PoolTables {
         // taken from the free set by this transaction : it was empty in the committed state when it was taken, so everything in it is this transaction's own and a rollback leaves it empty
         private final Set<String> mine = SetFact.mAddRemoveSet();
         // a slot a rollback leaves unusable : this transaction created it, so the create goes with the rollback and there is no table behind the name any more
-        private final Set<String> discard = SetFact.mAddRemoveSet();
+        private final Set<String> created = SetFact.mAddRemoveSet();
+        // parked and then handed out again inside this transaction : a rollback brings back whatever the FIRST owner had in it, so it is no good to the second one either - but unlike a created
+        // name there is a table behind it, and it is the first owner's. That is the difference the restoration below reads
+        private final Set<String> retaken = SetFact.mAddRemoveSet();
         // given back and not published yet : the pool gets them at the commit
         private final Set<String> parked = SetFact.mAddRemoveSet();
         // where this transaction sits in the pool's order of emptyings, for a snapshot based one : it may only take a slot that was already free when it started
         private Long startStamp;
 
         private void took(String table, boolean create) {
-            (create ? discard : mine).add(table);
+            (create ? created : mine).add(table);
         }
         private void park(String table) {
             parked.add(table);
         }
-        // a name this transaction parked, of that shape, handed out again. It joins the discard set : its emptiness is this transaction's own DELETE, and a rollback would hand its new owner
-        // back whatever the previous one left in it
+        // a name this transaction parked, of that shape, handed out again. It is no longer parked and not simply the new owner's either : its emptiness is this transaction's own DELETE, and a
+        // rollback would hand its new owner back whatever the previous one left in it
         private String takeBack(TemporaryTableStruct struct) {
             for(String table : parked)
                 if(struct.equals(adapter.tempTablePool.getStruct(table))) { // null for a name the pool no longer owns, which is no shape at all and matches nothing
                     parked.remove(table);
-                    discard.add(table);
+                    retaken.add(table);
                     return table;
                 }
             return null;
         }
-        // the same, undoing a return rather than serving a new request : the slot goes back to the owner it came from, and that owner WANTS what a rollback restores in it, so this one does
-        // not join the discard set
+        // the same, undoing a return rather than serving a new request : the slot goes back to the owner it came from, and that owner WANTS what a rollback restores in it, so this one is not
+        // discarded
         private boolean takeBackParked(String table) {
             return parked.remove(table);
+        }
+        // the same for a name this transaction had already handed on to somebody else : the rollback restoration is asking for a slot it parked, and the owner that took it in between is being
+        // thrown away by the very rollback that is asking. What the rollback leaves in the table is the FIRST owner's rows - its own emptying and the second owner's writes go together - so
+        // giving the name back is not a favour, it is the only reading of the table that will be true. It leaves the transaction's books entirely : the slot is the session's again, exactly as
+        // it was before the transaction touched it, so the rollback must neither discard it nor give it to the pool
+        private boolean takeBackRetaken(String table) {
+            if(!retaken.remove(table))
+                return false;
+
+            // the one it was handed to may have given it back again before the rollback, and then the name is in the parked set as well. That return is being undone by the same rollback, so it
+            // has to go too : left there it would put the name among what the rollback discards, and the owner this method has just given it to would lose it
+            parked.remove(table);
+            mine.remove(table);
+            return true;
         }
         // what a rollback discards. Not the slots this transaction took from the free set and still holds : those were empty in the committed state when they were taken (see the stamp rule
         // in the pool), so the rollback undoes this transaction's rows and leaves the table exactly as it was handed over - present, empty, and still this owner's. That is what happens to a
         // table of the connection's own pool that was REUSED inside a transaction, since only the ones created there go into transactionTables
         private Set<String> discarded() {
-            Set<String> discarded = new HashSet<>(discard);
+            Set<String> discarded = new HashSet<>(created);
+            discarded.addAll(retaken);
             for(String table : parked)
                 if(!mine.contains(table)) // the rest are empty after the rollback and go back to the pool, see released
                     discarded.add(table);
@@ -1387,7 +1416,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
         private void clear() {
             mine.clear();
-            discard.clear();
+            created.clear();
+            retaken.clear();
             parked.clear();
             startStamp = null;
         }
@@ -1577,10 +1607,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     table = privateConnection.temporary.getTable(this, struct, keys, properties, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
 
                 registerSessionChange(table, owner, -1, TableChange.ADD);
-                if(!fromGlobalPool && isNew.result && isInTransaction()) { // пометим как transaction
-                    if(transactionCounter==null)
-                        transactionCounter = privateConnection.temporary.getCounter() - 1;
-                    transactionTables.add(table);
+                // what a transaction has to remember about a table of the connection's own pool, and the two cases are the whole of it : one it CREATED here, which its rollback drops, and one it
+                // was handed from what it had given back, which a rollback restoration may still be owed. The pool records the second of its own slots where it hands them out (PoolTables.takeBack)
+                if(isInTransaction() && !fromGlobalPool) {
+                    if(isNew.result) { // пометим как transaction
+                        if(transactionCounter==null)
+                            transactionCounter = privateConnection.temporary.getCounter() - 1;
+                        transactionTables.add(table);
+                    } else if(transactionParked.remove(table)) // this is the only place that will know this transaction is what put the name in another owner's hands
+                        transactionRetaken.add(table);
                 }
             } finally {
                 temporaryTablesLock.unlock();
@@ -1793,17 +1828,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     
             sessionTablesMap.remove(table); // the registration and its owner were validated at the top, under the same temporaryTablesLock that serializes the issuing
 
-            // what another session would find in the table decides when it goes back. Inside a transaction the emptying above is this transaction's own and nobody else sees it, so the slot
-            // is parked until the commit; outside one the emptying is committed as it runs, and it goes back at once. A table of the connection's own pool has no such wait - its next owner
-            // sits on THAT connection and sees the emptying as its own
-            if(GlobalTempTablePool.isPoolName(table)) {
-                if(isInTransaction()) {
+            // inside a transaction the give-back is a fact of the transaction, and both kinds record it with their own keeper : the undo of this return will ask whichever of the two owns the
+            // name, in exactly this order. The emptying above is this transaction's own and nobody else sees it, so a slot may not go to the pool until the commit; a table of the connection's
+            // own pool has no such wait either way - its next owner sits on THAT connection and sees the emptying as its own - and outside a transaction it has nothing to record at all
+            if(isInTransaction()) {
+                if(GlobalTempTablePool.isPoolName(table)) {
                     // only a name the pool still owns : undoing a return (takeBackParked) reads membership of this set as proof that the slot is still ours, without asking the pool again
                     if(adapter.tempTablePool.getStruct(table) != null)
                         poolTables.park(table);
                 } else
-                    adapter.tempTablePool.release(table);
-            }
+                    transactionParked.add(table);
+            } else if(GlobalTempTablePool.isPoolName(table)) // outside one the emptying is committed as it runs, so the slot goes back at once
+                adapter.tempTablePool.release(table);
 
             runSuppressed(() -> tryCommon(opOwner, true), firstException);
 
@@ -1836,10 +1872,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 // commit would put two owners on one table. Outside a transaction the return published it at once, so it has to be asked for : another session may already have it
                 // the owner does not get it back : it must not go on holding a name that is now somebody else's, and failing loudly here is what stands between that and this owner writing
                 // into another session's table
-                if(GlobalTempTablePool.isPoolName(tableName) && !poolTables.takeBackParked(tableName) && !adapter.tempTablePool.reclaim(tableName)) {
+                // the name this transaction handed on to somebody else after this owner gave it back. Only a RESTORATION may take it from them (assertNotExists) : it is the rollback of the
+                // transaction that made the hand-on, the owner it is taken from is being thrown away by that same rollback, and what the table will hold afterwards is this owner's - its own
+                // emptying and the other's writes go together. The speculative undo is a different matter - there the transaction goes on and the second owner is alive and right to hold it,
+                // so that one still fails loudly below.
+                // The question is the same for both kinds and so is the answer; only where the fact is kept differs, and each kind is asked its own keeper
+                boolean takenFromNext = assertNotExists && currentOwner != null
+                        && (GlobalTempTablePool.isPoolName(tableName) ? poolTables.takeBackRetaken(tableName) : transactionRetaken.remove(tableName));
+
+                if(GlobalTempTablePool.isPoolName(tableName) && !takenFromNext && !poolTables.takeBackParked(tableName) && !adapter.tempTablePool.reclaim(tableName)) {
                     tryCommon(opOwner, false); // the connection above was taken for a slot this session is not getting back
-                    throw new SQLException("GLOBAL TEMP TABLE POOL : " + tableName + " could not be taken back by " + owner + ", it is no longer free");
+                    // which of the two it is decides whether anything can be done about it, and the message is the only place that will say : a name the pool no longer owns was killed while
+                    // this owner held it - there may be no table behind it at all - where one it still owns has simply been given to somebody else
+                    throw new SQLException("GLOBAL TEMP TABLE POOL : " + tableName + " could not be taken back by " + owner
+                            + (adapter.tempTablePool.getStruct(tableName) == null ? ", the pool does not own it any more - it was taken out while this owner held it" : ", it is no longer free - another owner has it"));
                 }
+
+                // the rows the one it was taken from put in there go with the rollback, so they go out of the totals here : registering the ADD below would otherwise reset the count for the
+                // name without taking them out, and those totals drive the connection restart and balance scores.
+                // TableOwner.none when the one it was taken from has been collected : its count entry is still there and still has to come out of the totals, and REMOVE only reads the owner to
+                // say whose it was
+                if(takenFromNext)
+                    forgetTableAccounting(tableName, BaseUtils.nvl(currentOwner.get(), TableOwner.none), false);
 
                 registerSessionChange(tableName, owner, -1, TableChange.ADD);
 
@@ -1852,7 +1906,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 if(assertNotExists) {
                     // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
                     // в принципе он не настолько нужен, но для порядка пусть будет
-                    ServerLoggers.assertLog(prevOwner == null, "ROLLBACK TABLE SHOULD BE FREE");
+                    // unless it was taken from the owner this transaction handed it on to, which is the one case where the name is legitimately somebody else's right up to here
+                    ServerLoggers.assertLog(prevOwner == null || takenFromNext, "ROLLBACK TABLE SHOULD BE FREE");
                 } else
                     ServerLoggers.assertLog(prevOwner == null || prevOwner.get() == owner, "ROLLBACK OWNERS SHOULD MATCH"); // вернул назад
 
