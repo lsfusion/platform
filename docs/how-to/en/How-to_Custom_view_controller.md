@@ -123,7 +123,7 @@ Passing a handle (`otherRow.objects`) as an FK value silently sets it to `NULL`,
 
 The format is the same in the read direction: an object property's value arrives in the data row as this same numeric id, so it can be compared with the target row's `row.key` (in a single-object group) or passed back as an FK value without conversion.
 
-If the edited property is marked `APPLY` on the form (the edit is applied at once), `changeProperty` commits the change immediately. For a simple edit from a view — a move, a resize, an in-place value edit — this is preferable to a separate server action; the server action (`exec`) stays for what a property change cannot express: creating an object (`NEW`), multi-step logic, opening a form.
+Like a user edit in the standard table, the change is made in the form's [change session](../paradigm/Change_sessions.md): the view sees the new value in `props.data` at once, while it reaches the database when the session is applied — with the Save button or an action with the [`APPLY`](../language/APPLY_operator.md) operator. If the edited property is marked `APPLY` on the form (the edit is applied at once), `changeProperty` commits the change immediately. For a simple edit from a view — a move, a resize, an in-place value edit — this is preferable to a separate server action; the server action (`exec`) stays for what a property change cannot express: creating an object (`NEW`), multi-step logic, opening a form.
 
 ```js
 // move an object to another parent and edit a primitive in one call:

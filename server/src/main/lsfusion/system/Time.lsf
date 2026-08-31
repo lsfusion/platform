@@ -95,7 +95,8 @@ dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || C
 
 secondsBetweenDates(DATETIME dateTo, DATETIME dateFrom) = [ FORMULA LONG PG 'trunc(extract(epoch from ($1)) - extract(epoch from ($2)))::bigint', MS 'CAST(DATEDIFF(ss, $2, $1) AS BIGINT)'](dateTo AS DATETIME, dateFrom AS DATETIME);
 daysBetweenDates(DATE dateFrom, DATE dateTo) = [ FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
-daysInclBetweenDates (DATE date1, DATE date2) = daysBetweenDates(date2, date1) + 1;
+daysBetweenDatesIncl(DATE dateFrom, DATE dateTo) = daysBetweenDates(dateFrom, dateTo) + 1;
+daysInclBetweenDates (DATE date1, DATE date2) = daysBetweenDates(date2, date1) + 1 @@deprecated('7.0','use daysBetweenDatesIncl with reversed arguments instead');
 
 sumWeekFrom (DATE date, INTEGER int) = sum(date, int * 7) IF date IS DATE AND int IS INTEGER;
 sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND int IS INTEGER;

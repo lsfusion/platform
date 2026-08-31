@@ -124,7 +124,7 @@ FORM schedule '{schedule.schedule}'
     
     OBJECTS date = INTEGER 
     PROPERTIES READONLY dateCaption(date)
-    FILTERS iterate(date,1,daysInclBetweenDates(toDate(df),toDate(dt)))
+    FILTERS iterate(date,1,daysBetweenDatesIncl(toDate(dt),toDate(df)))
     
     PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER hour
     
@@ -190,7 +190,7 @@ FORM schedules '{schedule.schedules}'
     
     OBJECTS date = INTEGER 
     PROPERTIES READONLY dateCaption(date)
-    FILTERS iterate(date,1,daysInclBetweenDates(toDate(df),toDate(dt)))
+    FILTERS iterate(date,1,daysBetweenDatesIncl(toDate(dt),toDate(df)))
     
     PROPERTIES BACKGROUND background(hour,date,s) READONLY showIn(hour,date,s) COLUMNS (hour) HEADER hour           
 ;

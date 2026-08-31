@@ -47,13 +47,37 @@ title: 'Rules: properties'
    - `(+)` / `(-)` or `GROUP SUM` produces `0`
      (a zero result is returned as `NULL`).
 
-4. The assistant MUST NOT use `GROUP AGGR`
-   inside arbitrary expressions.
+4. The assistant MUST NOT use `GROUP` with a `BY` block
+   (including `GROUP AGGR`) inside expressions:
+   in a type cast, in arithmetic
+   (including `(+)` / `(-)`), as an argument
+   of another property, or as an implementation
+   of an abstract property via `+=`.
 
-   `GROUP AGGR` is allowed only in property definitions.
+   Such an operator defines the parameters
+   of its result itself, so it is allowed only
+   as an entire property definition:
+   the right-hand side of a definition via `=`
+   or an inline definition in square brackets;
+   in any other position the platform raises
+   the error `BY clause in GROUP operator
+   cannot be used in expressions`.
+   To use the result in an expression,
+   the assistant SHOULD first rewrite the operator
+   without `BY`, replacing each grouping
+   with an equality condition on an outer parameter
+   (`GROUP SUM f(x) IF g(x) = y`); otherwise,
+   apply the inline form `[GROUP ... BY ...](...)`
+   to arguments or declare a separate property
+   and refer to it.
 
-   When reasoning about it, the assistant MUST treat
-   `GROUP AGGR` as `GROUP MAX`
+   The restriction is tied specifically
+   to the `BY` block: `GROUP` without `BY`
+   takes its parameters from the outer context
+   and may be used inside expressions.
+
+   When reasoning about `GROUP AGGR`, the assistant
+   MUST treat it as `GROUP MAX`
    with an additional constraint.
 
 5. The assistant SHOULD avoid unnecessary conditions
@@ -93,6 +117,11 @@ title: 'Rules: properties'
     A static object's caption is assigned through `caption`;
     the name must not be changed — changing `name` is
     forbidden by a system constraint.
+
+    `name` returns the static object's canonical name —
+    `<namespace>_<Class>.<object>`, not the short identifier.
+    When the part after the dot is needed, the assistant
+    SHOULD use `basicName` from the `Utils` system module.
 
 12. Property names SHOULD be concise
     and avoid unnecessary words.
@@ -150,20 +179,66 @@ title: 'Rules: properties'
     to the parameters not used in the expressions;
     a mismatch in count or classes is an error.
 
+19. `MAX` and `MIN` are prefix operators over a comma-separated
+    operand list (`MAX a, b`), not infix ones: `a MAX b`
+    does not parse — the platform reports
+    `no viable alternative at input 'MAX'`.
+
+    The operand list extends as far as the expression allows,
+    so everything after the comma belongs to the operator:
+    `MAX a, b * c` is `MAX(a, b * c)`, while `x * MAX a, b`
+    is fine as it stands. Where a following operator must
+    apply to the maximum itself, the operator MUST be
+    parenthesized: `(MAX a, b) * c`.
+
+    These operators compare the operands of a single row;
+    a maximum across rows is `GROUP MAX`.
+
 ## Abstract property rules (`+=`)
 
 1. The value class of a `+=` implementation MUST fit within
    the value class declared on the abstract property; there
    is no implicit cast — an implementation with a wider
    class is rejected at server startup with a
-   "wrong value class of implementation" error.
+   "wrong value class of implementation" error, whose
+   `specified` and `expected` lines name the implementation's
+   class and the declared one.
 
-   An expression that widens the value class — above all
-   string concatenation, which sums the operands' lengths
-   (`ISTRING[326]` against a declared `ISTRING[250]`) —
-   the assistant MUST wrap in an explicit cast to the
-   declared class:
+   Arithmetic is what widens the class most often, and it
+   widens further than it looks:
+
+   - `+` and `-` — like `MIN` / `MAX` and the selection
+     operators — take the common ancestor, widening the whole
+     part and the scale independently, so the result can be
+     wider than either operand:
+     `NUMERIC[16,2] + NUMERIC[10,4]` is `NUMERIC[18,4]`;
+   - `*` adds both the whole parts and the scales:
+     `NUMERIC[16,2] * NUMERIC[10,4]` is `NUMERIC[26,6]`;
+   - `/` widens catastrophically: with the default settings
+     its scale is always the maximum `NUMERIC` scale (`32`),
+     so `NUMERIC[16,2] / NUMERIC[16,2]` is `NUMERIC[48,32]`.
+
+   A `GROUP` aggregate mostly keeps the class of what it
+   aggregates — a `GROUP SUM`, `GROUP MAX` or `GROUP LAST`
+   over a `NUMERIC[16,2]` is `NUMERIC[16,2]` — but it carries
+   outward whatever that expression already widened to.
+   `GROUP CONCAT` is the aggregate that widens by itself: its
+   result is a string of unlimited length (`ISTRING` against
+   a declared `ISTRING[250]`). Plain string concatenation
+   widens as well, summing the operands' lengths
+   (`ISTRING[326]` against a declared `ISTRING[250]`).
+
+   Any such expression the assistant MUST wrap in an explicit
+   cast to the declared class:
+   `f(X x) += NUMERIC[16,2](a(x) / b(x));`
    `f(X x) += ISTRING[250](a(x) + b(x));`
+
+   For operands of integer classes the cast MUST go on an
+   operand first, so that the division is not integer
+   division (see rule 16 of the property rules); the result
+   still widens to scale `32` like any other division, so
+   the outer cast is needed as well:
+   `f(X x) += NUMERIC[16,2](NUMERIC[16,2](a(x)) / b(x));`
 
 ## Ordering rules (`ORDER`)
 
