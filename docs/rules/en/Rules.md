@@ -55,10 +55,7 @@ the name in the first column.
 4. The assistant MUST NOT claim that no rule applies to an area whose
    article it has not read.
 
-5. The assistant MUST NOT report a documentation gap in an article it
-   has not read.
-
-6. If a required rules article cannot be read, the assistant MUST tell
+5. If a required rules article cannot be read, the assistant MUST tell
    the user which area went unread, and MUST NOT present the result as
    rule-checked.
 
