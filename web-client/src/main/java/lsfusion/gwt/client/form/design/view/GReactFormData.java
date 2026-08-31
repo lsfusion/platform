@@ -24,6 +24,25 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 
+// THE PRINCIPLE THIS LAYER RESTS ON, stated once, here:
+//
+//   EVERY BASE COMPONENT (and the filters beside them) HAS ITS OWN PROJECTION AND ITS OWN CONTROLLER, AND A
+//   REACT CONTAINER GETS THE UNION OF THOSE OF THE BASE COMPONENTS INSIDE IT.
+//
+// A group is not the unit; a component is. That is why placement is asked of a COMPONENT (partScope), why a
+// node is ASSEMBLED from the parts its components produce rather than built as one thing, and why a group can
+// be MIXED - its grid drawn by one engine and one of its panel properties by the other - without either
+// engine knowing about the other's half.
+//
+// The projection half of this is true. The CONTROLLER half is not yet: GFormController.initializeControllers
+// still asks isReactOwned(GROUP), which is defined as isReactOwned(group.getDrawComponent()) - the answer for
+// ONE base component, the grid - and then creates or skips the whole group controller, panel included. Three
+// patches exist because of that collapse and would not be needed without it: rowPanelControllers, built
+// before the branch so a react-owned group can still have per-row LSF renderers; hasReactOwnedDraw, which
+// adds a react controller to a GWT-owned group for the mirror case; and FormView.checkLsfView's refusal of an
+// lsf PANEL property on a react-drawn group - the one case with no patch, so it is banned at build time
+// instead. Per-component ownership would remove all three.
+//
 // Maintains the @lsfusion/core-shaped `data` snapshot for CUSTOM REACT containers,
 // accumulated incrementally from each GFormChanges delta, built into a JS object on demand.
 // data = { <groupSID>: { list:[{key, isCurrent, <propSID>:{value,...}}], byKey, keys, properties, <propSID>:{caption} }, <formPropSID>:{value,...}, <containerSID>:{caption,image} }
