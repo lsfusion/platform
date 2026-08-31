@@ -1201,8 +1201,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:e118d03ab03b305546c003aa24e1188f2b763d0e6d865eddc042d9ca5d5318c0",
-      "indexed_at": "2026-08-28T16:33:39Z",
+      "file_hash": "sha256:9ad211a92520258067392098becbdc538d44ca0e7041a1b64d2e013fbae216c6",
+      "indexed_at": "2026-08-31T14:00:51Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -1302,9 +1302,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
-          "file_id": "file-V2gSFnYuTgv8MrdpULH46k",
+          "file_id": "file-T2gBnV4JKAXAyFH7AteeFg",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:c4b23d72964517c4c9cc0870329dd50b90cfcf9710d0150e5507cfc773c01d1c",
+          "section_payload_hash": "sha256:2830788282f86180a27efc893dd0535a8cae3092c7ce59bb43ead83bc0e65f3b",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-forms-window-forms-window": {
@@ -1553,8 +1553,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:7be895bb319f324498e0bd75b6945d73feb1e12608d5cafe1d9f0c216ea70e92",
-      "indexed_at": "2026-08-28T16:34:38Z",
+      "file_hash": "sha256:09322558573c97e82267adb8dd85edaec81c92f167c109720da8055b69a325d7",
+      "indexed_at": "2026-08-31T14:00:59Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -1588,9 +1588,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-01": {
-          "file_id": "file-RzGD2epfNANPjJjTBZYbAE",
+          "file_id": "file-N6pNCuF2jQ5qsjoVrWYM26",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:9dddf4ba066d6dce70dfa2c57c7e54de6cac92388c2a1bd1259a4719b1fa0582",
+          "section_payload_hash": "sha256:34f621f18aac918daa70d7bb61d501bdefb1ff6c742a0c9f7570f8ae85da6eb4",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
@@ -14897,8 +14897,8 @@
       "stale": false
     },
     "paradigm/System_Time.md": {
-      "file_hash": "sha256:a23c7aafce8e629240b5c6b75535bd2509f766ead76beb9e0b53ec7b11210969",
-      "indexed_at": "2026-08-28T17:26:53Z",
+      "file_hash": "sha256:31e39733918c4ff3afea2e909e5c489c2aabeb9b8a86af520bb61d77afaa55d8",
+      "indexed_at": "2026-08-31T14:01:07Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14908,9 +14908,9 @@
       },
       "sections": {
         "System_Time::arithmetic": {
-          "file_id": "file-UVNCmRjtVfFp2HapKiAMXb",
+          "file_id": "file-3k5UqnegDJihVfWxJd9w9D",
           "heading_path": "Time > Arithmetic",
-          "section_payload_hash": "sha256:a71ddc025e8a86a84b72bf803ea85246773f9eac193cef9967c7411919273b23",
+          "section_payload_hash": "sha256:89171b577a7cba41291105355b943c35efd910dcdb0222c88dc233d3dfcd4ef1",
           "source_file": "paradigm/System_Time.md"
         },
         "System_Time::calendar-classes-and-forms": {
@@ -16039,8 +16039,8 @@
       "stale": false
     },
     "rules/Rules_properties.md": {
-      "file_hash": "sha256:c8e832e3754e60dd63028ddf2f3804aaf3572c7cba16684cb5e704888feabe23",
-      "indexed_at": "2026-08-28T17:31:27Z",
+      "file_hash": "sha256:440c6471ec2fca6ffe90096b858237a83c0c2f3ee2856cb1932068c1eac1de21",
+      "indexed_at": "2026-08-31T14:01:14Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v4",
@@ -16050,9 +16050,9 @@
       },
       "sections": {
         "Rules_properties::abstract-property-rules-=": {
-          "file_id": "file-6qdPZHTNGuqLkaC7PheEdB",
+          "file_id": "file-RsDnaXqPRgHPV1M6oAdKuQ",
           "heading_path": "Rules: properties > Abstract property rules (`+=`)",
-          "section_payload_hash": "sha256:85b70a499e1129b6ebcd86b0b988d15f54c952e9a63bdfe34b7523b04e8597ca",
+          "section_payload_hash": "sha256:bf5104e3a3168e642791beaf742739cce0ffe538222a05b69f3e2a70ffa92bce",
           "source_file": "rules/Rules_properties.md"
         },
         "Rules_properties::ordering-rules-order": {
@@ -16062,9 +16062,9 @@
           "source_file": "rules/Rules_properties.md"
         },
         "Rules_properties::property-rules": {
-          "file_id": "file-Xe1eou5xcCVQeXkzNGQWyt",
+          "file_id": "file-PeiQqrpC7vNGeVULRnTpmm",
           "heading_path": "Rules: properties > Property rules",
-          "section_payload_hash": "sha256:95d2e44209544d17ec1ad4245243c0c32064c25b76c4e3cc90971827719c23e5",
+          "section_payload_hash": "sha256:f0e9887287942f96fdb88fdceff0fc301fb074baee638365778740e396be60c6",
           "source_file": "rules/Rules_properties.md"
         }
       },
@@ -16111,7 +16111,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "2a6b11241cf43fcb9dfcdea1ba85dd50b1f6502a",
+  "last_indexed_docs_commit": "c87063c82cdf258562840b72dbb56ff08a9b075c",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
