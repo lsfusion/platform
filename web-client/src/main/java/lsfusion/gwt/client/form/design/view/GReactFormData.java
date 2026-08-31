@@ -582,6 +582,16 @@ public class GReactFormData {
     // For an LSF property this set is the exact COMPLEMENT of what its platform renderer draws (the rest of its
     // readers stay with that renderer; projecting them would draw them twice) - GFormController.isReactOwned takes
     // back exactly what isProjectedDescriptorAttribute admits, so the two sides cannot disagree.
+    // WHY A CHILD THE PLATFORM DRAWS STILL HAS AN ENTRY HERE, since a search for readers will not tell you: this is
+    // what a component labels a TAB with. A react view showing one `lsf` child at a time has to name the ones it is
+    // NOT showing, and what the platform computed for them is the only thing it has to name them with. Two things
+    // follow, and both are deliberate: the entry does NOT follow the placement - fillContainers walks the DESIGN, so
+    // a closed tab still has a label - and FormInstance.isHidden redirects an lsf child's caption readers to its
+    // parent, in as many words ("a React component that can keep showing the caption while unmounting the body"), so
+    // a caption nobody can see goes on being read, for the strip.
+    // The complement is what makes it load-bearing rather than a convenience: GWT does not draw an lsf child's
+    // caption (GFormLayout.createContainerCaptionWidget returns null under a react parent; PropertyPanelRenderer
+    // forces hasCaption false), so `caption = '...'` on an lsf child is drawn by React or by nobody.
     private JavaScriptObject buildDescriptorEntry(GComponent component, GGroupObjectValue key) {
         JavaScriptObject entry = newObject();
         for (GPropertyReader reader : component.getDescriptorReaders())

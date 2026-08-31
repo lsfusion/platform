@@ -337,13 +337,33 @@ Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill
 
 ```jsx
 <section className="board-panel">
-    <h3><span dangerouslySetInnerHTML={{ __html: props.data['BOX(o)'].image }}/>
-        {props.data['BOX(o)'].caption}</h3>
+    <h3><Image value={props.data['BOX(o)'].image}/><Caption value={props.data['BOX(o)'].caption}/></h3>
     <Lsf name="BOX(o)"/>
 </section>
 ```
 
-`image` is a string with the image HTML, so it is inserted as HTML; `caption` is plain text.
+Drawn with [`<Caption>`](#caption) and [`<Image>`](#image), for the reason those exist: a caption is not always plain text, and an image is a string of HTML.
+
+This is what makes a **tab strip** possible, and it is what the entry is for. A component that shows one `lsf` child at a time still has to name the ones it is not showing, and their captions are the only thing it has to name them with. Two things make that work: the entry does not follow the placement — every `lsf` child of the container has one from the start, so a closed tab has a label — and a caption goes on being read while its body is hidden, so a computed caption on a closed tab keeps up to date.
+
+```jsx
+const TABS = ['BOX(o)', 'BOX(i)'];
+
+export function LsfTabs(props) {
+    const [active, setActive] = React.useState(TABS[0]);
+    return <div className="lsf-tabs">
+        <div className="lsf-tabs-strip" role="tablist">
+            {TABS.map(sid => <button key={sid} role="tab" aria-selected={sid === active}
+                                     onClick={() => setActive(sid)}>
+                <Image value={props.data[sid].image}/><Caption value={props.data[sid].caption}/>
+            </button>)}
+        </div>
+        <Lsf key={active} name={active} className="lsf-tabs-body"/>
+    </div>;
+}
+```
+
+Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [below](#lsf-child). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with nothing in it.
 
 These rules bound the placement:
 
