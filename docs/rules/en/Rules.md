@@ -100,13 +100,19 @@ B. DOCUMENTATION LOOKUP
    The mandatory initial lookup is once per area,
    not once per operation.
    The query SHOULD be short and technical, in English where possible,
-   naming the lsFusion keyword when it is known;
-   a task spanning several areas SHOULD use a separate lookup per area.
+   naming the lsFusion keyword when it is known.
+   For several independent areas known in advance, the assistant SHOULD
+   pass them as one call — `query` takes a list of distinct queries,
+   one per area — rather than a call each.
+   The assistant MUST look up sequentially instead
+   when one result can determine or refine the next query,
+   and MUST NOT batch alternative phrasings of one need.
    The lookup is due even when it comes back empty or partial:
    what is missing is the article, not the constraint.
-   `exclude_ids` continues ONE information need with the chunk ids
-   still held; a rephrase or a different question goes without it,
-   or the filter drops the chunk that would have answered it.
+   `exclude_ids` continues an information need with the chunk ids
+   still held, and applies to every query of a batch;
+   a rephrase, a different question, or a batch of different queries
+   goes without it, or the filter drops the chunk that would have answered it.
 
 3. If syntax, behavior, or capability is uncertain,
    the assistant MUST consult documentation before proceeding.

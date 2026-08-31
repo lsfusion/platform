@@ -427,7 +427,16 @@ public class MCPDispatcher {
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("query", strProp("Short topical phrase. Semantic match (not literal); rephrase rather than retry the same query if results are weak."))
+                        // string OR array: one call may carry several independent
+                        // needs, which is the normal shape of real traffic. A plain
+                        // `type: string` here would hide that from a strict client
+                        // even though the server accepts it.
+                        .put("query", new JSONObject()
+                                .put("anyOf", new JSONArray()
+                                        .put(new JSONObject().put("type", "string"))
+                                        .put(new JSONObject().put("type", "array")
+                                                .put("items", new JSONObject().put("type", "string"))))
+                                .put("description", "One short technical query, or a list of DISTINCT queries for independent needs already known before this call. Batch only lookups that do not depend on one another; when one answer can determine or refine the next query, call the tool again instead. Do not batch alternative phrasings of one need. In a batch, `type` and `exclude_ids` apply to every query, all queries share one result cap, a chunk answering two of them is returned once, and each result names the query it is credited to. Semantic match (not literal); rephrase rather than retry the same query if results are weak."))
                         .put("type", typeProp)
                         // Must be DECLARED even though remoteToolResult forwards `args` verbatim:
                         // `additionalProperties:false` above would otherwise make it unpassable by
@@ -439,7 +448,7 @@ public class MCPDispatcher {
         return new JSONObject()
                 .put("name", TOOL_RETRIEVE_DOCS)
                 .put("description",
-                        "Search official lsFusion documentation for chunks relevant to a query. Returns `{docs:[{id,source,text,score}]}` sorted by descending score. Use `type` to narrow to one branch when known; omit to search all five branches and merge (the two top guidance articles are always excluded — get_guidance serves those in full). To page deeper on one information need, pass the `id` values you already hold in `exclude_ids`; they are filtered out before ranking. Omit them when rephrasing for a better ranking or asking a different question, or the filter will drop the chunk that best answers it. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
+                        "Search official lsFusion documentation for chunks relevant to a query, or to several at once. Returns `{docs:[{id,source,text,score,query}]}` sorted by descending score; `query` names which of the submitted queries a chunk answers (null when one was submitted). Use `type` to narrow to one branch when known; omit to search all five branches and merge (the two top guidance articles are always excluded — get_guidance serves those in full). To page deeper on one information need, pass the `id` values you already hold in `exclude_ids`; they are filtered out before ranking. Omit them when rephrasing for a better ranking or asking a different question, or the filter will drop the chunk that best answers it. The corpus is English-only (`docs/en/`) — cross-lingual embeddings make non-English queries work, but English wording gives the best recall.")
                 .put("inputSchema", input);
     }
 
