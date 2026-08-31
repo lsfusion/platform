@@ -809,12 +809,17 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 checkProjectedDraw(columns, integrationSID, "form property");
                 claimProjectionName(topNames, scope, integrationSID, "form property '" + integrationSID + "'", CONTROLLER_NAMES);
             } else if (isProjectedGroup(group)) {
-                checkProjectedDraw(columns, integrationSID, "property of object group '" + group.getSID() + "'");
                 boolean list = property.entity.isList(entity);
                 // a name is claimed WHERE ITS ENTRY LANDS, which is one container: a list draw's column entry where
                 // the grid's part is, a panel draw's entry where the draw itself is. An LSF PANEL draw lands nowhere
                 // on the node at all - its descriptor is a top-level entry, claimed with the components above.
                 ContainerView scope = list ? partScope(getGroupDrawComponent(group)) : (lsf ? null : partScope(property));
+                // ... and the shape refusals are asked of THE DRAW, not of its group: a group is projected when ANY of
+                // its components is, so a draw that lands in a classic grid nobody projects is nobody's business here -
+                // no projection carries it and no name can reach it. An lsf draw has no scope on the node by
+                // construction and still carries a descriptor, so it is asked by that instead
+                if (scope != null || getProjectedContainerScope(property) != null)
+                    checkProjectedDraw(columns, integrationSID, "property of object group '" + group.getSID() + "'");
                 if (scope == null)
                     continue;
                 String source = "property '" + group.getSID() + "." + integrationSID + "'";
