@@ -337,13 +337,33 @@ export function Board(props) {
 
 ```jsx
 <section className="board-panel">
-    <h3><span dangerouslySetInnerHTML={{ __html: props.data['BOX(o)'].image }}/>
-        {props.data['BOX(o)'].caption}</h3>
+    <h3><Image value={props.data['BOX(o)'].image}/><Caption value={props.data['BOX(o)'].caption}/></h3>
     <Lsf name="BOX(o)"/>
 </section>
 ```
 
-`image` — строка с HTML изображения, поэтому вставляется как HTML; `caption` — обычный текст.
+Рисуются через [`<Caption>`](#caption) и [`<Image>`](#image) — ровно затем они и есть: заголовок не всегда обычный текст, а изображение — строка с HTML.
+
+Именно это делает возможной **полосу вкладок**, и ради этого запись и существует. Компонент, показывающий по одному дочернему компоненту с `lsf`, всё равно должен как-то назвать те, которые он не показывает, а называть их больше нечем. Работает это благодаря двум вещам: запись не следует за размещением — она есть с самого начала у каждого дочернего компонента с `lsf`, поэтому у закрытой вкладки есть подпись, — и заголовок продолжает читаться, пока тело скрыто, поэтому вычисляемый заголовок закрытой вкладки не устаревает.
+
+```jsx
+const TABS = ['BOX(o)', 'BOX(i)'];
+
+export function LsfTabs(props) {
+    const [active, setActive] = React.useState(TABS[0]);
+    return <div className="lsf-tabs">
+        <div className="lsf-tabs-strip" role="tablist">
+            {TABS.map(sid => <button key={sid} role="tab" aria-selected={sid === active}
+                                     onClick={() => setActive(sid)}>
+                <Image value={props.data[sid].image}/><Caption value={props.data[sid].caption}/>
+            </button>)}
+        </div>
+        <Lsf key={active} name={active} className="lsf-tabs-body"/>
+    </div>;
+}
+```
+
+Отрисовка только активного дочернего компонента, а не сокрытие остальных, — это и есть то, из-за чего закрытые вкладки перестают читаться, см. [ниже](#lsf-child). Вкладки нужно делать над `BOX` группы, а не над её `GRID`: заголовок и изображение есть только у контейнера и у свойства, поэтому у размещённого `GRID(o)` запись есть, но пустая.
 
 Размещение ограничено следующими правилами:
 
