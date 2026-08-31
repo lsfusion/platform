@@ -1892,6 +1892,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
     // programmatic activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
+        // an lsf child of a CUSTOM REACT container is shown by that component, not by a tab strip - it is not in a
+        // tabbed container at all, so setTabActive's `assert view.isTabbed()` would fail under -ea and, without it,
+        // write ACTIVE TAB true for something no strip will ever show. Refused the way a scripted COLLAPSE/EXPAND on
+        // the same component is (ExpandCollapseContainerAction)
+        if (view.isReactHidable())
+            throw new RuntimeException("ACTIVATE TAB is set for '" + view.getSID() + "', which is placed by a CUSTOM REACT"
+                    + " component - its visibility is controlled by that component");
         if (!(view instanceof ContainerView && ((ContainerView) view).getChildrenList().isEmpty())) {
             setTabActive(view.getContainer(), view);
             userActivateTabs = userActivateTabs.addList(view);
