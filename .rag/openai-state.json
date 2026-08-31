@@ -1,8 +1,8 @@
 {
   "files": {
     "brief/Brief.md": {
-      "file_hash": "sha256:cd25046efc58bfd9b5e28d41f7a0a5ac6f6ecb0d937faee307cbadacb85ef0a5",
-      "indexed_at": "2026-08-28T16:28:53Z",
+      "file_hash": "sha256:a947beaa5fc3b822dbc892590c816b6a343cdd91204b2c22722d830f836a1672",
+      "indexed_at": "2026-08-31T16:41:31Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v4",
@@ -11,514 +11,42 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Brief::actions": {
-          "file_id": "file-2mc8FBPicL5k4WwM7wYKVr",
-          "heading_path": "lsFusion Brief > Domain logic — the core elements (from simpler to more complex) > Actions",
-          "section_payload_hash": "sha256:0690bdcaf499624903feb11d9d88e1f4ea9dabedaa8a9aafdec75a0312cb8a52",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::aggregations": {
-          "file_id": "file-SQYF6LU6R622qQm7iQxYQL",
-          "heading_path": "lsFusion Brief > Domain logic — the core elements (from simpler to more complex) > Aggregations",
-          "section_payload_hash": "sha256:01f280c7cae6f38a7f1ca5c6c8bb67aedabe2b324056f23e0a31626b83f17c07",
-          "source_file": "brief/Brief.md"
-        },
         "Brief::brief-on-lsfusion-elements-for-ai-agents": {
-          "file_id": "file-Hxqfo1He12JZYsUzJT5y2Q",
+          "file_id": "file-FPDUAw8X6Q5vqyv7KNjhJf",
           "heading_path": "lsFusion Brief > Brief on lsFusion elements for AI agents",
-          "section_payload_hash": "sha256:631cdfb504115b5ce1c2c203a4b63d3a94f42335347c63be76e2d931b60a3a11",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::classes": {
-          "file_id": "file-XjPnfHLuHLGpyxUEnCSJiP",
-          "heading_path": "lsFusion Brief > Domain logic — the core elements (from simpler to more complex) > Classes",
-          "section_payload_hash": "sha256:f2c5e5669c6bf0016aa1cca13e6a4df4f54dee31297fd5eb97324d73b3f6c0a8",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::constraints": {
-          "file_id": "file-UULAs5ETrywv5GqfzyXKxy",
-          "heading_path": "lsFusion Brief > Domain logic — the core elements (from simpler to more complex) > Constraints",
-          "section_payload_hash": "sha256:3b6578fe356ff488d6bd031797b4d96ec27984f345a3054e3caae254e48d47b3",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::development-and-integration": {
-          "file_id": "file-UwvdooKSeZFbWewNwVGkbf",
-          "heading_path": "lsFusion Brief > Physical model — how a project is built and how it runs > Development and integration",
-          "section_payload_hash": "sha256:8f89d5dbdb060fa706e0ec5698c3aaa9310ed91709263f5f76b7fa626548cafa",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::events": {
-          "file_id": "file-Pf9Fue36ptfaWEMSaZbTeL",
-          "heading_path": "lsFusion Brief > Domain logic — the core elements (from simpler to more complex) > Events",
-          "section_payload_hash": "sha256:caa7ee0069bdce5937a5dc459afcb75a7ed44cd84a9b6b46182167a39efa495b",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::execution--telling-the-platform-how-to-store-and-process": {
-          "file_id": "file-Rsocypd2NstAxaqDRVhPzm",
-          "heading_path": "lsFusion Brief > Physical model — how a project is built and how it runs > Execution — telling the platform how to store and process",
-          "section_payload_hash": "sha256:62251eba5b5b4e19763f74a02e5ef697486cd4495235bde09b20d243e2f76c01",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::forms": {
-          "file_id": "file-SuqWYZSbhAr6Vgys8oCx8c",
-          "heading_path": "lsFusion Brief > View logic — the same model, shown to a user or to another system > Forms",
-          "section_payload_hash": "sha256:a2ca28b4a8c862eec3f3bb429181bdbef29906a26be229f3a83d49cb7b74f786",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::management--running-the-result": {
-          "file_id": "file-GpVXBvT6WPURyjZN734HrL",
-          "heading_path": "lsFusion Brief > Physical model — how a project is built and how it runs > Management — running the result",
-          "section_payload_hash": "sha256:e06d5e5ec2bb3c60787a405ba3f1df9d221881caa56eb801fa9a7dedeae4989a",
+          "section_payload_hash": "sha256:74a9a760938c0a978434235d725b65b7f4fef386f7df990e20b7e5ac28c95de1",
           "source_file": "brief/Brief.md"
         },
         "Brief::mini-map-for-ai": {
-          "file_id": "file-YaaUTMjgx3W6rXt1Brs7Rr",
+          "file_id": "file-MPB6x3xRruGwwnTMKLjYZf",
           "heading_path": "lsFusion Brief > Mini map for AI",
-          "section_payload_hash": "sha256:15b1cdafb61a289ed2790eca7e3a15aa122316443eda17372b86695e78c1913b",
+          "section_payload_hash": "sha256:ca88b579c01c3558f0fadabee989344e5cd86119ece8e556a3be812b0e307465",
           "source_file": "brief/Brief.md"
         },
-        "Brief::modules": {
-          "file_id": "file-BDsm73t9d8g4ouHsac5xkG",
-          "heading_path": "lsFusion Brief > Physical model — how a project is built and how it runs > Modules",
-          "section_payload_hash": "sha256:3e788c08765ed076797464176af3d338903e9f0e7efad1f3d295032f910a950b",
+        "Brief::reading-an-areas-brief-recommended": {
+          "file_id": "file-U7hr2gedvqQUD7Kvbr2o5A",
+          "heading_path": "lsFusion Brief > Reading an area's brief (RECOMMENDED)",
+          "section_payload_hash": "sha256:7d205e8b1cfa978b314df5534afcca785682735fbbbe4cb5bef735864bd2ced3",
           "source_file": "brief/Brief.md"
         },
-        "Brief::navigator-and-windows": {
-          "file_id": "file-K6Cj6UZRFEXH8hdU45p5e5",
-          "heading_path": "lsFusion Brief > View logic — the same model, shown to a user or to another system > Navigator and windows",
-          "section_payload_hash": "sha256:7347a439ba5b9e23be6165150e024b0dd51aebdf5871ad28996398e8834ea1bf",
+        "Brief::the-brief-articles--which-one-to-open": {
+          "file_id": "file-Ui6T2hFJgMM8B6yMuiMx38",
+          "heading_path": "lsFusion Brief > The brief articles — which one to open",
+          "section_payload_hash": "sha256:8c64c18c7efe381ad4fcd178bbe9d53db3416a1236fa68e92eb744ab40efc0bf",
           "source_file": "brief/Brief.md"
         },
-        "Brief::physical-model--how-a-project-is-built-and-how-it-runs": {
-          "file_id": "file-TbeRW1Go3nwehZ8zYCGeW2",
-          "heading_path": "lsFusion Brief > Physical model — how a project is built and how it runs",
-          "section_payload_hash": "sha256:f17ca4129b4bcf3b45613118c02355f6bef754d466f7784ce029177555bbb293",
+        "Brief::the-model": {
+          "file_id": "file-FiKGg5LCSHuMqQLuhf7pgo",
+          "heading_path": "lsFusion Brief > The model",
+          "section_payload_hash": "sha256:50f3e73d0f41e93a80a2a58bed07adad10a0f540a26ea4a4e10d67bbac2daeb9",
           "source_file": "brief/Brief.md"
-        },
-        "Brief::properties": {
-          "file_id": "file-1omnywWTvHMfehwXvoTX1P",
-          "heading_path": "lsFusion Brief > Domain logic — the core elements (from simpler to more complex) > Properties",
-          "section_payload_hash": "sha256:46024e2f226fc4bf1a68432311a2729c86ab0f2fa2cea3f5ea073ec752d750fb",
-          "source_file": "brief/Brief.md"
-        },
-        "Brief::system-modules-standard-library": {
-          "file_id": "file-FWh7HL9vwRHVU8grbYnDgY",
-          "heading_path": "lsFusion Brief > Physical model — how a project is built and how it runs > System modules (standard library)",
-          "section_payload_hash": "sha256:e3429422019cdfd74bc731921bf771d6cfb706eac4e2d5ac14249fff2b8974af",
-          "source_file": "brief/Brief.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_actions.md": {
-      "file_hash": "sha256:9bdc54b67fcfbb8172dafd0338b881d99ffd1f7a1ba0e34455fae473691c1088",
-      "indexed_at": "2026-08-29T09:09:07Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_actions::branching-case-if": {
-          "file_id": "file-Uizu3SrsaAHKvH9XUn54L1",
-          "heading_path": "Brief: actions > Branching (CASE, IF)",
-          "section_payload_hash": "sha256:15ddf9ef399fbc84ea9c87150b9c1b8d63466db40f7fef50c55a8443a5941b74",
-          "source_file": "brief/Brief_actions.md"
-        },
-        "Brief_actions::calls-and-sequencing": {
-          "file_id": "file-UYNoksyYoe3TFo4wNDinJZ",
-          "heading_path": "Brief: actions > Calls and sequencing",
-          "section_payload_hash": "sha256:28821f92d58428119a9c9d9edfa8095598c5dea0704390cbd444e5a42ccbd260",
-          "source_file": "brief/Brief_actions.md"
-        },
-        "Brief_actions::flow-control": {
-          "file_id": "file-2y2AmKXCxnaovzPEMwjSKi",
-          "heading_path": "Brief: actions > Flow control",
-          "section_payload_hash": "sha256:cae6d42bd8272b4d2e14431cf5587973d8cc56b5c89c8715fb483d2a64bac976",
-          "source_file": "brief/Brief_actions.md"
-        },
-        "Brief_actions::form-actions": {
-          "file_id": "file-DAfN5uq6VKW6aAJCgKNYzw",
-          "heading_path": "Brief: actions > Form actions",
-          "section_payload_hash": "sha256:51cbc2dee775d1305e1d3b4645dd872c1edf35c96803144787f91024e2da63fc",
-          "source_file": "brief/Brief_actions.md"
-        },
-        "Brief_actions::loops-for-while": {
-          "file_id": "file-DKqqaTFG66abTVL4FaRabR",
-          "heading_path": "Brief: actions > Loops (FOR, WHILE)",
-          "section_payload_hash": "sha256:df0ecf00c89b8c36571082606b2f5bcca605ad3e45c67048a01851aaebe3ca21",
-          "source_file": "brief/Brief_actions.md"
-        },
-        "Brief_actions::state-changes---new-delete": {
-          "file_id": "file-R4id1yaR8QhNb5nEoNJu27",
-          "heading_path": "Brief: actions > State changes (`<-`, NEW, DELETE)",
-          "section_payload_hash": "sha256:ae070231032aa80c5999047e728e8169cb3c2d04db6ba1c3baa3891014a325c1",
-          "source_file": "brief/Brief_actions.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_constraints.md": {
-      "file_hash": "sha256:28e2e6ab3f7fee760df4e80977886c7940643d33e96233060c8faeebd3c27a11",
-      "indexed_at": "2026-08-28T16:29:20Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_constraints::aggregated-objects-and-constraints": {
-          "file_id": "file-Vfx8xToZx1i8bYpHYL1Sgc",
-          "heading_path": "Brief: constraints > Aggregated objects and constraints",
-          "section_payload_hash": "sha256:f825e509a7bd5d60e9cbce3a98f5e741d159ea494d0b76c8ceb36c90cebf4dc5",
-          "source_file": "brief/Brief_constraints.md"
-        },
-        "Brief_constraints::constraints-constraint": {
-          "file_id": "file-AuZHDrxaETRVny2W5TGY2Q",
-          "heading_path": "Brief: constraints > Constraints (CONSTRAINT)",
-          "section_payload_hash": "sha256:65c68ab162de95a700c43e3a926c435d1f4d5fcf5e92f91fdf0b9b269a5c2a4c",
-          "source_file": "brief/Brief_constraints.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_design.md": {
-      "file_hash": "sha256:559276705f25b8d590aab968bc1f18407453f61af40fd7f68bb901c0af1c27e9",
-      "indexed_at": "2026-08-28T16:29:27Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_design::containers": {
-          "file_id": "file-UHgw2nbw4JTr54oQgTizL7",
-          "heading_path": "Brief: form design > Containers",
-          "section_payload_hash": "sha256:25c3c9e38cb4323cb530b2bb04701cfb773f5982036a95fa21b8dc8e9d54906b",
-          "source_file": "brief/Brief_design.md"
-        },
-        "Brief_design::sizes-and-alignment": {
-          "file_id": "file-RibFeTa1figgEUoccFUSe7",
-          "heading_path": "Brief: form design > Sizes and alignment",
-          "section_payload_hash": "sha256:a7dd669c88ee3de47146cc633c51e20bd466df296920bbbe0f6dc013f6d1cb41",
-          "source_file": "brief/Brief_design.md"
-        },
-        "Brief_design::the-default-design": {
-          "file_id": "file-XPZbRmBPap5mHA9uvfDhTm",
-          "heading_path": "Brief: form design > The default design",
-          "section_payload_hash": "sha256:e9e362e006d7803b69d8e2205abbde41795e49f9557b2df86b5d84a41ceb7ae0",
-          "source_file": "brief/Brief_design.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_events.md": {
-      "file_hash": "sha256:9051412e431ce7705868c306316aa87da1ce0502a80e427e9abe66439c5edd6c",
-      "indexed_at": "2026-08-28T16:29:35Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_events::data-events-when": {
-          "file_id": "file-GVt7iuDRY1rT6WUxfqDzP2",
-          "heading_path": "Brief: events > Data events (WHEN)",
-          "section_payload_hash": "sha256:2b8c8ad537c0599e242d82c9983972b842eeec5bf043a4ba67fa5aa4950fb143",
-          "source_file": "brief/Brief_events.md"
-        },
-        "Brief_events::form-events-on": {
-          "file_id": "file-RqLxXUHpzapLWrEewpgGV2",
-          "heading_path": "Brief: events > Form events (ON)",
-          "section_payload_hash": "sha256:ee06a66370fbc5601abdab8646f2f41df22565dc18c197c89df1172732fab5e4",
-          "source_file": "brief/Brief_events.md"
-        },
-        "Brief_events::order-of-execution": {
-          "file_id": "file-6BhgCh5DBsovTVnWuMGV3p",
-          "heading_path": "Brief: events > Order of execution",
-          "section_payload_hash": "sha256:558dff59a56621c400793b3e7b17735981cde8428c74e8dcc1c180ccc05c0065",
-          "source_file": "brief/Brief_events.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_execution.md": {
-      "file_hash": "sha256:14e2bf1233a6043e9689c19a2d9cd36426a6e689598749ef7eebc786203743d6",
-      "indexed_at": "2026-08-28T16:29:43Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_execution::indexes": {
-          "file_id": "file-6nxp1DMuGC4QmbUU73JF8X",
-          "heading_path": "Brief: execution > Indexes",
-          "section_payload_hash": "sha256:d3300a4a6f33204112d519b5535934f8d7997cb90f3a46638ef4069d75a9692e",
-          "source_file": "brief/Brief_execution.md"
-        },
-        "Brief_execution::recomputing-materializations": {
-          "file_id": "file-GaWK7ryiRBNcJNj9YvTmVB",
-          "heading_path": "Brief: execution > Recomputing materializations",
-          "section_payload_hash": "sha256:0845455d821d2941b421e3924d98030cc7a7a547d2839f88f5721ae78f363706",
-          "source_file": "brief/Brief_execution.md"
-        },
-        "Brief_execution::stored-data-and-materializations": {
-          "file_id": "file-TKp3QwQAmZ37BUAkYGbCSF",
-          "heading_path": "Brief: execution > Stored data and materializations",
-          "section_payload_hash": "sha256:d5133e051af884af782fc7a5ea2a6dcfccd9fc12035177dcd1e8ab58def37a44",
-          "source_file": "brief/Brief_execution.md"
-        },
-        "Brief_execution::tables-and-database-names": {
-          "file_id": "file-ExpN92Xf9855mZXFnkGqsD",
-          "heading_path": "Brief: execution > Tables and database names",
-          "section_payload_hash": "sha256:1d8f57e5b98502c83d7535b1d2287ddd7509140b9b74a8ca9b113008405749fe",
-          "source_file": "brief/Brief_execution.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_export.md": {
-      "file_hash": "sha256:87d92eb059b00c51933308e1250612c28ea32fa9a195abc2eab41b209bc6c59f",
-      "indexed_at": "2026-08-28T16:29:50Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_export::defaults-that-shape-the-result": {
-          "file_id": "file-L3pNjvV1vtMmFGtKBfQKii",
-          "heading_path": "Brief: data export (EXPORT) > Defaults that shape the result",
-          "section_payload_hash": "sha256:3d4d1d3795ed224b6725878146109555aa416899da272ac7d1f8ae969432bd3a",
-          "source_file": "brief/Brief_export.md"
-        },
-        "Brief_export::exporting-properties-and-forms": {
-          "file_id": "file-SLF2xDH4g6TLr7Mo4xq5wz",
-          "heading_path": "Brief: data export (EXPORT) > Exporting properties and forms",
-          "section_payload_hash": "sha256:f1bf378c84bd2b65a42832a893fb7045a45dfb639eff73d6ffc10e13735ebbe0",
-          "source_file": "brief/Brief_export.md"
-        },
-        "Brief_export::flat-and-hierarchical-structure": {
-          "file_id": "file-GcFZkUYsf6KyC9ASmGEPnb",
-          "heading_path": "Brief: data export (EXPORT) > Flat and hierarchical structure",
-          "section_payload_hash": "sha256:17718b182fd5d7267dc80f466815bdc1bbe73005cb7000ae063c63902d5b2818",
-          "source_file": "brief/Brief_export.md"
-        },
-        "Brief_export::formats-and-options": {
-          "file_id": "file-Mc2CY7HjUDTkddP7h3awkd",
-          "heading_path": "Brief: data export (EXPORT) > Formats and options",
-          "section_payload_hash": "sha256:e13bd1bdd9d7fa88366badf889ad8d6dbe94c92814b8dbea5064999d8da5d251",
-          "source_file": "brief/Brief_export.md"
-        },
-        "Brief_export::where-the-result-goes": {
-          "file_id": "file-HsFZTZvkAhhxY2CsEusYHe",
-          "heading_path": "Brief: data export (EXPORT) > Where the result goes",
-          "section_payload_hash": "sha256:c60489e9bf054fc7b96f03bfcd6d905406852376f9f8f297e42500fe0d7e2e30",
-          "source_file": "brief/Brief_export.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_extensions.md": {
-      "file_hash": "sha256:0747e397138cc5a0aa1cb841fb533ac2f975644d755aae1239673c333c086199",
-      "indexed_at": "2026-08-28T16:29:59Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_extensions::extending-classes": {
-          "file_id": "file-HD4tcbPhsjyn2ebiUGgebY",
-          "heading_path": "Brief: extensions > Extending classes",
-          "section_payload_hash": "sha256:cb94a4dae62ef5d18dc26b9c853ce83905f4c9a98e57fd079420b5ea129466d9",
-          "source_file": "brief/Brief_extensions.md"
-        },
-        "Brief_extensions::extending-forms": {
-          "file_id": "file-JcLpJPNy7eKWZTVMyvfSo9",
-          "heading_path": "Brief: extensions > Extending forms",
-          "section_payload_hash": "sha256:6f84e8d3c47f51bdcb2c962f0aa688890065d732082760351a57a49ab7d93437",
-          "source_file": "brief/Brief_extensions.md"
-        },
-        "Brief_extensions::extending-properties-and-actions": {
-          "file_id": "file-QDaynqRXmvMj5rA9ZFbXcE",
-          "heading_path": "Brief: extensions > Extending properties and actions",
-          "section_payload_hash": "sha256:21157970d80695dc5d53733256d4dfab3ef7aa74f1dc421805e7e83096f8a11b",
-          "source_file": "brief/Brief_extensions.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_forms.md": {
-      "file_hash": "sha256:3379d3ec89ca75b69c3d46b652f4094c29a4f809f2acb3e0263405872d67f439",
-      "indexed_at": "2026-08-28T16:30:08Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_forms::form-structure": {
-          "file_id": "file-R8udDjBft93ydngFqg9spS",
-          "heading_path": "Brief: forms > Form structure",
-          "section_payload_hash": "sha256:63994a50714aa48966713ceac3144aaab5daae5fe0a91464f84c66a8f5cba2f3",
-          "source_file": "brief/Brief_forms.md"
-        },
-        "Brief_forms::interactive-view": {
-          "file_id": "file-6MBTuSDA1djcRhkujfdFPh",
-          "heading_path": "Brief: forms > Interactive view",
-          "section_payload_hash": "sha256:47e47c1c476910b3f43142f1581d887d2e7a2f3104928fc6db7538cc1c74637b",
-          "source_file": "brief/Brief_forms.md"
-        },
-        "Brief_forms::opening-a-form-show-dialog-print-export": {
-          "file_id": "file-MGgBwnX9EEF48Q1TFxZs54",
-          "heading_path": "Brief: forms > Opening a form (SHOW, DIALOG, PRINT, EXPORT)",
-          "section_payload_hash": "sha256:418836be2d0b9d49ba6c16b01d4a3bc403823245e9be0238eb12bd073cbbb767",
-          "source_file": "brief/Brief_forms.md"
-        },
-        "Brief_forms::passing-objects-and-the-opening-mode": {
-          "file_id": "file-9aSAx3TyQ16wQQtoKpnsCx",
-          "heading_path": "Brief: forms > Passing objects and the opening mode",
-          "section_payload_hash": "sha256:8d4d43861103fc4c1d18fd7c60db256d600e8f7eadce3d470eb468064cbe3fa7",
-          "source_file": "brief/Brief_forms.md"
-        },
-        "Brief_forms::print-view": {
-          "file_id": "file-3kU9qByM8fm5VeDjiKHQG9",
-          "heading_path": "Brief: forms > Print view",
-          "section_payload_hash": "sha256:7a68b8e392f64ea98496207368944120e699e67ea4f36bd584dd875d38f5e9f0",
-          "source_file": "brief/Brief_forms.md"
-        },
-        "Brief_forms::structured-view": {
-          "file_id": "file-8QGwGCEQjukFzbHactpND7",
-          "heading_path": "Brief: forms > Structured view",
-          "section_payload_hash": "sha256:80b541fbdc1421799efd859977991fe32a9c38f4ee1b3f034394b2b7a52840e4",
-          "source_file": "brief/Brief_forms.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_i18n.md": {
-      "file_hash": "sha256:8ec13b3249f62f2167525b04e05d8f05cf6d2b75d48538ca70552804cda0d612",
-      "indexed_at": "2026-08-28T16:30:24Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_i18n::localizing-strings-and-captions": {
-          "file_id": "file-4vqFqtUL4MfYMWv34C5iWB",
-          "heading_path": "Brief: internationalization > Localizing strings and captions",
-          "section_payload_hash": "sha256:592f817186f631531690cdbef252e85c6ddd23b754e92d638659e048c57321c9",
-          "source_file": "brief/Brief_i18n.md"
-        },
-        "Brief_i18n::reverse-translation": {
-          "file_id": "file-MFbG4WN82GKJAJzpRdDqPC",
-          "heading_path": "Brief: internationalization > Reverse translation",
-          "section_payload_hash": "sha256:d6b9934be28ae7cca1e859436b5aa5eadd36e41d7a227a8f8d1ca0d920dea8f4",
-          "source_file": "brief/Brief_i18n.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_identification.md": {
-      "file_hash": "sha256:ed876cc1d900a8b1a8481be1046c69063edf7d220cec3f8fbddcf95cd514bac4",
-      "indexed_at": "2026-08-28T16:30:31Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_identification::finding-elements": {
-          "file_id": "file-89ntCEyDwjPYLUCPcRGiZB",
-          "heading_path": "Brief: element identification > Finding elements",
-          "section_payload_hash": "sha256:805ba5888ff6955805a9fa96e37ef4b6611ccc9cf07284e491853477c0792c8a",
-          "source_file": "brief/Brief_identification.md"
-        },
-        "Brief_identification::identifiers-and-namespaces": {
-          "file_id": "file-2XETw4LhoBTo9tQGwrzqBa",
-          "heading_path": "Brief: element identification > Identifiers and namespaces",
-          "section_payload_hash": "sha256:478c505222ff795ac232ebc07f25bc2d848522497482e2a8cd2b17edf88bd6d7",
-          "source_file": "brief/Brief_identification.md"
-        },
-        "Brief_identification::naming": {
-          "file_id": "file-GaEXYJvQ2rMenKHD4WMh9o",
-          "heading_path": "Brief: element identification > Naming",
-          "section_payload_hash": "sha256:0fa404546a0714c31525d8a67211868e7112459841ee945b37f8ca5664b4736a",
-          "source_file": "brief/Brief_identification.md"
-        },
-        "Brief_identification::renaming-and-migration.script": {
-          "file_id": "file-1ajswWXBZJMoxbjwbacu2G",
-          "heading_path": "Brief: element identification > Renaming and migration.script",
-          "section_payload_hash": "sha256:e0f377f8a08d1a5ee475d595c0d787a0141a2fe7a9abc00bc66ca60fe025d14f",
-          "source_file": "brief/Brief_identification.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_import.md": {
-      "file_hash": "sha256:e15e28d425382cedca8d6a52670a0b56e239759a912517924fbf661449a8b561",
-      "indexed_at": "2026-08-28T16:30:40Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_import::flat-import": {
-          "file_id": "file-SKNz2b2uCT8QHP3dfqzj9U",
-          "heading_path": "Brief: data import > Flat import",
-          "section_payload_hash": "sha256:f62419ca8bc140c9d2ac1796eb21e0ddffaa1220fd3ee782b48298c68f467369",
-          "source_file": "brief/Brief_import.md"
-        },
-        "Brief_import::formats-and-field-mapping": {
-          "file_id": "file-HPdwwSSAL1mZUgd8GmuzFq",
-          "heading_path": "Brief: data import > Formats and field mapping",
-          "section_payload_hash": "sha256:4d13e40806fdc1112e20742fbd74b9423baa2f46ba8235786d8941b7636b964b",
-          "source_file": "brief/Brief_import.md"
-        },
-        "Brief_import::handling-imported-data": {
-          "file_id": "file-Qu4zvswh9upyhwMFG9ChUD",
-          "heading_path": "Brief: data import > Handling imported data",
-          "section_payload_hash": "sha256:6d66f4300275cded49ccd9d880f8dc060905b0ba515944fc15f0f132b34f1303",
-          "source_file": "brief/Brief_import.md"
-        },
-        "Brief_import::structured-import-and-forms": {
-          "file_id": "file-4xCGr9ZBKPhfmwBDqBxW3B",
-          "heading_path": "Brief: data import > Structured import and forms",
-          "section_payload_hash": "sha256:819c0d381fc436766912ecc8db49fc9c7191a4766535d3b658351eeeab39a3e4",
-          "source_file": "brief/Brief_import.md"
         }
       },
       "stale": false
     },
     "brief/Brief_integration.md": {
-      "file_hash": "sha256:9f7f2cb8474eb0dd157fc750b97b56fe1dfc04cc6d4f66b9d860ae3b742647fb",
-      "indexed_at": "2026-08-28T16:30:48Z",
+      "file_hash": "sha256:344f2afab7d398d87a119fb776abbfdc668f5e08f7a9365995ab8769c4fefcf6",
+      "indexed_at": "2026-08-31T16:41:40Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v4",
@@ -528,35 +56,95 @@
       },
       "sections": {
         "Brief_integration::access-from-outside": {
-          "file_id": "file-FRhxmZLc8E14JtaLRgD5eZ",
-          "heading_path": "Brief: integration > Access from outside",
-          "section_payload_hash": "sha256:2ac2ffce41787ba3c5ff4f8d6a665a4390bc87a99a4adadf00a5cf114fe1e6e3",
+          "file_id": "file-XTYSwQKEpfE3L7QfdrbuH7",
+          "heading_path": "Brief: integration > Integration > Access from outside",
+          "section_payload_hash": "sha256:998832ac18e8e8cceed11ac8ed163f5ea8afcbdcf4a4423b3a3a4663ca279266",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::brief-integration": {
+          "file_id": "file-4LzXiYQnTbDg4t6WnWBngb",
+          "heading_path": "Brief: integration",
+          "section_payload_hash": "sha256:0e20434e382a8e7f57bb105c98e20d279d122b29101ea4f8f76aa384791c8e5f",
           "source_file": "brief/Brief_integration.md"
         },
         "Brief_integration::declarative-integration-formula-custom-json": {
-          "file_id": "file-HyTmn8jNLXF95den8FGHVD",
-          "heading_path": "Brief: integration > Declarative integration (FORMULA, CUSTOM, JSON)",
-          "section_payload_hash": "sha256:afb52e11462596e478070f6c0f55fd1b9fdae9535d5baa66d6fba1672e15990b",
+          "file_id": "file-2zzJ8Z7B3XPAngsgvjQCyz",
+          "heading_path": "Brief: integration > Integration > Declarative integration (FORMULA, CUSTOM, JSON)",
+          "section_payload_hash": "sha256:80216b946a5095ac977217b494b9984023f4ff87429d3819891e8c0d96f9de0c",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::defaults-that-shape-the-result": {
+          "file_id": "file-L2HM6kcnKrgxXd1m2gnYWx",
+          "heading_path": "Brief: integration > Data export (EXPORT) > Defaults that shape the result",
+          "section_payload_hash": "sha256:1f478d57d381dc1082335dbb93be50f37059d72771c0df28a771dd8cc5fae219",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::exporting-properties-and-forms": {
+          "file_id": "file-PyMnAUCZJjHzURn1eeqUbU",
+          "heading_path": "Brief: integration > Data export (EXPORT) > Exporting properties and forms",
+          "section_payload_hash": "sha256:3ecb05117ce90a5af11ef4e922a577f268ca70de903f229db6f02f529aaa5e19",
           "source_file": "brief/Brief_integration.md"
         },
         "Brief_integration::external-calls-external": {
-          "file_id": "file-N91Z8rEsVkVk4F3RwrPf1E",
-          "heading_path": "Brief: integration > External calls (EXTERNAL)",
-          "section_payload_hash": "sha256:4d7038a82e28ed2b0e3d1d781e060d486456403b6e2f8886781245c9076067c5",
+          "file_id": "file-QZ4Lxg5BbdRn53hgj5HYwk",
+          "heading_path": "Brief: integration > Integration > External calls (EXTERNAL)",
+          "section_payload_hash": "sha256:e048f7eb0b13ce8efb72d06bce5f15da98624faf491d46f139a212e478258235",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::flat-and-hierarchical-structure": {
+          "file_id": "file-7rmBFS4FcsK2XEVkSzj2QQ",
+          "heading_path": "Brief: integration > Data export (EXPORT) > Flat and hierarchical structure",
+          "section_payload_hash": "sha256:37f145e8a44fa6f6c4294c9c818287033ec887bd97d9ac475a00d4f2fc782c78",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::flat-import": {
+          "file_id": "file-R7vDyw7HHWongATuAzHqUW",
+          "heading_path": "Brief: integration > Data import > Flat import",
+          "section_payload_hash": "sha256:d48305f4a59c1673591d68585a95b1f2d1cfba8977e6f963c49e964512892f25",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::formats-and-field-mapping": {
+          "file_id": "file-3QqWTTKGjs1B4wPMZRMAGk",
+          "heading_path": "Brief: integration > Data import > Formats and field mapping",
+          "section_payload_hash": "sha256:90d4d1d7380fbb74480c1e16f999c1a515755a6cab0e861b8fab48b7544987fb",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::formats-and-options": {
+          "file_id": "file-LMdDniipwChFFccfvrpVmW",
+          "heading_path": "Brief: integration > Data export (EXPORT) > Formats and options",
+          "section_payload_hash": "sha256:0fdf915e70f17a8bbe6fbfa262997a81be7e4969915e3fcbc07328d05e7e0d3a",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::handling-imported-data": {
+          "file_id": "file-3W49dvaNMRGMqa7djy1UZT",
+          "heading_path": "Brief: integration > Data import > Handling imported data",
+          "section_payload_hash": "sha256:d3c8cb109bd044c0b1a9e5a517a920fb9e3cdbb225b902395baf9803f3d31f7a",
           "source_file": "brief/Brief_integration.md"
         },
         "Brief_integration::internal-calls-internal": {
-          "file_id": "file-4Y3UPFyrQMwVvXWihATFe6",
-          "heading_path": "Brief: integration > Internal calls (INTERNAL)",
-          "section_payload_hash": "sha256:d94ed63bc615dd75d46345174367a4a8c427d0c1100c6f993cac0c12c86439db",
+          "file_id": "file-YThGDTs2fQhinXWVFXrfCy",
+          "heading_path": "Brief: integration > Integration > Internal calls (INTERNAL)",
+          "section_payload_hash": "sha256:6c4009d4db4b154e0946b0d5ea599cb9871f83477556a4f79c3e026af5a8d6e8",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::structured-import-and-forms": {
+          "file_id": "file-XtAa9XDEGw1kKoTXEhRE9b",
+          "heading_path": "Brief: integration > Data import > Structured import and forms",
+          "section_payload_hash": "sha256:8ae66b2297c38a80b2579c5a9ddc828afb4e5b7f63c6b8f4e0e4c39a455237f9",
+          "source_file": "brief/Brief_integration.md"
+        },
+        "Brief_integration::where-the-result-goes": {
+          "file_id": "file-4u3SvhEdENieyeqFbRnWH3",
+          "heading_path": "Brief: integration > Data export (EXPORT) > Where the result goes",
+          "section_payload_hash": "sha256:e6dd8b8b69d74a0c1f3e2f7f8b68e0477ccba481b86fec4831686e1f80e2c465",
           "source_file": "brief/Brief_integration.md"
         }
       },
       "stale": false
     },
-    "brief/Brief_metaprogramming.md": {
-      "file_hash": "sha256:2e5373564bfdd8c1f2733d84d45e792ea79d65b1856141fc82cf89a4afb910e4",
-      "indexed_at": "2026-08-28T16:30:55Z",
+    "brief/Brief_logic.md": {
+      "file_hash": "sha256:0433af863c0d5e827819e9769c5332ca1718f56fb32fe9f02c2cc402831e4309",
+      "indexed_at": "2026-08-31T16:41:55Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v4",
@@ -565,24 +153,168 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Brief_metaprogramming::generated-code-and-call-arguments": {
-          "file_id": "file-6KAgVwdQbFkkBERDYt8fTy",
-          "heading_path": "Brief: metaprogramming > Generated code and call arguments",
-          "section_payload_hash": "sha256:0cca8e51acc31d14a7313738bf918d75806fabc57fa61f149590346612bfa86a",
-          "source_file": "brief/Brief_metaprogramming.md"
+        "Brief_logic::a-class-is-not-a-table": {
+          "file_id": "file-Fm92o6FjvhvjN6wBWDFXZw",
+          "heading_path": "Brief: domain logic > Classes > A class is not a table",
+          "section_payload_hash": "sha256:da595f918d63563a5f4c4661010e4513098bd3204f7ebb3fdf0b6a5d0eee5e48",
+          "source_file": "brief/Brief_logic.md"
         },
-        "Brief_metaprogramming::meta-and-calling-metacode-": {
-          "file_id": "file-Ps2T4wc49aJDHEULGdzXwD",
-          "heading_path": "Brief: metaprogramming > META and calling metacode (@)",
-          "section_payload_hash": "sha256:c900496c70caa09f66d8aa0b316d15a37ba5c839c7ed894360ca005f209b0a54",
-          "source_file": "brief/Brief_metaprogramming.md"
+        "Brief_logic::abstract-properties-abstract": {
+          "file_id": "file-56kE8oLNCE5x2pWRmysKtF",
+          "heading_path": "Brief: domain logic > Properties > Abstract properties (ABSTRACT)",
+          "section_payload_hash": "sha256:13094126cce9dc9efed850743ad05d78dcf32497cc1d891bb5c17acb1f094f69",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::aggregated-objects-and-constraints": {
+          "file_id": "file-3s4zzjnVi7iskvHNocx7Nd",
+          "heading_path": "Brief: domain logic > Constraints > Aggregated objects and constraints",
+          "section_payload_hash": "sha256:ed9aeaf8cbdca4c6a353068b9068825c629e9602cc72177c21f8b2ea50d03acd",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::apply-and-cancel": {
+          "file_id": "file-CXLTJUBC7NDuGvS48823yo",
+          "heading_path": "Brief: domain logic > Change sessions > APPLY and CANCEL",
+          "section_payload_hash": "sha256:c74cffb473c652acf205327f1cd79a64d0ecc88de4a41790367df7a5ae5aab40",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::branching-case-if": {
+          "file_id": "file-Buqj1A1r2QoEjYwtJ9EzYZ",
+          "heading_path": "Brief: domain logic > Actions > Branching (CASE, IF)",
+          "section_payload_hash": "sha256:4232a11c0f3cd9784a4734b2bb132d3920a329050392e0bf14d65086fa030520",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::brief-domain-logic": {
+          "file_id": "file-CU1PqxUpfVA5K7TX22NDqF",
+          "heading_path": "Brief: domain logic",
+          "section_payload_hash": "sha256:ee043f9c0a903f17aa9a783e55830ae5b64c0dec08778e1db5eaab2d6384d3f0",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::calls-and-sequencing": {
+          "file_id": "file-9G9XVEioPWV9Wk4PLAGc6F",
+          "heading_path": "Brief: domain logic > Actions > Calls and sequencing",
+          "section_payload_hash": "sha256:f7832366e8cf912240403106815822ac7e0182d7d65b1853a36d0b41f230ee01",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::constraints-constraint": {
+          "file_id": "file-DeKVxef7yfeuWS5KHKEFgj",
+          "heading_path": "Brief: domain logic > Constraints > Constraints (CONSTRAINT)",
+          "section_payload_hash": "sha256:011564dad0442e68a763059db87f4ff980a101d408b568dcb58692f43b816c3f",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::data-events-when": {
+          "file_id": "file-4WDEj8fdnd2Yqnax1vCmhK",
+          "heading_path": "Brief: domain logic > Events > Data events (WHEN)",
+          "section_payload_hash": "sha256:5bfd8fe1b7d4d915cb556796c9e3324a3bbd255bd9728165c91886abdcc9a21d",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::expressions-and-composition": {
+          "file_id": "file-8CuLni8TzC9PXjz8CamYYf",
+          "heading_path": "Brief: domain logic > Properties > Expressions and composition",
+          "section_payload_hash": "sha256:1268cc791f426c20182ca89078da7338b2456dcfc6bb9b3f004a9b48430059cc",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::flow-control": {
+          "file_id": "file-RGZb41aqPW4qmUceaYBytR",
+          "heading_path": "Brief: domain logic > Actions > Flow control",
+          "section_payload_hash": "sha256:deb6d29f8a71d1cbdd99a9d0cdb970f99e6c1f930ff7ecfdded79bfec7a26997",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::form-actions": {
+          "file_id": "file-PqhyMHyiUjQkH4C3s5Zc2U",
+          "heading_path": "Brief: domain logic > Actions > Form actions",
+          "section_payload_hash": "sha256:7c284f40abcd9b3d4ff8dc58dce0bf523df070b01837b2db2dca5381361a6b30",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::form-events-on": {
+          "file_id": "file-Gga3z5zAHjdGninGKFAc36",
+          "heading_path": "Brief: domain logic > Events > Form events (ON)",
+          "section_payload_hash": "sha256:845ab2ec60ee07cbb43575839e3bcb0ca9a9d6fbf5fca325b503d9d16ec0291e",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::grouping-group": {
+          "file_id": "file-6JQCc9qNAv933zCW1V1azn",
+          "heading_path": "Brief: domain logic > Properties > Grouping (GROUP)",
+          "section_payload_hash": "sha256:dfefc17d13ef8c267b8c2dac960cdf4e32e132f77d9ad46c8b35b1f425a5da7c",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::how-changes-are-seen-across-sessions": {
+          "file_id": "file-HQEaKE2jGoCQRXspfsJ1vw",
+          "heading_path": "Brief: domain logic > Change sessions > How changes are seen across sessions",
+          "section_payload_hash": "sha256:e91a5277b144739eb0c71891ee2d4df6f6b2006ca2763dd2d3d42d813b0ee582",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::loops-for-while": {
+          "file_id": "file-Gc8m1yPjnqBfMqs2ZBcius",
+          "heading_path": "Brief: domain logic > Actions > Loops (FOR, WHILE)",
+          "section_payload_hash": "sha256:0cfb38d9c8875596df1ba665beeac0e7e8f9ffed1e6949cf500a7a2364a21b92",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::newsession-and-nestedsession": {
+          "file_id": "file-G5igK55oz4Fz7u7UjmBZan",
+          "heading_path": "Brief: domain logic > Change sessions > NEWSESSION and NESTEDSESSION",
+          "section_payload_hash": "sha256:fc1b2792780fd101c9fbf7e239e211fd158affc91c79dc5d19b753d36abc8c6e",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::object-aggregation-group-aggr-aggr": {
+          "file_id": "file-Sx2Nd5fVJizUJXs8h6TBp4",
+          "heading_path": "Brief: domain logic > Properties > Object aggregation (GROUP AGGR, AGGR)",
+          "section_payload_hash": "sha256:d17e63ca4998d28fb08dc275b70cdf623060f4d909f22b014ec04eeca14ee16c",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::order-of-execution": {
+          "file_id": "file-SH9zJVVxCCZdrgrawTzfv4",
+          "heading_path": "Brief: domain logic > Events > Order of execution",
+          "section_payload_hash": "sha256:a248db3a7a12a4eb68fad9611e1c90b6de9fd655900881f54fd4c71b5c0db774",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::partitioning-and-ordering-partition": {
+          "file_id": "file-EwnyxdHJZtnvmVWdQjSLQq",
+          "heading_path": "Brief: domain logic > Properties > Partitioning and ordering (PARTITION)",
+          "section_payload_hash": "sha256:589f1525c3a7cde9478762c1f2d0e971dfbbc81a6a25b9ed14533d3eaff175f6",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::polymorphism": {
+          "file_id": "file-H5FCKxbEgaZ8cpYcQK4Ubv",
+          "heading_path": "Brief: domain logic > Classes > Polymorphism",
+          "section_payload_hash": "sha256:9b43c5c8ce2413c08f8f78c37b86b5c8f4124e52228ad14b3c7442ae56f35529",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::recursion-recursion": {
+          "file_id": "file-Kyvc182e57HY98mnTHf8oJ",
+          "heading_path": "Brief: domain logic > Properties > Recursion (RECURSION)",
+          "section_payload_hash": "sha256:8b7d36d68b107d92f745589f1c0d28a48928421f5423516ed9797d4d1f47dcfc",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::selection-and-override-case-if-override": {
+          "file_id": "file-F1o7PU5TAsabBJbpKfaunp",
+          "heading_path": "Brief: domain logic > Properties > Selection and override (CASE, IF, OVERRIDE)",
+          "section_payload_hash": "sha256:17f874b06c3dda1f2e604212195910f6a2d91c86aea74c1ec880c3c08ef163fb",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::state-changes---new-delete": {
+          "file_id": "file-WCyXeVLBbUvhA9oyMJgFRB",
+          "heading_path": "Brief: domain logic > Actions > State changes (`<-`, NEW, DELETE)",
+          "section_payload_hash": "sha256:0975da19bd715cb27bcd52523fda97fa3869b330f730ddbff3026136bdfb0353",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::what-a-class-is": {
+          "file_id": "file-Y67q3iNATQyRCPRaRPJXHj",
+          "heading_path": "Brief: domain logic > Classes > What a class is",
+          "section_payload_hash": "sha256:20146a2f2b52ff50257accef6ca687c30f7a76c72af10120122ccbce84f78f5c",
+          "source_file": "brief/Brief_logic.md"
+        },
+        "Brief_logic::what-a-session-is": {
+          "file_id": "file-8gwQPavrSLPkRZ2N7wWsrN",
+          "heading_path": "Brief: domain logic > Change sessions > What a session is",
+          "section_payload_hash": "sha256:9d60889e257cb7364ca7862070a084f8f9fb5ff3e0d1496248cf5f9703cec1ec",
+          "source_file": "brief/Brief_logic.md"
         }
       },
       "stale": false
     },
-    "brief/Brief_modularity.md": {
-      "file_hash": "sha256:c51635a270e62059c45bfa44ddb43c7ddf6e386166937a765c8572d7017d8d7b",
-      "indexed_at": "2026-08-28T16:31:04Z",
+    "brief/Brief_physical.md": {
+      "file_hash": "sha256:b02196d6ed2b15b878eab0669786ac4c7c25cf9952f0332b1ea5c53ef69014f7",
+      "indexed_at": "2026-08-31T16:42:19Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v4",
@@ -591,24 +323,108 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Brief_modularity::modules-and-order": {
-          "file_id": "file-3xYwYexBB1tYKnUqNmJvop",
-          "heading_path": "Brief: modules > Modules and order",
-          "section_payload_hash": "sha256:572b7fa013315592a5d3f0c6490325714ca0b99748f211065ae36560d3cef1ba",
-          "source_file": "brief/Brief_modularity.md"
+        "Brief_physical::brief-physical-model": {
+          "file_id": "file-1FCDvZrF2mVuMwLMLKUwUq",
+          "heading_path": "Brief: physical model",
+          "section_payload_hash": "sha256:31023095280b7d1b297855bd8338d268958c489c7ae5ab343154b6513ac9a878",
+          "source_file": "brief/Brief_physical.md"
         },
-        "Brief_modularity::system-modules": {
-          "file_id": "file-UZGmY4TDtz4DR1sFN8nP1Z",
-          "heading_path": "Brief: modules > System modules",
-          "section_payload_hash": "sha256:a127f425908aadd2c96b497eedd3552311aa01505aaf30aa16997409c514d0d4",
-          "source_file": "brief/Brief_modularity.md"
+        "Brief_physical::extending-classes": {
+          "file_id": "file-ByJFp2zUaPS47Nvgpe98XF",
+          "heading_path": "Brief: physical model > Extensions > Extending classes",
+          "section_payload_hash": "sha256:20500d40e4616e7d42525764562048600fb5eed9c7f3071723f7273314cc8c5d",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::extending-forms": {
+          "file_id": "file-EeJquAEXcdZMDk7p1XMK77",
+          "heading_path": "Brief: physical model > Extensions > Extending forms",
+          "section_payload_hash": "sha256:02523647f6e93fd81a62d766bd53989d9922f7ab9451356681769b6d45bdc48b",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::extending-properties-and-actions": {
+          "file_id": "file-81iB4qy3gTj1W9gw9ByD88",
+          "heading_path": "Brief: physical model > Extensions > Extending properties and actions",
+          "section_payload_hash": "sha256:8cb1a7afebdf602e4ffd808d55981c71abac10769b6a4cd72147d578ffeed72c",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::finding-elements": {
+          "file_id": "file-7wGTCLZ5wWAzvohaXfeErD",
+          "heading_path": "Brief: physical model > Element identification > Finding elements",
+          "section_payload_hash": "sha256:8a5781448de5ce5034ffe33599a9ba0acf08180019e58efe19f2fa643dfc1287",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::generated-code-and-call-arguments": {
+          "file_id": "file-FULf3ot17CMSdEGkVYvcs2",
+          "heading_path": "Brief: physical model > Metaprogramming > Generated code and call arguments",
+          "section_payload_hash": "sha256:45b40c73d12f2836d31d5431e8f019f7435b9f56ab7e7ae660d569d7d218734b",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::identifiers-and-namespaces": {
+          "file_id": "file-LFqbYagzbWYHE3umU3RMs5",
+          "heading_path": "Brief: physical model > Element identification > Identifiers and namespaces",
+          "section_payload_hash": "sha256:df5fe8fc886f9e790c0723ddc1e23457e9a1b31d6957a644127887aea07d53c4",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::indexes": {
+          "file_id": "file-1KBRHtKuzhQmDqwpRS1sAW",
+          "heading_path": "Brief: physical model > Execution > Indexes",
+          "section_payload_hash": "sha256:d4c50af0869f5c442b024e7b3f0d515ca258e3e461f1ec2df5e75ec14d1b5ad3",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::meta-and-calling-metacode-": {
+          "file_id": "file-6LP84mzTvtkot2L3PCi6j9",
+          "heading_path": "Brief: physical model > Metaprogramming > META and calling metacode (@)",
+          "section_payload_hash": "sha256:b4a79c4760f46a19549bb932a2f108c8682e01b32264138e6f09885a77e05e83",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::modules-and-order": {
+          "file_id": "file-AmaH1hKHMyzxjwU8tgYEcz",
+          "heading_path": "Brief: physical model > Modules > Modules and order",
+          "section_payload_hash": "sha256:74e961404c0cb2e721b8245a23773e650b140f75fd70e3b65e56e4079e26e3b5",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::naming": {
+          "file_id": "file-H1NB72nBpyUTJSM5qS8m56",
+          "heading_path": "Brief: physical model > Element identification > Naming",
+          "section_payload_hash": "sha256:2dd6db6434b9687d3032a94351826014e4e2dedd61b79b2714fe26aba07a8963",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::recomputing-materializations": {
+          "file_id": "file-H1cWh8eAAEYWzeeSgRxbWq",
+          "heading_path": "Brief: physical model > Execution > Recomputing materializations",
+          "section_payload_hash": "sha256:5893120a5edb33675892d8e445c006eb186af5943f272c6fd6a318e75d1f58c2",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::renaming-and-migration.script": {
+          "file_id": "file-Kg6kSo5MHCGJ2Faw8KfTm1",
+          "heading_path": "Brief: physical model > Element identification > Renaming and migration.script",
+          "section_payload_hash": "sha256:723d4fade8987d285493eed3ed170a911e0419415564b551e6febe0e69d4cf9f",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::stored-data-and-materializations": {
+          "file_id": "file-FbzdiEuCMrB6LU2ThJUQWE",
+          "heading_path": "Brief: physical model > Execution > Stored data and materializations",
+          "section_payload_hash": "sha256:459304e53658ac004649226d7d949b4bf7b86c9e0e5a01b86dce548d3ab1cff6",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::system-modules": {
+          "file_id": "file-Tb1GML65BZBdyvfQyXTrqP",
+          "heading_path": "Brief: physical model > Modules > System modules",
+          "section_payload_hash": "sha256:5c8eb8cdb3d0f4aa5be0efa468037a2f8a9e6ed94c0d3160c7aac27e47db20c2",
+          "source_file": "brief/Brief_physical.md"
+        },
+        "Brief_physical::tables-and-database-names": {
+          "file_id": "file-LyL7upnsDNgYdKJMKK95cQ",
+          "heading_path": "Brief: physical model > Execution > Tables and database names",
+          "section_payload_hash": "sha256:67eac41970f4095ef0174cb242eb5e4265b3339805ef0d2f193d5957d8fb5c38",
+          "source_file": "brief/Brief_physical.md"
         }
       },
       "stale": false
     },
-    "brief/Brief_navigator.md": {
-      "file_hash": "sha256:33459265b542431abffd933dae4385670233aefb7fa013e5af295167fa7cb5d2",
-      "indexed_at": "2026-08-28T16:31:11Z",
+    "brief/Brief_view.md": {
+      "file_hash": "sha256:21ee028e65cba8f806938e682e577bc4320cb3075dc38d2a72b9f12404835821",
+      "indexed_at": "2026-08-31T16:42:33Z",
       "indexed_sourceType": "brief",
       "indexed_with": {
         "chunker_version": "v4",
@@ -617,137 +433,101 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Brief_navigator::navigator-structure": {
-          "file_id": "file-BEHGTx6mqspA2MiYeaGkob",
-          "heading_path": "Brief: navigator > Navigator structure",
-          "section_payload_hash": "sha256:3ec14d652ec4bd2b4ff1ea7c650e2543bc8101942897654df19e7b8cf7672ade",
-          "source_file": "brief/Brief_navigator.md"
+        "Brief_view::brief-view-logic": {
+          "file_id": "file-Rb7qae8CMy899UXYV9yZZk",
+          "heading_path": "Brief: view logic",
+          "section_payload_hash": "sha256:6d2c650bbb05370d1f2f4905e805e0839e892a3b9509e04f600d85893bda5e9b",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_navigator::windows-and-placement": {
-          "file_id": "file-DpwiapoKAdjwPQcDy8PCH8",
-          "heading_path": "Brief: navigator > Windows and placement",
-          "section_payload_hash": "sha256:0ec61559926541d6f60bf912378140dd0035b2591d9a3e86214eac1fe64dfb91",
-          "source_file": "brief/Brief_navigator.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_properties.md": {
-      "file_hash": "sha256:37ef78569861ab8d6cb71f176a3d4e22b5eb1fd58e4b918473917061240a7cca",
-      "indexed_at": "2026-08-28T16:31:18Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_properties::abstract-properties-abstract": {
-          "file_id": "file-SXpL7HPaDqCTZ4xhKqpddZ",
-          "heading_path": "Brief: properties > Abstract properties (ABSTRACT)",
-          "section_payload_hash": "sha256:09f04457d0e78d6d5c7435416306afd478d7e97324f0cfcee14f7ae71f81d31d",
-          "source_file": "brief/Brief_properties.md"
+        "Brief_view::containers": {
+          "file_id": "file-EmS25Eoq3BXoRkzDboo2tJ",
+          "heading_path": "Brief: view logic > Form design > Containers",
+          "section_payload_hash": "sha256:c9ba1760d297baf6b263fd82db12fcaa467bc8fe801e6b724d85d8d891515c41",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_properties::expressions-and-composition": {
-          "file_id": "file-9gbmGom8HPLoPdTzm6WLSS",
-          "heading_path": "Brief: properties > Expressions and composition",
-          "section_payload_hash": "sha256:0b36b9635eb1db1b25f37cc1d523f4e049e5308284956116b12629335df7d544",
-          "source_file": "brief/Brief_properties.md"
+        "Brief_view::form-structure": {
+          "file_id": "file-H1R3Fg49rinV5xaYHz8tZ7",
+          "heading_path": "Brief: view logic > Forms > Form structure",
+          "section_payload_hash": "sha256:af3f895e2cad0d457c5ce3fb59d7049a365ef2c6417681cafe38a5671ccc5f1a",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_properties::grouping-group": {
-          "file_id": "file-6dAS5feABJgUa6nX6SyrZL",
-          "heading_path": "Brief: properties > Grouping (GROUP)",
-          "section_payload_hash": "sha256:18794f58e3cfe93dd65420396ea31b1ff848efc6caaa1378bbbaec8cf726f288",
-          "source_file": "brief/Brief_properties.md"
+        "Brief_view::interactive-view": {
+          "file_id": "file-C2ErAMqs3zqCwPw8Dmx8P3",
+          "heading_path": "Brief: view logic > Forms > Interactive view",
+          "section_payload_hash": "sha256:ae41420da82eaf0c2893e9860243dfe84add58a5be3ae704cb736586fe6814f0",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_properties::object-aggregation-group-aggr-aggr": {
-          "file_id": "file-1RvivGZ4vfNjSPpWCRPycj",
-          "heading_path": "Brief: properties > Object aggregation (GROUP AGGR, AGGR)",
-          "section_payload_hash": "sha256:763fee80e1cf33552e4f4d51395330a5e657073fa82de2c8c8edf52922375eb5",
-          "source_file": "brief/Brief_properties.md"
+        "Brief_view::localizing-strings-and-captions": {
+          "file_id": "file-VPGZtTWyBHwd1oezrWeRdj",
+          "heading_path": "Brief: view logic > Internationalization > Localizing strings and captions",
+          "section_payload_hash": "sha256:3ca53ed0618f1cf46191aa6716d53b07bc7705dab8dcff3361fe1b19e6e9c7be",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_properties::partitioning-and-ordering-partition": {
-          "file_id": "file-BS5u82pARrFafFKw3DqDuv",
-          "heading_path": "Brief: properties > Partitioning and ordering (PARTITION)",
-          "section_payload_hash": "sha256:81b4c8e733e0b839bc7b8960e56bcff78210b02649cf8178ddd2c7b5ded3106a",
-          "source_file": "brief/Brief_properties.md"
+        "Brief_view::navigator-structure": {
+          "file_id": "file-KKiC7AQLpE7dRyQ9Vp757Q",
+          "heading_path": "Brief: view logic > Navigator > Navigator structure",
+          "section_payload_hash": "sha256:df45434d3d2694f4a71f0dbb07f4d20041deea02dcdf629f9ecefef85d2d5139",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_properties::recursion-recursion": {
-          "file_id": "file-3p9fkEMLg7jswR9HyvnWUc",
-          "heading_path": "Brief: properties > Recursion (RECURSION)",
-          "section_payload_hash": "sha256:eb1348e3bf07ee576717d30a4e7c9ea19395f75dac4316d0ae7886a08d0af9ec",
-          "source_file": "brief/Brief_properties.md"
+        "Brief_view::opening-a-form-show-dialog-print-export": {
+          "file_id": "file-KkUTysz4cVpMEmVtLXD5Ls",
+          "heading_path": "Brief: view logic > Forms > Opening a form (SHOW, DIALOG, PRINT, EXPORT)",
+          "section_payload_hash": "sha256:af678f254e4b3db61dfd838de2042354fc2fe8e6d7409e8aaa8a6573a257c9e1",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_properties::selection-and-override-case-if-override": {
-          "file_id": "file-19EqWU8QQrLQjh76Bm5B62",
-          "heading_path": "Brief: properties > Selection and override (CASE, IF, OVERRIDE)",
-          "section_payload_hash": "sha256:177f5007bd183e7c7de441a09e7e8d90532acb08388e1fc60f21456e1e6c5b02",
-          "source_file": "brief/Brief_properties.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_reports.md": {
-      "file_hash": "sha256:95c8d58460c7768fb060fec0a5637ab2543cc2d3bacf11c0816e1483529ba8e3",
-      "indexed_at": "2026-08-28T16:31:25Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_reports::report-design": {
-          "file_id": "file-WKjCxjN96Pv8cBNm5kymPi",
-          "heading_path": "Brief: reports > Report design",
-          "section_payload_hash": "sha256:1fa104b09100ebc73e8014415c7682480bffef4395455b5a89dc10e9efad1f94",
-          "source_file": "brief/Brief_reports.md"
+        "Brief_view::passing-objects-and-the-opening-mode": {
+          "file_id": "file-Hd4jrno6mCk4Sc51EsfmA1",
+          "heading_path": "Brief: view logic > Forms > Passing objects and the opening mode",
+          "section_payload_hash": "sha256:106d5b8531a5164a5257d6dde49c3ecd8135849430d7b040375cb7a8586af709",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_reports::the-print-view": {
-          "file_id": "file-ME14XKVf11QcqyKQuzT3rB",
-          "heading_path": "Brief: reports > The print view",
-          "section_payload_hash": "sha256:b998b0393844e813332c5d9864b1c06d4d3b5ba3e22bf501fee9795fa97f0132",
-          "source_file": "brief/Brief_reports.md"
-        }
-      },
-      "stale": false
-    },
-    "brief/Brief_sessions.md": {
-      "file_hash": "sha256:b5eed8e6c3aa04696460c57f0a5908ed34fdd6672d54d99f69b88bd1fda4ed18",
-      "indexed_at": "2026-08-28T16:31:33Z",
-      "indexed_sourceType": "brief",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Brief_sessions::apply-and-cancel": {
-          "file_id": "file-RhnjFkxQ88d3LnGE49Rsh9",
-          "heading_path": "Brief: change sessions > APPLY and CANCEL",
-          "section_payload_hash": "sha256:478e9f5fab0f69d0e67e1af28fb996988834fe3140a70f855b4e5190e59307f7",
-          "source_file": "brief/Brief_sessions.md"
+        "Brief_view::print-view": {
+          "file_id": "file-HmKbrV6rj3aQsY4hr7wRpd",
+          "heading_path": "Brief: view logic > Forms > Print view",
+          "section_payload_hash": "sha256:42b7e6d02a66310e7e591642a4ba4c0603603f06ac2b193390ac943f3450208b",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_sessions::how-changes-are-seen-across-sessions": {
-          "file_id": "file-Sd3N1ViUb5Yau9gQDUkK54",
-          "heading_path": "Brief: change sessions > How changes are seen across sessions",
-          "section_payload_hash": "sha256:3a189c7b5c02b9e3ba495df3de6f6153887e67bb0bc9eaea0a69bef80d97f9c8",
-          "source_file": "brief/Brief_sessions.md"
+        "Brief_view::report-design": {
+          "file_id": "file-KwJWkRhTCREwtQKt6X9zTi",
+          "heading_path": "Brief: view logic > Reports > Report design",
+          "section_payload_hash": "sha256:f97f6bd0e1a90c4e04b7678af6571cbc1fef41ce111697697facf60666c8a8d9",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_sessions::newsession-and-nestedsession": {
-          "file_id": "file-Krmj5ULMAJD8dw8PSPfrXb",
-          "heading_path": "Brief: change sessions > NEWSESSION and NESTEDSESSION",
-          "section_payload_hash": "sha256:e689b873c0b4c1f43b6b2bde2c7ca9f53a55df227611d34383d2b008cdd19ee2",
-          "source_file": "brief/Brief_sessions.md"
+        "Brief_view::reverse-translation": {
+          "file_id": "file-9KWNJVVbQcHwJyaD21Pqoa",
+          "heading_path": "Brief: view logic > Internationalization > Reverse translation",
+          "section_payload_hash": "sha256:f7b0862e46fe0f1f74e92a3afe1f55c75c1bda771bbf9a2396305d7d82b3341c",
+          "source_file": "brief/Brief_view.md"
         },
-        "Brief_sessions::what-a-session-is": {
-          "file_id": "file-Va2iuQFPgq39bKSYqCB58U",
-          "heading_path": "Brief: change sessions > What a session is",
-          "section_payload_hash": "sha256:bc348cea233f5b9664e4c7acf2219a2baf16238fcef99ad6164acc1ab3163a9a",
-          "source_file": "brief/Brief_sessions.md"
+        "Brief_view::sizes-and-alignment": {
+          "file_id": "file-WhX9CVpto5wYHgh4jhaNRg",
+          "heading_path": "Brief: view logic > Form design > Sizes and alignment",
+          "section_payload_hash": "sha256:a00e42121d101b141b10a019df636cffee06f59fb32df736df0dbdde283919bc",
+          "source_file": "brief/Brief_view.md"
+        },
+        "Brief_view::structured-view": {
+          "file_id": "file-17wazGcrYvXyyjqt8efS7U",
+          "heading_path": "Brief: view logic > Forms > Structured view",
+          "section_payload_hash": "sha256:30bbd03a6b91e39246fd87e28bbdd3a12c96041c122d7f28d03fd450b03dec74",
+          "source_file": "brief/Brief_view.md"
+        },
+        "Brief_view::the-default-design": {
+          "file_id": "file-A3NU82e2osSzM5NdvXQZcx",
+          "heading_path": "Brief: view logic > Form design > The default design",
+          "section_payload_hash": "sha256:b3c536b8001ae9aeddeea15cb75311137c764cd596385ec13a75812f8b048a04",
+          "source_file": "brief/Brief_view.md"
+        },
+        "Brief_view::the-print-view": {
+          "file_id": "file-2EfY3N54T4ahMHMgKNBHfH",
+          "heading_path": "Brief: view logic > Reports > The print view",
+          "section_payload_hash": "sha256:ae8941daaf6d42b20f8df8af968b60b5a9ca92624f806240949a062123c3a1ac",
+          "source_file": "brief/Brief_view.md"
+        },
+        "Brief_view::windows-and-placement": {
+          "file_id": "file-UbCWc5hkMFmh1bUAadpPDi",
+          "heading_path": "Brief: view logic > Navigator > Windows and placement",
+          "section_payload_hash": "sha256:067e8d18fe2a3dd6a37f30fdf4ad46711c4c7447ec4fedbe6eefabcfa8252ffc",
+          "source_file": "brief/Brief_view.md"
         }
       },
       "stale": false
@@ -15671,8 +15451,8 @@
       "stale": false
     },
     "rules/Rules.md": {
-      "file_hash": "sha256:957e0c605cc407c13fdae54427fcb53fb01de48292050aab79d7234cc5b1718e",
-      "indexed_at": "2026-08-31T12:03:49Z",
+      "file_hash": "sha256:4835689382bd903b46acdafa0f23f40aa0514e1df1ef89ea38f96d8c15377cda",
+      "indexed_at": "2026-08-31T16:42:48Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v4",
@@ -15688,9 +15468,9 @@
           "source_file": "rules/Rules.md"
         },
         "Rules::lsfusion-rules": {
-          "file_id": "file-KffwFPUm2qituWRChFWgoB",
+          "file_id": "file-9oA3Q7mJhM1Utkhd44hQzw",
           "heading_path": "lsFusion Rules",
-          "section_payload_hash": "sha256:87f0ced55dd267d51d292c554bd14b11167541a93080541d041c36e51272d5c7",
+          "section_payload_hash": "sha256:fe094f471e2048cd3c0c9c1d79638dc3c4d470a4c3e29e60ddf9422f7d91ee71",
           "source_file": "rules/Rules.md"
         },
         "Rules::mandatory-workflow": {
@@ -15705,10 +15485,16 @@
           "section_payload_hash": "sha256:003b49a0054c43955165fdc90b67b322a00d5f29f6bf2de5fe47b9cb29029330",
           "source_file": "rules/Rules.md"
         },
+        "Rules::reading-an-areas-rules-mandatory": {
+          "file_id": "file-Kee3XpQEZAi3zjpXSwu1Jk",
+          "heading_path": "lsFusion Rules > Reading an area's rules (MANDATORY)",
+          "section_payload_hash": "sha256:e1af0ac310cefc986453fcef84bd34f4d4f2d6dff07ea2009064e915e124b56a",
+          "source_file": "rules/Rules.md"
+        },
         "Rules::rules-for-using-lsfusion-tools": {
-          "file_id": "file-Hp9fymNQEDcYx3Bq8r1m1n",
+          "file_id": "file-RZSAxuQimjT54XqQvhScFx",
           "heading_path": "lsFusion Rules > Rules for using lsFusion tools",
-          "section_payload_hash": "sha256:a3885840f2e0f36c25a2ccd77ecb930e914d55c3013a9315847576d6f6a77d98",
+          "section_payload_hash": "sha256:64da11fcfc8af452e4a8ed1b38296f1bd32791d911681200de107560dfee6255",
           "source_file": "rules/Rules.md"
         },
         "Rules::syntax-rules": {
@@ -15716,13 +15502,19 @@
           "heading_path": "lsFusion Rules > Syntax rules",
           "section_payload_hash": "sha256:d8faff3f4d918d2a9626f91b0e36ad627b5acbdeb616447e4dd87dfaa8245795",
           "source_file": "rules/Rules.md"
+        },
+        "Rules::the-rules-articles--what-to-read-and-when": {
+          "file_id": "file-WLbQX7rNMf3VeVgtgadn3C",
+          "heading_path": "lsFusion Rules > The rules articles — what to read and when",
+          "section_payload_hash": "sha256:7a63640bbc837fdc2e10228a3650574edeac51dd7ad52ec55fe4ea777e7bcfdf",
+          "source_file": "rules/Rules.md"
         }
       },
       "stale": false
     },
-    "rules/Rules_actions.md": {
-      "file_hash": "sha256:57d0e7b4bbbaf8d2c5485a6cef901b3188172680753fae5bbaed2f376abc31c1",
-      "indexed_at": "2026-08-28T17:29:55Z",
+    "rules/Rules_integration.md": {
+      "file_hash": "sha256:3d26380d12764adb2217bcee6bd989ffe503dc9b74ae18aa07eaec5af64ecd4c",
+      "indexed_at": "2026-08-31T16:42:56Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v4",
@@ -15731,36 +15523,60 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Rules_actions::action-rules": {
-          "file_id": "file-DMigvSHJd7bYkrueYHTKbZ",
-          "heading_path": "Rules: actions and assignment > Action rules",
-          "section_payload_hash": "sha256:1c1874774d182931f58e593854ee611643401f3c6a181365b78dbf341fff2090",
-          "source_file": "rules/Rules_actions.md"
+        "Rules_integration::choosing-the-export-source": {
+          "file_id": "file-TPfnoDiU6SUJhVMZ69uB6s",
+          "heading_path": "Rules: integration > Data export (EXPORT) > Choosing the export source",
+          "section_payload_hash": "sha256:cf4eac1fdffade00019dbd6ee0325bedb22d31caa8e37f40212d80175f8f7527",
+          "source_file": "rules/Rules_integration.md"
         },
-        "Rules_actions::assignment-rules--": {
-          "file_id": "file-P4CArCERa2GhqjeAqns39E",
-          "heading_path": "Rules: actions and assignment > Assignment rules (`<-`)",
-          "section_payload_hash": "sha256:b4b120470be39e6ef2508fd431aee9776e509bdf89e4c267a3c558d641d3a8db",
-          "source_file": "rules/Rules_actions.md"
+        "Rules_integration::data-import-import": {
+          "file_id": "file-Qpi8PGFkM2VTuoFC1dqYpc",
+          "heading_path": "Rules: integration > Data import (IMPORT)",
+          "section_payload_hash": "sha256:0038d067140ef6d80626b981d5828b58f57133399062f0fb353f85092091f8d5",
+          "source_file": "rules/Rules_integration.md"
         },
-        "Rules_actions::loop-rules-for-while": {
-          "file_id": "file-DjzsobUaKfcbTPhKzR3Tdv",
-          "heading_path": "Rules: actions and assignment > Loop rules (`FOR`, `WHILE`)",
-          "section_payload_hash": "sha256:ac3e4c08be17470db11781cfe39b9cbc36d38ccc9fc7eb4359c89856dea4b651",
-          "source_file": "rules/Rules_actions.md"
+        "Rules_integration::delivering-the-result": {
+          "file_id": "file-PVv5KeQQ1imwyPe1zAMBDM",
+          "heading_path": "Rules: integration > Data export (EXPORT) > Delivering the result",
+          "section_payload_hash": "sha256:4c8b6a645ce23975727c544a57f1e051d34bcc8a27e1046cb4826ae6384486e7",
+          "source_file": "rules/Rules_integration.md"
         },
-        "Rules_actions::thread-rules-newthread-newexecutor": {
-          "file_id": "file-Dh9eptnVpFsCJesdixmMXB",
-          "heading_path": "Rules: actions and assignment > Thread rules (`NEWTHREAD`, `NEWEXECUTOR`)",
-          "section_payload_hash": "sha256:1a264d38a5f6ea1451cba81045dd02d9e02a7a2c1988c3e9bf1343a4c305126f",
-          "source_file": "rules/Rules_actions.md"
+        "Rules_integration::examples": {
+          "file_id": "file-CdB8ikU77gkKMaom6yedb6",
+          "heading_path": "Rules: integration > Data export (EXPORT) > Examples",
+          "section_payload_hash": "sha256:c561fae043c4baf4d7c87dddbade25dd81fcdd3af5a550f3c0d43b4ba6586fdc",
+          "source_file": "rules/Rules_integration.md"
+        },
+        "Rules_integration::format-options": {
+          "file_id": "file-Ugoq3q8ULNbT1nudifvEsE",
+          "heading_path": "Rules: integration > Data export (EXPORT) > Format options",
+          "section_payload_hash": "sha256:c788420255b67d6ce03fd4348e07a610dc05559d75c87e3d7b44c4862eeaba96",
+          "source_file": "rules/Rules_integration.md"
+        },
+        "Rules_integration::result-destination": {
+          "file_id": "file-EbRJzBh342c6jv4yL6Qbgp",
+          "heading_path": "Rules: integration > Data export (EXPORT) > Result destination",
+          "section_payload_hash": "sha256:11b22adc6bc8ba7b7c60b6c1122ec1bd498945af5eadba23f10f1821a1b231a9",
+          "source_file": "rules/Rules_integration.md"
+        },
+        "Rules_integration::rules-integration": {
+          "file_id": "file-NNFV4TeAqhiZhcJoGE1QaQ",
+          "heading_path": "Rules: integration",
+          "section_payload_hash": "sha256:fe39ce7853ef770031d20b0401af1435a5caad980235a52efa1a092002871102",
+          "source_file": "rules/Rules_integration.md"
+        },
+        "Rules_integration::stating-explicitly-what-shapes-the-result": {
+          "file_id": "file-RiJzuHzJJe3tyzQ9hwxNn7",
+          "heading_path": "Rules: integration > Data export (EXPORT) > Stating explicitly what shapes the result",
+          "section_payload_hash": "sha256:a0f07a9a81eedf127a5d33599eb596433a7a5a21418705571a5dafaecd2afda7",
+          "source_file": "rules/Rules_integration.md"
         }
       },
       "stale": false
     },
-    "rules/Rules_constraints.md": {
-      "file_hash": "sha256:4cea25081105bcdaf59c460d1ef3dc978924462481784cdddb8579366d348249",
-      "indexed_at": "2026-08-28T17:30:03Z",
+    "rules/Rules_logic.md": {
+      "file_hash": "sha256:e63e2a9882ed5706639eb436669ce085f56e5918e142f1bc590ba4b6d53c1ecb",
+      "indexed_at": "2026-08-31T16:43:04Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v4",
@@ -15769,64 +15585,84 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Rules_constraints::constraint-rules": {
-          "file_id": "file-DvptEudGK9ZD7ej1jS3ff3",
-          "heading_path": "Rules: constraints > Constraint rules",
-          "section_payload_hash": "sha256:8a3add042fcdd767c73d279f000f324d5bb4ca566572be1f1d82e9042bb8fc8d",
-          "source_file": "rules/Rules_constraints.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_design.md": {
-      "file_hash": "sha256:5037de386da0a8e249f1a53efb12b3b3d4e497b4da689d5a343491323f2d39fd",
-      "indexed_at": "2026-08-28T17:30:10Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_design::form-design-rules": {
-          "file_id": "file-QyzTHhjyBsFuc4D9xq2Qs4",
-          "heading_path": "Rules: form design > Form design rules",
-          "section_payload_hash": "sha256:4cc704696b80ff5c74aaf340eeb5109ea68c18e3446154ad0eb3f1eb04718c3d",
-          "source_file": "rules/Rules_design.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_events.md": {
-      "file_hash": "sha256:aa59c5fbb244d1ad546beefaf1ce4462a70f12050b725a8fec8737207ac92dc9",
-      "indexed_at": "2026-08-28T17:30:19Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_events::event-rules-when": {
-          "file_id": "file-BmDUFdvVdsHFsBeYPaoSMc",
-          "heading_path": "Rules: events (WHEN) > Event rules (`WHEN`)",
-          "section_payload_hash": "sha256:b940901985d8195a4a15b6f9a53776f6866129b7a6383ed3115e31e93d6a5609",
-          "source_file": "rules/Rules_events.md"
+        "Rules_logic::abstract-property-rules-=": {
+          "file_id": "file-Rx3LGXMcW6dosntxvcFsUr",
+          "heading_path": "Rules: domain logic > Properties > Abstract property rules (`+=`)",
+          "section_payload_hash": "sha256:0440ed7d06b20b1adff4a559f0c62dfe41c7e65e621b9115961455c0174078c9",
+          "source_file": "rules/Rules_logic.md"
         },
-        "Rules_events::where-local-events-actually-run": {
-          "file_id": "file-Uv9Kej5JwzqpiYqjoTZL2e",
-          "heading_path": "Rules: events (WHEN) > Where local events actually run",
-          "section_payload_hash": "sha256:a93830ba40cad18c3056534a226de5b30e1acb99aec5ed89ae4e76a329c116f3",
-          "source_file": "rules/Rules_events.md"
+        "Rules_logic::action-rules": {
+          "file_id": "file-4RKd2UDz4YW5vyUn9KU5HQ",
+          "heading_path": "Rules: domain logic > Actions and assignment > Action rules",
+          "section_payload_hash": "sha256:3685e8c29d4d80b1bb9ef8b1945b2b24408c87c566c600bb888c7141ab267aab",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::assignment-rules--": {
+          "file_id": "file-XUv7ZpsipsUsWswXTikw5o",
+          "heading_path": "Rules: domain logic > Actions and assignment > Assignment rules (`<-`)",
+          "section_payload_hash": "sha256:609942faa85c89a2ff2fde0d4f8f2aacb0bc7ee12bb03615321ecbedf4e618bc",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::change-sessions-newsession-apply": {
+          "file_id": "file-3dmo1xQJVZ5SjA93yExb7Y",
+          "heading_path": "Rules: domain logic > Change sessions (NEWSESSION, APPLY)",
+          "section_payload_hash": "sha256:e5e4c731312d7490c22349577c882ae4e03e6e3d53787a9a4b99cc7a083bc6e7",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::constraints": {
+          "file_id": "file-LNBPy3KZj8rzSNjNEdtLZV",
+          "heading_path": "Rules: domain logic > Constraints",
+          "section_payload_hash": "sha256:2770ffe776f2c36f84fa8de0c0304926f88fdef207a40f97cbd0d8560131a2ed",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::event-rules-when": {
+          "file_id": "file-QinpjSnWqJpYVP25Xw6KBD",
+          "heading_path": "Rules: domain logic > Events (WHEN) > Event rules (`WHEN`)",
+          "section_payload_hash": "sha256:dc59e2c57923b768f17e371e1d6e67403c9059fe38379b3facced02f01425ba3",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::loop-rules-for-while": {
+          "file_id": "file-FTvSxmb4faUBh9DZsRqvqR",
+          "heading_path": "Rules: domain logic > Actions and assignment > Loop rules (`FOR`, `WHILE`)",
+          "section_payload_hash": "sha256:f95ef6a12c9b1245d5d7fb8625af6ea5edc1fae0257a826dcfda7536b731a1c9",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::ordering-rules-order": {
+          "file_id": "file-8KPVkUYPZFJyc4dq4Qq6yU",
+          "heading_path": "Rules: domain logic > Properties > Ordering rules (`ORDER`)",
+          "section_payload_hash": "sha256:f7a14c210f658640a415fc594156679d98ada7cc04be36f6f68981144667561a",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::property-rules": {
+          "file_id": "file-3M5BMEr5J4hupo6WjRb3Kx",
+          "heading_path": "Rules: domain logic > Properties > Property rules",
+          "section_payload_hash": "sha256:315632cdb772949e302d05fefa20609d6e71c2f88889dd5eaa68a90267d7529e",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::rules-domain-logic": {
+          "file_id": "file-VVCq8WjWTYBSDso9WKVsQR",
+          "heading_path": "Rules: domain logic",
+          "section_payload_hash": "sha256:6164cfdebd1df6aa6ac8523547c447fc937c3e4984223430728e3cf968118793",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::thread-rules-newthread-newexecutor": {
+          "file_id": "file-ScqDvEi95PLZucxJSUGSkf",
+          "heading_path": "Rules: domain logic > Actions and assignment > Thread rules (`NEWTHREAD`, `NEWEXECUTOR`)",
+          "section_payload_hash": "sha256:fd511c1503eef0984dfec88c323e8d443c5e19a9356baa90393b84fd720ed4da",
+          "source_file": "rules/Rules_logic.md"
+        },
+        "Rules_logic::where-local-events-actually-run": {
+          "file_id": "file-J9Kk4hTEdDLJdcSrdiRsQp",
+          "heading_path": "Rules: domain logic > Events (WHEN) > Where local events actually run",
+          "section_payload_hash": "sha256:d3692368acf92579745831138ef5bd562d2f81ff864cc4c48e499ed1756887b9",
+          "source_file": "rules/Rules_logic.md"
         }
       },
       "stale": false
     },
-    "rules/Rules_execution.md": {
-      "file_hash": "sha256:e2da46b67424b93ba5a03b0ac8e028298acb4a2f648e7d03c515686ec1d550bf",
-      "indexed_at": "2026-08-28T17:30:26Z",
+    "rules/Rules_physical.md": {
+      "file_hash": "sha256:00b9252b415d832eedc25d26274e8a8fe9b1a73d2d597c2175a07d5df49eecb2",
+      "indexed_at": "2026-08-31T16:43:18Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v4",
@@ -15835,36 +15671,54 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Rules_execution::examples": {
-          "file_id": "file-RAJwdTuWJrCUkamwyhZLHc",
-          "heading_path": "Rules: execution > Examples",
-          "section_payload_hash": "sha256:c3ecb8d874da9593d30985599d9323f4a4cde1f2026bacb64f487ce3cf0feb0b",
-          "source_file": "rules/Rules_execution.md"
+        "Rules_physical::examples": {
+          "file_id": "file-YcMQTuvA2wjHoGqQWPs4zr",
+          "heading_path": "Rules: physical model > Execution > Examples",
+          "section_payload_hash": "sha256:709f9b2ce9e0bd12f021b4845d36a7541c184577bd104208ed9970ada62bd608",
+          "source_file": "rules/Rules_physical.md"
         },
-        "Rules_execution::indexes": {
-          "file_id": "file-MYkipSCrUdgYWc4S76gcdG",
-          "heading_path": "Rules: execution > Indexes",
-          "section_payload_hash": "sha256:c1eb2f4f41dd497a3b96807a01afba4e2a18d94f651b58533dc729f1a9b41439",
-          "source_file": "rules/Rules_execution.md"
+        "Rules_physical::indexes": {
+          "file_id": "file-QyR2Myyttz3PN3HQXjsFkF",
+          "heading_path": "Rules: physical model > Execution > Indexes",
+          "section_payload_hash": "sha256:43479f39004cec529228463ef945d6b452fd4c0b31d10b8cc5724e17b081501a",
+          "source_file": "rules/Rules_physical.md"
         },
-        "Rules_execution::materializations": {
-          "file_id": "file-SwwWtUWfJfh5XK9xz2pKkN",
-          "heading_path": "Rules: execution > Materializations",
-          "section_payload_hash": "sha256:c3fa632a421dd9bfced99dc637875255f86824b07da191c226a5109a3398b544",
-          "source_file": "rules/Rules_execution.md"
+        "Rules_physical::materializations": {
+          "file_id": "file-Bb4e9LtkDc81k1XTAVqyRF",
+          "heading_path": "Rules: physical model > Execution > Materializations",
+          "section_payload_hash": "sha256:6046b2ce69bc9c3c2039fb79d1b32f1469e31cc231da70f3befd8984b68e52d1",
+          "source_file": "rules/Rules_physical.md"
         },
-        "Rules_execution::tables": {
-          "file_id": "file-FsJ9mdsXSi7dRWvcpYnJhc",
-          "heading_path": "Rules: execution > Tables",
-          "section_payload_hash": "sha256:2153189772a64e11d0eaf5e4e6540d8305478be4dc1ac1a14fe52e97a02700a7",
-          "source_file": "rules/Rules_execution.md"
+        "Rules_physical::migration-migration.script": {
+          "file_id": "file-MKm6yC9jmohdGJ9mXcES5k",
+          "heading_path": "Rules: physical model > Migration (migration.script)",
+          "section_payload_hash": "sha256:2ebf728faed3e47ab7e2250d8d12233d367f8d7efc1e10b5ec1d83b6671dcec8",
+          "source_file": "rules/Rules_physical.md"
+        },
+        "Rules_physical::modules": {
+          "file_id": "file-57BPNDEPVbaLw76GDp96Tr",
+          "heading_path": "Rules: physical model > Modules",
+          "section_payload_hash": "sha256:5fbd2bafb7d4d2121e1ca1a803f0313c98b59e5e019deabed3e4a3a00d588611",
+          "source_file": "rules/Rules_physical.md"
+        },
+        "Rules_physical::rules-physical-model": {
+          "file_id": "file-XEySNcWZXnr3SN3EaiT5Mk",
+          "heading_path": "Rules: physical model",
+          "section_payload_hash": "sha256:1e56f10be5dcfc72b473d712bbe0f0cf8232ed169040d79020eb5cbaad68b008",
+          "source_file": "rules/Rules_physical.md"
+        },
+        "Rules_physical::tables": {
+          "file_id": "file-USKmvCnHUHZe31KKwMs9oa",
+          "heading_path": "Rules: physical model > Execution > Tables",
+          "section_payload_hash": "sha256:8720335a3498a696aa47d3d382b979737011df6b64c94d8bd48ac64f211ecf03",
+          "source_file": "rules/Rules_physical.md"
         }
       },
       "stale": false
     },
-    "rules/Rules_export.md": {
-      "file_hash": "sha256:e82c26eb733dce3689f5df1f974cae6a90746ad0b2a6f67f34864349b50c4515",
-      "indexed_at": "2026-08-28T17:30:35Z",
+    "rules/Rules_view.md": {
+      "file_hash": "sha256:22f31915b859e0035ce9f0cfb34c14f1ff751b837f277773ab3f81b21dff87ad",
+      "indexed_at": "2026-08-31T16:43:25Z",
       "indexed_sourceType": "rules",
       "indexed_with": {
         "chunker_version": "v4",
@@ -15873,245 +15727,53 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "Rules_export::choosing-the-export-source": {
-          "file_id": "file-YbrrqniHF45Rb5AKLxk8Yc",
-          "heading_path": "Rules: data export (EXPORT) > Choosing the export source",
-          "section_payload_hash": "sha256:cd21dd0cab691270060be908ddb5a55ae94904357ff485e8d237cbd15399d2f0",
-          "source_file": "rules/Rules_export.md"
+        "Rules_view::flow-rules-wait-nowait": {
+          "file_id": "file-TrRXJS2cBG19DnUmbC3AkY",
+          "heading_path": "Rules: view logic > Forms > Flow rules (`WAIT`, `NOWAIT`)",
+          "section_payload_hash": "sha256:35df322297690023eb9f7ddf9b29087c4704b7a7783819c609b01d9f65578fa5",
+          "source_file": "rules/Rules_view.md"
         },
-        "Rules_export::delivering-the-result": {
-          "file_id": "file-2AzQrFtEygu58z92cb5rMP",
-          "heading_path": "Rules: data export (EXPORT) > Delivering the result",
-          "section_payload_hash": "sha256:ee85d1d38132a4c5594d0d0fbc80f8af8bf0aa49f19ff4df618654ad03426c98",
-          "source_file": "rules/Rules_export.md"
+        "Rules_view::form-design": {
+          "file_id": "file-4pWQS5cKonwo6HgpJBoS96",
+          "heading_path": "Rules: view logic > Form design",
+          "section_payload_hash": "sha256:62177e55133aae4e59466c94c1bf6bede4d8457b38f202d06b72ad729a6df454",
+          "source_file": "rules/Rules_view.md"
         },
-        "Rules_export::examples": {
-          "file_id": "file-3o2BqEMva4i6eYPERa5TYP",
-          "heading_path": "Rules: data export (EXPORT) > Examples",
-          "section_payload_hash": "sha256:67e57206c886a2ce2597daeee2febb5de12606a178c0d618c8e2b773ec70af08",
-          "source_file": "rules/Rules_export.md"
+        "Rules_view::form-rules": {
+          "file_id": "file-7adGBy3JmEmFgPbB3rNYox",
+          "heading_path": "Rules: view logic > Forms > Form rules",
+          "section_payload_hash": "sha256:79afef27945a3edc3a56097cfde53e89ff8f5824071263818950a6c8bd4b7ad3",
+          "source_file": "rules/Rules_view.md"
         },
-        "Rules_export::format-options": {
-          "file_id": "file-5tbt1CPAM9fXcAXPdxEnnG",
-          "heading_path": "Rules: data export (EXPORT) > Format options",
-          "section_payload_hash": "sha256:095db145e3245db48f66ece005ad7c02638a9f031fa1c93a2fee298147eaa247",
-          "source_file": "rules/Rules_export.md"
+        "Rules_view::internationalization": {
+          "file_id": "file-2pbLTCThGQTurvo3Krhj8V",
+          "heading_path": "Rules: view logic > Internationalization",
+          "section_payload_hash": "sha256:62c4d5bdc4fd7929519885f4938056e139816c1a77d3741c8ebe11d562f3b8b5",
+          "source_file": "rules/Rules_view.md"
         },
-        "Rules_export::result-destination": {
-          "file_id": "file-TPrqAYf47bAYh3A3r3vXP4",
-          "heading_path": "Rules: data export (EXPORT) > Result destination",
-          "section_payload_hash": "sha256:613fa231607bf35ab90d4f143ccb0d23e4c3a000d8d196cc2e7e2496170bf58b",
-          "source_file": "rules/Rules_export.md"
+        "Rules_view::navigator": {
+          "file_id": "file-HZFTZVP9TnTAH1wGew4VdJ",
+          "heading_path": "Rules: view logic > Navigator",
+          "section_payload_hash": "sha256:f8062317e57289689e4119869609197b6992b285b42d0350669ec7bdd6655f6e",
+          "source_file": "rules/Rules_view.md"
         },
-        "Rules_export::stating-explicitly-what-shapes-the-result": {
-          "file_id": "file-DJvGYgJSBCTu1rYApHnf7K",
-          "heading_path": "Rules: data export (EXPORT) > Stating explicitly what shapes the result",
-          "section_payload_hash": "sha256:52566183e7e2292429e576b574e4c6bf62c1d2c313c675e76a1d2e4c03bdfec5",
-          "source_file": "rules/Rules_export.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_forms.md": {
-      "file_hash": "sha256:3a8409a37b78b7061cee909a5ddb8467dd01e4996d47b9db6a7e54e350c67a60",
-      "indexed_at": "2026-08-28T17:30:44Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_forms::flow-rules-wait-nowait": {
-          "file_id": "file-KWzjKrviE3hT8qJe3iZcWg",
-          "heading_path": "Rules: forms > Flow rules (`WAIT`, `NOWAIT`)",
-          "section_payload_hash": "sha256:1b103e7be77a5bca649fde6044c4dcd6696e6fbef9c131bd8be20fa8118fa061",
-          "source_file": "rules/Rules_forms.md"
+        "Rules_view::reports": {
+          "file_id": "file-8bAo7va46uBGEyTgZSHW4j",
+          "heading_path": "Rules: view logic > Reports",
+          "section_payload_hash": "sha256:8c714b65d2424584d1d2a1ae1fbebaf70815cc45c7b4b086f94b1202dd4f8feb",
+          "source_file": "rules/Rules_view.md"
         },
-        "Rules_forms::form-rules": {
-          "file_id": "file-Pmj8XDNqWCGpoW3Cc62QGT",
-          "heading_path": "Rules: forms > Form rules",
-          "section_payload_hash": "sha256:122550c49732e86291c3ef4a62891bcbd942960776c9dde49140367c4568d12f",
-          "source_file": "rules/Rules_forms.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_i18n.md": {
-      "file_hash": "sha256:6332f6b0b0bb34484d29d72793b69ec11578fdb7245bad8796d8b12d3ca45416",
-      "indexed_at": "2026-08-28T17:30:52Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_i18n::internationalization-and-reverse-translation-rules": {
-          "file_id": "file-B1Dh7aMyk4AGn7cUKTca8h",
-          "heading_path": "Rules: internationalization > Internationalization and reverse translation rules",
-          "section_payload_hash": "sha256:eb373af1f5cc11b60aba44632b1c7ad5da9562e6c1ab8f15e991a1f7488dea02",
-          "source_file": "rules/Rules_i18n.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_import.md": {
-      "file_hash": "sha256:808222700d2870191e33215cd35c7fa4260337ccbb04ceaa0e809630d6d6aac8",
-      "indexed_at": "2026-08-28T17:31:00Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_import::import-rules-import": {
-          "file_id": "file-3LJyjQS3ndz17NErrMMEsX",
-          "heading_path": "Rules: data import (IMPORT) > Import rules (`IMPORT`)",
-          "section_payload_hash": "sha256:1ace5d9fbd2e4e5fe3742c2299eaf7f7e3b0d48688028c76909ee7e51456d975",
-          "source_file": "rules/Rules_import.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_migration.md": {
-      "file_hash": "sha256:c439ea725deab4e227e7d233b56e8270daac361ffa3f9c33d1e0c4ad4d156c14",
-      "indexed_at": "2026-08-28T17:31:06Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_migration::migration-rules-migration.script": {
-          "file_id": "file-VQ2PZFva6Z2nAjPkQj9cc3",
-          "heading_path": "Rules: migration (migration.script) > Migration rules (`migration.script`)",
-          "section_payload_hash": "sha256:566f00863e344bacbf01e6a9c69d7bdcec3b913f4aadc0697d56497284b09805",
-          "source_file": "rules/Rules_migration.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_modularity.md": {
-      "file_hash": "sha256:380bb4f468cf513d2fa977c9e4acc8e43fb1635566d3b77cda79af29d3e819d1",
-      "indexed_at": "2026-08-28T17:31:14Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_modularity::module-design-rules": {
-          "file_id": "file-Dsqk2DaEdsRwJBkydnfnZo",
-          "heading_path": "Rules: modules > Module design rules",
-          "section_payload_hash": "sha256:74a5980847ae452d6b7cfc013e90f1d07138794d97a730dcfd395fdff4fa6724",
-          "source_file": "rules/Rules_modularity.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_navigator.md": {
-      "file_hash": "sha256:e5ef8bb3525586fcbe6dbb9c51648ce32a4c1e8874b3542adfbe2aeab7f20a69",
-      "indexed_at": "2026-08-28T17:31:21Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_navigator::navigator-rules": {
-          "file_id": "file-15k5JygvJaWhBMvAVgqFFS",
-          "heading_path": "Rules: navigator > Navigator rules",
-          "section_payload_hash": "sha256:47705f1439fe0c858d575128ceca0218d6caaf04cec492aae4219d168b84f80b",
-          "source_file": "rules/Rules_navigator.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_properties.md": {
-      "file_hash": "sha256:440c6471ec2fca6ffe90096b858237a83c0c2f3ee2856cb1932068c1eac1de21",
-      "indexed_at": "2026-08-31T14:01:14Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_properties::abstract-property-rules-=": {
-          "file_id": "file-RsDnaXqPRgHPV1M6oAdKuQ",
-          "heading_path": "Rules: properties > Abstract property rules (`+=`)",
-          "section_payload_hash": "sha256:bf5104e3a3168e642791beaf742739cce0ffe538222a05b69f3e2a70ffa92bce",
-          "source_file": "rules/Rules_properties.md"
-        },
-        "Rules_properties::ordering-rules-order": {
-          "file_id": "file-YB5ADSqh7XYDvTwXdYjWPa",
-          "heading_path": "Rules: properties > Ordering rules (`ORDER`)",
-          "section_payload_hash": "sha256:a6ad6327580e66053d5c1fa877123c01bf73065b2f1d1b8e8eab2c3555c8fe45",
-          "source_file": "rules/Rules_properties.md"
-        },
-        "Rules_properties::property-rules": {
-          "file_id": "file-PeiQqrpC7vNGeVULRnTpmm",
-          "heading_path": "Rules: properties > Property rules",
-          "section_payload_hash": "sha256:f0e9887287942f96fdb88fdceff0fc301fb074baee638365778740e396be60c6",
-          "source_file": "rules/Rules_properties.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_reports.md": {
-      "file_hash": "sha256:324c1cb45fb09594de202fd9f631a1fbe0f41fef061d1b085cc55aa23b5347b4",
-      "indexed_at": "2026-08-28T17:31:33Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_reports::report-rules": {
-          "file_id": "file-JpDsSugrndwu3HJdifbRsU",
-          "heading_path": "Rules: reports > Report rules",
-          "section_payload_hash": "sha256:8df6e1b4d0e02c5dfb3945113f38d002deb9b51b4eb6e0b355134ca969584521",
-          "source_file": "rules/Rules_reports.md"
-        }
-      },
-      "stale": false
-    },
-    "rules/Rules_sessions.md": {
-      "file_hash": "sha256:13a75b055fa204ea58dbda30b5b8ddf63808f4af0e382eb46c4580ca94367828",
-      "indexed_at": "2026-08-28T17:31:41Z",
-      "indexed_sourceType": "rules",
-      "indexed_with": {
-        "chunker_version": "v4",
-        "glossary_version": "v0",
-        "prefix_version": "v1",
-        "source_url_version": "v1"
-      },
-      "sections": {
-        "Rules_sessions::change-session-rules-newsession-nestedsession-apply": {
-          "file_id": "file-E6XnvU3kWv7HU4YBXtrc39",
-          "heading_path": "Rules: change sessions (NEWSESSION, APPLY) > Change session rules (`NEWSESSION`, `NESTEDSESSION`, `APPLY`)",
-          "section_payload_hash": "sha256:5afa7a64ade1935378f31a6b35decbbfe1b8d36fba2dc71a34c0aa3a15557d25",
-          "source_file": "rules/Rules_sessions.md"
+        "Rules_view::rules-view-logic": {
+          "file_id": "file-6ttLXCA8PzmWDpDJ4f1NYE",
+          "heading_path": "Rules: view logic",
+          "section_payload_hash": "sha256:4551b9a2ecdf3ee7cf7f5a29cbd70e7ac33a1fff2a43f39b43030f8b39e94fbb",
+          "source_file": "rules/Rules_view.md"
         }
       },
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "c87063c82cdf258562840b72dbb56ff08a9b075c",
+  "last_indexed_docs_commit": "4fa3045abc2451ee7148acd1071925322248782c",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
