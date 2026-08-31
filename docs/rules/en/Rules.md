@@ -13,16 +13,64 @@ project exploration, and code writing).
 
 These rules MUST be followed.
 
-The `language`, `paradigm`, `how-to` and `brief` branches provide
-reference material. Not retrieving one of their articles is not by
-itself a violation of these rules.
+The `language`, `paradigm` and `how-to` branches provide reference
+material, searched with `lsfusion_retrieve_docs`. Not retrieving one of
+their articles is not by itself a violation of these rules.
 
-The `rules` branch is different. Before working in a technical area,
-the assistant MUST perform a lookup for rules relevant to that area
-and apply what it receives according to the stated strength of each
-rule (MUST / MUST NOT or SHOULD / SHOULD NOT).
+The `rules` branch is different in two ways. It is not searched: an
+article is named and delivered whole, so no part of it can be withheld
+without the assistant being able to tell. And reading it is not
+optional: before working in a technical area, the assistant MUST read
+that area's rules article and apply each rule according to its stated
+strength (MUST / MUST NOT or SHOULD / SHOULD NOT).
 
-A retrieval may be incomplete; this does not make the lookup optional.
+## The rules articles — what to read and when
+
+This article does NOT contain the rules below. Each row is a separate
+article, read whole with `lsfusion_get_guidance(rules='<name>')` using
+the name in the first column. The **Read it before** column is the
+obligation, not a suggestion.
+
+| name | governs | read it before |
+|---|---|---|
+| `logic` | properties, `NULL` propagation, `ABSTRACT` / `+=`, `ORDER`, action bodies, `<-`, `FOR` / `WHILE`, `NEWTHREAD` / `NEWEXECUTOR`, `WHEN` and where local events run, `CONSTRAINT`, `NEWSESSION` / `NESTEDSESSION` / `APPLY` | declaring any property or action; writing any expression whose operand can be `NULL`; writing any `<-`, `FOR`, `WHILE`, `WHEN`, `CONSTRAINT`, `NEWSESSION` or `APPLY`; reasoning about when a change reaches the database |
+| `view` | `FORM` blocks and object groups, `ORDERS`, `WAIT` / `NOWAIT`, `DESIGN`, `NAVIGATOR` placement across `WINDOW`s, jrxml and `SUBREPORT`, `ResourceBundle` and reverse translation | writing or extending any `FORM` or `DESIGN`; opening a form with `SHOW` or `DIALOG`; adding anything to `NAVIGATOR`; creating or editing any jrxml, or reasoning about `PRINT`; writing any user-visible caption or `MESSAGE` text |
+| `physical` | `TABLE`, `MATERIALIZED`, `INDEX`, `RECALCULATE`, how to split modules, `REQUIRE` and coupling, `migration.script`, `STORED PROPERTY` vs `PROPERTY` | adding a `TABLE`, an `INDEX` or `MATERIALIZED`; acting on a slow form or query; creating a module or moving a declaration between modules; renaming or re-namespacing ANY existing property, action or class — omitting this silently destroys stored data |
+| `integration` | flat `IMPORT` vs form import, `EXTID`, staging properties, `EXPORT FROM` vs `EXPORT <form>`, formats, `WHERE`, column ids | writing any `IMPORT`, `EXPORT` or `JSON FROM`; exchanging data with anything outside the application |
+
+## Reading an area's rules (MANDATORY)
+
+1. The summary in the table above is an index entry, not a rule. The
+   assistant MUST NOT infer what an article says from its summary, and
+   MUST NOT act on the summary in place of the article.
+
+2. Before doing anything a row's trigger describes, the assistant MUST
+   call `lsfusion_get_guidance(rules='<name>')` for that row, read what
+   comes back, and apply each rule at its stated strength. Once per area
+   per session is enough.
+
+3. A trigger that fires in the middle of work is due at that moment. The
+   assistant MUST read the article before writing the construct, and
+   MUST NOT defer it to a review pass afterwards.
+
+4. Before finishing a task, the assistant MUST check the constructs it
+   actually wrote against the table, and MUST read any article whose
+   trigger fired but which it has not read.
+
+5. An area the assistant did not read is not an area without rules. The
+   assistant MUST NOT state, imply, or act on the assumption that no
+   rule applies to an area whose article it has not read — and MUST NOT
+   report a documentation gap in an article it did not read.
+
+6. Each article arrives whole, between `=== BEGIN ... ===` and
+   `=== END ... ===`. If the END line is missing, the copy was
+   truncated: the assistant MUST recover the full text — reading the
+   saved file in full if the client saved one — before applying
+   anything from it.
+
+7. If the call fails, the assistant MUST retry it once. If it fails
+   again, the assistant MUST tell the user which area's rules could not
+   be read, and MUST NOT present the resulting code as rule-checked.
 
 ## Mandatory workflow
 

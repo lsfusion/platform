@@ -7,7 +7,38 @@ slug: "/Brief"
 
 Format: **very concise**, for understanding and code generation. Detailed description and syntax is retrieved with tools via RAG in docs.
 
-Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes; `brief` — a per-area map, fetched with `lsfusion_retrieve_docs(type='brief', query='<area>')`; most areas named here have one, and a lookup that comes back with nothing means this article is all there is on it; `rules` — the coding constraints of one area. When unsure, omit the filter — by default the search goes over all five branches and merges them; only the two top articles (this one and `Rules`) are excluded, because `lsfusion_get_guidance` delivers them in full.
+Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`; when unsure which one, omit the filter and it searches all three and merges them.
+
+`brief` and `rules` are not searched. Each is a small set of articles, named and delivered whole by `lsfusion_get_guidance`: `brief` says what an area offers, `rules` states the constraints on using it. The `rules` map, in the top `Rules` article, says when reading one of its articles becomes mandatory.
+
+## The brief articles — what each area covers
+
+This article is the overview; the detail per area is in the four
+articles below, read whole with `lsfusion_get_guidance(brief='<name>')`.
+
+| name | covers |
+|---|---|
+| `logic` | properties, actions, events, constraints, change sessions |
+| `view` | forms, form design, navigator, reports, internationalization |
+| `physical` | execution (tables, materializations, indexes), modules, extensions, metaprogramming, element identification |
+| `integration` | data import, data export, calling in and out |
+
+## Reading an area's brief (RECOMMENDED)
+
+1. What is listed above is the name to ask for, not a summary to reason
+   from. This article does not contain those four articles.
+
+2. The first time a task touches an area, the assistant SHOULD read that
+   area's brief before choosing a construct. It is short, and it is what
+   prevents inventing a mechanism the platform already has.
+
+3. The brief says WHAT exists. For syntax, concepts and recipes the
+   assistant SHOULD use `lsfusion_retrieve_docs` on the `language`,
+   `paradigm` and `how-to` branches.
+
+4. Not reading a brief article is not a rule violation. Writing code for
+   an area whose `rules` article was not read is — see the top `Rules`
+   article.
 
 ---
 
@@ -40,7 +71,7 @@ Which branch: `language` — statement / operator syntax; `paradigm` — concept
 - **Statement** ([`CONSTRAINT`](../language/CONSTRAINT_statement.md)): `CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr [PROPERTIES outExpr1, ..., outExprM];`
 
 ### Aggregations
-- **Description**: aggregated objects that the platform creates and deletes by rule — `AGGR` creates the object when the aggregated expression becomes not `NULL` and deletes it when it becomes `NULL` again, acting on changes rather than on data that already exists; `GROUP AGGR` returns the object of the group. See [Brief: properties](Brief_properties.md) and [Brief: constraints](Brief_constraints.md).
+- **Description**: aggregated objects that the platform creates and deletes by rule — `AGGR` creates the object when the aggregated expression becomes not `NULL` and deletes it when it becomes `NULL` again, acting on changes rather than on data that already exists; `GROUP AGGR` returns the object of the group. See [Brief: properties](Brief_logic.md#properties) and [Brief: constraints](Brief_logic.md#constraints).
 - **Operator** ([`AGGR`](../language/AGGR_operator.md)): `AGGR [eventClause] aggrClass WHERE aggrExpr [NEW [newEventClause]] [DELETE [deleteEventClause]]`
 
 ## View logic — the same model, shown to a user or to another system
@@ -66,7 +97,7 @@ Three parts: development — the modules a project is made of and everything abo
 
 ### System modules (standard library)
 
-The platform loads twelve of them itself, `System`, `Utils`, `Time`, `Authentication` among them — but loading is not depending: `REQUIRE` is what makes a module's declarations reachable, and only `System` is implicit. Which twelve those are and what each module is for is in [Brief: modules](Brief_modularity.md).
+The platform loads twelve of them itself, `System`, `Utils`, `Time`, `Authentication` among them — but loading is not depending: `REQUIRE` is what makes a module's declarations reachable, and only `System` is implicit. Which twelve those are and what each module is for is in [Brief: modules](Brief_physical.md#modules).
 
 ### Development and integration
 - **Identification, naming, migration**: an element is named by `<namespace>.<name>`, and a property or action by that plus the signature of its parameter classes; renaming it, or moving it to another namespace, changes that name — moving it to another module under the same `NAMESPACE` does not — and `migration.script` carries what a given kind of change preserves — a `PROPERTY` entry keeps the settings, the DATA of a property needs `STORED PROPERTY`.
