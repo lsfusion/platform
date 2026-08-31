@@ -668,6 +668,16 @@ public class GReactFormData {
     // Asked lazily, never at construction: getOwningReactContainer answers null for everything until GFormController
     // has assigned its reactData, which happens after this object's constructor returns.
     public GContainer partScope(GComponent component) {
+        // a LIST draw has no place of its own: it is parked in its group's generated GROUP(,g) box, which says nothing
+        // about where its column is drawn, so asking THAT container answers about the wrong component. Its placement is
+        // DERIVED from whoever draws the rows, exactly as GPropertyDraw.isLsfView derives it and as the server's own
+        // claim does (FormView: `list ? partScope(getGroupDrawComponent(group)) : ...`). Without this a projected
+        // column attribute - a dynamic HEADER, footer, image, comment - was dirtied into a scope that carries nothing
+        // of the group, so its entry was never rebuilt and the header froze at its first value for the life of the form
+        if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList) {
+            GGroupObject group = ((GPropertyDraw) component).groupObject;
+            return group != null ? partScope(group.getDrawComponent()) : null;
+        }
         return formController.getOwningReactContainer(component);
     }
 
