@@ -47,14 +47,17 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 // placer decides. `collapsible` is ignored and a scripted COLLAPSE / EXPAND is an error for the same reason:
 // showing the box is the placer's business, and the placer says it by rendering the box or not.
 //
-// The projection half of P1 is true. The CONTROLLER half is not yet: GFormController.initializeControllers
-// still asks isReactOwned(GROUP), which is defined as isReactOwned(group.getDrawComponent()) - the answer for
-// ONE base component, the grid - and then creates or skips the whole group controller, panel included. Three
-// patches exist because of that collapse and would not be needed without it: rowPanelControllers, built
-// before the branch so a react-owned group can still have per-row LSF renderers; hasReactOwnedDraw, which
-// adds a react controller to a GWT-owned group for the mirror case; and FormView.checkLsfView's refusal of an
-// lsf PANEL property on a react-drawn group - the one case with no patch, so it is banned at build time
-// instead. Per-component ownership would remove all three.
+// Both halves obey it. The controller half used to ask isReactOwned(GROUP) - which is
+// isReactOwned(group.getDrawComponent()), the answer for ONE base component, the grid - and then created or
+// skipped the WHOLE group controller on it, taking the group's CHROME (its toolbar, its user filters, and
+// with them the server-side FILTER / ORDER actions) down with the table and saying nothing. Now the two are
+// asked separately: React gets a controller when any part of the group is projected, asked of the projection
+// so the enumeration is not written twice; the platform builds the table when it still draws the rows, and
+// the chrome either way (GGridController.chromeOnly).
+// Note what is NOT part of that collapse and stays: rowPanelControllers is keyed by group because ONE ROW
+// PRODUCER PER GROUP is itself P1-correct, and the FORM's panel controller was never the group's - every
+// non-list draw goes there (getPropertyController), which is why an lsf PANEL property of a react-drawn group
+// works and why refusing it at build time was a rule with a false reason.
 //
 // Maintains the @lsfusion/core-shaped `data` snapshot for CUSTOM REACT containers,
 // accumulated incrementally from each GFormChanges delta, built into a JS object on demand.

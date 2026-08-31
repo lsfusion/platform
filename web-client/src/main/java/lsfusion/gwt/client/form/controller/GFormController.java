@@ -1115,26 +1115,18 @@ public class GFormController implements EditManager {
             // ... and a group can be MIXED the other way too: GWT draws its rows, and a react container holds one of
             // its panel properties. That property's values are routed to a react controller
             // (getReactablePropertyController), so the group needs one whether or not React draws it.
-            if (isReactOwned(group)) {
+            // P1: the two halves are not exclusive, because they are about different base components. React gets a
+            // controller when ANY part of the group is projected - asked of the projection, which enumerates the
+            // producers, so the two sides cannot drift (this replaces a second, hand-written enumeration that already
+            // had). And the platform still builds what it still draws: the TABLE when React does not draw the rows,
+            // the CHROME - toolbar, user filters, and with them the server-side FILTER / ORDER actions - either way.
+            if (reactData != null && reactData.isProjectedGroup(group))
                 initializeReactController(group);
-            } else {
-                if (group.parent == null) {
-                    initializeGroupController(group);
-                }
-                if (hasReactOwnedDraw(group))
-                    initializeReactController(group);
-            }
+            if (group.parent == null)
+                initializeGroupController(group, isReactOwned(group));
         }
 
         panelController = new GPanelController(this); // kept even for React: getPropertyController/update rely on it; it stays empty when only react-owned property readers are skipped, so no panel views are built
-    }
-
-    // any of the group's properties projected into a react container, its rows drawn where they are drawn
-    private boolean hasReactOwnedDraw(GGroupObject group) {
-        for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && isReactOwned(draw))
-                return true;
-        return false;
     }
 
     private void initializeReactController(GGroupObject group) {
@@ -1170,7 +1162,10 @@ public class GFormController implements EditManager {
     }
 
     private void initializeGroupController(GGroupObject group) {
-        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
+        initializeGroupController(group, false);
+    }
+    private void initializeGroupController(GGroupObject group, boolean chromeOnly) {
+        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null, chromeOnly);
         controllers.put(group, controller);
     }
 
@@ -2374,7 +2369,7 @@ public class GFormController implements EditManager {
             }
 
             GGridController controller = controllers.get(groupObject);
-            if (controller != null) // null for react-owned groups
+            if (controller != null) // says so itself when its group's rows are React's and it holds no table
                 controller.changeOrders(pOrders, false);
         }
     }
@@ -2383,7 +2378,7 @@ public class GFormController implements EditManager {
         GGroupObject groupObject = form.getGroupObject(goID);
         if (groupObject != null) {
             GGridController gGridController = controllers.get(groupObject);
-            if (gGridController == null) // react-owned groups have no base controller (no grid filter UI)
+            if (gGridController == null) // a group with no controller at all: not a list, or a tree's child
                 return;
             List<GPropertyFilter> uFilters = new ArrayList<>();
             for (GFilterAction.FilterItem filter : filters) {
@@ -2513,7 +2508,8 @@ public class GFormController implements EditManager {
 
     public void quickFilter(Event event, int initialFilterPropertyID) {
         GPropertyDraw propertyDraw = getProperty(initialFilterPropertyID);
-        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)
+                && !controllers.get(propertyDraw.groupObject).chromeOnly) { // a quick filter edits a cell of a table
             focusProperty(propertyDraw);
             controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, GGroupObjectValue.EMPTY);
         }
@@ -2637,7 +2633,7 @@ public class GFormController implements EditManager {
         List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
         for (GGridController controller : controllers.values()) {
-            if (controller.isList()) {
+            if (controller.isList() && !controller.chromeOnly) { // no table here, so no column preferences of one
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
                 groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
             }

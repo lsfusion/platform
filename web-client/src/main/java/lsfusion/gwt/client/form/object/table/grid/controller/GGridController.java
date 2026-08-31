@@ -79,11 +79,23 @@ public class GGridController extends GAbstractTableController implements GFormGr
         return groupObject.mapTileProvider;
     }
 
+    // P1: a group's TABLE and its CHROME are different base components, and React taking the rows says nothing about
+    // the rest. In chromeOnly mode this controller builds the toolbar and the user-filter box and NOT the table, so a
+    // group whose rows a CUSTOM REACT container draws keeps its filter button, its Ctrl+F binding and the server-side
+    // FILTER / ORDER actions - all of which used to vanish with no message because the whole controller was skipped.
+    public final boolean chromeOnly;
+
     public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
+        this(iformController, groupObject, userPreferences, false);
+    }
+    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences, boolean chromeOnly) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
+        this.chromeOnly = chromeOnly;
 
-        if (isList()) {
+        if (isList() && chromeOnly) {
+            configureToolbar(); // the chrome alone: initGridView is what makes a TABLE, and there is none here
+        } else if (isList()) {
             initGridView();
 
             // proceeding recordView
@@ -225,7 +237,7 @@ public class GGridController extends GAbstractTableController implements GFormGr
     protected void configureToolbar() {
         assert isList();
 
-        if(groupObject.toolbar.showViews) {
+        if(groupObject.toolbar.showViews && !chromeOnly) { // a view switch needs a table to switch
             GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
             gridTableButton = new GToolbarButton(StaticImage.GRID, messages.formGridTableView()) {
                 @Override
@@ -290,7 +302,7 @@ public class GGridController extends GAbstractTableController implements GFormGr
             initFilters();
         }
 
-        if (groupObject.toolbar.showSettings) {
+        if (groupObject.toolbar.showSettings && !chromeOnly) { // ... and the settings dialog edits a table's columns
             GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
 
             settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
@@ -409,6 +421,8 @@ public class GGridController extends GAbstractTableController implements GFormGr
     }
 
     public void update(long requestIndex, GFormChanges fc) {
+        if (chromeOnly) // there is no table to update; the rows are the react controller's
+            return;
         Boolean updateState = null;
         if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
@@ -661,11 +675,21 @@ public class GGridController extends GAbstractTableController implements GFormGr
     }
     public boolean changeOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert isList();
+        if (chromeOnly) { // the sortings are a TABLE's state, and there is none here - the rows are drawn from the
+            if (!saidNoOrders) { // projection, which does not carry them on this branch. Said once, not silently
+                saidNoOrders = true;
+                GwtClientUtils.consoleError("ORDER for object group '" + groupObject.getSID() + "': its rows are drawn"
+                        + " by a CUSTOM REACT component, which holds its own sorting - the platform has no table here"
+                        + " to order");
+            }
+            return false;
+        }
         return table.changePropertyOrders(orders, alreadySet);
     }
+    private boolean saidNoOrders;
 
     public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
-        boolean hasUserPreferences = isList() && table.hasUserPreferences();
+        boolean hasUserPreferences = isList() && !chromeOnly && table.hasUserPreferences();
         if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
         return null;
     }
