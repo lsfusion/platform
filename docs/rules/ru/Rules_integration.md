@@ -114,7 +114,7 @@ title: 'Rules: integration'
       ОБЯЗАН сообщить её сам — через `applyMessage()` или исключение.
 
     Остальные — в статье про сессии изменений:
-    `lsfusion_retrieve_docs(type='rules', query='change sessions')`.
+    `lsfusion_get_guidance(rules='logic')`.
 
 11. Ассистент НЕ ДОЛЖЕН частично сохранять
     неудавшийся импорт молча. Для ошибок, которые ассистент

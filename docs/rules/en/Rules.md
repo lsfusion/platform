@@ -141,22 +141,17 @@ B. DOCUMENTATION LOOKUP
 
 2. The assistant MUST retrieve definitions and syntax
    for those element types before editing.
-   Before working in an area for the first time in a session,
-   the assistant MUST also call
-   `lsfusion_retrieve_docs(type='rules', query='<area>')`
-   to retrieve the rules relevant to that area.
-   The mandatory initial lookup is once per area,
-   not once per operation.
+   That search covers `language`, `paradigm` and `how-to` only.
+   The rules of an area are not searched: they are read whole,
+   by name, per the map and the mandatory-reading section above.
    The query SHOULD be short and technical, in English where possible,
    naming the lsFusion keyword when it is known.
-   For several independent areas known in advance, the assistant SHOULD
-   pass them as one call — `query` takes a list of distinct queries,
-   one per area — rather than a call each.
+   For several independent needs known in advance, the assistant SHOULD
+   pass them as one call — `query` takes a list of distinct queries —
+   rather than a call each.
    The assistant MUST look up sequentially instead
    when one result can determine or refine the next query,
    and MUST NOT batch alternative phrasings of one need.
-   The lookup is due even when it comes back empty or partial:
-   what is missing is the article, not the constraint.
    `exclude_ids` continues an information need with the chunk ids
    still held, and applies to every query of a batch;
    a rephrase, a different question, or a batch of different queries

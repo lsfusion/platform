@@ -14,15 +14,24 @@ This is the realization of the earlier "Guide" recommendation part: it states
 what should and should not be done when writing `.lsf`, distilled from
 Language / Paradigm / How-to.
 
-The folder has two kinds of article, and they have different budgets:
-- `Rules.md` is the CORE. It is served whole by `lsfusion_get_guidance`, so
-  every byte of it is spent on every task. It carries only what applies
-  regardless of area, and it MUST keep the requirement to fetch the rules of
-  the area being worked in. It deliberately does NOT list the areas that have
-  an article: the lookup is mandatory whether or not an area is on a list, and
-  a list is a second catalogue to keep in step for nothing.
-- `Rules_<area>.md` are the per-area articles. They reach the assistant only
-  through `lsfusion_retrieve_docs(type='rules', ...)`, never automatically.
+The folder is NOT searched. Nothing here is chunked or indexed: an article is
+named and delivered whole by `lsfusion_get_guidance`, which is what makes
+completeness decidable — a top-N retrieval cannot report the chunk it withheld.
+
+Two kinds of article, with different budgets:
+- `Rules.md` is the CORE, served on every task by the zero-argument call, so
+  every byte of it is spent on every task. It carries what applies regardless
+  of area, plus the MAP of the branch: one row per article, with the trigger
+  that makes reading it mandatory. The map is load-bearing, not a courtesy —
+  it is the only thing that tells the assistant an article exists, and the
+  session that motivated this structure went wrong precisely because nothing
+  did. Changing the set of articles means changing the map in the same commit.
+- `Rules_<name>.md` are the four area articles: `logic`, `view`, `physical`,
+  `integration`. They reach the assistant only when it asks for one by name.
+  Each must stay inside the tool-result envelope of the harnesses — under
+  40 KB, against a measured 50 KB ceiling — because an article that arrives
+  truncated defeats the whole point. Splitting one is a structural change: it
+  needs a new row in the map and a trigger of its own.
 
 It MUST contain general recommendations:
 - what should be done
@@ -57,25 +66,27 @@ Rules article structure convention:
   on every task,
   so noise there hurts
   more than missing edges
-- a per-area article
-  is retrieved, not primed:
+- an area article
+  is fetched, not primed:
   it may be longer,
-  but it MUST start
-  with a `##` heading —
+  but it MUST open
+  with its contents list
+  and then `##` sections —
   no preamble
-  and no `Scope` section.
-  Text before the first `##`
-  becomes a chunk of its own
-  in the retrieval index,
-  and a scope paragraph
-  repeated across articles
-  becomes near-duplicate noise
+  and no `Scope` section,
+  which only repeat
+  across articles
 - every `##`
-  is a chunk boundary
-  and a search signal;
+  is one former area
+  and an anchor target;
   name it
   after its subject,
-  not `General`
+  not `General`.
+  Cross-references
+  from other articles
+  land on these anchors,
+  so renaming one
+  means fixing them
 
 Cross-references:
 Rules articles

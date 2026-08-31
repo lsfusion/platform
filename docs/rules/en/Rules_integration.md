@@ -113,8 +113,8 @@ title: 'Rules: integration'
       it twice; an API or background import MUST surface it
       itself, through `applyMessage()` or an exception.
 
-    The rest of them are in the change-session article:
-    `lsfusion_retrieve_docs(type='rules', query='change sessions')`.
+    The rest of them are in the domain-logic article:
+    `lsfusion_get_guidance(rules='logic')`.
 
 11. The assistant MUST NOT partially persist
     a failed import silently. For failures the assistant

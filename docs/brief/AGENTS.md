@@ -14,20 +14,27 @@ knows anything about the platform. It answers "what exists here and what is
 it for", and hands off to Paradigm for "how it works" and to Language for
 the exact syntax.
 
-The folder has two kinds of article, and they have different budgets:
-- `Brief.md` is the TOP. It is served whole by `lsfusion_get_guidance`, so
-  every byte of it is spent on every task. It carries the map of the core
-  elements and nothing that a reader can be sent to fetch instead.
+The folder is NOT searched. Nothing here is chunked or indexed: an article is
+named and delivered whole by `lsfusion_get_guidance`.
 
-  The core map is what tells an assistant a concept exists at all, so an
-  area that gets its own article MUST also be named and explained in one
-  line there — the assistant retrieves an area by NAME, and a name it has
-  never read is a name it will not ask for. There is deliberately no list
-  of the article files: it was a second catalogue to keep in step, and the
-  map already names every area worth fetching. No links either — the
-  consumer reads this over MCP and has no way to follow one.
-- `Brief_<area>.md` are the per-area maps. They reach the assistant only
-  through `lsfusion_retrieve_docs(type='brief', ...)`, never automatically.
+Two kinds of article, with different budgets:
+- `Brief.md` is the TOP, served on every task by the zero-argument call, so
+  every byte of it is spent on every task. It carries the map of the core
+  elements and NOTHING a reader can be sent to fetch instead. That second half
+  is the one that erodes: it is always tempting to explain an element a little
+  more where it is already named, and the result is a top article that restates
+  its own area articles at half the length — the same analogy, the same
+  signature, less of the substance. If a sentence would also belong in the area
+  article, it belongs there and not here.
+
+  What the top MUST keep is the vocabulary the map routes on: an assistant
+  fetches an area by NAME, and it cannot ask for a name it has never read, nor
+  recognize that `WHEN` is what `logic` covers unless the top said so. One line
+  per element, enough to route — not enough to substitute.
+- `Brief_<name>.md` are the four area articles: `logic`, `view`, `physical`,
+  `integration`, the same names the `rules` branch uses. They reach the
+  assistant only when it asks for one by name, and must stay inside the
+  tool-result envelope (under 40 KB against a measured 50 KB ceiling).
 
 Writing a brief article:
 - an analogy
