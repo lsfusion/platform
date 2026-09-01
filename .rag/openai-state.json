@@ -7781,8 +7781,8 @@
       "stale": false
     },
     "language/WRITE_operator.md": {
-      "file_hash": "sha256:b4f46783d7bd0fde7fa2d3ca17c8d1494ccb3cee495f186d1dceed65935d82f7",
-      "indexed_at": "2026-08-28T17:02:21Z",
+      "file_hash": "sha256:b6bb8966cdb0deedb9d7c30f7f97fa5d01acd750e0436ab6c7f9daa317816c57",
+      "indexed_at": "2026-09-01T07:16:18Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -7804,9 +7804,9 @@
           "source_file": "language/WRITE_operator.md"
         },
         "WRITE_operator::parameters": {
-          "file_id": "file-LNrgRqVdQuiGiZibJD7JZ1",
+          "file_id": "file-61uTTyJVoDEaT7cFm36eTc",
           "heading_path": "WRITE operator > Parameters",
-          "section_payload_hash": "sha256:9cf941719eb2117e09a1528783a99bac8f1c09f49923d5f6811ba4fc9f1a6259",
+          "section_payload_hash": "sha256:dc1a5d073b5a4ccb78f632d82bdcd329f7fa9c963172a3a72e0de7784ff5bfe8",
           "source_file": "language/WRITE_operator.md"
         },
         "WRITE_operator::syntax": {
@@ -14919,7 +14919,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "417d5a096b8c724d8031e27e44c8f345fb774194",
+  "last_indexed_docs_commit": "409862f2dbffa53601c1edb9cd12439a7e62b2a4",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
