@@ -164,7 +164,42 @@ title: 'Rules: domain logic'
     silently drops the fractional part;
     the correct form is `NUMERIC[16,4](a) * b / c`.
 
-17. A parameter's class annotation (`prop(SubClass x)`) is a
+17. The class of an expression's result can be wider than
+    the classes it is built from, and the assistant MUST
+    account for that wherever a narrower class is required —
+    above all in a `+=` implementation, where it is
+    a server startup error.
+
+    Arithmetic widens further than it looks:
+
+    - `+` and `-` — like `MIN` / `MAX` and the selection
+      operators — take the common ancestor, widening the
+      whole part and the scale independently, so the result
+      can be wider than either operand:
+      `NUMERIC[16,2] + NUMERIC[10,4]` is `NUMERIC[18,4]`;
+    - `*` adds both the whole parts and the scales:
+      `NUMERIC[16,2] * NUMERIC[10,4]` is `NUMERIC[26,6]`;
+    - `/` widens catastrophically: with the default settings
+      its scale is always the maximum `NUMERIC` scale (`32`),
+      so `NUMERIC[16,2] / NUMERIC[16,2]` is `NUMERIC[48,32]`.
+
+    A `GROUP` aggregate mostly keeps the class of what it
+    aggregates — a `GROUP SUM`, `GROUP MAX` or `GROUP LAST`
+    over a `NUMERIC[16,2]` is `NUMERIC[16,2]` — but it
+    carries outward whatever that expression already widened
+    to. `GROUP CONCAT` is the aggregate that widens by
+    itself: its result is a string of unlimited length.
+    String concatenation widens as well, summing the
+    operands' lengths: `ISTRING[200] + ISTRING[126]`
+    is `ISTRING[326]`.
+
+    A narrower class is obtained only by an explicit cast of
+    the whole expression. With operands of integer classes
+    the operand cast of rule 16 does not bound the result —
+    the division still widens to scale `32` — so both casts
+    are needed: `NUMERIC[16,2](NUMERIC[16,2](a(x)) / b(x))`.
+
+18. A parameter's class annotation (`prop(SubClass x)`) is a
     signature, not a runtime filter: it resolves same-named
     properties and sets the signature, but the computed set is
     determined by the properties used in the expression.
@@ -176,7 +211,7 @@ title: 'Rules: domain logic'
     an explicit `x IS SubClass` condition (or use a property
     declared on that subclass).
 
-18. In the `GROUP ... BY` operator the assistant MUST NOT
+19. In the `GROUP ... BY` operator the assistant MUST NOT
     list in the `BY` block the upper parameters used
     in the operator's expressions: each such parameter
     is already implicitly a group — a parameter of the
@@ -187,7 +222,7 @@ title: 'Rules: domain logic'
     to the parameters not used in the expressions;
     a mismatch in count or classes is an error.
 
-19. `MAX` and `MIN` are prefix operators over a comma-separated
+20. `MAX` and `MIN` are prefix operators over a comma-separated
     operand list (`MAX a, b`), not infix ones: `a MAX b`
     does not parse — the platform reports
     `no viable alternative at input 'MAX'`.
@@ -212,41 +247,12 @@ title: 'Rules: domain logic'
    `specified` and `expected` lines name the implementation's
    class and the declared one.
 
-   Arithmetic is what widens the class most often, and it
-   widens further than it looks:
-
-   - `+` and `-` — like `MIN` / `MAX` and the selection
-     operators — take the common ancestor, widening the whole
-     part and the scale independently, so the result can be
-     wider than either operand:
-     `NUMERIC[16,2] + NUMERIC[10,4]` is `NUMERIC[18,4]`;
-   - `*` adds both the whole parts and the scales:
-     `NUMERIC[16,2] * NUMERIC[10,4]` is `NUMERIC[26,6]`;
-   - `/` widens catastrophically: with the default settings
-     its scale is always the maximum `NUMERIC` scale (`32`),
-     so `NUMERIC[16,2] / NUMERIC[16,2]` is `NUMERIC[48,32]`.
-
-   A `GROUP` aggregate mostly keeps the class of what it
-   aggregates — a `GROUP SUM`, `GROUP MAX` or `GROUP LAST`
-   over a `NUMERIC[16,2]` is `NUMERIC[16,2]` — but it carries
-   outward whatever that expression already widened to.
-   `GROUP CONCAT` is the aggregate that widens by itself: its
-   result is a string of unlimited length (`ISTRING` against
-   a declared `ISTRING[250]`). Plain string concatenation
-   widens as well, summing the operands' lengths
-   (`ISTRING[326]` against a declared `ISTRING[250]`).
-
-   Any such expression the assistant MUST wrap in an explicit
+   An expression that widens the value class — arithmetic
+   above all, and division most of all (rule 17 of the
+   property rules) — the assistant MUST wrap in an explicit
    cast to the declared class:
    `f(X x) += NUMERIC[16,2](a(x) / b(x));`
    `f(X x) += ISTRING[250](a(x) + b(x));`
-
-   For operands of integer classes the cast MUST go on an
-   operand first, so that the division is not integer
-   division (see rule 16 of the property rules); the result
-   still widens to scale `32` like any other division, so
-   the outer cast is needed as well:
-   `f(X x) += NUMERIC[16,2](NUMERIC[16,2](a(x)) / b(x));`
 
 ### Ordering rules (`ORDER`)
 
