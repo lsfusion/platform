@@ -1387,8 +1387,9 @@ public class Settings implements Cloneable {
     private boolean deleteFromInsteadOfTruncateForTempTablesUnknown = false; // unknown - use deleteFrom
 
     // hand out a table from a pool the whole node shares, instead of creating a temporary one : creating a table takes a lock that suppresses the fast path of the lock manager for the whole
-    // cluster until the transaction ends, and a pooled table is created once for the node rather than once for every connection that needs that shape
-    private boolean useGlobalTempTablePool = false;
+    // cluster until the transaction ends, and a pooled table is created once for the node rather than once for every connection that needs that shape.
+    // On in a development or a test run and off otherwise, so that it is the path being written against rather than one nobody meets until an installation turns it on
+    private boolean useGlobalTempTablePool = SystemProperties.inDevMode || SystemProperties.inTestMode;
     // the tables one node may hold in the pool at once, over all their shapes ; past it a request falls back to an ordinary temporary table. A pool never gives a healthy table back, so an
     // application that keeps meeting new shapes would grow it without bound
     private int globalTempTablePoolMaxTables = 2000;
