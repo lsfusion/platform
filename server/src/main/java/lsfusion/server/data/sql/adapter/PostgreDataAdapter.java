@@ -84,8 +84,16 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     private Connection getConnection(Server server, String dataBase, boolean useConnectTimeout) throws SQLException {
-        return DriverManager.getConnection("jdbc:postgresql://" + server.host + "/" + dataBase.toLowerCase() + "?user=" + user + "&password=" + password + (useConnectTimeout ? "&connectTimeout=" + (int) (connectTimeout / 1000) : ""));
+        return DriverManager.getConnection("jdbc:postgresql://" + server.host + "/" + dataBase.toLowerCase(Locale.ROOT) + "?user=" + user + "&password=" + password + (useConnectTimeout ? "&connectTimeout=" + (int) (connectTimeout / 1000) : ""));
     }
+
+    // quotes on dataBase.toLowerCase(Locale.ROOT) (matching getConnection above) so CREATE/DROP/ALTER
+    // DATABASE accept exactly the same names as connecting to an existing db does,
+    // instead of failing as an unquoted identifier
+    private static String quoteDBName(String dataBase) {
+        return "\"" + dataBase.toLowerCase(Locale.ROOT).replace("\"", "\"\"") + "\"";
+    }
+
     private String getMasterLibpqConnectionString() {
         String host = master.host;
         String port = null;
@@ -95,7 +103,7 @@ public class PostgreDataAdapter extends DataAdapter {
             port = parts[1];
         }
 
-        return "host=" + host + (port != null ? " port=" + port : "") + " dbname=" + dataBase.toLowerCase() + " user=" + user + " password=" + password;
+        return "host=" + host + (port != null ? " port=" + port : "") + " dbname=" + dataBase.toLowerCase(Locale.ROOT) + " user=" + user + " password=" + password;
     }
 
     public void initProctab(Server server){
@@ -120,12 +128,12 @@ public class PostgreDataAdapter extends DataAdapter {
             }
         }
         if (cleanDB)
-            executeEnsure(connect, "DROP DATABASE " + dataBase);
+            executeEnsure(connect, "DROP DATABASE " + quoteDBName(dataBase));
 
         // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
-        executeEnsure(connect, "CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
+        executeEnsure(connect, "CREATE DATABASE " + quoteDBName(dataBase) + " WITH TEMPLATE template0 ENCODING='UTF8' ");
 
-        executeEnsure(connect, "ALTER DATABASE " + dataBase + " SET TIMEZONE='" + TimeZone.getDefault().getID() + "'");
+        executeEnsure(connect, "ALTER DATABASE " + quoteDBName(dataBase) + " SET TIMEZONE='" + TimeZone.getDefault().getID() + "'");
 
         connect.close();
     }
@@ -139,8 +147,9 @@ public class PostgreDataAdapter extends DataAdapter {
 
         boolean isFirstStart = false;
         try {
+            // escape ' so a dataBase/host/user/password containing one can't break out of this SQL string literal
             executeEnsureWithException(server, "CREATE SUBSCRIPTION " + DB_SUBSRIPTION + "\n" +
-                    "                CONNECTION '" + getMasterLibpqConnectionString() + "'\n" +
+                    "                CONNECTION '" + getMasterLibpqConnectionString().replace("'", "''") + "'\n" +
                     "                PUBLICATION " + DB_SUBSRIPTION + " WITH (slot_name = '" + getSlotName(server) + "', enabled = false);");
             isFirstStart = true;
         } catch (SQLException e) {

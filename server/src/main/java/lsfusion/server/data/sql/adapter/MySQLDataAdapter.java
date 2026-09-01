@@ -16,17 +16,23 @@ public class MySQLDataAdapter extends DataAdapter {
         super(MySQLSQLSyntax.instance, database, server, user, password, null);
     }
 
+    // backtick-quotes so DDL/USE statements accept exactly the same names as the JDBC url-based
+    // connection above does, instead of failing as an unquoted identifier
+    private static String quoteDBName(String dataBase) {
+        return "`" + dataBase.replace("`", "``") + "`";
+    }
+
     public void ensureDB(Server server, boolean cleanDB) throws SQLException {
 
         Connection connect = DriverManager.getConnection("jdbc:mysql://" + server.host + ":3306/" + dataBase);
-        connect.createStatement().execute("DROP DATABASE " + dataBase);
-        connect.createStatement().execute("CREATE DATABASE " + dataBase);
+        connect.createStatement().execute("DROP DATABASE " + quoteDBName(dataBase));
+        connect.createStatement().execute("CREATE DATABASE " + quoteDBName(dataBase));
         connect.close();
     }
 
     public Connection createConnection(Server server) throws SQLException {
         Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
-        connect.createStatement().execute("USE " + dataBase);
+        connect.createStatement().execute("USE " + quoteDBName(dataBase));
 
         return connect;
     }
