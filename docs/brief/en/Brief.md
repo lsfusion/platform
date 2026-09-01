@@ -7,9 +7,8 @@ slug: "/Brief"
 
 This article is the TOP of the `brief` branch: the model in outline, plus the
 map that says which article to open. It is deliberately not a short version of
-those articles. What is here is enough to classify a task and answer a rough
-conceptual question; before choosing a mechanism or writing code, read the
-article of the area the task falls in.
+those articles. What is here is enough to classify a task and answer a rough conceptual
+question.
 
 Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`; when unsure which one, omit the filter and it searches all three and merges them.
 

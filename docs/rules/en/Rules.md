@@ -11,11 +11,11 @@ This rule set applies to ALL tasks related to lsFusion
 (including analysis, how-to, examples, documentation lookup,
 project exploration, and code writing).
 
-These rules MUST be followed.
+Apply each rule below at its stated strength.
 
-The `language`, `paradigm` and `how-to` branches provide reference
-material, searched with `lsfusion_retrieve_docs`. Not retrieving one of
-their articles is not by itself a violation of these rules.
+The `language`, `paradigm` and `how-to` branches are reference material,
+searched with `lsfusion_retrieve_docs`; they are not a mandatory reading
+list. The workflow below states when a lookup is required.
 
 The `rules` branch is different in two ways. It is not searched: an
 article is named and delivered whole, so no part of it can be withheld
@@ -58,15 +58,6 @@ the name in the first column.
 5. If a required rules article cannot be read, the assistant MUST tell
    the user which area went unread, and MUST NOT present the result as
    rule-checked.
-
-## Reading an area's brief (RECOMMENDED)
-
-1. The first time a task matches an area in a session, the assistant
-   SHOULD call `lsfusion_get_guidance(brief='<name>')` for the areas it
-   matched, and read what comes back before choosing a construct. The
-   brief says what the platform already offers, which is what stops a
-   mechanism being reinvented; the map of its areas is in the top
-   `Brief` article.
 
 ## Mandatory workflow
 
@@ -135,23 +126,8 @@ B. DOCUMENTATION LOOKUP
 1. Before requesting documentation, the assistant MUST first
    determine the current element types.
 
-2. The assistant MUST retrieve definitions and syntax
+2. The assistant MUST retrieve the relevant definitions and syntax
    for those element types before editing.
-   That search covers `language`, `paradigm` and `how-to` only.
-   The rules of an area are not searched: they are read whole,
-   by name, per the map and the mandatory-reading section above.
-   The query SHOULD be short and technical, in English where possible,
-   naming the lsFusion keyword when it is known.
-   For several independent needs known in advance, the assistant SHOULD
-   pass them as one call — `query` takes a list of distinct queries —
-   rather than a call each.
-   The assistant MUST look up sequentially instead
-   when one result can determine or refine the next query,
-   and MUST NOT batch alternative phrasings of one need.
-   `exclude_ids` continues an information need with the chunk ids
-   still held, and applies to every query of a batch;
-   a rephrase, a different question, or a batch of different queries
-   goes without it, or the filter drops the chunk that would have answered it.
 
 3. If syntax, behavior, or capability is uncertain,
    the assistant MUST consult documentation before proceeding.
