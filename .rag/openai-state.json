@@ -14861,8 +14861,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:fe6aed0879125caa7d161470f58dcd9514baff345235bd80de7a535ad8d3d26c",
-      "indexed_at": "2026-09-01T16:03:02Z",
+      "file_hash": "sha256:80d29b1f3c3ec6e060938afe88c458a4ce7b4bb801513be71a13e755854d67e8",
+      "indexed_at": "2026-09-01T16:16:15Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14872,9 +14872,9 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-A8o6nQgC4JX5MkuYfjn7KQ",
+          "file_id": "file-FHPGqip38ZFspwfVnJ76sU",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:34f5573897d355aca40654403971b896b24634b6ff2afc9c766828e18b29a179",
+          "section_payload_hash": "sha256:3855d7599da5d429726d8f6035b95317b25118412b38c443f2f76b36c6bc3eea",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
@@ -14919,7 +14919,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "918d362c04f233ec5ff4096963a0ac0aefbb8a6c",
+  "last_indexed_docs_commit": "2b95d2da12fc69922154b4e7c508121d1ae64d95",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
