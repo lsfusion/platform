@@ -107,6 +107,27 @@ title: 'Rules: domain logic'
    To check that it is not `NULL`,
    the assistant SHOULD use `IF property(...)`.
 
+   This applies to a property of any class, not only
+   `BOOLEAN`: a condition holds when its value is not `NULL`,
+   whatever that value is —
+   `hasNotes(o) = IF notes(o) THEN TRUE` for a `STRING`,
+   `isScheduled(o) = IF scheduledAt(o) THEN TRUE` for a
+   `DATETIME`, `hasDepartment(e) = IF department(e) THEN TRUE`
+   for an object-valued property,
+   `NOT query() OR name(o) LIKE ('%' + query() + '%')`
+   for a search filter that passes everything while the query
+   is empty (`NOT` and `OR` do not propagate `NULL`, rule 3).
+
+   The assistant MUST NOT compare with the `NULL` literal:
+   `expr = NULL`, `expr == NULL` and `expr != NULL` are
+   ordinary comparisons, and by rule 3 the `NULL` operand makes
+   the result `NULL` whatever `expr` holds —
+   `scheduledAt(o) != NULL` is never `TRUE`, so a `FILTER` or
+   `WHERE` on it selects nothing, a `SHOWIF` on it always hides,
+   an `IF` on it always takes the `ELSE` branch — and the server
+   only reports a warning when it loads the module, the code still
+   compiles and starts.
+
 10. The assistant SHOULD specify `CHARWIDTH`
    in the property definition rather than in form design.
 

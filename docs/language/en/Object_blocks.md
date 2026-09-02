@@ -68,7 +68,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
 - `name`
 
-    Object name. Simple ID. Must be specified if the object class is a [built-in class](../paradigm/Built-in_classes.md). If the object class is a [custom class](../paradigm/User_classes.md), the name doesn't need to be specified. In this case, it will be equal to the name of the class object. 
+    Object name. Simple ID. Must be specified if the object class is a [built-in class](../paradigm/Built-in_classes.md). If the object class is a [custom class](../paradigm/User_classes.md), the name can be omitted, but an object declared without a name cannot be referenced by name anywhere on the form (for example, in `PROPERTIES`, `FILTERS`, or the `PARENT` expression).
 
 - `classId`
 

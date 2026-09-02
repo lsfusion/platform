@@ -218,7 +218,12 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    Double quotes are NOT a valid string literal delimiter
    in lsFusion and MUST NOT be used.
 
-4. An expression whose comma is NOT enclosed in brackets of
+4. Date and time literals MUST use the underscore formats:
+   `2001_01_31` (`DATE`), `2001_01_31_14:30[:00]`
+   (`DATETIME`), `14:30[:00]` (`TIME`). An ISO-style
+   `2001-01-31` is NOT a date literal.
+
+5. An expression whose comma is NOT enclosed in brackets of
    its own — `OVERRIDE a, b`, `CONCAT sep, a, b`,
    `GROUP CONCAT expr, sep`, `MAX a, b` — MUST NOT go
    straight into a comma-separated list (`PROPERTIES`,
@@ -230,14 +235,14 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    list, but they do not fence off such an expression placed
    inside them: `f(MAX a, b)` passes one argument, not two.
 
-5. When introducing a new parameter, the assistant MUST
+6. When introducing a new parameter, the assistant MUST
    declare its class explicitly at the first use
    (`prop(Class x)`, `GROUP MAX Class x IF ...`).
    `AS` does NOT declare the parameter's class: it is
    a cast — the parameter itself stays untyped
    at later occurrences.
 
-6. The body of a `META` statement consists of module-level
+7. The body of a `META` statement consists of module-level
    statements; action operators (`NEW ...`, assignments)
    cannot appear there directly, and the `@` statement
    using a metacode is itself a module-level statement
@@ -245,7 +250,7 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    parameterized object creation, declare an action
    with parameters and call it.
 
-7. The two declaration forms of a local property
+8. The two declaration forms of a local property
    belong to different levels and MUST NOT be mixed up:
    the `LOCAL name = Class (...);` statement is valid
    only inside an action body `{ ... }`,
