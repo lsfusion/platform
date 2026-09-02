@@ -140,12 +140,16 @@ public abstract class GNavigatorController implements GINavigatorController {
 
         Map<GAbstractWindow, Boolean> visibleElements = new HashMap<>();
         for (Map.Entry<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> entry : selectedElements.entrySet()) {
-            GAbstractNavigatorView view = views.get(entry.getKey());
+            GNavigatorWindow window = entry.getKey();
+            GAbstractNavigatorView view = views.get(window);
             if (view != null) {
-                view.refresh(entry.getValue(), selected.get(entry.getKey()));
+                view.refresh(entry.getValue(), selected.get(window));
                 // a standard strip with nothing to draw is hidden, but a custom one is given the empty bucket and
                 // decides for itself - it is the only place an application can draw "pick a section", loading, and such
-                visibleElements.put(entry.getKey(), entry.getKey().visible && (entry.getKey().isCustom() || !entry.getValue().isEmpty()));
+                // the root strip stays even when empty: unlike logo/system it is not auto-sized along the navbar, so
+                // it always keeps its declared flex share and is the one that keeps the logo at the start and the
+                // system icons at the end
+                visibleElements.put(window, window.visible && (window.isCustom() || window.isRoot() || !entry.getValue().isEmpty()));
             }
         }
         updateVisibility(visibleElements);
