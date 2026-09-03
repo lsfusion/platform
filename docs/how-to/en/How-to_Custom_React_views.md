@@ -28,6 +28,8 @@ The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_
 
 A form opened as a window (`SHOW ... FLOAT`; for `DIALOG` the window is the default location) gets its size from the content at the moment of opening, when the component has not drawn anything yet, so the container is given a base size: `size = (900, 600)` or the separate `width` and `height` attributes. Without it, a window with a single such container collapses to the caption and the system buttons, and the content drawn later pushes the OK / Close buttons past the window's edge. A tab (`DOCKED`) is sized by the forms window, so no base size is needed there.
 
+Another way is to leave the React container without a base size and make the window itself dynamic: in the form's own `DESIGN`, set its main container to `size = (-1, -1)`, or only `height = -1` — then the width is measured and fixed at opening while the height stays dynamic. In each dynamic direction the window follows the component's content, including content drawn later. This suits a form with no tables (their height stops fitting the rows) and content of moderate height: the window is centered only at opening, and its height is not capped at the screen height — a window taller than the screen scrolls as a whole.
+
 ### The component
 
 `OrderBoard` is a named export from a `.jsx` module under `src/main/web`; how the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served; `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
@@ -83,6 +85,22 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 
 Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the scroll must be still, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#lsf-child) alike — follows.
 
+`data.<g>.count` is the number of rows read — the length of `list` — not how many rows the group's filters admit, so under paged reading the projection alone cannot show "6 of 23". The total is a separate property that counts the rows under the form's current filter with the [`FILTER` operator](../paradigm/Filter_FILTER.md), as in [How-to: Table status](How-to_Table_status.md), placed inside the container so that it reaches `data`:
+
+```lsf
+filteredCount 'Orders' = GROUP SUM 1 IF [ FILTER orders.o](Order o);
+
+EXTEND FORM orders PROPERTIES() filteredCount;
+DESIGN orders { BOX(o) { MOVE PROPERTY(filteredCount()); } }
+```
+
+```jsx
+const { o, filteredCount } = props.data;
+<div>{o.count} of {filteredCount.value ?? 0}</div>
+```
+
+Drawn for the group instead (`PROPERTIES() filteredCount DRAW o PANEL`), the property needs no `MOVE`: its default place is in `PANEL(o)`, inside `BOX(o)`; it is a member of the group node, read as `data.o.filteredCount.value`.
+
 ```jsx
 function Row(props) {
     const r = props.row;
@@ -122,7 +140,7 @@ The projection follows what an option describes — a whole column, one cell, or
 | `data.<g>.<integrationSID>` | For a property shown in the table — its column attributes, one entry for the whole column: `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue`. For a panel property of the group — the property's `value` and its attributes, read for the current object |
 | `data.<g>.list[i].<integrationSID>` | One cell of a table property — its `value` for that row and the cell attributes computed for that row: `readOnly`, `disabled`, `background`, `foreground` and the rest |
 | `data.<g>.list[i]` | The row's own options, direct on the row: `background`, `foreground`, `selected` |
-| `data.<g>` | `count` — how many rows have been read; `options` — the group's custom options |
+| `data.<g>` | `count` — how many rows have been read (`list.length`), not how many rows pass the group's filters; `options` — the group's custom options |
 | `data.<integrationSID>` | A form-level (no-group) property — its `value` and attributes |
 | `data.<containerSID>` | The `caption` and `image` of a container the component can be asked to draw them for — one **declared** in the design (`NEW <name>`), or an `lsf` child like `BOX(o)` — keyed by its design component identifier, always at the top level, whatever the container is nested in. Such a container is always there, `{}` when it has neither. A generated container the author neither declared nor marked `lsf` (`BOX(g)`, `TOOLBAR(g)`, `PANEL(g)`, …) is not projected |
 
@@ -477,6 +495,8 @@ and each element carries:
 An element declared [`LSF`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `children` and `lsf: true`, and none of the rest.
 
 The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not. `props.controller` is the navigator controller, whose [`activate`](How-to_Custom_view_controller.md#navigator-controller) does what clicking the element does: selects a folder, or runs an action.
+
+So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child that lands in another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself sits in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component. A component that draws only the elements it knows about loses such sections; everything the window was given is reached through `root` and `children`.
 
 Only the desktop web client draws the component. The mobile web client and the desktop client render their standard menu for that window, so the navigator stays usable in all of them.
 

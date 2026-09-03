@@ -126,6 +126,8 @@ If the form opens in [window](In_an_interactive_view_SHOW_DIALOG.md#location) mo
 
 The size is computed from the content present at the moment the window opens and does not change afterwards (only the user can resize the window). In the web client, the content of a container rendered by a React component is drawn by the component itself — after the window size has been computed — so such a container without a base size counts as empty, and its content then does not fit the window and pushes the components below it, including the system buttons, past its edge. A component's base size is taken as the minimum when the window size is computed, so such a container is given a base size; content that does not fit in it scrolls inside the container by default.
 
+Measuring and fixing the size at opening is the default mode of the form's main container. If the form's design explicitly gives the main container the base size `-1` — in both directions or only in height — the window is not measured and not fixed in that direction but follows the content, including content drawn later. The window is then centered only at opening, by the content present at that moment, its height is not capped at the screen height — a window taller than the screen scrolls as a whole — and tables on such a form do not fit their height to their rows, keeping their base height with their own scrolling.
+
 ### Default design {#defaultDesign}
 
 An automatic design can be created for each form, based on the form's structure. The developer can modify the automatic design or create a design from scratch.

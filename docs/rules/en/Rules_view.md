@@ -65,6 +65,24 @@ title: 'Rules: view logic'
    dropdown — by the number of options and the length of
    the captions).
 
+   The rule concerns what the user sees. In a container with
+   the `custom` attribute (a custom view on a React component,
+   form design rule 8) the platform does not show property
+   values but hands them to the component in the `props.data`
+   projection, where an object value is the numeric identifier.
+   Object links (`assignedTo(s)`, `customer(o)`) are needed there
+   in exactly that form: by the identifier the view lays rows
+   out into cells, matches a row with a row of another group —
+   in a single-object group of a custom class a row's `row.key`
+   numerically equals that object's identifier — and writes the
+   link back through `changeProperty`. So in such a container
+   the assistant MAY add an object-valued property to the form
+   as is — for the component's logic, not for display; if the
+   link is shown to the user, its caption MUST be added as a
+   separate entry — the caption composition, as above. A property
+   marked `LSF` is drawn by the platform, and the rule applies to
+   it as usual.
+
 5. A `PANEL` object of a user-defined class
    is NOT user-selectable by default.
 
@@ -160,6 +178,20 @@ title: 'Rules: view logic'
     explicit `READONLY` except the ones deliberately meant
     for input. The explicit mark also documents intent
     for the code reader.
+
+    In a container with the `custom` attribute (form design
+    rule 8) the component draws the values and decides itself
+    what is edited: an edit goes through the controller
+    (`changeProperty`). A static `READONLY` mark does not reach
+    the `props.data` projection — only the data-dependent
+    `readOnly` from `READONLYIF` arrives there — but the server
+    refuses a change to a marked property, and an edit through
+    the controller is silently not performed. So there `READONLY`
+    marks the properties the view does not change, and a
+    property the view changes through the controller MUST NOT
+    carry `READONLY`. A property marked `LSF` is drawn by the
+    platform with its own editor, and the rule applies to it as
+    usual.
 
 ### Flow rules (`WAIT`, `NOWAIT`)
 
@@ -279,7 +311,11 @@ title: 'Rules: view logic'
    without it a window with a single such container collapses
    to the caption and the system buttons, and the content
    drawn later pushes the OK / Close buttons past the window's
-   edge.
+   edge. For a form with no tables and content of moderate
+   height, the assistant MAY instead leave the container
+   without a base size and set `size = (-1, -1)` on the main
+   container of the form itself: the window is then not fixed
+   and follows the content (details in `Form_design`).
 
 9. `FALSE` is valid in the logical attributes of a `DESIGN`
    block — `defaultComponent`, `activated` and the like —
