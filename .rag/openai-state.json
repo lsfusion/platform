@@ -449,8 +449,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:c42134c0bb2b67a34437b7bd67423fd06ef7fd330c5512b5cda05d375b9efe9b",
-      "indexed_at": "2026-09-03T08:19:53Z",
+      "file_hash": "sha256:3d15a14f5886365752e76eea3bd93bf516e2fdf1badf138f70557500933cb923",
+      "indexed_at": "2026-09-03T08:59:04Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -466,9 +466,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::a-navigator-window-navigator-window": {
-          "file_id": "file-Dx6o7PKHCLC2QjvjtD4VXU",
+          "file_id": "file-FnTqGbMiSvdhDeK9CTT9du",
           "heading_path": "How-to: Custom React form views > A navigator window {#navigator-window}",
-          "section_payload_hash": "sha256:096096270e634c4fc6970090b448498ae1d8c5d66c9df2720b77e6ad3e15df15",
+          "section_payload_hash": "sha256:c7e080fc1fea8e4e642523b48339e1df1d9ba5cf7d65c4fb1a11efa08e4fb02a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::bucketing-rows-into-cells-bucketing": {
@@ -490,9 +490,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::display-options-display-options": {
-          "file_id": "file-TLuDm7tRtgxTtE9Einrd5d",
+          "file_id": "file-D3bgDdkeRniBk1dQ9saWER",
           "heading_path": "How-to: Custom React form views > Display options {#display-options}",
-          "section_payload_hash": "sha256:3700b361ec6c0028cc806f6f362530bcd70540d0046910c088cef806485e2122",
+          "section_payload_hash": "sha256:fec23d095a56066896c383547a58035a6bb48a4c6e1100e5978430b4051e4a4a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::drawing-a-caption-caption": {
@@ -544,15 +544,21 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
-          "file_id": "file-MFAkfjstTzxDcFRNaWKF7V",
+          "file_id": "file-P2iWK94Mo5yuptkF9gAzh3",
           "heading_path": "How-to: Custom React form views > Selecting the component",
-          "section_payload_hash": "sha256:d3583ee4e7ba1630b84f65df31111879800937c48d1f27aa24872e6d4a14460e",
+          "section_payload_hash": "sha256:683e84570be6da8a5cf8610d3d1648248b6c6ae0392d9286911acfb3d1ad9d8a",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
-        "How-to_Custom_React_views::the-component": {
-          "file_id": "file-T2gBnV4JKAXAyFH7AteeFg",
+        "How-to_Custom_React_views::the-component::part-00": {
+          "file_id": "file-U6gKQi3y7jtJ6tGGC5pSur",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:2830788282f86180a27efc893dd0535a8cae3092c7ce59bb43ead83bc0e65f3b",
+          "section_payload_hash": "sha256:1654d60f64e8fd5d3e09f9ff28b65f80d598a46cdbf4765d785d314ee2ac42c7",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::the-component::part-01": {
+          "file_id": "file-3L4jCnhv98p4wKj5FrfJSr",
+          "heading_path": "How-to: Custom React form views > The component",
+          "section_payload_hash": "sha256:41aa749f2beb3df6e73838a439edd1e5cef2c5dbec6fa7fb629deec5cddc20ba",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-forms-window-forms-window": {
@@ -10055,8 +10061,8 @@
       "stale": false
     },
     "paradigm/Form_design.md": {
-      "file_hash": "sha256:ee3e18f313e7e5a61db6a630f1e45f0595529948fa7fb9f2428f364ee05a679b",
-      "indexed_at": "2026-09-03T08:20:55Z",
+      "file_hash": "sha256:5e744a6604d16ed5f0c241f189112388e58a53f171127d02fc8cd2537a182863",
+      "indexed_at": "2026-09-03T08:59:13Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -10120,9 +10126,9 @@
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::window-size": {
-          "file_id": "file-73LkX7SZtWcZJADGQXZzcg",
+          "file_id": "file-J6Mk4Y5DTM26nqmkPU9EuB",
           "heading_path": "Form design > Window size",
-          "section_payload_hash": "sha256:a845664796f958f4b06525ed5f7a8ad5c09ed02e89c54a388f8d61c1851c72fc",
+          "section_payload_hash": "sha256:6fea809355a9034255fb37ba8c3c19294b3ab148c29978bbd6dd1409ca04cf78",
           "source_file": "paradigm/Form_design.md"
         }
       },
@@ -14919,7 +14925,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "ea7ea057e146026bbfa68fa267e54f69447fade9",
+  "last_indexed_docs_commit": "4581d73c8b4026bc453e3a47351b079211fc556e",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
