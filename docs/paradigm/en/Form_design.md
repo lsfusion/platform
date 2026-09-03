@@ -124,6 +124,8 @@ The default height of a property value cell is equal to the height of the font u
 
 If the form opens in [window](In_an_interactive_view_SHOW_DIALOG.md#location) mode it does not have an upper container, so you need to determine this window's initial size. This size is determined similarly to the default base size, the only difference is that for tables/trees the default size is determined not as a constant (the default is `130`, `70`) but in such a way that it contains their whole contents (similar to the automatic sizing mechanism), but no less than `130` in width and `140` in height.
 
+The size is computed from the content present at the moment the window opens and does not change afterwards (only the user can resize the window). In the web client, the content of a container rendered by a React component is drawn by the component itself — after the window size has been computed — so such a container without a base size counts as empty, and its content then does not fit the window and pushes the components below it, including the system buttons, past its edge. A component's base size is taken as the minimum when the window size is computed, so such a container is given a base size; content that does not fit in it scrolls inside the container by default.
+
 ### Default design {#defaultDesign}
 
 An automatic design can be created for each form, based on the form's structure. The developer can modify the automatic design or create a design from scratch.

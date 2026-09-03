@@ -94,6 +94,16 @@ title: 'Rules: view logic'
       are no parameters — empty parentheses MUST still be
       written. Writing the bare name without parentheses
       is a parse error.
+    - Empty parentheses right after the keyword
+      (`PROPERTIES()`) are a common-parameter header, not
+      its absence: the entries of such a block are bare IDs
+      (`PROPERTIES() total, newCustomer`), and only
+      parameterless properties and actions can be added
+      this way. An entry with parentheses in it is the same
+      parse error as in any header block
+      (`mismatched input '(' expecting ';'`), and the error
+      does not point at the cause. The equivalent without
+      a header is `PROPERTIES total(), newCustomer()`.
 
     The assistant MUST NOT mix the two styles in one block,
     and MUST NOT repeat the common parameters after the
@@ -170,6 +180,14 @@ title: 'Rules: view logic'
    its result is consumed, and left to the same heuristic
    otherwise. When a dialog must block, the assistant makes
    it block by using what it returns.
+
+2. In synchronous mode `DOCKED` is a tab that blocks the
+   calling form, and from a form shown as a window such a
+   tab is shown as a window. So `SHOW ... DOCKED` from a
+   form shown as a window (`FLOAT`) without `NOWAIT` opens
+   a window, not a tab: such a form is modal, so the default
+   mode there is synchronous (rule 1). To open a tab from it,
+   the assistant MUST specify `NOWAIT`.
 
 ## Form design
 
@@ -251,6 +269,17 @@ title: 'Rules: view logic'
    a nonstandard layout or interactivity. Before creating
    such a view, the assistant MUST retrieve the
    `How-to_Custom_React_views` documentation.
+
+   For a form with such a container opened as a window
+   (`FLOAT`; the default location for `DIALOG`), the assistant
+   MUST give the container a base size — `size = (w, h)` or
+   the separate `width` and `height` attributes: the
+   window size is computed from the content at the moment of
+   opening, when the component has not drawn anything yet, so
+   without it a window with a single such container collapses
+   to the caption and the system buttons, and the content
+   drawn later pushes the OK / Close buttons past the window's
+   edge.
 
 9. `FALSE` is valid in the logical attributes of a `DESIGN`
    block — `defaultComponent`, `activated` and the like —

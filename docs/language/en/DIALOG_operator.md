@@ -161,7 +161,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `windowType`
 
-    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. `FLOAT` is the default.
+    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. `FLOAT` is the default. In synchronous mode a `DOCKED` tab blocks the form it is opened from until it is closed, and from a form shown as a window it is shown as a window, like `FLOAT`.
 
 - `manageSessionType`
 

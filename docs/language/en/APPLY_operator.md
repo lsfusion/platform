@@ -22,6 +22,8 @@ LOCAL
 
 The `APPLY` operator creates an action that applies changes to the database. If an action is given inside the operator, it is run as part of the same apply transaction.
 
+The `APPLY` option of the [`PROPERTIES` block](Properties_and_actions_block.md#options) of a form is a different construction: it makes the standard change handler of a property (action) on the form apply the changes right after the change, without an explicit `APPLY` operator.
+
 ### Parameters
 
 - `NESTED`

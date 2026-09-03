@@ -13,7 +13,7 @@ PROPERTIES [(cparam1, ..., cparamN)] [formPropertyOptions] formPropertyDecl1, ..
 
 Each `formPropertyDecl` describes the property or action being added to the form structure and has the following syntax:
 
-If the common parameters `(cparam1, ..., cparamN)` have been specified:
+If the common parameters `(cparam1, ..., cparamN)` have been specified — the parentheses after `PROPERTIES` are present, even if empty:
 
 ```
 [[alias1] [caption1] =] [ACTION] formPropertyId1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] [ACTION] formPropertyIdK [formPropertyOptionsK] 
@@ -103,7 +103,7 @@ In all [expressions](Expression.md) and [context-dependent action operators](Act
 
 - `cparam1, ..., cparamN`
 
-    List of common parameters of the block. Each parameter is specified with the name of the object on the form. If this list is defined, then adding a property (action) will require that you specify only its ID without parameters. The object name is specified with [simple ID](IDs.md#id).
+    List of common parameters of the block. Each parameter is specified with the name of the object on the form. If this list is defined, then adding a property (action) will require that you specify only its ID without parameters. The object name is specified with [simple ID](IDs.md#id). The list may also be empty: `PROPERTIES()` is a header with zero common parameters, not its absence, so in such a block too a property (action) is specified by its ID alone, and only parameterless properties and actions can be added this way — `PROPERTIES() total, newCustomer` is equivalent to `PROPERTIES total(), newCustomer()`.
 
 - `alias`
 
@@ -151,7 +151,7 @@ In the current platform implementation, if the name and caption are not specifie
 
     [Context-dependent action operator](Action_operators.md#contextdependent) being added to the form structure.
 
-#### Options for the property or action
+#### Options for the property or action {#options}
 
 - `changeType`
 
@@ -296,7 +296,15 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `APPLY`
 
-    Modifier specifying that a change of the property being added (or execution of the action being added) is immediately applied (committed) to the database, instead of remaining in the current form session until it is applied explicitly. It can be combined with `NEWSESSION` / `NESTEDSESSION` (the session scope determines the session in which the change is executed, after which `APPLY` commits it) or used on its own.
+    Modifier specifying that the changes of the property being added (or of the action being added) are applied immediately after the change (execution), instead of remaining in the current form session until it is applied explicitly. The modifier extends the [standard handler](../paradigm/Form_events.md#predefined) of the change event: after the value is written (the action is executed), the changes are applied in the same way as by the [`APPLY` operator](APPLY_operator.md). The modifier does not affect an explicitly specified handler (`ON CHANGE`): such a handler applies the changes itself, if necessary.
+
+    Which changes are applied depends on the session scope:
+
+    - without `NEWSESSION` / `NESTEDSESSION` — the current form session is applied entirely, that is, together with all the other pending changes of the form, not only the change of this property;
+    - with `NEWSESSION` — the change (the action) is executed and applied in a new session, so only the changes made in that session are committed, while the pending changes of the form session remain unapplied;
+    - with `NESTEDSESSION` — applying the nested session only copies its changes into the form session; they reach the database when the form session is applied.
+
+    If the apply is canceled, for example, due to a [constraint](../paradigm/Constraints.md) violation, the transaction is rolled back, and the messages issued during the apply are shown to the user, as with the `APPLY` operator. Without a session scope the change then remains in the form session as an unsaved change (the property keeps the entered value); with `NEWSESSION` it is discarded together with the new session. The modifier does not affect the asynchronous execution of the change on the client and can be combined with `OPTIMISTICASYNC`.
 
 - `OPTIMISTICASYNC`
 

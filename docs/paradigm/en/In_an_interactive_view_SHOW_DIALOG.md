@@ -26,6 +26,8 @@ A form being opened can be shown in one of the following ways:
 
 By default, forms in the synchronous mode are shown as windows, in the asynchronous mode – as tabs.
 
+A tab opened in the synchronous mode blocks the calling form until it is closed. If the calling form is itself shown as a window, the opened form is shown as a window instead of a tab.
+
 
 :::info
 In the current implementation of the platform, the floating window, the embedded form, and the popup are modal; the tab and the container form are not. This is the modality the platform uses when choosing the mode automatically (see above).
