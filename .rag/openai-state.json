@@ -449,8 +449,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:9ad211a92520258067392098becbdc538d44ca0e7041a1b64d2e013fbae216c6",
-      "indexed_at": "2026-08-31T14:00:51Z",
+      "file_hash": "sha256:c42134c0bb2b67a34437b7bd67423fd06ef7fd330c5512b5cda05d375b9efe9b",
+      "indexed_at": "2026-09-03T08:19:53Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -544,9 +544,9 @@
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::selecting-the-component": {
-          "file_id": "file-SqY5yWGo2VaFdfpUm8WWup",
+          "file_id": "file-MFAkfjstTzxDcFRNaWKF7V",
           "heading_path": "How-to: Custom React form views > Selecting the component",
-          "section_payload_hash": "sha256:2bb210b8b53dc011734a170812d4b071fb216f8fd9308720325baf8513b42bd1",
+          "section_payload_hash": "sha256:d3583ee4e7ba1630b84f65df31111879800937c48d1f27aa24872e6d4a14460e",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component": {
@@ -801,8 +801,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:09322558573c97e82267adb8dd85edaec81c92f167c109720da8055b69a325d7",
-      "indexed_at": "2026-08-31T14:00:59Z",
+      "file_hash": "sha256:e0c6fd028e1dde821956fd5509e7facb21fe20d0ac68048be59ea5fde15d3a76",
+      "indexed_at": "2026-09-03T08:19:59Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -836,9 +836,9 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-01": {
-          "file_id": "file-N6pNCuF2jQ5qsjoVrWYM26",
+          "file_id": "file-Bk1kDsC8WvXQUaMkxdTPGL",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:34f621f18aac918daa70d7bb61d501bdefb1ff6c742a0c9f7570f8ae85da6eb4",
+          "section_payload_hash": "sha256:e61ea108eb374ec559716eb2fab23ba8ae52bf581b3440c182d0de1c9150313b",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
@@ -3159,8 +3159,8 @@
       "stale": false
     },
     "language/APPLY_operator.md": {
-      "file_hash": "sha256:063e0619dd603f3074b42c1e7192f59d8af511d4ca584e3043603bc6d547ed2e",
-      "indexed_at": "2026-08-28T16:44:32Z",
+      "file_hash": "sha256:019b07018ea6345f190ebd2bc6fc8425d0e2fee985b500a9621cd9239f815d43",
+      "indexed_at": "2026-09-03T08:20:06Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -3176,9 +3176,9 @@
           "source_file": "language/APPLY_operator.md"
         },
         "APPLY_operator::description": {
-          "file_id": "file-17JPPjDnDwCQXT1gC85FHc",
+          "file_id": "file-Gi74X6Fk6veXFpqVX6Y1f6",
           "heading_path": "APPLY operator > Description",
-          "section_payload_hash": "sha256:2730d16c7f03712b73d14833fc4a8f7e895a7f3b287f382e33070f89a6bd7de0",
+          "section_payload_hash": "sha256:19085b6d49ed528e20d6e98620d6236f7978c4512634f94a7a7beaf516e3764b",
           "source_file": "language/APPLY_operator.md"
         },
         "APPLY_operator::examples": {
@@ -4235,8 +4235,8 @@
       "stale": false
     },
     "language/DIALOG_operator.md": {
-      "file_hash": "sha256:73b7fefdd095720f4d937b8fb7249f9446bae36a87252dcb142960a385cb4d4a",
-      "indexed_at": "2026-08-28T16:48:38Z",
+      "file_hash": "sha256:bc04f82433dac318dffebc1c4c6504a4bdca66f551339a10f7e4c390a4c1e9e1",
+      "indexed_at": "2026-09-03T08:20:13Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -4270,9 +4270,9 @@
           "source_file": "language/DIALOG_operator.md"
         },
         "DIALOG_operator::options": {
-          "file_id": "file-9BUVBBea52xMCYxwfMw3tD",
+          "file_id": "file-H4YXeDCv4zLxwDwAAFrmX3",
           "heading_path": "DIALOG operator > Options",
-          "section_payload_hash": "sha256:c459e933951fabe3e0cbaf27dc1e93918228029a4ff0f170468391e5ec051fd4",
+          "section_payload_hash": "sha256:11bfc5a1603a1847b8c564be756af3e3ebb7063b15017fd6d070dc9ff6c9431d",
           "source_file": "language/DIALOG_operator.md"
         },
         "DIALOG_operator::parameters": {
@@ -6411,8 +6411,8 @@
       "stale": false
     },
     "language/Object_blocks.md": {
-      "file_hash": "sha256:593f7946c1d82c8061359cce89f428a93851232502d042db8917d8d6dd4874db",
-      "indexed_at": "2026-08-28T16:57:11Z",
+      "file_hash": "sha256:e83075708db7a06567d068ce5fb9c566ab38a2cfd4cf157c579ad7af3bba3ebd",
+      "indexed_at": "2026-09-03T08:20:21Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -6494,9 +6494,9 @@
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::parameters": {
-          "file_id": "file-2Wi72odwyhTT6882SEXqnQ",
+          "file_id": "file-Mo6vkPMAcyo52MwZzao1Y4",
           "heading_path": "Object blocks > Object block {#objects} > Parameters",
-          "section_payload_hash": "sha256:5bb34941e2823a1de68597d89ba9decac0a9c7c2e578d90e08fd9c2622987e70",
+          "section_payload_hash": "sha256:621740a5b99b4a78c40a01ce6e99d8bd8ca9d589d57f381edc2e74bd095a6e73",
           "source_file": "language/Object_blocks.md"
         },
         "Object_blocks::parameters::dup-1": {
@@ -6779,8 +6779,8 @@
       "stale": false
     },
     "language/Properties_and_actions_block.md": {
-      "file_hash": "sha256:eca2a2ffa0a3ca3228fed2e92bcfbb925b9036d6e81f9f63890cea71761e9c1a",
-      "indexed_at": "2026-08-28T16:58:30Z",
+      "file_hash": "sha256:18ce85d429fa669e4a97acbbc3de6f0aa353d54e713ef82628abc9f0f6598088",
+      "indexed_at": "2026-09-03T08:20:29Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -6820,21 +6820,21 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-00": {
-          "file_id": "file-BNebkJVAD6YM8PpQuMdEVN",
+          "file_id": "file-YAMPF9z8vrm6ZmYnDSHZGa",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:07430cb665cacef556f989ff6f5ff0159f2dd2ae3e9056ba93cf7ad0cff259f0",
+          "section_payload_hash": "sha256:bf29715d2471a58c5eb2d438a8891dbe485b8adf0eedba60020b73df6cfc15d1",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-01": {
-          "file_id": "file-G7sksGUQqLk1hUhDrVy6qm",
+          "file_id": "file-LTv2pyJPC7SgqnaQ9Qzxco",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:5b84c4522b9bc7e950c870b8f5acdf494ad9f9cf6e1ab40726547c3f92d3a58c",
+          "section_payload_hash": "sha256:4846c8ad9ab994b655145073df34513851a1fd0efb0b6e36de441631530c90e4",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-02": {
-          "file_id": "file-DmdCowrJbUVVJR5L5Z4Yc2",
+          "file_id": "file-Vau6LVnWq1tK2zABThG5Ht",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:8ee84da6f6345f1847f9a1c1945709c923b29142047ca01552dd24f30cbce999",
+          "section_payload_hash": "sha256:b7b5374a9ecf45e64d3e06b337ee2e6401fc8992cedc343c5c7d62312a616bb2",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::properties-and-actions-block": {
@@ -6844,9 +6844,9 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::syntax": {
-          "file_id": "file-X6mg7qzfeCrT6iVix5RG8X",
+          "file_id": "file-1eiPpfrGBY6FLRZtd1x4Jr",
           "heading_path": "Properties and actions block > Syntax",
-          "section_payload_hash": "sha256:d3f77c1ce90c0a6fc6a976e6714b4dfb2e64f52a7f3712b213aabebeedf9f642",
+          "section_payload_hash": "sha256:2ff91a15c9e9f6d1fd78729a7ec049819e5b37522edd289e1bad1801bb65feb4",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::syntax::dup-1": {
@@ -7277,8 +7277,8 @@
       "stale": false
     },
     "language/SHOW_operator.md": {
-      "file_hash": "sha256:d7812cd26e8413d21b0a05f5bb42c9468b01babe7c69c293afa1bb336dbb9065",
-      "indexed_at": "2026-08-28T17:00:26Z",
+      "file_hash": "sha256:51e22585215e5548a2a676448ca6ff5eafe634a0cfda791a55f8cf06e61195be",
+      "indexed_at": "2026-09-03T08:20:40Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -7300,9 +7300,9 @@
           "source_file": "language/SHOW_operator.md"
         },
         "SHOW_operator::options": {
-          "file_id": "file-S9qoXt5ETn8fCneutyLeoN",
+          "file_id": "file-EtWouRbBZrYT8AKtpDogWV",
           "heading_path": "SHOW operator > Options",
-          "section_payload_hash": "sha256:23c03b2efdbd4242e5ff7d637ecc275212c7b369f45ffc7c29ae49cc5b651c24",
+          "section_payload_hash": "sha256:489812671aee98a15ea7e09dfd9809880de739f34c254341a176ed3596c11d50",
           "source_file": "language/SHOW_operator.md"
         },
         "SHOW_operator::parameters": {
@@ -9023,8 +9023,8 @@
       "stale": false
     },
     "paradigm/Comparison_operators_=_etc.md": {
-      "file_hash": "sha256:2cc90e5b773a72cefb89d2087e0444f5ef7e5da40b3191b5f44093e553170726",
-      "indexed_at": "2026-08-28T17:07:16Z",
+      "file_hash": "sha256:96be70421bcb9b463526c37c34340fb4a7fa39471ffcf827a899bd209ceba280",
+      "indexed_at": "2026-09-03T08:20:47Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -9034,9 +9034,9 @@
       },
       "sections": {
         "Comparison_operators_=_etc::comparison-operators-=---...": {
-          "file_id": "file-GEaLCQN14Yt4pLhLwsgmKZ",
+          "file_id": "file-B33tdysV26vvQwZmmeeLL1",
           "heading_path": "Comparison operators (=, >, <, ...)",
-          "section_payload_hash": "sha256:d75903cf1b29cdbb1fe64532e60ab52e314dc1383d0cc3093dcbb070331ee363",
+          "section_payload_hash": "sha256:18f7c3403f8bec231965530c1c1fb113e3f3b66474fa48dc1720cb8672927f92",
           "source_file": "paradigm/Comparison_operators_=_etc.md"
         },
         "Comparison_operators_=_etc::examples": {
@@ -10055,8 +10055,8 @@
       "stale": false
     },
     "paradigm/Form_design.md": {
-      "file_hash": "sha256:1dd6c1eabeb91a803bf33625fae21babe76adac3303282fd7fedf9511a906eed",
-      "indexed_at": "2026-08-28T17:11:37Z",
+      "file_hash": "sha256:ee3e18f313e7e5a61db6a630f1e45f0595529948fa7fb9f2428f364ee05a679b",
+      "indexed_at": "2026-09-03T08:20:55Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -10120,9 +10120,9 @@
           "source_file": "paradigm/Form_design.md"
         },
         "Form_design::window-size": {
-          "file_id": "file-RZVEPXd1B2mYNUi5xoGAXV",
+          "file_id": "file-73LkX7SZtWcZJADGQXZzcg",
           "heading_path": "Form design > Window size",
-          "section_payload_hash": "sha256:e8545403ad042de46203ea00d8a73a4ced187e566b2f99f78aa27f4c46dfbf85",
+          "section_payload_hash": "sha256:a845664796f958f4b06525ed5f7a8ad5c09ed02e89c54a388f8d61c1851c72fc",
           "source_file": "paradigm/Form_design.md"
         }
       },
@@ -10585,8 +10585,8 @@
       "stale": false
     },
     "paradigm/In_an_interactive_view_SHOW_DIALOG.md": {
-      "file_hash": "sha256:e9ab0eb26ef540cab8654b880f80e3c87bd135a2740cdfab2fc958f474019747",
-      "indexed_at": "2026-08-28T17:13:31Z",
+      "file_hash": "sha256:a5e654a9dadea46bc6ea497bc084b47bb0717a906ea8b51b69801184c6618462",
+      "indexed_at": "2026-09-03T08:21:03Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -10620,9 +10620,9 @@
           "source_file": "paradigm/In_an_interactive_view_SHOW_DIALOG.md"
         },
         "In_an_interactive_view_SHOW_DIALOG::form-location-location": {
-          "file_id": "file-WpiEdkw2FeSfqvSudWqS7e",
+          "file_id": "file-5tRfB1YiBauXngDhAVto9S",
           "heading_path": "In an interactive view (SHOW, DIALOG) > Form location {#location}",
-          "section_payload_hash": "sha256:064130506fa2875fdce480d645032bac550b5df5a02acc498bc8c5f203eb7a91",
+          "section_payload_hash": "sha256:44439bbfeb724326525c74c315f90de4ffa52294a0174029347be520d3e2a95c",
           "source_file": "paradigm/In_an_interactive_view_SHOW_DIALOG.md"
         },
         "In_an_interactive_view_SHOW_DIALOG::in-an-interactive-view-show-dialog": {
@@ -14919,7 +14919,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "2b95d2da12fc69922154b4e7c508121d1ae64d95",
+  "last_indexed_docs_commit": "ea7ea057e146026bbfa68fa267e54f69447fade9",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
