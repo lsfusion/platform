@@ -1,0 +1,2 @@
+# Tests listed here still run, but a failure is reported as skipped rather than as a build failure.
+# One name per line, the same name the report shows: <directory>/<Module>.<action>
