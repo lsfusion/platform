@@ -120,11 +120,12 @@ price (Item i) = OVERRIDE salePrice(i), basePrice(i), 0;
 
 ### Рекурсия (RECURSION)
 
-[Оператор `RECURSION`](../language/RECURSION_operator.md) создает свойство, вычисляемое итерациями; к нему обращаются на деревьях, графах и транзитивных замыканиях — уровень узла, все предки объекта, достижимость по цепочке ссылок. Его части — `STEP`, префикс `$` перед параметром и опция `CYCLES` — и то, как считаются итерации, описаны в [рекурсии](../paradigm/Recursion_RECURSION.md).
+[Оператор `RECURSION`](../language/RECURSION_operator.md) создает свойство, вычисляемое итерациями; к нему обращаются на деревьях, графах и транзитивных замыканиях — все предки объекта, достижимость по цепочке ссылок, а через подсчёт предков — уровень узла. Его части — `STEP`, префикс `$` перед параметром и опция `CYCLES` — и то, как считаются итерации, описаны в [рекурсии](../paradigm/Recursion_RECURSION.md). Для иерархии по свойству `parent[class]` готовый набор таких свойств даёт системный модуль [`Hierarchy`](../paradigm/Utils_Hierarchy.md).
 
 ```lsf
-level (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent = child
-                                              STEP 1 IF parent = parent($parent);
+isParent (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent = child
+                                                 STEP 1 IF parent = parent($parent); // не NULL для предка и самого child
+level (Group child) = GROUP SUM 1 IF isParent(child, Group parent);                  // уровень: число предков вместе с самим объектом
 ```
 
 ### Абстрактные свойства (ABSTRACT)

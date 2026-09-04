@@ -62,8 +62,8 @@ We need to create a form with a category tree, so that the books that belong to 
 ### Solution
 
 ```lsf
-level 'Level' (Category child, Category parent) = RECURSION 1l IF child IS Category AND parent == child
-                                                                 STEP 2l IF parent == parent($parent) MATERIALIZED;
+isParent 'Is parent' (Category child, Category parent) = RECURSION 1 IF child IS Category AND parent == child
+                                                                   STEP 1 IF parent == parent($parent) MATERIALIZED;
 
 FORM categoryBooks 'Books by category'
     TREE categories c = Category PARENT parent(c)
@@ -71,7 +71,7 @@ FORM categoryBooks 'Books by category'
 
     OBJECTS b = Book
     PROPERTIES(b) name
-    FILTERS level(category(b), c)
+    FILTERS isParent(category(b), c)
 ;
 
 DESIGN categoryBooks {
@@ -83,3 +83,5 @@ DESIGN categoryBooks {
     }
 }
 ```
+
+The `isParent[Category, Category]` property is not `NULL` when its second argument is an ancestor of the first or the same category (its numeric value is the number of paths between them, always `1` in a tree), so the filter selects the books of the current category and of all its descendants. The same set of properties for a hierarchy by `parent[Category]` — `isParent[Category, Category]`, `level[Category]`, `canonicalName[Category]` and others — is provided by the `@defineHierarchy` metacode of the [`Hierarchy`](../paradigm/Utils_Hierarchy.md) system module; here, where the `parent[Category]` property is already declared, it is attached by `@defineHierarchyCustom(category, Category)`, and `isParent[Category, Category]` then need not be declared by hand — the metacode creates it with the same meaning and the value `TRUE`.

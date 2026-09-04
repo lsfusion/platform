@@ -26,6 +26,8 @@ level 'Level' (Category child, Category parent) = RECURSION 1l IF child IS Categ
                                                                  STEP 2l IF parent == parent($parent) MATERIALIZED;
 ```
 
+The step value at each iteration is multiplied by the value of the previous one, which is why `STEP 2l` yields a power of two. The literals have the `LONG` class (`1l`, `2l`) because of the constraint of the default `CYCLES NO` policy: it fires when the value exceeds half of the cycle marker, which in a tree allows a distance of up to `30` for `LONG` and only up to `14` for `INTEGER`. The same set of properties — `level[Category, Category]`, `level[Category]`, `isParent[Category, Category]` and `category[Category, LONG]`, the counterpart of the `parent[Category, LONG]` declared below — is provided by the `@defineHierarchyCustom(category, Category)` metacode of the [`Hierarchy`](../paradigm/Utils_Hierarchy.md) system module; with it, the manual declarations of `nameParent[Category]`, `level[Category, Category]` and `parent[Category, LONG]` in this example are not needed.
+
 Let's create a property that will determine the corresponding parent by category and level.
 
 ```lsf

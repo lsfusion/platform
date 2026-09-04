@@ -40,7 +40,7 @@ System modules live under `server/src/main/lsfusion/` in the platform repository
 | `Integration`     | Generic integration actions                                                |
 | `MasterData`      | Base templates for master-data classes                                     |
 | [`Numerator`](Utils_Numerator.md) | Generic number generators                                            |
-| `Hierarchy`       | Hierarchical properties                                                    |
+| [`Hierarchy`](Utils_Hierarchy.md) | Object hierarchy by a `parent[class]` property: ancestors, levels, descendants, full name |
 | `Historizable`    | Change-history storage                                                     |
 | `Geo`             | Geographic data and operations                                             |
 | `Printer` / `QZTray` / `Sound` / `Com` | Access to client-side hardware                                |

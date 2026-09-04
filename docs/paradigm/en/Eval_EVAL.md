@@ -27,7 +27,7 @@ The compiled `run` action runs synchronously in the calling action's [session](C
 The executable code is meant to add new local elements and call existing ones; it cannot change the project's persistent structure. The following cannot appear in eval code:
 
 -   declarations of new [classes](Classes.md), [tables](Tables.md), and [indexes](Indexes.md)
--   global [events](Events.md) and [constraints](Constraints.md), including the write-event and follows-constraint forms attached to a property declaration
+-   global [events](Events.md) and [constraints](Constraints.md), including the write-event and follows-constraint forms attached to a property declaration, as well as the constraint implicitly created by a [recursion](Recursion_RECURSION.md) under the `CYCLES NO` policy (the default)
 -   [aggregations](Aggregations.md), and the aggregation and equality modes of [grouping](Grouping_GROUP.md)
 -   [materialization](Materializations.md), explicit table placement, and not-null constraints on properties
 -   declaring a [group](Groups_of_properties_and_actions.md) with a parent group from another module, or attaching a property or action to a group from another module

@@ -15,7 +15,7 @@ RECURSION initialExpr STEP stepExpr [CYCLES policy]
 
 The `RECURSION` operator creates a property that implements recursion. An [expression](Expression.md) that describes the next step of the recursion may access not only the property parameters but also the parameters at the previous step. This access has the syntax `$name`, where `name` is the name of the parameter. If `$name` is used, the corresponding parameter `name` (without `$`) must also appear in `initialExpr` or `stepExpr` — using `$name` alone in `stepExpr` is not enough.
 
-Values produced across all iterations are aggregated: if `initialExpr` and `stepExpr` are of a numeric class, the `SUM` aggregation is used; otherwise (typically when they are `BOOLEAN`), the `OR` aggregation is used. For a detailed description of the semantics and cycle policies, see [Recursion (RECURSION)](../paradigm/Recursion_RECURSION.md).
+Values produced across all iterations are aggregated per set of property parameters: if `initialExpr` and `stepExpr` are of a numeric class, the value of the next iteration equals the value of the previous one multiplied by `stepExpr`, and the values of all iterations are summed (`SUM`), so the result is the sum over all paths from the initial sets of objects to the given one, where the `initialExpr` value at the start of the path is multiplied by the product of the `stepExpr` values along the path (in particular, with `initialExpr` and a constant `stepExpr` both equal to `1`, the number of such paths); otherwise (typically when they are `BOOLEAN`), the `OR` aggregation is used. For a detailed description of the semantics and cycle policies, see [Recursion (RECURSION)](../paradigm/Recursion_RECURSION.md).
 
 Another `RECURSION` operator cannot be used inside `stepExpr` — such nesting is forbidden. The restriction applies only to `stepExpr`; `RECURSION` may appear inside `initialExpr`.
 
@@ -33,8 +33,8 @@ Another `RECURSION` operator cannot be used inside `stepExpr` — such nesting i
 
     Cycle-handling policy. One of:
 
-    - `YES` — cycles are allowed. For `BOOLEAN`-valued recursion there is no maximum to use as a cycle marker, so the marker has no effect on the result.
-    - `NO` (default) — cycles are not allowed; a constraint is added that the result must not reach the maximum value of its class.
+    - `YES` — cycles are allowed: when a cycle is detected, a marker value is added for the repeated set of objects — the rounded square root of the maximum value of the result class (`46341` for `INTEGER`, `3037000500` for `LONG`), and no further iterations are built from the marker row; the final value for the set is the marker summed with the other values accumulated for it, so it may exceed the marker. For `BOOLEAN`-valued recursion there is no marker: repeated sets of objects are discarded, and the cycle does not change the result.
+    - `NO` (default) — cycles are not allowed; an additional constraint is created that rejects a result greater than half of the cycle marker. This is a numeric threshold, so a sufficiently large value of a recursion without cycles can exceed it as well. For `BOOLEAN`-valued `initialExpr`/`stepExpr` under this policy every non-`NULL` value is replaced by the number `1`, and the result class becomes `LONG`.
     - `IMPOSSIBLE` — cycles are not possible (an optimisation hint, typically used when one of the parameters is a strictly increasing counter).
 
 ### Examples
@@ -49,10 +49,14 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 // counts the number of different paths from a to b in the graph
 pathes 'Number of paths' (a, b) = RECURSION 1 AND a IS Node AND b==a STEP 1 IF edge(b, $b);
 
-// defines at what level child is from parent, and null if it is not a child (thus this property can be used to define all children)
+// not NULL if parent is an ancestor of the child group or that group itself (so the property selects all descendants of parent);
+// the numeric value is the number of paths from child to parent along the parent property, always 1 in a tree
 parent = DATA Group (Group);
-level 'Level' (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent == child
-                                                                  STEP 1 IF parent == parent($parent);
+isParent 'Is parent' (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent == child
+                                                             STEP 1 IF parent == parent($parent);
+
+// level of a group in the hierarchy — the number of its ancestors including itself (1 for a root)
+level 'Level' (Group child) = GROUP SUM 1 IF isParent(child, Group parent);
 
 // Fibonacci numbers, the property calculates all Fibonacci numbers up to the value to, (afterwards it will return null)
 fib(i, to) = RECURSION 1 IF (i==0 OR i==1) AND to IS INTEGER STEP 1 IF (i==$i+1 OR i==$i+2) AND i<to CYCLES IMPOSSIBLE;

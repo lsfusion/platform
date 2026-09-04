@@ -120,11 +120,12 @@ price (Item i) = OVERRIDE salePrice(i), basePrice(i), 0;
 
 ### Recursion (RECURSION)
 
-The [`RECURSION` operator](../language/RECURSION_operator.md) creates a property computed by iteration; it is reached for on trees, graphs and transitive closures — the level of a node, all the ancestors of an object, reachability along a chain of references. Its parts — `STEP`, the `$` prefix on a parameter and the `CYCLES` option — and the way the iterations are computed are described in [recursion](../paradigm/Recursion_RECURSION.md).
+The [`RECURSION` operator](../language/RECURSION_operator.md) creates a property computed by iteration; it is reached for on trees, graphs and transitive closures — all the ancestors of an object, reachability along a chain of references, and, by counting the ancestors, the level of a node. Its parts — `STEP`, the `$` prefix on a parameter and the `CYCLES` option — and the way the iterations are computed are described in [recursion](../paradigm/Recursion_RECURSION.md). For a hierarchy by a `parent[class]` property the ready-made set of such properties is provided by the [`Hierarchy`](../paradigm/Utils_Hierarchy.md) system module.
 
 ```lsf
-level (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent = child
-                                              STEP 1 IF parent = parent($parent);
+isParent (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent = child
+                                                 STEP 1 IF parent = parent($parent); // not NULL for an ancestor and for child itself
+level (Group child) = GROUP SUM 1 IF isParent(child, Group parent);                  // level: the number of ancestors including the object itself
 ```
 
 ### Abstract properties (ABSTRACT)

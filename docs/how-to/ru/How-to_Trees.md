@@ -62,8 +62,8 @@ FORM categories 'Категории'
 ### Решение
 
 ```lsf
-level 'Уровень' (Category child, Category parent) = RECURSION 1l IF child IS Category AND parent == child
-                                                                 STEP 2l IF parent == parent($parent) MATERIALIZED;
+isParent 'Является родителем' (Category child, Category parent) = RECURSION 1 IF child IS Category AND parent == child
+                                                                            STEP 1 IF parent == parent($parent) MATERIALIZED;
 
 FORM categoryBooks 'Книги по категориям'
     TREE categories c = Category PARENT parent(c)
@@ -71,7 +71,7 @@ FORM categoryBooks 'Книги по категориям'
 
     OBJECTS b = Book
     PROPERTIES(b) name
-    FILTERS level(category(b), c)
+    FILTERS isParent(category(b), c)
 ;
 
 DESIGN categoryBooks {
@@ -83,3 +83,5 @@ DESIGN categoryBooks {
     }
 }
 ```
+
+Свойство `isParent[Category, Category]` не равно `NULL`, если второй аргумент — предок первого или та же самая категория (его числовое значение — количество путей между ними, в дереве всегда `1`), поэтому фильтр отбирает книги текущей категории и всех её потомков. Тот же набор свойств для иерархии по `parent[Category]` — `isParent[Category, Category]`, `level[Category]`, `canonicalName[Category]` и другие — даёт метакод `@defineHierarchy` системного модуля [`Hierarchy`](../paradigm/Utils_Hierarchy.md); здесь, где свойство `parent[Category]` уже объявлено, его подключает `@defineHierarchyCustom(category, Category)`, и объявлять `isParent[Category, Category]` вручную тогда не нужно — метакод создаёт его с тем же смыслом и значением `TRUE`.

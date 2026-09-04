@@ -15,7 +15,7 @@ title: 'Reflection'
 |---------------------------------------------|-------------------------------------------------------------------------------|
 | `PropertyGroup`                             | по одному объекту на группу свойств и действий                                |
 | `parent[PropertyGroup]`                     | родительская группа в дереве                                                  |
-| `level[PropertyGroup, PropertyGroup]`       | рекурсивная глубина: `1` для группы относительно самой себя, увеличивается на `1` за шаг до предка |
+| `level[PropertyGroup, PropertyGroup]`       | не `NULL`, если вторая группа — предок первой или она сама; значение — `2` в степени расстояния до предка (`1` для группы относительно самой себя, `2` для родителя) |
 | `caption[PropertyGroup]` / `number[PropertyGroup]` / `SID[PropertyGroup]` | отображаемое название, порядок и строковый идентификатор |
 | `propertyGroup[STRING]`                     | группа с указанным `SID`                                                      |
 
@@ -30,7 +30,7 @@ title: 'Reflection'
 | `NavigatorAction`                             | элемент навигатора, открывающий форму или запускающий действие              |
 | `caption[NavigatorElement]` / `canonicalName[NavigatorElement]` / `number[NavigatorElement]` | отображаемое название, уникальное каноническое имя и порядок |
 | `parent[NavigatorElement]`                    | родительский элемент в дереве                                               |
-| `level[NavigatorElement, NavigatorElement]`   | рекурсивная глубина, определяемая как `level[PropertyGroup, PropertyGroup]` |
+| `level[NavigatorElement, NavigatorElement]`   | не `NULL`, если второй элемент — предок первого или он сам; значение — `2` в степени расстояния до предка, по тому же правилу, что `level[PropertyGroup, PropertyGroup]` |
 | `form[NavigatorElement]`                      | форма, открываемая элементом навигатора                                     |
 | `action[NavigatorAction]`                     | действие, запускаемое элементом навигатора                                  |
 | `navigatorElementCanonicalName[STRING]`       | элемент с указанным каноническим именем                                     |
@@ -162,7 +162,7 @@ title: 'Reflection'
 
 ### Язык
 
-- [Оператор `RECURSION`](../language/RECURSION_operator.md) — вычисляет свойства глубины `level` по деревьям групп и навигатора.
+- [Оператор `RECURSION`](../language/RECURSION_operator.md) — вычисляет `level[PropertyGroup, PropertyGroup]` и `level[NavigatorElement, NavigatorElement]`: не `NULL` для предка и самого объекта, значение — `2` в степени расстояния.
 - [Оператор `INTERNAL`](../language/INTERNAL_operator.md) — стоит за служебными действиями физической модели, реализованными на Java.
 
 ### Связано

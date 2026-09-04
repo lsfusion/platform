@@ -19,6 +19,14 @@ All of these operators return `NULL` if one of the operands is `NULL` . Division
 |`(+)`   |Summation |Takes two input operands and returns their sum, treating `NULL` as `0`|`3 (+) 5`<br/>`3 (+) NULL`|`8`<br/>`3`|
 |`(-)`   |Difference|Takes two input operands and returns their difference, treating `NULL` as `0`|`5 (-) 3`<br/>`5 (-) NULL`<br/>`5 (-) 5`|`2`<br/>`5`<br/>`NULL`|
 
+The remainder of division, integer division, and exponentiation have no operators of their own — they are performed by properties of the system module [`Utils`](System_Utils.md):
+
+|Operation|Property|Description|Example|Result|
+|--------|--------|---|---|---|
+|Remainder of division|`mod[…, …]`|Takes two input operands and returns the remainder of dividing the first by the second; the sign of the result matches the sign of the dividend. With a zero divisor it does not return `NULL` but fails with a DBMS error|`mod(-7, 2)`|`-1`|
+|Integer division|`divideInteger[…, …]`|Casts both operands to `INTEGER` (non-integer values are rounded) and returns their ratio — integer division, truncating the fractional part|`divideInteger(7, 2)`|`3`|
+|Exponentiation|`power[…, …]`|Takes two input operands and returns the first raised to the power of the second; the result is `DOUBLE`|`power(2, 3)`|`8`|
+
 ### Determining the result class
 
 The result class is determined as:
@@ -50,4 +58,5 @@ Description [of arithmetic operators](../language/Arithmetic_operators.md).
 ```lsf
 sum(a, b) = a + b;
 transform(a, b, c) = -a * (b (+) c);
+remainder(a, b) = mod(a, b); // remainder of division — a property of the Utils module
 ```

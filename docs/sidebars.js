@@ -360,6 +360,7 @@ module.exports = {
                         'paradigm/System_Icon',
                         'paradigm/System_Utils',
                         'paradigm/Utils_Numerator',
+                        'paradigm/Utils_Hierarchy',
                       ]
                     },
                     'paradigm/Projects',

@@ -15,7 +15,7 @@ The module stores one object per metadata element (one `Property` per property, 
 |---------------------------------------------|-------------------------------------------------------------------------------|
 | `PropertyGroup`                             | one object per group of properties and actions                                |
 | `parent[PropertyGroup]`                     | the parent group in the tree                                                  |
-| `level[PropertyGroup, PropertyGroup]`       | recursive depth: `1` for a group relative to itself, growing by `1` per step up to an ancestor |
+| `level[PropertyGroup, PropertyGroup]`       | not `NULL` if the second group is an ancestor of the first or the group itself; the value is `2` to the power of the distance to the ancestor (`1` for a group relative to itself, `2` for the parent) |
 | `caption[PropertyGroup]` / `number[PropertyGroup]` / `SID[PropertyGroup]` | display caption, sort order, and string identifier |
 | `propertyGroup[STRING]`                     | the group with the given `SID`                                                |
 
@@ -30,7 +30,7 @@ The [navigator](Navigator.md) tree is represented by `NavigatorElement` and its 
 | `NavigatorAction`                             | a navigator element that opens a form or runs an action                     |
 | `caption[NavigatorElement]` / `canonicalName[NavigatorElement]` / `number[NavigatorElement]` | display caption, unique canonical name, and sort order |
 | `parent[NavigatorElement]`                    | the parent element in the tree                                              |
-| `level[NavigatorElement, NavigatorElement]`   | recursive depth, defined like `level[PropertyGroup, PropertyGroup]`         |
+| `level[NavigatorElement, NavigatorElement]`   | not `NULL` if the second element is an ancestor of the first or the element itself; the value is `2` to the power of the distance to the ancestor, by the same rule as `level[PropertyGroup, PropertyGroup]` |
 | `form[NavigatorElement]`                      | the form a navigator element opens                                          |
 | `action[NavigatorAction]`                     | the action a navigator action runs                                         |
 | `navigatorElementCanonicalName[STRING]`       | the element with the given canonical name                                  |
@@ -162,7 +162,7 @@ All five forms are placed in a `metadata` navigator folder under the system `Adm
 
 ### Language
 
-- [`RECURSION` operator](../language/RECURSION_operator.md) — computes the `level` depth properties over the group and navigator trees.
+- [`RECURSION` operator](../language/RECURSION_operator.md) — computes `level[PropertyGroup, PropertyGroup]` and `level[NavigatorElement, NavigatorElement]`: not `NULL` for an ancestor and the object itself, the value is `2` to the power of the distance.
 - [`INTERNAL` operator](../language/INTERNAL_operator.md) — backs the physical-model service actions implemented in Java.
 
 ### See also
