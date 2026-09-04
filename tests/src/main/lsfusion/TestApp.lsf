@@ -1,0 +1,4 @@
+MODULE TestApp;
+
+// the logics the test modules make up : they are picked up from the classpath, so nothing is registered here
+REQUIRE TestUtils;

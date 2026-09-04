@@ -10,6 +10,9 @@
 
 /server/target/
 
+/tests/logs/
+/tests/target/
+
 /server/src/main/java/LsfLogics.tokens
 /server/src/main/java/MigrationScript.tokens
 
