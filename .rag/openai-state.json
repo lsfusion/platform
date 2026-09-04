@@ -449,8 +449,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:3d15a14f5886365752e76eea3bd93bf516e2fdf1badf138f70557500933cb923",
-      "indexed_at": "2026-09-03T08:59:04Z",
+      "file_hash": "sha256:15ca0a71e9aa0b7d65dcbeffac7cc4c96515329e164df1cad897de230ae6e811",
+      "indexed_at": "2026-09-04T08:14:09Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -543,16 +543,16 @@
           "section_payload_hash": "sha256:0450da711cd1799c052541676daabcbe0d1fa505eba67484382f07b688c362f7",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
-        "How-to_Custom_React_views::selecting-the-component": {
-          "file_id": "file-P2iWK94Mo5yuptkF9gAzh3",
-          "heading_path": "How-to: Custom React form views > Selecting the component",
-          "section_payload_hash": "sha256:683e84570be6da8a5cf8610d3d1648248b6c6ae0392d9286911acfb3d1ad9d8a",
+        "How-to_Custom_React_views::selecting-the-component-selecting-the-component": {
+          "file_id": "file-KDrHwXUdQjdo29LjJsJa9J",
+          "heading_path": "How-to: Custom React form views > Selecting the component {#selecting-the-component}",
+          "section_payload_hash": "sha256:56df1f650f3049c9d53bc6c10f703436462c5c05c9a2e744e131ea6630d141ca",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component::part-00": {
-          "file_id": "file-U6gKQi3y7jtJ6tGGC5pSur",
+          "file_id": "file-PuDAP9a3AdSLvgopBqF8Wt",
           "heading_path": "How-to: Custom React form views > The component",
-          "section_payload_hash": "sha256:1654d60f64e8fd5d3e09f9ff28b65f80d598a46cdbf4765d785d314ee2ac42c7",
+          "section_payload_hash": "sha256:4dde3a3f6903c8519bfd0bd078d5c8de9d46da392f860bb45d4de8a639c66226",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::the-component::part-01": {
@@ -2117,8 +2117,8 @@
       "stale": false
     },
     "how-to/How-to_Overriding_values.md": {
-      "file_hash": "sha256:d26906a8f7193262c02b8db369b157b57480de06f2021142d882dc5b3239f539",
-      "indexed_at": "2026-08-28T16:40:13Z",
+      "file_hash": "sha256:0ad8a3b17aa3aebf7eab2347fda599b9a9080fd71bb147f8c87334dd271708d7",
+      "indexed_at": "2026-09-04T08:14:17Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -2128,9 +2128,9 @@
       },
       "sections": {
         "How-to_Overriding_values::how-to-overriding-values": {
-          "file_id": "file-WJ93eTRQyLZxDFRjeLrJ4s",
+          "file_id": "file-BoZ3aebG4zHoq5jcL9m5v1",
           "heading_path": "How-to: Overriding values",
-          "section_payload_hash": "sha256:00895568c90ec1911572347a4615297a9532822f8851eb9a9096e276a20db77b",
+          "section_payload_hash": "sha256:657c210bd7bfa77dc7fc7ac3d5fc1751fd2542ab95c53653d467ff603f5510d7",
           "source_file": "how-to/How-to_Overriding_values.md"
         }
       },
@@ -2361,8 +2361,8 @@
       "stale": false
     },
     "how-to/How-to_Trees.md": {
-      "file_hash": "sha256:baf50e57533e5acf369bf4c2a0e577032e45fcc110ad6bb8d0ab879f99632d8d",
-      "indexed_at": "2026-08-28T16:41:22Z",
+      "file_hash": "sha256:b8338d260313ba24ca3767df57de9075f0579c49b54f7c8da438df72eb798145",
+      "indexed_at": "2026-09-04T08:14:25Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -2384,9 +2384,9 @@
           "source_file": "how-to/How-to_Trees.md"
         },
         "How-to_Trees::task-003": {
-          "file_id": "file-KWcrwz2GuuZ2wj6xsh6R72",
+          "file_id": "file-7VNDARFyNsy9eqZFpdr3J3",
           "heading_path": "How-to: Trees > Example 3",
-          "section_payload_hash": "sha256:02a8dcff13e9a9bde4f6808028c38e36533a3eb0b260fb65d5ee63f8c74cb79a",
+          "section_payload_hash": "sha256:0ad9aaef84e4c765fc2cef506725d86fe84d1da0614f20ed7546dc4580917dd7",
           "source_file": "how-to/How-to_Trees.md"
         }
       },
@@ -3355,8 +3355,8 @@
       "stale": false
     },
     "language/Arithmetic_operators.md": {
-      "file_hash": "sha256:64c49767ab0322e0c48f211a7ad53ad170120974e1f2f3539116dc3cbcbac46c",
-      "indexed_at": "2026-08-28T16:45:15Z",
+      "file_hash": "sha256:c468175c9555c60399e3496473ec71838b2c59b56f71811f17d67caa008d29a4",
+      "indexed_at": "2026-09-04T08:14:31Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -3371,10 +3371,16 @@
           "section_payload_hash": "sha256:9264ec86e709b7f4422c08d5cefe001c35f64be50555ed6994b969cd6a464b40",
           "source_file": "language/Arithmetic_operators.md"
         },
-        "Arithmetic_operators::syntax+description+parameters+examples": {
-          "file_id": "file-VPSUf1XAn1Ec3qvhFAtr8u",
-          "heading_path": "Arithmetic operators > Syntax + Description + Parameters + Examples",
-          "section_payload_hash": "sha256:671d50c8cac1835a81b7abfc967fbfd007c789a4f7c1ed512260211cbf69f6d7",
+        "Arithmetic_operators::examples": {
+          "file_id": "file-HVgYyUmphus1LjXM5KDh67",
+          "heading_path": "Arithmetic operators > Examples",
+          "section_payload_hash": "sha256:e5c4b5e35230ef6d7928f9d754747a6319aa350738b8f9f39993fc5febea91c8",
+          "source_file": "language/Arithmetic_operators.md"
+        },
+        "Arithmetic_operators::syntax+description+parameters": {
+          "file_id": "file-RLCgmrfbyEVVNY4svYciyu",
+          "heading_path": "Arithmetic operators > Syntax + Description + Parameters",
+          "section_payload_hash": "sha256:d259a11c11b21b2b4a67ac1bfe08b74d77a8d0a2aef519c43ddbe1ed2530125e",
           "source_file": "language/Arithmetic_operators.md"
         }
       },
@@ -7055,8 +7061,8 @@
       "stale": false
     },
     "language/RECURSION_operator.md": {
-      "file_hash": "sha256:a55e13285cba161c022e172caeaccaf0d4e67364f0009bc41ca42669104675e8",
-      "indexed_at": "2026-08-28T16:59:37Z",
+      "file_hash": "sha256:ddb5f5e066ec8bebf41e334006fb8e8e43b6bd910a0d8ea30831f75cb45b2c7d",
+      "indexed_at": "2026-09-04T08:14:40Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -7065,16 +7071,22 @@
         "source_url_version": "v1"
       },
       "sections": {
+        "RECURSION_operator::description": {
+          "file_id": "file-Vnu8V9aZ9dXUKEog2Ckiz9",
+          "heading_path": "RECURSION operator > Description",
+          "section_payload_hash": "sha256:30abac21a4e3ad41b711c106dd0e53b6f686f0131ae283f325e1314cf2a794d7",
+          "source_file": "language/RECURSION_operator.md"
+        },
         "RECURSION_operator::examples": {
-          "file_id": "file-9W3XnJ5zmxoDBqphWdGKA2",
+          "file_id": "file-SBkkbSDookBYMSRVN9tmqe",
           "heading_path": "RECURSION operator > Examples",
-          "section_payload_hash": "sha256:6aad064a2f80e1881b9db21346d7d63f869f5bb0ff669b45261154687e8e47b7",
+          "section_payload_hash": "sha256:f9b487014e06453338a391e6cd8a6c838ceed304ac247a7488019b46a0fb790b",
           "source_file": "language/RECURSION_operator.md"
         },
         "RECURSION_operator::parameters": {
-          "file_id": "file-U33GYgE51qXyWfjih8MTie",
+          "file_id": "file-5XWgLQkNg977wnWs8izPeD",
           "heading_path": "RECURSION operator > Parameters",
-          "section_payload_hash": "sha256:eda3f0613e328158a062101fd0adfa5e545741c3ef640f94bac435e39bb8f7a7",
+          "section_payload_hash": "sha256:a5823a792671699d392c2337a4c1ea5d86b6dec60c33aa0f116840d1d573071a",
           "source_file": "language/RECURSION_operator.md"
         },
         "RECURSION_operator::recursion-operator": {
@@ -7083,10 +7095,10 @@
           "section_payload_hash": "sha256:0729d2aa79de232f4d2190ad517247767da2aaa2e4ebe3e6779ab395bc94ed34",
           "source_file": "language/RECURSION_operator.md"
         },
-        "RECURSION_operator::syntax+description": {
-          "file_id": "file-H7YicUkSQRz4B6Qjh33v6f",
-          "heading_path": "RECURSION operator > Syntax + Description",
-          "section_payload_hash": "sha256:68b7d8a8f1f82cc9dd3193f35ba9a194806b7938c8947a08261f5a58111c9c3a",
+        "RECURSION_operator::syntax": {
+          "file_id": "file-6tYnBZt2WHSQ1LYqmKcT9p",
+          "heading_path": "RECURSION operator > Syntax",
+          "section_payload_hash": "sha256:3ef5501ae9f5ae428c285191ea99c9921be0dd2461ef752e3f4709ac2f584ad5",
           "source_file": "language/RECURSION_operator.md"
         }
       },
@@ -8443,8 +8455,8 @@
       "stale": false
     },
     "paradigm/Arithmetic_operators_plus_minus_etc.md": {
-      "file_hash": "sha256:55a6a87b1363c3c71c7f09c04eb2b616c16365fc6ff4f9ead3655d7ed60cae1a",
-      "indexed_at": "2026-08-28T17:04:51Z",
+      "file_hash": "sha256:345306ee5b05932c1f5065c073b571422cb4e360883c3af382ee7d63f8198c8b",
+      "indexed_at": "2026-09-04T08:14:48Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -8454,9 +8466,9 @@
       },
       "sections": {
         "Arithmetic_operators_plus_minus_etc::arithmetic-operators-----...": {
-          "file_id": "file-ATBX8JAC6d8Tc1oPQiLHog",
+          "file_id": "file-DqwjNfLo6YPquqqs31U6SB",
           "heading_path": "Arithmetic operators (+, -, *, ...)",
-          "section_payload_hash": "sha256:90146e280ff7f13c53d17f0937f086e3c1ad4542077904c11bf2fa70301248fb",
+          "section_payload_hash": "sha256:9ff2a2fb157d7551047fdb63b2839e105cc4f75454df0af5e692b92a92860564",
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::determining-the-result-class": {
@@ -8466,9 +8478,9 @@
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         },
         "Arithmetic_operators_plus_minus_etc::language+examples": {
-          "file_id": "file-4i7b1Wxk5DNbWVcMYMLBcb",
+          "file_id": "file-MasTYeLCj9AgzMxqv5Fj3a",
           "heading_path": "Arithmetic operators (+, -, *, ...) > Language + Examples",
-          "section_payload_hash": "sha256:15ba202edf3b387c29f46b37efed9ac8305d67a8e08690bbacff70f87ff48599",
+          "section_payload_hash": "sha256:8a925e948a42c91899c6262177c1685c371493632963c285de640c0ed0fe03e3",
           "source_file": "paradigm/Arithmetic_operators_plus_minus_etc.md"
         }
       },
@@ -9639,8 +9651,8 @@
       "stale": false
     },
     "paradigm/Eval_EVAL.md": {
-      "file_hash": "sha256:5d0c70522beae8ff0e30fb7603d8c1a8d54157110e03e743308984b9b38ca2b8",
-      "indexed_at": "2026-08-28T17:09:46Z",
+      "file_hash": "sha256:f88dd39cf9bab24daed4d6e4e04da561a9ba1ae2a226f4095b1dd11a8d73af9a",
+      "indexed_at": "2026-09-04T08:14:57Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -9668,9 +9680,9 @@
           "source_file": "paradigm/Eval_EVAL.md"
         },
         "Eval_EVAL::restrictions-on-the-executable-code": {
-          "file_id": "file-YF1hTtGmbt7tzHSLL6pbWw",
+          "file_id": "file-9R5E2P1eAW6DpsFDrUDjVa",
           "heading_path": "Eval (EVAL) > Restrictions on the executable code",
-          "section_payload_hash": "sha256:0ea0f36f801e7bae37aeb5ed1dd1145a515777d0d7ba5f9aca33ac2b1860bea4",
+          "section_payload_hash": "sha256:f3eb1e46bdc6150367c2c9b467d08d7487251dc67c62f42b32ad11888ba609e1",
           "source_file": "paradigm/Eval_EVAL.md"
         },
         "Eval_EVAL::source-code": {
@@ -12561,8 +12573,8 @@
       "stale": false
     },
     "paradigm/Recursion_RECURSION.md": {
-      "file_hash": "sha256:1f6c34ff76f5785f9c753096545ead2bce8a0eef4653e8e3cb1530fd9484f93d",
-      "indexed_at": "2026-08-28T17:21:24Z",
+      "file_hash": "sha256:d96be9679f5d71b5df31584981d0419558aa06d7f238a0926ddcabbe702b5cf5",
+      "indexed_at": "2026-09-04T08:15:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -12572,9 +12584,9 @@
       },
       "sections": {
         "Recursion_RECURSION::examples": {
-          "file_id": "file-E49JWiGJh5EJtyyqMKNRms",
+          "file_id": "file-61Bkdncj6MvC7TrVHnUkGM",
           "heading_path": "Recursion (RECURSION) > Examples",
-          "section_payload_hash": "sha256:2e1e5d9ca06ea757ddb09b03dcb516c8e0b61f7c56ceba067014ab17b8967f73",
+          "section_payload_hash": "sha256:f280db4f99d68f8185e9a33a5b55733d37f352c3886336b14a3b90cae30b30bb",
           "source_file": "paradigm/Recursion_RECURSION.md"
         },
         "Recursion_RECURSION::language": {
@@ -12584,9 +12596,9 @@
           "source_file": "paradigm/Recursion_RECURSION.md"
         },
         "Recursion_RECURSION::recursion-recursion": {
-          "file_id": "file-TwqcNmUhBa3VizCpdMPKQo",
+          "file_id": "file-Ck7UQmJTev74rhWCfKFcL1",
           "heading_path": "Recursion (RECURSION)",
-          "section_payload_hash": "sha256:5e5835fb45414b79a34aa02886a7bc38201fa61192fcff9deb71f78ee7e9be13",
+          "section_payload_hash": "sha256:a1e6ad88088aba62ec098e3d1e30b9e4c35cc1e385b82b467557f8773bb195f2",
           "source_file": "paradigm/Recursion_RECURSION.md"
         }
       },
@@ -13679,8 +13691,8 @@
       "stale": false
     },
     "paradigm/System_Reflection.md": {
-      "file_hash": "sha256:c796a4e98a0e71b398a4f74ca520e869e5bcf98d92c064cd18285b548cb99e9c",
-      "indexed_at": "2026-08-28T17:25:27Z",
+      "file_hash": "sha256:bc06e6e2f71980bda1740a4502969eb39f96e2ad4b0424621ecf54221bd97c40",
+      "indexed_at": "2026-09-04T08:15:11Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -13708,15 +13720,15 @@
           "source_file": "paradigm/System_Reflection.md"
         },
         "System_Reflection::language": {
-          "file_id": "file-G4r7P1hLdeVymLYqp4rnhu",
+          "file_id": "file-8DwdAU5wcnTQsLwrfhEBJy",
           "heading_path": "Reflection > Language",
-          "section_payload_hash": "sha256:375a02ac0b76e8838cef332db79f10995b6ae38450e543cdd1be1ec2d5503283",
+          "section_payload_hash": "sha256:b5a11cc7b7f0c218586890c3a94c03468b7c2e6c90ed9aa6b10de9efb6eaebae",
           "source_file": "paradigm/System_Reflection.md"
         },
         "System_Reflection::navigator-metadata": {
-          "file_id": "file-Cfc8xyzgeovRZHaR239u6s",
+          "file_id": "file-ELV3Fc2uvexGXEnE91q5Qj",
           "heading_path": "Reflection > Navigator metadata",
-          "section_payload_hash": "sha256:bf6cf27d5ba423ea156a46ebce412786dcbdff450825dc04e5c36d680e481a65",
+          "section_payload_hash": "sha256:0207349ca14fcf96f23f3c7f2eb64cb1dc2d15fc37ad52e94d979337aa72ba5d",
           "source_file": "paradigm/System_Reflection.md"
         },
         "System_Reflection::physical-model": {
@@ -13732,9 +13744,9 @@
           "source_file": "paradigm/System_Reflection.md"
         },
         "System_Reflection::property-groups": {
-          "file_id": "file-RR25ydgFS185r9ycEBSeUU",
+          "file_id": "file-9a7K8xF4zxSCnyeqhnzyEu",
           "heading_path": "Reflection > Property groups",
-          "section_payload_hash": "sha256:b796259a483b3cdc5cba4d4b9dda1b7c2d9b187e4001f5a418ce04387f33060e",
+          "section_payload_hash": "sha256:081e7d142079e0fce54c3a3526f8ba69966cc78c9c862769aa6cdba65a562954",
           "source_file": "paradigm/System_Reflection.md"
         },
         "System_Reflection::reflection": {
@@ -14397,8 +14409,8 @@
       "stale": false
     },
     "paradigm/System_modules.md": {
-      "file_hash": "sha256:c40ad6aa00d4c1a00905da379f929c14947da139ec2998a1af5b1328e2f59ecb",
-      "indexed_at": "2026-08-28T17:27:36Z",
+      "file_hash": "sha256:dc516d906710c2e10f4685e8cfdbc3d126258053d3dab79e2d8bf1ac1cf0632b",
+      "indexed_at": "2026-09-04T08:15:20Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14408,9 +14420,9 @@
       },
       "sections": {
         "System_modules::inventory": {
-          "file_id": "file-VFEQSa7wRbAoNwWAQpV3Mz",
+          "file_id": "file-P7ksZEuMwUjUpozoxjoiNy",
           "heading_path": "System modules > Inventory",
-          "section_payload_hash": "sha256:3f207a81d7187f4e01d191aa11d9f08a25307977ed76b97751893e76dc3387fd",
+          "section_payload_hash": "sha256:60c1b6caa037b819239893c47684c5f6d45dd45579ff87e7eff90147a71fed5e",
           "source_file": "paradigm/System_modules.md"
         },
         "System_modules::language": {
@@ -14664,6 +14676,56 @@
           "heading_path": "User interface",
           "section_payload_hash": "sha256:78df5c54f6b640d79350aa1970eec4b3dc2ca7a8af27238305164709faceface",
           "source_file": "paradigm/User_interface.md"
+        }
+      },
+      "stale": false
+    },
+    "paradigm/Utils_Hierarchy.md": {
+      "file_hash": "sha256:6225e5c159dfaf5a51b82b4fcb8af654deb8d6569c85bc9fb3246aa02da15b5b",
+      "indexed_at": "2026-09-04T08:15:28Z",
+      "indexed_sourceType": "paradigm",
+      "indexed_with": {
+        "chunker_version": "v4",
+        "glossary_version": "v0",
+        "prefix_version": "v1",
+        "source_url_version": "v1"
+      },
+      "sections": {
+        "Utils_Hierarchy::additional-metacodes": {
+          "file_id": "file-CiJ2VUFkqdWW83T3hdnDY9",
+          "heading_path": "Hierarchy > Additional metacodes",
+          "section_payload_hash": "sha256:231d4796f5c4754cdd33249348e15622d278b51879e329e696a6f9400eb75b77",
+          "source_file": "paradigm/Utils_Hierarchy.md"
+        },
+        "Utils_Hierarchy::attaching-to-a-class": {
+          "file_id": "file-WcHCp9vqyZSt3T1tWNdv7U",
+          "heading_path": "Hierarchy > Attaching to a class",
+          "section_payload_hash": "sha256:9694bbaf5259a93f8c03bf2805665b6cdf445eb3927f38a464c991a0fc319d32",
+          "source_file": "paradigm/Utils_Hierarchy.md"
+        },
+        "Utils_Hierarchy::examples": {
+          "file_id": "file-NFeei7iZdXY1yC77gV4dJi",
+          "heading_path": "Hierarchy > Examples",
+          "section_payload_hash": "sha256:3fac20917217be1ead11fa839faefe2453aacb8075fbe12cfa9fb321d1487bff",
+          "source_file": "paradigm/Utils_Hierarchy.md"
+        },
+        "Utils_Hierarchy::hierarchy": {
+          "file_id": "file-WBjayqTfjiMWMgZokaerTo",
+          "heading_path": "Hierarchy",
+          "section_payload_hash": "sha256:4e65c928b5c25d2842bbd94229598aac4c4e7b92aef7a78329e6c038a59be2a8",
+          "source_file": "paradigm/Utils_Hierarchy.md"
+        },
+        "Utils_Hierarchy::hierarchy-properties": {
+          "file_id": "file-SBAEiv5KpmPJecEPaVLCHF",
+          "heading_path": "Hierarchy > Hierarchy properties",
+          "section_payload_hash": "sha256:fd3829d61188456a1c6668a867b80ee017fd2bb333a89dda264de580e403da78",
+          "source_file": "paradigm/Utils_Hierarchy.md"
+        },
+        "Utils_Hierarchy::language": {
+          "file_id": "file-VeqgKVWjVJNFPzLqmyQ4nq",
+          "heading_path": "Hierarchy > Language",
+          "section_payload_hash": "sha256:9f7540b8ab139617a38ca1a283956a80a69166c2259569eff13d05df20f07d02",
+          "source_file": "paradigm/Utils_Hierarchy.md"
         }
       },
       "stale": false
@@ -14925,7 +14987,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4581d73c8b4026bc453e3a47351b079211fc556e",
+  "last_indexed_docs_commit": "776888241e79e09349d429d149fd92069c23ebe8",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
