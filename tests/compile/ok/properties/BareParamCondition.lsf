@@ -1,0 +1,12 @@
+MODULE BareParamCondition;
+
+REQUIRE System;
+
+CLASS Sample 'Sample';
+value 'Value' = DATA INTEGER (Sample);
+
+// a bare parameter used as a condition parsed fine and then crashed the compiler with a ClassCastException,
+// because an assignment with no extend params never reaches the place that materializes one (fixed for #1787)
+setValue 'Set value' (Sample s, BOOLEAN active) {
+    value(s) <- 1 WHERE active;
+}

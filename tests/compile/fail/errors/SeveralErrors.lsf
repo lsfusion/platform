@@ -1,0 +1,8 @@
+MODULE SeveralErrors;
+
+REQUIRE System;
+
+// dryRun implies batchScriptErrors, so one run has to report both of these, not just the first (#1797)
+first = noSuchPropertyOne();
+
+second = noSuchPropertyTwo();
