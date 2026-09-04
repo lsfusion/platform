@@ -35,8 +35,8 @@ mvn -pl server -am clean install -DskipTests    # server + ai/api/build/base
 mvn -pl web-client gwt:compile -q               # GWT client only
 # Append -o for offline mode (deps must already be cached).
 
-# Run JUnit tests (live in server/src/test/ and api/src/test/).
-mvn -pl <module> test                           # or -am test to rebuild deps first
+# Run JUnit tests (live in server/src/test/ and api/src/test/, skipped platform-wide - see Tests).
+mvn -pl <module> test -Dmaven.test.skip=false    # or -am test to rebuild deps first
 ```
 
 `-DskipTests` is a build verification, not a test run — don't claim "tests passed" in a commit body unless a `test` target actually ran (and say which one).
@@ -91,6 +91,35 @@ curl -s -X PUT "http://localhost:9333/json/new?http://localhost:8080/main"
 Or attach to an existing tab via `GET /json/list` and drive `Page.navigate`. The response carries a per-tab `webSocketDebuggerUrl`; drive JS evaluation, clicks, and screenshots over that websocket via CDP (`Runtime.evaluate`, `Page.captureScreenshot`, or in-page `html-to-image` / `html2canvas`).
 
 A check must produce **evidence**: a saved screenshot, a DOM assertion (expected element with expected text), a console-error count, or a confirmed visible form name. Opening a tab without an obvious error is **not** verification — the page may show a login screen, stale cache, or a calm-looking error component. Record evidence (or its absence) in the commit body. Use only when the change is genuinely UI-shaped; for backend-only changes, log-based smoke tests are enough.
+
+## Tests
+
+`build/base` skips tests platform-wide (`maven.test.skip`), and `tests/` — an ordinary lsFusion logics that is
+never deployed — is the module that turns them back on. Where a new test goes:
+
+- **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server;
+- **syntax** — `tests/compile/ok/<theme>/X.lsf` has to compile, `tests/compile/fail/<theme>/X.lsf` has to fail with every non-blank line of its `X.expected` somewhere in the output. Run with `dryRun`, which compiles the logic and exits before touching the database: all of `ok` in one run, one run per `fail` module (`LsfCompileTest`, surefire);
+- **server behaviour** — an action named `test*` with a caption, at the top level of a module under `tests/src/main/lsfusion/<theme>/` (`LsfIntegrationIT`, failsafe). Nothing is registered: modules come off the classpath, tests are found by name. Each is called through the external HTTP `/exec`, so it runs in a session of its own and its changes are dropped afterwards — a test that needs them kept has to `APPLY`. Assertions live in `TestUtils.lsf` and end in `fail(message)`, which is what the report shows.
+
+```
+mvn -pl tests test                        # the compile corpus only
+mvn -pl tests verify                      # and the behaviour tests, which need postgres
+mvn -pl tests verify -Dlsf.tests=forms/*  # one directory of them
+mvn -pl tests verify -DskipITs            # skip them, e.g. in a full build without a database
+```
+
+Postgres defaults to `localhost` / `postgres` / no password (`-Ddb.server=`, `-Ddb.user=`, `-Ddb.password=`), and
+`tests/compose.yaml` brings up a matching one for CI. A run creates its own `lsfusion_test_<pid>` database and
+drops it afterwards (`-Dlsf.keepDb=true` keeps it), and takes free ports, so a server of your own can stay up.
+`tests/quarantine.txt` names tests as `<theme>/<Module>.<action>`: they still run, but a failure is reported as
+skipped rather than failing the build.
+
+A test written because of a fix says so in a comment, and names the issue rather than the commit: a backport
+gives one fix several hashes, and the issue is what the changelog already points at. Names of files and
+directories stay descriptive either way; with no issue behind it, the comment says what the test holds.
+
+A check worth keeping goes into `tests/`, not into a scratch directory, and lands in the same commit as the fix
+it guards.
 
 ## Commits
 
