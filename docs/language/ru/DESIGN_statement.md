@@ -299,7 +299,7 @@ TREE treeSelector
 
 - `formPropertyName`
 
-    [Имя свойства / действия на форме](Properties_and_actions_block.md#name).
+    [Имя свойства / действия на форме](Properties_and_actions_block.md#name). Селектор сопоставляет это имя целиком: для свойства, добавленного как `PROPERTIES(o) number`, это `number(o)`, для `PROPERTIES() total` — `total()`, а `number` — только если это имя явно задано при добавлении свойства на форму: `PROPERTIES(o) number = number`.
 
 - `filterName`
 

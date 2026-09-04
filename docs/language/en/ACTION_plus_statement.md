@@ -20,6 +20,8 @@ The `ACTION+` statement does not create a new action, but adds another implement
 
 For an abstract action of type `CASE`, the `WHEN conditionExpr THEN` block is required. For abstract actions of types `MULTI` and `LIST`, the `WHEN ... THEN` block is not used and the implementation is written directly after `+`.
 
+The implementation is always written as an action body after the `+` sign. The [`+=` statement](plus_equals_statement.md) does not apply to actions: it adds an implementation to an abstract property and takes an expression, so `abstractAction(...) += { ... }` does not parse.
+
 ### Parameters
 
 - `ACTION`

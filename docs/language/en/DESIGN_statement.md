@@ -300,7 +300,7 @@ To access design components, you can use their names or address property compone
 
 - `formPropertyName`
 
-    [Property/action name on the form](Properties_and_actions_block.md#name).
+    [Property/action name on the form](Properties_and_actions_block.md#name). The selector matches this name in full: for a property added as `PROPERTIES(o) number` it is `number(o)`, for `PROPERTIES() total` it is `total()`, and `number` only if that name was given explicitly when the property was added to the form: `PROPERTIES(o) number = number`.
 
 - `filterName`
 

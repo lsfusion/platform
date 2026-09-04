@@ -19,6 +19,8 @@ The `+=` statement does not create a new property. It adds another implementatio
 
 For an abstract property of type `CASE`, the `WHEN conditionExpr THEN` block is required. For abstract properties of types `MULTI` and `VALUE`, the `WHEN ... THEN` block is not used and the implementation expression appears directly after `+=`.
 
+The `+=` statement applies to properties only. An implementation of an abstract action is added by the [`ACTION+` statement](ACTION_plus_statement.md): an action body, not an expression, is written after the `+` sign.
+
 The position of the added implementation in the abstract property's [implementation list](../paradigm/Property_extension.md#poly) is determined by the abstract property's `OVERRIDE FIRST` / `OVERRIDE LAST` setting; see the [`ABSTRACT` operator](ABSTRACT_operator.md) for the available modes.
 
 ### Parameters

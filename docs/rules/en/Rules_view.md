@@ -333,6 +333,16 @@ title: 'Rules: view logic'
    core rule that bans `FALSE` covers expressions only, and
    MUST NOT be applied here by rewriting it as `NULL`.
 
+10. In `DESIGN`, the assistant MUST use the property's name on
+    the form in `PROPERTY(...)`, following form rule 2:
+    `PROPERTY(number(o))` after `PROPERTIES(o) number`,
+    `PROPERTY(total())` after `PROPERTIES() total`, and
+    `PROPERTY(number)` only after the name was assigned
+    explicitly, `PROPERTIES(o) number = number`. A bare name
+    without such an assignment is reported as
+    `property 'number' is not found` although the property is
+    on the form.
+
 ## Navigator
 
 1. A folder whose children should appear only when the folder
