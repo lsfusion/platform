@@ -1,0 +1,18 @@
+# Postgres for the integration tests, for CI and for anyone who does not already have one running.
+# The data lives in tmpfs and durability is off - every run creates its own database and drops it afterwards.
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust # matches the runner's defaults : user postgres, no password
+      PGDATA: /var/lib/postgresql/data # the image's own default moved with the version, this one does not
+    command: postgres -c fsync=off -c synchronous_commit=off
+    tmpfs:
+      - /var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck: # so that "up -d db --wait" returns only once the database accepts connections
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
