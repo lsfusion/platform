@@ -4287,7 +4287,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
 
             public void proceedBatch(ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> batch) throws SQLException {
-                insertSessionBatchRecords(sqlTo, table, batch.getMap(), owner);
+                try {
+                    insertSessionBatchRecords(sqlTo, table, batch.getMap(), owner);
+                } catch (SQLException e) {
+                    // a failure of the OTHER connection, thrown from inside a statement of this one. Left as it is, handle() reads its state as this session's own connection having closed,
+                    // and outside a transaction executeCommand answers that by running the statement again - which reads the table again and fails on the same dead connection again, without
+                    // end. Stripped of its state it is what it is, a failure of the copy, and the move is off
+                    throw new SQLException("copying " + table + " to the new connection failed", e);
+                }
                 proceeded.set(proceeded.result + batch.size());
             }
         };
