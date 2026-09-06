@@ -1397,7 +1397,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         // table of the connection's own pool that was REUSED inside a transaction, since only the ones created there go into transactionTables
         private Set<String> discarded() {
             Set<String> discarded = new HashSet<>(created);
-            discarded.addAll(retaken);
+            for(String table : retaken)
+                // handed on by this transaction and not taken back by a restoration : with the retaker still holding it the map still names that retaker, and only a discard
+                // takes that entry down. Given back by the retaker it is parked, and if it was also taken EMPTY from the pool by this transaction it is empty again after the
+                // rollback and nobody's - that one goes back to the pool with the rest of its kind (see released) rather than being burned
+                if(!(mine.contains(table) && parked.contains(table)))
+                    discarded.add(table);
             for(String table : parked)
                 if(!mine.contains(table)) // the rest are empty after the rollback and go back to the pool, see released
                     discarded.add(table);
