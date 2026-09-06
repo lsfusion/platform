@@ -4006,8 +4006,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             boolean locked = alreadyLocked || tryLockWrite(OperationOwner.unknown);
             if(locked) {
                 try {
-                    Connection prevConnection = privateConnection.sql;
-                    if (alreadyLocked || !DataAdapter.getServer(newConnection).equals(DataAdapter.getServer(prevConnection))) {
+                    // the scheduler scored this session under a read lock that saw a private connection (see runLockReadOperation), and gave that lock up before coming here : a session
+                    // holding nothing but slots gives its connection back after any statement in between, so it is asked again under the write lock - the way the periodic restart double
+                    // checks. With nothing to move from there is nothing to do, and the connection taken for the move goes back below
+                    Connection prevConnection = privateConnection != null ? privateConnection.sql : null;
+                    if (prevConnection != null && (alreadyLocked || !DataAdapter.getServer(newConnection).equals(DataAdapter.getServer(prevConnection)))) {
                         EConsumer<Connection, SQLException> cleaner;
                         try {
                             cleaner = restartConnection(newConnection);
