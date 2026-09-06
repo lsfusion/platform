@@ -1368,8 +1368,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
         // the same, undoing a return rather than serving a new request : the slot goes back to the owner it came from, and that owner WANTS what a rollback restores in it, so this one is not
         // discarded
+        // a restoration finding the slot parked again takes it back whole : it may well be in retaken as well - handed on by this transaction and given back by whoever got
+        // it - and that hand-on is undone with the transaction, its rows along with it (the rollback restores them). Left in retaken, the slot the owner just got back would
+        // be thrown away by discarded, with the owner still holding it
         private boolean takeBackParked(String table) {
-            return parked.remove(table);
+            if(!parked.remove(table))
+                return false;
+
+            retaken.remove(table);
+            return true;
         }
         // the same for a name this transaction had already handed on to somebody else : the rollback restoration is asking for a slot it parked, and the owner that took it in between is being
         // thrown away by the very rollback that is asking. What the rollback leaves in the table is the FIRST owner's rows - its own emptying and the second owner's writes go together - so
