@@ -15,7 +15,6 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.Settings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,30 +27,19 @@ public interface ParseNode {
         Map<Group, MOrderExclSet<PGNode>> childGroupNodes = new HashMap<>(); // not MMap because we need null keys in this case
         childGroupNodes.put(null, SetFact.mOrderExclSet());
 
-        if(Settings.get().isGroupIntegrationHierarchyOldOrder()) {
-
-            for(PropertyDrawEntity<?, ?> property : hierarchy.getProperties(currentGroup))
+        ImOrderSet<PropertyDrawEntity> properties = hierarchy.getProperties(currentGroup);
+        ImOrderSet<GroupObjectEntity> groups = hierarchy.getDependencies(currentGroup);
+        int i = 0, j = 0;
+        while (i < properties.size() || j < groups.size()) {
+            PropertyDrawEntity property = i < properties.size() ? properties.get(i) : null;
+            GroupObjectEntity group = j < groups.size() ? groups.get(j) : null;
+            if ((property != null && (group == null || compareIndexes(property.getScriptIndex(), group.getScriptIndex()) <= 0))) {
                 fillPropertyGroupIntegrationHierarchy(new PropertyPGNode(property), childGroupNodes);
-            for(GroupObjectEntity group : hierarchy.getDependencies(currentGroup))
+                i++;
+            } else {
                 fillPropertyGroupIntegrationHierarchy(new GroupObjectPGNode(group), childGroupNodes);
-
-        } else {
-
-            ImOrderSet<PropertyDrawEntity> properties = hierarchy.getProperties(currentGroup);
-            ImOrderSet<GroupObjectEntity> groups = hierarchy.getDependencies(currentGroup);
-            int i = 0, j = 0;
-            while (i < properties.size() || j < groups.size()) {
-                PropertyDrawEntity property = i < properties.size() ? properties.get(i) : null;
-                GroupObjectEntity group = j < groups.size() ? groups.get(j) : null;
-                if ((property != null && (group == null || compareIndexes(property.getScriptIndex(), group.getScriptIndex()) <= 0))) {
-                    fillPropertyGroupIntegrationHierarchy(new PropertyPGNode(property), childGroupNodes);
-                    i++;
-                } else {
-                    fillPropertyGroupIntegrationHierarchy(new GroupObjectPGNode(group), childGroupNodes);
-                    j++;
-                }
+                j++;
             }
-
         }
         
         // generating parse nodes recursively

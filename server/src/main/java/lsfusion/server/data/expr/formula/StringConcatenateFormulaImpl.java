@@ -6,7 +6,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
-import lsfusion.server.physics.admin.Settings;
 
 public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
     protected final String separator;
@@ -84,13 +83,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements
         for (int i = 1; i < exprCount; i++) {
             String exprSource = getExprSource(source, type, i);
 
-            if (Settings.get().isUseSafeStringAgg()) {
-                result = "CASE WHEN " + result + " IS NOT NULL" +
-                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
-                        " ELSE " + exprSource + " END";
-            } else {
-                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
-            }
+            result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
         }
         return type.getCast("(" + result + ")", syntax, source.getMEnv());
     }

@@ -71,7 +71,6 @@ import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.NullValueProperty;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.*;
@@ -575,9 +574,6 @@ public class PropertyFact {
         return createJoin(partitionGroup.getPropertyImplement());
     }
 
-    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(PropertyImplement<L, PropertyInterfaceImplement<T>> group, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, Property<T> restriction, boolean over) {
-        return createUGProp(LocalizedString.NONAME, restriction.interfaces, group, orders, Settings.get().isDefaultOrdersNotNull(), restriction.getImplement(), over);
-    }
     public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createUGProp(LocalizedString caption, ImSet<T> innerInterfaces, PropertyImplement<L, PropertyInterfaceImplement<T>> group, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, PropertyInterfaceImplement<T> restriction, boolean over) {
         ImSet<PropertyInterfaceImplement<T>> partitions = group.mapping.values().toSet();
 

@@ -16,8 +16,6 @@ public class Settings implements Cloneable {
 
     public boolean applyVolatileStats = false;
 
-    public boolean defaultOrdersNotNull = true; // временно
-
     // будет ли компилятор вместо UNION (когда UNION ALL не удается построить) использовать FULL JOIN
     boolean useFJInsteadOfUnion = false;
 
@@ -988,14 +986,6 @@ public class Settings implements Cloneable {
         this.checkUniqueEvent = checkUniqueEvent;
     }
 
-    public boolean isDefaultOrdersNotNull() {
-        return defaultOrdersNotNull;
-    }
-
-    public void setDefaultOrdersNotNull(boolean defaultOrdersNotNull) {
-        this.defaultOrdersNotNull = defaultOrdersNotNull;
-    }
-
     public int getCommandLengthVolatileStats() {
         return commandLengthVolatileStats;
     }
@@ -1364,16 +1354,6 @@ public class Settings implements Cloneable {
         this.logLevelJDBC = logLevelJDBC;
     }
     
-    private boolean useSafeStringAgg = false; // temporary
-
-    public boolean isUseSafeStringAgg() {
-        return useSafeStringAgg;
-    }
-
-    public void setUseSafeStringAgg(boolean useSafeStringAgg) {
-        this.useSafeStringAgg = useSafeStringAgg;
-    }
-
     // safe cast type for integral (arithmetic casts)
     // 0 - using pl/sql function with try catch clause - the problem that there seems to be a bug in PostgreSQL 13 when canceling this statement
     // 1 - (default) using sql function that compares with maximum minimum values
@@ -1524,16 +1504,6 @@ public class Settings implements Cloneable {
 
     public void setEnableAdjustSelectivity(boolean enableAdjustSelectivity) {
         this.enableAdjustSelectivity = enableAdjustSelectivity;
-    }
-    
-    private boolean useMSSQLFuncWrapper = false; // в ms sql оборачивать CASE WHEN'ы (в основном CASE WHEN ... NULL END) в функции из-за проблем со статистикой в SQL Server <= 2012 
-
-    public boolean isUseMSSQLFuncWrapper() {
-        return useMSSQLFuncWrapper;
-    }
-
-    public void setUseMSSQLFuncWrapper(boolean useMSSQLFuncWrapper) {
-        this.useMSSQLFuncWrapper = useMSSQLFuncWrapper;
     }
     
     private long logTimeThreshold = 60;
@@ -2654,16 +2624,6 @@ public class Settings implements Cloneable {
         this.useHeurCanBeChanged = useHeurCanBeChanged;
     }
 
-    private boolean enableInteractiveAssertLog = false; // temporary
-
-    public boolean isEnableInteractiveAssertLog() {
-        return enableInteractiveAssertLog;
-    }
-
-    public void setEnableInteractiveAssertLog(boolean enableInteractiveAssertLog) {
-        this.enableInteractiveAssertLog = enableInteractiveAssertLog;
-    }
-
     private double cacheNextEventActionRatio = 0.05; // if the percent of changes is lower that this percent of events - cache them
 
     public double getCacheNextEventActionRatio() {
@@ -2693,18 +2653,6 @@ public class Settings implements Cloneable {
 
     public void setStacktraceInSQLSession(boolean stacktraceInSQLSession) {
         this.stacktraceInSQLSession = stacktraceInSQLSession;
-    }
-
-    // version for backward compatibility
-    // 3 - version: building hierarchy includes groups without properties
-    private int backwardCompatibilityVersion = 999999;
-
-    public int getBackwardCompatibilityVersion() {
-        return backwardCompatibilityVersion;
-    }
-
-    public void setBackwardCompatibilityVersion(int backwardCompatibilityVersion) {
-        this.backwardCompatibilityVersion = backwardCompatibilityVersion;
     }
 
     private boolean useRequestTimeout = true;
@@ -2956,17 +2904,6 @@ public class Settings implements Cloneable {
     }
     public void setOauthAuthCodeExpiration(int oauthAuthCodeExpiration) {
         this.oauthAuthCodeExpiration = oauthAuthCodeExpiration;
-    }
-
-    //temporary setting, enable if order changed after update
-    private boolean groupIntegrationHierarchyOldOrder = false;
-
-    public boolean isGroupIntegrationHierarchyOldOrder() {
-        return groupIntegrationHierarchyOldOrder;
-    }
-
-    public void setGroupIntegrationHierarchyOldOrder(boolean groupIntegrationHierarchyOldOrder) {
-        this.groupIntegrationHierarchyOldOrder = groupIntegrationHierarchyOldOrder;
     }
 
     private int asyncValuesLongCacheThreshold = 4;

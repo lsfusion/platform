@@ -8,7 +8,6 @@ import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.log.FlushableRollingFileAppender;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import org.apache.log4j.Logger;
 
@@ -94,13 +93,7 @@ public class ServerLoggers {
     }
 
     public static void assertLog(boolean assertion, String message) {
-        assertLog(assertion, message, false);
-    }
-    public static void assertLog(boolean assertion, String message, boolean interactive) {
         if(!assertion) {
-            Settings settings;
-            if(interactive && (settings = Settings.get()) != null && settings.isEnableInteractiveAssertLog())
-                ThreadLocalContext.message(ThreadLocalContext.localize("{logics.server.interactive.assert}"));
             assertLogger.info(message + '\n' + ExecutionStackAspect.getExStackTrace());
         }
         assert assertion : message;

@@ -35,7 +35,6 @@
             <map>
                 <entry key="innerGroupExprs" value="${settings.innerGroupExprs:}"/>
                 <entry key="packOnCacheComplexity" value="${settings.packOnCacheComplexity:}"/>
-                <entry key="backwardCompatibilityVersion" value="${settings.backwardCompatibilityVersion:}"/>
                 <entry key="removeJoinCutBackwardCompatibility" value="${settings.removeJoinCutBackwardCompatibility:}"/>
                 <entry key="keyExprCompareJoinBackwardCompatibility" value="${settings.keyExprCompareJoinBackwardCompatibility:}"/>
                 <entry key="prefixIndexIntervalBackwardCompatibility" value="${settings.prefixIndexIntervalBackwardCompatibility:}"/>
@@ -100,7 +99,6 @@
                 <entry key="applyVolatileStats" value="${settings.applyVolatileStats:}"/>
                 <entry key="useEventValuePrevHeuristic" value="${settings.useEventValuePrevHeuristic:}"/>
                 <entry key="checkUniqueEvent" value="${settings.checkUniqueEvent:}"/>
-                <entry key="defaultOrdersNotNull" value="${settings.defaultOrdersNotNull:}"/>
                 <entry key="commandLengthVolatileStats" value="${settings.commandLengthVolatileStats:}"/>
                 <entry key="disableReadSingleValues" value="${settings.disableReadSingleValues:}"/>
                 <entry key="reserveIDStep" value="${settings.reserveIDStep:}"/>

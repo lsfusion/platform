@@ -18,7 +18,6 @@ import lsfusion.server.data.type.TypeFunc;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.ArrayClass;
-import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -179,30 +178,12 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv) {
-        if(!Settings.get().isUseMSSQLFuncWrapper())
-            return "CASE WHEN " + expr1 + (max?">":"<") + expr2 + " THEN " + expr1 + " ELSE COALESCE(" + expr2 + "," + expr1 + ") END";
-
-        TypeFunc typeFunc = max ? TypeFunc.MAX : TypeFunc.MIN;
-        typeEnv.addNeedTypeFunc(typeFunc, type);
-        return "dbo." + getTypeFuncName(typeFunc, type) + "(" + expr1 + "," + expr2 + ")";
+        return "CASE WHEN " + expr1 + (max?">":"<") + expr2 + " THEN " + expr1 + " ELSE COALESCE(" + expr2 + "," + expr1 + ") END";
     }
 
     @Override
     public String getNotZero(String expr, Type type, TypeEnvironment typeEnv) {
-        if(!Settings.get().isUseMSSQLFuncWrapper())
-            return "(CASE WHEN ABS(" + expr + ")>0.0005 THEN " + expr + " ELSE NULL END)";
-
-        typeEnv.addNeedTypeFunc(TypeFunc.NOTZERO, type);
-        return "dbo." + getTypeFuncName(TypeFunc.NOTZERO, type) + "(" + expr + ")";
-    }
-
-    @Override
-    public String getAndExpr(String where, String expr, Type type, TypeEnvironment typeEnv) {
-        if(!Settings.get().isUseMSSQLFuncWrapper())
-            return super.getAndExpr(where, expr, type, typeEnv);
-
-        typeEnv.addNeedTypeFunc(TypeFunc.ANDEXPR, type);
-        return "dbo." + getTypeFuncName(TypeFunc.ANDEXPR, type) + "(CASE WHEN " + where + " THEN 1 ELSE 0 END," + expr + ")";
+        return "(CASE WHEN ABS(" + expr + ")>0.0005 THEN " + expr + " ELSE NULL END)";
     }
 
     @Override

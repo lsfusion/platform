@@ -33,7 +33,6 @@ import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
-import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -69,10 +68,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         private final ImSet<GroupObjectEntity> valueGroups; // all groups that are not in groupHierarchy
 
         public StaticDataGenerator.ReportHierarchy getReportHierarchy() {
-            boolean checkShallowGroups = Settings.get().getBackwardCompatibilityVersion() > 3;
             return new StaticDataGenerator.ReportHierarchy(groupHierarchy.getReportHierarchy(group -> {
-                if(!checkShallowGroups)
-                    return false;
                 ImOrderSet<PropertyDrawEntity> groupProperties = properties.get(group);
                 return groupProperties == null || groupProperties.isEmpty();
             }), this);
