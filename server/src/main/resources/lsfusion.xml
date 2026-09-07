@@ -33,27 +33,17 @@
     <bean id="settings" class="lsfusion.server.physics.admin.Settings">
         <property name="properties">
             <map>
-                <entry key="innerGroupExprs" value="${settings.innerGroupExprs:}"/>
                 <entry key="packOnCacheComplexity" value="${settings.packOnCacheComplexity:}"/>
                 <entry key="removeJoinCutBackwardCompatibility" value="${settings.removeJoinCutBackwardCompatibility:}"/>
                 <entry key="keyExprCompareJoinBackwardCompatibility" value="${settings.keyExprCompareJoinBackwardCompatibility:}"/>
                 <entry key="prefixIndexIntervalBackwardCompatibility" value="${settings.prefixIndexIntervalBackwardCompatibility:}"/>
-                <entry key="LRUOftenCleanPeriod" value="${settings.LRUOftenCleanPeriod:}"/>
-                <entry key="LRUOftenExpireSecond" value="${settings.LRUOftenExpireSecond:}"/>
-                <entry key="LRUOftenProceedBucket" value="${settings.LRUOftenProceedBucket:}"/>
-                <entry key="LRURareCleanPeriod" value="${settings.LRURareCleanPeriod:}"/>
-                <entry key="LRURareExpireSecond" value="${settings.LRURareExpireSecond:}"/>
-                <entry key="LRURareProceedBucket" value="${settings.LRURareProceedBucket:}"/>
                 <entry key="cacheInnerHashes" value="${settings.cacheInnerHashes:}"/>
                 <entry key="mapInnerMaxIterations" value="${settings.mapInnerMaxIterations:}"/>
                 <entry key="enableApplySingleStored" value="${settings.enableApplySingleStored:}"/>
-                <entry key="pushOrderWhere" value="${settings.pushOrderWhere:}"/>
                 <entry key="splitSelectGroupInnerJoins" value="${settings.splitSelectGroupInnerJoins:}"/>
                 <entry key="splitGroupStatInnerJoins" value="${settings.splitGroupStatInnerJoins:}"/>
                 <entry key="useFJInsteadOfUnion" value="${settings.useFJInsteadOfUnion:}"/>
                 <entry key="simpleCheckCompare" value="${settings.simpleCheckCompare:}"/>
-                <entry key="editLogicalOnSingleClick" value="${settings.editLogicalOnSingleClick:}"/>
-                <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
                 <entry key="checkFollowsWhenObjects" value="${settings.checkFollowsWhenObjects:}"/>
                 <entry key="restructWhereOnMeans" value="${settings.restructWhereOnMeans:}"/>
                 <entry key="splitGroupSelectExprcases" value="${settings.splitGroupSelectExprcases:}"/>
@@ -94,8 +84,6 @@
                 <entry key="useGreaterEquals" value="${settings.useGreaterEquals:}"/>
                 <entry key="disableAutoHints" value="${settings.disableAutoHints:}"/>
                 <entry key="disableAutoHintCaches" value="${settings.disableAutoHintCaches:}"/>
-                <entry key="disableWrapComplexity" value="${settings.disableWrapComplexity:}"/>
-                <entry key="enablePrevWrapComplexity" value="${settings.enablePrevWrapComplexity:}"/>
                 <entry key="applyVolatileStats" value="${settings.applyVolatileStats:}"/>
                 <entry key="useEventValuePrevHeuristic" value="${settings.useEventValuePrevHeuristic:}"/>
                 <entry key="checkUniqueEvent" value="${settings.checkUniqueEvent:}"/>
@@ -141,26 +129,20 @@
                 <entry key="deadLockThreshold" value="${settings.deadLockThreshold:}"/>
                 <entry key="periodRestartConnections" value="${settings.periodRestartConnections:}"/>
                 <entry key="percentRestartConnections" value="${settings.percentRestartConnections:}"/>
-                <entry key="closeFormDelay" value="${settings.closeFormDelay:}"/>
                 <entry key="defaultCompareForStringContains" value="${settings.defaultCompareForStringContains:}"/>
                 <entry key="useSavePointsThreshold" value="${settings.useSavePointsThreshold:}"/>
                 <entry key="authTokenExpiration" value="${settings.authTokenExpiration:}"/>
-                <entry key="connectTimeout" value="${settings.connectTimeout:}"/>
-                <entry key="editBooleanOnSingleClick" value="${settings.editBooleanOnSingleClick:}"/>
-                <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
                 <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
                 <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
                 <entry key="userFiltersManualApplyMode" value="${settings.userFiltersManualApplyMode:}"/>
                 <entry key="defaultAutoImageRankingThreshold" value="${settings.defaultAutoImageRankingThreshold:}"/>
                 <entry key="defaultNavigatorImageRankingThreshold" value="${settings.defaultNavigatorImageRankingThreshold:}"/>
-                <entry key="defaultFormImageRankingThreshold" value="${settings.defaultFormImageRankingThreshold:}"/>
                 <entry key="defaultContainerImageRankingThreshold" value="${settings.defaultContainerImageRankingThreshold:}"/>
                 <entry key="defaultPropertyImageRankingThreshold" value="${settings.defaultPropertyImageRankingThreshold:}"/>
                 <entry key="minInterfaceStatForValueUnique" value="${settings.minInterfaceStatForValueUnique:}"/>
                 <entry key="maxInterfaceStatForValueList" value="${settings.maxInterfaceStatForValueList:}"/>
                 <entry key="maxInterfaceStatForValueDropdown" value="${settings.maxInterfaceStatForValueDropdown:}"/>
                 <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
-                <entry key="mobileMode" value="${settings.mobileMode:}"/>
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
                 <entry key="useISOTimeFormatsInIntegration" value="${settings.useISOTimeFormatsInIntegration:}"/>
