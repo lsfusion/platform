@@ -14935,8 +14935,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:436cd4ed3075839cecd775d14958a089bdccb633ae0bce00292af9c37adec7b8",
-      "indexed_at": "2026-09-07T10:25:34Z",
+      "file_hash": "sha256:370b0e1922737c33c404d385b097e0255a56678646d0f3dcc62aaf664b8e32e7",
+      "indexed_at": "2026-09-07T12:35:51Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14946,21 +14946,21 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-FHPGqip38ZFspwfVnJ76sU",
+          "file_id": "file-AWN5tqMfm4krsJcMyift8h",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:3855d7599da5d429726d8f6035b95317b25118412b38c443f2f76b36c6bc3eea",
+          "section_payload_hash": "sha256:4282cc4fc4da335de2fba56f2a31dac7cb57d673cbfcca9360400e6e5ddd1d66",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
-          "file_id": "file-SKreJVcd1Q3XoALQ6UB4gS",
+          "file_id": "file-J45Gcg5LCJrnr8yRS8VXkR",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:9165345b956c71d6164c34538396110d999f436316ed45721fab6c57641e10e4",
+          "section_payload_hash": "sha256:2f15795be551ec65591587008174ff805d4c6243bc700a22d1972748971a2a93",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-02": {
-          "file_id": "file-6hfxxwNkuVxY3W2kaVx1Ca",
+          "file_id": "file-MsWLs2Y1RMvtQSbK4FiWDE",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:68ec0d20b326c703f149e59f1e71fef09eae558f501b8ac55093db0aa2c2a6d6",
+          "section_payload_hash": "sha256:60e7e4ee083f8fc53800554dbb134151b23dcad042b52d63d63ea07fb82fee3d",
           "source_file": "paradigm/Working_parameters.md"
         }
       },
@@ -14993,7 +14993,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "b1947c4bbbf58d321f6ec3abf7b6e8479372e479",
+  "last_indexed_docs_commit": "cec5d3782cda743b8c54309b03e0c23a5d5f3efd",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
