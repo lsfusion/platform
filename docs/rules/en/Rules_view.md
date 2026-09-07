@@ -442,6 +442,13 @@ title: 'Rules: view logic'
    are kept around the substitution; a literal that is empty
    or made of spaces alone is never replaced.
 
+   The substitution also affects a literal a value is compared
+   with in a condition or filter, including scripts run through
+   `/eval` and `/exec`: the comparison is made against the
+   substituted text and, with no error at all, can silently
+   include unintended rows or drop expected ones. The assistant MUST write a comparison
+   value as a raw literal `r'...'`.
+
    Therefore the assistant MUST write technical literals —
    JSON keys, URLs, formats, canonical names,
    external identifiers —

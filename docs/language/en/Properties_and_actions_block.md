@@ -317,7 +317,7 @@ In the current platform implementation, if the name and caption are not specifie
     - `AFTER formPropertyName`
     - `BEFORE formPropertyName`
 
-        The property (action) will be added to the form structure directly before (keyword `BEFORE`) or after (keyword `AFTER`) the specified property (action) on the form. 
+        The property (action) will be added to the form structure directly before (keyword `BEFORE`) or after (keyword `AFTER`) the specified property (action) on the form. When the position is specified for the whole block, its properties and actions are inserted at that place in the order listed.
 
         - `formPropertyName`
 
@@ -714,7 +714,7 @@ The options `formPropertyOptions` are the same as when adding a property (action
 
 ### Description
 
-The property and action extension block changes properties and actions already added to the form structure. The specified options are applied to the existing property (action) in the same way as if they were specified when it was added. The options specified right after the `EXTEND PROPERTIES` keywords are applied to all the properties (actions) listed in the block; if an option is specified both for the entire block and for a specific element, the option value for the element is used.
+The property and action extension block changes properties and actions already added to the form structure. The specified options are applied to the existing property (action) in the same way as if they were specified when it was added. The options specified right after the `EXTEND PROPERTIES` keywords are applied to all the properties (actions) listed in the block; if an option is specified both for the entire block and for a specific element, the option value for the element is used. The block is available starting with platform version 7.0.
 
 ### Parameters
 

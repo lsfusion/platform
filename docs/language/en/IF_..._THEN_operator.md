@@ -15,7 +15,7 @@ IF condition
 
 ### Description
 
-The `IF ... THEN` operator creates a property that implements conditional selection. The condition is defined using a property. If this condition is met, that is, the value of the property does not equal `NULL`, then the value of the created property will be the value of the property specified in the `THEN` block; otherwise, the value will be the value of the property in the `ELSE` block, or `NULL` if no `ELSE` block was specified.
+The `IF ... THEN` operator creates a property that implements conditional selection. The condition is defined using a property. If this condition is met, that is, the value of the property does not equal `NULL`, then the value of the created property will be the value of the property specified in the `THEN` block; otherwise, the value will be the value of the property in the `ELSE` block, or `NULL` if no `ELSE` block was specified. The value class of the property is the [result class](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#resultclass) of the selection.
 
 ### Parameters
 

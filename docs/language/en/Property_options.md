@@ -352,7 +352,9 @@ Property annotation. Begins with `@@`. The following annotations are supported:
 
 - `STICKY` | `NOSTICKY`
 
-    Keywords. `STICKY` indicates that the property in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically.
+    Keywords. `STICKY` indicates that the property in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically: a property (but not an action) is pinned if it belongs to the `System.id` [group](../paradigm/Groups_of_properties_and_actions.md). Other properties are pinned if the classes of their parameters not fixed by form objects outside the object group of the table are inferable and, in addition, either its name contains the word `name`, `id`, `number` or `caption` and it is a [data property](../paradigm/Data_properties_DATA.md) itself or is obtained from data properties by string addition or concatenation, a class cast, parameter reordering or a selection, or, according to the table statistics, one property value corresponds to one row of the object group (with a row count estimate not above `minInterfaceStatForValueUnique`, `100` by default, the statistics are not consulted).
+
+    In the web client the pinned columns are limited to the share of the table width set by the `maxStickyLeft` server setting (`0.33` by default): the columns are pinned from left to right as long as their total width fits into that share; the column with which the total would exceed it, and every `STICKY` column to the right of it, are not pinned and scroll with the rest. So a wide `STICKY` column can stay unpinned in a narrow window; room for it is freed by `NOSTICKY` on the columns to its left that are pinned by the heuristic.
 
 - `syncType`
 
