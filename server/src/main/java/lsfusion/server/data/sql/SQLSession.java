@@ -1370,12 +1370,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         // discarded
         // a restoration finding the slot parked again takes it back whole : it may well be in retaken as well - handed on by this transaction and given back by whoever got
         // it - and that hand-on is undone with the transaction, its rows along with it (the rollback restores them). Left in retaken, the slot the owner just got back would
-        // be thrown away by discarded, with the owner still holding it
-        private boolean takeBackParked(String table) {
+        // be thrown away by discarded, with the owner still holding it. Only a restoration says so : the speculative undo (see rollReturnTemporaryTable) takes the slot back
+        // into a transaction that goes on, and the record that it was handed on is exactly what the real rollback of that transaction will need
+        private boolean takeBackParked(String table, boolean restoring) {
             if(!parked.remove(table))
                 return false;
 
-            retaken.remove(table);
+            if(restoring)
+                retaken.remove(table);
             return true;
         }
         // the same for a name this transaction had already handed on to somebody else : the rollback restoration is asking for a slot it parked, and the owner that took it in between is being
@@ -1888,7 +1890,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 boolean takenFromNext = assertNotExists && currentOwner != null
                         && (GlobalTempTablePool.isPoolName(tableName) ? poolTables.takeBackRetaken(tableName) : transactionRetaken.remove(tableName));
 
-                if(GlobalTempTablePool.isPoolName(tableName) && !takenFromNext && !poolTables.takeBackParked(tableName) && !adapter.tempTablePool.reclaim(tableName)) {
+                if(GlobalTempTablePool.isPoolName(tableName) && !takenFromNext && !poolTables.takeBackParked(tableName, assertNotExists) && !adapter.tempTablePool.reclaim(tableName)) {
                     tryCommon(opOwner, false); // the connection above was taken for a slot this session is not getting back
                     // which of the two it is decides whether anything can be done about it, and the message is the only place that will say : a name the pool no longer owns was killed while
                     // this owner held it - there may be no table behind it at all - where one it still owns has simply been given to somebody else
