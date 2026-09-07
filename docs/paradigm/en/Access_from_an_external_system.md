@@ -13,7 +13,7 @@ An action being called can be defined in one of the three ways:
 
 -   `EXEC` – the name of the action is specified.
 -   `EVAL` – code in the lsFusion language is specified. It is assumed that this code contains a declaration of an action named `run`. This is the action that will be called.
--   `EVAL ACTION` – action code in the lsFusion language is specified. The supplied code is the body of the implicitly declared `run` action, so, unlike `EVAL`, it must not be wrapped in a `run(...) { ... }` declaration. To access a parameter, the special character `$` and the parameter number (starting from `1`) are used.
+-   `EVAL ACTION` – action code in the lsFusion language is specified. The supplied code is the body of the implicitly declared `run` action, so, unlike `EVAL`, it must not be wrapped in a `run(...) { ... }` declaration: the server wraps the supplied text in such a declaration itself, and a nested action declaration fails to parse with `no viable alternative at input '{'`. To access a parameter, the special character `$` and the parameter number (starting from `1`) are used.
 
 For example, the same call in the two forms:
 
@@ -108,7 +108,7 @@ Alternatively, an action that has a [result](Actions.md) returns it directly as 
 
 The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). For tabular or multi-field output use [`EXPORT`](Data_export_EXPORT.md) rather than `RETURN`.
 
-The `MESSAGE` operator is not suitable for returning a value: showing a message is an [interactive](#interactive) operation, and its text never appears in the response body. Likewise, on a synchronous call a canceled [apply](Apply_changes_APPLY.md) (for example, on a [constraint](Constraints.md) violation) returns no error and shows no message automatically: the request completes as usual and the changes are not saved. To detect this, the action itself must check the `System.canceled[]` property and, if needed, return the error text from the `System.applyMessage[]` property.
+The `MESSAGE` operator is not suitable for returning a value: showing a message is an [interactive](#interactive) operation, and its text never appears in the response body: on a headless call the server collects such messages, but they do not reach the HTTP response (they are returned, for example, by the `lsfusion_eval` MCP tool), and a message with the `NOWAIT` option is additionally written to the server log as `Server message: ...`. Likewise, on a synchronous call a canceled [apply](Apply_changes_APPLY.md) (for example, on a [constraint](Constraints.md) violation) returns no error and shows no message automatically: the request completes as usual and the changes are not saved. To detect this, the action itself must check the `System.canceled[]` property and, if needed, return the error text from the `System.applyMessage[]` property.
 
 If the result of a request is a file (`FILE`, `PDFFILE`, etc.), the response [content type](https://en.wikipedia.org/wiki/Media_type) , depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 

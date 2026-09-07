@@ -653,17 +653,22 @@ public class Query<K,V> extends IQuery<K,V> {
     @Pack
     public Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(final BaseClass baseClass) {
         MSet<Expr> mReadExprs = SetFact.mSet();
-        for(KeyExpr expr : mapKeys.valueIt()) {
-            ClassReader reader = expr.getReader(where);
-            if(reader == null)
-                throw new RuntimeException(ThreadLocalContext.localize("{exceptions.mix.of.types.or.incorrect.set.operation}"));
-            reader.prepareClassesQuery(expr, where, mReadExprs, baseClass);
-        }
+        for(KeyExpr expr : mapKeys.valueIt())
+            getClassReader(expr).prepareClassesQuery(expr, where, mReadExprs, baseClass);
         for(Expr expr : properties.valueIt())
-            expr.getReader(where).prepareClassesQuery(expr, where, mReadExprs, baseClass);
+            getClassReader(expr).prepareClassesQuery(expr, where, mReadExprs, baseClass);
         ImSet<Expr> readExprs = mReadExprs.immutable();
         final ImRevMap<Expr, Object> objects = BaseUtils.generateObjects(readExprs);
         return new Pair<>(new Query<>(mapKeys, MapFact.addExcl(properties, objects.reverse().mapValues(value -> value.classExpr(baseClass))), where), objects);
+    }
+
+    // the reader is null when the type of a key (or of a property value, for example an aggregated parameter) does not follow from the where :
+    // the parameter has no class at all, or its classes are incompatible (see ClassExprWhere.getKeyType)
+    private ClassReader getClassReader(Expr expr) {
+        ClassReader reader = expr.getReader(where);
+        if(reader == null)
+            throw new RuntimeException(ThreadLocalContext.localize("{exceptions.mix.of.types.or.incorrect.set.operation}"));
+        return reader;
     }
 
     public void outClassesSelect(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {

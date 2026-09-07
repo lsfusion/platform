@@ -34,6 +34,8 @@ From the perspective of determining the set of object collections and the result
 
 You should consider that during each operation on a set of object collections, this set must be finite. In this case, the operation is called *correct*.
 
+The platform considers a set finite when each of its parameters has a source to iterate over: a [user class](User_classes.md) (the `a IS A` condition, the `a AS A` expression, or the `A a` declaration in the operator) or a property with a finite set of non-`NULL` values in which the parameter takes part (for example, a [data property](Data_properties_DATA.md)). A known built-in type is not such a source by itself (see the `hs` example below), and neither is comparing a parameter cast to another type with a literal or a computed value: in the conditions `LONG(a) = 5` or `STRING(a) = '5'` (looking an object up by its internal identifier) the parameter `a` occurs only under the [type conversion operator](../language/Type_conversion_operator.md), so such a set is considered infinite and the operation incorrect. The source may also follow from other parts of the operation — for example, from the property being assigned to or from another condition on the same parameter; the error occurs when there is none anywhere. It is detected only at execution time (the module loads successfully) and is reported as `Set operation is incorrect` or `Parameter violates type constraint or set operation is incorrect`, without pointing at the statement, so in a script of several statements look for the parameter that has neither a user class nor a source property. The fix is to state the user class explicitly or to rewrite the condition through such a property.
+
 ### Examples
 
 ```lsf
@@ -66,4 +68,13 @@ messageHS  { MESSAGE hs(); }
 // workaround: to work with intervals, the iterate property can be used
 // (which, in turn, is implemented through recursion)
 hi = GROUP SUM 1 IF iterate(a, 4, 6); 
+```
+
+The class of a parameter does not follow from comparing its cast to another type with a literal:
+
+```lsf
+// a has neither a class nor a source property — the set is infinite, the error is thrown at execution time
+badById = GROUP MAX a IF LONG(a) = 5;
+// declaring the parameter class makes the set finite
+byId (LONG id) = GROUP MAX A a IF LONG(a) = id;
 ```
