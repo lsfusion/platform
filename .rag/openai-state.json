@@ -7391,8 +7391,8 @@
       "stale": false
     },
     "language/String_literal.md": {
-      "file_hash": "sha256:e73abd99c9fcdb1af8e338ea89e73f71bc026095f6d7f09395da46ec9d56e9aa",
-      "indexed_at": "2026-08-28T17:00:48Z",
+      "file_hash": "sha256:fcd290746af0a5f89dbc3a0ce17a6344ca06a16239b2e5cbe7e1b1480bc1e9ad",
+      "indexed_at": "2026-09-07T12:21:00Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -7444,9 +7444,9 @@
           "source_file": "language/String_literal.md"
         },
         "String_literal::inline-sequences": {
-          "file_id": "file-2rgaVVfmSB5WJKx5c5P6Ym",
+          "file_id": "file-28fmVVQp39QbD2kWgUGWrk",
           "heading_path": "String literal > Inline sequences",
-          "section_payload_hash": "sha256:306d8af30f58dbde07b9de26beee617cbf7631ae09d51611d317caaf051c365d",
+          "section_payload_hash": "sha256:f9d837440b9676f44a2ad20a9679f3d9c332c5c2f8927d2bd2b09d8b1b845249",
           "source_file": "language/String_literal.md"
         },
         "String_literal::interpolation": {
@@ -7989,8 +7989,8 @@
       "stale": false
     },
     "paradigm/Access_from_an_external_system.md": {
-      "file_hash": "sha256:d260ce1a39a13d3c16419849939826a04252070ad32b8ee95e29a0846d3c99fd",
-      "indexed_at": "2026-08-28T17:03:02Z",
+      "file_hash": "sha256:fd17606ab95aee8556ac275ce24a6523c259f18ef31cd79cf99fc1a43858b6d7",
+      "indexed_at": "2026-09-07T12:21:10Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -8012,9 +8012,9 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::defining-an-action-actiontype": {
-          "file_id": "file-Y8H4TDhfWejgTLDaJzsd3N",
+          "file_id": "file-W5xraetPtAerTDgMkGX7SV",
           "heading_path": "Access from an external system > Action API > Defining an action {#actiontype}",
-          "section_payload_hash": "sha256:eeb194cd9d217e0107a0043ec7dd5406b2daef520624d85cbfa86e744bc4bac3",
+          "section_payload_hash": "sha256:aed77c78ee8d3d7e0d44598b555ef45ccf59a10b70809e5e7fa88c96c4c571b1",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::file-api-files": {
@@ -8054,15 +8054,15 @@
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-01": {
-          "file_id": "file-BYqByMYsWWNkaYMkCxN6Lu",
+          "file_id": "file-868tccE5951vKo8giP32y9",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:205428e042b900b9ce37cd274c7655a4d076c13ced8fcd115605716636dd3d8c",
+          "section_payload_hash": "sha256:4ffc041f6447ee21e7498f5813eb9766c35b9f8d274c0c11c4bc9adb7f905f9f",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::protocols::part-02": {
-          "file_id": "file-H4kEj9y6wHcKy6GG4aPwpi",
+          "file_id": "file-BsaQKnicAizyGXRiLUCnp6",
           "heading_path": "Access from an external system > Action API > Protocols",
-          "section_payload_hash": "sha256:f4fb2d25ae297ad06552d497db0eb3b5f8c0032ff9b56e36f58dc9bc3066991a",
+          "section_payload_hash": "sha256:95f4903a0e0b2153a1ef8eaec66e6c23eff1682fca543b68d0cee4c0076f6a05",
           "source_file": "paradigm/Access_from_an_external_system.md"
         },
         "Access_from_an_external_system::reading-a-file": {
@@ -13047,8 +13047,8 @@
       "stale": false
     },
     "paradigm/Set_operations.md": {
-      "file_hash": "sha256:021e81cf3caf6605dfebc17a388716addc13432b4cf5fe8dd4805c3bfbf0980a",
-      "indexed_at": "2026-08-28T17:23:10Z",
+      "file_hash": "sha256:915164da9c27acaae516899746f6c1034acce0ec0961f24d80ab7ab656ba3812",
+      "indexed_at": "2026-09-07T12:21:19Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -13064,15 +13064,15 @@
           "source_file": "paradigm/Set_operations.md"
         },
         "Set_operations::examples": {
-          "file_id": "file-AMHogXYK1d2QA7G1dpECGY",
+          "file_id": "file-DsukfruSkudBoM3jNRx1AU",
           "heading_path": "Set operations > Examples",
-          "section_payload_hash": "sha256:a19dc833a56d826839cb64c1138259a20a47dffdac7617d5fe5e4c0b9ddc98be",
+          "section_payload_hash": "sha256:fa5ca491a23af56f3d0cbf7602fdad21cd0c4924d58e30d01970f66109912da7",
           "source_file": "paradigm/Set_operations.md"
         },
         "Set_operations::operation-correctness-correct": {
-          "file_id": "file-HG3JHrz1mgYmaaVn6UKbxm",
+          "file_id": "file-MzMD68qxvkcPbXyJb2hHud",
           "heading_path": "Set operations > Operation correctness {#correct}",
-          "section_payload_hash": "sha256:5893037771eb8625e289409d00c04047f41809bc2e54a5f2e7665c67623d0160",
+          "section_payload_hash": "sha256:a6c29ae2055e24efd85d823f535a80005bf6a7ca24adaf8a6b967a656d2e6c69",
           "source_file": "paradigm/Set_operations.md"
         },
         "Set_operations::set-operations": {
@@ -14993,7 +14993,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "4a7931ec7f713c0e03592b63b00cdcc613818bb2",
+  "last_indexed_docs_commit": "b1947c4bbbf58d321f6ec3abf7b6e8479372e479",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
