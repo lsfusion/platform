@@ -1406,10 +1406,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-//            if (Settings.get().isCheckClassWhere()) {
-//                checks.checkClassWhere((LP) property, name);
-//            }
-
         ActionOrProperty actionOrProperty = property.getActionOrProperty();
         ActionOrProperty.DrawOptions drawOptions = actionOrProperty.drawOptions;
         if(ps.defaultCompare != null)

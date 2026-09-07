@@ -668,15 +668,6 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         if(query.type.nullsNotAllowed() || hasLimitOffset) {
             groupWhere = queryWhere;
         } else {
-            // не нужно, так как и так WhereJoins включаются
-//            int groupJoinLevel = Settings.get().getGroupJoinLevel() - group.size();
-//            if(groupJoinLevel >= 0) { // оптимизация
-//                MSet<WhereJoin> mGroupJoins = SetFact.mSet();
-//                for(GroupJoinsWhere queryJoin : queryWhere.getWhereJoins(false, innerKeys, StatType.GROUP_SPLIT, SetFact.<Expr>EMPTYORDER()).first)
-//                    mGroupJoins.addAll(queryJoin.getLevelJoins(groupJoinLevel));
-//                groupJoins = new WhereJoins(mGroupJoins.immutable());
-//            } else
-//                groupJoins = WhereJoins.EMPTY;
             groupWhere = (query.type.hasAdd() && query.type.splitExprCases() ? query.exprs.single().getBaseWhere() : Where.TRUE()).
                     and(query.getOrderWhere()); // тут особенность в том что в SQL даже если order null, он (в отличии от expr) может повлиять на результат, поэтому важно чтобы условия совпадали (конечно есть небольшой вопрос с and'ом getBaseWhere(), но эта ветка все равно пока не используется)
         }

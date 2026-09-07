@@ -97,7 +97,6 @@
                 <entry key="disableAutoHintCaches" value="${settings.disableAutoHintCaches:}"/>
                 <entry key="disableWrapComplexity" value="${settings.disableWrapComplexity:}"/>
                 <entry key="enablePrevWrapComplexity" value="${settings.enablePrevWrapComplexity:}"/>
-                <entry key="groupJoinLevel" value="${settings.groupJoinLevel:}"/>
                 <entry key="applyVolatileStats" value="${settings.applyVolatileStats:}"/>
                 <entry key="useEventValuePrevHeuristic" value="${settings.useEventValuePrevHeuristic:}"/>
                 <entry key="checkUniqueEvent" value="${settings.checkUniqueEvent:}"/>
@@ -110,7 +109,6 @@
                 <entry key="queryPrepareRunTime" value="${settings.queryPrepareRunTime:}"/>
                 <entry key="modifySessionTableInsteadOfRewrite" value="${settings.modifySessionTableInsteadOfRewrite:}"/>
                 <entry key="checkAlwaysNull" value="${settings.checkAlwaysNull:}"/>
-                <entry key="checkClassWhere" value="${settings.checkClassWhere:}"/>
                 <entry key="dialogTransactionTimeout" value="${settings.dialogTransactionTimeout:}"/>
                 <entry key="queryLengthTimeout" value="${settings.queryLengthTimeout:}"/>
                 <entry key="queryRowCountPessLimit" value="${settings.queryRowCountPessLimit:}"/>
@@ -146,7 +144,6 @@
                 <entry key="periodRestartConnections" value="${settings.periodRestartConnections:}"/>
                 <entry key="percentRestartConnections" value="${settings.percentRestartConnections:}"/>
                 <entry key="closeFormDelay" value="${settings.closeFormDelay:}"/>
-                <entry key="constraintRowsLimit" value="${settings.constraintRowsLimit:}"/>
                 <entry key="defaultCompareForStringContains" value="${settings.defaultCompareForStringContains:}"/>
                 <entry key="useSavePointsThreshold" value="${settings.useSavePointsThreshold:}"/>
                 <entry key="authTokenExpiration" value="${settings.authTokenExpiration:}"/>

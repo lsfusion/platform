@@ -799,10 +799,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         try {
                             if(isExplainTemporaryTablesEnabled())
                                 addTTLog("TRANSRET", transactionTable, tableOwner == null ? null : tableOwner.get(), owner);
-//                            
-//                            if(Settings.get().isEnableHacks())
-//                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
-//
                         } finally { // the accounting must be dropped even if the logging above fails : the counter is rewound anyway, and the name would be handed out again with no physical table behind it
                             lastReturnedStamp.remove(transactionTable);
                             privateConnection.temporary.removeTable(transactionTable);

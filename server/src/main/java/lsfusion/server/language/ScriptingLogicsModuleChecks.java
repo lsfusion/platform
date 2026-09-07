@@ -539,28 +539,6 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-//    public void checkClassWhere(LP<?> property, String name) {
-//        ClassWhere<Integer> classWhere = property.getClassWhere(ClassType.signaturePolicy);
-//        boolean needWarning = false;
-//        if (classWhere.wheres.length > 1) {
-//            needWarning = true;
-//        } else {
-//            AbstractClassWhere.And<Integer> where = classWhere.wheres[0];
-//            for (int i = 0; i < where.size(); ++i) {
-//                ResolveClassSet acSet = where.getValue(i);
-//                if (acSet instanceof UpClassSet && ((UpClassSet)acSet).wheres.length > 1 ||
-//                    acSet instanceof OrObjectClassSet && ((OrObjectClassSet)acSet).up.wheres.length > 1) {
-//
-//                    needWarning = true;
-//                    break;
-//                }
-//            }
-//        }
-//        if (needWarning) {
-//            warningList.add(" Property " + name + " has class where " + classWhere);
-//        }
-//    }
-
     public void checkAbstractProperty(LP<?> property, String propName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property.property instanceof CaseUnionProperty && ((CaseUnionProperty)property.property).isAbstract())) {
             errLog.emitNotAbstractPropertyError(parser, propName);

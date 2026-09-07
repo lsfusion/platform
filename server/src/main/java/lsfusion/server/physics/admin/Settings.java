@@ -186,8 +186,6 @@ public class Settings implements Cloneable {
 
     private boolean disableAutoHintCaches = true;
 
-    private int groupJoinLevel = 1; // -1 отключить
-
     // если prev идет в value, то использовать то значение которое есть сейчас после singleapply,
     // а не высчитывать на начало транзакции потому как все равно "временнОй" целостности не будет
     private boolean useEventValuePrevHeuristic = true;
@@ -215,8 +213,6 @@ public class Settings implements Cloneable {
     private boolean modifySessionTableInsteadOfRewrite = true;
 
     private boolean checkAlwaysNull = true;
-
-    private boolean checkClassWhere = true;
 
     private int dialogTransactionTimeout = 5000;
 
@@ -968,14 +964,6 @@ public class Settings implements Cloneable {
         this.disableAutoHintCaches = disableAutoHintCaches;
     }
 
-    public int getGroupJoinLevel() {
-        return groupJoinLevel;
-    }
-
-    public void setGroupJoinLevel(int groupJoinLevel) {
-        this.groupJoinLevel = groupJoinLevel;
-    }
-
     public boolean isApplyVolatileStats() {
         return applyVolatileStats;
     }
@@ -1104,10 +1092,6 @@ public class Settings implements Cloneable {
         this.checkAlwaysNull = checkAlwaysNull;
     }
 
-    public boolean isCheckClassWhere() {
-        return checkClassWhere;
-    }
-
     public int getDialogTransactionTimeout() {
         return dialogTransactionTimeout;
     }
@@ -1122,10 +1106,6 @@ public class Settings implements Cloneable {
 
     public void setDisableExplicitVolatileStats(String disableExplicitVolatileStats) {
         this.disableExplicitVolatileStats = disableExplicitVolatileStats;
-    }
-
-    public void setCheckClassWhere(boolean checkClassWhere) {
-        this.checkClassWhere = checkClassWhere;
     }
 
     public void setProperties(Map<String, String> properties) {
@@ -1374,16 +1354,6 @@ public class Settings implements Cloneable {
         this.queryLengthLimit = queryLengthLimit;
     }
 
-    private boolean enableHacks = true;
-
-    public boolean isEnableHacks() {
-        return enableHacks;
-    }
-
-    public void setEnableHacks(boolean enableHacks) {
-        this.enableHacks = enableHacks;
-    }
-    
     private int logLevelJDBC = 0;
 
     public int getLogLevelJDBC() {
@@ -1881,16 +1851,6 @@ public class Settings implements Cloneable {
 
     public void setAllowUserInteractionInTransaction(boolean allowUserInteractionInTransaction) {
         this.allowUserInteractionInTransaction = allowUserInteractionInTransaction;
-    }
-
-    private boolean packStatBackwardCompatibility = false;
-
-    public boolean isPackStatBackwardCompatibility() {
-        return packStatBackwardCompatibility;
-    }
-
-    public void setPackStatBackwardCompatibility(boolean packStatBackwardCompatibility) {
-        this.packStatBackwardCompatibility = packStatBackwardCompatibility;
     }
 
     private boolean removeJoinCutBackwardCompatibility = false; // fall back to cutting the whole dependent join in the push down recursion guard (instead of virtualizing its arguments) + the compensating getReducePushedStatKeys heuristics
@@ -2558,16 +2518,6 @@ public class Settings implements Cloneable {
         this.transformPartitionExprsToKeys = transformPartitionExprsToKeys;
     }
 
-    private int constraintRowsLimit = 30;
-
-    public int getConstraintRowsLimit() {
-        return constraintRowsLimit;
-    }
-
-    public void setConstraintRowsLimit(int constraintRowsLimit) {
-        this.constraintRowsLimit = constraintRowsLimit;
-    }
-    
     private boolean disableCheckDataClasses = false; // проверка на целостность изменений свойств перед применением транзакции (без SERIALIZABLE не имеет особого смысла)
 
     public boolean isDisableCheckDataClasses() {
