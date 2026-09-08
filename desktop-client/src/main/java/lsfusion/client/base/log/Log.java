@@ -133,9 +133,7 @@ public final class Log {
 
         provideErrorFeedback();
 
-        if (MainFrame.instance == null) {
-            return;
-        }
+        // MainFrame.instance may be null (an error during the application initialization), the dialog below is still shown (with no owner), otherwise the client would just exit without any explanation
 
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));

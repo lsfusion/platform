@@ -297,7 +297,9 @@ public class MainController {
         // reset the SecurityManager that installs JavaWS,
         // since it doesn't let the RemoteClassLoader class do anything,
         // since it is loaded from a temporary directory
-        System.setSecurityManager(null);
+        // Java 24+ has no security manager at all and System.setSecurityManager always throws there, so reset it only when one is actually installed
+        if (System.getSecurityManager() != null)
+            System.setSecurityManager(null);
     }
     
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
