@@ -228,15 +228,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     }
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses, ImOrderMap<PropertyField, Boolean> orders, LimitOffset limitOffset) throws SQLException, SQLHandledException {
-        boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && !used(query);
-        OperationOwner opOwner = env.getOpOwner();
-        if(dropBefore)
-            drop(session, owner, opOwner);
-
         SessionData result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses, orders, limitOffset);
-
-        if(!dropBefore)
-            drop(session, owner, opOwner);
+        drop(session, owner, env.getOpOwner());
         return result;
     }
 

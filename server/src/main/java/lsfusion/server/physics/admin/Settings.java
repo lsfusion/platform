@@ -176,8 +176,6 @@ public class Settings implements Cloneable {
 
     private int notificationCleanupPeriod = 600; // retention/sweep period in seconds for ALL globally-pushed notifications (NEWEXECUTOR CLIENT, TO target, external UI redirects, needNotificationId etc.): every Notification gets this deadline at construction, sweepStaleNotifications reaps expired entries on the same period via the system task. Aligned with the legacy 10-minute pending-delivery window in NavigatorsManager.navigatorInitialized so notifications queued via deliverNotificationSession(..., pend=true) don't go ghost before the pending lambda fires.
 
-    private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
-
     private boolean useGreaterEquals = true;
 
     private boolean disableAutoHints = false;
@@ -920,14 +918,6 @@ public class Settings implements Cloneable {
         this.updatePingInfo = updatePingInfo;
     }
 
-    public boolean isAutoAnalyzeTempStats() {
-        return autoAnalyzeTempStats;
-    }
-
-    public void setAutoAnalyzeTempStats(boolean autoAnalyzeTempStats) {
-        this.autoAnalyzeTempStats = autoAnalyzeTempStats;
-    }
-
     private boolean useISOTimeFormatsInIntegration = true;
 
     public boolean isUseISOTimeFormatsInIntegration() {
@@ -1155,16 +1145,6 @@ public class Settings implements Cloneable {
 
     public void setApplyAutoAttemptCountLimit(int applyAutoAttemptCountLimit) {
         this.applyAutoAttemptCountLimit = applyAutoAttemptCountLimit;
-    }
-
-    private boolean alwaysDropSessionTableAfter = true; // если false то может использовать меньше таблиц, но есть риск что при exception'е не востановится таблица, что может привести к непредсказуемым последствиям 
-
-    public boolean isAlwaysDropSessionTableAfter() {
-        return alwaysDropSessionTableAfter;
-    }
-
-    public void setAlwaysDropSessionTableAfter(boolean alwaysDropSessionTableAfter) {
-        this.alwaysDropSessionTableAfter = alwaysDropSessionTableAfter;
     }
 
     private int disablePropertyReupdateCount = 10; // при записи свойств в базу после какого количества свойств включать REUPDATE (чтобы исключить избыточную проверку так как с большой вероятностью поля все равно придется обновить) 

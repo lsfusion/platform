@@ -32,7 +32,6 @@ import java.util.Set;
 // an inventory of what this connection created, by shape : whether one of them is free is answered elsewhere, by the calling session's sessionTablesMap
 public class SQLTemporaryPool {
     private final Map<TemporaryTableStruct, Set<String>> tables = MapFact.mAddRemoveMap();
-    private final Map<String, Object> stats = MapFact.mAddRemoveMap();
     private final Map<String, TemporaryTableStruct> structs = MapFact.mAddRemoveMap(); // чтобы удалять таблицы, не имея структры
     // the rows the emptyings of that table left dead since its storage was last reset - what one owner hands over to the next, not what an owner does to the table while it holds it.
     // Inside a transaction the VACUUM that would reclaim them can not run, and autovacuum does not reach another backend's temporary relations, so a table that is only ever emptied
@@ -168,17 +167,7 @@ public class SQLTemporaryPool {
         Long actual = data.fill(table); // заполняем
         assert (actual!=null)==(count==null);
         if(session.syntax.supportsAnalyzeSessionTable()) {
-            if (Settings.get().isAutoAnalyzeTempStats())
-                session.analyzeSessionTable(table, owner);
-            else {
-                assert false; // ??? с синхронизацией stats
-                Object actualStatistics = TemporaryTableStruct.getDBStatistics(actual);
-                Object currentStat = stats.get(table);
-                if (!actualStatistics.equals(currentStat)) {
-                    session.analyzeSessionTable(table, owner);
-                    stats.put(table, actualStatistics);
-                }
-            }
+            session.analyzeSessionTable(table, owner);
         }
         if(count==null)
             resultActual.set(actual);
@@ -188,8 +177,6 @@ public class SQLTemporaryPool {
 
     @AssertSynchronized
     public void removeTable(String table) { // SQLSession.assertLock - либо temporaryTables.lock() + lockRead либо lockWrite
-        if(!Settings.get().isAutoAnalyzeTempStats())
-            stats.remove(table);
         deadRows.remove(table);
         TemporaryTableStruct fieldStruct = structs.remove(table);
         if(fieldStruct == null) // idempotent : the name can be removed twice - the failure branch of the return drops it from the pool without touching transactionTables, and then the rollback compensation repeats it (see SQLSession.rollbackTransaction)

@@ -1610,7 +1610,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                 // the shape is worked out by the caller, not by the pool : it is the question "which table will do", and the answer does not belong to any one pool of them
-                TemporaryTableStruct struct = new TemporaryTableStruct(keys, properties, count);
+                TemporaryTableStruct struct = new TemporaryTableStruct(keys, properties);
                 table = getGlobalPoolTable(struct, keys, properties, owner, opOwner);
                 boolean fromGlobalPool = table != null;
                 if(!fromGlobalPool)
