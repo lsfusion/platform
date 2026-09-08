@@ -30,133 +30,14 @@
     <!-- 3. Loading JVM parameters with the highest priority -->
     <context:property-placeholder ignore-resource-not-found="true" system-properties-mode="OVERRIDE" order="3"/>
 
+    <!-- every settings.<name> key of Settings : JVM parameters, then environment variables (SETTINGS_<NAME>), then the properties files -->
+    <bean id="settingsProperties" class="lsfusion.server.physics.admin.SettingsProperties">
+        <property name="fileProperties" ref="lsfFileProperties"/>
+    </bean>
+
     <bean id="settings" class="lsfusion.server.physics.admin.Settings">
-        <property name="properties">
-            <map>
-                <entry key="packOnCacheComplexity" value="${settings.packOnCacheComplexity:}"/>
-                <entry key="removeJoinCutBackwardCompatibility" value="${settings.removeJoinCutBackwardCompatibility:}"/>
-                <entry key="keyExprCompareJoinBackwardCompatibility" value="${settings.keyExprCompareJoinBackwardCompatibility:}"/>
-                <entry key="prefixIndexIntervalBackwardCompatibility" value="${settings.prefixIndexIntervalBackwardCompatibility:}"/>
-                <entry key="cacheInnerHashes" value="${settings.cacheInnerHashes:}"/>
-                <entry key="mapInnerMaxIterations" value="${settings.mapInnerMaxIterations:}"/>
-                <entry key="enableApplySingleStored" value="${settings.enableApplySingleStored:}"/>
-                <entry key="splitSelectGroupInnerJoins" value="${settings.splitSelectGroupInnerJoins:}"/>
-                <entry key="splitGroupStatInnerJoins" value="${settings.splitGroupStatInnerJoins:}"/>
-                <entry key="useFJInsteadOfUnion" value="${settings.useFJInsteadOfUnion:}"/>
-                <entry key="simpleCheckCompare" value="${settings.simpleCheckCompare:}"/>
-                <entry key="checkFollowsWhenObjects" value="${settings.checkFollowsWhenObjects:}"/>
-                <entry key="restructWhereOnMeans" value="${settings.restructWhereOnMeans:}"/>
-                <entry key="splitGroupSelectExprcases" value="${settings.splitGroupSelectExprcases:}"/>
-                <entry key="calculateGroupDataChanged" value="${settings.calculateGroupDataChanged:}"/>
-                <entry key="noIncrementMaxGroupProperty" value="${settings.noIncrementMaxGroupProperty:}"/>
-                <entry key="compileMeans" value="${settings.compileMeans:}"/>
-                <entry key="freeConnections" value="${settings.freeConnections:}"/>
-                <entry key="disablePoolConnections" value="${settings.disablePoolConnections:}"/>
-                <entry key="disablePoolPreparedStatements" value="${settings.disablePoolPreparedStatements:}"/>
-                <entry key="disableWhenCalcDo" value="${settings.disableWhenCalcDo:}"/>
-                <entry key="disablePrereadValues" value="${settings.disablePrereadValues:}"/>
-                <entry key="splitIncrementApply" value="${settings.splitIncrementApply:}"/>
-                <entry key="statDegree" value="${settings.statDegree:}"/>
-                <entry key="useQueryExpr" value="${settings.useQueryExpr:}"/>
-                <entry key="noExclusiveCompile" value="${settings.noExclusiveCompile:}"/>
-                <entry key="limitWhereJoinsCount" value="${settings.limitWhereJoinsCount:}"/>
-                <entry key="limitWhereJoinsComplexity" value="${settings.limitWhereJoinsComplexity:}"/>
-                <entry key="limitClassWhereCount" value="${settings.limitClassWhereCount:}"/>
-                <entry key="limitClassWhereComplexity" value="${settings.limitClassWhereComplexity:}"/>
-                <entry key="limitWhereJoinPack" value="${settings.limitWhereJoinPack:}"/>
-                <entry key="limitHintIncrementComplexity" value="${settings.limitHintIncrementComplexity:}"/>
-                <entry key="limitHintIncrementValueComplexity" value="${settings.limitHintIncrementValueComplexity:}"/>
-                <entry key="noApplyIncrement" value="${settings.noApplyIncrement:}"/>
-                <entry key="limitApplyHintIncrementComplexity" value="${settings.limitApplyHintIncrementComplexity:}"/>
-                <entry key="limitHintIncrementStat" value="${settings.limitHintIncrementStat:}"/>
-                <entry key="limitApplyHintIncrementStat" value="${settings.limitApplyHintIncrementStat:}"/>
-                <entry key="limitHintNoUpdateComplexity" value="${settings.limitHintNoUpdateComplexity:}"/>
-                <entry key="limitWrapComplexity" value="${settings.limitWrapComplexity:}"/>
-                <entry key="limitComplexityGrowthCoeff" value="${settings.limitComplexityGrowthCoeff:}"/>
-                <entry key="limitExclusiveCount" value="${settings.limitExclusiveCount:}"/>
-                <entry key="noOrderTopSplit" value="${settings.noOrderTopSplit:}"/>
-                <entry key="limitExclusiveSimpleCount" value="${settings.limitExclusiveSimpleCount:}"/>
-                <entry key="limitExclusiveSimpleComplexity" value="${settings.limitExclusiveSimpleComplexity:}"/>
-                <entry key="limitExclusiveComplexity" value="${settings.limitExclusiveComplexity:}"/>
-                <entry key="limitMaterializeComplexity" value="${settings.limitMaterializeComplexity:}"/>
-                <entry key="updateFormCountPeriod" value="${settings.updateFormCountPeriod:}"/>
-                <entry key="autoAnalyzeTempStats" value="${settings.autoAnalyzeTempStats:}"/>
-                <entry key="useGreaterEquals" value="${settings.useGreaterEquals:}"/>
-                <entry key="disableAutoHints" value="${settings.disableAutoHints:}"/>
-                <entry key="disableAutoHintCaches" value="${settings.disableAutoHintCaches:}"/>
-                <entry key="applyVolatileStats" value="${settings.applyVolatileStats:}"/>
-                <entry key="useEventValuePrevHeuristic" value="${settings.useEventValuePrevHeuristic:}"/>
-                <entry key="checkUniqueEvent" value="${settings.checkUniqueEvent:}"/>
-                <entry key="commandLengthVolatileStats" value="${settings.commandLengthVolatileStats:}"/>
-                <entry key="disableReadSingleValues" value="${settings.disableReadSingleValues:}"/>
-                <entry key="reserveIDStep" value="${settings.reserveIDStep:}"/>
-                <entry key="mergeUpClassSets" value="${settings.mergeUpClassSets:}"/>
-                <entry key="queryPrepareLength" value="${settings.queryPrepareLength:}"/>
-                <entry key="queryPrepareRunTime" value="${settings.queryPrepareRunTime:}"/>
-                <entry key="modifySessionTableInsteadOfRewrite" value="${settings.modifySessionTableInsteadOfRewrite:}"/>
-                <entry key="checkAlwaysNull" value="${settings.checkAlwaysNull:}"/>
-                <entry key="dialogTransactionTimeout" value="${settings.dialogTransactionTimeout:}"/>
-                <entry key="queryLengthTimeout" value="${settings.queryLengthTimeout:}"/>
-                <entry key="queryRowCountPessLimit" value="${settings.queryRowCountPessLimit:}"/>
-                <entry key="timeoutDegree" value="${settings.timeoutDegree:}"/>
-                <entry key="timeoutStart" value="${settings.timeoutStart:}"/>
-                <entry key="applyAutoAttemptCountLimit" value="${settings.applyAutoAttemptCountLimit:}"/>
-                <entry key="useMaxDivisionLength" value="${settings.useMaxDivisionLength:}"/>
-                <entry key="noTransSyncDB" value="${settings.noTransSyncDB:}"/>
-                <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
-                <entry key="startServerAnyWay" value="${settings.startServerAnyWay:}"/>
-                <entry key="dryRun" value="${settings.dryRun:}"/>
-                <entry key="batchScriptErrors" value="${settings.batchScriptErrors:}"/>
-                <entry key="maxScriptErrorsPerModule" value="${settings.maxScriptErrorsPerModule:}"/>
-                <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
-                <entry key="busyDialog" value="${settings.busyDialog:}"/>
-                <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
-                <entry key="enableAPI" value="${settings.enableAPI:}"/>
-                <entry key="enableUI" value="${settings.enableUI:}"/>
-                <entry key="excessThreadAllocatedBytes" value="${settings.excessThreadAllocatedBytes:}"/>
-                <entry key="excessInterruptCount" value="${settings.excessInterruptCount:}"/>
-                <entry key="tempTablesTimeThreshold" value="${settings.tempTablesTimeThreshold:}"/>
-                <entry key="tempTablesCountThreshold" value="${settings.tempTablesCountThreshold:}"/>
-                <entry key="queryRowCountOptDivider" value="${settings.queryRowCountOptDivider:}"/>
-                <entry key="queryLengthLimit" value="${settings.queryLengthLimit:}"/>
-                <entry key="remoteLogTime" value="${settings.remoteLogTime:}"/>
-                <entry key="explainThreshold" value="${settings.explainThreshold:}"/>
-                <entry key="explainNoAnalyzeThreshold" value="${settings.explainNoAnalyzeThreshold:}"/>
-                <entry key="explainJavaStack" value="${settings.explainJavaStack:}"/>
-                <entry key="explainCompile" value="${settings.explainCompile:}"/>
-                <entry key="conflictSleepThreshold" value="${settings.conflictSleepThreshold:}"/>
-                <entry key="conflictSleepTimeDegree" value="${settings.conflictSleepTimeDegree:}"/>
-                <entry key="deadLockThreshold" value="${settings.deadLockThreshold:}"/>
-                <entry key="periodRestartConnections" value="${settings.periodRestartConnections:}"/>
-                <entry key="percentRestartConnections" value="${settings.percentRestartConnections:}"/>
-                <entry key="defaultCompareForStringContains" value="${settings.defaultCompareForStringContains:}"/>
-                <entry key="useSavePointsThreshold" value="${settings.useSavePointsThreshold:}"/>
-                <entry key="authTokenExpiration" value="${settings.authTokenExpiration:}"/>
-                <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
-                <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
-                <entry key="userFiltersManualApplyMode" value="${settings.userFiltersManualApplyMode:}"/>
-                <entry key="defaultAutoImageRankingThreshold" value="${settings.defaultAutoImageRankingThreshold:}"/>
-                <entry key="defaultNavigatorImageRankingThreshold" value="${settings.defaultNavigatorImageRankingThreshold:}"/>
-                <entry key="defaultContainerImageRankingThreshold" value="${settings.defaultContainerImageRankingThreshold:}"/>
-                <entry key="defaultPropertyImageRankingThreshold" value="${settings.defaultPropertyImageRankingThreshold:}"/>
-                <entry key="minInterfaceStatForValueUnique" value="${settings.minInterfaceStatForValueUnique:}"/>
-                <entry key="maxInterfaceStatForValueList" value="${settings.maxInterfaceStatForValueList:}"/>
-                <entry key="maxInterfaceStatForValueDropdown" value="${settings.maxInterfaceStatForValueDropdown:}"/>
-                <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
-                <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
-                <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
-                <entry key="useISOTimeFormatsInIntegration" value="${settings.useISOTimeFormatsInIntegration:}"/>
-                <entry key="highlightDuplicateValue" value="${settings.highlightDuplicateValue:}"/>
-                <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
-                <entry key="createSessionObjects" value="${settings.createSessionObjects:}"/>
-                <entry key="logChangesSession" value="${settings.logChangesSession:}"/>
-                <entry key="generateReportsOnWebServer" value="${settings.generateReportsOnWebServer:}"/>
-                <entry key="disableLRUCollectionUsageThreshold" value="${settings.disableLRUCollectionUsageThreshold:}"/>
-                <entry key="noExecuteLocalEventsOnFormShowFallback" value="${settings.noExecuteLocalEventsOnFormShowFallback:}"/>
-                <entry key="hideAPIErrorStackTrace" value="${settings.hideAPIErrorStackTrace:}"/>
-            </map>
-        </property>
-        </bean>
+        <property name="properties" ref="settingsProperties"/>
+    </bean>
 
     <bean id="dataAdapter" class="lsfusion.server.data.sql.adapter.PostgreDataAdapter">
         <constructor-arg value="${db.name:lsfusion}"/>
