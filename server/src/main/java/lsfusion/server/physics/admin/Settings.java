@@ -2059,16 +2059,6 @@ public class Settings implements Cloneable {
         this.maxNumericScale = maxNumericScale;
     }
 
-//    private int minClassDataIndexCount = 1000; // при превышении какого количества записей строить индексы
-//
-//    public int getMinClassDataIndexCount() {
-//        return minClassDataIndexCount;
-//    }
-//
-//    public void setMinClassDataIndexCount(int minClassDataIndexCount) {
-//        this.minClassDataIndexCount = minClassDataIndexCount;
-//    }
-
     private boolean logConflictStack = false;
 
     public boolean isLogConflictStack() {

@@ -508,13 +508,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private boolean needIndex(ObjectValueClassSet classSet) {
         ImSet<ConcreteCustomClass> set = classSet.getSetConcreteChildren();
         if(set.size() > 1) { // оптимизация
-//            int count = classSet.getCount(); // it's dangerous because if updateStats fails for some reason, then server starts dropping large indices 
-//            if(count >= Settings.get().getMinClassDataIndexCount()) {
-//                Stat totStat = new Stat(count);
-//                for (ConcreteCustomClass customClass : set)
-//                    if (new Stat(customClass.getCount()).less(totStat))
-                        return true;
-//            }
+            return true;
         }
         return false;
     }
