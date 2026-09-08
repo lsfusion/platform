@@ -149,7 +149,7 @@ SSL credentials for the external (HTTP) server are kept here as well, in two alt
 
 `computerSettings[]` collects per-`Computer` client settings (currently `textFieldPropertyEditorScannerSleep[Computer]`) as a `JSON` value for the client.
 
-### Database scaling
+### Database scaling {#database-scaling}
 
 A `DBServer` (abstract) is a database node with a `host[DBServer]` and an `snmpPort[DBServer]`. The concrete classes are `DBMaster` (the primary node; its `host` is the configured database server) and `DBSlave` (a replica; its `host` is `slaveHost[DBSlave]`). The `scaling` form lists the servers and their monitoring locals — `load`, `lsn`, `readyStatus`, `availability`, `lag`, `usedCpu`, `numberConnections` (all `DATA LOCAL` per `DBServer`, refreshed by `updateServersAction[]`).
 

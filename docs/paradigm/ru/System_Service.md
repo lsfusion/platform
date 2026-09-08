@@ -149,7 +149,7 @@ SSL-учётные данные для внешнего (HTTP) сервера т
 
 `computerSettings[]` собирает клиентские настройки по `Computer` (сейчас `textFieldPropertyEditorScannerSleep[Computer]`) в виде значения `JSON` для клиента.
 
-### Масштабирование базы данных
+### Масштабирование базы данных {#database-scaling}
 
 `DBServer` (абстрактный) — узел базы данных со свойствами `host[DBServer]` и `snmpPort[DBServer]`. Конкретные классы — `DBMaster` (главный узел; его `host` — настроенный сервер базы данных) и `DBSlave` (реплика; её `host` — это `slaveHost[DBSlave]`). Форма `scaling` показывает серверы и их локальные свойства мониторинга — `load`, `lsn`, `readyStatus`, `availability`, `lag`, `usedCpu`, `numberConnections` (все `DATA LOCAL` на `DBServer`, обновляются действием `updateServersAction[]`).
 
