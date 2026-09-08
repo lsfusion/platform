@@ -484,7 +484,7 @@ public class EmailReceiver {
                     RawFileData file = new RawFileData(f);
 
                     byte[] bytes = file.getBytes();
-                    if(Settings.get().ignoreBodyStructureSizeFix && fileName.endsWith(".dbf") && bytes[bytes.length - 1] == 0x0d && bytes[bytes.length - 1] == 0x0a) {
+                    if(Settings.get().isIgnoreBodyStructureSizeFix() && fileName.endsWith(".dbf") && bytes[bytes.length - 1] == 0x0d && bytes[bytes.length - 1] == 0x0a) {
                         file = new RawFileData(Arrays.copyOfRange(bytes, 0, bytes.length - 2));
                     }
 

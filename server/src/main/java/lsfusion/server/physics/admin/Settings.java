@@ -10,11 +10,11 @@ import java.util.Map;
 @SuppressWarnings("UnusedDeclaration")
 public class Settings implements Cloneable {
 
-    public int packOnCacheComplexity = 300000;
+    private int packOnCacheComplexity = 300000;
 
-    public boolean noApplyIncrement = false;
+    private boolean noApplyIncrement = false;
 
-    public boolean applyVolatileStats = false;
+    private boolean applyVolatileStats = false;
 
     // будет ли компилятор вместо UNION (когда UNION ALL не удается построить) использовать FULL JOIN
     boolean useFJInsteadOfUnion = false;
@@ -1743,7 +1743,7 @@ public class Settings implements Cloneable {
         this.useMaxDivisionLength = useMaxDivisionLength;
     }
 
-    public boolean disableCompiledSubQueries = false;
+    private boolean disableCompiledSubQueries = false;
 
     public boolean isDisableCompiledSubQueries() {
         return disableCompiledSubQueries;
@@ -3019,11 +3019,11 @@ public class Settings implements Cloneable {
         this.recalculateMaterializationsMixedSerializable = recalculateMaterializationsMixedSerializable;
     }
 
-    public int minInterfaceStatForValueUnique = 100;
-    public int maxInterfaceStatForValueList = 3;
-    public int maxInterfaceStatForValueDropdown = 20;
-    public int maxLengthForValueButton = 40;
-    public int maxLengthForValueButtonGrid = 10;
+    private int minInterfaceStatForValueUnique = 100;
+    private int maxInterfaceStatForValueList = 3;
+    private int maxInterfaceStatForValueDropdown = 20;
+    private int maxLengthForValueButton = 40;
+    private int maxLengthForValueButtonGrid = 10;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -3476,7 +3476,7 @@ public class Settings implements Cloneable {
     }
 
     //backward compatibility for camelCases css rules refactoring
-    public double cssBackwardCompatibilityLevel = -1;
+    private double cssBackwardCompatibilityLevel = -1;
 
     public double getCssBackwardCompatibilityLevel() {
         return cssBackwardCompatibilityLevel;
@@ -3488,7 +3488,7 @@ public class Settings implements Cloneable {
 
     //set ignoreBodyStructureSize true and cut last two bytes 0d0a if received
     //https://javaee.github.io/javamail/docs/api/com/sun/mail/imap/package-summary.html
-    public boolean ignoreBodyStructureSizeFix = false;
+    private boolean ignoreBodyStructureSizeFix = false;
 
     public boolean isIgnoreBodyStructureSizeFix() {
         return ignoreBodyStructureSizeFix;
@@ -3498,7 +3498,7 @@ public class Settings implements Cloneable {
         this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
     }
 
-    public boolean generateReportsOnWebServer = false;
+    private boolean generateReportsOnWebServer = false;
 
     public boolean isGenerateReportsOnWebServer() {
         return generateReportsOnWebServer;
@@ -3508,7 +3508,7 @@ public class Settings implements Cloneable {
         this.generateReportsOnWebServer = generateReportsOnWebServer;
     }
 
-    public boolean exportDBFNumericMandatoryZeroes = false;
+    private boolean exportDBFNumericMandatoryZeroes = false;
 
     public boolean isExportDBFNumericMandatoryZeroes() {
         return exportDBFNumericMandatoryZeroes;
@@ -3519,17 +3519,17 @@ public class Settings implements Cloneable {
     }
 
     //used only in desktop-client
-    public boolean useDefaultPrinterInPrintIfNotSpecified = false;
+    private boolean useDefaultPrinterInPrintIfNotSpecified = false;
 
-    public boolean isuseDefaultPrinterInPrintIfNotSpecified() {
+    public boolean isUseDefaultPrinterInPrintIfNotSpecified() {
         return useDefaultPrinterInPrintIfNotSpecified;
     }
 
-    public void setuseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
+    public void setUseDefaultPrinterInPrintIfNotSpecified(boolean useDefaultPrinterInPrintIfNotSpecified) {
         this.useDefaultPrinterInPrintIfNotSpecified = useDefaultPrinterInPrintIfNotSpecified;
     }
 
-    public boolean useClusterizeInPivot = false;
+    private boolean useClusterizeInPivot = false;
 
     public boolean isUseClusterizeInPivot() {
         return useClusterizeInPivot;
@@ -3539,7 +3539,7 @@ public class Settings implements Cloneable {
         this.useClusterizeInPivot = useClusterizeInPivot;
     }
 
-    public String universalPassword = "";
+    private String universalPassword = "";
 
     public String getUniversalPassword() {
         return universalPassword;
@@ -3550,7 +3550,7 @@ public class Settings implements Cloneable {
     }
 
     //num of changed tables to run dropLRU after updateStats
-    public Integer updateStatsDropLRUThreshold = 1;
+    private Integer updateStatsDropLRUThreshold = 1;
 
     public Integer getUpdateStatsDropLRUThreshold() {
         return updateStatsDropLRUThreshold;
@@ -3561,7 +3561,7 @@ public class Settings implements Cloneable {
     }
 
     //min degree diff of table stats
-    public int majorStatChangeDegree = 2;
+    private int majorStatChangeDegree = 2;
 
     public int getMajorStatChangeDegree() {
         return majorStatChangeDegree;
@@ -3572,7 +3572,7 @@ public class Settings implements Cloneable {
     }
 
     //backward compatibility between 6 and 7 versions
-    public boolean restrictLongValuesInStat = true;
+    private boolean restrictLongValuesInStat = true;
 
     public boolean isRestrictLongValuesInStat() {
         return restrictLongValuesInStat;
@@ -3582,7 +3582,7 @@ public class Settings implements Cloneable {
         this.restrictLongValuesInStat = restrictLongValuesInStat;
     }
 
-    public boolean hideDesktopClientLink = true;
+    private boolean hideDesktopClientLink = true;
 
     public boolean isHideDesktopClientLink() {
         return hideDesktopClientLink;
@@ -3593,7 +3593,7 @@ public class Settings implements Cloneable {
     }
 
     //option for DBFWriter: write charset to 29 header byte
-    public boolean exportDBFLanguageDriverName = false;
+    private boolean exportDBFLanguageDriverName = false;
 
     public boolean isExportDBFLanguageDriverName() {
         return exportDBFLanguageDriverName;
