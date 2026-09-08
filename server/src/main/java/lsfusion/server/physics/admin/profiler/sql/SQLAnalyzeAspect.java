@@ -53,11 +53,10 @@ public class SQLAnalyzeAspect {
         if(!explain)
             return thisJoinPoint.proceed();
 
-        final boolean noAnalyze = sql.explainNoAnalyze();
         final int thresholdMs = Settings.get().getExplainThreshold();
 
         // Run EXPLAIN (VERBOSE, COSTS) before execution if the estimated cost exceeds the noAnalyze threshold.
-        // Covers both noAnalyze and SQLDML-analyze paths so the plan is available even if the query hangs.
+        // The plan is then available even if the query hangs.
         SQLNoAnalyze noAnalyzeCommand;
         long defaultTimeout = command.baseCost.getDefaultTimeout();
         if (defaultTimeout > Settings.get().getExplainNoAnalyzeThreshold()) {
@@ -76,7 +75,7 @@ public class SQLAnalyzeAspect {
         final long started = System.currentTimeMillis();
 
         // Execute the actual command, wrapping DML with EXPLAIN ANALYZE when needed.
-        final boolean ranExplain = command instanceof SQLDML && !noAnalyze;
+        final boolean ranExplain = command instanceof SQLDML;
         final Object result;
         try {
             result = ranExplain || noAnalyzeCommand != null // proceed with new args overrides old params
@@ -90,22 +89,16 @@ public class SQLAnalyzeAspect {
             throw t;
         }
 
-        boolean scheduledLogNotExecutedYet = false;
         if(noAnalyzeCommand != null)
-            scheduledLogNotExecutedYet = scheduledLog.cancel(false);
+            scheduledLog.cancel(false);
 
         final long elapsedMs = System.currentTimeMillis() - started;
 
-        if (noAnalyzeCommand != null && noAnalyze) {
-            // cancel(false) fails only once the scheduled task has completed, and then it has logged the
-            // plan itself.  Otherwise log it here if the query was still slow.
-            if (scheduledLogNotExecutedYet && elapsedMs >= thresholdMs)
-                logNoAnalyze(noAnalyzeCommand);
-        } else if (!ranExplain && elapsedMs >= thresholdMs) {
-            // No pre-explain and no inline EXPLAIN ANALYZE: fallback to post-explain for slow queries.
+        if (!ranExplain && elapsedMs >= thresholdMs) {
+            // No inline EXPLAIN ANALYZE: fallback to post-explain for slow queries.
             DynamicExecEnvSnapshot analyzeEnv = queryExecEnv.forAnalyze();
             assert !analyzeEnv.hasRepeatCommand();
-            thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, noAnalyze), analyzeEnv, owner, paramObjects, SQLDML.Handler.VOID});
+            thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, false), analyzeEnv, owner, paramObjects, SQLDML.Handler.VOID});
         }
 
         return result;
