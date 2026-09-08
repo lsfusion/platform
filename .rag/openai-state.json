@@ -13851,8 +13851,8 @@
       "stale": false
     },
     "paradigm/System_Service.md": {
-      "file_hash": "sha256:8afbd845bd69ac671b6491fafb552055675fefaf7b49ed616fcec0907cd43062",
-      "indexed_at": "2026-08-28T17:25:56Z",
+      "file_hash": "sha256:0764ab546a28b9d3cede763a3fae6803e005d21741284d6c2a7e5422fe0baaf0",
+      "indexed_at": "2026-09-08T12:32:05Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -13879,10 +13879,10 @@
           "section_payload_hash": "sha256:ace9369196b2a3fa54d133cc1c07c58c5406b7e546d0763eb224cc59ef757211",
           "source_file": "paradigm/System_Service.md"
         },
-        "System_Service::database-scaling": {
-          "file_id": "file-Lngn7oi51KEUzMDogKgk61",
-          "heading_path": "Service > Database scaling",
-          "section_payload_hash": "sha256:8b7d9341c15cdf9b6ef1249ad17bbf769ed2a57ad16813f0bfac6b60349fd1d8",
+        "System_Service::database-scaling-database-scaling": {
+          "file_id": "file-UoxhbaMggDDP3JFSrDuRRL",
+          "heading_path": "Service > Database scaling {#database-scaling}",
+          "section_payload_hash": "sha256:40b3d232acdb33591a62e228e476e073b7495b95eb8731309d5032894dd36e00",
           "source_file": "paradigm/System_Service.md"
         },
         "System_Service::database-service": {
@@ -14935,8 +14935,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:b26262364220ac3173675b370e538cba1c4ddd606f3b15f45e923b100a3ca04c",
-      "indexed_at": "2026-09-08T08:47:57Z",
+      "file_hash": "sha256:8fdd3a3328d13fc332824ee3e7eb3ddf763f757df790cd24114bcd671aa738b5",
+      "indexed_at": "2026-09-08T12:32:13Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14958,9 +14958,21 @@
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-02": {
-          "file_id": "file-MsWLs2Y1RMvtQSbK4FiWDE",
+          "file_id": "file-JLLGBuatf4XBS6qQdRbop3",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:60e7e4ee083f8fc53800554dbb134151b23dcad042b52d63d63ea07fb82fee3d",
+          "section_payload_hash": "sha256:1924aee03e42a8b7dff456856c7d88ee3d7639ff99b72affa4b1d6f0a19b2737",
+          "source_file": "paradigm/Working_parameters.md"
+        },
+        "Working_parameters::working-parameters::part-03": {
+          "file_id": "file-Kw8NXWAn7z1u9LXZio3Q9j",
+          "heading_path": "Working parameters",
+          "section_payload_hash": "sha256:3bfe93eed2c695a2c3d9ee15f67b3be3c11d63a4ac95bedba4e8cda2b060b09b",
+          "source_file": "paradigm/Working_parameters.md"
+        },
+        "Working_parameters::working-parameters::part-04": {
+          "file_id": "file-KhXu81YKg6xvqojc2bAwiG",
+          "heading_path": "Working parameters",
+          "section_payload_hash": "sha256:d5dde8b85560d657b3047e23f9550c16ea6d06ea04116e15e0b15703bc34323e",
           "source_file": "paradigm/Working_parameters.md"
         }
       },
@@ -14993,7 +15005,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "f67eb04223412ceba5cd3d97d6ae379e93d47752",
+  "last_indexed_docs_commit": "8b98e0a900763f016256b5deec2f9d1b893e9731",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
