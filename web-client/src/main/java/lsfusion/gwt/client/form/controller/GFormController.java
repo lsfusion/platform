@@ -2450,6 +2450,13 @@ public class GFormController implements EditManager {
         formLayout.initPreferredSize(maxWindow, maxWidth, maxHeight);
     }
 
+    // this form is shown in a window whose size is measured once when it is shown and then fixed (a -3 main container,
+    // see GFormLayout.initPreferredSize) - the only case where a component has to have drawn before that measurement.
+    // A docked form is never measured, and a -1 main container stays dynamic and follows its content afterwards
+    public boolean isSizeFixedOnShow() {
+        return formContainer instanceof ModalForm && formLayout.isFixedSizeOnInit();
+    }
+
     public boolean isWindow() {
         return nvl(getContextContainer(), formContainer) instanceof ModalForm;
     }

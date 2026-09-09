@@ -100,7 +100,7 @@ public class ReactFormsView implements FormsView {
         panel.addAttachHandler(event -> {
             if (event.isAttached()) {
                 Document.get().getBody().appendChild(park);
-                root.mount(panel.getElement());
+                root.mount(panel.getElement(), false); // never measured, so it stays asynchronous
             } else
                 root.unmount();
         });

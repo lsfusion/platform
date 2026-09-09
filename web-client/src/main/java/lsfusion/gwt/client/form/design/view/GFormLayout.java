@@ -386,9 +386,16 @@ public class GFormLayout extends SizedFlexPanel {
             hasVisible = hasVisible || childVisible;
         }
         containerView.updateLayout(requestIndex, childrenVisible);
-        // a CUSTOM REACT container has GWT child views only for its lsf children, so hasVisible says nothing about
-        // what React renders; it always renders its own content, so it must not be collapsed to display:none by its parent
-        return hasVisible || container.isReact();
+        // a container that draws its own content - a React component, or an HTML template - has GWT child views only for
+        // the children it places, so hasVisible says nothing about what it renders; it must not be collapsed to
+        // display:none by its parent (which used to leave a template-only container invisible, and its window collapsed)
+        return hasVisible || container.isCustomDrawn();
+    }
+
+    // the window is measured ONCE when it is shown and fixed to that size (initPreferredSize below); -1 stays dynamic
+    // and follows its content, so only this case needs the content to be drawn before the measurement
+    public boolean isFixedSizeOnInit() {
+        return mainContainer.width == -3 || mainContainer.height == -3;
     }
 
     public void initPreferredSize(Widget maxWindow, GSize maxWidth, GSize maxHeight) {
@@ -399,6 +406,8 @@ public class GFormLayout extends SizedFlexPanel {
         boolean fixHeightOnInit = mainContainer.height == -3;
         if(!fixWidthOnInit && !fixHeightOnInit) //optimisation
             return;
+
+
 
         Result<Integer> grids = new Result<>(0);
         if(main instanceof HasMaxPreferredSize)

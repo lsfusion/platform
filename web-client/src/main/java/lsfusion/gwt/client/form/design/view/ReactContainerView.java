@@ -82,7 +82,7 @@ public class ReactContainerView extends ParkedContainerView {
         GwtClientUtils.addClassName(panel, "panel-react");
         panel.addAttachHandler(event -> {
             if (event.isAttached())
-                root.mount(panel.getElement());
+                root.mount(panel.getElement(), formController.isSizeFixedOnShow());
             else
                 unmount();
         });

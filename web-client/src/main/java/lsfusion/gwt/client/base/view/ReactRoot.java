@@ -70,9 +70,13 @@ public class ReactRoot {
         placement.unmount(name, host, row);
     }
 
-    public void mount(Element element) {
+    // `sync`: commit the first render inside this call instead of in a later task. Only an owner whose window is
+    // MEASURED when it is shown needs it - a -3 main container is fixed to whatever can be measured then, and an
+    // asynchronous commit leaves it measuring an empty host. The navigator, the forms window and the log are never
+    // measured and stay asynchronous. Later updates always go through the store, asynchronously, either way
+    public void mount(Element element, boolean sync) {
         if (createRoot(element))
-            render();
+            render(sync);
     }
 
     // a component that cannot be drawn says so in the element the window or the container would have filled, not only
@@ -163,18 +167,29 @@ public class ReactRoot {
     // projection down as props.data, so every later change is one notification and one React pass. The boundary sits
     // inside that root and around the application's component - a component that throws while drawing leaves the reason
     // in the window instead of tearing the root down and leaving it blank
-    private native void render()/*-{
+    private native void render(boolean sync)/*-{
         var root = this.@ReactRoot::root;
         if (!root) return;
         var React = $wnd.React;
         var context = this.@ReactRoot::context;
-        root.render(React.createElement($wnd.lsfusion.__context.Provider, { value: context },
+        var element = React.createElement($wnd.lsfusion.__context.Provider, { value: context },
             React.createElement($wnd.lsfusion.__root, {
                 name: this.@ReactRoot::componentName,
                 component: this.@ReactRoot::component,
                 controller: context.controller
-            })));
+            }));
+        // commit the initial render before the window measures its content. It is legal here because a root is mounted
+        // from a GWT attach handler, never from inside another root's render or effect (placing an lsf child is a DOM
+        // move, not an attach) - React would otherwise warn and silently fall back to an asynchronous commit
+        if (sync && $wnd.ReactDOM.flushSync)
+            $wnd.ReactDOM.flushSync(function() { root.render(element); });
+        else
+            root.render(element);
     }-*/;
+
+
+
+
 
     public native void unmount()/*-{
         var root = this.@ReactRoot::root;

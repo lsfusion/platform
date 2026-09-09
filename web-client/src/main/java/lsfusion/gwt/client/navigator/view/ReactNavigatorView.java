@@ -38,7 +38,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
 
         panel.addAttachHandler(event -> {
             if (event.isAttached())
-                root.mount(panel.getElement());
+                root.mount(panel.getElement(), false); // never measured, so it stays asynchronous
             else
                 root.unmount();
         });

@@ -272,6 +272,14 @@ public class GContainer extends GComponent implements HasNativeSID {
         return custom != null;
     }
 
+    // draws content of its OWN - a React component, or an HTML template. Such a container has GWT child views only for
+    // the children it is given places for, so whether any of those is visible says nothing about what it shows. A
+    // 'simple' custom container (custom = '') draws nothing of its own and lays its children out like a plain panel,
+    // so it follows the ordinary rule
+    public boolean isCustomDrawn() {
+        return custom != null && !custom.isEmpty();
+    }
+
     public boolean isReact() {
         return react; // custom holds the React component name
     }
