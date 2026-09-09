@@ -167,6 +167,8 @@ Three actions export the server configuration to clients as JSON; all are declar
 
 `resetServerSettingsCacheAction[]` drops the cached server settings; it is fired by `WHEN CHANGED` on `lsfParams` and on the application name / graphics so the next API call rebuilds them.
 
+Two [working parameters](Working_parameters.md) travel through this API. `sessionConfigTimeout` (`0` by default, meaning unchanged) is part of the settings `getServerSettings[]` returns, but takes effect only once the client authenticates and its navigator is created: if positive, it then overrides the servlet container's default idle-session expiration (in seconds) for the web client's HTTP session, which is the HTTP-layer session and unrelated to how long an lsFusion application session stays open. `hideDesktopClientLink` (`true` by default) gates whether the server bothers generating JNLP launch URLs for the Java-Web-Start desktop client at all; while it is on, `getServerSettings[]` reports no such URLs and the login page offers no desktop-client download link.
+
 ### Forms and navigator
 
 | Form          | Purpose                                                                                  |
