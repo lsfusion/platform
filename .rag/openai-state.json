@@ -14935,8 +14935,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:8fdd3a3328d13fc332824ee3e7eb3ddf763f757df790cd24114bcd671aa738b5",
-      "indexed_at": "2026-09-08T12:32:13Z",
+      "file_hash": "sha256:fdfbe8e6cdfa07b7b0296e9fcc378ea5341220d05fc78e9abdfe4c164c2dfd93",
+      "indexed_at": "2026-09-09T07:24:34Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14964,15 +14964,21 @@
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-03": {
-          "file_id": "file-Kw8NXWAn7z1u9LXZio3Q9j",
+          "file_id": "file-BdDXbchjdtbKZwFN63qU7h",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:3bfe93eed2c695a2c3d9ee15f67b3be3c11d63a4ac95bedba4e8cda2b060b09b",
+          "section_payload_hash": "sha256:4c5033d5ca630b67e86fb896869dd4599c3550d8283ea7e5a30423ed3cb16604",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-04": {
-          "file_id": "file-KhXu81YKg6xvqojc2bAwiG",
+          "file_id": "file-6D26vUA4jSv3k9picRRWbX",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:d5dde8b85560d657b3047e23f9550c16ea6d06ea04116e15e0b15703bc34323e",
+          "section_payload_hash": "sha256:6538eb955488064f7fe1c0312de0e12e431b7a74846f1581a276f9445be4dd82",
+          "source_file": "paradigm/Working_parameters.md"
+        },
+        "Working_parameters::working-parameters::part-05": {
+          "file_id": "file-1e9v8LM7uRV8dZ4VbmbTS6",
+          "heading_path": "Working parameters",
+          "section_payload_hash": "sha256:59b072c18a68c9b8037e10b5b23a836a507e4abe01fe8f5b6c0bddadb965cfdd",
           "source_file": "paradigm/Working_parameters.md"
         }
       },
@@ -15005,7 +15011,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "8b98e0a900763f016256b5deec2f9d1b893e9731",
+  "last_indexed_docs_commit": "df7117ce5fca5b5a72e6ed3d80bb292fa92e9e33",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
