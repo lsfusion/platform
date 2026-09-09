@@ -537,6 +537,11 @@ public class MainController {
         model.addAttribute("sessionID", sessionId);
         addResourcesAttributes(model, serverSettings, false, serverSettings != null ? initSettings.mainResourcesBeforeSystem : null, serverSettings != null ? initSettings.mainResourcesAfterSystem : null);
 
+        // the page (with its resources, whose .jsx transform above can take a long time) is built: only now does the
+        // client's grace to send InitializeNavigator start, so a slow build cannot reap this navigator before its
+        // client has even received the page (which caused a SessionInvalidatedException + reload loop)
+        navigatorProvider.setNavigatorPrepared(sessionId, isPrefetch(request));
+
         return "main";
     }
 

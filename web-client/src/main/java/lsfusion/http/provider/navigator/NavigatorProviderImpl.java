@@ -147,7 +147,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
         addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
-        scheduleCheckInitialized(sessionID, MainController.isPrefetch(request));
+        scheduleAbandonedCheck(currentLogicsAndNavigators, sessionID); // the short grace starts when the page is delivered
         return sessionID;
     }
 
@@ -203,14 +203,27 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         removeNavigatorSessionObject(currentLogicsAndNavigators, sessionID);
     }
 
-    public void scheduleCheckInitialized(String sessionId, boolean isPrefetch) {
+    // the /main page has been built for this navigator, so from now the client can actually answer: give it the
+    // ordinary grace to send InitializeNavigator. Until then only the long abandoned-check from createNavigator is
+    // pending, which is what keeps a slow page build (a big .jsx transform) from reaping a client that has not even
+    // received the page yet
+    public void setNavigatorPrepared(String sessionId, boolean isPrefetch) {
         scheduleCheckInitialized(currentLogicsAndNavigators, sessionId, isPrefetch);
     }
+
+    private static final long INIT_GRACE = 1; // minutes the client has to send InitializeNavigator once it has the page
+    private static final long PREFETCH_GRACE = 5; // google has a 5 minutes prefetch grace period
+    // a navigator whose page is never delivered - the request failed, or it is the orphan a retried runRequest left
+    // behind, whose id the caller never got - is cleaned up by this one instead
+    private static final long ABANDONED_GRACE = 10;
     private static final ScheduledExecutorService checkInitializedExecutor = Executors.newScheduledThreadPool(5);
+    private static void scheduleAbandonedCheck(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId) {
+        checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 1), ABANDONED_GRACE, TimeUnit.MINUTES);
+    }
     private static void scheduleCheckInitialized(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId, boolean isPrefetch) {
-        checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 1), 1, TimeUnit.MINUTES);
-        if(isPrefetch) // google has prefetch 5 minutes grace period
-            checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 2), 5, TimeUnit.MINUTES);
+        checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 1), INIT_GRACE, TimeUnit.MINUTES);
+        if(isPrefetch)
+            checkInitializedExecutor.schedule(() -> checkInitialized(currentLogicsAndNavigators, sessionId, 2), PREFETCH_GRACE, TimeUnit.MINUTES);
     }
 
     private static void checkInitialized(Map<String, NavigatorSessionObject> currentLogicsAndNavigators, String sessionId, int status) {

@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 public interface NavigatorProvider {
 
     String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
+    void setNavigatorPrepared(String sessionId, boolean isPrefetch); // the /main page for this navigator has been built (see MainController.processMain)
     NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException;
     NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
     void removeNavigatorSessionObject(String sessionID) throws RemoteException;
