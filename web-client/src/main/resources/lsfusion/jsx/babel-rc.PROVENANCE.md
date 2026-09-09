@@ -13,8 +13,8 @@ served to the browser.
 ## Coordinates
 
 - npm packages: `@babel/standalone@7.29.7` (MIT), `babel-plugin-react-compiler@1.0.0` (MIT)
-- sha256 of `babel-rc.min.js`: `ef3e7f1efc352aeee99ea0e8065db448315f7c9d294cc0dd7d1c452848464fb6`
-- size: 5339230 bytes
+- sha256 of `babel-rc.min.js`: `c7bf26e442714d921885c8aeed4615330a23c92317e7c67304a885cc49960854`
+- size: 5339451 bytes
 - full transitive pin: `babel-rc.package-lock.json` (the `package-lock.json` of the bundle build,
   captured by the build script; includes the build-time-only esbuild)
 

@@ -113,7 +113,10 @@ const autoMemo = ({ types: t }) => {
     visitor: {
       Program: { exit(path, state) {
         if (!state.wrapped.length) return;
-        const memoId = path.scope.generateUidIdentifier('rcMemo');
+        // the token makes the name file-specific: every served .jsx is a separate classic script sharing ONE global
+        // lexical scope, so a name that is only unique within its own Program (which is all generateUid can promise)
+        // is re-declared by the next file and throws, taking that whole script with it
+        const memoId = path.scope.generateUidIdentifier('rcMemo' + (state.opts.token ? '_' + state.opts.token : ''));
         path.unshiftContainer('body', t.variableDeclaration('const', [t.variableDeclarator(memoId, t.memberExpression(t.identifier('React'), t.identifier('memo')))]));
         for (const w of state.wrapped) w(memoId);
       } },
@@ -159,7 +162,10 @@ const autoMemo = ({ types: t }) => {
 // JsxTransformer preflight, which rejects it with the tier message.
 const rewriteRuntimeImports = ({ types: t }) => ({
   visitor: {
-    Program: { exit(path) {
+    Program: { exit(path, state) {
+      // the compiler plugin inserted its cache calls without telling babel's scope about them, so the binding does not
+      // know all of its references yet - and scope.rename would leave the ones it cannot see pointing at the old name
+      path.scope.crawl();
       for (const stmt of path.get('body')) {
         if (!stmt.isImportDeclaration()) continue;
         const source = stmt.node.source.value;
@@ -170,15 +176,25 @@ const rewriteRuntimeImports = ({ types: t }) => ({
         const specifiers = stmt.node.specifiers;
         if (!specifiers.length || !specifiers.every(s => s.type === 'ImportSpecifier' && s.imported.type === 'Identifier')) continue;
         const runtime = t.memberExpression(t.memberExpression(t.identifier('window'), t.identifier('lsfusion')), t.identifier('rcRuntime'));
-        stmt.replaceWith(t.variableDeclaration('const', specifiers.map(s =>
-          t.variableDeclarator(t.identifier(s.local.name), t.memberExpression(runtime, t.identifier(s.imported.name))))));
+        // the compiler names its cache helper the same in EVERY file, and each served .jsx is a classic script
+        // sharing one global lexical scope - so rename the binding per file first (scope.rename rewrites every
+        // reference, which a textual replacement could not do safely), then declare it under the new name
+        const names = specifiers.map(s => {
+          const token = state.opts.token;
+          const local = s.local.name;
+          const renamed = token ? path.scope.generateUid(local + '_' + token) : local;
+          if (renamed !== local) path.scope.rename(local, renamed);
+          return {local: renamed, imported: s.imported.name};
+        });
+        stmt.replaceWith(t.variableDeclaration('const', names.map(n =>
+          t.variableDeclarator(t.identifier(n.local), t.memberExpression(runtime, t.identifier(n.imported))))));
       }
     } }
   }
 });
 
 globalThis.rc = {
-  transform: function (src) {
+  transform: function (src, token) {
     // babel's SyntaxError.message already carries the codeframe + "(line:col)"; rethrow it as a plain Error so
     // Graal's PolyglotException.getMessage() surfaces the full detail to Java instead of a bare "SyntaxError"
     try {
@@ -187,7 +203,7 @@ globalThis.rc = {
         // plugins run before presets: the compiler and autoMemo see the original JSX, then preset-react
         // lowers it to React.createElement (classic runtime against the platform window.React, no dev metadata)
         presets: [['react', {runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment', development: false}]],
-        plugins: [[compiler.default || compiler, {target: '18', panicThreshold: 'none'}], autoMemo, rewriteRuntimeImports],
+        plugins: [[compiler.default || compiler, {target: '18', panicThreshold: 'none'}], [autoMemo, {token: token}], [rewriteRuntimeImports, {token: token}]],
         parserOpts: {plugins: ['jsx']},
         sourceType: 'module'
       }).code;

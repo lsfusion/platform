@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -53,13 +55,45 @@ public class JsxTransformer {
         return resourceName.substring(0, resourceName.length() - "x".length());
     }
 
+    // every served .jsx is a plain classic script, and they all share ONE global lexical scope - so the helpers the
+    // transform generates (the memo alias and the compiler's cache helper) must be named per FILE, or the second file
+    // re-declares them, throws, and never runs. Derived from the resource NAME rather than its content: two files with
+    // the same content are still two scripts. The readable part is only a hint - it maps many characters onto '_', so
+    // the digest of the exact name is what actually keeps two names apart (a-b.jsx and a_b.jsx read the same otherwise)
+    private static String token(String resourceName) {
+        StringBuilder readable = new StringBuilder();
+        for (int i = 0; i < resourceName.length(); i++) {
+            char c = resourceName.charAt(i);
+            readable.append(Character.isLetterOrDigit(c) || c == '_' ? c : '_');
+        }
+        return readable + "_" + digest(resourceName);
+    }
+
+    // LETTERS only, no digits: babel's generateUid strips trailing digits from the name it is given, so a hex digest
+    // would be silently truncated - and two names whose digests differed only in those digits would collide again
+    private static String digest(String resourceName) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(resourceName.getBytes(StandardCharsets.UTF_8));
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < 6; i++) {
+                result.append((char) ('a' + ((hash[i] >> 4) & 0xF)));
+                result.append((char) ('a' + (hash[i] & 0xF)));
+            }
+            return result.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e); // SHA-256 is required of every JRE
+        }
+    }
+
     public static RawFileData transform(String resourceName, RawFileData source) {
-        String id = source.getID();
+        // the name is part of the key because it is part of the OUTPUT (see token) - the same content under two names
+        // must not be served the other one's helper names
+        String id = resourceName + "|" + source.getID();
         RawFileData cached = cache.get(id);
         if (cached != null)
             return cached;
         try {
-            RawFileData result = new RawFileData(PREAMBLE + doTransform(source.getString(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            RawFileData result = new RawFileData(PREAMBLE + doTransform(source.getString(StandardCharsets.UTF_8), token(resourceName)), StandardCharsets.UTF_8);
             if (cache.size() >= CACHE_LIMIT)
                 cache.clear();
             cache.put(id, result);
@@ -114,10 +148,10 @@ public class JsxTransformer {
     }
 
     // synchronized: serializing transforms is fine for this tier (rare, cached by content)
-    private static synchronized String doTransform(String source) {
+    private static synchronized String doTransform(String source, String token) {
         checkJavaVersion(); // before any Graal class is touched, so an old JVM gets guidance, not UnsupportedClassVersionError
         try {
-            return engineThread.submit(() -> transformOnEngineThread(source)).get();
+            return engineThread.submit(() -> transformOnEngineThread(source, token)).get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
@@ -131,7 +165,7 @@ public class JsxTransformer {
         }
     }
 
-    private static String transformOnEngineThread(String source) {
+    private static String transformOnEngineThread(String source, String token) {
         if (transformFunction == null) {
             long started = System.currentTimeMillis();
             Context context = Context.newBuilder("js").option("engine.WarnInterpreterOnly", "false").build();
@@ -144,14 +178,14 @@ public class JsxTransformer {
             // passes through untransformed — a user's top-level import/export (only the compiler's
             // own runtime imports are rewritten by the bundle) — and most syntax errors
             transformFunction = context.eval("js",
-                    "(function(src) {" +
-                    "    var code = rc.transform(src);" +
+                    "(function(src, token) {" +
+                    "    var code = rc.transform(src, token);" +
                     "    new Function(code);" +
                     "    return code;" +
                     "})");
             logger.info("lsFusion .jsx transformer initialized in " + (System.currentTimeMillis() - started) + " ms");
         }
-        return transformFunction.execute(source).asString();
+        return transformFunction.execute(source, token).asString();
     }
 
     private static String readBabelBundle() {
