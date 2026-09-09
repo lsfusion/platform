@@ -2361,8 +2361,8 @@
       "stale": false
     },
     "how-to/How-to_Trees.md": {
-      "file_hash": "sha256:b8338d260313ba24ca3767df57de9075f0579c49b54f7c8da438df72eb798145",
-      "indexed_at": "2026-09-04T08:14:25Z",
+      "file_hash": "sha256:261abd654d406fe7d4fe063ca4991cf67f2cef352edadde11c062a6fb6b6977b",
+      "indexed_at": "2026-09-09T10:24:14Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -2387,6 +2387,12 @@
           "file_id": "file-7VNDARFyNsy9eqZFpdr3J3",
           "heading_path": "How-to: Trees > Example 3",
           "section_payload_hash": "sha256:0ad9aaef84e4c765fc2cef506725d86fe84d1da0614f20ed7546dc4580917dd7",
+          "source_file": "how-to/How-to_Trees.md"
+        },
+        "How-to_Trees::task-004": {
+          "file_id": "file-CnAKC9miFMStsm62dsgYVr",
+          "heading_path": "How-to: Trees > Example 4",
+          "section_payload_hash": "sha256:1d9d8dd5719fb6d38867352930c46fbde3c84d1368a9ee51eeb35058dab4992e",
           "source_file": "how-to/How-to_Trees.md"
         }
       },
@@ -4155,8 +4161,8 @@
       "stale": false
     },
     "language/DESIGN_statement.md": {
-      "file_hash": "sha256:224f718619be793e044f0b8751c46ff03158587448c0ddd7bcf4a821be801c24",
-      "indexed_at": "2026-09-07T09:33:57Z",
+      "file_hash": "sha256:1c204fab19b88c393b14531201746b43a242d790b606f89af40c9c43d0b9eeac",
+      "indexed_at": "2026-09-09T10:24:22Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -4220,9 +4226,9 @@
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::properties-of-actions-and-properties-on-the-form::part-01": {
-          "file_id": "file-HHQqLYFsLHULZEtrfcZHC3",
+          "file_id": "file-NRmSRWBsTQxvHqwCUXy85D",
           "heading_path": "DESIGN statement > Parameters > Properties of actions and properties on the form",
-          "section_payload_hash": "sha256:c2743bd7952b6855e2ebf844db0af28b3dc0cf192fe4d25a84809aeca1b166f7",
+          "section_payload_hash": "sha256:258648d323a1948a47c4a9a6d6163c120e18c065531099db9b80c017f7df57cc",
           "source_file": "language/DESIGN_statement.md"
         },
         "DESIGN_statement::selector-parameters": {
@@ -4897,8 +4903,8 @@
       "stale": false
     },
     "language/FORM_statement.md": {
-      "file_hash": "sha256:25fa06e97162c8c9723f55e0f384f141096eeaad2380f253d7242fc9b724df85",
-      "indexed_at": "2026-08-28T16:50:54Z",
+      "file_hash": "sha256:f36235e082d13aa50cc3d1229291e3bda42e220384f9865810ec2bd85a01ae3b",
+      "indexed_at": "2026-09-09T10:24:28Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -4920,9 +4926,9 @@
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::form-blocks-formblock1-...-formblockn-blocks::part-00": {
-          "file_id": "file-Y8irR9thcgvzK7EtzzVPqd",
+          "file_id": "file-J6ohpZ5uExyanvB4CqyyNf",
           "heading_path": "FORM statement > Parameters > Form blocks (`formBlock1 ... formBlockN`) {#blocks}",
-          "section_payload_hash": "sha256:0510eaf77878452d5ed4a4066d8fc5c6b36c9d1f7c8f7397a8de280c0d9b4029",
+          "section_payload_hash": "sha256:d9953eeb73a363d814e4e1713a8fe3ea76fa1df0fd9748c637f2c4b9ad2f2305",
           "source_file": "language/FORM_statement.md"
         },
         "FORM_statement::form-blocks-formblock1-...-formblockn-blocks::part-01": {
@@ -5751,8 +5757,8 @@
       "stale": false
     },
     "language/Literals.md": {
-      "file_hash": "sha256:d8853a52b51363ce42556709e8c76076f08c9ee5896ea0ff371df45d94664a67",
-      "indexed_at": "2026-08-28T16:54:21Z",
+      "file_hash": "sha256:c1aa8ed0e7b75dafd8af754158b1f35b208459d0dfa56efd054b1b4f983b141b",
+      "indexed_at": "2026-09-09T10:24:36Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -5762,9 +5768,9 @@
       },
       "sections": {
         "Literals::literals": {
-          "file_id": "file-AMe3e6fT9tJXTELnow1jBm",
+          "file_id": "file-4dS42U18URqyF8XeaUM5n5",
           "heading_path": "Literals",
-          "section_payload_hash": "sha256:246fbef249f4083cf728542dfdf979421ceea6fb7a60c1b664f26dd1a13f874d",
+          "section_payload_hash": "sha256:b704eeb8e4c3cb6cf2c0297dde2deced4c9f1cbda1a434bfcb671d48cd3d7f07",
           "source_file": "language/Literals.md"
         }
       },
@@ -6791,8 +6797,8 @@
       "stale": false
     },
     "language/Properties_and_actions_block.md": {
-      "file_hash": "sha256:4fb5618189c43a3df25abbbe21f02f70150ed5b620f61ccd36d26aed948943b2",
-      "indexed_at": "2026-09-07T09:34:25Z",
+      "file_hash": "sha256:c69814aa1afe32d062211d837137d9f1dbb6b3b38c77c487091ba3006e92d2c9",
+      "indexed_at": "2026-09-09T10:24:45Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -6832,15 +6838,15 @@
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-00": {
-          "file_id": "file-YAMPF9z8vrm6ZmYnDSHZGa",
+          "file_id": "file-Ce93kAyF9sX8EB9DCUuoiM",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:bf29715d2471a58c5eb2d438a8891dbe485b8adf0eedba60020b73df6cfc15d1",
+          "section_payload_hash": "sha256:aa9ebf7810fd15478440095f09f2a5b216742dd5febe4ae4289ce8320ce27ed6",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-01": {
-          "file_id": "file-8xsFAq8aoaQfqpAa2Hg8Bn",
+          "file_id": "file-3b2gNbgJ1jJjmJ41VyWrDq",
           "heading_path": "Properties and actions block > Parameters",
-          "section_payload_hash": "sha256:21c1dc001baaa0b393ab72db9795867778254667603f92111177016093b57847",
+          "section_payload_hash": "sha256:5df8293f5689b6386edfb407c897a4ab086c4db46458d46777dbdc246b82e923",
           "source_file": "language/Properties_and_actions_block.md"
         },
         "Properties_and_actions_block::parameters::part-02": {
@@ -8607,8 +8613,8 @@
       "stale": false
     },
     "paradigm/Built-in_classes.md": {
-      "file_hash": "sha256:fcd72af63a19591520fc253e636e3fab3cfb73e4f71d5dab59b1ae446d6afb6f",
-      "indexed_at": "2026-08-28T17:05:24Z",
+      "file_hash": "sha256:7ccbff37b7b7c43fbcf86138973a65bf9e926f9c55bbf9787689b11bb4cbd992",
+      "indexed_at": "2026-09-09T10:24:53Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -8618,9 +8624,9 @@
       },
       "sections": {
         "Built-in_classes::built-in-classes": {
-          "file_id": "file-WwKLiqNaeLqKN9ubt5zNk4",
+          "file_id": "file-QKDo3CZUtdxeBiVFMewM8t",
           "heading_path": "Built-in classes",
-          "section_payload_hash": "sha256:eff85b0c1456d2f836ee51bbebece500cf11f278db776afb400a3afbacd3c12d",
+          "section_payload_hash": "sha256:874588eef2312b17e6276ccc746edb731b34d755aba59b0aaa727c674a27424e",
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::common-ancestor-commonparentclass": {
@@ -8654,9 +8660,9 @@
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::language": {
-          "file_id": "file-3Xj7oCYSbaw4cy6MCjyux6",
+          "file_id": "file-Dm3VgWdLZHkJEbMw6dRHYj",
           "heading_path": "Built-in classes > Language",
-          "section_payload_hash": "sha256:38f498b93108b0de6fc36eef5588729e2befe9b11f62bca535b774276c0d75d6",
+          "section_payload_hash": "sha256:306d51ffcec5b986f1bfae36ca22e8b7b49c5b6725c5f04d7051c0701bfdb20b",
           "source_file": "paradigm/Built-in_classes.md"
         },
         "Built-in_classes::numbers": {
@@ -10761,8 +10767,8 @@
       "stale": false
     },
     "paradigm/Interactive_view.md": {
-      "file_hash": "sha256:3c97da1b2bda408dde698554d9984f9804793bec9d4d9bd5ad6f35662daa5b66",
-      "indexed_at": "2026-09-09T10:00:49Z",
+      "file_hash": "sha256:56dcec3afbf6de54c7433ab44ccb275f08989f049835ee5bdf9137481d20b47a",
+      "indexed_at": "2026-09-09T10:25:02Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -10844,9 +10850,9 @@
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::property-views-property": {
-          "file_id": "file-1XjBjkn92QrMLCh2SmiWkv",
+          "file_id": "file-MS21v39F23BxsRh4E7PP5q",
           "heading_path": "Interactive view > Property views {#property}",
-          "section_payload_hash": "sha256:9d057a1c613b50efa4c094cb599710d7056173063226a022a5a2edecb89552fa",
+          "section_payload_hash": "sha256:1866d33a3090652d84db609612aed810eadc0229cc0655312d8a2d504d0af0c6",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::selectionediting-forms-edtclass": {
@@ -12649,8 +12655,8 @@
       "stale": false
     },
     "paradigm/Report_design.md": {
-      "file_hash": "sha256:b396f161a9b4ab9e16541688e76e0bdb8f8cac1c87bf633efe4c762b59272219",
-      "indexed_at": "2026-08-28T17:21:41Z",
+      "file_hash": "sha256:4112cffc790a5d9df1f13e71652c92f30e53391a3b147933b7f4490e43b68233",
+      "indexed_at": "2026-09-09T10:25:12Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -12684,9 +12690,9 @@
           "source_file": "paradigm/Report_design.md"
         },
         "Report_design::templates-template": {
-          "file_id": "file-RTHpfYDAGUn7WE7sC9gRHt",
+          "file_id": "file-MwTERtwY1gAE2GHNfbu63s",
           "heading_path": "Report design > Templates {#template}",
-          "section_payload_hash": "sha256:7046c5dc6ef81ae00f2ac30785ac2482e2b17dae6da5b54db8be0a7bc6689ba2",
+          "section_payload_hash": "sha256:ebd7c6e9e3a24442053945f1fbb9e6b52f192c1d9b9d33fc622ebc99bc096634",
           "source_file": "paradigm/Report_design.md"
         }
       },
@@ -14661,8 +14667,8 @@
       "stale": false
     },
     "paradigm/User_interface.md": {
-      "file_hash": "sha256:671b8220eeefe724897a422656f3a399b02d59609e14d0ce07dc854dd9562f9f",
-      "indexed_at": "2026-08-28T17:28:32Z",
+      "file_hash": "sha256:8ab93300901261cac67c19f00bd1f8a5327e90563499f0c34077b746612f6f34",
+      "indexed_at": "2026-09-09T10:25:20Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14671,10 +14677,10 @@
         "source_url_version": "v1"
       },
       "sections": {
-        "User_interface::appearance": {
-          "file_id": "file-FFiTJWTJx7FPdj155uPu7f",
-          "heading_path": "User interface > Appearance",
-          "section_payload_hash": "sha256:ab6315b8d27517de8f5957be859c24504058a874a2f43393326db7446d44e6f6",
+        "User_interface::appearance-appearance": {
+          "file_id": "file-MEWm5eNVBjFCTRhU6tW46g",
+          "heading_path": "User interface > Appearance {#appearance}",
+          "section_payload_hash": "sha256:c793dcc96242506c2a102d098eaad9b620e3cfe026aba04610b3a778edd6fe83",
           "source_file": "paradigm/User_interface.md"
         },
         "User_interface::form-table-settings": {
@@ -14953,8 +14959,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:fb6699a4db90c29e56c895c7f14b1ebf375d1e30b069b52cc611e9522eb0bcb7",
-      "indexed_at": "2026-09-09T08:11:51Z",
+      "file_hash": "sha256:7257994f5e1153aa98110f9845cd5b566600bcc877203e06e146e7b83851ea07",
+      "indexed_at": "2026-09-09T10:25:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14964,33 +14970,33 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-FoygUbc2eRDSotCuW3KeXe",
+          "file_id": "file-AFJvzyVJg25shdynCN9J8q",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:9b5e640c516ae2d8c5161e8f01de2a4b55f009508f6726dacbf20ab8d19f0a49",
+          "section_payload_hash": "sha256:a94d3680c60cfd23465b6d15ffbced258b71800cd14c01b9c990b76636ca7ef1",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
-          "file_id": "file-J45Gcg5LCJrnr8yRS8VXkR",
+          "file_id": "file-XDVTWt13ib1PjazETakudS",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:2f15795be551ec65591587008174ff805d4c6243bc700a22d1972748971a2a93",
+          "section_payload_hash": "sha256:4accbb383c5b9e3aadeada242061b2b08eec1d448a0148e380ae9b815af05706",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-02": {
-          "file_id": "file-JLLGBuatf4XBS6qQdRbop3",
+          "file_id": "file-BP23cC8pTuiPjbTiB5Vkpd",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:1924aee03e42a8b7dff456856c7d88ee3d7639ff99b72affa4b1d6f0a19b2737",
+          "section_payload_hash": "sha256:53f9660088fa9b3cc9022f371ec8835749b05c4da074d630575d5317e11801b2",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-03": {
-          "file_id": "file-RW61n4McjjVdm2j7LDVz5K",
+          "file_id": "file-KdY3fJFbf7kxMqXFZn2BKK",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:d27c42422716f5109969974539ea3139844d2cb298f50126a2e44147bd8a10b6",
+          "section_payload_hash": "sha256:090a29b7c1d76eda13d998d5e4b05b449b8730bc534bb48799cce9c6e82a39b1",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-04": {
-          "file_id": "file-6D26vUA4jSv3k9picRRWbX",
+          "file_id": "file-NHjGGturYxf3HTyV9iwdxg",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:6538eb955488064f7fe1c0312de0e12e431b7a74846f1581a276f9445be4dd82",
+          "section_payload_hash": "sha256:9ac8ab0e61c80b36acd8408a3fd9abee3237868e55f310f219b9de3514667fed",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-05": {
@@ -15029,7 +15035,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "782acaedf57f7f747648eed6880c83c74d89f34f",
+  "last_indexed_docs_commit": "5fc61ed9677fca7b28c7bbf84cba40f9fe05037a",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
