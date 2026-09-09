@@ -10761,8 +10761,8 @@
       "stale": false
     },
     "paradigm/Interactive_view.md": {
-      "file_hash": "sha256:783d11b7a8546f1dc34c9b6e7cc85b1e5a159efda0bd97db96be3d894667985b",
-      "indexed_at": "2026-08-28T17:14:04Z",
+      "file_hash": "sha256:3c97da1b2bda408dde698554d9984f9804793bec9d4d9bd5ad6f35662daa5b66",
+      "indexed_at": "2026-09-09T10:00:49Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -10772,15 +10772,27 @@
       },
       "sections": {
         "Interactive_view::additional-features-extra": {
-          "file_id": "file-6Shgx6bvjZpijSYZZ9Ko2F",
+          "file_id": "file-U9843uJhwN5oPPZcBZsfzT",
           "heading_path": "Interactive view > Additional features {#extra}",
-          "section_payload_hash": "sha256:b518189653443ae82e8ac9dd18b5bfd1931633debd8cb253e179c1a85d10ec5e",
+          "section_payload_hash": "sha256:67be1e7e00915aad7c29f93d4f8604b6ba5bf14b9b30357af7540c57e786b066",
+          "source_file": "paradigm/Interactive_view.md"
+        },
+        "Interactive_view::async-input-value-list-async": {
+          "file_id": "file-Quwm9eAzeVsh6DnAWFjaad",
+          "heading_path": "Interactive view > Async input value list {#async}",
+          "section_payload_hash": "sha256:4f91ef20894439604143bc5c8eb9f81bbd11e1dec7b94ac3a5d059fcaa8697cf",
+          "source_file": "paradigm/Interactive_view.md"
+        },
+        "Interactive_view::busy-indicator-busy": {
+          "file_id": "file-HYucj3Cv8YkVac8theLMtU",
+          "heading_path": "Interactive view > Busy indicator {#busy}",
+          "section_payload_hash": "sha256:b32426b1a38e20871065d150170e19e557e51090299e85ea18fc4404da9e5dfa",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::custom-filtersorders-userfilters": {
-          "file_id": "file-Ncf9b8z7N9pmFgz5WZxsYo",
+          "file_id": "file-BkWFSDsycsjuKnecCUvefJ",
           "heading_path": "Interactive view > Custom filters/orders {#userfilters}",
-          "section_payload_hash": "sha256:7e7919c4ad2541b296c55f88489978b0144935d38445a6187fd0259095f8c415",
+          "section_payload_hash": "sha256:cbc130cec5413fa03eee54c3fa79268d4711cf4e2cffeffb7fa115c8033e4455",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::default-objects-selection-defaultobject": {
@@ -10826,15 +10838,15 @@
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::object-views-objects": {
-          "file_id": "file-Nra9A7pEC3QAEq9QLuGqmB",
+          "file_id": "file-F5bQaeiG2GxzCtj1haMcVh",
           "heading_path": "Interactive view > Object views {#objects}",
-          "section_payload_hash": "sha256:2de63e075bde032bdcab133289d7805670202e9166ec7880e45ed57a7b1aad91",
+          "section_payload_hash": "sha256:6e144e03100bdffceb4a51fe55336837d98da9d99fbbc4107aa2041e53011886",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::property-views-property": {
-          "file_id": "file-62N9zBbPVpi97AFRLP81dK",
+          "file_id": "file-1XjBjkn92QrMLCh2SmiWkv",
           "heading_path": "Interactive view > Property views {#property}",
-          "section_payload_hash": "sha256:498caae152812db32774d5ea629188d324aee871a17d25016b557fbc34cb0d57",
+          "section_payload_hash": "sha256:9d057a1c613b50efa4c094cb599710d7056173063226a022a5a2edecb89552fa",
           "source_file": "paradigm/Interactive_view.md"
         },
         "Interactive_view::selectionediting-forms-edtclass": {
@@ -13851,8 +13863,8 @@
       "stale": false
     },
     "paradigm/System_Service.md": {
-      "file_hash": "sha256:0764ab546a28b9d3cede763a3fae6803e005d21741284d6c2a7e5422fe0baaf0",
-      "indexed_at": "2026-09-08T12:32:05Z",
+      "file_hash": "sha256:672a83d3fb9ab7fb35ca995f8df0861a4205ea5dc6126b28fafc455ed9d917f5",
+      "indexed_at": "2026-09-09T10:00:59Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -13922,9 +13934,9 @@
           "source_file": "paradigm/System_Service.md"
         },
         "System_Service::server-settings-api": {
-          "file_id": "file-9EZpFZ7b35DhVSu48NtM2Y",
+          "file_id": "file-SyXut9aa1MCaddgyAmybW8",
           "heading_path": "Service > Server-settings API",
-          "section_payload_hash": "sha256:ed8998d8f8990ee3611de9ca25c0218c1f4415f3c00f4c0938bd5ccb4d96892d",
+          "section_payload_hash": "sha256:bee16063bb3a35c6a75ad0a69c987dde3a94d153f0d909ad09c5220338559481",
           "source_file": "paradigm/System_Service.md"
         },
         "System_Service::service": {
@@ -14909,8 +14921,8 @@
       "stale": false
     },
     "paradigm/View_type_VIEWTYPE.md": {
-      "file_hash": "sha256:7233edb48e2e34ef12068e5983c85858960d8c2e3601204712ba71be3ba5a77c",
-      "indexed_at": "2026-08-28T17:29:22Z",
+      "file_hash": "sha256:5b452565e011011ad72ede84d3fbf7163a43f9552a26924249fefbe76d372a48",
+      "indexed_at": "2026-09-09T10:01:08Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14923,6 +14935,12 @@
           "file_id": "file-DQ8So1Hu5s64nrLPcqb5Gr",
           "heading_path": "View type (VIEWTYPE) > Language + Examples",
           "section_payload_hash": "sha256:6ce59a8a24e01673c2aeefbb82817d1b55272e9167b72bd3db57b5299f029633",
+          "source_file": "paradigm/View_type_VIEWTYPE.md"
+        },
+        "View_type_VIEWTYPE::pivot-table-pivot": {
+          "file_id": "file-1fRmAUTueMaB6MQhAMHxZb",
+          "heading_path": "View type (VIEWTYPE) > Pivot table {#pivot}",
+          "section_payload_hash": "sha256:b85fd182b0135f1091c02087a6482266f38576488e60cab66d87e11aa1c6565c",
           "source_file": "paradigm/View_type_VIEWTYPE.md"
         },
         "View_type_VIEWTYPE::view-type-viewtype": {
@@ -15011,7 +15029,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "f4bc11d19991703369153c184a07b624f2d22b48",
+  "last_indexed_docs_commit": "782acaedf57f7f747648eed6880c83c74d89f34f",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
