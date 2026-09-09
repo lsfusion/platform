@@ -251,7 +251,7 @@ To access design components, you can use their names or address property compone
 |`toolbar`|Whether the value cell shows its own small control toolbar|Extended Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`toolbarActions`|Whether the value cell's toolbar includes the property's action buttons|Extended Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Logical literal|the property's `notNull`|`TRUE`<br/>`FALSE`|
-|`select`|Renders the value as a selection control over its possible values; a string chooses the control kind (for example `'dropdown'`, `'list'`, `'buttongroup'`, `'input'`), and `NULL` disables it|String literal|`NULL`|`'dropdown'`|
+|`select`|Renders the value as a [selection element](../paradigm/Interactive_view.md#property) over its possible values; a string chooses the kind of element: `'buttonGroup'` — adjacent toggle buttons with the picked option highlighted, `'button'` — the same buttons standing apart, `'list'` — a column of radio buttons (check boxes for a selection of several values), `'dropdown'` — a standard drop-down list (a `select` element), `'input'` — a text field with a drop-down list of the options matching the typed text (only for a selection of several values); `NULL` disables the element|String literal|`NULL`|`'dropdown'`|
 |`defaultValue`|Default value (on start editing, only for custom interpreter)|Expression (string value)|`NULL`|`default value`<br/>`defaultValue(a, b)`|
 
 ### Toolbar properties

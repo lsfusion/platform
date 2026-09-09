@@ -41,6 +41,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.physics.admin.log.ServerLoggers.systemLogger;
 
 public abstract class FormReportManager extends FormDataManager {
     protected final FormReportInterface reportInterface; // for multiple inhertiance
@@ -329,8 +330,11 @@ public abstract class FormReportManager extends FormDataManager {
             ImMap<GroupObjectHierarchy.ReportNode, ReportSource> fileNames = getCustomReportSources(hierarchy, printType, reportPrefix);
             for(int i=0,size=fileNames.size();i<size;i++) {
                 ReportSource reportSource = fileNames.getValue(i);
-                if(reportSource == null) // if some design is missing we'll consider that there's no custom design at all
+                if(reportSource == null) { // if some design is missing we'll consider that there's no custom design at all
+                    if(fileNames.filterFnValues(Objects::nonNull).size() > 0) // some templates were found, so the fallback to the auto design is most likely not intended
+                        systemLogger.warn("Custom report template " + getReportFileName(fileNames.getKey(i), reportPrefix) + " not found, all custom templates of the form " + getFormEntity().getCanonicalName() + " are ignored and the auto design is used");
                     return null;
+                }
                 JasperDesign subreport = JRXmlLoader.load(reportSource.getInputStream());
                 designs.put(fileNames.getKey(i), subreport);
             }

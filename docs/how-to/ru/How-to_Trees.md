@@ -85,3 +85,50 @@ DESIGN categoryBooks {
 ```
 
 Свойство `isParent[Category, Category]` не равно `NULL`, если второй аргумент — предок первого или та же самая категория (его числовое значение — количество путей между ними, в дереве всегда `1`), поэтому фильтр отбирает книги текущей категории и всех её потомков. Тот же набор свойств для иерархии по `parent[Category]` — `isParent[Category, Category]`, `level[Category]`, `canonicalName[Category]` и другие — даёт метакод `@defineHierarchy` системного модуля [`Hierarchy`](../paradigm/Utils_Hierarchy.md); здесь, где свойство `parent[Category]` уже объявлено, его подключает `@defineHierarchyCustom(category, Category)`, и объявлять `isParent[Category, Category]` вручную тогда не нужно — метакод создаёт его с тем же смыслом и значением `TRUE`.
+
+## Пример 4
+
+### Условие
+
+Аналогичен [**Примеру 2**](#пример-2), но иерархия подключается системным модулем [`Hierarchy`](../paradigm/Utils_Hierarchy.md), а не объявлением `parent[Category]` вручную.
+
+Нужно дать пользователю строить дерево категорий на форме: добавлять категорию на верхний уровень или под выбранную, а также переносить категорию к другому родителю.
+
+### Решение
+
+```lsf
+@defineHierarchy(category); // parent, nameParent, level, isParent, canonicalName, ...
+
+FORM category 'Категория'
+    OBJECTS c = Category PANEL
+    PROPERTIES(c) name, nameParent
+    EDIT Category OBJECT c
+;
+
+addCategory 'Добавить подкатегорию' (Category parent) {
+    NEWSESSION {
+        NEW c = Category {
+            parent(c) <- parent;
+            SHOW category OBJECTS c = c DOCKED;
+        }
+    }
+} TOOLBAR;
+
+addRootCategory 'Добавить категорию' () {
+    NEWSESSION {
+        NEW c = Category {
+            SHOW category OBJECTS c = c DOCKED;
+        }
+    }
+} TOOLBAR;
+
+FORM categories 'Категории'
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES(c) READONLY name, canonicalName
+    PROPERTIES() addRootCategory
+    PROPERTIES(c) addCategory
+    PROPERTIES(c) NEWSESSION EDIT, DELETE
+;
+```
+
+Действие `addCategory[Category]` привязано к объекту дерева и создает категорию под текущей; действие с параметром класса `Category` доступно, только пока категория выбрана, поэтому корневую категорию создает действие без параметров `addRootCategory[]`. Родитель существующей категории меняется правкой `nameParent[Category]` на ее форме редактирования — открывается диалог выбора нового родителя. Для подкатегории подошло бы и стандартное действие `NEW`: объявленное метакодом свойство `parent[Category]` при создании объекта автоматически получает текущую категорию.

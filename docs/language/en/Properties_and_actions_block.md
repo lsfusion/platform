@@ -164,7 +164,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `SHOWIF propertyExpression`
 
-    Specifies a property that determines visibility of the property or action being added to the form. If the value of this property is `NULL`, then the property (action) being added will not be displayed. Cannot be used together with the `HEADER` option.
+    Specifies a property that determines visibility of the property or action being added to the form. If the value of this property is `NULL`, then the property (action) being added will not be displayed. For a property (action) with the `COLUMNS` option the visibility is determined for each column separately: an expression over the column objects hides individual columns. The option can be combined with the `HEADER` option.
 
     - `propertyExpression`
 
@@ -212,7 +212,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `HEADER propertyExpression`
 
-    Specifying a property that determines the header for the column of the property (action) being added. The return value of this property will be used as the header. If the return value is `NULL`, then the added property (action) will be automatically hidden. 
+    Specifying a property that determines the header for the column of the property (action) being added. The return value of this property will be used as the header. If the return value is `NULL`, the header is empty; the property (action) itself and its columns stay visible — they are hidden with the `SHOWIF` option.
 
     - `propertyExpression`
 
@@ -228,7 +228,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `COLUMNS [groupid] (groupName1, ..., groupNameM)`
 
-    Specifies the upper [object groups](../paradigm/Form_structure.md#objects) whose values will define a set of [columns](../paradigm/Form_structure.md#groupcolumns) to display the added property (action). The `COLUMNS` option is often used with the `HEADER` option which defines headers for these columns.
+    Specifies the upper [object groups](../paradigm/Form_structure.md#objects) whose values will define a set of [columns](../paradigm/Form_structure.md#groupcolumns) to display the added property (action). The `COLUMNS` option is often used with the `HEADER` option which defines headers for these columns. Individual columns are hidden with the `SHOWIF` option whose expression uses the column objects.
 
     - `groupid`
 
