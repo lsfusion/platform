@@ -14935,8 +14935,8 @@
       "stale": false
     },
     "paradigm/Working_parameters.md": {
-      "file_hash": "sha256:fdfbe8e6cdfa07b7b0296e9fcc378ea5341220d05fc78e9abdfe4c164c2dfd93",
-      "indexed_at": "2026-09-09T07:24:34Z",
+      "file_hash": "sha256:fb6699a4db90c29e56c895c7f14b1ebf375d1e30b069b52cc611e9522eb0bcb7",
+      "indexed_at": "2026-09-09T08:11:51Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14946,9 +14946,9 @@
       },
       "sections": {
         "Working_parameters::working-parameters::part-00": {
-          "file_id": "file-PNPY4qjx11zHL7GjmQRK3Y",
+          "file_id": "file-FoygUbc2eRDSotCuW3KeXe",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:7a0f3f80ec7143913c30587d47c91dd45d3e5319b7e557a104b496a15e09ecb2",
+          "section_payload_hash": "sha256:9b5e640c516ae2d8c5161e8f01de2a4b55f009508f6726dacbf20ab8d19f0a49",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-01": {
@@ -14964,9 +14964,9 @@
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-03": {
-          "file_id": "file-BdDXbchjdtbKZwFN63qU7h",
+          "file_id": "file-RW61n4McjjVdm2j7LDVz5K",
           "heading_path": "Working parameters",
-          "section_payload_hash": "sha256:4c5033d5ca630b67e86fb896869dd4599c3550d8283ea7e5a30423ed3cb16604",
+          "section_payload_hash": "sha256:d27c42422716f5109969974539ea3139844d2cb298f50126a2e44147bd8a10b6",
           "source_file": "paradigm/Working_parameters.md"
         },
         "Working_parameters::working-parameters::part-04": {
@@ -15011,7 +15011,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "df7117ce5fca5b5a72e6ed3d80bb292fa92e9e33",
+  "last_indexed_docs_commit": "f4bc11d19991703369153c184a07b624f2d22b48",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
