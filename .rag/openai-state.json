@@ -2867,8 +2867,8 @@
       "stale": false
     },
     "language/ABSTRACT_operator.md": {
-      "file_hash": "sha256:554af84dafba3a81074dc33c9557a3c5e4b87dee7fc2abaea29b4fc92b7f3b11",
-      "indexed_at": "2026-08-28T16:43:26Z",
+      "file_hash": "sha256:5d02b31d3c221e0ff7ab08179ed53293cb6da1a507dc439945c79f3785d1a048",
+      "indexed_at": "2026-09-10T07:23:41Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -2890,9 +2890,9 @@
           "source_file": "language/ABSTRACT_operator.md"
         },
         "ABSTRACT_operator::parameters": {
-          "file_id": "file-L75xUJ6xqxJ1wGLmyFEge3",
+          "file_id": "file-CPqdq4Tj2xzwzPiamcUH9m",
           "heading_path": "ABSTRACT operator > Parameters",
-          "section_payload_hash": "sha256:862d4e6012bfcc22edc3a86476685d2fe13827247a32b3a4d8abf988922ecdd4",
+          "section_payload_hash": "sha256:4a7e95243b95c717fcdcf2da5b4c5f128a398db5dbddc3fa937e2f6640db9fc1",
           "source_file": "language/ABSTRACT_operator.md"
         },
         "ABSTRACT_operator::syntax+description": {
@@ -7925,8 +7925,8 @@
       "stale": false
     },
     "language/plus_equals_statement.md": {
-      "file_hash": "sha256:7eecd3e571116e46d3ffe99be171bb436a694d3e678c5f3f386ab3e1ca06be6f",
-      "indexed_at": "2026-09-04T09:20:06Z",
+      "file_hash": "sha256:cbb8640b3f2ab11820f049faed431c5095e3798916d014e57cf9eca1502610ab",
+      "indexed_at": "2026-09-10T07:23:50Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -7941,6 +7941,12 @@
           "section_payload_hash": "sha256:decf3e6a0f87d1f524772a428c6b4da72a737e46c28673dac7b803277de7ee10",
           "source_file": "language/plus_equals_statement.md"
         },
+        "plus_equals_statement::description": {
+          "file_id": "file-1SBWzwuGAkpcPvVUv4Lfh1",
+          "heading_path": "+= statement > Description",
+          "section_payload_hash": "sha256:ac4d7c4996a9e829da02eb5a63e452ab211f1f94a1d7859e2f1d249a8389d207",
+          "source_file": "language/plus_equals_statement.md"
+        },
         "plus_equals_statement::examples": {
           "file_id": "file-Sbfdohkupzsg3znu8SY2H1",
           "heading_path": "+= statement > Examples",
@@ -7953,10 +7959,10 @@
           "section_payload_hash": "sha256:168026a9b67abe79f247b09ea9016d13ad3fb02ec599b65fa73f8868dc85c03c",
           "source_file": "language/plus_equals_statement.md"
         },
-        "plus_equals_statement::syntax+description": {
-          "file_id": "file-6J4KHKYvQJ5mBBEijcCb1i",
-          "heading_path": "+= statement > Syntax + Description",
-          "section_payload_hash": "sha256:6c12001019784119b6fec0f3ecb94e56774da34f7c8120876db7921d0cb2fda5",
+        "plus_equals_statement::syntax": {
+          "file_id": "file-DNdrr7LQMu6cnBUAMqXEJc",
+          "heading_path": "+= statement > Syntax",
+          "section_payload_hash": "sha256:e1c516f1f55af4671d0a7105d9613667d9c029a44c00b1a4e91d4ae0d4d3e459",
           "source_file": "language/plus_equals_statement.md"
         }
       },
@@ -13967,8 +13973,8 @@
       "stale": false
     },
     "paradigm/System_System.md": {
-      "file_hash": "sha256:165275e570927af8bbb8aa89f7de3d63f58d0f16b26e9735bfd7a25d8487902f",
-      "indexed_at": "2026-08-28T17:26:12Z",
+      "file_hash": "sha256:f3144be04c1623825395eaf8c3c3f17e15d8bfe494c88ba6304992ce61556cc4",
+      "indexed_at": "2026-09-10T07:23:59Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -13995,10 +14001,10 @@
           "section_payload_hash": "sha256:68fef84ea809f73521cb896036764c54516a6c41bc8e76cd3f3dca2785d80cf7",
           "source_file": "paradigm/System_System.md"
         },
-        "System_System::client-side-loading+windows-and-navigator": {
-          "file_id": "file-VFGyhasdHzuoE41jxMje5P",
-          "heading_path": "System > Client-side loading + Windows and navigator",
-          "section_payload_hash": "sha256:75a4cbaeca74f08d45daa6b843ace1a7bd01dc40aaa9d9bd07d128c69e46f2b7",
+        "System_System::client-side-loading": {
+          "file_id": "file-Pu8ZPgE7hmzqNCddBcDxFW",
+          "heading_path": "System > Client-side loading",
+          "section_payload_hash": "sha256:8462af39d17c113c82dee9cef21c7f3f21bcc5308ffa23a6b50640f1fe683cfa",
           "source_file": "paradigm/System_System.md"
         },
         "System_System::file-helpers": {
@@ -14026,9 +14032,9 @@
           "source_file": "paradigm/System_System.md"
         },
         "System_System::language": {
-          "file_id": "file-PjLHfDJGJFA3LJGmYokcxc",
+          "file_id": "file-KTNjpcqjrc4ESFbuyk4RYv",
           "heading_path": "System > Language",
-          "section_payload_hash": "sha256:d11c057233fef020a6014685240487674cd0eb05efc77f65d4e8556931c679f8",
+          "section_payload_hash": "sha256:c1f747c51ae4c03f7af3a8cd4d264b1948cd8d027f1030bd910e5aefd2f4f2be",
           "source_file": "paradigm/System_System.md"
         },
         "System_System::local-buffers": {
@@ -14090,13 +14096,19 @@
           "heading_path": "System > UI defaults",
           "section_payload_hash": "sha256:c3d918bf303cccc12e8491a6be19ae8b0d30cd5f39dbf1172bda48ca0257aaf5",
           "source_file": "paradigm/System_System.md"
+        },
+        "System_System::windows-and-navigator": {
+          "file_id": "file-B3bVw1H3a7cM7K2v1efdjr",
+          "heading_path": "System > Windows and navigator",
+          "section_payload_hash": "sha256:934572e31dbe9f37bc19e10a796a0e54708fcdea061f42792a2b1bc02c5185bb",
+          "source_file": "paradigm/System_System.md"
         }
       },
       "stale": false
     },
     "paradigm/System_SystemEvents.md": {
-      "file_hash": "sha256:e7ab4ff324755cef2df7207b58701350af170dbdd7885eecbc2a436b7b39cca5",
-      "indexed_at": "2026-08-28T17:26:37Z",
+      "file_hash": "sha256:f00682672d217560709664e053a7109264e4beb4942e6ea7188ab4d2d668663c",
+      "indexed_at": "2026-09-10T07:24:08Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14106,9 +14118,9 @@
       },
       "sections": {
         "System_SystemEvents::appearance": {
-          "file_id": "file-XkNiVwRABtbsiW3K1iVMdb",
+          "file_id": "file-Hb8BsW9R1sbWdxCW2w6r5n",
           "heading_path": "SystemEvents > Appearance",
-          "section_payload_hash": "sha256:715ce1aaec87489c3ed2eda971303d1c6dabd5b2bbd3d6b3ec2062ca40334da3",
+          "section_payload_hash": "sha256:38ca96eaa80ccdf2c648f0279b1b0b545bae1c85d353405dd9b20fd74a624263",
           "source_file": "paradigm/System_SystemEvents.md"
         },
         "System_SystemEvents::change-session-log": {
@@ -14135,6 +14147,12 @@
           "section_payload_hash": "sha256:c591993db0501cea74922ca7af17493bdb08a0f57bf7d0d90d4005dfcc6cfa48",
           "source_file": "paradigm/System_SystemEvents.md"
         },
+        "System_SystemEvents::language": {
+          "file_id": "file-NzoFCDAsGy4ucRYXuggLAi",
+          "heading_path": "SystemEvents > Language",
+          "section_payload_hash": "sha256:c423a1eea38167d93f2b2d495987ec45497dd87ac1808e08c2fddbb7495cb395",
+          "source_file": "paradigm/System_SystemEvents.md"
+        },
         "System_SystemEvents::launch-events": {
           "file_id": "file-3tSc3s73jWx6o7uXQ8Ts2S",
           "heading_path": "SystemEvents > Launch events",
@@ -14147,10 +14165,10 @@
           "section_payload_hash": "sha256:65a57401b01e790a16e693a226e33e731164431c9be1a28867a79a4237876f7b",
           "source_file": "paradigm/System_SystemEvents.md"
         },
-        "System_SystemEvents::logo+language": {
-          "file_id": "file-5gKMnJUEocWswLfHBTHfW8",
-          "heading_path": "SystemEvents > Logo + Language",
-          "section_payload_hash": "sha256:20961187f0b2daf6ff61d91c0a67c82dd98fef4348ccb629d22e0422951c5da6",
+        "System_SystemEvents::logo": {
+          "file_id": "file-6L6GX5dwy1WogTjxuJqyHh",
+          "heading_path": "SystemEvents > Logo",
+          "section_payload_hash": "sha256:d8a57f787637d57dbf7b04c3a7923ceec83e571cfde1465a8c34235966ed9ada",
           "source_file": "paradigm/System_SystemEvents.md"
         },
         "System_SystemEvents::pings": {
@@ -15035,7 +15053,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "5fc61ed9677fca7b28c7bbf84cba40f9fe05037a",
+  "last_indexed_docs_commit": "df17ba7e365ae706a5b430306c0595f4b59f94b5",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
