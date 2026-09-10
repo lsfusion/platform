@@ -102,16 +102,15 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
 
     @Override
     protected ImSet<Object> getDependElements(Object key) {
-        ImSet<Object> depends = SetFact.EMPTY();
         if(key instanceof Property && groupByTables) {
             List<AbstractDataProperty> entry = propertiesMap.get(((Property) key).mapTable.table);
             if(entry != null) {
                 int index = entry.indexOf(key);
-                if(index > 0)
-                    depends.addExcl(entry.get(index - 1));
+                if(index > 0) // chaining the properties of one table, so that they are recalculated one after another and don't lock each other
+                    return SetFact.singleton(entry.get(index - 1));
             }
         }
-        return depends;
+        return SetFact.EMPTY();
     }
 
     @Override
