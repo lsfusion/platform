@@ -2,6 +2,7 @@
 
 /api/target/
 /build/logics/target/
+/build/platform-assemble/target/
 
 /desktop-client/logs/
 /desktop-client/target/
