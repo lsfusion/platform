@@ -26,12 +26,6 @@ public class Settings implements Cloneable {
     // обозначает что если компилятор видет включающие join'ы (J1, J2, ... Jk) (J1,...J2, ... Jk,.. Jn) он будет выполнять все в первом подмножестве, предполагая что возникающий OR разберет SQL сервер что мягко говоря не так
     private boolean compileMeans = true;
 
-    // обозначает что при проверке условия на TRUE не будет преобразовывать A cmp B в 3 противоположных NOT'а как правильно, а будет использовать эвристику
-    private boolean simpleCheckCompare = true;
-
-    // обозначает что на следствия (и отрицания) условия будет проверять когда остались только термы, не делая этого на промежуточных уровнях
-    private boolean checkFollowsWhenObjects = false;
-
     // будет ли оптимизатор пытаться перестраивать условия по правилу X OR (Y AND Z) и X=>Y, то Y AND (X OR Z)
     private boolean restructWhereOnMeans = false;
 
@@ -378,14 +372,6 @@ public class Settings implements Cloneable {
         this.useFJInsteadOfUnion = useFJInsteadOfUnion;
     }
 
-    public boolean isSimpleCheckCompare() {
-        return simpleCheckCompare;
-    }
-
-    public void setSimpleCheckCompare(boolean simpleCheckCompare) {
-        this.simpleCheckCompare = simpleCheckCompare;
-    }
-
     public Boolean getChangeBooleanOnSingleClick() {
         return changeBooleanOnSingleClick;
     }
@@ -400,14 +386,6 @@ public class Settings implements Cloneable {
 
     public void setChangeActionOnSingleClick(boolean changeActionOnSingleClick) {
         this.changeActionOnSingleClick = changeActionOnSingleClick;
-    }
-
-    public boolean isCheckFollowsWhenObjects() {
-        return checkFollowsWhenObjects;
-    }
-
-    public void setCheckFollowsWhenObjects(boolean checkFollowsWhenObjects) {
-        this.checkFollowsWhenObjects = checkFollowsWhenObjects;
     }
 
     public boolean isRestructWhereOnMeans() {
