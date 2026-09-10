@@ -70,16 +70,22 @@ markup 'Product markup' = DATA NUMERIC[8,2] (Book);
 overMarkup 'Overidden markup' (Book b) = OVERRIDE markup(b), overMarkup(category(b));
 ```
 
-Finally, let's design a form that will allow the user to enter the markup for categories and products at the same time. Let's output both the data and the overridden markup for the category and the product. Note that changes in overridden properties on the form will be displayed immediately, but saved only when the corresponding button is clicked.
+Finally, let's design a form that will allow the user to enter the markup for categories and products at the same time. Let's output both the data and the overridden markup for the category and the product. Note that changes in overridden properties on the form will be displayed immediately, but saved only when the corresponding button is clicked. Let's show the categories as a tree, and in the design place the category tree and the book table side by side.
 
 ```lsf
 FORM markups 'Markups'
-    OBJECTS c = Category
-    PROPERTIES(c) name, nameParent, markup, overMarkup
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES(c) name, markup, overMarkup
 
     OBJECTS b = Book
     PROPERTIES(b) name, nameCategory, markup, overMarkup
 ;
+
+DESIGN markups {
+    OBJECTS {
+        horizontal = TRUE;
+    }
+}
 
 NAVIGATOR {
     NEW markups;
