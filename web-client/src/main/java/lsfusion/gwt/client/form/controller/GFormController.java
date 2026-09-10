@@ -2813,16 +2813,30 @@ public class GFormController implements EditManager {
         }
     }
 
+    // the element the user is currently typing in. That is the platform's own cell editor when one is open, and
+    // otherwise a text control inside content a CUSTOM view drew: for the user it is the same state, and the form,
+    // which registers its own editors by identity, had no way to see the second kind and so read it as no state at all.
+    // The whole editing scope hangs off this - ENTER moves to the next property only when nothing is being edited,
+    // ESCAPE closes the window only when there is no edit to cancel - so a field the platform did not create used to
+    // lose both keys to the form while the user was typing in it
+    private Element getEditingElement(Event event) {
+        if (isEditing())
+            return getEditElement();
+
+        return CellRenderer.getCustomEditingElement(Element.as(event.getEventTarget()));
+    }
+
     private boolean bindEditing(GBindingEnv binding, Event event) {
+        Element editing = getEditingElement(event);
         switch (binding.bindEditing) {
             case AUTO:
-                return !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())));
+                return !(editing != null && editing.isOrHasChild(Element.as(event.getEventTarget())));
             case ALL:
                 return true;
             case ONLY:
-                return isEditing();
+                return editing != null;
             case NO:
-                return !isEditing();
+                return editing == null;
             case INPUT:
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);

@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -80,6 +81,9 @@ public class ReactContainerView extends ParkedContainerView {
             }
         });
         GwtClientUtils.addClassName(panel, "panel-react");
+        // the mark the other CUSTOM views already set on what they draw. It carries no policy of its own - it says
+        // the platform did not create this subtree - and the editing scope needs it to see a field the component drew
+        CellRenderer.setCustomElement(panel.getElement());
         panel.addAttachHandler(event -> {
             if (event.isAttached())
                 root.mount(panel.getElement(), formController.isSizeFixedOnShow());
@@ -163,12 +167,12 @@ public class ReactContainerView extends ParkedContainerView {
     // the host may be an element the component renders for its own layout (useLsf), so the platform marks it
     // rather than expecting the marks
     private void stampHost(Element host, String sid) {
-        GwtClientUtils.addClassName(host, "lsf-view");
+        GwtClientUtils.addClassName(host, CellRenderer.LSF_VIEW_CLASS);
         host.setAttribute("data-lsf-sid", sid);
     }
 
     private void clearHost(Element host) {
-        GwtClientUtils.removeClassName(host, "lsf-view");
+        GwtClientUtils.removeClassName(host, CellRenderer.LSF_VIEW_CLASS);
         host.removeAttribute("data-lsf-sid");
     }
 

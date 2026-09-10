@@ -68,6 +68,28 @@ public abstract class CellRenderer {
     public static void clearCustomElement(Element parent) {
         parent.setPropertyObject(customElementProp, null);
     }
+    // a host inside a custom view where the platform draws again: a child marked `lsf = TRUE` keeps its own view, so
+    // everything below the host is the platform's, however far out the custom view is (see ReactContainerView.stampHost)
+    public final static String LSF_VIEW_CLASS = "lsf-view";
+    // the element the user is editing in inside content a custom view drew, or null when there is none. Walking out
+    // from the event target: a host where the platform draws again ends the search, and at the boundary of the custom
+    // content the answer is whatever was found on the way - a component that DECLARED the state with setIsEditing, or
+    // else, for a component that declares nothing, a control the browser itself treats as text entry. A declaration
+    // counts only inside custom content, so one left behind on a platform element cannot stand in for an open editor
+    public static Element getCustomEditingElement(Element target) {
+        Element declared = null;
+        Element element = target;
+        while (element != null) {
+            if (element.hasClassName(LSF_VIEW_CLASS))
+                return null;
+            if (declared == null && element.hasClassName(editingClass))
+                declared = element;
+            if (isCustomElement(element))
+                return declared != null ? declared : (GwtClientUtils.isTextInput(target) ? element : null);
+            element = element.getParentElement();
+        }
+        return null;
+    }
 
     private final static String readonlyFncProp = "readonlyFnc";
     public final static String NULL = "NULL"; // none / manual
@@ -86,14 +108,18 @@ public abstract class CellRenderer {
     public static void removeAllPMB(Element parent, Element element) {
         GwtClientUtils.addClassName(element, "remove-all-pmb");
     }
+    // what a custom view says with lsfUtils.setIsEditing, and what the platform's own editors say when they start and
+    // stop. It used to be read by styling alone; the editing scope reads it now, so a control the browser cannot see
+    // as text entry - a focusable div, a widget behind a shadow root - can still declare the state (getCustomEditingElement)
+    public final static String editingClass = "is-editing";
     public static void setIsEditing(Element parent, Element element, boolean set) {
         if(set)
-            GwtClientUtils.addClassName(element, "is-editing");
+            GwtClientUtils.addClassName(element, editingClass);
         else
-            GwtClientUtils.removeClassName(element, "is-editing");
+            GwtClientUtils.removeClassName(element, editingClass);
     }
     public static boolean isEditing(Element parent, Element element) {
-        return element.hasClassName("is-editing");
+        return element.hasClassName(editingClass);
     }
 
     protected boolean isTagInput() {

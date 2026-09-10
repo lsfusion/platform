@@ -30,6 +30,23 @@ import static lsfusion.gwt.client.view.MainFrame.*;
 
 public class GwtClientUtils {
 
+    // a control the user types into, as the browser itself sees it. The platform never has to ask this about its own
+    // editors - it created them, and knows - but content a CUSTOM view drew is not the platform's to register, so
+    // whether the user is typing in it is only observable here (isContentEditable is the EFFECTIVE editability, so
+    // inheritance and contenteditable="false" are already accounted for)
+    public static native boolean isTextInput(Element element) /*-{
+        if (!element || element.nodeType !== 1) return false;
+        if (element.isContentEditable) return true;
+        if (element.readOnly || element.disabled) return false;
+        var tag = element.tagName;
+        if (tag === 'TEXTAREA') return true;
+        if (tag !== 'INPUT') return false;
+        var type = (element.type || 'text').toLowerCase();
+        return type === 'text' || type === 'search' || type === 'url' || type === 'tel' || type === 'password'
+            || type === 'email' || type === 'number' || type === 'date' || type === 'datetime-local'
+            || type === 'month' || type === 'time' || type === 'week';
+    }-*/;
+
     private static native JavaScriptObject createUndefined()/*-{
         return { name : "UNDEFINED" };
     }-*/;
