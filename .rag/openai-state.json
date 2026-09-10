@@ -2117,8 +2117,8 @@
       "stale": false
     },
     "how-to/How-to_Overriding_values.md": {
-      "file_hash": "sha256:0ad8a3b17aa3aebf7eab2347fda599b9a9080fd71bb147f8c87334dd271708d7",
-      "indexed_at": "2026-09-04T08:14:17Z",
+      "file_hash": "sha256:9b9c3a28a8c94c7b4bedee85036ce8707f2ffd92a4430bae40f4f98b0338eb64",
+      "indexed_at": "2026-09-10T13:44:12Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -2128,9 +2128,9 @@
       },
       "sections": {
         "How-to_Overriding_values::how-to-overriding-values": {
-          "file_id": "file-BoZ3aebG4zHoq5jcL9m5v1",
+          "file_id": "file-8bYQ4FzAkM59HgT4QgmtQW",
           "heading_path": "How-to: Overriding values",
-          "section_payload_hash": "sha256:657c210bd7bfa77dc7fc7ac3d5fc1751fd2542ab95c53653d467ff603f5510d7",
+          "section_payload_hash": "sha256:d3cce72d60c7ddb6d877115e80fc0477877d7e817e32127bb1e7cc159da58afb",
           "source_file": "how-to/How-to_Overriding_values.md"
         }
       },
@@ -15053,7 +15053,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "df17ba7e365ae706a5b430306c0595f4b59f94b5",
+  "last_indexed_docs_commit": "a239282c9550a9e1ceef5c89d2cdc7685779e9a8",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
