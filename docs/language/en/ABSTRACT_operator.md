@@ -36,7 +36,7 @@ The `ABSTRACT` operator cannot be used inside [expressions](Expression.md).
     - `EXCLUSIVE` - the mutually exclusive mode for the `CASE`, `MULTI`, and `VALUE` forms. In this mode, for each set of arguments there must be at most one matching implementation.
     - `OVERRIDE` - the mode for the `CASE`, `MULTI`, and `VALUE` forms in which several implementations may match simultaneously.
 
-    Used only with `CASE`, `MULTI`, or `VALUE`. For `MULTI`, `EXCLUSIVE` is used by default; for `CASE` and `VALUE`, `OVERRIDE` is used by default.
+    Used only with `CASE`, `MULTI`, or `VALUE`. For `MULTI`, `EXCLUSIVE` is used by default; for `CASE` and `VALUE`, `OVERRIDE` is used by default. An abstract property without parameters in the `EXCLUSIVE` mode can therefore have at most one implementation.
 
 - `order`
 
