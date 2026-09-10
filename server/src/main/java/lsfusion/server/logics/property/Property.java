@@ -1518,7 +1518,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
         ObjectValue lazyValue = readLazyClasses(session, keys, modifier, !hasChanges, changesController, env);
         if(lazyValue != null)
-            return new Pair<>(lazyValue, false);
+            return new Pair<>(lazyValue, hasChanges); // the shortcut returns a value from the changes exactly when hasChanges, and the prev value otherwise
 
         String readValue = "readvalue"; String readChanged = "readChanged";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
