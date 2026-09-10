@@ -85,6 +85,12 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!-- here rather than in logics, which uses it: the release plugin updates ${lsfusion.version} only in the pom that defines it -->
+                <plugin>
+                    <groupId>lsfusion.platform.build</groupId>
+                    <artifactId>web-compile-maven-plugin</artifactId>
+                    <version>${lsfusion.version}</version>
+                </plugin>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>3.2.0</version>
