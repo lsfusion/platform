@@ -43,9 +43,9 @@ public class LsfCompileTest {
         Path fail = BASE.resolve("compile/fail");
         try (Stream<Path> modules = Files.walk(fail)) {
             for (Path module : (Iterable<Path>) modules.filter(path -> path.toString().endsWith(".lsf")).sorted()::iterator) {
-                String name = fail.relativize(module).toString().replace('\\', '/');
-                Path expected = module.resolveSibling(module.getFileName().toString().replace(".lsf", ".expected"));
-                cases.add(new Object[]{"fail/" + name, "/fail/" + name, expectedLines(expected)});
+                String file = fail.relativize(module).toString().replace('\\', '/');
+                String name = file.substring(0, file.length() - ".lsf".length()); // the case is the .lsf and its .expected together
+                cases.add(new Object[]{"fail/" + name, "/fail/" + file, expectedLines(fail.resolve(name + ".expected"))});
             }
         }
         return cases;
