@@ -36,7 +36,7 @@ ABSTRACT [type [exclusionType] [order]] [FULL] returnClassName [(argClassName1, 
     - `EXCLUSIVE` - взаимоисключающий режим для форм `CASE`, `MULTI` и `VALUE`. В этом режиме для каждого набора аргументов должна существовать не более чем одна подходящая реализация.
     - `OVERRIDE` - режим для форм `CASE`, `MULTI` и `VALUE`, в котором одновременно могут подходить несколько реализаций.
 
-    Используется только вместе с `CASE`, `MULTI` или `VALUE`. Для `MULTI` по умолчанию используется `EXCLUSIVE`, для `CASE` и `VALUE` - `OVERRIDE`.
+    Используется только вместе с `CASE`, `MULTI` или `VALUE`. Для `MULTI` по умолчанию используется `EXCLUSIVE`, для `CASE` и `VALUE` - `OVERRIDE`. Поэтому абстрактное свойство без параметров в режиме `EXCLUSIVE` может иметь не более одной реализации.
 
 - `order`
 

@@ -332,7 +332,6 @@
             <plugin>
                 <groupId>lsfusion.platform.build</groupId>
                 <artifactId>web-compile-maven-plugin</artifactId>
-                <version>${lsfusion.version}</version>
                 <executions>
                     <execution>
                         <goals>

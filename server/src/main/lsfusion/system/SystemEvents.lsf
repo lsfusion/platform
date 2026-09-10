@@ -91,8 +91,8 @@ logoAction() {
     MESSAGE CONCAT '\n', (CONCAT ' ', 'Current Version:', platformVersion(), '(' + apiVersion() + ')', revisionVersion()),
         (CONCAT ' ', 'Current User:', currentUserLogin());
 }
-logoActionClass = ABSTRACT STRING();
-logoHeader() = ABSTRACT STRING();
+logoActionClass = ABSTRACT VALUE STRING();
+logoHeader() = ABSTRACT VALUE STRING();
 
 NAVIGATOR {
     NEW logoAction WINDOW logo PARENT HEADER logoHeader() IMAGE logo() CLASS logoActionClass();
@@ -199,7 +199,7 @@ toggleNavigatorPinMode '{system.events.navigator.pin.toggle}' () {
     useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
     apply();
 }
-navigatorPinModeClass = ABSTRACT STRING();
+navigatorPinModeClass = ABSTRACT VALUE STRING();
 
 toggleLogsPinMode '{system.events.logs.pin.toggle}' () {
     designEnvLogsPinMode(currentDesignEnv()) <- NOT logsPinMode();

@@ -130,7 +130,7 @@ Graphics: `logicsLogo[]` (logo image), `logicsIcon[]` (application icon), `PWAIc
 
 ### Windows and navigator
 
-The module fixes the main [windows](Form_views.md): `logo`, `root`, `system` (the top horizontal bar), `toolbar` (the left vertical strip), `forms` (the central area), `log` (the right notification strip). Each window has an abstract CSS class (`logoWindowClass[]`, …) for customization.
+The module fixes the main [windows](Form_views.md): `logo`, `root`, `system` (the top horizontal bar), `toolbar` (the left vertical strip), `forms` (the central area), `log` (the right notification strip). The CSS classes of these windows are the abstract properties `logoWindowClass[]`, `rootWindowClass[]`, `systemWindowClass[]`, `formsWindowClass[]`, `toolbarWindowClass[]`, `logsWindowClass[]`, implemented by the [SystemEvents](System_SystemEvents.md) module from the appearance settings (the theme background class such as `bg-dark-subtle` plus navbar helper classes). They are declared in the [value-based form](Property_extension.md) that allows several implementations, so a project replaces a window's classes by adding an implementation of its own: the implementation of a module that requires `SystemEvents`, directly or through its required modules, is added later and is therefore checked first (without that requirement the order of the two modules is not guaranteed), and it applies whenever it returns a value, otherwise the module's classes remain. The two are not concatenated, so an implementation that keeps the theme classes repeats them. The look of the system windows is also customized through those settings and the project's stylesheet (registered through `onWebClientInit[STRING]`); a window with classes of its own is declared by the project, and navigator elements are placed into it.
 
 The navigator gets a system folder `Administration` with subfolders `Application` (options / integration / migration) and `System` (performance, notifications, scheduler, logs).
 
@@ -141,6 +141,8 @@ The navigator gets a system folder `Administration` with subfolders `Application
 - [`CANCEL` operator](../language/CANCEL_operator.md) — cancels session changes.
 - [`EXPORT` operator](../language/EXPORT_operator.md) — writes into the `export…` local buffers.
 - [`IMPORT` operator](../language/IMPORT_operator.md) — fills `imported`, `importedString`, and related local properties.
+- [`+=` statement](../language/plus_equals_statement.md) — adds a project's implementation of a window-class property.
+- [`WINDOW` statement](../language/WINDOW_statement.md) — declares a window of the project's own, with its CSS class.
 
 ### See also
 

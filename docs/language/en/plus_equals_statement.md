@@ -23,6 +23,8 @@ The `+=` statement applies to properties only. An implementation of an abstract 
 
 The position of the added implementation in the abstract property's [implementation list](../paradigm/Property_extension.md#poly) is determined by the abstract property's `OVERRIDE FIRST` / `OVERRIDE LAST` setting; see the [`ABSTRACT` operator](ABSTRACT_operator.md) for the available modes.
 
+For an abstract property in the [mutually exclusive](../paradigm/Property_extension.md#exclusive) mode (the default for `MULTI`) the platform checks at module finalization, when the server starts, that the conditions of the implementations do not intersect; for the `MULTI` form these are the signatures of the implementations, and an intersection stops the start with the error `signature intersection of property ... for abstract property ...`. In particular, an abstract property without parameters in this mode admits at most one implementation: a second `+=`, even from another module, is such an intersection. A property meant to take several simultaneously applicable implementations, or a default one and an override, is declared in the `OVERRIDE` mode, which is written after the form: `ABSTRACT VALUE` has it by default and applies the implementation added later when it returns a value, falling back to the earlier one; `ABSTRACT MULTI OVERRIDE` applies the more specific signature and, for equal signatures, the implementation added later.
+
 ### Parameters
 
 - `abstractProperty`

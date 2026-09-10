@@ -531,12 +531,12 @@ META defineLinkDialog (object)
     } ASON CHANGE object;
 END
 
-logoWindowClass = ABSTRACT STRING();
-rootWindowClass = ABSTRACT STRING();
-systemWindowClass = ABSTRACT STRING();
-formsWindowClass = ABSTRACT STRING();
-toolbarWindowClass = ABSTRACT STRING();
-logsWindowClass = ABSTRACT STRING();
+logoWindowClass = ABSTRACT VALUE STRING();
+rootWindowClass = ABSTRACT VALUE STRING();
+systemWindowClass = ABSTRACT VALUE STRING();
+formsWindowClass = ABSTRACT VALUE STRING();
+toolbarWindowClass = ABSTRACT VALUE STRING();
+logsWindowClass = ABSTRACT VALUE STRING();
 
 WINDOW logo HORIZONTAL POSITION(0, 0, 10, 6) VALIGN (CENTER) HALIGN (START) HIDETITLE HIDESCROLLBARS CLASS logoWindowClass();
 WINDOW root HORIZONTAL POSITION(10, 0, 70, 6) VALIGN (CENTER) HALIGN (CENTER) HIDETITLE HIDESCROLLBARS CLASS rootWindowClass();

@@ -215,7 +215,7 @@ The `FORM` statement declares a new form and adds it to the current [module](../
 
 - `REPORTS reportPath1, ..., reportPathN`
 
-    Specifying the properties whose values will be used as the names of the report files for the object groups of the form. The keyword `REPORTFILES` can be used as a synonym of `REPORTS`.
+    Specifying the properties whose values will be used as the names of the report files for the object groups of the form. The keyword `REPORTFILES` can be used as a synonym of `REPORTS`. A template given this way is used only together with the templates of all the other reports of the form (see [report design](../paradigm/Report_design.md#template)).
 
     - `TOP`
 

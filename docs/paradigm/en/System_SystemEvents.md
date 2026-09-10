@@ -51,6 +51,7 @@ Each setting has a per-environment value (`designEnv…`), a server-wide default
 | `size[DesignEnv]` / `serverSize[]` | the widget size; `isMini[]` / `isTiny[]` flag the compact sizes                 |
 | `navbar[DesignEnv]` / `serverNavbar[]` | navbar orientation; `verticalNavbar[]` flags the vertical one                 |
 | `navigatorPinMode[DesignEnv]` / `navigatorPinMode[]` | the navigator pin mode; from the per-environment value when `useClientNavigatorPinMode[DesignEnv]` holds, otherwise from the server value `serverNavigatorPinMode[]` |
+| `logsPinMode[DesignEnv]` / `logsPinMode[]` | whether the log window is pinned; from the per-environment value when `useClientLogsPinMode[DesignEnv]` holds, otherwise from the server value `serverLogsPinMode[]`; toggled by `toggleLogsPinMode[]` |
 | `mobileMode[DesignEnv]` / `mobileMode[]` | forces mobile layout on or off                                              |
 | `suppressOnFocusChange[DesignEnv]` | suppresses the on-focus-change apply                                            |
 | `contentWordWrap[DesignEnv]` / `contentWordWrap[]` | wraps content text                                                |
@@ -61,6 +62,19 @@ Each setting has a per-environment value (`designEnv…`), a server-wide default
 `ColorTheme` (light / dark / auto) is toggled by `toggleColorTheme[]`, which cycles light → dark → auto for the current environment, applies, and refreshes the form. The navigator pin mode is cycled by `toggleNavigatorPinMode[]`.
 
 The `design` form edits the current environment's appearance (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]`, and the toggles above) and reloads the client on apply when a setting that needs a reload changed; `showDesign[]` opens it as a floating window. In the navigator's `system` window the module adds the `showDesign`, `toggleNavigatorPinMode`, and `toggleColorTheme` entries.
+
+The module also implements the CSS classes of the navigator windows declared in [System](System_System.md) and of its own navigator entries; these abstract properties select the implementation by its value, so a project's implementation, which a module requiring `SystemEvents` adds after this one, is checked first and replaces the module's classes whenever it returns a value. Each value the module computes is the base classes followed by helper classes added under the listed conditions (`isWebDesktop[]` / `isWebMobile[]` are the client type, the settings are those above):
+
+| Property (window or entry)                              | Base classes                       | Helper classes and their conditions |
+|---------------------------------------------------------|------------------------------------|-------------------------------------|
+| `logoWindowClass[]` (`logo`)                            | `bg-dark-subtle`                   | on the desktop web client: `navbar-text-on-hover` for a vertical navbar while nothing is pinned (`navigatorPinMode[]` is `NULL`), `navbar-force-align-start` for a vertical navbar, `navbar-auto-icon-font-size` for a horizontal one |
+| `rootWindowClass[]` (`root`)                            | `bg-dark-subtle navbar-icon-large` | on the desktop web client: `navbar-text-on-hover` while nothing is pinned, `navbar-force-align-start` for a vertical navbar |
+| `systemWindowClass[]` (`system`)                        | `bg-dark-subtle`                   | on the desktop web client: `navbar-icon-large`; `navbar-text-on-hover` for a vertical navbar while nothing is pinned; `navbar-text-hidden` for a horizontal navbar, `navbar-force-align-start` for a vertical one |
+| `formsWindowClass[]` (`forms`)                          | `bg-body-tertiary`                 | `dont-show-close-button` on the mobile web client or when `dontShowCloseButtonOnInactiveTab[]` holds |
+| `toolbarWindowClass[]` (`toolbar`)                      | `bg-body-secondary`                | `navbar-popup-over-selected-hover` on the desktop web client unless the navigator is pinned entirely (`navigatorPinMode[]` is `TTRUE`) |
+| `logsWindowClass[]` (`log`)                             | `bg-body-secondary`                | `navbar-popup-over-selected-hover navbar-always-hide-unpinned` on the desktop web client while the log window is not pinned (`logsPinMode[]`) |
+| `logoActionClass[]` (`logoAction`)                      | `navbar-icon-large`                | `navbar-hidden` on the mobile web client without Bootstrap (`useBootstrap[]` does not hold) |
+| `navigatorPinModeClass[]` (`toggleNavigatorPinMode`)    | —                                  | `navbar-hidden` on the mobile web client |
 
 On web-client initialization `onWebClientInit[STRING]` registers the CSS and JS resources for the client: the Bootstrap bundle and size-specific padding / font stylesheets when `useBootstrap[]` holds, or the plain table stylesheets otherwise, followed by the shared widget scripts and styles. Resources placed under `/onStarted/` are picked up automatically.
 
@@ -191,7 +205,7 @@ Since `customizeForm` always edits the code of the current user, someone else's 
 
 ### Logo
 
-`logo[]` is the navigator logo image; `logoAction[]` is the logo navigator entry, which shows the current version and user. The module places `logoAction` in the `logo` window of the navigator.
+`logo[]` is the navigator logo image; `logoAction[]` is the logo navigator entry, which shows the current version and user. The module places `logoAction` in the `logo` window of the navigator. Its header `logoHeader[]` — the application name on the mobile web client and with a vertical navbar — is an abstract property in the same value-based form as the class properties above, so a project overrides it the same way.
 
 ### Language
 

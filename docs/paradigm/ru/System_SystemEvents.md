@@ -51,6 +51,7 @@ title: 'SystemEvents'
 | `size[DesignEnv]` / `serverSize[]` | размер виджетов; `isMini[]` / `isTiny[]` отмечают компактные размеры            |
 | `navbar[DesignEnv]` / `serverNavbar[]` | ориентация панели навигации; `verticalNavbar[]` отмечает вертикальную         |
 | `navigatorPinMode[DesignEnv]` / `navigatorPinMode[]` | режим закрепления навигатора; берётся из значения по среде, когда выполняется `useClientNavigatorPinMode[DesignEnv]`, иначе из серверного значения `serverNavigatorPinMode[]` |
+| `logsPinMode[DesignEnv]` / `logsPinMode[]` | закреплено ли окно логов; берётся из значения по среде, когда выполняется `useClientLogsPinMode[DesignEnv]`, иначе из серверного значения `serverLogsPinMode[]`; переключается `toggleLogsPinMode[]` |
 | `mobileMode[DesignEnv]` / `mobileMode[]` | принудительно включает или выключает мобильную раскладку                    |
 | `suppressOnFocusChange[DesignEnv]` | подавляет применение при смене фокуса                                           |
 | `contentWordWrap[DesignEnv]` / `contentWordWrap[]` | перенос текста содержимого                                        |
@@ -61,6 +62,19 @@ title: 'SystemEvents'
 `ColorTheme` (светлая / тёмная / авто) переключается действием `toggleColorTheme[]`, которое для текущей среды переходит светлая → тёмная → авто, применяет и обновляет форму. Режим закрепления навигатора переключается действием `toggleNavigatorPinMode[]`.
 
 Форма `design` редактирует оформление текущей среды (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]` и переключатели выше) и перезагружает клиент при применении, если изменилась настройка, требующая перезагрузки; `showDesign[]` открывает её плавающим окном. В окне `system` навигатора модуль добавляет пункты `showDesign`, `toggleNavigatorPinMode` и `toggleColorTheme`.
+
+Модуль также реализует CSS-классы окон навигатора, объявленных в [System](System_System.md), и своих пунктов навигатора; эти абстрактные свойства выбирают реализацию по значению, поэтому реализация проекта, которую модуль, требующий `SystemEvents`, добавляет после этой, проверяется первой и заменяет классы модуля, когда возвращает значение. Каждое вычисляемое модулем значение — базовые классы, за которыми при перечисленных условиях добавляются вспомогательные (`isWebDesktop[]` / `isWebMobile[]` — тип клиента, настройки — из таблицы выше):
+
+| Свойство (окно или пункт)                               | Базовые классы                     | Вспомогательные классы и их условия |
+|---------------------------------------------------------|------------------------------------|-------------------------------------|
+| `logoWindowClass[]` (`logo`)                            | `bg-dark-subtle`                   | в настольном веб-клиенте: `navbar-text-on-hover` при вертикальной панели, пока ничего не закреплено (`navigatorPinMode[]` — `NULL`), `navbar-force-align-start` при вертикальной панели, `navbar-auto-icon-font-size` при горизонтальной |
+| `rootWindowClass[]` (`root`)                            | `bg-dark-subtle navbar-icon-large` | в настольном веб-клиенте: `navbar-text-on-hover`, пока ничего не закреплено, `navbar-force-align-start` при вертикальной панели |
+| `systemWindowClass[]` (`system`)                        | `bg-dark-subtle`                   | в настольном веб-клиенте: `navbar-icon-large`; `navbar-text-on-hover` при вертикальной панели, пока ничего не закреплено; `navbar-text-hidden` при горизонтальной панели, `navbar-force-align-start` при вертикальной |
+| `formsWindowClass[]` (`forms`)                          | `bg-body-tertiary`                 | `dont-show-close-button` в мобильном веб-клиенте или когда выполняется `dontShowCloseButtonOnInactiveTab[]` |
+| `toolbarWindowClass[]` (`toolbar`)                      | `bg-body-secondary`                | `navbar-popup-over-selected-hover` в настольном веб-клиенте, если навигатор не закреплён целиком (`navigatorPinMode[]` не `TTRUE`) |
+| `logsWindowClass[]` (`log`)                             | `bg-body-secondary`                | `navbar-popup-over-selected-hover navbar-always-hide-unpinned` в настольном веб-клиенте, пока окно логов не закреплено (`logsPinMode[]`) |
+| `logoActionClass[]` (`logoAction`)                      | `navbar-icon-large`                | `navbar-hidden` в мобильном веб-клиенте без Bootstrap (`useBootstrap[]` не выполняется) |
+| `navigatorPinModeClass[]` (`toggleNavigatorPinMode`)    | —                                  | `navbar-hidden` в мобильном веб-клиенте |
 
 При инициализации веб-клиента `onWebClientInit[STRING]` регистрирует CSS- и JS-ресурсы клиента: набор Bootstrap и зависящие от размера таблицы отступов / шрифтов, когда выполняется `useBootstrap[]`, либо обычные табличные стили в противном случае, а затем общие скрипты и стили виджетов. Ресурсы, лежащие под `/onStarted/`, подхватываются автоматически.
 
@@ -191,7 +205,7 @@ title: 'SystemEvents'
 
 ### Логотип
 
-`logo[]` — изображение логотипа навигатора; `logoAction[]` — пункт навигатора с логотипом, показывающий текущую версию и пользователя. Модуль размещает `logoAction` в окне `logo` навигатора.
+`logo[]` — изображение логотипа навигатора; `logoAction[]` — пункт навигатора с логотипом, показывающий текущую версию и пользователя. Модуль размещает `logoAction` в окне `logo` навигатора. Его заголовок `logoHeader[]` — имя приложения в мобильном веб-клиенте и при вертикальной панели навигации — абстрактное свойство в той же форме выбора по значению, что и свойства-классы выше, и проект переопределяет его так же.
 
 ### Язык
 

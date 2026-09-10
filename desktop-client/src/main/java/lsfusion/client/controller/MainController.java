@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.security.CodeSource;
 import java.util.List;
 import java.util.*;
 
@@ -93,7 +94,14 @@ public class MainController {
 
     private static RemoteClassLoader remoteClassLoader;
     public static void start(final String[] args) {
-        remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
+        checkClassSources();
+        try {
+            remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
+        } catch (SecurityException e) {
+            throw reportStartupFailure("Creating the class loader is not permitted: " + e.getMessage() + "\n" +
+                    "The client was loaded from " + getCodeSource(MainController.class) + ".\n\n" +
+                    "Under Java Web Start this means the client classes were not taken from the signed client jar. " + CLASSPATH_HINT, e);
+        }
         Thread.currentThread().setContextClassLoader(remoteClassLoader);
 
         registerSingleInstanceListener();
@@ -266,6 +274,32 @@ public class MainController {
     private static void removeSingleInstanceListener() {
         if(singleInstance != null)
             singleInstance.unregister();
+    }
+
+    private static void checkClassSources() {
+        ClassLoader clientClassLoader = MainController.class.getClassLoader();
+        for (Class<?> checkClass : new Class<?>[]{RemoteClassLoader.class, BaseUtils.class, RemoteLogicsInterface.class, Logger.class, JSONObject.class})
+            if (checkClass.getClassLoader() != clientClassLoader)
+                throw reportStartupFailure("Class " + checkClass.getName() + " was loaded from " + getCodeSource(checkClass) + ",\n" +
+                        "while the client itself was loaded from " + getCodeSource(MainController.class) + ".\n\n" + CLASSPATH_HINT, null);
+    }
+
+    private static final String CLASSPATH_HINT = "Most likely the classpath of the Java process (the CLASSPATH environment variable or the folder the .jnlp file is started from)\n" +
+            "contains lsfusion / org / com / net class directories or jars. Remove them or start the client from an empty folder.";
+
+    private static RuntimeException reportStartupFailure(String message, Throwable cause) {
+        if (!GraphicsEnvironment.isHeadless())
+            JOptionPane.showMessageDialog(null, message, LSFUSION_TITLE, JOptionPane.ERROR_MESSAGE);
+        return new RuntimeException(message, cause);
+    }
+
+    private static String getCodeSource(Class<?> cls) {
+        try {
+            CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+            return codeSource != null && codeSource.getLocation() != null ? codeSource.getLocation().toString() : "an unknown location";
+        } catch (SecurityException e) { // getProtectionDomain is not permitted for the classes without all-permissions
+            return "an unknown location";
+        }
     }
 
     public static String getSystemPropertyWithJNLPFallback(String propertyName) {

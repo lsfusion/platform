@@ -7,7 +7,7 @@ The platform lets the user adjust the graphical interface to their own preferenc
 
 By default the settings are stored separately for each user. Some of the appearance settings can be stored for the computer rather than for the user — they then become shared by everyone working at that computer.
 
-### Appearance
+### Appearance {#appearance}
 
 Appearance settings are set in the user profile and in the appearance settings form; the color theme and the navigator pinning can also be switched directly from the system toolbar.
 
@@ -18,9 +18,10 @@ Appearance settings are set in the user profile and in the appearance settings f
 | Size | normal, mini, tiny | the scale of interface elements |
 | Navigation bar | horizontal, vertical | the placement of the navigation bar |
 | Navigator pinning | all, navigation bar only, none | what part of the navigator is pinned (permanently shown) |
-| Text wrapping | yes, no | wrapping of long text in table cells |
-| Highlighting of duplicates | yes, no | highlighting of repeated values in a column |
-| Manual filter applying | yes, no | filters are applied by a separate command rather than immediately on input |
+| Text wrapping | yes, no | wrapping of long text in table cells; the default is the `contentWordWrap` [working parameter](Working_parameters.md) |
+| Highlighting of duplicates | yes, no | highlighting of repeated values in a column; the default is the `highlightDuplicateValue` working parameter |
+| Manual filter applying | yes, no | filters are applied by a separate command rather than immediately on input; the default is the `userFiltersManualApplyMode` working parameter |
+| Start editing on focus | yes, no | in the web client, a table cell with a text input starts being edited as soon as it receives the focus, without a separate command (a double click or a key press); the default is the `suppressOnFocusChange` working parameter |
 | Mobile mode | yes, no | interface layout for mobile devices |
 | Font size | percent | the font size of the interface |
 | Colors | color choice | the color of the selected row and cell, the active cell, and the table grid lines |

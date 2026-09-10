@@ -484,7 +484,7 @@ public class EmailReceiver {
                     RawFileData file = new RawFileData(f);
 
                     byte[] bytes = file.getBytes();
-                    if(Settings.get().isIgnoreBodyStructureSizeFix() && fileName.endsWith(".dbf") && bytes[bytes.length - 1] == 0x0d && bytes[bytes.length - 1] == 0x0a) {
+                    if(Settings.get().isIgnoreBodyStructureSizeFix() && fileName.endsWith(".dbf") && bytes.length >= 2 && bytes[bytes.length - 2] == 0x0d && bytes[bytes.length - 1] == 0x0a) { // the terminating CRLF that reading to the end of the literal adds
                         file = new RawFileData(Arrays.copyOfRange(bytes, 0, bytes.length - 2));
                     }
 

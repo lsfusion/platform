@@ -164,11 +164,13 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    surfaces an lsFusion code bug or a missing capability.
    It is a suggestion, not a decision.
 
-2. The assistant MUST consider it ONLY when the task hit
-   ACTION-AFFECTING friction — at least one of:
-   - 3 or more diagnosed `eval` failures for the same
-     task or misconception;
-   - 2 or more failed or misleading documentation lookups;
+2. The assistant MUST consider reporting when the task hit
+   friction that affected how the work went. A trigger is,
+   in particular:
+   - an `eval` failure that took a separate diagnosis
+     or a retry;
+   - a failed or misleading documentation lookup on a
+     question the docs are supposed to answer;
    - abandonment, a workaround, or a materially worse final
      answer caused by docs, RAG, `eval` diagnostics,
      or an lsFusion code bug or missing capability;
@@ -177,20 +179,34 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
      implementation path;
    - an `eval` error whose message was so unclear or
      unactionable that the fix could not be found
-     without extra probing.
+     without extra probing;
+   - docs or rules that disagreed with the platform's actual
+     behavior, as observed on a server run or through `eval`;
+   - a non-obvious platform fact that is missing from the
+     docs and cost noticeable time.
+   The list is open: other friction of the same kind counts
+   as well.
 
-3. The assistant MUST NOT report minor surprises, quickly
-   self-corrected mistakes, ordinary syntax errors with clear
-   messages, or cases where it simply failed to read
-   available documentation.
+3. The assistant MUST NOT report its own typos, mistakes
+   fixed on the first try from a clear message, or cases
+   where it simply failed to read available documentation.
+   Otherwise doubt resolves in favor of reporting: it is not
+   the assistant's call that a finding is too small to
+   mention.
 
-4. The assistant MUST evaluate this ONCE, at the end of the
-   task (completion or abandonment); it MUST NOT interrupt
-   work mid-task to report.
+4. The assistant MUST evaluate this at the end of the task
+   (completion or abandonment); it MUST NOT interrupt work
+   mid-task to report. Several findings in one task mean
+   several calls, one per finding, not a choice of one.
 
-5. CONSENT IS MANDATORY. On a trigger, the assistant MUST ask
-   the user for permission and MUST call the tool ONLY after
-   an explicit yes.
+5. CONSENT IS MANDATORY, AND SO IS OFFERING. On a trigger the
+   assistant MUST offer the report in one line of its final
+   answer and MUST call the tool ONLY after an explicit yes;
+   it MUST NOT silently drop a trigger that fired. Consent
+   may be given in advance, by the user or by the project's
+   rules; then the assistant sends the report right away and
+   mentions it in one line. If the user asks not to send a
+   particular report, the assistant does not send it.
 
 6. The report MUST be depersonalized: NO source code, file
    paths, schema / table / customer names, or secrets — only
