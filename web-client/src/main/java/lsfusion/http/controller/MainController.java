@@ -9,6 +9,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.JsxTransformer;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -268,8 +269,15 @@ public class MainController {
     }
 
     private void addResourcesAttributes(ModelMap model, ServerSettings serverSettings, boolean noAuth, List<Pair<String, RawFileData>> resourcesBeforeSystem, List<Pair<String, RawFileData>> resourcesAfterSystem) {
-        model.addAttribute("resourcesBeforeSystem", resourcesBeforeSystem != null ? saveResources(serverSettings, resourcesBeforeSystem, noAuth) : null);
-        model.addAttribute("resourcesAfterSystem", resourcesAfterSystem != null ? saveResources(serverSettings, resourcesAfterSystem, noAuth) : null);
+        // one budget for the WHOLE build: a .jsx resource that is not transformed yet is waited for, but the page is
+        // never held for the sum of every resource's wait (see JsxTransformer)
+        JsxTransformer.startPageBudget();
+        try {
+            model.addAttribute("resourcesBeforeSystem", resourcesBeforeSystem != null ? saveResources(serverSettings, resourcesBeforeSystem, noAuth) : null);
+            model.addAttribute("resourcesAfterSystem", resourcesAfterSystem != null ? saveResources(serverSettings, resourcesAfterSystem, noAuth) : null);
+        } finally {
+            JsxTransformer.endPageBudget();
+        }
     }
 
     private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {

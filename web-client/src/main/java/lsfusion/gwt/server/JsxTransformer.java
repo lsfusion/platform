@@ -11,6 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,6 +37,30 @@ public class JsxTransformer {
     // size cap (transforms are cheap and re-cached, an LRU is not worth the machinery here)
     private static final int CACHE_LIMIT = 1000;
     private static final ConcurrentHashMap<String, RawFileData> cache = new ConcurrentHashMap<>();
+
+    // ONE transform in flight per content key. The cache used to be consulted once BEFORE a class-wide lock and never
+    // again after it, so every user whose first page followed a restart missed the cache, queued on that lock, and
+    // then ran a FULL transform of the SAME content in turn - N users, N transforms, one after another. Now they all
+    // wait on the first one's result. Work still happens on the single engine thread; nothing is parallelised
+    private static final ConcurrentHashMap<String, CompletableFuture<RawFileData>> flights = new ConcurrentHashMap<>();
+
+    // a page build transforms every init resource in a row, so a per-resource wait would still let /main wait for
+    // their SUM. The budget is for the whole build, and what is not ready inside it is served as a stub while the
+    // transform carries on - a page that says so beats a request thread parked for minutes
+    private static final long PAGE_BUDGET = TimeUnit.SECONDS.toNanos(30);
+    // nanoTime, not the wall clock: a clock stepped backwards between opening the budget and reading what is left of
+    // it would turn 30 seconds into minutes, which is the wait this exists to bound
+    private static final ThreadLocal<Long> pageDeadline = new ThreadLocal<>();
+    public static void startPageBudget() {
+        pageDeadline.set(System.nanoTime() + PAGE_BUDGET);
+    }
+    public static void endPageBudget() {
+        pageDeadline.remove();
+    }
+    private static long remainingWait() {
+        Long until = pageDeadline.get();
+        return until == null ? PAGE_BUDGET : Math.max(0, until - System.nanoTime());
+    }
 
     // Babel's recursive-descent work needs a much bigger stack than the JVM default; instead of
     // relying on a global -Xss flag, all engine work runs on this dedicated 16MB-stack thread
@@ -92,21 +119,72 @@ public class JsxTransformer {
         RawFileData cached = cache.get(id);
         if (cached != null)
             return cached;
+
         try {
-            RawFileData result = new RawFileData(PREAMBLE + doTransform(source.getString(StandardCharsets.UTF_8), token(resourceName)), StandardCharsets.UTF_8);
-            if (cache.size() >= CACHE_LIMIT)
-                cache.clear();
-            cache.put(id, result);
-            return result;
-        } catch (Throwable t) { // a PolyglotException carries the Babel message and position
-            String message = t.getMessage();
+            return flight(id, resourceName, source).get(remainingWait(), TimeUnit.NANOSECONDS);
+        } catch (TimeoutException e) {
+            // NOT a failure: the transform is still running and will publish its result, this page just cannot wait
+            // for it any longer. The flight is deliberately left alone, so the next request joins it instead of
+            // starting a second one, and the load after that is served from the cache
+            return stub(resourceName, "is still being compiled; reload the page in a moment");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return stub(resourceName, "was interrupted while compiling");
+        } catch (ExecutionException e) { // a PolyglotException carries the Babel message and position
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            String message = cause.getMessage();
             if (message != null && MODULE_SYNTAX.matcher(message).find())
                 message += "; imports are not supported in the lightweight .jsx tier; use src/main/web (compiled)";
-            // a broken .jsx must not break the page render or the action queue: serve a stub that
-            // reports to the browser console instead — the same contract as a failed classic script.
-            // NOT cached: the stub embeds the resource name, so the same broken content under another
-            // name must be re-reported with its own name
-            return new RawFileData("console.error(" + JSONObject.quote("lsFusion .jsx transform failed for " + resourceName + ": " + message) + ");", StandardCharsets.UTF_8);
+            return stub(resourceName, "failed to compile: " + message);
+        }
+    }
+
+    // a broken (or not yet ready) .jsx must not break the page render or the action queue: serve a script that
+    // reports to the browser console instead - the same contract as a failed classic script. NEVER cached: the
+    // reason is about this attempt, and the resource must be able to come back on the next one
+    private static RawFileData stub(String resourceName, String what) {
+        return new RawFileData("console.error(" + JSONObject.quote("lsFusion .jsx " + resourceName + " " + what) + ");", StandardCharsets.UTF_8);
+    }
+
+    private static CompletableFuture<RawFileData> flight(String id, String resourceName, RawFileData source) {
+        CompletableFuture<RawFileData> running = flights.get(id);
+        if (running != null)
+            return running;
+
+        CompletableFuture<RawFileData> created = new CompletableFuture<>();
+        running = flights.putIfAbsent(id, created);
+        if (running != null) // someone else registered first; join them rather than starting a second transform
+            return running;
+
+        // between the cache lookup above and this registration another flight may have published AND retired
+        RawFileData published = cache.get(id);
+        if (published != null) {
+            created.complete(published);
+            flights.remove(id, created);
+            return created;
+        }
+
+        try {
+            engineThread.execute(() -> runFlight(id, resourceName, source, created));
+        } catch (RuntimeException e) { // the executor refused it - nobody may be left waiting on a task that will never run
+            created.completeExceptionally(e);
+            flights.remove(id, created);
+        }
+        return created;
+    }
+
+    private static void runFlight(String id, String resourceName, RawFileData source, CompletableFuture<RawFileData> flight) {
+        try {
+            checkJavaVersion(); // before any Graal class is touched, so an old JVM gets guidance, not UnsupportedClassVersionError
+            RawFileData result = new RawFileData(PREAMBLE + transformOnEngineThread(source.getString(StandardCharsets.UTF_8), token(resourceName)), StandardCharsets.UTF_8);
+            if (cache.size() >= CACHE_LIMIT)
+                cache.clear();
+            cache.put(id, result); // published BEFORE the flight retires, so a late joiner finds the result either way
+            flight.complete(result);
+        } catch (Throwable t) {
+            flight.completeExceptionally(t); // every waiter gets the same reason and reports it for itself
+        } finally {
+            flights.remove(id, flight); // conditional: only ours, and a failed one must be retryable next request
         }
     }
 
@@ -147,23 +225,6 @@ public class JsxTransformer {
                     + " to the compiled src/main/web tier (which has no server-side JVM requirement)");
     }
 
-    // synchronized: serializing transforms is fine for this tier (rare, cached by content)
-    private static synchronized String doTransform(String source, String token) {
-        checkJavaVersion(); // before any Graal class is touched, so an old JVM gets guidance, not UnsupportedClassVersionError
-        try {
-            return engineThread.submit(() -> transformOnEngineThread(source, token)).get();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) { // unwrap so transform() sees the raw PolyglotException message
-            Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException)
-                throw (RuntimeException) cause;
-            if (cause instanceof Error)
-                throw (Error) cause;
-            throw new RuntimeException(cause);
-        }
-    }
 
     private static String transformOnEngineThread(String source, String token) {
         if (transformFunction == null) {
