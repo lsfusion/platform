@@ -95,6 +95,8 @@ A sent folder is marked per account: `sentFolder[Account]` is the folder that ou
 
 `receiveEmailAction[]`, `receiveEmailAction[Account]`, `receiveEML[Account]`, and `importEML[Account, LONG, FILE]` are native actions bound through the `INTERNAL` operator to the platform's mail-receiving Java implementation.
 
+The receiving connection itself is configured by two [working parameters](Working_parameters.md). `mailReceiveTimeout` (`5000` ms by default) sets the timeout for waiting on the mail server's answer: a read that does not fit into that time aborts the receive with an error. A value of `0` removes the timeout entirely rather than tightening it. The timeout for establishing the connection itself is not set by this parameter, and sending is not affected by it. `ignoreBodyStructureSizeFix` (`false` by default) tells the platform not to trust the size of a message part reported by the IMAP server and to read the attachment until the data actually ends; this is a workaround for servers that report a wrong size, which otherwise makes attachments arrive truncated. On an attachment with a `.dbf` extension the trailing line break is cut off as well, if it ended up there. For POP3 accounts the parameter changes nothing.
+
 ### Sending and composing
 
 `send[Email]` sends a stored message through the `EMAIL` operator: it takes the message's `fromAddress[Email]`, `subject[Email]`, `toAddress[Email]`, `ccAddress[Email]`, `bccAddress[Email]`, and `message[Email]` body, and attaches every file from `attachment0[Email, INTEGER]`.

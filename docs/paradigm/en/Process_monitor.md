@@ -15,6 +15,8 @@ The monitor is opened by the `Administration > System > Process monitor` form an
 |Blocking processes|Processes holding locks that other processes are waiting for|
 |Blocked processes|Processes waiting for locks to be released|
 
+The monitor collects the list of java threads by walking the JVM thread groups. The [working parameter](Working_parameters.md) `useSafeMonitorProcess` (`false` by default) switches the collection to the standard snapshot of all JVM threads: it is more complete but noticeably more expensive, as it captures the stack of every thread. The process dump and the periodic measurement of the memory allocated by threads collect the list of threads the same way.
+
 ### Columns
 
 Each monitor row combines two aspects of a single logical process: the server thread (Java) and the SQL query associated with it (if the process is working with the database at that moment). Some columns relate to the java thread, others to the database query.
@@ -44,6 +46,8 @@ Each monitor row combines two aspects of a single logical process: the server th
 |`Blocking (Java)`|The lock (monitor) the thread currently holds or is waiting for|
 
 The `Thread allocated bytes` and `Last thread allocated bytes` columns are populated only when the `readAllocatedBytes` setting is enabled.
+
+The `Java-thread stack trace (SQL)` column is populated only when the [working parameter](Working_parameters.md) `stacktraceInSQLSession` (`false` by default) is enabled. The stack is captured at the moment the SQL session is opened and kept together with it, so the column shows where the session was opened from, not what it is doing now — that is what the neighbouring `Java-thread stack trace (Java)` column shows. Enabling it applies only to the sessions opened afterwards.
 
 #### SQL query
 

@@ -9,6 +9,8 @@ The *profiler* is a built-in platform mechanism that collects execution statisti
 
 Data collection is controlled by a pair of actions, *Start profiling* and *Stop profiling*, available on the `Administration > System > Profiler` form. From start to stop the platform records property and action invocations; the data is persisted on the application server and becomes available for analysis once profiling is stopped.
 
+On stop, the collected arcs are written to the database in batches; the batch size is set by the [working parameter](Working_parameters.md) `profilerBatchSize` (`10000` arcs by default). It also decides how fine-grained the progress bar shown during that write is.
+
 ### Call graph
 
 Each profiler record corresponds to an *arc* — a *(caller, callee)* pair in the context of a user and a form. The arcs form a directed graph: the same callee may be the endpoint of several arcs with different callers, and the same caller may be the source of several arcs with different callees. The graph can be walked in both directions — *down* from a given property to the ones it calls, and *up* to the ones that call it.

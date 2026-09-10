@@ -26,6 +26,8 @@ Appearance settings are set in the user profile and in the appearance settings f
 | Font size | percent | the font size of the interface |
 | Colors | color choice | the color of the selected row and cell, the active cell, and the table grid lines |
 
+The size is chosen on the client side by the pixel area of the viewport, its width multiplied by its height: *tiny* at or below the [working parameter](Working_parameters.md) `maxPixelTinySize` (`748800`, for example 1280×585), *mini* at or below `maxPixelMiniSize` (`1121280`, for example 1536×730), and *normal* above that.
+
 ### Regional settings
 
 The user can set the interface language, country, time zone, and the date and time formats. Each of these values is taken from the client side (the browser or the operating system) if the user allows it; otherwise the value set by the user explicitly is used, then the default value set by the administrator, and finally the server value.
@@ -35,3 +37,5 @@ The user can set the interface language, country, time zone, and the date and ti
 For each table on a form the user can change the set of displayed columns, their order, width, sorting, captions, and value display format, as well as the row font, the page size, and the header height. These settings are saved personally and override the general table settings and the [form design](Form_design.md).
 
 The user can save their table settings or reset them to the general ones. The administrator can set general settings that apply to all users who have none of their own.
+
+Until the page size is set for a table, the number of rows it reads in its first batch is the [working parameter](Working_parameters.md) `pageSizeDefaultValue` (`50` by default); the client sizes the batches that follow itself, to the height of the table.

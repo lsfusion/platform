@@ -85,6 +85,8 @@ To set up access rights to a particular property on a form, it is convenient to 
 
 Fig. 7. Option for configuring access to an individual property
 
+The `View` and `Change` statuses are coupled, and the coupling is configured by two [working parameters](Working_parameters.md). An action a role is explicitly forbidden to change is by default not shown to it either; `disableActionForbidViewOnForbidChange` (`false` by default) removes that coupling, and an action forbidden to run stays visible. The second parameter, `disableDefaultChangeOnReadOnlyChange` (`false` by default), concerns change handlers that do not actually change anything, a value selector for example: by default such a handler counts as navigation rather than a change, and the `Change` status is not applied to it, while a value of `true` makes it be checked on a par with ordinary changes. Neither parameter affects the built-in `Readonly` role — for it both the coupling of the statuses and the skipping of the check always apply.
+
 #### Users Tab
 
 This tab displays all the users to whom the highlited role is assigned as a primary or secondary role.

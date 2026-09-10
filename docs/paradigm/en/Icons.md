@@ -20,6 +20,8 @@ Icon font CSS classes are CSS classes for displaying vector icons from special f
 
 The platform supports free icons from two popular sets: **Font Awesome** and **Bootstrap Icons**.
 
+For an icon set by a file path, the platform additionally looks up a matching icon-font icon by the name of that file — with the same mechanism as [automatic assignment](#auto), and equally requiring the `Icon.lsf` module to be connected. If a match is found, the CSS classes of the icon found are attached to the element alongside the path, and wherever icon fonts are used it is shown rather than the raster image. The minimum rank of such a match is set by the [working parameter](Working_parameters.md) `defaultImagePathRankingThreshold`. It is `0.0` by default, which means any match found will do; to have the specified path used as it is, the threshold has to be raised.
+
 ## Automatic assignment {#auto}
 
 ::::info
@@ -49,6 +51,7 @@ Parameters that change ranking thresholds:
 
 | Parameter                                 | Scope                           | Default threshold |
 |-------------------------------------------|---------------------------------|-------------------|
+| `defaultImagePathRankingThreshold`        | Icons [set by a file path](#manual) | `0.0`         |
 | `defaultAutoImageRankingThreshold`        | All auto-icons                  | `0.0`             |
 | `defaultNavigatorImageRankingThreshold`   | Navigator elements and forms    | `0.1`             |
 | `defaultContainerImageRankingThreshold`   | Containers                      | `0.6`             |

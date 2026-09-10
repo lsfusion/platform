@@ -116,7 +116,7 @@ These per-`User` flags turn on extra logging and query diagnostics for a single 
 
 ### Per-user runtime settings
 
-These per-user properties tune query execution and client behavior. `execEnv[User]` (class `TypeExecEnv`, with objects `materialize`, `disablenestloop`, `none`) selects the query execution environment and pushes the selected `id[TypeExecEnv]` into the server through the same `set…` / `refresh…` / `WHEN CHANGED` pattern as the diagnostics flags; `nameExecEnv[User]` is its caption.
+These per-user properties tune query execution and client behavior. `execEnv[User]` (class `TypeExecEnv`, with objects `materialize`, `disablenestloop`, `none`) selects the query execution environment and pushes the selected `id[TypeExecEnv]` into the server through the same `set…` / `refresh…` / `WHEN CHANGED` pattern as the diagnostics flags; `nameExecEnv[User]` is its caption. A user for whom no environment is chosen gets the one set by the [working parameter](Working_parameters.md) `defaultTypeExecuteEnvironment`.
 
 | Property                      | What it controls                                                                |
 |-------------------------------|----------------------------------------------------------------------------------|

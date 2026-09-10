@@ -53,6 +53,8 @@ Local event handlers are executed not at the very moment the data is changed, bu
 -   when creating a [nested session](New_session_NEWSESSION_NESTEDSESSION.md);
 -   when the system action `System.executeLocalEvents[]` ([System module](System_System.md)) is called explicitly.
 
+Executing the handlers when a form is opened aligns the previous values in the global context with the previous values in the form being opened, since the form extends the scope of the session. The [working parameter](Working_parameters.md) `noExecuteLocalEventsOnFormShowFallback` (`false` by default) brings back the previous behaviour, in which the handlers are not executed on a form opening.
+
 If changes are made outside an interactive form - for example, in an action called [from an external system](Access_from_an_external_system.md) or in the [scheduler](Scheduler.md) - the only one of these points that normally occurs is applying changes. So reading a property right after changing data in the same action returns the value without the local event handlers applied - unlike [calculated events](Calculated_events.md), which are computed on every access to the property. For the handlers to run, the changes must be applied, or `System.executeLocalEvents[]` must be called explicitly.
 
 ### Change operators' event mode {#change}
