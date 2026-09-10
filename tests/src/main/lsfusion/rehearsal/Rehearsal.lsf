@@ -1,0 +1,13 @@
+MODULE Rehearsal;
+
+REQUIRE TestUtils;
+
+// both fail on purpose : the branch exists to see a red build in Jenkins, and is deleted afterwards
+
+testDeliberateFailure 'Fails on purpose, so the build has to go red' () {
+    fail('deliberate failure: the rehearsal checks that a failing test blocks the build');
+}
+
+testQuarantined 'Fails on purpose, but is quarantined' () {
+    fail('deliberate failure: quarantined, so it has to be reported as skipped');
+}
