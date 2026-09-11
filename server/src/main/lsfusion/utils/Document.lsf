@@ -382,8 +382,9 @@ DESIGN options {
     }
 }
 
+skipDocumentsClosedDateConstraint = ABSTRACT BOOLEAN ();
 META defineDocumentClosedConstraint(objectClass)
-    CONSTRAINT CHANGED(date(objectClass d)) AND date(d) < documentsClosedDate()
+    CONSTRAINT CHANGED(date(objectClass d)) AND date(d) < documentsClosedDate() AND NOT skipDocumentsClosedDateConstraint()
         MESSAGE '{documents.message.closed.constraint}';
 END
 
