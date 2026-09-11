@@ -18,6 +18,8 @@ All children of any container make an ordered list. It is necessary to determine
 
 By default, any container being created is vertical.
 
+A container can be given a *caption* — a fixed text or the current value of a property, in which case it depends on data and changes with it. The caption of the form's main container (`BOX` in the [default design](#defaultDesign)) is the caption of the form in the interactive view: it is shown as the caption of the form's window or tab. By default it is the caption given when the form is declared; it does not affect the caption of the form element in the [navigator](Navigator.md).
+
 If at some point a container has no child components , or they are invisible, it is automatically hidden. In turn, if a component is not a child of any container, then it will not be shown on the form.
 
 A container that has a caption is *collapsible* by default: a toggle next to the caption folds it away, and the design can have it start folded. The [working parameter](Working_parameters.md) `disableCollapsibleContainers` (`false` by default) removes that default, leaving collapsible only the containers whose design asks for it explicitly. Its two halves take effect at different times: the toggle disappears as soon as the parameter is set, while the initial folded state given in the design is dropped only for a design built after that, that is, after a server restart.

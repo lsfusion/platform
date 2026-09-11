@@ -69,13 +69,13 @@ Each type yields a parallel family of properties, for example `dataPermissionVie
 
 Navigator access uses the same single-permission model (`dataPermission[UserRole, NavigatorElement]`, `permission[UserRole, NavigatorElement]`, `captionPermission[UserRole, NavigatorElement]` captioned `Access`). The effective per-user access is `permit[User, NavigatorElement]`: the element is permitted when some enabled role of the user permits it, or when no enabled role forbids it.
 
-### Form and client settings
+### Form and client settings {#formSettings}
 
 These flags are set per role and combined across the user's roles.
 
 | Property                                     | What it does                                                              |
 |----------------------------------------------|----------------------------------------------------------------------------|
-| `forbidDuplicateForms[UserRole]`             | open a single instance of an already-open form instead of a new window     |
+| `forbidDuplicateForms[UserRole]`             | when a form is opened from the [navigator](Navigator.md), activate its already open tab instead of opening a new one |
 | `dataForbidDuplicateForms[CustomUser]`       | the same restriction set on an individual user                            |
 | `autoReconnectOnConnectionLost[UserRole]`    | reconnect the client automatically after a lost connection                 |
 | `showDetailedInfo[UserRole]`                 | show the detailed description popup for properties and controls            |

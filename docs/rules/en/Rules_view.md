@@ -65,6 +65,27 @@ title: 'Rules: view logic'
    dropdown — by the number of options and the length of
    the captions).
 
+   A many-to-many link through a logical data property
+   (`in = DATA BOOLEAN (Book, Tag)`) SHOULD be exposed on the
+   form as a concatenation of the views under that condition —
+   `tags 'Tags' (Book b) = GROUP CONCAT name(Tag t) IF in(b, t), ', ' ORDER name(t), t`:
+   the web client shows such a property as an element of
+   [selection of several values](../paradigm/Interactive_view.md#multiselect)
+   (separate buttons / a column of check boxes / a dropdown /
+   a field with lookup by typed text — by the same length and
+   option-count thresholds as above), and each toggle of an
+   option writes `TRUE` / `NULL` into `in(b, t)`. The condition
+   MUST be a single changeable logical property: a chain
+   `name(t) IF active(t) IF in(b, t)`, a `TOP` limit or a
+   condition without a write path leave an ordinary
+   non-editable string. The options are all objects with a
+   non-empty view; to offer not all objects of the class, the
+   assistant SHOULD take the view under an additional condition
+   in its own parentheses —
+   `GROUP CONCAT (name(Tag t) IF active(t)) IF in(b, t), ', ' ORDER name(t), t` —
+   and NOT replace the built-in editing with its own
+   `ON CHANGE`, which disables the selection element.
+
    The rule concerns what the user sees. In a container with
    the `custom` attribute (a custom view on a React component,
    form design rule 8) the platform does not show property

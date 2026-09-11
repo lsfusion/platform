@@ -28,6 +28,8 @@ By default, forms in the synchronous mode are shown as windows, in the asynchron
 
 A tab opened in the synchronous mode blocks the calling form until it is closed. If the calling form is itself shown as a window, the opened form is shown as a window instead of a tab.
 
+Each execution of the action opens a new instance of the form, even if the same form is already open. An already open tab of the form is activated instead of a new one only when the form is opened from the [navigator](Navigator.md), and only if duplicate forms are forbidden for the user.
+
 
 :::info
 In the current implementation of the platform, the floating window, the embedded form, and the popup are modal; the tab and the container form are not. This is the modality the platform uses when choosing the mode automatically (see above).

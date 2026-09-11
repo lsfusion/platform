@@ -84,7 +84,7 @@ The `FORM` statement declares a new form and adds it to the current [module](../
 
 - `caption`
 
-    Form caption. [String literal](Literals.md#strliteral). If the caption is not defined, the form's name will be its caption.
+    Form caption. [String literal](Literals.md#strliteral). If the caption is not defined, the form's name will be its caption. In the interactive view the caption of the form (of its window or tab) is the caption of its main container `BOX`, to which this literal is assigned; a data-dependent caption is set on that container in the [`DESIGN` statement](DESIGN_statement.md#containerprops).
 
 ### Form options (`formOptions`)
 

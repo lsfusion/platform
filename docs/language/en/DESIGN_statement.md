@@ -55,7 +55,7 @@ TREE treeSelector
 
 Using the `DESIGN` statement the developer can manage the [design](../paradigm/Form_design.md) of the [interactive form view](../paradigm/Interactive_view.md) by creating, moving, and deleting containers and components, as well as changing their certain properties. By default, a [default design](../paradigm/Form_design.md#defaultDesign)  is created for each form, along with appropriate containers. If necessary, you can recreate the design without the default containers and previously configured settings. This is done using the keyword `CUSTOM`.  
 
-Each block of design statements enclosed in braces alows to modify a particular component and its descendants. Let's call this component the *current component* or the *current container* if we know that the component should be a container in our case. In the external block following the `DESIGN` keyword, the `main` container is the current component. There are the following design statements:
+Each block of design statements enclosed in braces alows to modify a particular component and its descendants. Let's call this component the *current component* or the *current container* if we know that the component should be a container in our case. In the external block following the `DESIGN` keyword, the form's main container `BOX` is the current component. There are the following design statements:
 
 - The *create statement* (`NEW`) allows to create a new container, making it a descendant of the current one. The newly-created container will be the current component in the design statements block contained in this statement.
 - The *move statement* (`MOVE`)  allows to make an existing component a direct descendant of the current container. This component is first removed from the previous parent container. The component being moved becomes the current component in the design statements block contained in this statement. 
@@ -77,7 +77,7 @@ To access design components, you can use their names or address property compone
 
 - `caption`
 
-    The new form caption in the interactive view mode. [String literal](Literals.md#strliteral). The form caption doesn't change in the [navigator](../paradigm/Navigator.md).
+    The new form caption in the interactive view mode — the caption of the main container `BOX`, which is shown as the caption of the form's window or tab. [String literal](Literals.md#strliteral). A data-dependent caption is set not here but by the `caption` property of the main container in the outer statement block (see [container properties](#containerprops)). The form caption doesn't change in the [navigator](../paradigm/Navigator.md).
 
 - `name`
 
@@ -155,11 +155,11 @@ To access design components, you can use their names or address property compone
 |`captionAlignmentVert`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`CENTER`|`STRETCH`|
 |`showIf`|Specifies a condition under which the component will be displayed.|Expression (logical value)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
 
-### Container properties
+### Container properties {#containerprops}
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`caption`|Container header. An empty string is equivalent to `NULL`: no header is created (and the container stops being `collapsible` by default)|Expression (string value)|`NULL`|`'Caption'`|
+|`caption`|Container header. For the main container `BOX` — the caption of the form itself (of its window or tab) in the interactive view; an expression whose value depends on data updates it when the data changes, the form caption in the [navigator](../paradigm/Navigator.md) does not change. An empty string is equivalent to `NULL`: no header is created (and the container stops being `collapsible` by default)|Expression (string value)|`NULL`|`'Caption'`<br/>`'Order ' + number(o)`|
 |`captionClass`|CSS-classes of container header (separated by space)|Expression (string value)|`NULL`|`'some-caption-class'`|
 |`valueClass`|CSS-classes of container value (separated by space)|Expression (string value)|`NULL`|`'some-value-class'`|
 |`image`|Image shown in the container caption: a path relative to the `images` folder, or a property expression yielding the image|Expression (string value)|`NULL`|`'image.png'`|
@@ -352,6 +352,8 @@ To access design components, you can use their names or address property compone
 ```lsf
 DESIGN order { // customizing the design of the form, starting with the default design
                // marking that all changes to the hierarchy will occur for the topmost container
+    // setting a data-dependent form caption (of its window or tab) - the caption of the main container
+    caption = 'Order ' + number(o);
     // creating a new container as the very first one before the system buttons, 
     // in which we put two containers - header and specifications
     NEW orderPane FIRST { 
