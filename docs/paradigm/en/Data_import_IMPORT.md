@@ -22,6 +22,8 @@ It should be noted that data import is a special case of (syntactic sugar for) [
 
 Accordingly, the behavior of the data import operator (for example, determining the names of the resulting columns / keys, [processing of `value`](Structured_view.md#value), etc.) is completely determined by the behavior of the form import operator (as if the above form were passed to it as a parameter).
 
+The [working parameter](Working_parameters.md) `minSizeForExcelStreamingReader` (`15000000` bytes) decides how an `XLSX` file is read: a file of at least that size is read row by row, in a stream, instead of being loaded into memory whole; a negative value turns the streaming off for any size. Streaming is what lets a large file be read at all, but it does not evaluate formulas: a formula cell is read as the result the application that produced the file saved in it, and is empty when nothing was saved. The old binary `XLS` format is always read whole, whatever the parameter says.
+
 ### Language
 
 To declare an action that imports data, use the [`IMPORT` operator](../language/IMPORT_operator.md).

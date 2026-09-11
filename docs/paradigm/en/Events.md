@@ -41,6 +41,8 @@ The platform also allows to additionally specify that the event will occur only 
 
 When several handlers react to the same change, the order in which they are executed follows the data dependencies between them: a handler that uses data modified by another handler is executed after it. A handler can also be required explicitly to be executed after the specified properties and actions.
 
+Those dependencies are the ones the platform sees in the handlers themselves. The [working parameter](Working_parameters.md) `useCalculatedEventsInEventOrder` (`false` by default) also counts the changes a handler reaches through [calculated events](Calculated_events.md), which orders such handlers more accurately but ties more of them together, so handlers that used to be independent can end up in one cycle. It is read while the logics are being built, so it takes effect only after a server restart.
+
 ### Executing local events {#local}
 
 Local event handlers are executed not at the very moment the data is changed, but at the following points of the [change session](Change_sessions.md)'s life:
@@ -64,6 +66,8 @@ By default, the following modes are used in event handling:
 -   for the previous value operator: standard mode (value at the beginning of the session)
 -   for change operators - event (value at the time the previous event occurred). 
 -   for the cancel changes operator - event mode (canceling the application, not clearing the session).
+
+In the value of an assignment event - the part written into the property, as opposed to the condition - the previous value operator is not held at the start of the apply: it is read as of the moment the assignment runs, after the events applied before it. The [working parameter](Working_parameters.md) `useEventValuePrevHeuristic` (`true` by default) is what allows that; with it off those values are held like the ones in the condition, which costs extra work in every apply and buys no real consistency in time anyway. It is read while the logics are being built, so it takes effect only after a server restart.
 
 
 :::info

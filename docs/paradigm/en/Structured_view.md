@@ -239,7 +239,7 @@ Each file for an object group in flat view is a table in which:
 
 If a [key](#extkey) is specified for the object group, columns with the values of the objects of this object group are added to these columns - one for each object, before the property columns (that is, after the `parent` column, if there is one). They are named, like the other elements of the file, by the [export/import name](#extid) of the object.
 
-In CSV format (when there is no first header line), the columns are named similarly to XLS (i.e., `A` is the first, `B` is the second, etc.).
+In CSV format (when there is no first header line), the columns are named similarly to XLS (i.e., `A` is the first, `B` is the second, etc.). How many such names are generated is set by the [working parameter](Working_parameters.md) `maxColumnsInPlainImportExport` (`256`, that is up to `IV`), which is therefore how many columns can be addressed at all: the columns that come after that in the file get no name and are simply not read, while an import or export that needs more properties than there are names fails with an error naming the first property left without a column. The names are built once when the server starts, so a change of the parameter needs a restart.
 
 If a column with the form property name is not found when importing the form, then the column next to the column of the previous property in the list of form properties is selected for import (in this case, the `parent` column is considered the first).
 

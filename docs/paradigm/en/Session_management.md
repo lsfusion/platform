@@ -25,3 +25,5 @@ When changes are [applied](Apply_changes_APPLY.md), [canceled](Cancel_changes_CA
 3.  When changes are canceled, all values of the local property will remain the same as they were before the cancellation.
 
 The nesting mark can be added globally on a local property's declaration (and applies to all of its uses), or specified separately on each session-management operator — including a blanket mark covering all local properties of the current session.
+
+Writing `NULL` into a local property removes its rows from the session instead of storing the `NULL` there, which is what lets a property that has been nulled back count as unchanged again. The [working parameter](Working_parameters.md) `deleteLocalNullChanges` (`true` by default) controls this; with it off the `NULL` is stored and the property keeps counting as changed. Either way the removal is skipped for a change that reads the very property being changed, since that cannot be split into two steps.

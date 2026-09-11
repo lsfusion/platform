@@ -54,6 +54,8 @@ The HTTP API is served by two kinds of servers:
 
 A request is addressed as `http://<server address>:<port><endpoint>` for the corresponding server.
 
+The built-in HTTP server serves its requests from a pool of `externalHttpServerThreadCount` threads ([working parameter](Working_parameters.md), `10` by default); the value is read at startup. That is a hard limit on how many of its requests run at once: the rest wait for a free thread, so a few long calls delay everything else on that port.
+
 ##### Parameters {#url}
 
 Parameters can be passed both in the request string (by appending constructs like `&p=<parameter value>` to the end of the string), as well as in the request body (BODY). It is assumed that URL parameters are substituted (in the order of their appearance in the request) for the executed action before BODY parameters.
@@ -188,6 +190,8 @@ On the web server the container that keys sessions by the `session` parameter li
 The current implementation of the platform assumes that if sessions are used, the elements of the system (for example, local properties) created in the current call are deleted — that is, they are not visible in subsequent calls.
 :::
 
+A call that does not use `session` is stateless, but it still takes resources: it needs a session of the platform's own, with a database connection and the context of its user and computer. Such sessions are kept in a pool rather than built for every call. The [working parameter](Working_parameters.md) `freeAPISessions` (`12` by default) is how many are kept: one coming back to a full pool is closed instead, and `0` closes every one of them, which is the behaviour the pool replaced. A pooled session is reused as it is when the call comes from the same caller - the same authentication token and the same connection - so its context is not built again; `reinitAPISession` (`false` by default) gives that up and rebuilds the context on every call, slower but leaving nothing of the previous call in it. Neither parameter concerns the sessions of the stateful API above.
+
 ##### Authentication {#authentication}
 
 When executing an http request, it is often necessary to identify the user on whose behalf the specified action will be executed. At the moment, two types of authentication are supported by the platform:
@@ -218,6 +222,8 @@ How the caller obtains the notification:
 -   **Browser redirect (default)** - HTTP `302` to `/push-notification?notification_id=<notification id>`. Following the redirect in a browser delivers the notification to the lsFusion tab already open there, through its service worker.
 -   **Notification ID (when the request has the `Need-Notification-Id` header)** - HTTP `200` with the notification ID (as `INTEGER`) in the response body. Intended for non-browser callers that need to deliver the ID to a running lsFusion client through some other channel.
 
+Which of the two ways is used is decided by the [working parameter](Working_parameters.md) `externalUINotificationMode` (`0` by default): `0` redirects and lets the client pick the notification up itself, through the service worker, which not every browser supports; `1` and `2` have the server deliver the notification to the client's navigator first and then redirect without the identifier, `2` additionally holding the call until the client takes it. When the server finds no navigator to deliver to, the redirect leads nowhere: in mode `1` the identifier is handed to the caller instead, while in mode `2` it is not, and the notification is left waiting on the server.
+
 Interactive actions additionally require the [`enableUI`](Working_parameters.md) setting to permit the call, on top of the regular [`enableAPI`](Working_parameters.md) check.
 
 Routing to a client is the only way an interactive action can open a form: the interactive operation runs on the client that hosts the form, and there is no server-side equivalent. If the action instead runs synchronously on the server — which is what happens for a headless caller when the action carries neither `@@ui` nor the `Need-Notification-Id` header and the request is not a browser navigation — then as soon as it reaches an operation that opens a form ([`SHOW` / `DIALOG`](In_an_interactive_view_SHOW_DIALOG.md), [value input](Value_input.md), a default edit or dialog form, and so on) the call fails with a `createFormInstance is not supported` error and the action does not complete. Such an action can therefore be triggered only from a running client (in practice, through the browser), not through a plain headless `/exec` / `/eval` / `/eval/action` request.
@@ -230,7 +236,7 @@ On failure, the response uses a specific HTTP status code:
 -   `401` - authentication is required or has failed. On the web server, an anonymous [interactive](#interactive) request is redirected to `/login` instead.
 -   `500` - any other unhandled exception raised during request processing, including when the API is disabled by the [`enableAPI`](Working_parameters.md) setting.
 
-For `404`, `500`, and other server-side exception statuses, the response body is `text/html` with the error message; for most exceptions it also includes Java and lsFusion stack traces, except for a `RemoteMessageException` (a user-facing platform message) which returns only the message. A `401` body carries only the short error message. On the web server, the redirect to `/login` has no body - the exception is stored in the HTTP session and the original request is cached for retry after login.
+For `404`, `500`, and other server-side exception statuses, the response body is `text/html` with the error message; for most exceptions it also includes Java and lsFusion stack traces, except for a `RemoteMessageException` (a user-facing platform message) which returns only the message. The [working parameter](Working_parameters.md) `hideAPIErrorStackTrace` (`false` by default) keeps those stacks out of the response, which is worth turning on for a server reachable from outside. The two servers do it differently: the web server still returns the platform's own messages and drops only the stacks, while the built-in HTTP server returns an empty body for every error but an authentication one. On the web server the change reaches the caller only once the cached server settings are refreshed. A `401` body carries only the short error message. On the web server, the redirect to `/login` has no body - the exception is stored in the HTTP session and the original request is cached for retry after login.
 
 ## Form API {#form}
 

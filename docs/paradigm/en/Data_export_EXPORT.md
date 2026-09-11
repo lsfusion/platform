@@ -20,6 +20,8 @@ It should be noted that data export is a special case of (syntactic sugar for) [
 
 Thus, the behavior of the data export operator (for example, determining the names of the resulting columns/keys, [processing `value`](Structured_view.md#value), etc.) is completely determined by the behavior of the form export operator (as if the above form was passed to it as a parameter).
 
+Two [working parameters](Working_parameters.md) affect the `DBF` format. `exportDBFNumericMandatoryZeroes` (`false` by default) writes a numeric field with all its decimal places and a leading zero (`0.50`) instead of leaving out the places that are not significant (`.5`); it applies only to fields that have decimal places at all. `exportDBFLanguageDriverName` (`false` by default) writes the code page of the file into the language driver byte of its header, so that a reader can pick the encoding up from the file itself; the platform knows the identifier of `cp866` only, so for an export in any other charset, the default one included, the parameter does nothing.
+
 ### Language
 
 To declare an action that exports data, use the [`EXPORT` operator](../language/EXPORT_operator.md).

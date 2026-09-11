@@ -64,6 +64,8 @@ If such a composition through a link can be changed, and its outer part — the 
 
 When focus moves into a text input on a form, the platform can start changing that property right away, without waiting for the user to type. `suppressOnFocusChange` (`false` by default) is what allows it: with the parameter off the change never starts on focus alone, and with it on the change starts, except when the focus was moved by the platform itself - a mouse click, scrolling, arrow-key navigation, restoring focus, applying a filter, and so on - where it is always suppressed.
 
+The default actions of a property whose value is an object - editing that object, or choosing another one in a dialog - are built for any such property whose view can be changed; the working parameter `onlyUniqueObjectEvents` (`false` by default) restricts them to the properties whose view is unique, which can leave a great many properties without them. These actions are built and kept as the forms are prepared, so a change of the parameter takes effect only after a server restart.
+
 On the desktop client, `showNotDefinedStrings` (`false` by default) marks a genuinely absent (`NULL`) string-typed value with an explicit placeholder instead of a blank cell: "Not defined", or "Required" if the property must be filled in. An empty string value goes the other way: with the setting off, it is marked as "Empty string" so it isn't mistaken for a blank cell; turning the setting on renders it as a literal blank instead.
 
 ### Filter group {#filtergroup}
