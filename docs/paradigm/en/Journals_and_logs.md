@@ -30,6 +30,8 @@ The `Form` section shows which forms the user entered and how many times. The `S
 
 #### Startup log
 
+![](../images/Journals_and_logs_launch_log.png)
+
 Stores information about the dates and times when the application server was started (restarted). You can also see the name of the computer on which the server is installed and the version of the application (if filled in during the build).
 
 #### Change log
