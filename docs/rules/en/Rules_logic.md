@@ -258,6 +258,13 @@ title: 'Rules: domain logic'
     These operators compare the operands of a single row;
     a maximum across rows is `GROUP MAX`.
 
+21. `AND`, `OR`, `XOR` and `NOT` always yield `BOOLEAN`
+    (`TRUE` or `NULL`), never the value of an operand:
+    `name(o) AND active(o)` is `TRUE`, not the name, and
+    `a OR b` is `TRUE`, not the first non-`NULL` value.
+    The assistant MUST NOT use them to select or pass a value
+    through; for that use `expr IF cond` and `OVERRIDE a, b`.
+
 ### Abstract property rules (`+=`)
 
 1. The value class of a `+=` implementation MUST fit within

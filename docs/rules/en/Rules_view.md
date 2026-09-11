@@ -364,6 +364,23 @@ title: 'Rules: view logic'
     `property 'number' is not found` although the property is
     on the form.
 
+11. For data a form has to keep current — quotes, a queue,
+    a monitor — the assistant MUST use the form's `SCHEDULE`
+    event: `EVENTS ON SCHEDULE PERIOD n formRefresh()`. It MUST
+    NOT poll the server from a custom React component with a
+    timer of its own through `controller.changeProperty('<action>')`:
+    an action drawn without `NOWAIT` goes as a synchronous
+    request that blocks input to the whole web client on every
+    tick, and the component's timer keeps polling while the
+    form is hidden — a background tab, or a form the
+    forms-window component places nowhere. The scheduled event
+    goes as an asynchronous request and runs only while the
+    form is shown on screen. `formRefresh[]` re-reads the whole
+    form on every run, so such a form is kept small: there is
+    no refresh of one object group — `forceUpdate[STRING]`
+    only applies the pending update of a group in manual
+    update mode.
+
 ## Navigator
 
 1. A folder whose children should appear only when the folder

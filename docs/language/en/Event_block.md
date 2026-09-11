@@ -54,6 +54,8 @@ The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filter
 
 The `SELECT PROPERTY` event occurs when the [selection](../paradigm/Selection_SELECT.md) of the columns of the specified form property changes - when the user selects a column or unselects it, including by moving the cursor into it or out of it. If the property is drawn by several columns, the event occurs when any of them changes. Each of the two selection events follows its own property: `SELECT` follows the row selection of an object group, `SELECT PROPERTY` follows the selection of the columns of a form property.
 
+The `SCHEDULE` event is a [timer of the form](../paradigm/Form_events.md): the handler runs every `intPeriod` seconds while the form is shown on screen, and a run of a hidden form is skipped. The usual handler is `System.formRefresh[]` - a periodic refresh (polling, auto-update) of what the form shows; on the web client the request does not block the user's input.
+
 ### Parameters 
 
 - `objName`
@@ -104,7 +106,7 @@ The `SELECT PROPERTY` event occurs when the [selection](../paradigm/Selection_SE
 
 - `FIXED`
 
-    Keyword. When specified, the period to the next run is counted from the start of the current action instead of from its end.
+    Keyword. By default the period to the next run is counted from the end of the current run, once its response has been processed. With `FIXED` it is counted from the start of the run, so the runs keep a fixed pace whatever each takes; a run that has not completed when the period is up is followed by the next one, queued behind it.
 
 - `replaceMode`
 

@@ -444,6 +444,32 @@ Both name their children, so neither is extended from `DESIGN` alone: adding a c
 
 To read and change form state from the component — selecting a row, changing a property, calling actions — use `props.controller`. Its methods are described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
 
+### Live data {#live-data}
+
+Data that keeps changing while the form is open — quotes, a queue, a monitor — is refreshed by the form itself, not by a timer in the component. The [`SCHEDULE` event](../paradigm/Form_events.md) of the form runs an action every given number of seconds, and the platform delivers what changed through `props.data` like any other change:
+
+```lsf
+FORM quotes 'Quotes'
+    OBJECTS q = Quote
+    PROPERTIES(q) READONLY symbol, price, changedAt
+    EVENTS ON SCHEDULE PERIOD 2 formRefresh()
+;
+
+DESIGN quotes {
+    BOX(q) {
+        custom = 'QuoteBoard';
+    }
+}
+```
+
+`System.formRefresh[]` re-reads everything the form shows, so the response carries the whole form on every run. There is no refresh of a single object group: `System.forceUpdate[STRING]` only applies the pending update of a group in manual update mode (the `enableManualUpdate` design attribute) and does nothing for a group updated automatically. So a live board is kept as a form of its own, with only the properties it draws, and the period is no shorter than the data needs.
+
+The scheduled run differs from a request the component would make itself. A timer of the component's own that calls `controller.changeProperty('refresh')` polls the server the way a click on the form would — as a synchronous request that blocks input until it completes, unless the action is drawn with `NOWAIT` — and, as the third point shows, goes on polling while the form is hidden.
+
+- **It does not block the user.** The web client sends it as an asynchronous request, without blocking input and without the [busy indicator](../paradigm/Interactive_view.md#busy) a synchronous request gets, so the user keeps working while the form is re-read.
+- **It runs only while the form is on screen.** For a form in a background tab, a form the [forms window](#forms-window) component places nowhere, or a form under a modal dialog, the run is skipped; the timer keeps counting, and the next run comes once the form is shown again.
+- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component; a timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden.
+
 ### A navigator window {#navigator-window}
 
 A React component can also draw a navigator window — the menu itself — instead of the standard toolbar. The [`WINDOW`](../language/WINDOW_statement.md) is given the component name, and the elements placed in that window become its data:

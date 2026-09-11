@@ -45,6 +45,8 @@ These methods are the same wherever the form controller is reached — directly 
 
 The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, qualify the group directly in the name — `'groupSID.property'`; a group named this way has priority. When an object is passed, the property is resolved by that object's own group, so the group needs to be named only for a change with no object (the current object, or the two-argument `changeProperty(property, value)`). A bare, unqualified name drawn on more than one group must not be used — such a call fails with an error instead of silently changing the wrong group.
 
+Running an action with `changeProperty` is the same request as clicking it on the form: synchronous, blocking input until it completes and showing the [busy indicator](../paradigm/Interactive_view.md#busy) after its delay, unless the action is drawn with `NOWAIT` (the `syncType` [property option](../language/Property_options.md)); `exec`, `eval`, `evalAction` and `change` go as asynchronous requests. So a refresh on a timer is not made through the controller — see [Live data](How-to_Custom_React_views.md#live-data).
+
 The same two groups also differ along two more axes — whether they are gated, and how an object is addressed in them:
 
 | group | methods | gate | how an object is passed |

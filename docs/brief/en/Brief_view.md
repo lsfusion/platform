@@ -36,7 +36,7 @@ FORM orders
 
 ### Interactive view
 
-In the [interactive view](../paradigm/Interactive_view.md) the user works with the open form: picks current objects, changes data properties, runs actions. Data is read as needed and changes are visible immediately. An object group is shown as a table or a panel, and only the groups listed in a `TREE` block are joined into one tree; the user can add filters and orderings of their own.
+In the [interactive view](../paradigm/Interactive_view.md) the user works with the open form: picks current objects, changes data properties, runs actions. Data is read as needed and changes are visible immediately. An object group is shown as a table or a panel, and only the groups listed in a `TREE` block are joined into one tree; the user can add filters and orderings of their own. Data that keeps changing while the form is open is refreshed by the form's `SCHEDULE` event, see [periodic execution](Brief_logic.md#periodic-execution).
 
 A property is displayed in exactly one object group — its *display group*, by default the last group whose objects it takes as arguments. A property that has no display group at all — one with no parameters, for instance — goes into the form's top-level `PANEL`, or into `TOOLBARBOX` in the `TOOLBAR` view.
 
@@ -120,7 +120,7 @@ Which container a property component lands in is determined by its view on the f
 
 The [navigator](../paradigm/Navigator.md) is the tree the user starts working with the application from. Its elements come in three types: a *folder* groups other elements, a *form element* opens a [form](Brief_view.md#forms) in the interactive view, and an *action element* runs an action that takes no arguments. The root is the `System.root` folder. **Analogy**: the application menu together with its routing.
 
-The navigator is filled by the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md) as nested blocks: `NEW FOLDER`, `NEW FORM` and `NEW ACTION` create an element as a child of the current one, `MOVE` moves an existing one, and an element name with a block edits it; the position is `FIRST`, `LAST`, `BEFORE`, `AFTER`. The element options are: `WINDOW` — the [window](../paradigm/Navigator_design.md) for its children (with `PARENT`, for the element itself as well), `HEADER` — a caption from a property, `SHOWIF` — visibility, `IMAGE` / `NOIMAGE` — the [icon](../paradigm/Icons.md), `CHANGEKEY` and `CHANGEMOUSE` — a hot key and a mouse binding, `CLASS` — a CSS class. The `SCHEDULE PERIOD` statement creates a scheduler that runs an action with the given period in seconds.
+The navigator is filled by the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md) as nested blocks: `NEW FOLDER`, `NEW FORM` and `NEW ACTION` create an element as a child of the current one, `MOVE` moves an existing one, and an element name with a block edits it; the position is `FIRST`, `LAST`, `BEFORE`, `AFTER`. The element options are: `WINDOW` — the [window](../paradigm/Navigator_design.md) for its children (with `PARENT`, for the element itself as well), `HEADER` — a caption from a property, `SHOWIF` — visibility, `IMAGE` / `NOIMAGE` — the [icon](../paradigm/Icons.md), `CHANGEKEY` and `CHANGEMOUSE` — a hot key and a mouse binding, `CLASS` — a CSS class. The `SCHEDULE PERIOD` statement creates a scheduler that runs an action with the given period in seconds — on the client, for the whole connection (see [periodic execution](Brief_logic.md#periodic-execution)).
 
 ```lsf
 NAVIGATOR {

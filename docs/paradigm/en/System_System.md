@@ -77,7 +77,7 @@ Inside a `CATCH` block, `messageCaughtException[]`, `javaStackTraceCaughtExcepti
 | `formCustomizeBackground[]` / `formCustomizeShowIf[]` | abstract properties (`ABSTRACT COLOR()` / `ABSTRACT BOOLEAN()`) used to customize the form-customization dialog |
 | `formApplied[]`                                   | abstract list of actions called after a successful form `APPLY` (the default shows a success notification) |
 | `navigatorRefresh[]`                              | refresh the navigator                                          |
-| `forceUpdate[STRING]`                             | forcibly re-read a group of objects                            |
+| `forceUpdate[STRING]`                             | apply the pending update of an object group (given by its name on the form) that is in manual update mode |
 | `seek[Object]`                                    | locate and activate an object on the current form              |
 | `sleep[LONG]`                                     | pause for the given number of milliseconds                     |
 
