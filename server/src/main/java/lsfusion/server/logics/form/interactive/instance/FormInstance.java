@@ -1389,13 +1389,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         // SELECT t, highl(t) WHERE z(t) ORDER BY rank(t) LIMIR act
         String language = ThreadLocalContext.getBusinessLogics().getSearchLanguage();
         SQLSyntax syntax = sql.syntax;
-        String match = "'" + value + "'";
+        Expr matchExpr = value.isEmpty() ? null : new DataObject(value).getExpr();
 
         MExclMap<String, Expr> mProps = MapFact.mExclMap();
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap();
-        mProps.exclAdd("highlight", value.isEmpty() || !highlight ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", match, language), StringClass.text, listExpr));
+        mProps.exclAdd("highlight", value.isEmpty() || !highlight ? listExpr : FormulaExpr.createCustomFormula(MatchWhere.getHighlight(syntax, "prm1", "prm2", language), StringClass.text, listExpr, matchExpr));
 
-        mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", match, language), DoubleClass.instance, listExpr));
+        mProps.exclAdd("rank", value.isEmpty() ? ValueExpr.COUNT : FormulaExpr.createCustomFormula(MatchWhere.getRank(syntax, "prm1", "prm2", language), DoubleClass.instance, listExpr, matchExpr));
         mOrders.exclAdd("rank", true);
         mProps.exclAdd("count", countExpr);
         mOrders.exclAdd("count", true);
