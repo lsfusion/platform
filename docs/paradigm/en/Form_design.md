@@ -20,6 +20,8 @@ By default, any container being created is vertical.
 
 If at some point a container has no child components , or they are invisible, it is automatically hidden. In turn, if a component is not a child of any container, then it will not be shown on the form.
 
+A container that has a caption is *collapsible* by default: a toggle next to the caption folds it away, and the design can have it start folded. The [working parameter](Working_parameters.md) `disableCollapsibleContainers` (`false` by default) removes that default, leaving collapsible only the containers whose design asks for it explicitly. Its two halves take effect at different times: the toggle disappears as soon as the parameter is set, while the initial folded state given in the design is dropped only for a design built after that, that is, after a server restart.
+
 ### Base components
 
 When defining the form design, the developer can use the following base components, which are created automatically based on the form structure:
@@ -38,6 +40,12 @@ When defining the form design, the developer can use the following base componen
 *Properties / Actions*
 
 -   *Property panel* (`PROPERTY`): a component that displays the title and current value of a property. The caption can be either to the left of the value cell or at the top. Not shown if the property is displayed in the table.
+
+### Value cell rendering {#cellrender}
+
+In the web client, a property value cell is normally an ordinary block that turns into an editor when the user starts editing. A property of a text-based class shown in a panel can instead be drawn as a real input field right away, which is what the [working parameter](Working_parameters.md) `useInputTagForTextBasedInPanel` (`1` by default) decides: `0` draws it as an input field in every theme, `1` only in a bootstrap theme, `2` never. The property still has to be editable and its class has to have a matching input type; HTML, rich text and links are never drawn this way, while a `BOOLEAN` always is, regardless of this parameter.
+
+Over the value cell the client draws a *cell toolbar*: the loading indicator of the property, and the buttons of the actions moved into the cell for quick access. Three parameters remove it: `noToolbarForInputTagInPanel` (`false` by default) for a panel property drawn as an input field, `noToolbarForBoolean` (`true`, so on out of the box) for every `BOOLEAN` in a panel and in a table alike, and `noToolbarForSelectDropdownInPanel` (`false`) for a property whose values are chosen from a dropdown, which is then drawn as a native selection element; despite its name that last one is not limited to a panel, and since such a property has no quick-access buttons anyway, what it removes in practice is the loading indicator over it. The `toolbar` option of the [form design](#defaultDesign) wins over all three.
 
 ### Dimensions and components layout {#components}
 
@@ -97,6 +105,8 @@ By default, the extension coefficient and alignment for components are determine
 |Property panel inside a horizontal container or property in a table. The property values are objects of [built-in classes](Built-in_classes.md) of dynamic length (i.e. strings and numbers)|With of the value cell|`START`|
 |Property panel inside a vertical container. The property values are objects of [built-in classes](Built-in_classes.md) of dynamic length (i.e. strings and numbers)|`0`|`STRETCH`|
 |All others|`0`|`START`|
+
+The `0` of the last row is not quite `0` for a column of a table. While the [working parameter](Working_parameters.md) `defaultFlexInGrid` (`true` by default) is on, a column whose values are of a fixed size - `BOOLEAN`, a date, a colour, a file, an object of a user class, an action - gets a tiny extension coefficient of `0.001` instead, so that it takes its share of the free width only after the columns of dynamic length have taken theirs. With the parameter off such a column keeps `0`: it never grows past its base size, and the width the user drags it to is not remembered either, since a saved width applies only to a column whose extension coefficient is not zero.
 
 The base container size (except the tab panel) is equal by default to the sum of the base sizes of all its child components for the dynamic direction, and the maximum for the static direction. The base height of the tab panel is the sum of the base height of its current tab and the height of the tab title bar, the base width is the same as the base width of the current tab.
 
@@ -158,6 +168,12 @@ The automatic design is generated as follows:
                     -   `PROPERTY(<property>)`: base component of the Property Panel.
     -   `TOOLBARBOX`: contains property components that are displayed in `TOOLBAR` [view](Interactive_view.md#property) and have no [display group](Form_structure.md#drawgroup) (for example, the property has no parameters). The internal structure and layout are similar to the corresponding internal structure and layout of an object group (except for `FILTERGROUPS`, which does not make sense when there is no object group, and therefore is not present in this container). This container is added to the end of `BOX`, and components that the form design adds to `BOX` in the order of insertion are placed above it.
         -   `TOOLBARLEFT, TOOLBARRIGHT, TOOLBAR...`
+
+Two [working parameters](Working_parameters.md) change this automatic design. Both are read while it is being built, so changing either of them takes effect only after the server is restarted.
+
+`verticalColumnsFiltersContainer` (`true` by default) lays the conditions inside `FILTERS` out in three columns, the way a `GROUP` container does, except that with one or two conditions it keeps the three columns instead of folding into a single line. With the parameter off, `FILTERS` is a plain horizontal container and all the conditions go in one row.
+
+`toolbarTopLeft` (`false` by default) puts `TOOLBARBOX` above the user filter and the table instead of below them, and swaps the two halves inside it: `TOOLBARRIGHT` with the calculations, the filter groups and the toolbar properties comes first, and `TOOLBARLEFT` with the system toolbar and the `POPUP` menu goes to the right, each half taking the free width and aligning its own children the other way round as well. In the form's own toolbar the order of the system buttons changes too: Refresh moves to the end of them, OK and Close to the front. For a tree only the vertical move applies - the halves keep their order there.
 
 ### Default design example
 

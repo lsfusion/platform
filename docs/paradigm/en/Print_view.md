@@ -42,6 +42,18 @@ import ReportHierarchyEnSvg from '../images/ReportHierarchyEn.svg';
 
 <ReportHierarchyEnSvg />
 
+### Generating the document {#generation}
+
+Which server builds the document depends on the client. The desktop client always builds it itself, out of the templates and the data the application server sends it. For the web client the [working parameter](Working_parameters.md) `generateReportsOnWebServer` (`false` by default) chooses between the application server, which builds the document and sends a ready file, and the web server, which is sent the templates and the data and builds the document itself, asking the application server for the classes it needs along the way. Printing into a file is always done by the application server, whatever the client.
+
+`useShowIfInReports` (`true` by default) honours the display condition of a property in the print view: the columns of the properties whose condition is `NULL` are cut out of the template and the ones to the right of them are moved into the freed space, and, in a paginated format, stretched back to the original width of the template afterwards. The condition is taken from the first row of the report, so one that differs from row to row is decided by that row alone. With the parameter off, every column is printed.
+
+Two parameters bound the work of the report generator itself, so that a runaway template ends with an error instead of exhausting the process that builds the document. Both values travel with the generation request, so they apply whether the document is built by the application server, by the desktop client or by the web server: `jasperReportsGovernorMaxPages` (`500` by default) bounds the number of generated pages, and `jasperReportsGovernorTimeout` (`0`) the time spent building the document, in milliseconds. `0` means that this particular bound is not applied at all, so out of the box only the number of pages is bounded.
+
+`jasperReportsIgnorePageMargins` (`true` by default) drops the page margins of the template when the document is exported to a file, and puts one page of the document on one sheet of an Excel workbook.
+
+`useDefaultPrinterInPrintIfNotSpecified` (`false` by default) is used by the desktop client only, and only when the document is printed without naming a printer: the print button of the print view then sends the document straight to the default printer of the operating system instead of opening its dialog. The default printer is looked up on Windows only; elsewhere the button keeps opening the dialog.
+
 ### Language
 
 All of the above options, as well as defining the form structure, can be done using the [`FORM` statement](../language/FORM_statement.md).
