@@ -449,8 +449,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_React_views.md": {
-      "file_hash": "sha256:15ca0a71e9aa0b7d65dcbeffac7cc4c96515329e164df1cad897de230ae6e811",
-      "indexed_at": "2026-09-04T08:14:09Z",
+      "file_hash": "sha256:e7bc6a4f9edfce22a16134315e8b44c5e97e60dd4143cdf75db4602347bce98a",
+      "indexed_at": "2026-09-11T09:48:03Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -523,6 +523,12 @@
           "file_id": "file-QduasENxGBCELEVxR3haCN",
           "heading_path": "How-to: Custom React form views > Interactivity",
           "section_payload_hash": "sha256:fa2938068de28ed94484ca093dc386e3b56d5d388509e7151413ac5a02d7fe1b",
+          "source_file": "how-to/How-to_Custom_React_views.md"
+        },
+        "How-to_Custom_React_views::live-data-live-data": {
+          "file_id": "file-NHPr4GuyKjcAZnFiHBJAnS",
+          "heading_path": "How-to: Custom React form views > Live data {#live-data}",
+          "section_payload_hash": "sha256:d6c74a740c050670d01fe938cf316fa458e2864c44ec3a8f0f536670aa588f71",
           "source_file": "how-to/How-to_Custom_React_views.md"
         },
         "How-to_Custom_React_views::placing-an-lsf-child-lsf-child": {
@@ -807,8 +813,8 @@
       "stale": false
     },
     "how-to/How-to_Custom_view_controller.md": {
-      "file_hash": "sha256:e0c6fd028e1dde821956fd5509e7facb21fe20d0ac68048be59ea5fde15d3a76",
-      "indexed_at": "2026-09-03T08:19:59Z",
+      "file_hash": "sha256:34709aac4aa3e483db4a4b727b18d0e251ff09ed31ed3eb26bdd8e366b37868b",
+      "indexed_at": "2026-09-11T09:48:12Z",
       "indexed_sourceType": "how-to",
       "indexed_with": {
         "chunker_version": "v4",
@@ -836,15 +842,15 @@
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-00": {
-          "file_id": "file-QBcB9RUpyYtFHc6XzoeKra",
+          "file_id": "file-5sahvctBAsDoRPB6ocrYX2",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:95f488a705ae8f29578795b48f18f00ec28fe1b27aa912be828a34630e8ac86c",
+          "section_payload_hash": "sha256:396514c1269027bf17c96cd2cb9fd7f4288e96c63abb86bdf524d3d8cd93d6e8",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-01": {
-          "file_id": "file-Bk1kDsC8WvXQUaMkxdTPGL",
+          "file_id": "file-8GavJBYrosMSz62K4iBrnQ",
           "heading_path": "How-to: Custom view controller API > The form controller",
-          "section_payload_hash": "sha256:e61ea108eb374ec559716eb2fab23ba8ae52bf581b3440c182d0de1c9150313b",
+          "section_payload_hash": "sha256:3d9e083cd3bed41bb73f2cfea2f9f5f89f7f350f33c23ebe68760071a6631e85",
           "source_file": "how-to/How-to_Custom_view_controller.md"
         },
         "How-to_Custom_view_controller::the-form-controller::part-02": {
@@ -4713,8 +4719,8 @@
       "stale": false
     },
     "language/Event_block.md": {
-      "file_hash": "sha256:ad936149dff0aeccb0aac77187930d8ec54384603021abf81376c863a89dbafc",
-      "indexed_at": "2026-08-28T16:50:13Z",
+      "file_hash": "sha256:955a415070ffd95b374ffdf1d3478b3fec98f9eb5ccbb3adaf9235aea6be65de",
+      "indexed_at": "2026-09-11T09:48:20Z",
       "indexed_sourceType": "language",
       "indexed_with": {
         "chunker_version": "v4",
@@ -4724,9 +4730,9 @@
       },
       "sections": {
         "Event_block::description": {
-          "file_id": "file-WahK7TqLqjtzZStz3eRsrH",
+          "file_id": "file-Vb5N6SAK2MaDSJCyeuSZ4o",
           "heading_path": "Event block > Description",
-          "section_payload_hash": "sha256:c6721b3a7cb58c87ab01a62f9d0d72794c1b297b3197dd56e9aed390aecebbbd",
+          "section_payload_hash": "sha256:93edbf11191f1708bb109aac5d8f833aa8789493bd665be4cf6a7a30849c8b2d",
           "source_file": "language/Event_block.md"
         },
         "Event_block::event-block": {
@@ -4742,9 +4748,9 @@
           "source_file": "language/Event_block.md"
         },
         "Event_block::parameters": {
-          "file_id": "file-LEcgLvPzTJYR6bRiF63QbQ",
+          "file_id": "file-VYsV5f8t4GeCuVa9XjJPMp",
           "heading_path": "Event block > Parameters",
-          "section_payload_hash": "sha256:9cbb60bfe6c51c962fd294e78760d33e897aabc2b816a6ce95dd7755f5a92b9b",
+          "section_payload_hash": "sha256:98777d92fc5648b33e0f7ff40522a5008b6063f41c8bc130a3063bacc9252b54",
           "source_file": "language/Event_block.md"
         },
         "Event_block::syntax": {
@@ -10171,8 +10177,8 @@
       "stale": false
     },
     "paradigm/Form_events.md": {
-      "file_hash": "sha256:66502206cef4e9dc13c6fc2ad72c7c738790b0467155581b76b6332df48e7530",
-      "indexed_at": "2026-08-28T17:11:51Z",
+      "file_hash": "sha256:03c69f68caa9a4bc61c0398d21dec51e8b9eb313130dff2bab5ee1fd2786296f",
+      "indexed_at": "2026-09-11T09:48:28Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -10200,9 +10206,9 @@
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::form-events": {
-          "file_id": "file-Apa1gxg1jPFQe65vug5UCN",
+          "file_id": "file-QUGto4LLp6CwYSqcvUd3SE",
           "heading_path": "Form events",
-          "section_payload_hash": "sha256:fc8dd79c3087edab1672c86f4caea65b13b19d2a2180a7e3cf973cf7bb4e72f1",
+          "section_payload_hash": "sha256:ee252b5b91b842312106f7112321ea34ece8c68ae3dcd278c7ed6b014199a9cc",
           "source_file": "paradigm/Form_events.md"
         },
         "Form_events::language": {
@@ -14003,8 +14009,8 @@
       "stale": false
     },
     "paradigm/System_System.md": {
-      "file_hash": "sha256:f3144be04c1623825395eaf8c3c3f17e15d8bfe494c88ba6304992ce61556cc4",
-      "indexed_at": "2026-09-10T07:23:59Z",
+      "file_hash": "sha256:41d9c59bbae71aa7bda06f73f8fa7ecde78d40221f2d1f400a5f81515d14b5f3",
+      "indexed_at": "2026-09-11T09:48:37Z",
       "indexed_sourceType": "paradigm",
       "indexed_with": {
         "chunker_version": "v4",
@@ -14050,9 +14056,9 @@
           "source_file": "paradigm/System_System.md"
         },
         "System_System::form-lifecycle": {
-          "file_id": "file-N8HBnxjnZqnD2gT8TSUwth",
+          "file_id": "file-2NPJ7pHUniqjpjEihTcq1h",
           "heading_path": "System > Form lifecycle",
-          "section_payload_hash": "sha256:d833ce54170c2ce69cfcfa512d3c6fac23fccb28ea3bdc67fbc45b8a0165e22d",
+          "section_payload_hash": "sha256:2eae50cf294a4c75746c6cac6c151d22154f8346b4b38cf050f83c028945edc1",
           "source_file": "paradigm/System_System.md"
         },
         "System_System::http-request-context": {
@@ -15083,7 +15089,7 @@
       "stale": false
     }
   },
-  "last_indexed_docs_commit": "fcaa7f7130e830eb0f4482d8cc78663d9f0c7d1b",
+  "last_indexed_docs_commit": "8447ff3e75ea4352027eba7e6f2b47787faeb486",
   "pipeline_versions": {
     "chunker_version": "v4",
     "glossary_version": "v0",
