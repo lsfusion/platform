@@ -483,6 +483,24 @@ public class GFormController implements EditManager {
                 }
                 var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2];
                 thisObj.@GFormController::controllerGetPropertyValues(*)(property, object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
+            },
+            // say that the user has started, and finished, editing in `element`. This is the CUSTOM branch of the
+            // form's editing state (GFormController.customEditElement): while it stands, the bindings that step
+            // aside for the form's own open editor - ENTER to the next component, ESCAPE to close a modal - step
+            // aside for this element too. Declare on a wrapper and everything inside it is covered.
+            // It says the state, it does not open an edit, and it cannot: an edit is a property's, with a value to
+            // commit or cancel and only one live at a time. To edit a property from a React view, place the
+            // property - <Lsf name/> - and the form brings its own editor, with nothing to declare.
+            // The element is the caller's to name, from a ref: the form cannot tell which of a view's elements was
+            // meant, and guessing would be wrong exactly where this is used
+            startEditing: function (element) {
+                thisObj.@GFormController::startCustomEditing(Lcom/google/gwt/dom/client/Element;)(element);
+            },
+            stopEditing: function (element) {
+                thisObj.@GFormController::stopCustomEditing(Lcom/google/gwt/dom/client/Element;)(element);
+            },
+            isEditing: function (element) {
+                return thisObj.@GFormController::isCustomEditing(Lcom/google/gwt/dom/client/Element;)(element);
             }
         };
         return this.@GFormController::gController.@GController::extendController(Lcom/google/gwt/core/client/JavaScriptObject;)(controller);
@@ -2813,21 +2831,8 @@ public class GFormController implements EditManager {
         }
     }
 
-    // the element the user is currently typing in. That is the platform's own cell editor when one is open, and
-    // otherwise a text control inside content a CUSTOM view drew: for the user it is the same state, and the form,
-    // which registers its own editors by identity, had no way to see the second kind and so read it as no state at all.
-    // The whole editing scope hangs off this - ENTER moves to the next property only when nothing is being edited,
-    // ESCAPE closes the window only when there is no edit to cancel - so a field the platform did not create used to
-    // lose both keys to the form while the user was typing in it
-    private Element getEditingElement(Event event) {
-        if (isEditing())
-            return getEditElement();
-
-        return CellRenderer.getCustomEditingElement(Element.as(event.getEventTarget()));
-    }
-
     private boolean bindEditing(GBindingEnv binding, Event event) {
-        Element editing = getEditingElement(event);
+        Element editing = getEditingElement();
         switch (binding.bindEditing) {
             case AUTO:
                 return !(editing != null && editing.isOrHasChild(Element.as(event.getEventTarget())));
@@ -2899,6 +2904,11 @@ public class GFormController implements EditManager {
     }
 
     private EditContext editContext;
+    // the CUSTOM branch of the same state: what a view that draws its own content said the user is editing in.
+    // The form cannot open an edit for such content - an edit is a property's, with a value to commit or to cancel,
+    // and only one is live at a time - but it can be TOLD, and the editing scope below reads the two branches the
+    // same way. Set and cleared by controller.startEditing / stopEditing
+    private Element customEditElement;
     private long editRequestIndex = -1;
 
     private BiConsumer<GUserInputResult, CommitReason> editBeforeCommit;
@@ -2911,6 +2921,28 @@ public class GFormController implements EditManager {
     public boolean isEditing() {
         return editContext != null;
     }
+
+    public void startCustomEditing(Element element) {
+        customEditElement = element;
+    }
+    public void stopCustomEditing(Element element) {
+        if (customEditElement == element) // a view stops its own editing, never somebody else's
+            customEditElement = null;
+    }
+    public boolean isCustomEditing(Element element) {
+        return customEditElement == element;
+    }
+
+    // the element the user is editing in, whichever branch it is. The form's own editor wins while it is open, which
+    // is all "one live input" needs here: a view's word is simply not consulted meanwhile, and is still there when
+    // the form's edit ends - which matters, since a view can declare on a wrapper that holds an `lsf = TRUE` child
+    // and the form opens its editor inside that. Stopping is the view's to say; a view that never says it holds its
+    // form's ENTER and ESCAPE, and that is the view's bug to see
+    private Element getEditingElement() {
+        assert customEditElement == null || Document.get().getBody().isOrHasChild(customEditElement);
+        return editContext != null ? editContext.getEditElement() : customEditElement;
+    }
+
 
     public long getEditingRequestIndex() {
         return editRequestIndex;
