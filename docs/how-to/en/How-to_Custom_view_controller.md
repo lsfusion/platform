@@ -42,6 +42,9 @@ These methods are the same wherever the form controller is reached — directly 
 | `eval(script, ...params)` | run an lsf script with a typed `run` | `Promise` |
 | `evalAction(script, ...params)` | run an action body (`$1`, `$2`, … params) | `Promise` |
 | `change(property, ...keyParams, value)` | set a global property | `Promise` |
+| `startEditing(element)` | declare that the user is editing in `element` | — |
+| `stopEditing(element)` | declare that they are not — only if `element` is the declared one | — |
+| `isEditing(element)` | whether that declaration stands | `boolean` |
 
 The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, qualify the group directly in the name — `'groupSID.property'`; a group named this way has priority. When an object is passed, the property is resolved by that object's own group, so the group needs to be named only for a change with no object (the current object, or the two-argument `changeProperty(property, value)`). A bare, unqualified name drawn on more than one group must not be used — such a call fails with an error instead of silently changing the wrong group.
 
@@ -190,6 +193,37 @@ await controller.change('archived', orderId, true);
 ```
 
 A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch.
+
+#### Declaring that the user is editing {#editing}
+
+While a form is editing, a binding whose `editing` scope is the default does not fire for an event that came from inside the element being edited: `ENTER` does not move the focus to the next component, `ESCAPE` does not close a modal window, and a shortcut bound with [`CHANGEKEY`](../language/Property_options.md) does not run. A binding declared with `editing=all` fires regardless.
+
+The form knows the editors it created itself. A field a view drew for itself it does not know, so the view declares it:
+
+- `startEditing(element)` — from now on the user is editing in `element`;
+- `stopEditing(element)` — the user is no longer editing in `element`; the declaration is cleared only when `element` is the declared one;
+- `isEditing(element)` — whether `element` is the declared one.
+
+There is one declaration per form: declaring another element replaces the previous one. While the form's own editor is open it takes precedence over the declaration, which is read again once that editing ends.
+
+While the declaration stands, the bindings above do not fire for events from `element` or from anything inside it. A view that declares nothing keeps the behaviour it had before: `ENTER` moves the focus to the next component and `ESCAPE` closes the window, from a field the view drew as from anywhere else.
+
+```jsx
+function Note({ controller }) {
+    return <textarea onFocus={e => controller.startEditing(e.target)}
+                     onBlur={e => controller.stopEditing(e.target)}/>;
+}
+```
+
+This example declares on focus; a property's own editor starts editing on the first character typed, not on focus.
+
+Declaring on a wrapper covers every field inside it — including a nested [`lsf` child](How-to_Custom_React_views.md#lsf-child) and the editor the platform renders there. Declare on a narrower element when that is not wanted.
+
+Removing the declaration is the view's to do, and not only on blur: clear it when the element is removed or the view unmounts. A declaration left behind keeps those bindings from firing for events inside that element for as long as the form is open.
+
+The declaration does not start property editing: there is no value to commit or to cancel, and `ENTER` saves nothing. To edit a *property* from the view, place the property with [`<Lsf name/>`](How-to_Custom_React_views.md#lsf-child) — the platform renders its own editor there, and nothing is declared.
+
+A single key the view needs regardless of the editing state — a shortcut of its own — is a different matter: stop the event in the handler (`stopPropagation`), and the form does not receive it.
 
 ### The navigator controller {#navigator-controller}
 
