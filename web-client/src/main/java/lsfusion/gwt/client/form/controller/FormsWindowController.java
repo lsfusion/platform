@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -15,12 +16,16 @@ import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 
 // one FORMS window: the forms open in it, which of them is current, and the view that draws them - the tab strip
 // of a TABBED window, the one form alone otherwise, or the React component named with WINDOW ... CUSTOM.
 // System.forms is one of these, the MAIN one; every other is a WINDOW ... FORMS the application declared, which
-// a form reaches with SHOW ... DOCKED <window>.
+// a form reaches with SHOW ... WINDOW <window>.
 // What a window owns is where a form sits, which one is current, and the order it hands the keyboard back in.
 // Everything else about an open form - its lifecycle, its container, its close - stays in FormsController, which
 // is the caller for all of that; a form itself reaches its window for the two things only it knows have happened:
@@ -38,6 +43,11 @@ public class FormsWindowController {
 
     private final FormsView formsView;
     private final ResizableSimplePanel container; // used for / in the setFullScreenMode, and it is assumed that it is returned in getView
+
+    // the forms this window displaced and has not asked to close yet, with the timer that will. Only a form the
+    // window is NOT drawing is ever in here - a wait is started for everything BUT the form drawn - so the one the
+    // user goes to is taken out of it by the selection that draws it, and nothing else has to take it out
+    private final Map<FormDockable, Timer> closing = new HashMap<>();
 
     private boolean isRemoving = false;
     private boolean isAdding = false;
@@ -59,9 +69,17 @@ public class FormsWindowController {
         FormsView.SelectionHandler selection = new FormsView.SelectionHandler() {
             @Override
             public void unselected(int index) { // unselected (but not removed)
-                if(index >= 0 && !keepFocus) { // nothing left this form: the focus has already moved, and what it
-                                               // remembers must not be overwritten with "nothing was focused"
-                    FormDockable dockable = forms.get(index);
+                if(index < 0)
+                    return;
+
+                FormDockable dockable = forms.get(index);
+                // a window that draws one form at a time has stopped drawing this one: its wait starts here, and
+                // not at some later arrival that has nothing to do with it. A form that is leaving is not displaced
+                if (displaces() && !isRemoving)
+                    Scheduler.get().scheduleDeferred(FormsWindowController.this::displaceOthers);
+
+                if(!keepFocus) { // nothing left this form: the focus has already moved, and what it remembers
+                                 // must not be overwritten with "nothing was focused"
                     // the form itself, not what getCurrentForm answers: that reads as "none" while a modal popup
                     // is up, and the form under the popup holds the keyboard all the same
                     FormContainer keyboard = MainFrame.getAssertCurrentForm();
@@ -73,14 +91,14 @@ public class FormsWindowController {
                     // not - it is in another window - that one keeps it
                     if (keyboard != null && keyboard != dockable)
                         MainFrame.setCurrentForm(keyboard);
-
-                    isRemoving = false;
                 }
+                isRemoving = false;
             }
 
             @Override
             public void selected(int index) {
                 if(index >= 0) {
+                    cancelClosing(forms.get(index));
                     if (!keepFocus) // the keyboard is already where it belongs
                         forms.get(index).onFocus(isAdding);
                     formFocusOrder.set(index, focusOrderCount++);
@@ -121,6 +139,8 @@ public class FormsWindowController {
         formsView.formsChanged();
     }
 
+    // the form asked for stops being a displaced one, either way this goes: the view answers with a selection, and
+    // the form it already shows is answered by focusCurrent - and both of those cancel its wait themselves
     public void setCurrentForm(FormDockable dockable) {
         int index = forms.indexOf(dockable);
         if (index < 0) // not a form this window holds: an optimistic close takes one out of its window until the
@@ -165,6 +185,8 @@ public class FormsWindowController {
     }
 
     public void removeDockable(FormDockable dockable) {
+        cancelClosing(dockable);
+
         int index = forms.indexOf(dockable);
         boolean wasCurrent = formsView.getCurrent() == index;
 
@@ -189,32 +211,19 @@ public class FormsWindowController {
         ensureCurrentForm();
     }
 
-    // a window that is not TABBED holds one form at a time, so the form that has just arrived asks every other one to close.
-    // Called when the form ARRIVES, not when its container is added: an async open puts a placeholder in the window
-    // long before the server confirms the form, and a form must not lose its place to a request that may still fail.
-    // A close is a request - a form with unsaved changes asks the user and may stay - so a form that refuses stays
-    // open beside the new one, hidden behind it, where ACTIVATE reaches it.
-    // Nothing is asked of, or by, EITHER end of a docked-modal pair. A form blocked by such a child cannot close while
-    // the child is open. A form that blocks its opener is there only until it closes, and whichever window it was aimed
-    // at must still hold what it held when the opener gets its answer back - which is as true of a child already in the
-    // window as of the one just arriving, since closing it would hand control back to a form nobody asked about.
-    // Which form the window draws is what says who is displaced, and an arrival is one of the two places that can
-    // change it: a form arriving into a container the window is NOT drawing stopped being drawn while it was on its
-    // way - its placeholder was hidden - and no selection will ever leave it again; a form arriving as the one drawn
-    // is what the forms it replaced were waiting for; and a form that is not in the window yet is about to be added
-    // AND drawn, so it is that one. Two quick opens end on the second because its placeholder is the one the window
-    // drew, with no order to keep
+    // the other half of it, which a selection cannot say: the form a window shows may still have been a placeholder
+    // when it was selected, and then nothing had taken anybody's place yet. An arrival is the moment that changes,
+    // for the form that arrived as much as for the ones it replaced - so both are answered by asking the question
+    // again, and neither has to be told apart from the other.
+    // Nothing is asked of, or by, either end of a docked-modal pair: a form blocked by such a child cannot close
+    // while the child is open, and the child is there only until it closes
     public void formArrived(FormDockable dockable) {
         if (!displaces() || dockable.inBlockingPair())
             return;
 
-        int index = forms.indexOf(dockable);
-        if (index >= 0 && index != formsView.getCurrent())
-            dockable.closePressed();
-        else
-            for (FormDockable other : new ArrayList<>(forms))
-                if (other != dockable && !other.async && !other.inBlockingPair())
-                    other.closePressed();
+        cancelClosing(dockable); // whatever was decided about the form this container held before it
+
+        displaceOthers();
     }
 
     // whether this window displaces at all: it draws one form at a time, and it is the window that says which one.
@@ -223,6 +232,84 @@ public class FormsWindowController {
     // itself; what it holds is closed through the component's own controller
     private boolean displaces() {
         return window.single && !window.react;
+    }
+
+    // everything a window holds and does not draw is displaced - once what it DOES draw is really there. That is the
+    // whole rule, and the two moments that can change its answer are the two places it is asked: a form stopped being
+    // drawn, and a form arrived.
+    // What the window draws has to be a form that TOOK the place. A placeholder has taken nothing yet - an open can
+    // fail, and then nobody was replaced - and a docked-modal child takes nobody's place either: it is there only
+    // until it closes, and the window it was aimed at must still hold what it held when the opener gets its answer
+    // back.
+    // A selection says it deferred, since the selection is still running and the view must not change under it -
+    // though nothing here changes it: starting a wait is all this does
+    private void displaceOthers() {
+        int current = formsView.getCurrent();
+        if (current < 0)
+            return;
+
+        FormDockable drawn = forms.get(current);
+        if (drawn.async || drawn.isBlockingForm())
+            return;
+
+        for (FormDockable other : forms)
+            if (other != drawn && !other.async && !other.inBlockingPair())
+                displaced(other);
+    }
+
+    // WINDOW ... FORMS CLOSE <seconds> | NOCLOSE: when the displaced form is closed. A delay is what makes going back
+    // cheap - the form the user returns to within it is never closed at all - and what bounds how many forms a window
+    // that shows one at a time ends up holding.
+    // At once, the close is the ordinary request, and a form with unsaved changes asks the user: the question comes
+    // as they leave the form, where it belongs. A clock never asks - a question about a form nobody is looking at,
+    // minutes later, over whatever the user is doing, is worse than the form staying - so it closes only a form that
+    // closes without asking, and one with unsaved changes stays until the application closes it, or the user comes back
+    private void displaced(FormDockable dockable) {
+        int delay = window.closeDelay; // CLOSE 0 is a timer of no time at all: the next turn, and not inside the
+                                       // selection that displaced the form, which a close would mutate
+        // a placeholder is never asked: closing one is a form built and thrown away unseen, and its own arrival is
+        // where it is asked instead, if by then the window is drawing something else
+        if (delay == GAbstractWindow.NOCLOSE || dockable.async)
+            return;
+
+        if (closing.containsKey(dockable)) // still waiting, and being displaced again does not start it over
+            return;
+
+        Timer timer = new Timer() {
+            @Override
+            public void run() {
+                // not under a modal popup: the close is a request, and its question would stack on whatever the
+                // user is answering. The same wait closeAllForms takes, and the clock stays cancellable meanwhile
+                if (MainFrame.isModalPopup()) {
+                    schedule(1000);
+                    return;
+                }
+
+                closing.remove(dockable);
+                // a WAIT is long enough for the answer to have changed, so a form that has got changes it would ask
+                // about is left alone: a question about a form nobody is looking at, minutes later, is worse than the
+                // form staying. At once there is no such distance - the question comes as the user leaves the form,
+                // where it belongs - and CLOSE 0 asks it
+                if (stillDisplaced(dockable) && (delay == 0 || !dockable.getForm().needConfirm()))
+                    dockable.closePressed();
+            }
+        };
+        closing.put(dockable, timer);
+        timer.schedule(delay * 1000);
+    }
+
+    // what a wait comes back to: the form may have been closed by hand, be the one drawn again, or have got a
+    // docked-modal child, the pair nothing is asked of
+    private boolean stillDisplaced(FormDockable dockable) {
+        return forms.contains(dockable) && forms.indexOf(dockable) != formsView.getCurrent()
+                && !dockable.inBlockingPair();
+    }
+
+    // the form is wanted again, or gone: either way it is not the displaced one any more
+    private void cancelClosing(FormDockable dockable) {
+        Timer timer = closing.remove(dockable);
+        if (timer != null)
+            timer.cancel();
     }
 
     public void closeAllForms() {
@@ -265,6 +352,12 @@ public class FormsWindowController {
             keepFocus = keyboard != null && keyboard != lastFocusedForm;
             setCurrentForm(lastFocusedForm);
             keepFocus = false;
+
+            // a form the window picks by itself - the one it drew is gone - took nobody's place in a selection, so no
+            // unselection asked who is displaced now: the forms held behind a placeholder that failed would stay
+            // hidden for good. Asked again here; a form already waiting is not started over
+            if (displaces())
+                displaceOthers();
         }
     }
 
@@ -278,9 +371,9 @@ public class FormsWindowController {
     // The keyboard does not follow when a docked-modal child has masked the form - it is not one the user can work in -
     // nor while a float or a modal popup holds it, since those do not give it up
     private void focusedIn(FormDockable dockable) {
-        // a form still on its way has no form to make current; a masked one is not one the user can work in, and the
-        // mask is a focus panel INSIDE it, so clicking it focuses the form; and a modal popup gives the focus it took
-        // back BEFORE it stops being one, so every message box closing over a form would announce that form again
+        // the mask is a focus panel INSIDE the form, so clicking it focuses a form the user cannot work in; and a
+        // modal popup gives the focus it took back BEFORE it stops being one, so every message box closing over a
+        // form would otherwise announce that form to the server all over again
         if (!dockable.canTakeKeyboard() || MainFrame.isModalPopup())
             return;
 

@@ -1140,6 +1140,12 @@ public class GFormController implements EditManager {
         needConfirm = fc.needConfirm;
     }
 
+    // whether closing this form would ask the user first, as the server last said: what the async close goes by,
+    // and what a FORMS window's close-delay goes by when it decides not to ask at all
+    public boolean needConfirm() {
+        return needConfirm;
+    }
+
     private void expandCollapseContainers(GFormChanges formChanges) {
         for (GContainer container : formChanges.collapseContainers) {
             setContainerExtCollapsed(container, true);

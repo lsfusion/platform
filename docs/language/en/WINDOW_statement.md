@@ -8,7 +8,7 @@ The `WINDOW` statement - creating a new [window](../paradigm/Navigator_design.md
 ### Syntax
 
 ```
-WINDOW name [caption] [NATIVE | FORMS [formsKind]] [options];
+WINDOW name [caption] [windowKind] [options];
 ```
 
 The `options` that appear at the end of the statement can be specified one after another in any order:
@@ -32,7 +32,7 @@ An existing window can be given a renderer, told how to draw the forms opened in
 
 ```
 EXTEND WINDOW windowName CUSTOM customExpr;
-EXTEND WINDOW windowName FORMS formsKind;
+EXTEND WINDOW windowName FORMS [formsKind] [formsClose];
 HIDE WINDOW windowName;
 ```
 
@@ -50,6 +50,13 @@ TABBED
 NOTABBED
 ```
 
+and `formsClose` is one of:
+
+```
+CLOSE seconds
+NOCLOSE
+```
+
 ### Description
 
 The `WINDOW` statement declares a new window and adds it to the current [module](../paradigm/Modules.md).
@@ -58,7 +65,7 @@ By default a window is created that displays [navigator elements](../paradigm/Na
 
 The `EXTEND WINDOW` statement gives an already declared window - a standard one included - the React component or HTML template that draws its navigator elements, leaving everything else about the window as it is. The elements keep the window they were placed in, so the navigator's structure, its selection and its startup behavior stay as they were, and only the renderer changes. The window must already exist. A `FORMS` window and `System.log` can be given a component and nothing else; any other `NATIVE` window can be given neither. When several modules extend one window, the last literal is the markup the window starts with and the last property is the one that recomputes it.
 
-The same statement also says how a window that holds forms draws them, which is the only way to say it about `System.forms`, since the platform declares that window and an application cannot declare it again. A window that does not hold forms cannot be extended this way. This is what makes the work area itself replace its content rather than collect tabs.
+The same statement also says how a window that holds forms draws them and when it closes a form that was displaced, which is the only way to say it about `System.forms`, since the platform declares that window and an application cannot declare it again. At least one of the two is given, and each replaces only itself: an extension that says when to close leaves the window drawing its forms the way it did, and one that turns the strip over leaves the close policy the window was given. A window that does not hold forms cannot be extended this way. This is what makes the work area itself replace its content rather than collect tabs.
 
 The `HIDE WINDOW` statement hides the specified window, making it invisible. A hidden window draws nothing, so a window given a `CUSTOM` component and then hidden does not draw it, and the messages of a hidden `System.log` are logged and not shown anywhere.
 
@@ -80,17 +87,27 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. A h
 
     Keyword specifying that the window holds forms: navigator elements cannot be placed into it, and a form is opened into it with [`SHOW ... WINDOW windowName`](SHOW_operator.md). This is how the predefined `System.forms` window is defined, and it is the window a form opens in when `WINDOW` names none. The same options apply as for a `NATIVE` window, `AUTOSIZE` and the orientation it sizes the window across included, and `CUSTOM` may name a React component that draws the window instead, as described below.
 
-    Such a window draws one form at a time and nothing of its own around it - no tab strip, no close button, and none of the platform's own toolbar - which is what a header, a side panel or a kiosk screen wants. Which form is drawn is the application's to say, with [`SHOW`](SHOW_operator.md) and [`ACTIVATE FORM`](ACTIVATE_operator.md). The window still holds more than one: when a form is opened into it, the form already there is asked to close, the request its close button makes, and a form with unsaved changes asks the user and may stay open - hidden behind the form drawn, where `ACTIVATE FORM` reaches it. Neither end of a pair opened with `WINDOW windowName` in synchronous mode takes part: the blocked form is not asked to close, since it cannot while that form is open, and the blocking form does not ask the forms already in the window to close.
+    Such a window draws one form at a time and nothing of its own around it - no tab strip, no close button, and none of the platform's own toolbar - which is what a header, a side panel or a kiosk screen wants. Which form is drawn is the application's to say, with [`SHOW`](SHOW_operator.md) and [`ACTIVATE FORM`](ACTIVATE_operator.md). The window still holds more than one: when a form is opened into it, the form already there is displaced and asked to close, the request its close button makes, and a form with unsaved changes asks the user and may stay open - hidden behind the form drawn, where `ACTIVATE FORM` reaches it. Neither end of a pair opened with `WINDOW windowName` in synchronous mode takes part: the blocked form is not asked to close, since it cannot while that form is open, and the blocking form does not ask the forms already in the window to close.
 
     Only the desktop web client draws one form alone: the mobile web client draws such a window as a strip of tabs, where the form that stayed is a tab, and the desktop client draws `System.forms` alone, so a form opened into any other `FORMS` window opens there, as a tab.
 
 - `TABBED`
 
-    Keyword specifying that the window is drawn as a strip of tabs, one per open form, and the user switches between them; nothing is displaced and nothing is closed on its own. Usually one window in an application is like this, and it is `System.forms`, which is declared with it; a window declared without any `formsKind` draws one form at a time.
+    Keyword specifying that the window is drawn as a strip of tabs, one per open form, and the user switches between them; nothing is displaced and nothing is closed on its own, so `formsClose` cannot be given together with it. Usually one window in an application is like this, and it is `System.forms`, which is declared with it; a window declared without `formsKind` draws one form at a time.
 
 - `NOTABBED`
 
-    Keyword specifying that the window draws one form at a time, which is what a window declared without any `formsKind` does. It is written to turn `System.forms` over into a work area that replaces its content.
+    Keyword specifying that the window draws one form at a time. This is what a window declared without `formsKind` does, so it is written to turn `System.forms` over into a work area that replaces its content.
+
+- `seconds`
+
+    [Integer literal](Literals.md#intliteral) ranging from `0` to `2000000` - how long the displaced form is kept before it is closed. `CLOSE 0` asks it to close at once, which is what a window given no `formsClose` does, and a form with unsaved changes then asks the user and may stay. A wait closes only a form that closes without asking: a form with unsaved changes stays open, hidden behind the form drawn, until the application or the user closes it - the user is not asked about a form they are no longer looking at. A form the user is brought back to within the wait - by [`ACTIVATE FORM`](ACTIVATE_operator.md), by a [`SHOW ... ACTIVATE`](SHOW_operator.md) of the same form, or by working in it - is not closed at all, and being displaced again while it is still waiting does not start the wait over. A form that is being drawn is not displaced and is never put on a wait, and neither is one whose place was taken by a form that has not arrived yet: an open can fail, and a form opened with `WAIT` leaves the window holding what it held, which is the answer its opener comes back to.
+
+    A window drawn by a `CUSTOM` component closes nothing by itself: what such a window draws is the component's to say, and it may draw several forms at once, so the platform cannot tell a form it stopped drawing from one it rearranged. Such a window closes what it holds through its own controller.
+
+- `NOCLOSE`
+
+    Keyword specifying that the displaced form is not asked to close at all: it stays open, hidden behind the form drawn, until the application or the user closes it.
 
 - `windowName`
 

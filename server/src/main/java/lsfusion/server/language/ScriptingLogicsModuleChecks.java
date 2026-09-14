@@ -1,5 +1,9 @@
 package lsfusion.server.language;
 
+import lsfusion.interop.form.DockedWindowFormType;
+import lsfusion.interop.form.WindowFormType;
+import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.base.Custom;
 
 import lsfusion.server.base.version.ComplexLocation;
@@ -110,44 +114,55 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkFormsWindowKind(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
+    // only a window declared FORMS holds forms: what is written about one is an error anywhere else, and
+    // `what` is the construction that was written
+    public void checkFormsWindow(AbstractWindow window, String name, String what) throws ScriptingErrorLog.SemanticErrorException {
         if (!(window instanceof FormsWindow)) {
-            errLog.emitExtendWindowNotFormsError(parser, name);
-        }
-    }
-
-    public void checkFormsWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(window instanceof FormsWindow)) {
-            errLog.emitDockedWindowNotFormsError(parser, name);
+            errLog.emitNotFormsWindowError(parser, name, what);
         }
     }
 
     // SHOW ... ACTIVATE shows the form that is already open, exactly as it is, so everything the open carries for a
     // NEW form has nowhere to go. Refusing to compile is the only honest answer: opening anyway would ignore the
     // objects asked for, and activating anyway would show the wrong ones
-    public void checkShowActivate(boolean window, boolean noWait, boolean noObjects, boolean noContextFilters,
-                                  boolean noReadOnly, boolean noSessionScope, boolean noInitAction,
-                                  boolean noCheckOnOk, boolean noManageSession, boolean noCancel) throws ScriptingErrorLog.SemanticErrorException {
-        if (!window)
+    public void checkShowActivate(WindowFormType windowType, Boolean syncType, boolean hasObjects, boolean hasContextFilters,
+                                  boolean readOnly, FormSessionScope sessionScope, boolean hasInitAction,
+                                  boolean checkOnOk, ManageSessionType manageSession, Boolean noCancel) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(windowType instanceof DockedWindowFormType))
             errLog.emitActivateNotAllowedError(parser, "without WINDOW - only a form opened into a FORMS window can be activated instead");
-        if (!noWait)
+        if (!Boolean.FALSE.equals(syncType))
             errLog.emitActivateNotAllowedError(parser, "without NOWAIT - a synchronous open waits for a result that a form already open does not give");
-        if (!noObjects)
+        if (hasObjects)
             errLog.emitActivateNotAllowedError(parser, "with OBJECTS");
-        if (!noContextFilters)
+        if (hasContextFilters)
             errLog.emitActivateNotAllowedError(parser, "with FILTERS");
-        if (!noReadOnly)
+        if (readOnly)
             errLog.emitActivateNotAllowedError(parser, "with READONLY");
-        if (!noSessionScope)
+        if (sessionScope != FormSessionScope.OLDSESSION)
             errLog.emitActivateNotAllowedError(parser, "with a session option");
-        if (!noInitAction)
+        if (hasInitAction)
             errLog.emitActivateNotAllowedError(parser, "with an initialization block - it runs only when a form is opened");
-        if (!noCheckOnOk)
+        if (checkOnOk)
             errLog.emitActivateNotAllowedError(parser, "with CHECK");
-        if (!noManageSession)
+        if (manageSession != ManageSessionType.AUTO)
             errLog.emitActivateNotAllowedError(parser, "with a session management option");
-        if (!noCancel)
+        if (noCancel != FormEntity.DEFAULT_NOCANCEL)
             errLog.emitActivateNotAllowedError(parser, "with a cancel option");
+    }
+
+    // checked where CLOSE is read and not where the window is built, because NOCLOSE arrives as a number too
+    // a TABBED window draws every form it holds at once, so nothing in it is ever displaced and there is nothing for
+    // a close policy to act on. Only when the two are said together, though - a later EXTEND that turns a window over
+    // leaves the option it no longer needs behind, the same way a CUSTOM component does
+    public void checkFormsClose(boolean single, Integer closeDelay) throws ScriptingErrorLog.SemanticErrorException {
+        if (!single && closeDelay != null)
+            errLog.emitFormsCloseNotAllowedError(parser);
+    }
+
+    public void checkFormCloseDelay(int closeDelay) throws ScriptingErrorLog.SemanticErrorException {
+        if (closeDelay < 0 || closeDelay > FormsWindow.MAX_CLOSE_DELAY) {
+            errLog.emitFormCloseDelayError(parser, closeDelay, FormsWindow.MAX_CLOSE_DELAY);
+        }
     }
 
     public void checkFormAddress(String formId, String formName, String windowName) throws ScriptingErrorLog.SemanticErrorException {

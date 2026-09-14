@@ -321,12 +321,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements; only a FORMS window and System.log can be drawn by a React component", name));
     }
 
-    public void emitExtendWindowNotFormsError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("EXTEND WINDOW %s FORMS: '%s' holds no forms, and only a window that does is drawn one way or the other", name, name));
+    public void emitNotFormsWindowError(ScriptParser parser, String name, String what) throws SemanticErrorException {
+        emitSimpleError(parser, format("%s: '%s' is not a FORMS window, so it holds no forms", what, name), name);
     }
 
-    public void emitDockedWindowNotFormsError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("WINDOW %s: '%s' is not a FORMS window, so no form can open into it", name, name));
+    public void emitFormCloseDelayError(ScriptParser parser, int seconds, int max) throws SemanticErrorException {
+        emitSimpleError(parser, format("CLOSE %s: a delay is a number of seconds from 0 to %s; NOCLOSE is how the form is kept for good", seconds, max));
+    }
+
+    public void emitFormsCloseNotAllowedError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "a TABBED window shows every form it holds, so it never displaces one - CLOSE and NOCLOSE say when a displaced form is closed");
     }
 
     public void emitActivateNotAllowedError(ScriptParser parser, String what) throws SemanticErrorException {

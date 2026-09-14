@@ -5425,27 +5425,36 @@ windowCreateStatement
 	boolean isNative = false;
 	boolean isForms = false;
 	boolean single = false;
+	Integer closeDelay = null;
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedWindow(isNative, isForms, single, $name.name, $name.caption, $opts.options);
+		self.addScriptedWindow(isNative, isForms, single, closeDelay, $name.name, $name.caption, $opts.options);
 	}
 }
     //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
     // FORMS: the window holds forms opened into it with SHOW ... WINDOW <window>, and draws one at a time unless
     // it is TABBED - which is one window in an application, so it is the one that says so
-	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; } | 'FORMS' { isForms = true; single = true; } (fk=formsKind { single = !$fk.tabbed; })?)? 'TOOLBAR'? opts=windowOptions  ';'
+	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; } | 'FORMS' { isForms = true; single = true; } (fk=formsKind { single = !$fk.tabbed; })? (fc=formsClose { closeDelay = $fc.delay; })?)? 'TOOLBAR'? opts=windowOptions  ';'
 	;
 
-// how a FORMS window draws what is opened into it: a tab per form, or one form at a time
+// how a FORMS window draws what is opened into it: a tab per form, or one at a time
 formsKind returns [boolean tabbed]
 	:	'TABBED' { $tabbed = true; }
 	|	'NOTABBED'
 	;
 
+// when the form a new one displaced is closed: at once, after that many seconds, or never. Only a window that draws
+// one form at a time displaces anything, so this says nothing about a TABBED one
+formsClose returns [int delay]
+	:	'CLOSE' d=intLiteral { if(inMainParseState()) $delay = self.getFormCloseDelay($d.val); }
+	|	'NOCLOSE' { $delay = FormsWindow.NOCLOSE; }
+	;
+
 windowExtendStatement
 @init {
-	boolean single = false;
+	Boolean single = null;
+	Integer closeDelay = null;
 }
 	:	'EXTEND' 'WINDOW' wid=compoundID
 		(	cst=windowCustom ';'
@@ -5455,11 +5464,12 @@ windowExtendStatement
 				}
 			}
 		// how a window draws the forms opened into it is the other thing an EXTEND can turn over, and the only way
-		// to say it about System.forms, which the platform declares and an application cannot
-		|	'FORMS' fk=formsKind { single = !$fk.tabbed; } ';'
+		// to say it about System.forms, which the platform declares and an application cannot. What it does not say
+		// it does not change - a window told when to close displaced forms keeps the strip or the single form it had
+		|	'FORMS' (fk=formsKind { single = !$fk.tabbed; } (fc=formsClose { closeDelay = $fc.delay; })? | fc2=formsClose { closeDelay = $fc2.delay; }) ';'
 			{
 				if (inMainParseState()) {
-					self.setWindowFormsKind($wid.sid, single);
+					self.setWindowFormsKind($wid.sid, single, closeDelay);
 				}
 			}
 		)

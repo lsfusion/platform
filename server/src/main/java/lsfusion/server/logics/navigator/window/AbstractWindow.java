@@ -116,11 +116,18 @@ public class AbstractWindow {
         // arrive - the one counted list of forms windows the navigator writes, System.forms among them - so that
         // is not written
         outStream.writeBoolean(isSingleForm());
+        outStream.writeInt(getFormCloseDelay());
         outStream.writeBoolean(vertical);
     }
 
     public boolean isSingleForm() {
         return false;
+    }
+
+    // how long the form a new one displaces is kept before it is asked to close, in seconds; 0 at once,
+    // FormsWindow.NOCLOSE never
+    public int getFormCloseDelay() {
+        return 0;
     }
 
     public void setDockPosition(int x, int y, int width, int height) {

@@ -2610,14 +2610,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (formName != null)
             formCanonicalName = findForm(formName).getCanonicalName();
 
-        String windowCanonicalName = null;
-        if (windowName != null) {
-            AbstractWindow window = findWindow(windowName);
-            checks.checkFormsWindow(window, windowName);
-            windowCanonicalName = window.getCanonicalName();
-        }
-
-        return new FormAddress(formId, formCanonicalName, windowCanonicalName);
+        return new FormAddress(formId, formCanonicalName, windowName != null ? getFormsWindowName(windowName) : null);
     }
 
     public LAWithParams addScriptedCollapseExpandAProp(ComponentView component, boolean collapse) {
@@ -4111,10 +4104,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<O> mappedObjects = mapped.objects;
 
         if (activateType != null)
-            checks.checkShowActivate(windowType instanceof DockedWindowFormType, Boolean.FALSE.equals(syncType),
-                    mappedObjects.isEmpty(), contextFilters.isEmpty(), !readonly,
-                    formSessionScope == FormSessionScope.OLDSESSION, initAction == null,
-                    !checkOnOk, manageSession == ManageSessionType.AUTO, noCancel == FormEntity.DEFAULT_NOCANCEL);
+            checks.checkShowActivate(windowType, syncType, !mappedObjects.isEmpty(), !contextFilters.isEmpty(),
+                    readonly, formSessionScope, initAction != null, checkOnOk, manageSession, noCancel);
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
         MList<O> mObjects = ListFact.mListMax(mappedObjects.size());
@@ -5700,12 +5691,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWindow(boolean isNative, boolean isForms, boolean single, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    public int getFormCloseDelay(int seconds) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkFormCloseDelay(seconds);
+        return seconds;
+    }
+
+    public void addScriptedWindow(boolean isNative, boolean isForms, boolean single, Integer closeDelay, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         parser.setDeclaredName(name);
         checks.checkDuplicateWindow(name);
+        checks.checkFormsClose(single, closeDelay);
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
-        AbstractWindow window = isNative || isForms ? createNativeWindow(name, caption, isForms, single, options) : createToolbarWindow(name, caption, options);
+        AbstractWindow window = isNative || isForms ? createNativeWindow(name, caption, isForms, single, closeDelay != null ? closeDelay : 0, options) : createToolbarWindow(name, caption, options);
 
         window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
         window.titleShown = nvl(options.getDrawTitle(), true);
@@ -5763,28 +5760,33 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
-    // SHOW ... DOCKED <window>: the window a form is docked into instead of System.forms. Resolved here, when the
-    // module is read, so a name that is not a FORMS window stops the application rather than opening the form nowhere
     public void addDockedDeprecationWarning() {
         warningList.add("'DOCKED' is deprecated, use 'WINDOW' instead ('WINDOW <window>' to name the window the form opens in)");
     }
 
+    // SHOW ... WINDOW <window>: the window a form opens into instead of System.forms
     public WindowFormType getDockedWindowFormType(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return new DockedWindowFormType(getFormsWindowName(name));
+    }
+
+    // WINDOW <window>, wherever it is written: the name is resolved when the module is read, so a name that is not
+    // a FORMS window stops the application rather than opening the form, or looking for it, nowhere
+    public String getFormsWindowName(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = findWindow(name);
-        checks.checkFormsWindow(window, name);
-        return new DockedWindowFormType(window.getCanonicalName());
+        checks.checkFormsWindow(window, name, "WINDOW " + name);
+        return window.getCanonicalName();
     }
 
     // the window kinds that hold no navigator elements. NATIVE is filled by the client (System.log). FORMS holds
     // the forms opened into it with SHOW ... WINDOW <window> - one at a time, or, when TABBED, as many as are opened -
     // which is what System.forms is; like it, such a window may be drawn by a React component, the forms open in it
     // being its projection, and by a component only: a template would have nothing to name
-    private AbstractWindow createNativeWindow(String name, LocalizedString caption, boolean forms, boolean single, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    private AbstractWindow createNativeWindow(String name, LocalizedString caption, boolean forms, boolean single, int closeDelay, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         boolean custom = options.custom != null || options.customProperty != null;
 
         AbstractWindow window;
         if (forms) {
-            window = new FormsWindow(elementCanonicalName(name), caption, single);
+            window = new FormsWindow(elementCanonicalName(name), caption, single, closeDelay);
             if (custom) {
                 checks.checkComponentOnlyWindowCustom(name, options.custom, options.customProperty != null);
                 window.setCustom(options.custom);
@@ -5803,21 +5805,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
+    // EXTEND WINDOW ... FORMS <kind>: how the window draws the forms opened into it - one at a time, or as tabs.
+    // It is an EXTEND and not only a declaration option because System.forms is declared by the platform: an
+    // application that wants its work area to hold one form at a time has no other way to say so
+    // each half of it replaces only itself: an EXTEND that says when to close displaced forms leaves the window
+    // drawing them the way it did, and one that turns the strip over leaves the close policy it was given
+    public void setWindowFormsKind(String name, Boolean single, Integer closeDelay) throws ScriptingErrorLog.SemanticErrorException {
+        AbstractWindow window = findWindow(name);
+        checks.checkFormsWindow(window, name, "EXTEND WINDOW " + name + " FORMS");
+
+        FormsWindow formsWindow = (FormsWindow) window;
+        if (single != null)
+            formsWindow.single = single;
+        if (closeDelay != null)
+            formsWindow.closeDelay = closeDelay;
+
+        checks.checkFormsClose(formsWindow.single, closeDelay);
+    }
+
     // the renderer of an ALREADY declared window - so the elements keep their window, and the navigator keeps its
     // structure, selection and startup behaviour; only the drawing changes.
     // What a renderer MEANS depends on the window's role, and only the role knows: a navigator window is drawn from its
     // navigator elements, the forms window from the forms open in it, the log window from the messages logged in it. So
     // the vocabulary is checked per role here, not once for every window
-    // EXTEND WINDOW ... FORMS [TABBED]: how the window draws the forms opened into it - one at a time, or as tabs.
-    // It is an EXTEND and not only a declaration option because System.forms is declared by the platform: an
-    // application that wants its work area to hold one form at a time has no other way to say so
-    public void setWindowFormsKind(String name, boolean single) throws ScriptingErrorLog.SemanticErrorException {
-        AbstractWindow window = findWindow(name);
-        checks.checkFormsWindowKind(window, name);
-
-        ((FormsWindow) window).single = single;
-    }
-
     public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = findWindow(name);
 

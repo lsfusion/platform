@@ -99,6 +99,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.custom = clientWindow.custom;
         window.react = clientWindow.react;
         window.single = clientWindow.single;
+        window.closeDelay = clientWindow.closeDelay;
         window.vertical = clientWindow.vertical;
         return window;
     }

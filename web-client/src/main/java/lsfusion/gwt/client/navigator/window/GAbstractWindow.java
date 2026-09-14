@@ -27,6 +27,9 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     public String custom;
     public boolean react; // inferred from custom on the server, so the client just reads it
     public boolean single; // one form at a time, drawn alone - what a FORMS window does unless it is TABBED
+    // how long the form a new one displaces is kept before it is asked to close, in seconds
+    public int closeDelay;
+    public static final int NOCLOSE = -1; // ... or not asked at all
     // the window's own orientation: a HORIZONTAL window is a band across, a VERTICAL one a column beside
     public boolean vertical;
 
