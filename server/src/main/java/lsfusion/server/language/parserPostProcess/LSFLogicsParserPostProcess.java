@@ -5,7 +5,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import java.io.*;
 
 public class LSFLogicsParserPostProcess {
-    private static final int BITSET_FILE_LINES_LIMIT = 2000;
+    private static final int BITSET_FILE_LINES_LIMIT = 1000;
 
     public static void main(String[] args) {
         String baseDir = args[0];
@@ -98,7 +98,8 @@ public class LSFLogicsParserPostProcess {
             }
 
             if (foundBitsetFollow) {
-                writer3.close();
+                if (writer3 != null) // null when the last bitset landed exactly on a part boundary
+                    writer3.close();
 
                 // second run just for bitset imports, as their number is unknown during first run
                 File tempParserFile2 = new File(parserDir + "/LsfLogicsParser2.tmp");
