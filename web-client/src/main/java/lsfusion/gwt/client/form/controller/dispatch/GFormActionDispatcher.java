@@ -28,6 +28,15 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         this.form = form;
     }
 
+    // ACTIVATE FORM run from a FORM's own action, which until now reached the base dispatcher's empty handler and did
+    // nothing on the web. The navigator's dispatcher has always done this; a form has no navigator elements to
+    // activate, which is why activation was left off the shared base - but the FORM it names is the same form either
+    // way, and a window that draws one form at a time has nothing else to bring it forward with
+    @Override
+    public void execute(GActivateFormAction action) {
+        form.getFormsController().setCurrentForm(action.formCanonicalName);
+    }
+
     @Override
     protected void continueServerInvocation(long requestIndex, Object actionResult, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
         form.continueServerInvocation(requestIndex, actionResult, continueIndex, callback);
