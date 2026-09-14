@@ -74,6 +74,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -671,12 +672,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     public void closeForm(String formId) {
-        for (ClientDockable openedForm : formsController.openedForms) {
-            if (formId.equals(openedForm.formId)) {
+        // every form with that id, not the first one: an id names the forms an open gave it to, and there can be more
+        // than one. Over a copy, since closing one takes it out of the list - and closing one can close another on its
+        // way (its ON CLOSE, say), so a form the copy still has may be gone already
+        for (ClientDockable openedForm : new ArrayList<>(formsController.openedForms))
+            if (formsController.openedForms.contains(openedForm) && formId.equals(openedForm.formId))
                 openedForm.onClosing();
-                break;
-            }
-        }
     }
 
     public void maximizeForm() {
