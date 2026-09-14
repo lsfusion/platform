@@ -122,9 +122,12 @@ public class GFormLayout extends SizedFlexPanel {
         form.checkGlobalMouseEvent(event);
     }
 
+    // a form that is shown gets its size, whether or not it holds the keyboard: with more than one forms window a form
+    // is drawn beside the one the user works in, and its grids need the room they have. A form no one sees - a tab
+    // behind another - is left alone, as before
     @Override
     public void onResize() {
-        if (form.isActive()) {
+        if (form.isActive() || GwtClientUtils.isShowing(this)) {
             super.onResize();
         }
     }

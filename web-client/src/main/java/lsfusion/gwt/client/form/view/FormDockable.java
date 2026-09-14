@@ -26,6 +26,10 @@ public final class FormDockable extends WidgetForm {
     private final WidgetForm.CloseButton closeButton;
 
     private FormDockable blockingForm; //GFormController
+    // the other end of the same pair: this form is the docked-modal child - the blocking form of the form it was
+    // opened from, which waits for it. Set where the pointer above is, so that either end can be recognised from the
+    // form alone
+    private boolean blocksOpener;
 
     @Override
     public GWindowFormType getWindowType() {
@@ -73,8 +77,28 @@ public final class FormDockable extends WidgetForm {
         return blockingForm != null;
     }
 
+    public boolean isBlockingForm() {
+        return blocksOpener;
+    }
+
+    // one of the two ends of a docked-modal pair: the form waiting for its child, or the child it waits for. Nothing
+    // is asked of either - a blocked form cannot close while its child is open, and the child is there only until it
+    // closes, with the window it was aimed at still holding what it held when its opener gets the answer back
+    public boolean inBlockingPair() {
+        return hasBlockingForm() || isBlockingForm();
+    }
+
     public void setBlockingForm(FormDockable blocking) {
+        if (blockingForm != null)
+            blockingForm.blocksOpener = false;
         blockingForm = blocking;
+        if (blocking != null)
+            blocking.blocksOpener = true;
+    }
+
+    @Override
+    protected void arrived(FormsController formsController) {
+        formsController.getFormsWindow(this).formArrived(this);
     }
 
     public Widget getTabWidget() {

@@ -551,7 +551,8 @@ public abstract class FormsController {
                 break;
             }
             if(recreateForm != null) {
-                fFormContainer.initForm(FormsController.this, recursionHiddenHandler.result, recreateForm, isDialog, fDispatchPriority, formId);
+                fFormContainer.initForm(FormsController.this, recursionHiddenHandler.result, recreateForm, isDialog, fDispatchPriority, formId); // the container is reused, but a NEW form arrived in it
+
                 if(fFormContainer instanceof ModalForm) // it's a hack but for now it's the best place
                     ((ModalForm)fFormContainer).initPreferredSize();
                 return;
@@ -563,13 +564,27 @@ public abstract class FormsController {
                 fFormContainer.queryHide(editFormCloseReason);
             removeFormContainer(fFormContainer);
 
+            // the form is gone for good, so a docked-modal child of ITS OWN stops blocking an opener there no longer
+            // is - the flag is what keeps an arrival from displacing that child, and nothing else would ever clear it,
+            // since the pair is unwound by the CHILD's handler below. Only here, where the server has confirmed the
+            // close: an optimistic hide can still be refused, and the same opener comes back
+            if (fFormContainer instanceof FormDockable)
+                ((FormDockable) fFormContainer).setBlockingForm(null);
+
             if (contextFormDockable != null) {
                 contextFormDockable.setBlockingForm(null);
                 contextFormDockable.unblock();
                 getFormsWindow(contextFormDockable).formsChanged();
+            }
 
+            // back to the form this one was opened from - if its window still holds it. CLOSE FORM can close a form
+            // while a docked-modal child of its own is open, and then there is nobody to go back to; an optimistic
+            // close takes one out of its window too, until the server answers - and it comes back, masked, if the
+            // close is refused. Either way the window picks what it draws instead. The opener is unblocked above
+            // in every case: the flag is about the pair, not about where the form is
+            if (contextFormDockable != null && getFormsWindow(contextFormDockable).indexOf(contextFormDockable) >= 0)
                 setCurrentForm(contextFormDockable);
-            } else if (fFormContainer instanceof FormDockable)
+            else if (fFormContainer instanceof FormDockable)
                 getFormsWindow((FormDockable) fFormContainer).ensureCurrentForm();
 
             onResult.accept(null);

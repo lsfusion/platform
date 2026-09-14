@@ -148,15 +148,29 @@ public abstract class FormContainer {
 
     public abstract Element getContentElement();
 
+    // the form is built and put in this container, which is the only thing that means a form ARRIVED - both places
+    // it happens say it this way: the ordinary open, and the reuse of a closing container for the next form in the
+    // same response. A container whose placeholder was closed before the form came is NOT an arrival: such a form is
+    // asked to close here and never shown, and letting it through would have an invisible form evict the one drawn
     public void initForm(FormsController formsController, WindowHiddenHandler hiddenHandler, GForm gForm, boolean isDialog, int dispatchPriority, String formId) {
         form = new GFormController(formsController, hiddenHandler, this, gForm, isDialog, formId, dispatchPriority, editEvent);
 
-        if(isAsyncHidden())
+        boolean closing = isAsyncHidden();
+        if(closing)
             form.closePressed(asyncHiddenReason);
         else
             setContent(form.getWidget());
 
-        async = false;
+        async = false; // after this, and not before: arrived can ask this very form to close, and a close asked of an
+                       // async container hides it instead of closing the form that is now in it
+
+        if(!closing)
+            arrived(formsController);
+    }
+
+    // a dockable tells the window holding it, which is where a window that draws one form at a time asks the others
+    // to close; every other container is on its own and has nobody to tell
+    protected void arrived(FormsController formsController) {
     }
 
     public abstract Widget getCaptionWidget();
