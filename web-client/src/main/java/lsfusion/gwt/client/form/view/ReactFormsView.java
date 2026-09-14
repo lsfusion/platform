@@ -121,6 +121,12 @@ public class ReactFormsView implements FormsView {
         byName.put(dockable.formName, dockable);
         panel.addToElement(dockable.getContentWidget(), park);
 
+        // what FlexTabBar.insertTab does for the strip: a form put in at or before the current one pushes it along.
+        // Only a form put back after an async close the server did not confirm arrives at an index at all, and it
+        // arrives where it was
+        if (index != null && index <= selected)
+            selected++;
+
         // once, on the view that outlives every placement: a view may show several forms at a time, but only the one
         // the user clicks into can be the keyboard-current one. Hanging this on each fill would stack up listeners,
         // since a rerender parks and fills the same view again
@@ -130,7 +136,7 @@ public class ReactFormsView implements FormsView {
     @Override
     public void formRemoved(FormDockable dockable, int index) {
         // what FlexTabbedPanel.removeTab does for the strip: the form being removed stops being current, and an index
-        // after it shifts down. FormsController picks the next current one afterwards
+        // after it shifts down. FormsWindowController picks the next current one afterwards
         if (index == selected) {
             selection.unselected(selected);
             selected = -1;
