@@ -26,7 +26,7 @@ DESIGN orders {
 
 The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` names a React component, while an empty string `''`, an HTML template string, or a property gives the classic (non-React) custom container described in [How-to: Custom Components (objects)](How-to_Custom_components_objects.md). Here the object `o` is rendered by the `OrderBoard` React component instead of the standard table.
 
-A form opened as a window (`SHOW ... FLOAT`; for `DIALOG` the window is the default location) gets its size from the content at the moment of opening, when the component has not drawn anything yet, so the container is given a base size: `size = (900, 600)` or the separate `width` and `height` attributes. Without it, a window with a single such container collapses to the caption and the system buttons, and the content drawn later pushes the OK / Close buttons past the window's edge. A tab (`DOCKED`) is sized by the forms window, so no base size is needed there.
+A form opened as a window (`SHOW ... FLOAT`; for `DIALOG` the window is the default location) gets its size from the content at the moment of opening, when the component has not drawn anything yet, so the container is given a base size: `size = (900, 600)` or the separate `width` and `height` attributes. Without it, a window with a single such container collapses to the caption and the system buttons, and the content drawn later pushes the OK / Close buttons past the window's edge. A tab (`WINDOW`) is sized by the forms window, so no base size is needed there.
 
 Another way is to leave the React container without a base size and make the window itself dynamic: in the form's own `DESIGN`, set its main container to `size = (-1, -1)`, or only `height = -1` — then the width is measured and fixed at opening while the height stays dynamic. In each dynamic direction the window follows the component's content, including content drawn later. This suits a form with no tables (their height stops fitting the rows) and content of moderate height: the window is centered only at opening, and its height is not capped at the screen height — a window taller than the screen scrolls as a whole.
 
@@ -575,7 +575,7 @@ The template may also be computed: given a property instead of a literal, it is 
 
 ### The forms window {#forms-window}
 
-A React component can also draw the window the forms open in, instead of the standard tabs. The [`WINDOW`](../language/WINDOW_statement.md) `System.forms` is given the component name, and the open forms become its data:
+A React component can also draw the window the forms open in, instead of the standard tabs. The [`WINDOW`](../language/WINDOW_statement.md) `System.forms` is given the component name, and the open forms become its data - and so is any other `FORMS` window the application declares, which gets the forms opened into it with `SHOW ... WINDOW windowName`:
 
 ```lsf
 EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
@@ -636,6 +636,129 @@ A form the component places nowhere stays **open and hidden**, which is what a b
 The platform's own toolbar — edit mode, full screen, the mobile menu — sits in the standard tab strip, so a window drawn by a component does not show it. What it does to the window itself the component does through the controller: `setEditMode(name)` chooses an edit mode, the way the mode button does, where `name` is the name of a mode in `editModes`, and `toggleFullScreen()` expands the forms window to the full screen and brings it back, the way the full screen button and ALT+F11 do. What the standard tab's context menu offers is here too: `closeAll()` asks every open form to close, starting from the last one in that order; closing each of them is a request as well, so a form that did not close stays open and the rest are closed. The chosen mode and the full screen are state the platform holds itself, which is why it projects them: a mode chosen by the component and a full screen entered with ALT+F11 are both seen the same way, in `props.data`. The mobile menu is not something a component needs: on the mobile web client the platform draws the forms window.
 
 Only the desktop web client draws the component. The mobile web client and the desktop client keep their standard forms window.
+
+### The application header {#application-header}
+
+A header with a search field that finds records is a form: it wants a live projection, a session to hold the query, ordering and paging, and a way to open what it finds. So it is built as a form and opened into a window of its own, a [`WINDOW ... FORMS`](../language/WINDOW_statement.md) above the forms area, with [`SHOW ... WINDOW windowName`](../language/SHOW_operator.md):
+
+```lsf
+// the window the header lives in: one form, drawn alone above the forms area, no taller than that form
+WINDOW header 'Header' FORMS AUTOSIZE POSITION(20, 6, 80, 10) HIDETITLE;
+
+// what the header searches with, and what it finds
+query 'Search' = DATA LOCAL ISTRING[100] ();
+found (Customer c) = isISubstring(name(c), query()) OR isISubstring(city(c), query());
+
+// what a found record does: opens as an ordinary tab in System.forms
+openCustomer 'Open' (Customer c) { SHOW customer OBJECTS c = c NOWAIT; }
+
+// the header IS a form: the query is its property, the matches are its object group, the session is its own
+FORM appHeader 'Header'
+    PROPERTIES() query
+    OBJECTS c = Customer
+    PROPERTIES(c) READONLY name, city
+    PROPERTIES(c) openCustomer
+    FILTERS found(c)
+    ORDERS name(c)
+;
+
+// the component draws it, from the ordinary form projection
+DESIGN appHeader {
+    // a header, not a document: no Save / Cancel / Ok / Close
+    REMOVE TOOLBARBOX;
+    NEW search {
+        custom = 'Search';
+        fill = 1;               // the container takes the window rather than hugging its content
+        MOVE PROPERTY(query());
+        MOVE BOX(c);
+    }
+}
+
+// opened once, when the client starts; a reload is a client start again
+onWebClientStarted() + {
+    SHOW appHeader WINDOW header NOWAIT;
+}
+```
+
+```jsx
+// nothing here fetches, caches or invalidates: the query and the matches are the form's
+const { useData, useController } = window.lsfusion;
+
+function Search() {
+    const data = useData();
+    const controller = useController();
+    const query = data.query.value || '';
+    const rows = data.c.list;
+    const input = React.useRef(null);
+
+    // what the field sent last, until the projection shows it: until then the projection is behind the field
+    const [sent, setSent] = React.useState(null);
+    const send = value => {
+        setSent(value);
+        controller.changeProperty('query', value);
+    };
+    // the field follows the query only when something else changed it, and never while the user is in it -
+    // so it catches up when the user leaves it
+    const follow = () => {
+        if (input.current && sent === null && input.current.value !== query && document.activeElement !== input.current)
+            input.current.value = query;
+    };
+    React.useEffect(() => {
+        if (query === sent)
+            setSent(null);
+        follow();
+    }, [query, sent]);
+
+    // where the results go: under the field, and following it
+    const [box, setBox] = React.useState(null);
+    const place = React.useCallback(() => {
+        if (!input.current) return;
+        const r = input.current.getBoundingClientRect();
+        setBox({ left: r.left, top: r.bottom + 2, width: r.width });
+    }, []);
+    React.useEffect(place, [query, rows.length, place]);
+    React.useEffect(() => {
+        const onKey = e => {
+            if (e.key !== 'Escape') return;
+            if (input.current) input.current.value = ''; // the user is in the field, so follow() leaves it alone
+            send('');
+        };
+        window.addEventListener('resize', place);
+        window.addEventListener('scroll', place, true);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            window.removeEventListener('resize', place);
+            window.removeEventListener('scroll', place, true);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [place, controller]);
+
+    return <div className="search">
+        <input className="search-input" maxLength={100} placeholder="Search customers…" ref={input}
+               onChange={e => send(e.target.value)} onBlur={follow}/>
+        {query && box && ReactDOM.createPortal(
+            <div className="search-results" style={{ position: 'fixed', left: box.left, top: box.top, width: box.width, zIndex: 1000 }}>
+                {rows.length === 0 && <div className="search-empty">Nothing found</div>}
+                {rows.map(row =>
+                    <div key={row.key} className="search-row" onClick={() => controller.changeProperty('c.openCustomer', row)}>
+                        <b>{row.name.value}</b> <span className="search-city">{row.city.value}</span>
+                    </div>)}
+            </div>, document.body)}
+    </div>;
+}
+
+window.lsfusion.custom.register('Search', Search, 'reactView');
+```
+
+Everything the component shows comes from the projection it reads with `useData()`: the query is `data.query.value`, the matches are `data.c.list`, kept current by the platform as the query changes - `changeProperty('query', …)` is the ordinary edit, and the form's `FILTERS` re-apply.
+
+The input is **uncontrolled** on purpose - it is not given `value={query}` - and that is the one thing a view like this must get right. A change is a round trip to the server, so between the keystroke and the new value coming back the projection still holds the query as it was. A React-controlled field would be redrawn from it, and the character just typed would be lost. So the field owns what the user types, and follows the projection only when something else changed it and the user is not in the field, catching up when the user leaves it. Until the projection shows the value the field sent last, kept in `sent`, the projection is behind the field rather than changed by something else, so the field does not follow it then either. This relies on the query being stored as typed: it is a `DATA` property, and `maxLength` keeps the input within its `ISTRING[100]`. A change the server rejected or stored differently would never show up in the projection, and the field would stop following it. A click runs the action drawn on the group for the clicked row, `changeProperty('c.openCustomer', row)`, and the record opens where a form opens by default, as a tab in `System.forms`. The header stays: a `FORMS` window draws one form at a time, so a form the application later opens `WINDOW header` replaces it, while `WINDOW` without a window leaves it alone.
+
+Two things make it read as a header rather than as a document. `REMOVE TOOLBARBOX` takes the form's own toolbar away - there is nothing here for the user to save, cancel or close, and the buttons are drawn by that container. (This is what `POPUP` and `EMBEDDED` get for free: every system button's `SHOWIF` is built from the form's environment properties, and an in-place editor sets `isEditing`, which those conditions negate. A form drawn as a header is not an in-place editor, so it says what it wants in its design instead.) The results are drawn through a **portal into the page body**, not inside the container, and that is the second thing this kind of view must get right. A window is short by design, and it clips what its form draws - a list left inside a header band is cut off after the first row. Nor is a high `z-index` enough: the window's own element is a stacking context (`position: relative; z-index: 0`), so a layer inside it can never rise above the neighbouring windows. A portal leaves both behind; the layer is then positioned from the field's `getBoundingClientRect()` and has to follow it on resize and scroll, and go away on Escape.
+
+`AUTOSIZE` on the window is what keeps the band from being a tall empty strip: the header is as tall as its form - here one input - while still stretching across, and the `fill = 1` container inside it fills that height rather than hugging its own content. A window is sized by the layout rather than by the form in it, so without it the band keeps the share of the height its `POSITION` asks for, empty or not. Note also that the client remembers a size the user dragged, and restores it over the declared one - `Service.resetWindowsLayout` is what puts the declared sizes back. Two things about `POSITION` are worth knowing before the header looks wrong. The numbers are not a rectangle the window is drawn in but the way the layout splits the space, so a header of `POSITION(20, 6, 80, 10)` becomes a band to the right of the toolbar and above `System.forms`. And unless the navigator is fully pinned its panel is an overlay that hangs over the windows beside it: a click aimed at the header then lands on the menu underneath and runs whatever that menu item runs.
+
+What the form route does not give is freshness across connections: a form does not see what another connection committed until it re-reads, so a header that must show that adds [`EVENTS ON SCHEDULE PERIOD n formRefresh()`](../paradigm/Interactive_view.md) to the form. And the header is drawn by the desktop web client only: the mobile web client and the desktop client draw `System.forms` alone and open the header there, as a tab, so an application that serves them keeps the header's design usable as a plain form.
 
 ### The log window {#log-window}
 
