@@ -516,7 +516,7 @@ public abstract class FormsController {
 
         // if form is async opened with different type - close it
         GWindowFormType windowType = showFormType.getWindowType();
-        if(asyncOpened && formContainer.getWindowType() != windowType && !formContainer.isAsyncHidden()) {
+        if(asyncOpened && !nullEquals(formContainer.getWindowType(), windowType) && !formContainer.isAsyncHidden()) { // by value: a docked type names its window
             formContainer.hide(CancelReason.HIDE);
             asyncOpened = false;
         }
@@ -613,7 +613,7 @@ public abstract class FormsController {
         } else if(windowType.isFloat()) {
             formContainer =  new ModalForm(this, formController, async, syncType, editEvent, editContext != null ? editContext.getPopupOwner() : (formController != null ? formController.getPopupOwner() : PopupOwner.GLOBAL));
         } else if(windowType.isDocked()) {
-            formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
+            formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent, windowType);
         } else if(windowType.isEmbedded()) {
             formContainer =  new EmbeddedForm(this, formController, editRequestIndex, async, editEvent, editContext);
         } else if(windowType.isPopup()) {

@@ -16,6 +16,7 @@ import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.navigator.NavigatorScheduler;
 
@@ -97,6 +98,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.autoSize = clientWindow.autoSize;
         window.custom = clientWindow.custom;
         window.react = clientWindow.react;
+        window.single = clientWindow.single;
         return window;
     }
 
@@ -140,7 +142,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ModalityWindowFormType.class)
     public GModalityWindowFormType convertModalityWindowFormType(ModalityWindowFormType modalityWindowFormType) {
         switch (modalityWindowFormType) {
-            case DOCKED: return GModalityWindowFormType.DOCKED;
             case FLOAT: return GModalityWindowFormType.FLOAT;
             case EMBEDDED: return GModalityWindowFormType.EMBEDDED;
             case POPUP: return GModalityWindowFormType.POPUP;
@@ -151,6 +152,11 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ContainerWindowFormType.class)
     public GContainerWindowFormType convertContainerWindowFormType(ContainerWindowFormType containerWindowFormType) {
         return new GContainerWindowFormType(containerWindowFormType.inContainerId);
+    }
+
+    @Converter(from = DockedWindowFormType.class)
+    public GDockedWindowFormType convertDockedWindowFormType(DockedWindowFormType dockedWindowFormType) {
+        return new GDockedWindowFormType(dockedWindowFormType.window);
     }
 
     @Cached

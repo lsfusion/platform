@@ -14,11 +14,14 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 public final class FormDockable extends WidgetForm {
     private String canonicalName;
+    // DOCKED, or DOCKED <window> with the FORMS window it named. What was ASKED for, kept as it was asked: on the
+    // mobile layout the form still opens in System.forms, but the type it reports must equal the one its async
+    // placeholder reported, or the placeholder is thrown away for a fresh container
+    private final GWindowFormType windowType;
 
     private final WidgetForm.CloseButton closeButton;
 
@@ -26,14 +29,15 @@ public final class FormDockable extends WidgetForm {
 
     @Override
     public GWindowFormType getWindowType() {
-        return GModalityWindowFormType.DOCKED;
+        return windowType;
     }
 
     Result<JavaScriptObject> popup = new Result<>();
-    public FormDockable(FormsController formsController, GFormController contextForm, String canonicalName, boolean async, Event editEvent) {
+    public FormDockable(FormsController formsController, GFormController contextForm, String canonicalName, boolean async, Event editEvent, GWindowFormType windowType) {
         super(formsController, contextForm, async, editEvent, GFormLayout.createTabCaptionWidget());
 
         this.canonicalName = canonicalName;
+        this.windowType = windowType;
 
         captionWidget.addDomHandler(event -> {
             GwtClientUtils.stopPropagation(event);

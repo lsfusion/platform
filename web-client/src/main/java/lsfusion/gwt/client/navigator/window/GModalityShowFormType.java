@@ -2,21 +2,11 @@ package lsfusion.gwt.client.navigator.window;
 
 public enum GModalityShowFormType implements GShowFormType {
 
-    DOCKED, DOCKED_MODAL, MODAL, DIALOG_MODAL, EMBEDDED, POPUP;
-
-    @Override
-    public boolean isDocked() {
-        return this == DOCKED;
-    }
-
-    @Override
-    public boolean isDockedModal() {
-        return this == DOCKED_MODAL;
-    }
+    MODAL, DIALOG_MODAL, EMBEDDED, POPUP;
 
     @Override
     public boolean isModal() {
-        return this != DOCKED;
+        return true; // DOCKED was the one kind that was not, and docked is GDockedShowFormType now
     }
 
     @Override
@@ -36,9 +26,6 @@ public enum GModalityShowFormType implements GShowFormType {
         if(this == POPUP)
             return GModalityWindowFormType.POPUP;
 
-        if(isWindow())
-            return GModalityWindowFormType.FLOAT;
-        else
-            return GModalityWindowFormType.DOCKED;
+        return GModalityWindowFormType.FLOAT; // MODAL and DIALOG_MODAL, the only two left
     }
 }

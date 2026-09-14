@@ -35,6 +35,7 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.navigator.window.GContainerShowFormType;
+import lsfusion.gwt.client.navigator.window.GDockedShowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
@@ -43,6 +44,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
+import lsfusion.interop.form.DockedShowFormType;
 import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -113,14 +115,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GModalityShowFormType convertModalityShowType(ModalityShowFormType modalityShowType) {
         GModalityShowFormType modalityType = null;
         switch (modalityShowType) {
-            case DOCKED:
-                modalityType = GModalityShowFormType.DOCKED;
-                break;
             case MODAL:
                 modalityType = GModalityShowFormType.MODAL;
-                break;
-            case DOCKED_MODAL:
-                modalityType = GModalityShowFormType.DOCKED_MODAL;
                 break;
             case DIALOG_MODAL:
                 modalityType = GModalityShowFormType.DIALOG_MODAL;
@@ -138,6 +134,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ContainerShowFormType.class)
     public GContainerShowFormType convertModalityType(ContainerShowFormType containerShowTypeX) {
         return new GContainerShowFormType(containerShowTypeX.inContainerId);
+    }
+
+    @Converter(from = DockedShowFormType.class)
+    public GDockedShowFormType convertDockedShowType(DockedShowFormType dockedShowType) {
+        return new GDockedShowFormType(dockedShowType.window, dockedShowType.modal);
     }
 
     @Converter(from = HideFormClientAction.class)

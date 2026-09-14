@@ -235,6 +235,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     protected ShowFormType getShowFormType(FormClientAction action) { // should correspond ClientAsyncOpenForm.isDesktopEnabled
         ShowFormType showFormType = action.showFormType;
+        // a docked open names its window, and this client draws forms only in its own, so the name is simply ignored
+        // and the form opens there as a tab
         if (showFormType.isDockedModal() && !canShowDockedModal())
             showFormType = ModalityShowFormType.MODAL;
         return showFormType;

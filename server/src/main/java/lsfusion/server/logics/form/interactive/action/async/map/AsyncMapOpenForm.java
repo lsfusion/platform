@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -126,7 +127,22 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         else
             mergedClass = ClassFormSelector.merge(propertyClass, asyncOpenForm.propertyClass);
         
-        return new AsyncMapOpenForm<>(mergedForm, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal, type.getType() <= asyncOpenForm.type.getType() ? type : asyncOpenForm.type, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
+        WindowFormType mergedType = mergeType(type, asyncOpenForm.type);
+        if(mergedType == null)
+            return null;
+
+        return new AsyncMapOpenForm<>(mergedForm, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal, mergedType, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
+    }
+
+    // the type byte doubles as a priority - the lower one wins - which is enough while a type is only a kind. A docked
+    // open also carries WHERE it goes, and two branches that name different windows have no common destination, so
+    // they do not merge: the branch fallback (Action.getBranchAsyncEventExec) predicts one of them, and when the form
+    // arrives for the other window, the placeholder put in the predicted one is closed on arrival
+    private static WindowFormType mergeType(WindowFormType type, WindowFormType other) {
+        if(type instanceof DockedWindowFormType && other instanceof DockedWindowFormType
+                && !((DockedWindowFormType) type).window.equals(((DockedWindowFormType) other).window))
+            return null;
+        return type.getType() <= other.getType() ? type : other;
     }
 
     @Override

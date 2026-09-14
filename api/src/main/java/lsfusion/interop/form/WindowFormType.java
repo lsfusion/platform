@@ -26,6 +26,8 @@ public interface WindowFormType {
         int type = inStream.readByte();
         if (type == 0) {
             return ContainerWindowFormType.deserialize(inStream);
+        } else if (type == 2) {
+            return DockedWindowFormType.deserialize(inStream);
         } else {
             return ModalityWindowFormType.deserialize(type);
         }

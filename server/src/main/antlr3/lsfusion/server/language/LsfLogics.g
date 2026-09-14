@@ -14,6 +14,8 @@ grammar LsfLogics;
     import lsfusion.interop.action.ServerResponse;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.ContainerWindowFormType;
+    import lsfusion.interop.form.DockedWindowFormType;
+    import lsfusion.server.logics.navigator.window.FormsWindow;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.server.logics.form.interactive.event.FormChangeEvent;
@@ -3853,7 +3855,8 @@ syncTypeLiteral returns [boolean val]
 
 windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = ModalityWindowFormType.FLOAT; }
-	|	'DOCKED' { $val = ModalityWindowFormType.DOCKED; }
+	|	('WINDOW' | 'DOCKED') { $val = new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME); }
+	        (wid=compoundID { if(inMainParseState()) { $val = self.getDockedWindowFormType($wid.sid); } })?
 	|	'EMBEDDED' { $val = ModalityWindowFormType.EMBEDDED; }
 	|	'POPUP' { $val = ModalityWindowFormType.POPUP; }
 	|   'IN' fc = formComponentID {

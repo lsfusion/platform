@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
@@ -5726,6 +5727,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         applyWindowCustom(window, name, options.custom, options.customProperty);
 
         return window;
+    }
+
+    // SHOW ... DOCKED <window>: the window a form is docked into instead of System.forms. Resolved here, when the
+    // module is read, so a name that is not a FORMS window stops the application rather than opening the form nowhere
+    public WindowFormType getDockedWindowFormType(String name) throws ScriptingErrorLog.SemanticErrorException {
+        AbstractWindow window = findWindow(name);
+        checks.checkFormsWindow(window, name);
+        return new DockedWindowFormType(window.getCanonicalName());
     }
 
     // the window kinds that hold no navigator elements. NATIVE is filled by the client (System.log). FORMS holds

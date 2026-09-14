@@ -36,6 +36,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.FormsWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
@@ -106,6 +107,12 @@ public class ScriptingLogicsModuleChecks {
     public void checkWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (window == null) {
             errLog.emitWindowNotFoundError(parser, name);
+        }
+    }
+
+    public void checkFormsWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(window instanceof FormsWindow)) {
+            errLog.emitDockedWindowNotFormsError(parser, name);
         }
     }
 

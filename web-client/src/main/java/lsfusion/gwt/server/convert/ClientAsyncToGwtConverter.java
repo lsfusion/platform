@@ -5,10 +5,12 @@ import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionT
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
+import lsfusion.gwt.client.navigator.window.GDockedWindowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.form.ContainerWindowFormType;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 
 import java.io.IOException;
@@ -90,7 +92,6 @@ public class ClientAsyncToGwtConverter extends CachedFormObjectConverter {
     @Converter(from = ModalityWindowFormType.class)
     public GModalityWindowFormType convertModalityWindowFormType(ModalityWindowFormType modalityWindowFormType) {
         switch (modalityWindowFormType) {
-            case DOCKED: return GModalityWindowFormType.DOCKED;
             case FLOAT: return GModalityWindowFormType.FLOAT;
             case EMBEDDED: return GModalityWindowFormType.EMBEDDED;
             case POPUP: return GModalityWindowFormType.POPUP;
@@ -101,6 +102,11 @@ public class ClientAsyncToGwtConverter extends CachedFormObjectConverter {
     @Converter(from = ContainerWindowFormType.class)
     public GContainerWindowFormType convertContainerWindowFormType(ContainerWindowFormType containerWindowFormType) {
         return new GContainerWindowFormType(containerWindowFormType.inContainerId);
+    }
+
+    @Converter(from = DockedWindowFormType.class)
+    public GDockedWindowFormType convertDockedWindowFormType(DockedWindowFormType dockedWindowFormType) {
+        return new GDockedWindowFormType(dockedWindowFormType.window);
     }
 
     @Cached

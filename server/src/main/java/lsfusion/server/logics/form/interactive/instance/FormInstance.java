@@ -18,6 +18,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.lambda.E2Callable;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.*;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
@@ -497,7 +498,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private static IncrementChangeProps createEnvironmentIncrement(boolean showOk, WindowFormType type, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.showOk, PropertyChange.STATIC(showOk));
-        environment.add(FormEntity.isDocked, PropertyChange.STATIC(type == ModalityWindowFormType.DOCKED));
+        environment.add(FormEntity.isDocked, PropertyChange.STATIC(type instanceof DockedWindowFormType));
         environment.add(FormEntity.isEditing, PropertyChange.STATIC(type.isEditing()));
         environment.add(FormEntity.isAdd, PropertyChange.STATIC(isAdd));
         environment.add(FormEntity.isManageSession, PropertyChange.STATIC(manageSession));

@@ -26,6 +26,7 @@ import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.FormSelectTop;
+import lsfusion.server.logics.navigator.window.FormsWindow;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -52,18 +53,18 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     private ShowFormType getShowFormType(boolean syncType) {
         WindowFormType windowType = this.windowType;
         if (windowType == null) {
-            windowType = syncType ? ModalityWindowFormType.FLOAT : ModalityWindowFormType.DOCKED;
+            windowType = syncType ? ModalityWindowFormType.FLOAT : new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME);
         }
 
         if (windowType instanceof ContainerWindowFormType) {
             return new ContainerShowFormType(((ContainerWindowFormType) windowType).getInContainerId());
+        } else if (windowType instanceof DockedWindowFormType) { // docked: into the window it names, or System.forms when it names none
+            return new DockedShowFormType(((DockedWindowFormType) windowType).window, syncType);
         } else {
             if (syncType) {
                 switch ((ModalityWindowFormType) windowType) {
                     case FLOAT:
                         return inputObjects.isEmpty() ? ModalityShowFormType.MODAL : ModalityShowFormType.DIALOG_MODAL;
-                    case DOCKED:
-                        return ModalityShowFormType.DOCKED_MODAL;
                     case EMBEDDED:
                         return ModalityShowFormType.EMBEDDED;
                     case POPUP:
@@ -75,8 +76,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                 switch ((ModalityWindowFormType) windowType) {
                     case FLOAT:
                         return inputObjects.isEmpty() ? ModalityShowFormType.MODAL : ModalityShowFormType.DIALOG_MODAL;
-                    default:
-                        return ModalityShowFormType.DOCKED;
+                    default: // an asynchronous EMBEDDED or POPUP has no editor to sit in, and falls back to a tab
+                        return new DockedShowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME, false);
                 }
         }
     }

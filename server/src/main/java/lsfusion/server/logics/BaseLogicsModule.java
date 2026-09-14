@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.navigator.NavigatorScheduler;
@@ -74,6 +75,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.FormsWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.LazyProperty;
@@ -811,7 +813,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         public NavigatorWindow root;
         public NavigatorWindow system;
         public NavigatorWindow toolbar;
-        public AbstractWindow forms;
+        public FormsWindow forms;
         public AbstractWindow log;
     }
 
@@ -845,7 +847,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
 
-        baseWindows.forms = findWindow("forms");
+        baseWindows.forms = (FormsWindow) findWindow("forms");
         baseWindows.log = findWindow("log");
 
         administration = findNavigatorElement("administration");
@@ -1173,7 +1175,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
-        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, ModalityWindowFormType.DOCKED, true);
+        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME), true);
 
         if(form.getCanonicalName() != null) {
             String name = "_NAVIGATORFORM" + getFormPrefix(form);

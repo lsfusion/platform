@@ -8,6 +8,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
@@ -50,6 +51,6 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     }
 
     public boolean isDesktopEnabled(boolean canShowDockedModal) { // should correspond SwingClientActionDispatcher.getModalityType
-        return type == ModalityWindowFormType.DOCKED && !(modal && !canShowDockedModal);
+        return type instanceof DockedWindowFormType && !(modal && !canShowDockedModal); // a named window opens as a tab here, see SwingClientActionDispatcher.getShowFormType
     }
 }

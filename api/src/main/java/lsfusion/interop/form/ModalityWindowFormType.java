@@ -5,11 +5,11 @@ import java.io.IOException;
 
 public enum ModalityWindowFormType implements WindowFormType {
 
-    FLOAT, DOCKED, EMBEDDED, POPUP;
+    FLOAT, EMBEDDED, POPUP;
 
     @Override
     public boolean isModal() {
-        return this != DOCKED;
+        return true; // docked is the only kind that is not, and it is DockedWindowFormType
     }
 
     @Override
@@ -22,8 +22,6 @@ public enum ModalityWindowFormType implements WindowFormType {
         switch (this) {
             case FLOAT:
                 return 1;
-            case DOCKED:
-                return 2;
             case EMBEDDED:
                 return 3;
             case POPUP:
@@ -41,8 +39,6 @@ public enum ModalityWindowFormType implements WindowFormType {
         switch (type) {
             case 1:
                 return FLOAT;
-            case 2:
-                return DOCKED;
             case 3:
                 return EMBEDDED;
             case 4:

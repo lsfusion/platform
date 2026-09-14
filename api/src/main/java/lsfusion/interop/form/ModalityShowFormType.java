@@ -2,16 +2,11 @@ package lsfusion.interop.form;
 
 public enum ModalityShowFormType implements ShowFormType {
 
-    DOCKED, DOCKED_MODAL, MODAL, DIALOG_MODAL, EMBEDDED, POPUP;
-
-    @Override
-    public boolean isDockedModal() {
-        return this == DOCKED_MODAL;
-    }
+    MODAL, DIALOG_MODAL, EMBEDDED, POPUP;
 
     @Override
     public boolean isModal() {
-        return this != DOCKED;
+        return true; // DOCKED was the one kind that was not, and docked is DockedShowFormType now
     }
 
     @Override
@@ -28,8 +23,6 @@ public enum ModalityShowFormType implements ShowFormType {
     public WindowFormType getWindowType() {
         if (this == EMBEDDED) return ModalityWindowFormType.EMBEDDED;
         if (this == POPUP) return ModalityWindowFormType.POPUP;
-
-        if (isWindow()) return ModalityWindowFormType.FLOAT;
-        else return ModalityWindowFormType.DOCKED;
+        return ModalityWindowFormType.FLOAT; // MODAL and DIALOG_MODAL, the only two left
     }
 }
