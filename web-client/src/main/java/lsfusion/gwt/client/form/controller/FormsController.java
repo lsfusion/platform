@@ -700,16 +700,77 @@ public abstract class FormsController {
             setCurrentForm(form);
     }
 
-    // CLOSE FORM: every form with that id, each through the ordinary close - which is a request, so a form with unsaved
-    // changes asks the user and may stay. That is why nothing is dropped from formContainers here: a container leaves
-    // that list when the form is actually hidden, and dropping it on the request alone put a form that refused to close
-    // out of reach of the next CLOSE FORM. Over a copy, since a close may take a container out of the list at once
-    public void closeForm(String formId) {
-        for (FormContainer formContainer : new ArrayList<>(formContainers)) {
-            GFormController form = formContainer.getForm();
-            if(form != null && formId.equals(form.formId))
-                formContainer.closePressed();
-        }
+    // ACTIVATE FORM: the first form the address names becomes the current one. A miss is not an error - the form the
+    // application means may have been closed by the user a moment ago, which is ordinary interaction, not a failure
+    public void activateForm(String formCanonicalName, String formId, String windowCanonicalName) {
+        for (FormContainer formContainer : findForms(formId, formCanonicalName, windowCanonicalName))
+            if (formContainer instanceof FormDockable) { // only a form a forms window holds has a "make it current"
+                setCurrentForm((FormDockable) formContainer);
+                return;
+            }
+    }
+
+    // CLOSE FORM: every form the address names, each through the ordinary close - which is a request, so a form with
+    // unsaved changes asks the user and may stay. That is why nothing is dropped from formContainers here: a container
+    // leaves that list when the form is actually hidden, and dropping it on the request alone put a form that refused
+    // to close out of reach of the next CLOSE FORM
+    public void closeForms(String formId, String formCanonicalName, String windowCanonicalName) {
+        for (FormContainer formContainer : findForms(formId, formCanonicalName, windowCanonicalName))
+            formContainer.closePressed();
+    }
+
+    // the one question every form-addressing statement asks - ACTIVATE FORM, CLOSE FORM, and a SHOW that reuses:
+    // which open forms does ['label' =] [form] [WINDOW window] name? A part that is absent does not narrow it.
+    // The forms windows come first, System.forms first among them, which is the order ACTIVATE has always resolved
+    // in; then what no forms window holds - a float, a popup, an in-place editor, a form whose window has not taken
+    // it yet - which CLOSE FORM has always reached, and which naming a window excludes by definition
+    public List<FormContainer> findForms(String formId, String formCanonicalName, String windowCanonicalName) {
+        List<FormContainer> found = new ArrayList<>();
+
+        FormsWindowController addressed = windowCanonicalName != null ? getFormsWindow(windowCanonicalName) : null;
+        for (FormsWindowController window : formsWindows.values())
+            if (addressed == null || window == addressed)
+                for (FormDockable dockable : window.getForms())
+                    if (matches(dockable, formId, formCanonicalName))
+                        found.add(dockable);
+
+        if (addressed == null)
+            for (FormContainer formContainer : formContainers)
+                // the dockables are in that list too, and the window loop above has already taken the ones that are
+                // still in a window. One that is NOT is on its way out - an optimistic close took it out of its
+                // window and the list keeps it only until the server confirms - and a form that is leaving is not
+                // one an address should reach
+                if (!(formContainer instanceof FormDockable) && matches(formContainer, formId, formCanonicalName))
+                    found.add(formContainer);
+
+        return found;
+    }
+
+    private boolean matches(FormContainer formContainer, String formId, String formCanonicalName) {
+        GFormController form = formContainer.getForm();
+
+        // the label is the form's, so a form that has not arrived yet carries none, and an address that names one
+        // cannot mean it
+        if (formId != null && (form == null || !formId.equals(form.formId)))
+            return false;
+
+        if (formCanonicalName == null)
+            return true;
+
+        // WHICH form it is, on the other hand, is known before it arrives: an async open puts a placeholder in the
+        // window knowing what it is waiting for, and ACTIVATE FORM has always reached it. Once the form is there it
+        // is the one to ask, since the container can be reused for another form
+        String canonicalName = form != null ? form.getForm().canonicalName
+                : (formContainer instanceof FormDockable ? ((FormDockable) formContainer).getCanonicalName() : null);
+        return formCanonicalName.equals(canonicalName);
+    }
+
+    // the window an address names, after the same fallback an open goes through: a client that draws System.forms
+    // alone holds there the forms every other window would have held, so an address naming one of those has to reach
+    // them rather than find nothing
+    private FormsWindowController getFormsWindow(String windowCanonicalName) {
+        FormsWindowController window = formsWindows.get(windowCanonicalName);
+        return window != null ? window : main;
     }
 
     // in any window, System.forms first: ACTIVATE names a form, not a window

@@ -23,7 +23,7 @@ import java.awt.event.MouseEvent;
 // уничтожаемые формы
 public abstract class ClientDockable extends DefaultMultipleCDockable {
 
-    private String canonicalName;
+    protected String canonicalName; // the form this dockable holds - a placeholder starts with the predicted one
 
     private Container contentContainer;
     private LockableUI contentLayerUI;

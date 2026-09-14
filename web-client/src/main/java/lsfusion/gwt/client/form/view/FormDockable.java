@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.WidgetForm;
@@ -104,6 +105,15 @@ public final class FormDockable extends WidgetForm {
         blockingForm = blocking;
         if (blocking != null)
             blocking.blocksOpener = true;
+    }
+
+    // the close / reopen lookahead puts ANOTHER form into this container, and what it is named after has to follow:
+    // everything that searches by form name - the duplicate check, a component view's projection - reads this
+    @Override
+    public void initForm(FormsController formsController, WindowHiddenHandler hiddenHandler, GForm gForm, boolean isDialog, int dispatchPriority, String formId) {
+        canonicalName = gForm.canonicalName;
+
+        super.initForm(formsController, hiddenHandler, gForm, isDialog, dispatchPriority, formId);
     }
 
     @Override

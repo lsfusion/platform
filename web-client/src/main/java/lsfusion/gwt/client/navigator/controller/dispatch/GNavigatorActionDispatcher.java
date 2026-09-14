@@ -107,7 +107,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GActivateFormAction action) {
-        formsController.setCurrentForm(action.formCanonicalName);
+        formsController.activateForm(action.formCanonicalName, action.formId, action.windowCanonicalName);
     }
 
     @Override
@@ -168,6 +168,6 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GCloseFormAction action) {
-        formsController.closeForm(action.formId);
+        formsController.closeForms(action.formId, action.formCanonicalName, action.windowCanonicalName);
     }
 }

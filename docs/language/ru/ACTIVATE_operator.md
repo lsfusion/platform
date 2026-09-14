@@ -8,12 +8,20 @@ title: 'Оператор ACTIVATE'
 ### Синтаксис 
 
 ```
-ACTIVATE FORM formName
+ACTIVATE FORM formAddress
 ACTIVATE TAB formName.componentSelector
 ACTIVATE PROPERTY formPropertyId
 
 ACTIVATE [seekDirection] formObjectId = expr
 ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprK]
+```
+
+Где `formAddress` - одно из:
+
+```
+[formLabel =] formName [WINDOW windowName]
+formLabel [WINDOW windowName]
+WINDOW windowName
 ```
 
 ### Описание
@@ -24,7 +32,7 @@ ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., fo
 
 Формы `ACTIVATE FORM`, `ACTIVATE TAB` и `ACTIVATE PROPERTY` создают действие, которое активизирует форму, закладку или свойство (действие) на форме. Действие не имеет параметров и не использует [контекст](Action_operators.md#contextdependent). Поведение определяется ключевым словом:
 
-- `FORM` — активирует указанную форму у пользователя, если она уже открыта (в виде запроса клиенту). Если форма была открыта несколько раз, активируется та, которая была открыта первой. Если форма не открыта, действие не имеет эффекта.
+- `FORM` — активирует у пользователя первую форму, названную адресом, среди форм, открытых в [окнах `FORMS`](WINDOW_statement.md) (в виде запроса клиенту). Адрес называет форму любым сочетанием метки, с которой она была открыта, её имени и окна, в которое она была открыта; хотя бы одно из трёх должно быть указано, а неуказанная часть адрес не сужает. Если подходит несколько форм, окна перебираются по очереди, `System.forms` первым, а внутри окна формы - в порядке открытия. Если адрес не называет ни одной открытой формы, действие не имеет эффекта.
 - `TAB` — делает указанную закладку активной в соответствующей панели закладок. Активация закладки выполняется только в том случае, если указанная форма в момент выполнения действия является активной (тот же вызов на неактивной форме не имеет эффекта). Закладка не активируется, если она является пустым контейнером (без дочерних элементов).
 - `PROPERTY` — переводит фокус на указанное свойство или действие, отображаемое на текущей активной форме. Для успешного выполнения указанное свойство должно находиться на форме, выполняющей действие.
 
@@ -34,9 +42,17 @@ ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., fo
 
 ### Параметры
 
+- `formLabel`
+
+    [Строковый литерал](Literals.md#strliteral) - метка, с которой форма была открыта [оператором `SHOW`](SHOW_operator.md). Если не указана, активируется форма с любой меткой.
+
 - `formName`
 
-    Имя формы. [Составной идентификатор](IDs.md#cid).
+    Имя формы. [Составной идентификатор](IDs.md#cid). Внутри `formAddress`, если не указано, активируется форма с любым именем.
+
+- `windowName`
+
+    Имя [окна `FORMS`](WINDOW_statement.md), в которое была открыта форма. [Составной идентификатор](IDs.md#cid). Если не указано, форма ищется во всех окнах. Мобильный веб-клиент и десктоп-клиент, которые рисуют одно окно `System.forms`, эту часть не учитывают.
 
 - `componentSelector`
 
@@ -106,6 +122,12 @@ testAction()  {
     ACTIVATE FORM myForm;
     ACTIVATE TAB myForm.recent;
 }
+
+WINDOW workspace FORMS;
+
+showOrders()  { SHOW 'main' = orders WINDOW workspace NOWAIT; }
+// одна и та же форма может быть открыта не один раз, и метка говорит, какая из них нужна
+backToMain()  { ACTIVATE FORM 'main' = orders WINDOW workspace; }
 
 CLASS ReceiptDetail;
 barcode = DATA STRING[30] (ReceiptDetail);

@@ -589,7 +589,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(ActivateFormClientAction action) {
-        ((DockableMainFrame) MainFrame.instance).activateForm(action.formCanonicalName);
+        ((DockableMainFrame) MainFrame.instance).activateForm(action.formCanonicalName, action.formId);
     }
 
     @Override
@@ -599,7 +599,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(CloseFormClientAction action) {
-        ((DockableMainFrame) MainFrame.instance).closeForm(action.formId);
+        ((DockableMainFrame) MainFrame.instance).closeForms(action.formId, action.formCanonicalName);
     }
 
     @Override

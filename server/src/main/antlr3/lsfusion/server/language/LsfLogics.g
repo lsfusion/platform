@@ -70,6 +70,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
+    import lsfusion.server.logics.form.interactive.action.FormAddress;
     import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
     import lsfusion.server.logics.form.interactive.action.async.QuickAccessMode;
     import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
@@ -4699,20 +4700,23 @@ activeFormActionDefinitionBody[List<TypedParameter> context, ActionStatementCont
 
 activateActionDefinitionBody[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LAWithParams action]
 @init {
+    FormAddress address = null;
     FormEntity form = null;
     ComponentView component = null;
     PropertyDrawEntity propertyDraw = null;
 }
 @after {
 	if (inMainParseState()) {
-	    if(form != null)
+	    if(address != null)
+	        $action = self.addScriptedActivateFormAProp(address);
+	    else if(form != null)
 		    $action = self.addScriptedActivateAProp(form, component);
         else
             $action = self.addScriptedFocusAction(propertyDraw);
 	}
 }
 	:	'ACTIVATE'
-		(	'FORM' fName=compoundID { if (inMainParseState()) { form = self.findForm($fName.sid); } }
+		(	'FORM' fa=formAddress { address = $fa.address; }
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
@@ -4720,14 +4724,34 @@ activateActionDefinitionBody[List<TypedParameter> context, ActionStatementContex
 
 closeFormActionDefinitionBody[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LAWithParams action]
 @init {
-    String formId = null;
+    FormAddress address = null;
 }
 @after {
 	if (inMainParseState()) {
-        $action = self.addScriptedCloseFormAProp(formId);
+        $action = self.addScriptedCloseFormAProp(address);
 	}
 }
-	:	'CLOSE' 'FORM' formIdVal = stringLiteral { formId = $formIdVal.val; }
+	:	'CLOSE' 'FORM' fa=formAddress { address = $fa.address; }
+	;
+
+// which open form the statement means: ['label' =] [form] [WINDOW window], at least one part. The bare 'label' is the
+// spelling CLOSE FORM shipped with. An omitted part does not narrow: CLOSE FORM orders closes every instance of the
+// form whatever its label, and 'label' alone reaches that label in any form and any window
+formAddress returns [FormAddress address]
+@init {
+    String formId = null;
+    String formName = null;
+    String windowName = null;
+}
+@after {
+    if (inMainParseState())
+        $address = self.getFormAddress(formId, formName, windowName);
+}
+	:	(	lbl=stringLiteral '=' fName=compoundID { formId = $lbl.val; formName = $fName.sid; }
+		|	fName2=compoundID { formName = $fName2.sid; }
+		|	lbl2=stringLiteralNoID { formId = $lbl2.val; }
+		)?
+		('WINDOW' wid=compoundID { windowName = $wid.sid; })?
 	;
 
 expandCollapseActionDefinitionBody[List<TypedParameter> context, ActionStatementContext actions, boolean dynamic] returns [LAWithParams action]

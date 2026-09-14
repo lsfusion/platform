@@ -124,7 +124,16 @@ public class FormsWindowController {
     }
 
     public void setCurrentForm(FormDockable dockable) {
-        formsView.setCurrent(forms.indexOf(dockable));
+        int index = forms.indexOf(dockable);
+        if (index < 0) // not a form this window holds: an optimistic close takes one out of its window until the
+            return;    // server answers, and asking the view for it would leave the window drawing NOTHING while it
+                       // still holds other forms
+        if (index == formsView.getCurrent())
+            focusCurrent(); // the view has nothing to change, but the keyboard may be in another window's form,
+                            // and moving it is the whole point of asking for this one
+        else
+            formsView.setCurrent(index);
+
         formsView.formsChanged();
     }
 

@@ -34,7 +34,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     // way, and a window that draws one form at a time has nothing else to bring it forward with
     @Override
     public void execute(GActivateFormAction action) {
-        form.getFormsController().setCurrentForm(action.formCanonicalName);
+        form.getFormsController().activateForm(action.formCanonicalName, action.formId, action.windowCanonicalName);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GCloseFormAction action) {
-        form.getFormsController().closeForm(action.formId);
+        form.getFormsController().closeForms(action.formId, action.formCanonicalName, action.windowCanonicalName);
     }
 
     @Override

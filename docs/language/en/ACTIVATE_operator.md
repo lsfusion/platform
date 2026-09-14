@@ -8,12 +8,20 @@ The `ACTIVATE` operator creates an [action](../paradigm/Actions.md) that [activa
 ### Syntax 
 
 ```
-ACTIVATE FORM formName
+ACTIVATE FORM formAddress
 ACTIVATE TAB formName.componentSelector
 ACTIVATE PROPERTY formPropertyId
 
 ACTIVATE [seekDirection] formObjectId = expr
 ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprK]
+```
+
+Where `formAddress` is one of:
+
+```
+[formLabel =] formName [WINDOW windowName]
+formLabel [WINDOW windowName]
+WINDOW windowName
 ```
 
 ### Description
@@ -24,7 +32,7 @@ The syntax of `ACTIVATE` depends on the kind of form element being activated.
 
 The `ACTIVATE FORM`, `ACTIVATE TAB` and `ACTIVATE PROPERTY` forms create an action that activates a form, a tab, or a property (action) on a form. The action has no parameters and uses no [context](Action_operators.md#contextdependent). The behavior depends on the keyword:
 
-- `FORM` — activates the specified form for the user, if it is already opened (sent to the client as a delayed user-interaction request). If the form was opened multiple times, the one opened first is activated. If the form is not open, the action has no effect.
+- `FORM` — activates for the user the first form the address names among the forms open in the [`FORMS` windows](WINDOW_statement.md) (sent to the client as a delayed user-interaction request). The address names a form by any combination of the label it was opened with, its name, and the window it was opened into; at least one of the three has to be specified, and a part that is not specified does not narrow the address. If several forms match, the windows are searched in turn, `System.forms` first, and within a window the forms in the order they were opened. If the address names no open form, the action has no effect.
 - `TAB` — selects the specified tab in the containing tab panel. The activation happens only if the form that owns the tab is the currently active form at the moment of execution; otherwise, the action has no effect. Empty containers (with no children) cannot be activated as tabs.
 - `PROPERTY` — moves the focus to the specified property or action displayed on the currently active form. The specified property must be placed on the form that is executing the action.
 
@@ -34,9 +42,17 @@ The `ACTIVATE ... formObjectId = expr` and `ACTIVATE ... formGroupObjectId [OBJE
 
 ### Parameters
 
+- `formLabel`
+
+    A [string literal](Literals.md#strliteral) — the label the form was given when it was opened by the [`SHOW` operator](SHOW_operator.md). If it is not specified, a form is activated whatever label it carries.
+
 - `formName`
 
-    Form name. [Composite ID](IDs.md#cid).
+    Form name. [Composite ID](IDs.md#cid). Inside `formAddress`, if it is not specified, a form of any name is activated.
+
+- `windowName`
+
+    Name of the [`FORMS` window](WINDOW_statement.md) the form was opened into. [Composite ID](IDs.md#cid). If it is not specified, the form is looked for in every window. On the mobile web client and in the desktop client, which draw `System.forms` alone, this part is ignored.
 
 - `componentSelector`
 
@@ -106,6 +122,12 @@ testAction()  {
     ACTIVATE FORM myForm;
     ACTIVATE TAB myForm.recent;
 }
+
+WINDOW workspace FORMS;
+
+showOrders()  { SHOW 'main' = orders WINDOW workspace NOWAIT; }
+// the same form can be open more than once, so the label says which of them
+backToMain()  { ACTIVATE FORM 'main' = orders WINDOW workspace; }
 
 CLASS ReceiptDetail;
 barcode = DATA STRING[30] (ReceiptDetail);

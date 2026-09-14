@@ -660,9 +660,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
     }
 
-    public void activateForm(String formCanonicalName) {
+    // ACTIVATE FORM: the first form the address names. A miss is not an error - the form may have been closed a
+    // moment ago, which is ordinary interaction
+    public void activateForm(String formCanonicalName, String formId) {
         for (ClientDockable openedForm : formsController.openedForms) {
-            if (openedForm.getCanonicalName() != null && openedForm.getCanonicalName().equals(formCanonicalName)) {
+            if (matches(openedForm, formId, formCanonicalName)) {
                 openedForm.toFront();
                 openedForm.requestFocusInWindow();
                 openedForm.onOpened();
@@ -671,13 +673,20 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
     }
 
-    public void closeForm(String formId) {
-        // every form with that id, not the first one: an id names the forms an open gave it to, and there can be more
-        // than one. Over a copy, since closing one takes it out of the list - and closing one can close another on its
-        // way (its ON CLOSE, say), so a form the copy still has may be gone already
+    // CLOSE FORM: every form the address names, not the first one - an id names the forms an open gave it to, and
+    // there can be more than one. Over a copy, since closing one takes it out of the list - and closing one can close
+    // another on its way (its ON CLOSE, say), so a form the copy still has may be gone already
+    public void closeForms(String formId, String formCanonicalName) {
         for (ClientDockable openedForm : new ArrayList<>(formsController.openedForms))
-            if (formsController.openedForms.contains(openedForm) && formId.equals(openedForm.formId))
+            if (formsController.openedForms.contains(openedForm) && matches(openedForm, formId, formCanonicalName))
                 openedForm.onClosing();
+    }
+
+    // a part of the address that is absent does not narrow it. The window part is not tested at all: the desktop
+    // client draws System.forms alone, so it holds there the forms every other window would have held
+    private boolean matches(ClientDockable openedForm, String formId, String formCanonicalName) {
+        return (formId == null || formId.equals(openedForm.formId)) &&
+                (formCanonicalName == null || formCanonicalName.equals(openedForm.getCanonicalName()));
     }
 
     public void maximizeForm() {

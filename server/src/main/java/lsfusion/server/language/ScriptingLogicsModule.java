@@ -85,6 +85,7 @@ import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.FormAddress;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseContainerAction;
@@ -2591,8 +2592,31 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(addAProp(null, new ActivateAction(LocalizedString.NONAME, form, component)), new ArrayList<>());
     }
 
-    public LAWithParams addScriptedCloseFormAProp(String formId) {
-        return new LAWithParams(addAProp(null, new CloseFormAction(LocalizedString.NONAME, formId)), new ArrayList<>());
+    public LAWithParams addScriptedCloseFormAProp(FormAddress address) {
+        return new LAWithParams(addAProp(null, new CloseFormAction(LocalizedString.NONAME, address)), new ArrayList<>());
+    }
+
+    public LAWithParams addScriptedActivateFormAProp(FormAddress address) {
+        return new LAWithParams(addAProp(null, new ActivateAction(LocalizedString.NONAME, address)), new ArrayList<>());
+    }
+
+    // ['label' =] [form] [WINDOW window]: the names are resolved here, so that a form or a window that does not exist
+    // is an error where it is written, not a silent miss at run time
+    public FormAddress getFormAddress(String formId, String formName, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkFormAddress(formId, formName, windowName);
+
+        String formCanonicalName = null;
+        if (formName != null)
+            formCanonicalName = findForm(formName).getCanonicalName();
+
+        String windowCanonicalName = null;
+        if (windowName != null) {
+            AbstractWindow window = findWindow(windowName);
+            checks.checkFormsWindow(window, windowName);
+            windowCanonicalName = window.getCanonicalName();
+        }
+
+        return new FormAddress(formId, formCanonicalName, windowCanonicalName);
     }
 
     public LAWithParams addScriptedCollapseExpandAProp(ComponentView component, boolean collapse) {

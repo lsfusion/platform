@@ -11,7 +11,7 @@ Activation of a form, tab, or property changes the focus / selection in the user
 
 -   Property — sets the focus on the specified [property](Properties.md) (or [action](Actions.md)) on the form. Applied to the currently active form, which must contain the specified property.
 -   Tab — selects one of the tabs in the specified [tab panel](Form_design.md#containers). Applied only if the form that owns the tab is the active form at the moment of execution.
--   Form — activates the specified [form](Forms.md), if it is opened for the user. If the same form was opened several times, the one opened first is activated. If the form is not open, the action has no effect.
+-   Form — activates the specified [form](Forms.md), if it is opened for the user. If the same form is open several times, the first one found is activated: the windows that hold forms are searched starting from `System.forms`, then in the order they are declared, each in the order it holds its forms. If the form is not open, the action has no effect.
 
 If the form is not open, or the tab does not belong to the active form, the action simply performs no changes. Property activation, in contrast, expects to be called from the context of the form that contains the property: if there is no form in the action's context or the property does not belong to that form, the behavior is undefined.
 

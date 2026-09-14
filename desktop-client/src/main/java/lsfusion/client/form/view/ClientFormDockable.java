@@ -89,6 +89,9 @@ public class ClientFormDockable extends ClientDockable {
         async = false;
 
         this.formId = formId;
+        // a placeholder was named after the form the open predicted, and the open may have ended in another one: the
+        // form that arrived is what an ACTIVATE or a CLOSE FORM looks this dockable up by from now on
+        this.canonicalName = clientForm.canonicalName;
     }
 
     public void setCaption(String caption, String tooltip) {

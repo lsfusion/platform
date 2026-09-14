@@ -4,10 +4,6 @@ import java.io.Serializable;
 
 public interface GShowFormType extends Serializable {
 
-    default boolean isDocked() {
-        return false;
-    }
-
     default boolean isDockedModal() {
         return false;
     }

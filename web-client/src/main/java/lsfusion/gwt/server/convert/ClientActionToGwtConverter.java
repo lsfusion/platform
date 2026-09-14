@@ -398,12 +398,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ActivateFormClientAction.class)
     public GActivateFormAction convertAction(ActivateFormClientAction action) {
-        return new GActivateFormAction(action.formCanonicalName);
+        return new GActivateFormAction(action.formCanonicalName, action.formId, action.windowCanonicalName);
     }
 
     @Converter(from = CloseFormClientAction.class)
     public GCloseFormAction convertAction(CloseFormClientAction action) {
-        return new GCloseFormAction(action.formId);
+        return new GCloseFormAction(action.formId, action.formCanonicalName, action.windowCanonicalName);
     }
 
     @Converter(from = MaximizeFormClientAction.class)

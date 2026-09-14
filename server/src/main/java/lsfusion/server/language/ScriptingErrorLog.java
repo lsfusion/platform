@@ -326,7 +326,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitDockedWindowNotFormsError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("DOCKED %s: '%s' is not a FORMS window, so no form can open into it", name, name));
+        emitSimpleError(parser, format("WINDOW %s: '%s' is not a FORMS window, so no form can open into it", name, name));
+    }
+
+    public void emitEmptyFormAddressError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "a form has to be named by at least one of a label, a form name and a window");
     }
 
     public void emitWindowCustomError(ScriptParser parser, String name, String custom) throws SemanticErrorException {

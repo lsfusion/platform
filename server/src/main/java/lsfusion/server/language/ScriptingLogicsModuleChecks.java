@@ -122,6 +122,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkFormAddress(String formId, String formName, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        if (formId == null && formName == null && windowName == null) {
+            errLog.emitEmptyFormAddressError(parser);
+        }
+    }
+
     public void checkNativeWindowCustom(String name, boolean nativeWithCustom) throws ScriptingErrorLog.SemanticErrorException {
         if (nativeWithCustom) {
             errLog.emitNativeWindowCustomError(parser, name);
