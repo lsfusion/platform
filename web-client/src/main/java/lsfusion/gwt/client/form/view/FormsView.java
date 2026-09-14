@@ -2,9 +2,10 @@ package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.user.client.ui.Widget;
 
-// where the forms open in the forms window go: the standard tab strip, or a React component the application named with
-// WINDOW forms CUSTOM. The view owns WHERE a form's content sits and which one is current; everything else about a
-// form - its lifecycle, its focus transition, its close - stays in FormsController, which is the view's only caller.
+// where the forms open in a forms window go: the standard tab strip, the one form a single-form window draws alone, or a
+// React component the application named with WINDOW ... CUSTOM. The view owns WHERE a form's content sits and which
+// one is current; everything else about a form - its lifecycle, its focus transition, its close - stays in
+// FormsController and the window's own FormsWindowController, which are the view's only callers.
 public interface FormsView {
 
     // FormsController owns the blur / focus transition; a view only says which index stopped being current and which

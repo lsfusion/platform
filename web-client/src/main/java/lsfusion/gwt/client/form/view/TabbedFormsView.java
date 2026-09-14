@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.FormsContainerPanel;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 // the standard view: one tab per open form, the platform's own strip. It also carries the platform's toolbar (edit
@@ -11,7 +12,7 @@ import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 public class TabbedFormsView implements FormsView {
 
     // the marker type FlexPanel's layout rules test for, to tell the forms window's strip from a form's own tabs
-    public static class Panel extends FlexTabbedPanel {
+    public static class Panel extends FlexTabbedPanel implements FormsContainerPanel {
         public Panel(Widget extraTabWidget, boolean end) {
             super(extraTabWidget, end);
         }

@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.FormsView;
 import lsfusion.gwt.client.form.view.ReactFormsView;
+import lsfusion.gwt.client.form.view.SingleFormsView;
 import lsfusion.gwt.client.form.view.TabbedFormsView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.view.MainFrame;
@@ -49,8 +50,10 @@ public class FormsWindowController {
     // built once the navigator has been read, which is after FormsController is - and no form can be open before that.
     // A component draws a window in the desktop web layout only, which is the rule for every window - a navigator
     // window's component is already never drawn there, since the mobile navigator view draws that window instead. Here
-    // it is not just the rule: the toolbar a component replaces carries the mobile menu button, which is the only way
-    // into the navigator on a phone
+    // it is not just the rule: what replaces the standard strip does not carry the platform's toolbar, and that toolbar
+    // carries the mobile menu button, which is the only way into the navigator on a phone. The single-form view drops
+    // the strip for the same reason a component does, so it falls back the same way - and one form at a time still
+    // holds, since what makes the window hold one form is formArrived below, not the view
     public FormsWindowController(FormsController formsController, GAbstractWindow window, boolean main, Widget toolbarView) {
         this.window = window;
         this.main = main;
@@ -88,8 +91,8 @@ public class FormsWindowController {
             }
         };
 
-        formsView = window.react && !MainFrame.mobile
-                ? new ReactFormsView(window.custom, formsController, this, selection)
+        formsView = !MainFrame.mobile && window.react ? new ReactFormsView(window.custom, formsController, this, selection)
+                : !MainFrame.mobile && window.single ? new SingleFormsView(selection)
                 : new TabbedFormsView(toolbarView, MainFrame.mobile, selection);
 
         container = new ResizableSimplePanel();
@@ -187,8 +190,7 @@ public class FormsWindowController {
     // Called when the form ARRIVES, not when its container is added: an async open puts a placeholder in the window
     // long before the server confirms the form, and a form must not lose its place to a request that may still fail.
     // A close is a request - a form with unsaved changes asks the user and may stay - so a form that refuses stays
-    // open beside the new one, and the tab strip hidden while such a window holds one form reappears, so that
-    // nothing open is out of reach.
+    // open beside the new one, hidden behind it, where ACTIVATE reaches it.
     // Nothing is asked of, or by, EITHER end of a docked-modal pair. A form blocked by such a child cannot close while
     // the child is open. A form that blocks its opener is there only until it closes, and whichever window it was aimed
     // at must still hold what it held when the opener gets its answer back - which is as true of a child already in the
