@@ -464,7 +464,7 @@ writeMessage (STRING from, STRING to, STRING cc, STRING bcc, STRING subject, RIC
             subject(e) <- subject;
             messageText() <- message;
             messageReply() <- replyMessage;
-            DIALOG writeMessage OBJECTS e = e DOCKED NOMANAGESESSION DO {
+            DIALOG writeMessage OBJECTS e = e WINDOW NOMANAGESESSION DO {
                 message(e) <- CONCAT '', HTMLTEXT(messageText()),
                     '<div>' + (replyHeader + ' : <br>' +
                         '<blockqoute>' +

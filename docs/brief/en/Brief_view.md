@@ -76,7 +76,7 @@ printOrder (Order o) { PRINT printOrder OBJECTS o = o XLSX TO orderFile; }
 
 The `OBJECTS` block of the opening operator passes object values to the form: the passed value becomes the current object in the interactive view, and a filter for equality to it in a static one. By default a `NULL` among the passed values cancels the action; the `NULL` keyword after the value allows it, and a `DIALOG` object marked `INPUT` or `CHANGE` allows it automatically.
 
-`SHOW` and `DIALOG` also set the form location — `FLOAT`, `DOCKED`, `EMBEDDED`, `POPUP`, `IN`. `SHOW` takes `WAIT` / `NOWAIT`; a `DIALOG` has no such option and runs synchronously whenever its result is consumed — by a `DO` / `ELSE` continuation or by a `CHANGE` write-back.
+`SHOW` and `DIALOG` also set the form location — `FLOAT`, `WINDOW`, `EMBEDDED`, `POPUP`, `IN`. `SHOW` takes `WAIT` / `NOWAIT`; a `DIALOG` has no such option and runs synchronously whenever its result is consumed — by a `DO` / `ELSE` continuation or by a `CHANGE` write-back.
 
 In detail — [Opening a form](../paradigm/Open_form.md). A form is also opened by picking a [navigator](../paradigm/Navigator.md) item, see [Brief: navigator](Brief_view.md#navigator).
 

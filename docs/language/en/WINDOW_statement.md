@@ -54,7 +54,7 @@ NOTABBED
 
 The `WINDOW` statement declares a new window and adds it to the current [module](../paradigm/Modules.md).
 
-By default a window is created that displays [navigator elements](../paradigm/Navigator.md). A `FORMS` window holds forms instead, the way `System.forms` does: a form is opened into it with [`SHOW ... DOCKED windowName`](SHOW_operator.md), which is how a form becomes the application's header or side panel.
+By default a window is created that displays [navigator elements](../paradigm/Navigator.md). A `FORMS` window holds forms instead, the way `System.forms` does: a form is opened into it with [`SHOW ... WINDOW windowName`](SHOW_operator.md), which is how a form becomes the application's header or side panel.
 
 The `EXTEND WINDOW` statement gives an already declared window - a standard one included - the React component or HTML template that draws its navigator elements, leaving everything else about the window as it is. The elements keep the window they were placed in, so the navigator's structure, its selection and its startup behavior stay as they were, and only the renderer changes. The window must already exist. A `FORMS` window and `System.log` can be given a component and nothing else; any other `NATIVE` window can be given neither. When several modules extend one window, the last literal is the markup the window starts with and the last property is the one that recomputes it.
 
@@ -78,9 +78,9 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. A h
 
 - `FORMS`
 
-    Keyword specifying that the window holds forms: navigator elements cannot be placed into it, and a form is opened into it with [`SHOW ... DOCKED windowName`](SHOW_operator.md). This is how the predefined `System.forms` window is defined, and it is the window a form opens in when `DOCKED` names none. The same options apply as for a `NATIVE` window, `AUTOSIZE` and the orientation it sizes the window across included, and `CUSTOM` may name a React component that draws the window instead, as described below.
+    Keyword specifying that the window holds forms: navigator elements cannot be placed into it, and a form is opened into it with [`SHOW ... WINDOW windowName`](SHOW_operator.md). This is how the predefined `System.forms` window is defined, and it is the window a form opens in when `WINDOW` names none. The same options apply as for a `NATIVE` window, `AUTOSIZE` and the orientation it sizes the window across included, and `CUSTOM` may name a React component that draws the window instead, as described below.
 
-    Such a window draws one form at a time and nothing of its own around it - no tab strip, no close button, and none of the platform's own toolbar - which is what a header, a side panel or a kiosk screen wants. Which form is drawn is the application's to say, with [`SHOW`](SHOW_operator.md) and [`ACTIVATE FORM`](ACTIVATE_operator.md). The window still holds more than one: when a form is opened into it, the form already there is asked to close, the request its close button makes, and a form with unsaved changes asks the user and may stay open - hidden behind the form drawn, where `ACTIVATE FORM` reaches it. Neither end of a pair opened with `DOCKED windowName` in synchronous mode takes part: the blocked form is not asked to close, since it cannot while that form is open, and the blocking form does not ask the forms already in the window to close.
+    Such a window draws one form at a time and nothing of its own around it - no tab strip, no close button, and none of the platform's own toolbar - which is what a header, a side panel or a kiosk screen wants. Which form is drawn is the application's to say, with [`SHOW`](SHOW_operator.md) and [`ACTIVATE FORM`](ACTIVATE_operator.md). The window still holds more than one: when a form is opened into it, the form already there is asked to close, the request its close button makes, and a form with unsaved changes asks the user and may stay open - hidden behind the form drawn, where `ACTIVATE FORM` reaches it. Neither end of a pair opened with `WINDOW windowName` in synchronous mode takes part: the blocked form is not asked to close, since it cannot while that form is open, and the blocking form does not ask the forms already in the window to close.
 
     Only the desktop web client draws one form alone: the mobile web client draws such a window as a strip of tabs, where the form that stayed is a tab, and the desktop client draws `System.forms` alone, so a form opened into any other `FORMS` window opens there, as a tab.
 
@@ -238,7 +238,7 @@ WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 
 // a window above the forms area that holds one form at a time, no taller than its form - the application's header, opened once at client start
 WINDOW header 'Header' FORMS AUTOSIZE POSITION(20, 6, 80, 10) HIDETITLE;
-onWebClientStarted() + { SHOW appHeader DOCKED header NOWAIT; }
+onWebClientStarted() + { SHOW appHeader WINDOW header NOWAIT; }
 
 // a window drawn by an application React component
 WINDOW appMenu VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CUSTOM 'AppMenu';

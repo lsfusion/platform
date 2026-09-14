@@ -5734,6 +5734,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     // SHOW ... DOCKED <window>: the window a form is docked into instead of System.forms. Resolved here, when the
     // module is read, so a name that is not a FORMS window stops the application rather than opening the form nowhere
+    public void addDockedDeprecationWarning() {
+        warningList.add("'DOCKED' is deprecated, use 'WINDOW' instead ('WINDOW <window>' to name the window the form opens in)");
+    }
+
     public WindowFormType getDockedWindowFormType(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = findWindow(name);
         checks.checkFormsWindow(window, name);
@@ -5741,7 +5745,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // the window kinds that hold no navigator elements. NATIVE is filled by the client (System.log). FORMS holds
-    // the forms opened into it with SHOW ... DOCKED <window> - one at a time, or, when TABBED, as many as are opened -
+    // the forms opened into it with SHOW ... WINDOW <window> - one at a time, or, when TABBED, as many as are opened -
     // which is what System.forms is; like it, such a window may be drawn by a React component, the forms open in it
     // being its projection, and by a component only: a template would have nothing to name
     private AbstractWindow createNativeWindow(String name, LocalizedString caption, boolean forms, boolean single, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {

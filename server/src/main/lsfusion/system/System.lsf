@@ -258,7 +258,7 @@ DESIGN htmlLinkInTab {
 }
 htmlLinkInTab(HTMLLINK htmlLink) {
     htmlLinkInTab() <- htmlLink;
-    SHOW htmlLinkInTab DOCKED;
+    SHOW htmlLinkInTab WINDOW;
 }
   
 addedObject() = DATA LOCAL Object ();
@@ -438,7 +438,7 @@ isDataChanged = NATIVE BOOLEAN();
 
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
 // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
-edit(Object o) + {  SHOW EDIT Object =o DOCKED; } OPTIMISTICASYNC; //  
+edit(Object o) + {  SHOW EDIT Object =o WINDOW; } OPTIMISTICASYNC; //  
 formEdit(Object o)  { edit(o); }
 
 formEditObject(Object o)  {

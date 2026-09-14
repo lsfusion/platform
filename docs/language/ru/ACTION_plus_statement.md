@@ -108,6 +108,6 @@ onStarted() + {
 edit '{logics.edit}' ABSTRACT MULTI OVERRIDE FIRST (Object) TOOLBAR;
 
 ACTION edit(Object o) + {
-    SHOW EDIT Object = o DOCKED;
+    SHOW EDIT Object = o WINDOW;
 } OPTIMISTICASYNC
 ```

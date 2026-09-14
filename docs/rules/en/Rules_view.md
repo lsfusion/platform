@@ -248,9 +248,9 @@ title: 'Rules: view logic'
    otherwise. When a dialog must block, the assistant makes
    it block by using what it returns.
 
-2. In synchronous mode `DOCKED` is a tab that blocks the
+2. In synchronous mode `WINDOW` is a tab that blocks the
    calling form, and from a form shown as a window such a
-   tab is shown as a window. So `SHOW ... DOCKED` from a
+   tab is shown as a window. So `SHOW ... WINDOW` from a
    form shown as a window (`FLOAT`) without `NOWAIT` opens
    a window, not a tab: such a form is modal, so the default
    mode there is synchronous (rule 1). To open a tab from it,
@@ -363,7 +363,7 @@ title: 'Rules: view logic'
    container of the form itself: the window is then not fixed
    and follows the content (details in `Form_design`).
 
-   A tab (`DOCKED`) is sized by the forms window, but the
+   A tab (`WINDOW`) is sized by the forms window, but the
    base size bounds the height of the container itself there
    too: the assistant SHOULD give a base height (`height`)
    that fits on the form to a container whose component draws

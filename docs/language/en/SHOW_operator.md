@@ -42,7 +42,7 @@ Where `windowType` is one of:
 
 ```
 FLOAT
-DOCKED [windowName]
+WINDOW [windowName]
 EMBEDDED
 POPUP
 IN containerName
@@ -106,7 +106,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
 - `windowType`
 
-    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window `System.forms` - or in the [`FORMS` window](WINDOW_statement.md) `windowName` names, which is how a form is drawn as a header or a side panel - `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. By default, `FLOAT` is used in synchronous mode and `DOCKED` in asynchronous mode. In synchronous mode a `DOCKED` tab blocks the form it is opened from until it is closed, and from a form shown as a window it is shown as a window, like `FLOAT`: to open a tab from a form shown as a window, specify `NOWAIT`.
+    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `WINDOW` as a tab in the system forms window `System.forms` - or in the [`FORMS` window](WINDOW_statement.md) `windowName` names, which is how a form is drawn as a header or a side panel - `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. By default, `FLOAT` is used in synchronous mode and `WINDOW` in asynchronous mode. In synchronous mode a `WINDOW` tab blocks the form it is opened from until it is closed, and from a form shown as a window it is shown as a window, like `FLOAT`: to open a tab from a form shown as a window, specify `NOWAIT`.
 
     - `windowName`
 

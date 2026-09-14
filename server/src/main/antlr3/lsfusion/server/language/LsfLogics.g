@@ -3855,7 +3855,8 @@ syncTypeLiteral returns [boolean val]
 
 windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = ModalityWindowFormType.FLOAT; }
-	|	('WINDOW' | 'DOCKED') { $val = new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME); }
+	|	('WINDOW' | 'DOCKED' { if(inMainParseState()) self.addDockedDeprecationWarning(); })
+	        { $val = new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME); }
 	        (wid=compoundID { if(inMainParseState()) { $val = self.getDockedWindowFormType($wid.sid); } })?
 	|	'EMBEDDED' { $val = ModalityWindowFormType.EMBEDDED; }
 	|	'POPUP' { $val = ModalityWindowFormType.POPUP; }
@@ -5404,7 +5405,7 @@ windowCreateStatement
 	}
 }
     //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
-    // FORMS: the window holds forms opened into it with SHOW ... DOCKED <window>, and draws one at a time unless
+    // FORMS: the window holds forms opened into it with SHOW ... WINDOW <window>, and draws one at a time unless
     // it is TABBED - which is one window in an application, so it is the one that says so
 	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; } | 'FORMS' { isForms = true; single = true; } (fk=formsKind { single = !$fk.tabbed; })?)? 'TOOLBAR'? opts=windowOptions  ';'
 	;

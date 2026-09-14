@@ -109,7 +109,7 @@ addCategory 'Add subcategory' (Category parent) {
     NEWSESSION {
         NEW c = Category {
             parent(c) <- parent;
-            SHOW category OBJECTS c = c DOCKED;
+            SHOW category OBJECTS c = c WINDOW;
         }
     }
 } TOOLBAR;
@@ -117,7 +117,7 @@ addCategory 'Add subcategory' (Category parent) {
 addRootCategory 'Add category' () {
     NEWSESSION {
         NEW c = Category {
-            SHOW category OBJECTS c = c DOCKED;
+            SHOW category OBJECTS c = c WINDOW;
         }
     }
 } TOOLBAR;
