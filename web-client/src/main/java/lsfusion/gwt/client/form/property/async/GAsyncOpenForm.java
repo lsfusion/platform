@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.window.GFormActivateType;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
@@ -18,7 +19,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
     public String caption;
     public AppStaticImage appImage;
-    public boolean forbidDuplicate;
+    public GFormActivateType activateType;
     public boolean modal;
     public GWindowFormType type;
 
@@ -26,11 +27,11 @@ public class GAsyncOpenForm extends GAsyncExec {
     public GAsyncOpenForm() {
     }
 
-    public GAsyncOpenForm(String canonicalName, String caption, AppStaticImage appImage, boolean forbidDuplicate, boolean modal, GWindowFormType type) {
+    public GAsyncOpenForm(String canonicalName, String caption, AppStaticImage appImage, GFormActivateType activateType, boolean modal, GWindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.appImage = appImage;
-        this.forbidDuplicate = forbidDuplicate;
+        this.activateType = activateType;
         this.modal = modal;
         this.type = type;
     }

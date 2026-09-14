@@ -108,7 +108,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         GShowFormType modalityType = convertOrCast(action.showFormType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
         return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, remoteForm, action.clientData, formSessionObject.navigatorID),
-                action.forbidDuplicate, action.syncType, action.formId);
+                convertActivateType(action.activateType), action.syncType, action.formId);
     }
 
     @Converter(from = ModalityShowFormType.class)

@@ -28,6 +28,7 @@ import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.cell.IntervalValue;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -454,7 +455,7 @@ public abstract class MainFrame extends JFrame {
 
     public abstract Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, boolean useDefaultPrinterInPrintIfNotSpecified, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
-    public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId);
+    public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, FormActivateType activateType, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId);
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
         return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, remoteNavigator, null);

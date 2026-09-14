@@ -8,6 +8,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -20,7 +21,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     public String canonicalName;
     public String caption;
     public AppImage appImage;
-    public boolean forbidDuplicate;
+    public FormActivateType activateType;
     public boolean modal;
     public WindowFormType type;
 
@@ -34,7 +35,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
         this.canonicalName = SerializationUtil.readString(inStream);
         this.caption = SerializationUtil.readString(inStream);
         appImage = IOUtils.readAppImage(inStream);
-        this.forbidDuplicate = inStream.readBoolean();
+        this.activateType = FormActivateType.deserialize(inStream.readByte());
         this.modal = inStream.readBoolean();
         this.type = WindowFormType.deserialize(inStream);
     }

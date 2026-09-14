@@ -4,6 +4,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
@@ -87,7 +88,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     private final Boolean noCancel;
 
     // NAVIGATOR
-    private final Boolean forbidDuplicate;
+    private final FormActivateType activateType;
 
     private final boolean readOnly;
     private final boolean checkOnOk;
@@ -106,7 +107,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                Boolean noCancel,
                                                                Boolean syncType,
                                                                WindowFormType windowType,
-                                                               boolean forbidDuplicate,
+                                                               FormActivateType activateType,
                                                                boolean checkOnOk,
                                                                boolean readOnly,
                                                                String formID,
@@ -121,7 +122,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.syncType = syncType;
         this.windowType = windowType;
 
-        this.forbidDuplicate = forbidDuplicate;
+        this.activateType = activateType;
 
         this.manageSession = manageSession;
         this.noCancel = noCancel;
@@ -171,7 +172,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             context.executeSessionEvents();
 
         FormInstance newFormInstance = context.createAndRequestFormInstance(form, mapObjectValues,
-                new FormOptions(noCancel, manageSession, showFormType, resolvedInputObjects.getCol().toSet(), contextFilters, readOnly, forbidDuplicate,
+                new FormOptions(noCancel, manageSession, showFormType, resolvedInputObjects.getCol().toSet(), contextFilters, readOnly, activateType,
                         syncType, isShowDrop(), checkOnOk, formId,
                         initAction != null ? initAction.getValueImplement(context.getKeys(), null, null) : null));
         if (syncType) {
@@ -231,7 +232,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
         ShowFormType showFormType = getShowFormType();
-        return new AsyncMapOpenForm<>(form, forbidDuplicate, showFormType.isModal(), showFormType.getWindowType(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
+        return new AsyncMapOpenForm<>(form, activateType, showFormType.isModal(), showFormType.getWindowType(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
     }
 
     private ShowFormType getShowFormType() {

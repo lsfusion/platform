@@ -4129,7 +4129,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
-                syncType, windowType, false, checkOnOk,
+                syncType, windowType, null, checkOnOk,
                 readonly, formId, contextEntities.initAction);
 
         for (int usedParam : contextEntities.usedParams) {

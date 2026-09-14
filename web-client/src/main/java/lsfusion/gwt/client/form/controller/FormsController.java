@@ -50,6 +50,7 @@ import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GDockedWindowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
+import lsfusion.gwt.client.navigator.window.GFormActivateType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -476,7 +477,7 @@ public abstract class FormsController {
         }
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, boolean syncType, String formId, OpenContext context, boolean canShowDockedModal, Consumer<Throwable> onResult) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, GFormActivateType activateType, boolean syncType, String formId, OpenContext context, boolean canShowDockedModal, Consumer<Throwable> onResult) {
         if (showFormType.isDockedModal() && !canShowDockedModal) {
             showFormType = GModalityShowFormType.MODAL;
         }
@@ -488,7 +489,7 @@ public abstract class FormsController {
         GFormController formController = context.formController;
 
         if(!asyncOpened) {
-            FormDockable duplicateForm = getDuplicateForm(showFormType.getWindowType(), form.canonicalName, forbidDuplicate);
+            FormDockable duplicateForm = getDuplicateForm(showFormType.getWindowType(), form.canonicalName, activateType);
             if (duplicateForm != null) {
                 // the form is built and registered on the server whatever the client decides to do with it, so the
                 // one that is not going to be shown is closed here - through the container it would have had
@@ -629,7 +630,7 @@ public abstract class FormsController {
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
         GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
-        FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.forbidDuplicate);
+        FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.activateType);
         if (duplicateForm == null) {
             Scheduler.ScheduledCommand runOpenForm = () -> {
                 FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
@@ -672,8 +673,9 @@ public abstract class FormsController {
 
     // a duplicate is looked for in the window the form would open in - after the fallback, so that on the mobile layout,
     // where every docked form goes to System.forms, it is that window's forms that are checked
-    private FormDockable getDuplicateForm(GWindowFormType windowType, String canonicalName, boolean forbidDuplicate) {
-        if(forbidDuplicate && MainFrame.forbidDuplicateForms) {
+    private FormDockable getDuplicateForm(GWindowFormType windowType, String canonicalName, GFormActivateType activateType) {
+        // FIXED is the application's decision and the setting does not gate it; USER is the user's, and it does
+        if(activateType == GFormActivateType.FIXED || (activateType == GFormActivateType.USER && MainFrame.forbidDuplicateForms)) {
             return getFormsWindow(windowType).findForm(canonicalName);
         }
         return null;

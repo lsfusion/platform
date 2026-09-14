@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.property.Compare;
@@ -1175,7 +1176,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
-        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME), true);
+        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME), FormActivateType.USER);
 
         if(form.getCanonicalName() != null) {
             String name = "_NAVIGATORFORM" + getFormPrefix(form);

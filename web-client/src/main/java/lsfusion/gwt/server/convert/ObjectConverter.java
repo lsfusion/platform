@@ -2,6 +2,8 @@ package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.gwt.client.navigator.window.GFormActivateType;
+import lsfusion.interop.form.FormActivateType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,6 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ObjectConverter {
+
+    // the two enums are the same set of names on the two sides of the wire, so the name is the conversion
+    public static GFormActivateType convertActivateType(FormActivateType activateType) {
+        return activateType != null ? GFormActivateType.valueOf(activateType.name()) : null;
+    }
 
     private final HashMap<Class, List<Method>> converterMethods = new HashMap<>();
 

@@ -25,6 +25,7 @@ import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.interop.form.event.InputEvent;
@@ -182,14 +183,14 @@ public class FormsController implements ColorThemeChangeListener {
         ((DockableMainFrame) MainFrame.instance).setLogsDockableVisible(false);
     }
 
-    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, boolean forbidDuplicate,
+    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, FormActivateType activateType,
                                        RemoteFormInterface remoteForm, FormClientData clientData, MainFrame.FormCloseListener closeListener, String formId) throws IOException {
         ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm, clientData);
         ClientFormDockable page = asyncFormController.removeAsyncForm();
         boolean asyncOpened = page != null;
 
         if (!asyncOpened) {
-            ClientFormDockable duplicateForm = getDuplicateForm(clientData.canonicalName, forbidDuplicate);
+            ClientFormDockable duplicateForm = getDuplicateForm(clientData.canonicalName, activateType);
             if (duplicateForm != null) {
                 // the form is built and registered on the server whatever the client decides to do with it, so the
                 // one that is not going to be shown is closed here - through a controller that is never put in a
@@ -225,7 +226,7 @@ public class FormsController implements ColorThemeChangeListener {
     //we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(AsyncFormController asyncFormController, ClientAsyncOpenForm asyncOpenForm) {
-        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.forbidDuplicate) == null) {
+        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.activateType) == null) {
             openFormTimer = new Timer(100, e -> {
                 if(openFormTimer != null) {
                     if (asyncFormController.checkNotCompleted()) { //request is not completed yet
@@ -242,8 +243,9 @@ public class FormsController implements ColorThemeChangeListener {
         }
     }
 
-    private ClientFormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
-        if (MainController.forbidDuplicateForms && forbidDuplicate) {
+    private ClientFormDockable getDuplicateForm(String canonicalName, FormActivateType activateType) {
+        // FIXED is the application's decision and the setting does not gate it; USER is the user's, and it does
+        if (activateType == FormActivateType.FIXED || (MainController.forbidDuplicateForms && activateType == FormActivateType.USER)) {
             List<ClientDockable> formsList = forms.getFormsList();
             ClientDockable duplicate = formsList.stream().filter(dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
             if (duplicate != null) {

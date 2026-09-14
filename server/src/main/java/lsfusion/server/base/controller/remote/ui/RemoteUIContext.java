@@ -47,7 +47,7 @@ public abstract class RemoteUIContext extends AbstractContext {
     }
 
     protected void requestFormUserInteraction(RemoteForm remoteForm, FormOptions options, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(options.forbidDuplicate, options.syncType, remoteForm, remoteForm.initClientData(stack), options.type, options.formId);
+        FormClientAction action = new FormClientAction(options.activateType, options.syncType, remoteForm, remoteForm.initClientData(stack), options.type, options.formId);
         if(options.type.isModal() && options.syncType)
             requestUserInteraction(action);
         else

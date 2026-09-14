@@ -37,6 +37,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
+import lsfusion.gwt.client.navigator.window.GFormActivateType;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
@@ -94,9 +95,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         @Override
         public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
             if (disableForbidDuplicate) {
-                for (GAction action : result.actions) // it's a hack, but the whole forbidDuplicate mechanism is a one big hack
+                for (GAction action : result.actions) // it's a hack, but the whole duplicate suppression mechanism is a one big hack
                     if (action instanceof GFormAction)
-                        ((GFormAction) action).forbidDuplicate = false;
+                        if(((GFormAction) action).activateType == GFormActivateType.USER) // FIXED is the application's decision, and Ctrl does not cancel it
+                            ((GFormAction) action).activateType = null;
             }
             getDispatcher().dispatchServerResponse(result, onDispatchFinished, getOnRequestFinished());
         }
@@ -289,7 +291,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GFormAction action) {
         executeAsyncNoResult(action.showFormType.isModal() && action.syncType, onResult -> {
-            getFormsController().openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.forbidDuplicate, action.syncType, action.formId, getOpenContext(action), canShowDockedModal(), onResult);
+            getFormsController().openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.showFormType, action.activateType, action.syncType, action.formId, getOpenContext(action), canShowDockedModal(), onResult);
         });
     }
 

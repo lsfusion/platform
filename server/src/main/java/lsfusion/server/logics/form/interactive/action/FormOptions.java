@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
@@ -18,7 +19,7 @@ public class FormOptions {
     public ImSet<ObjectEntity> inputObjects;
     public ImSet<ContextFilterInstance> contextFilters;
     public boolean showReadonly;
-    public boolean forbidDuplicate;
+    public FormActivateType activateType;
     public boolean syncType;
     public boolean showDrop;
     public boolean checkOnOk;
@@ -27,7 +28,7 @@ public class FormOptions {
 
     public FormOptions(Boolean noCancel, ManageSessionType manageSession, ShowFormType type,
                        ImSet<ObjectEntity> inputObjects, ImSet<ContextFilterInstance> contextFilters,
-                       boolean showReadonly, boolean forbidDuplicate, boolean syncType, boolean showDrop, boolean checkOnOk, String formId,
+                       boolean showReadonly, FormActivateType activateType, boolean syncType, boolean showDrop, boolean checkOnOk, String formId,
                        ActionValueImplement<?> initAction) {
         this.noCancel = noCancel;
         this.manageSession = manageSession;
@@ -35,7 +36,7 @@ public class FormOptions {
         this.inputObjects = inputObjects;
         this.contextFilters = contextFilters;
         this.showReadonly = showReadonly;
-        this.forbidDuplicate = forbidDuplicate;
+        this.activateType = activateType;
         this.syncType = syncType;
         this.showDrop = showDrop;
         this.checkOnOk = checkOnOk;

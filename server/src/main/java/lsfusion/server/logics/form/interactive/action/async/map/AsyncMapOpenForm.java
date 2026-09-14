@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.form.DockedWindowFormType;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -27,16 +28,16 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     
     public final FormSelector formSelector;
 
-    private final boolean forbidDuplicate;
+    private final FormActivateType activateType;
     private final boolean modal;
     private final WindowFormType type;
 
     public final CustomClass propertyClass;
     public final T propertyInterface;
 
-    public AsyncMapOpenForm(FormSelector formSelector, boolean forbidDuplicate, boolean modal, WindowFormType type, CustomClass propertyClass, T parameterInterface) {
+    public AsyncMapOpenForm(FormSelector formSelector, FormActivateType activateType, boolean modal, WindowFormType type, CustomClass propertyClass, T parameterInterface) {
         this.formSelector = formSelector;
-        this.forbidDuplicate = forbidDuplicate;
+        this.activateType = activateType;
         this.modal = modal;
         this.type = type;
         this.propertyClass = propertyClass;
@@ -45,7 +46,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     }
 
     private <P extends PropertyInterface> AsyncMapOpenForm<P> override(P propertyInterface) {
-        return new AsyncMapOpenForm<P>(formSelector, forbidDuplicate, modal, type, propertyClass, propertyInterface);
+        return new AsyncMapOpenForm<P>(formSelector, activateType, modal, type, propertyClass, propertyInterface);
     }
     
     @Override
@@ -78,7 +79,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         if (mapJoin instanceof PropertyMapImplement) {
             ValueClass valueClass = ((PropertyMapImplement<?, P>) mapJoin).property.getValueClass(ClassType.tryEditPolicy);
             if(valueClass instanceof CustomClass)
-                return new AsyncMapOpenForm<>(formSelector, forbidDuplicate, modal, type, (CustomClass)valueClass, null);
+                return new AsyncMapOpenForm<>(formSelector, activateType, modal, type, (CustomClass)valueClass, null);
             mapJoin = null;
         }
         return override((P) mapJoin);
@@ -102,7 +103,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         return new AsyncOpenForm(staticForm != null ? staticForm.getCanonicalName() : null, 
                                  staticForm != null ? staticForm.getLocalizedCaption() : null,
                                  staticForm != null ? staticForm.getImage(context) : null,
-                                 forbidDuplicate, modal, type);
+                                 activateType, modal, type);
     }
 
     @Override
@@ -131,7 +132,21 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         if(mergedType == null)
             return null;
 
-        return new AsyncMapOpenForm<>(mergedForm, forbidDuplicate || asyncOpenForm.forbidDuplicate, modal || asyncOpenForm.modal, mergedType, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
+        return new AsyncMapOpenForm<>(mergedForm, mergeActivateType(activateType, asyncOpenForm.activateType), modal || asyncOpenForm.modal, mergedType, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
+    }
+
+    // the branch that would reuse an open form wins, the way OR-ing the flag this replaced did. Returning null for
+    // branches that disagree would NOT mean "nothing is predicted": a failed merge falls back to one branch's own
+    // prediction (Action.getBranchAsyncEventExec), which may well be the branch that does not reuse. Predicting the
+    // reuse is the safe direction: a client that reuses early only confirms the open with this address, a branch
+    // that opens without ACTIVATE does not match that confirmation and opens as usual, and an arrival looks for a
+    // duplicate by itself either way
+    private static FormActivateType mergeActivateType(FormActivateType activateType, FormActivateType other) {
+        if(activateType == null)
+            return other;
+        if(other == null)
+            return activateType;
+        return activateType.ordinal() >= other.ordinal() ? activateType : other;
     }
 
     // the type byte doubles as a priority - the lower one wins - which is enough while a type is only a kind. A docked

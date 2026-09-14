@@ -27,6 +27,7 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.event.EventBus;
@@ -268,7 +269,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } else if (showFormType.isDockedModal()) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = MainFrame.instance.runForm(asyncFormController, false, remoteForm, action.clientData, openFailed -> {
+            ClientFormDockable blockingForm = MainFrame.instance.runForm(asyncFormController, null, remoteForm, action.clientData, openFailed -> {
                 afterModalActionInSameEDT(true);
                 if (!openFailed) {
                     continueDispatching();
@@ -276,7 +277,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             }, action.formId);
             setBlockingForm(blockingForm);
         } else {
-            MainFrame.instance.runForm(asyncFormController, action.forbidDuplicate, remoteForm, action.clientData, null, action.formId);
+            MainFrame.instance.runForm(asyncFormController, action.activateType, remoteForm, action.clientData, null, action.formId);
         }
     }
 

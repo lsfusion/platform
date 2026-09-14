@@ -1,5 +1,6 @@
 package lsfusion.interop.action;
 
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -13,15 +14,15 @@ public class FormClientAction extends ExecuteClientAction {
     public FormClientData clientData;
 
     public ShowFormType showFormType;
-    public boolean forbidDuplicate;
+    public FormActivateType activateType;
     public boolean syncType;
     public String formId;
 
-    public FormClientAction(boolean forbidDuplicate, boolean syncType, RemoteFormInterface remoteForm, FormClientData clientData, ShowFormType showFormType, String formId) {
+    public FormClientAction(FormActivateType activateType, boolean syncType, RemoteFormInterface remoteForm, FormClientData clientData, ShowFormType showFormType, String formId) {
         this.clientData = clientData;
         this.remoteForm = remoteForm;
         this.showFormType = showFormType;
-        this.forbidDuplicate = forbidDuplicate;
+        this.activateType = activateType;
         this.syncType = syncType;
         this.formId = formId;
     }

@@ -149,7 +149,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
 
             // now Object.noClasses doesn't work for interactive forms (so we can return innerClasses to null if it will be fixed)
             LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, selectProp, (PropertyMapImplement<?, I>) nameProp, orders, false, true);
-            LA<?> la = baseLM.addIFAProp(null, LocalizedString.NONAME, selectForm.form, selectForm.objectsToSet, ChangeEventScope.getScope(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), true, ModalityWindowFormType.EMBEDDED, false);
+            LA<?> la = baseLM.addIFAProp(null, LocalizedString.NONAME, selectForm.form, selectForm.objectsToSet, ChangeEventScope.getScope(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), true, ModalityWindowFormType.EMBEDDED, null);
             ActionMapImplement<?, Interface<I>> selectFormAction = la.getImplement(selectForm.getOrderInterfaces(groupMap));
 
             // APPLY (commit-on-edit): write whereProp from the selection, wrapped in its (new) session + APPLY when set - inside the request's

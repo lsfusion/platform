@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.server.base.AppServerImage;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
@@ -12,15 +13,15 @@ public class AsyncOpenForm extends AsyncExec {
     public String canonicalName;
     public String caption;
     public AppServerImage image;
-    public boolean forbidDuplicate;
+    public FormActivateType activateType;
     public boolean modal;
     public WindowFormType type;
 
-    public AsyncOpenForm(String canonicalName, String caption, AppServerImage image, boolean forbidDuplicate, boolean modal, WindowFormType type) {
+    public AsyncOpenForm(String canonicalName, String caption, AppServerImage image, FormActivateType activateType, boolean modal, WindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.image = image;
-        this.forbidDuplicate = forbidDuplicate;
+        this.activateType = activateType;
         this.modal = modal;
         this.type = type;
     }
@@ -37,7 +38,7 @@ public class AsyncOpenForm extends AsyncExec {
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, caption);
         AppServerImage.serialize(image, outStream);
-        outStream.writeBoolean(forbidDuplicate);
+        outStream.writeByte(activateType != null ? activateType.serialize() : 0);
         outStream.writeBoolean(modal);
         type.serialize(outStream);
     }
