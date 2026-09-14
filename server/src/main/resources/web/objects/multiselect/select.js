@@ -14,6 +14,20 @@ function selectMultiInput() {
         Selectize.define('lsf_events', function () {
             let selfKeyDown = this.onKeyDown;
             this.onKeyDown = function (e) {
+                if (!this.isOpen) {
+                    // the closed control in a grid cell : up / down navigate the rows (as in any other cell), so selectize must not open on them
+                    // (it would open the dropdown of the cell the grid is leaving - the focus goes to another row inside this very keydown)
+                    if (this.isInGrid && (e.keyCode === 38 || e.keyCode === 40))
+                        return;
+                    // enter opens the dropdown (as select2 does), otherwise it goes to the grid (the EDIT binding); in a panel down does that, and enter moves on as for any input
+                    if (this.isInGrid && e.key === 'Enter' && !e.shiftKey) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        this.open();
+                        return;
+                    }
+                }
+
                 handleSelectizeKeyEvent(this, e, true);
 
                 // we're copying suggest + multi line text event handling
@@ -23,6 +37,15 @@ function selectMultiInput() {
                 }
 
                 selfKeyDown.apply(this, arguments);
+            }
+            let selfOnFocus = this.onFocus;
+            this.onFocus = function (e) {
+                // open() -> focus() defers onFocus with a timeout, and by then the focus can be somewhere else (the grid moved it), so the
+                // control would consider itself focused (and reopen) while it is not
+                if (document.activeElement !== this.$control_input[0])
+                    return;
+
+                selfOnFocus.apply(this, arguments);
             }
             let selfKeyPress = this.onKeyPress;
             this.onKeyPress = function (e) {
@@ -173,6 +196,11 @@ function selectMultiInput() {
                 });
 
             lsfUtils.setOnFocusOutWithDropDownPartner(!isList ? element : selectizeInstance.$control[0], selectizeInstance.$dropdown[0], function(e) {
+                // the focus can leave inside the open() -> focus() window (ignoreFocus is set there, so onBlur would ignore the blur, and the dropdown
+                // would stay open orphaned), so close explicitly, not relying on the isFocused / ignoreFocus state
+                if (selectizeInstance.isOpen)
+                    selectizeInstance.close();
+                selectizeInstance.ignoreFocus = false;
                 selectizeInstance.blur();
             });
         },
@@ -385,6 +413,10 @@ function _wrapElement(element, createElement, wrap) {
 function _removeAllPMBInTD(element, controlElement) {
     if(_isInGrid(element))
         lsfUtils.removeAllPMB(element, controlElement);
+}
+
+function _isCharKey(e) {
+    return e.key != null && e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey;
 }
 
 function _isInGrid(element) {
@@ -852,13 +884,20 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 });
             }
 
+            // the open dropdown has no search field, so a typed char has nowhere to go but the grid, which would start its quick filter (closing the dropdown)
+            function handleKeyEvent(e, keyDown) {
+                let isEditing = _isEditing(element, mainElement);
+                handleDropdownKeyEvent(isEditing, e, keyDown);
+                if (isEditing && _isCharKey(e))
+                    e.stopPropagation();
+            }
             mainElement.addEventListener('keydown', function (e) {
-                handleDropdownKeyEvent(_isEditing(element, mainElement), e, true);
+                handleKeyEvent(e, true);
             });
 
             // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
             mainElement.addEventListener('keypress', function (e) {
-                handleDropdownKeyEvent(_isEditing(element, mainElement), e, false);
+                handleKeyEvent(e, false);
             });
         },
         update: function (element, controller, list, extraValue) {
