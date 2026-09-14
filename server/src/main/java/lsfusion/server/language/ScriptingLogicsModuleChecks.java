@@ -139,6 +139,7 @@ public class ScriptingLogicsModuleChecks {
         if (property || !Custom.isReactComponent(custom)) {
             errLog.emitComponentOnlyWindowCustomError(parser, name);
         }
+        checkCustomLength("window", name, custom); // the other window path checks it, and the throw it prevents is the same one
     }
 
     public void checkNavigatorElement(NavigatorElement element, String name) throws ScriptingErrorLog.SemanticErrorException {

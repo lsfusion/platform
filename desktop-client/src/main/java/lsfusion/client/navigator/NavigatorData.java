@@ -20,18 +20,20 @@ public class NavigatorData {
 
     public final ClientAbstractWindow logs;
     public final ClientAbstractWindow forms;
+    public final List<ClientAbstractWindow> formsWindows; // every FORMS window, System.forms among them, not aside
 
     public final List<NavigatorScheduler> navigatorSchedulers;
 
     public NavigatorData(ClientNavigatorElement root, Map<String, ClientNavigatorWindow> windows,
                          ClientNavigatorChanges navigatorChanges,
-                         ClientAbstractWindow logs, ClientAbstractWindow forms,
+                         ClientAbstractWindow logs, ClientAbstractWindow forms, List<ClientAbstractWindow> formsWindows,
                          List<NavigatorScheduler> navigatorSchedulers) {
         this.root = root;
         this.windows = windows;
         this.navigatorChanges = navigatorChanges;
         this.logs = logs;
         this.forms = forms;
+        this.formsWindows = formsWindows;
         this.navigatorSchedulers = navigatorSchedulers;
     }
 
@@ -73,7 +75,14 @@ public class NavigatorData {
         ClientNavigatorChanges clientNavigatorChanges = new ClientNavigatorChanges(inStream);
 
         ClientAbstractWindow logs =new ClientAbstractWindow(inStream);
-        ClientAbstractWindow forms = new ClientAbstractWindow(inStream);
+
+        // every window that holds forms, in the order the application declared them - which of them is
+        // System.forms the window says by its name, and it is not moved to the front here
+        List<ClientAbstractWindow> formsWindows = new ArrayList<>();
+        int formsWindowsCount = inStream.readInt();
+        for (int i = 0; i < formsWindowsCount; i++)
+            formsWindows.add(new ClientAbstractWindow(inStream));
+        ClientAbstractWindow forms = formsWindows.stream().filter(ClientAbstractWindow::isSystemForms).findFirst().orElse(null);
 
         List<NavigatorScheduler> navigatorSchedulers = new ArrayList<>();
         int size = inStream.readInt();
@@ -81,6 +90,6 @@ public class NavigatorData {
             navigatorSchedulers.add(new NavigatorScheduler(inStream.readInt(), inStream.readBoolean()));
         }
 
-        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms, navigatorSchedulers);
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms, formsWindows, navigatorSchedulers);
     }
 }

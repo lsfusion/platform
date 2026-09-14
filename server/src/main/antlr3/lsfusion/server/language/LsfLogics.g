@@ -5392,14 +5392,24 @@ windowStatement
 windowCreateStatement
 @init {
 	boolean isNative = false;
+	boolean isForms = false;
+	boolean single = false;
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedWindow(isNative, $name.name, $name.caption, $opts.options);
+		self.addScriptedWindow(isNative, isForms, single, $name.name, $name.caption, $opts.options);
 	}
 }
     //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
-	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? 'TOOLBAR'? opts=windowOptions  ';'
+    // FORMS: the window holds forms opened into it with SHOW ... DOCKED <window>, and draws one at a time unless
+    // it is TABBED - which is one window in an application, so it is the one that says so
+	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; } | 'FORMS' { isForms = true; single = true; } (fk=formsKind { single = !$fk.tabbed; })?)? 'TOOLBAR'? opts=windowOptions  ';'
+	;
+
+// how a FORMS window draws what is opened into it: a tab per form, or one form at a time
+formsKind returns [boolean tabbed]
+	:	'TABBED' { $tabbed = true; }
+	|	'NOTABBED'
 	;
 
 windowExtendStatement

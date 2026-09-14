@@ -9,6 +9,7 @@ import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
@@ -67,6 +68,7 @@ import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContex
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.FormsWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -540,7 +542,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            ImSet<AbstractWindow> windows = getWindows().filterFn(w -> w instanceof NavigatorWindow);
+            ImOrderSet<AbstractWindow> windows = getWindows().filterOrder(w -> w instanceof NavigatorWindow);
             dataStream.writeInt(windows.size());
             for(AbstractWindow window : windows) {
                 window.serialize(dataStream);
@@ -562,7 +564,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             dataStream.write(getNavigatorChangesByteArray());
 
             businessLogics.LM.baseWindows.log.serialize(dataStream);
-            businessLogics.LM.baseWindows.forms.serialize(dataStream);
+
+            // every window that holds forms, System.forms among them rather than beside them - it is one of the kind,
+            // and which one it is the clients read off its name, the way they already do for the navigator's own
+            // windows. In declaration order, which is the order a client searches them in
+            ImOrderSet<AbstractWindow> formsWindows = getWindows().filterOrder(w -> w instanceof FormsWindow);
+            dataStream.writeInt(formsWindows.size());
+            for (AbstractWindow window : formsWindows)
+                window.serialize(dataStream);
 
             Map<NavigatorScheduler, LA> navigatorSchedulers = businessLogics.LM.navigatorSchedulers;
             dataStream.writeInt(navigatorSchedulers.size());
@@ -587,7 +596,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return businessLogics.LM.root.getChildrenMap(securityPolicy);
     }
 
-    private ImSet<AbstractWindow> getWindows() {
+    private ImOrderSet<AbstractWindow> getWindows() {
         return businessLogics.getWindows();
     }
 

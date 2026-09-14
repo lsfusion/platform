@@ -120,6 +120,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.FormsWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
@@ -5667,12 +5668,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWindow(boolean isNative, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWindow(boolean isNative, boolean isForms, boolean single, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         parser.setDeclaredName(name);
         checks.checkDuplicateWindow(name);
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
-        AbstractWindow window = isNative ? createNativeWindow(name, caption, options) : createToolbarWindow(name, caption, options);
+        AbstractWindow window = isNative || isForms ? createNativeWindow(name, caption, isForms, single, options) : createToolbarWindow(name, caption, options);
 
         window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
         window.titleShown = nvl(options.getDrawTitle(), true);
@@ -5727,10 +5728,25 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
-    private AbstractWindow createNativeWindow(String name, LocalizedString caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkNativeWindowCustom(name, options.custom != null || options.customProperty != null);
+    // the window kinds that hold no navigator elements. NATIVE is filled by the client (System.log). FORMS holds
+    // the forms opened into it with SHOW ... DOCKED <window> - one at a time, or, when TABBED, as many as are opened -
+    // which is what System.forms is; like it, such a window may be drawn by a React component, the forms open in it
+    // being its projection, and by a component only: a template would have nothing to name
+    private AbstractWindow createNativeWindow(String name, LocalizedString caption, boolean forms, boolean single, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        boolean custom = options.custom != null || options.customProperty != null;
 
-        AbstractWindow window = new AbstractWindow(elementCanonicalName(name), caption);
+        AbstractWindow window;
+        if (forms) {
+            window = new FormsWindow(elementCanonicalName(name), caption, single);
+            if (custom) {
+                checks.checkComponentOnlyWindowCustom(name, options.custom, options.customProperty != null);
+                window.setCustom(options.custom);
+            }
+        } else {
+            checks.checkNativeWindowCustom(name, custom);
+            window = new AbstractWindow(elementCanonicalName(name), caption);
+        }
+
         DockPosition dp = options.getDockPosition();
         if (dp != null)
             window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
@@ -5753,10 +5769,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             return;
         }
 
-        // forms and log are the native windows a component can draw, and only a component: what they show is made while
-        // the application runs - the forms opened in one, the messages logged in the other - so a template would have
-        // nothing to name and a computed value nothing to compute
-        checks.checkNativeWindowCustom(name, window != baseLM.baseWindows.forms && window != baseLM.baseWindows.log);
+        // a FORMS window (System.forms included) and log are the windows a component can draw, and only a component:
+        // what they show is made while the application runs - the forms opened in one, the messages logged in the
+        // other - so a template would have nothing to name and a computed value nothing to compute
+        checks.checkNativeWindowCustom(name, !(window instanceof FormsWindow) && window != baseLM.baseWindows.log);
         checks.checkComponentOnlyWindowCustom(name, custom, customProperty != null);
 
         window.setCustom(custom);

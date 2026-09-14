@@ -111,6 +111,14 @@ public class AbstractWindow {
 
         SerializationUtil.writeString(outStream, custom);
         outStream.writeBoolean(isReact());
+        // one form at a time, drawn alone. Which windows hold forms at all the client knows from where they
+        // arrive - the one counted list of forms windows the navigator writes, System.forms among them - so that
+        // is not written
+        outStream.writeBoolean(isSingleForm());
+    }
+
+    public boolean isSingleForm() {
+        return false;
     }
 
     public void setDockPosition(int x, int y, int width, int height) {

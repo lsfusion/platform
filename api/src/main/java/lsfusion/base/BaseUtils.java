@@ -70,7 +70,7 @@ public class BaseUtils {
     }
 
     public static Integer getApiVersion() {
-        return 392;
+        return 393;
     }
 
     public static String getPlatformVersion() {

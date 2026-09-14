@@ -3,6 +3,7 @@ package lsfusion.gwt.server.navigator.handlers;
 import com.google.common.base.Throwables;
 import lsfusion.base.ServerUtils;
 import lsfusion.client.navigator.NavigatorData;
+import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.GNavigatorScheduler;
@@ -85,10 +86,11 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
             navigatorWindows.add(gWindow);
         }
 
-        //getting common windows
-        List<GAbstractWindow> windows = new ArrayList<>();
-        windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.logs));
-        windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
+        GAbstractWindow log = (GAbstractWindow) converter.convertOrCast(navigatorData.logs);
+
+        ArrayList<GAbstractWindow> formsWindows = new ArrayList<>();
+        for (ClientAbstractWindow window : navigatorData.formsWindows)
+            formsWindows.add((GAbstractWindow) converter.convertOrCast(window));
 
         //put in navigator info navigator data first changes
         GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges);
@@ -98,7 +100,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
             navigatorSchedulers.add(converter.convertNavigatorScheduler(navigatorScheduler));
         }
 
-        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows, navigatorSchedulers);
+        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, log, formsWindows, navigatorSchedulers);
     }
 
     @Override

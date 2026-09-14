@@ -251,7 +251,10 @@ public abstract class LogicsModule {
     
     protected final Map<String, Group> groups = new HashMap<>();
     protected final Map<String, CustomClass> classes = new HashMap<>();
-    protected final Map<String, AbstractWindow> windows = new HashMap<>();
+    // in declaration order, unlike the maps around it: they are read by name, and what is read in an order -
+    // properties, navigator elements - is read off the tree it was declared into. A window is in no tree, and
+    // a client searches the windows that hold forms in the order they arrive, so this map is that order
+    protected final Map<String, AbstractWindow> windows = new LinkedHashMap<>();
     protected final Map<String, NavigatorElement> navigatorElements = new HashMap<>();
     protected final Map<String, FormEntity> namedForms = new HashMap<>();
     protected final Map<String, ImplementTable> tables = new HashMap<>();

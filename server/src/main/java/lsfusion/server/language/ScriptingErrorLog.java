@@ -318,7 +318,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNativeWindowCustomError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements; of the native windows only System.forms and System.log can be drawn by a React component, and only with EXTEND WINDOW", name));
+        emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements; only a FORMS window and System.log can be drawn by a React component", name));
     }
 
     public void emitWindowCustomError(ScriptParser parser, String name, String custom) throws SemanticErrorException {

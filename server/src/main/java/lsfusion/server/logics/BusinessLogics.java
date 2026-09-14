@@ -2153,13 +2153,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutable();
     }
 
-    public ImSet<AbstractWindow> getWindows() {
-        MExclSet<AbstractWindow> mResult = SetFact.mExclSet();
+    // ordered, unlike the sets above it: modules.all() is the topological order the modules were sorted into, and
+    // a module keeps its windows in the order they were declared, so this is "the window declared first comes first"
+    public ImOrderSet<AbstractWindow> getWindows() {
+        MOrderExclSet<AbstractWindow> mResult = SetFact.mOrderExclSet();
         for(LogicsModule logicsModule : modules.all()) {
             for(AbstractWindow entry : logicsModule.getWindows())
                 mResult.exclAdd(entry);
         }
-        return mResult.immutable();
+        return mResult.immutableOrder();
     }
 
     public void markFormsForFinalization() {

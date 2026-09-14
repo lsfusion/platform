@@ -18,7 +18,9 @@ public class NavigatorInfo implements Serializable {
     public GNavigatorChangesDTO navigatorChanges;
 
     public GAbstractWindow log;
-    public GAbstractWindow forms;
+    // every window that holds forms, the default one FIRST - a form lookup answers with the first window that has it
+    public ArrayList<GAbstractWindow> formsWindows;
+    public GAbstractWindow forms; // the one of them that is System.forms, which the window says by its name
 
     public List<GNavigatorScheduler> navigatorSchedulers;
 
@@ -26,15 +28,18 @@ public class NavigatorInfo implements Serializable {
     public NavigatorInfo() {
     }
 
-    public NavigatorInfo(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GNavigatorChangesDTO navigatorChanges, List<GAbstractWindow> commonWindows,
-                         List<GNavigatorScheduler> navigatorSchedulers) {
+    public NavigatorInfo(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GNavigatorChangesDTO navigatorChanges, GAbstractWindow log,
+                         ArrayList<GAbstractWindow> formsWindows, List<GNavigatorScheduler> navigatorSchedulers) {
         this.root = root;
         this.navigatorWindows = navigatorWindows;
 
         this.navigatorChanges = navigatorChanges;
 
-        log = commonWindows.get(0);
-        forms = commonWindows.get(1);
+        this.log = log;
+        this.formsWindows = formsWindows;
+        for (GAbstractWindow window : formsWindows)
+            if (window.isSystemForms())
+                forms = window;
 
         this.navigatorSchedulers = navigatorSchedulers;
     }

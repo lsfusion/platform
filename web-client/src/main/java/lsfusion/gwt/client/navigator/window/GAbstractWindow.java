@@ -26,12 +26,20 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     // messages logged in it
     public String custom;
     public boolean react; // inferred from custom on the server, so the client just reads it
+    public boolean single; // one form at a time, drawn alone - what a FORMS window does unless it is TABBED
 
     public boolean autoSize;
 
     @Override
     public String getNativeSID() {
         return canonicalName;
+    }
+
+    // System.forms - the layout's centre, the window that carries the platform's toolbar, the one a form falls back to
+    // when the window it named was not built, and the only one the mobile layout draws. Read off the name, the way
+    // GNavigatorWindow reads isToolbar / isLogo / isRoot / isSystem
+    public boolean isSystemForms() {
+        return "System.forms".equals(canonicalName);
     }
 
     public boolean isAutoSize(boolean vertical) {
