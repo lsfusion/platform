@@ -1678,12 +1678,21 @@ public class GFormController implements EditManager {
         int length = properties.length;
         GEventSource[] eventSources = new GEventSource[length];
         GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
+        // the guard GPropertyDraw states for the same mistake, in the terms this path has: a property that is not a
+        // list has no group to change, and a call that CARRIES a value carries the value its caller wrote, which is
+        // not the cell gesture a group change is for. Without it a change made while the user happens to hold Shift -
+        // typing a capital letter into a view's own input does exactly that - became a GROUP change and the value was
+        // dropped. A call with no value is left alone: that is a view forwarding a click, where a held modifier still
+        // means what it means anywhere else. GPropertyDraw says it as changeOrGroupChange(isCharAddKeyEvent(editEvent))
+        boolean noGroupChange = false;
         for (int i = 0; i < length; i++) {
             eventSources[i] = GEventSource.CUSTOM;
             PValue newValue = newValues[i];
             pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(GUserInputResult.singleValue(newValue));
+
+            noGroupChange = noGroupChange || !properties[i].isList || pushAsyncResults[i] != null;
         }
-        String actionSID = GEditBindingMap.changeOrGroupChange();
+        String actionSID = GEditBindingMap.changeOrGroupChange(noGroupChange);
         if(length == 1 && pushAsyncResults[0] == null) // execute action / event
             executePropertyEventAction(properties[0], fullKeys[0], actionSID, eventSources[0], onExec);
         else // change properties with value
