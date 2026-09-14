@@ -1528,20 +1528,35 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readLazyClasses(session, keys, modifier, false, changesController, env);
     }
     public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController, QueryEnvironment env) throws SQLException, SQLHandledException {
-        if (lazy != null && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
+        return readLazyClasses(session, keys, modifier, prevChanges, changesController, env, null);
+    }
+    // changed (if not null) is set to whether the returned value comes from a change of this property (i.e. the changedWhere of the "real" read would be true)
+    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController, QueryEnvironment env, Result<Boolean> changed) throws SQLException, SQLHandledException {
+        if (lazy != null && !hasChanges(modifier, prevChanges) && !session.isInTransaction()) {
+            if(changed != null)
+                changed.set(false);
             return changesController.readLazyValue(this, keys);
+        }
         if (this instanceof SessionDataProperty) {
             // maybe can be done not only for all properties (not only SessionDataProperty)
-            ModifyChange<T> modify = modifier.getPropertyChanges().getModify(this);
-            if(modify != null) {
-                ImMap<T, Expr> mapExprs = modify.change.getMapExprs();
-                ImMap<T, ObjectValue> changeKeys; ObjectValue changeValue;
-                if (mapExprs.size() == keys.size() && (changeKeys = Expr.getObjectValues(mapExprs, env)) != null && keys.equals(changeKeys) && (changeValue = modify.change.expr.getObjectValue(env)) != null)
-                    return changeValue;
+            if(!prevChanges) { // the change is the current one, so it can not be used as the prev value
+                ModifyChange<T> modify = modifier.getPropertyChanges().getModify(this);
+                if(modify != null) {
+                    ImMap<T, Expr> mapExprs = modify.change.getMapExprs();
+                    ImMap<T, ObjectValue> changeKeys; ObjectValue changeValue;
+                    if (mapExprs.size() == keys.size() && (changeKeys = Expr.getObjectValues(mapExprs, env)) != null && keys.equals(changeKeys) && (changeValue = modify.change.expr.getObjectValue(env)) != null) {
+                        if(changed != null)
+                            changed.set(true);
+                        return changeValue;
+                    }
+                }
             }
 
-            if (!hasChanges(modifier, prevChanges))
+            if (!hasChanges(modifier, prevChanges)) {
+                if(changed != null)
+                    changed.set(false);
                 return NullValue.instance;
+            }
         }
         return null;
     }
@@ -1552,9 +1567,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
-        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, !hasChanges, changesController, env);
+        Result<Boolean> lazyChanged = new Result<>();
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, !hasChanges, changesController, env, lazyChanged);
         if(lazyValue != null)
-            return new Pair<>(lazyValue, false);
+            return new Pair<>(lazyValue, lazyChanged.result);
 
         String readValue = "readvalue"; String readChanged = "readChanged";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
