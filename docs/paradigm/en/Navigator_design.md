@@ -46,7 +46,7 @@ At any moment in time in each window there can be one current *user-selected* na
 
 There are several predefined system windows that are necessary for the client application to work:
 
--   `System.forms`: a window in which user forms open.
+-   `System.forms`: a window in which user forms open; it draws them as tabs. An application can declare windows of its own that hold forms: a form is opened into such a window when its [opening](In_an_interactive_view_SHOW_DIALOG.md#location) names the window, which is how a form is drawn as a header or a side panel of the application. Such a window draws one form at a time, unless it is declared to draw its forms as tabs or is drawn by a React component, which places them as it chooses.
 -   `System.log`: a window in which messages to the user are displayed. If this window is invisible, its messages are logged and shown nowhere.
 
 Also, additional windows are automatically created for ease of development:

@@ -60,7 +60,7 @@ Where `windowType` is one of:
 
 ```
 FLOAT
-DOCKED
+WINDOW [windowName]
 EMBEDDED
 POPUP
 IN containerName
@@ -161,7 +161,11 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `windowType`
 
-    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `DOCKED` as a tab in the system forms window, `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. `FLOAT` is the default. In synchronous mode a `DOCKED` tab blocks the form it is opened from until it is closed, and from a form shown as a window it is shown as a window, like `FLOAT`.
+    The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `WINDOW` as a tab in the system forms window `System.forms` - or in the [`FORMS` window](WINDOW_statement.md) `windowName` names - `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. `FLOAT` is the default in synchronous mode, and `WINDOW` in asynchronous mode. In synchronous mode a `WINDOW` tab blocks the form it is opened from until it is closed, wherever it is drawn, and from a form shown as a window it is shown as a window, like `FLOAT`. The mobile web client and the desktop client draw `System.forms` alone, so there a form named into another window opens in `System.forms`.
+
+    - `windowName`
+
+        Name of the window the form is docked into. [Composite ID](IDs.md#cid) of a window declared with `WINDOW ... FORMS`; any other window is an error.
 
 - `manageSessionType`
 

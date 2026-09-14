@@ -19,7 +19,7 @@ If neither mode is specified, the platform chooses one automatically: the operat
 A form being opened can be shown in one of the following ways:
 
 -   As a *window* (`FLOAT`) - the form is shown as a floating window.
--   As a *tab* (`DOCKED`) - the form is opened as a tab in the system [window](Navigator_design.md) `System.forms`.
+-   As a *tab* (`WINDOW`) - the form is opened as a tab in the system [window](Navigator_design.md) `System.forms`, or in another `FORMS` window the operator names - one the application declared for a form it draws apart from the others, such as a header above the forms area.
 -   As an *embedded form* (`EMBEDDED`) - the form is shown inline, embedded into the form it is opened from.
 -   As a *popup* (`POPUP`) - the form is shown in a floating popup attached to the element it is opened from.
 -   In a *container* (`IN`) - the form is docked into a specified container of the form it is opened from.
