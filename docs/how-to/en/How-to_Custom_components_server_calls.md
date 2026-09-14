@@ -33,7 +33,7 @@ discount 'Discount, %' = DATA NUMERIC[5,2] ();
 item 'Item' = DATA Item (CartLine) NONULL DELETE;
 nameItem 'Item' (CartLine l) = name(item(l));
 quantity 'Quantity' = DATA INTEGER (CartLine);
-note 'Note' = DATA STRING[100] (CartLine);
+note 'Note' = DATA STRING[100] (CartLine) CHARWIDTH 20;
 needBy 'Need by' = DATA DATE (CartLine);
 
 // exec: an object (arrives as a numeric id) + INTEGER, STRING, DATE primitives
@@ -81,7 +81,7 @@ DESIGN shop {
     NEW pane FIRST {
         fill = 1;
         horizontal = TRUE;
-        MOVE BOX(i) { fill = 2; }
+        MOVE BOX(i) { fill = 1; }
         MOVE BOX(l) { fill = 1; }
     }
 }

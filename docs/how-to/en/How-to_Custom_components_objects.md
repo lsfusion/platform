@@ -17,18 +17,18 @@ CLASS Item 'Item';
 
 name 'Name' = DATA STRING (Item) NONULL;
 price 'Price' = DATA NUMERIC[12,2] (Item) NONULL;
-image '' = DATA IMAGEFILE (Item);
+picture '' = DATA IMAGEFILE (Item);
 
 FORM item 'Item'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) name, price, image
+    PROPERTIES(i) name, price, picture
     
     EDIT Item OBJECT i
 ;
 
 DESIGN item {
     OBJECTS {
-        MOVE PROPERTY(image(i)) {
+        MOVE PROPERTY(picture(i)) {
             fill = 1;
         }
     }
@@ -42,7 +42,7 @@ Let's create a form with a list of items. To do this let's add to the form an ob
 ```lsf
 FORM items 'Items'
     OBJECTS i = Item CUSTOM 'itemCards'
-    PROPERTIES(i) READONLY image, price, name
+    PROPERTIES(i) READONLY picture, price, name
     PROPERTIES(i) NEWSESSION new = NEW, edit = EDIT GRID, DELETE GRID
 ;
 
@@ -83,7 +83,7 @@ update: (element, controller, list) => {
 
         let cardImage = document.createElement("img")
         cardImage.classList.add("item-card-image");
-        cardImage.src = item.image;
+        cardImage.src = item.picture;
         card.appendChild(cardImage);
 
         let cardPrice = document.createElement("div")

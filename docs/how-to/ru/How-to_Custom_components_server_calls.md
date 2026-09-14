@@ -33,7 +33,7 @@ discount 'Скидка, %' = DATA NUMERIC[5,2] ();
 item 'Товар' = DATA Item (CartLine) NONULL DELETE;
 nameItem 'Товар' (CartLine l) = name(item(l));
 quantity 'Кол-во' = DATA INTEGER (CartLine);
-note 'Комментарий' = DATA STRING[100] (CartLine);
+note 'Комментарий' = DATA STRING[100] (CartLine) CHARWIDTH 20;
 needBy 'Нужно к' = DATA DATE (CartLine);
 
 // exec: объект (приходит числовым id) + примитивы INTEGER, STRING, DATE
@@ -81,7 +81,7 @@ DESIGN shop {
     NEW pane FIRST {
         fill = 1;
         horizontal = TRUE;
-        MOVE BOX(i) { fill = 2; }
+        MOVE BOX(i) { fill = 1; }
         MOVE BOX(l) { fill = 1; }
     }
 }
