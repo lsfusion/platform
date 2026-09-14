@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
@@ -41,6 +42,9 @@ public class FormsWindowController {
 
     private boolean isRemoving = false;
     private boolean isAdding = false;
+    // the selection is following the keyboard rather than moving it: the user put the focus in the form themselves,
+    // or the keyboard is another window's and this window is only picking what it shows next
+    private boolean keepFocus = false;
 
     // built once the navigator has been read, which is after FormsController is - and no form can be open before that.
     // A component draws a window in the desktop web layout only, which is the rule for every window - a navigator
@@ -54,7 +58,8 @@ public class FormsWindowController {
         FormsView.SelectionHandler selection = new FormsView.SelectionHandler() {
             @Override
             public void unselected(int index) { // unselected (but not removed)
-                if(index >= 0) {
+                if(index >= 0 && !keepFocus) { // nothing left this form: the focus has already moved, and what it
+                                               // remembers must not be overwritten with "nothing was focused"
                     FormDockable dockable = forms.get(index);
                     // the form itself, not what getCurrentForm answers: that reads as "none" while a modal popup
                     // is up, and the form under the popup holds the keyboard all the same
@@ -75,7 +80,8 @@ public class FormsWindowController {
             @Override
             public void selected(int index) {
                 if(index >= 0) {
-                    forms.get(index).onFocus(isAdding);
+                    if (!keepFocus) // the keyboard is already where it belongs
+                        forms.get(index).onFocus(isAdding);
                     formFocusOrder.set(index, focusOrderCount++);
                     isAdding = false;
                 }
@@ -130,6 +136,16 @@ public class FormsWindowController {
         } else {
             forms.add(dockable);
             formFocusOrder.add(null);
+        }
+
+        // once per form, on the container that outlives every placement - and a form IS placed more than once, since an
+        // async close that the server does not confirm puts the same dockable back where it was. With more than one
+        // window a form can be SHOWN while another one is the keyboard-current form, and the user clicking into it is
+        // the only thing that says the keyboard should move; in one window that could not happen, a form was either
+        // the selected tab or hidden
+        if (!dockable.focusListened) {
+            dockable.focusListened = true;
+            listenFocus(dockable.getContentWidget().getElement(), dockable);
         }
 
         updateFormsNotEmptyClassName();
@@ -238,8 +254,80 @@ public class FormsWindowController {
                     maxOrder = formOrder;
                 }
             }
+            // what a window shows next is not the same as the keyboard: when that is another window's form - the
+            // user is working there, and this window has merely lost the form it was showing - it stays there
+            FormContainer keyboard = MainFrame.getAssertCurrentForm();
+            keepFocus = keyboard != null && keyboard != lastFocusedForm;
             setCurrentForm(lastFocusedForm);
+            keepFocus = false;
         }
+    }
+
+    // the user put the focus into this form: the keyboard follows, the way selecting a tab moves it, and this window's
+    // focus order is told, so that a later ensureCurrentForm prefers it. The DOM focus itself is already where the user
+    // put it, so it is left alone - onFocus would pull it to the form's default widget, away from what was clicked -
+    // and so is what the form it leaves remembers, since the browser has moved on and there is no focused cell to save.
+    // Which form the window SHOWS follows the click as well, and that half is the one a component view needs: it may
+    // show several forms at once, and the click is what says which of them the user is in. The strip and the
+    // single-form view show one, so there the form clicked into is the one already shown.
+    // The keyboard does not follow when a docked-modal child has masked the form - it is not one the user can work in -
+    // nor while a float or a modal popup holds it, since those do not give it up
+    private void focusedIn(FormDockable dockable) {
+        // a form still on its way has no form to make current; a masked one is not one the user can work in, and the
+        // mask is a focus panel INSIDE it, so clicking it focuses the form; and a modal popup gives the focus it took
+        // back BEFORE it stops being one, so every message box closing over a form would announce that form again
+        if (!dockable.canTakeKeyboard() || MainFrame.isModalPopup())
+            return;
+
+        int index = forms.indexOf(dockable);
+        assert index >= 0; // a form leaves the DOM before it leaves this list, and is put back into it before it returns
+        if (index != formsView.getCurrent()) { // which form this window shows follows the click too, for a view that
+            keepFocus = true;                  // shows several at once - a component one. The strip and the single-form
+            formsView.setCurrent(index);       // view show one form, so for them this is already the one shown
+            keepFocus = false;
+            formsView.formsChanged();
+        } else
+            formFocusOrder.set(index, focusOrderCount++); // the selection above does this when it runs
+
+        FormContainer current = MainFrame.getCurrentForm();
+        // a float that did not take the screen - FLOAT NOWAIT - is the keyboard-current form with a form of this
+        // window clickable beside it, and it keeps the keyboard while it is open
+        if (current == dockable || (current != null && !(current instanceof FormDockable)))
+            return;
+
+        // lostFocus, not onBlur: this runs AFTER the browser has moved the focus, so onBlur would look for the
+        // outgoing form's focused element, find none, and forget the cell the user was in - which that form needs
+        // when the user comes back to it
+        if (current != null && current.getForm() != null)
+            current.getForm().lostFocus();
+
+        MainFrame.setCurrentForm(dockable);
+        dockable.getForm().gainedFocus();
+    }
+
+    // in the CAPTURE phase: nothing the platform draws swallows focusin, but a custom container's React component can
+    // stop it in its own onFocus, and React hands that down to the native event - below this listener
+    private native void listenFocus(Element view, FormDockable dockable)/*-{
+        var controller = this;
+        view.addEventListener('focusin', function() {
+            controller.@lsfusion.gwt.client.form.controller.FormsWindowController::focusedIn(Llsfusion/gwt/client/form/view/FormDockable;)(dockable);
+        }, true);
+    }-*/;
+
+    // the keyboard goes to this window's selected form, if it shows one: what a window does when the current form of
+    // another window closed and nothing in that window took its place
+    public boolean focusCurrent() {
+        int current = formsView.getCurrent();
+        if (current < 0)
+            return false;
+        FormDockable dockable = forms.get(current);
+        if (!dockable.canTakeKeyboard())
+            return false;
+        if (!GwtClientUtils.isShowing(dockable.getContentWidget())) // a window HIDE WINDOW leaves undrawn still holds
+            return false;                                          // its forms, and none of them can take the keyboard
+        dockable.onFocus(false);
+        formFocusOrder.set(current, focusOrderCount++);
+        return true;
     }
 
     // a global class the page's CSS keys on: it says whether the MAIN forms window shows anything

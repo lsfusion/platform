@@ -126,11 +126,6 @@ public class ReactFormsView implements FormsView {
         // arrives where it was
         if (index != null && index <= selected)
             selected++;
-
-        // once, on the view that outlives every placement: a view may show several forms at a time, but only the one
-        // the user clicks into can be the keyboard-current one. Hanging this on each fill would stack up listeners,
-        // since a rerender parks and fills the same view again
-        listenFocus(dockable.getContentWidget().getElement(), dockable.formName);
     }
 
     @Override
@@ -189,14 +184,9 @@ public class ReactFormsView implements FormsView {
         return data;
     }
 
-    private native void listenFocus(Element view, String name)/*-{
-        var formsView = this; // NOT `view`: that is the element this listens on, the parameter above
-        view.addEventListener('focusin', function() {
-            formsView.@lsfusion.gwt.client.form.view.ReactFormsView::selectForm(Ljava/lang/String;)(name);
-        });
-    }-*/;
-
-    // called back from the component's controller, and from focusin on a placed form
+    // called back from the component's controller. The focus entering a form is heard by the window instead - once,
+    // for every kind of view, since the keyboard-current form is one for the whole page - and the window then says
+    // which form it shows, the same way this does
     public void selectForm(String name) {
         FormDockable dockable = byName.get(name);
         if (dockable == null) { // a name no open form has - a typo, or one kept after the form closed. Without this the
@@ -205,8 +195,10 @@ public class ReactFormsView implements FormsView {
             return;
         }
 
-        setCurrent(forms.indexOf(dockable));
-        formsChanged();
+        // the window's answer to "make this the current one", not this view's: the form asked for may be the one
+        // already drawn here, and then there is nothing to select - but the keyboard can still be in another window's
+        // form, and moving it is what the component asked for
+        formsWindow.setCurrentForm(dockable);
     }
 
     public void closeForm(String name) {

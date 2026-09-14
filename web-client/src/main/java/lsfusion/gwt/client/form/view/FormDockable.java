@@ -18,7 +18,7 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 public final class FormDockable extends WidgetForm {
     private String canonicalName;
-    // DOCKED, or DOCKED <window> with the FORMS window it named. What was ASKED for, kept as it was asked: on the
+    // the open's window type, with the FORMS window it named. What was ASKED for, kept as it was asked: on the
     // mobile layout the form still opens in System.forms, but the type it reports must equal the one its async
     // placeholder reported, or the placeholder is thrown away for a fresh container
     private final GWindowFormType windowType;
@@ -30,6 +30,10 @@ public final class FormDockable extends WidgetForm {
     // opened from, which waits for it. Set where the pointer above is, so that either end can be recognised from the
     // form alone
     private boolean blocksOpener;
+
+    // the window listens for the focus entering this form, on the element that outlives every placement, and a form is
+    // placed more than once - so the listener is put on once and this says it has been
+    public boolean focusListened;
 
     @Override
     public GWindowFormType getWindowType() {
@@ -86,6 +90,12 @@ public final class FormDockable extends WidgetForm {
     // closes, with the window it was aimed at still holding what it held when its opener gets the answer back
     public boolean inBlockingPair() {
         return hasBlockingForm() || isBlockingForm();
+    }
+
+    // whether this form could be the keyboard-current one: one still waiting for its own form has none to make
+    // current, and one a docked-modal child has masked is not one the user can work in
+    public boolean canTakeKeyboard() {
+        return !async && !hasBlockingForm();
     }
 
     public void setBlockingForm(FormDockable blocking) {

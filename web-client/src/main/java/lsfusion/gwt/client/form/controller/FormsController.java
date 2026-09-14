@@ -728,6 +728,16 @@ public abstract class FormsController {
 
     public void removeDockable(FormDockable dockable) {
         getFormsWindow(dockable).removeDockable(dockable);
+
+        // the window the form left picked its own next current form; if it had none, a form still shown in ANOTHER
+        // window takes the keyboard - System.forms first - rather than nothing while forms are visible.
+        // The form itself, not what getCurrentForm answers: that reads as "none" while a modal popup is up, and a
+        // form closed under one - a displaced form's clock, a CLOSE FORM - would have pulled the keyboard out of
+        // the popup and into a form nobody touched
+        if (MainFrame.getAssertCurrentForm() == null && !MainFrame.isModalPopup())
+            for (FormsWindowController window : formsWindows.values())
+                if (window.focusCurrent())
+                    break;
     }
 
     // the forms in System.forms: what the startup's "is anything open" check means
