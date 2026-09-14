@@ -562,7 +562,7 @@ public class MainFrame implements EntryPoint {
 
         GAbstractWindow formsWindow = result.forms;
         formsWindowLink.link = formsWindow;
-        formsController.initView(formsWindow);
+        formsController.initWindow(formsWindow);
         Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
         commonWindows.put(result.log, GLog.createLogPanel(result.log,
                 () -> formsController.executeAction("SystemEvents.toggleLogsPinMode[]", null)));

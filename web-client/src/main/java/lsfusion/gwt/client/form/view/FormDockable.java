@@ -45,7 +45,7 @@ public final class FormDockable extends WidgetForm {
             final MenuBar menuBar = new MenuBar(true);
             menuBar.addItem(new MenuItem(ClientMessages.Instance.get().closeAllTabs(), () -> {
                 GwtClientUtils.hideAndDestroyTippyPopup(popup.result);
-                formsController.closeAllForms();
+                formsController.getFormsWindow(FormDockable.this).closeAllForms(); // the tabs of THIS window
             }));
 
             popup.result = GwtClientUtils.showTippyPopup(getTabWidget(), menuBar);

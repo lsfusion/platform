@@ -39,10 +39,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.form.view.FormsView;
-import lsfusion.gwt.client.form.view.ReactFormsView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
-import lsfusion.gwt.client.form.view.TabbedFormsView;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -51,6 +48,7 @@ import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
+import lsfusion.gwt.client.navigator.window.GDockedWindowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -70,10 +68,11 @@ import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
-    private final ResizableSimplePanel container; // used for / in the setFullScreenMode, and it is assumed that it is returned in getView
-
-    private FormsView formsView; // chosen in initView, once the forms window is known - null until then
-    private final FormsView.SelectionHandler selection;
+    // System.forms, and every WINDOW ... FORMS the application declared, by canonical name: each holds its own
+    // forms and draws them its own way. Filled in initWindow, once the navigator has been read - System.forms FIRST,
+    // which is the order a search over all of them goes in
+    private FormsWindowController main;
+    private final Map<String, FormsWindowController> formsWindows = new LinkedHashMap<>();
     // the tabbed view's extra tab widget, built here with its buttons - and built even when a component draws the
     // window and it is never attached: the buttons are written from here as the state behind them changes (a held
     // modifier's force mode, ALT+F11, a server maximize), and those writes cannot become one FormsView notification -
@@ -81,10 +80,6 @@ public abstract class FormsController {
     private final GToolbarView toolbarView;
 
     private final List<FormContainer> formContainers = new ArrayList<>();
-
-    private final List<FormDockable> forms = new ArrayList<>();
-    private final List<Integer> formFocusOrder = new ArrayList<>();
-    private int focusOrderCount;
 
     private final WindowsController windowsController;
 
@@ -164,28 +159,6 @@ public abstract class FormsController {
             toolbarView.addComponent(mobileMenuButton);
         }
 
-        selection = new FormsView.SelectionHandler() {
-            @Override
-            public void unselected(int index) { // unselected (but not removed)
-                if(index >= 0) {
-                    forms.get(index).onBlur(isRemoving);
-                    isRemoving = false;
-                }
-            }
-
-            @Override
-            public void selected(int index) {
-                if(index >= 0) {
-                    forms.get(index).onFocus(isAdding);
-                    formFocusOrder.set(index, focusOrderCount++);
-                    isAdding = false;
-                }
-            }
-        };
-
-        container = new ResizableSimplePanel(); // filled by initView, with whichever view the forms window asks for
-        GwtClientUtils.addClassName(container, "forms-container-window");
-
         initEditModeTimer();
     }
 
@@ -248,9 +221,6 @@ public abstract class FormsController {
             }
         }
     }
-
-    private boolean isRemoving = false;
-    private boolean isAdding = false;
 
     public void checkEditModeEvents(NativeEvent event) {
         Boolean ctrlKey = eventGetCtrlKey(event);
@@ -399,10 +369,6 @@ public abstract class FormsController {
         GwtClientUtils.setGlobalClassName(linkMode, "linkMode");
     }
 
-    private void updateFormsNotEmptyClassName() {
-        GwtClientUtils.setGlobalClassName(!forms.isEmpty(), "forms-container-not-empty");
-    }
-
     private static Timer editModeTimer;
     public static boolean pressedCtrl = false;
     public static boolean pressedShift = false;
@@ -453,19 +419,34 @@ public abstract class FormsController {
         }
     }
 
-    // the forms window is only known once the navigator has been read, which is after this controller is built - and
-    // no form can be open before that, so the view is chosen here rather than in the constructor. Building the tab
-    // strip there and replacing it here would cost the whole FlexTabbedPanel on every React view, and would leave
-    // `formsView` reading as if it could be either at any time.
-    // And not in the mobile layout: a component draws a window in the desktop web layout only, which is the rule for
-    // every window - a navigator window's component is already never drawn there, since the mobile navigator view draws
-    // that window instead. Here it is not just the rule: the toolbar a component replaces carries the mobile menu
-    // button, which is the only way into the navigator on a phone
-    public void initView(GAbstractWindow formsWindow) {
-        formsView = formsWindow.react && !MainFrame.mobile
-                ? new ReactFormsView(formsWindow.custom, this, forms, selection)
-                : new TabbedFormsView(toolbarView, MainFrame.mobile, selection);
-        container.setPercentMain(formsView.getView());
+    // the windows are only known once the navigator has been read, which is after this controller is built - and no
+    // form can be open before that, so the views are made here rather than in the constructor. System.forms is the
+    // main one and carries the platform's toolbar; an application's own window is drawn where its POSITION puts it.
+    // Returns what draws the window
+    public Widget initWindow(GAbstractWindow window) {
+        boolean main = window.isSystemForms();
+        FormsWindowController formsWindow = new FormsWindowController(this, window, main, main ? toolbarView : null);
+        formsWindows.put(window.canonicalName, formsWindow);
+        if (main)
+            this.main = formsWindow;
+        return formsWindow.getView();
+    }
+
+    // the window a form goes to: the one the open names, or System.forms. There are two ways to reach System.forms
+    // and only one of them is a fallback: a type that is not docked names no window at all - a float, an editor - and
+    // a NAME no window answers to, which is the mobile web layout and only it, the one client that does not build the
+    // application's windows. HIDE WINDOW is not one of the two: it stops a window being drawn and leaves it here
+    public FormsWindowController getFormsWindow(GWindowFormType windowType) {
+        if (windowType instanceof GDockedWindowFormType) {
+            FormsWindowController formsWindow = formsWindows.get(((GDockedWindowFormType) windowType).window);
+            if (formsWindow != null)
+                return formsWindow;
+        }
+        return main;
+    }
+
+    public FormsWindowController getFormsWindow(FormDockable dockable) {
+        return getFormsWindow(dockable.getWindowType());
     }
 
     public void initRoot() {
@@ -478,7 +459,7 @@ public abstract class FormsController {
     }
 
     public Widget getView() {
-        return container;
+        return main.getView();
     }
 
     public static class OpenContext {
@@ -507,7 +488,7 @@ public abstract class FormsController {
         GFormController formController = context.formController;
 
         if(!asyncOpened) {
-            FormDockable duplicateForm = getDuplicateForm(form.canonicalName, forbidDuplicate);
+            FormDockable duplicateForm = getDuplicateForm(showFormType.getWindowType(), form.canonicalName, forbidDuplicate);
             if (duplicateForm != null) {
                 setCurrentForm(duplicateForm);
                 return null;
@@ -538,7 +519,7 @@ public abstract class FormsController {
         if (contextFormDockable != null) {
             contextFormDockable.block();
             contextFormDockable.setBlockingForm((FormDockable) formContainer);
-            formsView.formsChanged(); // the mask is a projected state, so a component view has to be told the transition happened
+            getFormsWindow(contextFormDockable).formsChanged(); // the mask is a projected state, so a component view has to be told the transition happened
         }
 
         boolean isDialog = showFormType.isDialog();
@@ -571,7 +552,6 @@ public abstract class FormsController {
             }
             if(recreateForm != null) {
                 fFormContainer.initForm(FormsController.this, recursionHiddenHandler.result, recreateForm, isDialog, fDispatchPriority, formId);
-
                 if(fFormContainer instanceof ModalForm) // it's a hack but for now it's the best place
                     ((ModalForm)fFormContainer).initPreferredSize();
                 return;
@@ -586,11 +566,11 @@ public abstract class FormsController {
             if (contextFormDockable != null) {
                 contextFormDockable.setBlockingForm(null);
                 contextFormDockable.unblock();
-                formsView.formsChanged();
+                getFormsWindow(contextFormDockable).formsChanged();
 
                 setCurrentForm(contextFormDockable);
-            } else if (fShowFormType.isDocked() || fShowFormType.isDockedModal())
-                ensureCurrentForm();
+            } else if (fFormContainer instanceof FormDockable)
+                getFormsWindow((FormDockable) fFormContainer).ensureCurrentForm();
 
             onResult.accept(null);
         };
@@ -628,9 +608,9 @@ public abstract class FormsController {
     }
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
-        FormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.forbidDuplicate);
+        GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
+        FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.forbidDuplicate);
         if (duplicateForm == null) {
-            GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
                 FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
 
@@ -661,7 +641,7 @@ public abstract class FormsController {
 
     public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
         if(formContainer instanceof FormDockable) {
-            asyncFormController.putAsyncClosedForm(new Pair<>((FormDockable) formContainer, forms.indexOf(formContainer)));
+            asyncFormController.putAsyncClosedForm(new Pair<>((FormDockable) formContainer, getFormsWindow((FormDockable) formContainer).indexOf((FormDockable) formContainer)));
             formContainer.queryHide(CancelReason.HIDE);
         }
     }
@@ -670,9 +650,11 @@ public abstract class FormsController {
         return (windowType.isEmbedded() && execContext.getProperty().hasAutoSize())  || windowType instanceof GContainerWindowFormType || windowType.isPopup() || windowType.isFloat();
     }
 
-    private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
+    // a duplicate is looked for in the window the form would open in - after the fallback, so that on the mobile layout,
+    // where every docked form goes to System.forms, it is that window's forms that are checked
+    private FormDockable getDuplicateForm(GWindowFormType windowType, String canonicalName, boolean forbidDuplicate) {
         if(forbidDuplicate && MainFrame.forbidDuplicateForms) {
-            return findForm(canonicalName);
+            return getFormsWindow(windowType).findForm(canonicalName);
         }
         return null;
     }
@@ -688,13 +670,13 @@ public abstract class FormsController {
         viewUpdateRequested = true;
         Scheduler.get().scheduleFinally(() -> {
             viewUpdateRequested = false;
-            formsView.formsChanged();
+            for (FormsWindowController window : formsWindows.values())
+                window.formsChanged();
         });
     }
 
     public void setCurrentForm(FormDockable dockable) {
-        formsView.setCurrent(forms.indexOf(dockable));
-        formsView.formsChanged();
+        getFormsWindow(dockable).setCurrentForm(dockable);
     }
 
     public void setCurrentForm(String formCanonicalName) {
@@ -715,94 +697,27 @@ public abstract class FormsController {
         }
     }
 
+    // in any window, System.forms first: ACTIVATE names a form, not a window
     public FormDockable findForm(String formCanonicalName) {
-        return findInList(forms, dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(formCanonicalName));
+        for (FormsWindowController window : formsWindows.values()) {
+            FormDockable form = window.findForm(formCanonicalName);
+            if (form != null)
+                return form;
+        }
+        return null;
     }
 
     public void addDockable(FormDockable dockable, Integer index) {
-        if(index != null) {
-            forms.add(index, dockable);
-            formFocusOrder.add(index, null);
-        } else {
-            forms.add(dockable);
-            formFocusOrder.add(null);
-        }
-
-        updateFormsNotEmptyClassName();
-
-        formsView.formAdded(dockable, index); // the projection is rebuilt by setCurrentForm just below
-
-        assert !isAdding;
-        isAdding = true;
-        setCurrentForm(dockable);
-        assert !isAdding;
+        getFormsWindow(dockable).addDockable(dockable, index);
     }
 
     public void removeDockable(FormDockable dockable) {
-        int index = forms.indexOf(dockable);
-        boolean wasCurrent = formsView.getCurrent() == index;
-
-        if (wasCurrent) {
-            assert !isRemoving;
-            isRemoving = true;
-        }
-
-        formsView.formRemoved(dockable, index);
-        assert !isRemoving; // checking that the form being closed was the current one
-
-        forms.remove(index);
-        formFocusOrder.remove(index);
-        formsView.formsChanged();
-
-        updateFormsNotEmptyClassName();
-        
-        if (forms.isEmpty()) {
-            MainFrame.openNavigatorMenu();
-        }
-
-        ensureCurrentForm();
+        getFormsWindow(dockable).removeDockable(dockable);
     }
-    
+
+    // the forms in System.forms: what the startup's "is anything open" check means
     public int getFormsCount() {
-        return forms.size();
-    }
-
-    public void closeAllForms() {
-        Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
-            private int size = forms.size();
-            @Override
-            public boolean execute() {
-                if (MainFrame.isModalPopup())
-                    return true;
-
-                if (size > 0 && size <= forms.size()) { // check if some form not closed by user while running "closeAllForms"
-                    FormDockable lastTab = forms.get(size - 1);
-                    setCurrentForm(lastTab);
-                    lastTab.closePressed();
-                    size--;
-                    return true;
-                }
-
-                return false;
-            }
-        }, 20);
-    }
-
-    public void ensureCurrentForm() {
-        int size;
-        if(formsView.getCurrent() < 0 && (size = forms.size()) > 0) {
-            FormDockable lastFocusedForm = null;
-            int maxOrder = 0;
-            int formOrder;
-            for(int i=0;i<size;i++) {
-                formOrder = formFocusOrder.get(i);
-                if (lastFocusedForm == null || formOrder > maxOrder) {
-                    lastFocusedForm = forms.get(i);
-                    maxOrder = formOrder;
-                }
-            }
-            setCurrentForm(lastFocusedForm);
-        }
+        return main.getFormsCount();
     }
 
     public void resetWindowsLayout() {

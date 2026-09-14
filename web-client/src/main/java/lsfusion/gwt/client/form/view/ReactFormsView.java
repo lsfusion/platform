@@ -13,6 +13,7 @@ import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.EditMode;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.FormsWindowController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 
@@ -76,9 +77,12 @@ public class ReactFormsView implements FormsView {
     // memoized on it is not redrawn when a form is opened or closed
     private final JavaScriptObject editModes = buildEditModes();
 
-    public ReactFormsView(String custom, FormsController formsController, List<FormDockable> forms, FormsView.SelectionHandler selection) {
+    private final FormsWindowController formsWindow; // the window this draws: its forms, and its closeAll
+
+    public ReactFormsView(String custom, FormsController formsController, FormsWindowController formsWindow, FormsView.SelectionHandler selection) {
         this.formsController = formsController;
-        this.forms = forms;
+        this.formsWindow = formsWindow;
+        this.forms = formsWindow.getForms();
         this.selection = selection;
 
         // the crossing BACK to the platform: the component renders the host node, we move the form's own view in
@@ -233,7 +237,7 @@ public class ReactFormsView implements FormsView {
     }
 
     public void closeAll() {
-        formsController.closeAllForms();
+        formsWindow.closeAllForms();
     }
 
     // what the component gets as props.controller: what only the platform can do to an open form, and what only it can
