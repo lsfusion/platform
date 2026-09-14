@@ -865,8 +865,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
             long elementCharWidth = charWidth != null ? charWidth : (select.count > 0 ? select.length / select.count : 0);
 
-            if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
+            if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi"))) {
+                if(charWidth != null)
+                    return charWidth;
                 return getScaledCharWidth(4, elementCharWidth);
+            }
 
 //            if (!entity.isList(context)) // we ignore charWidth in panel buttons and lists
 //                return null;
