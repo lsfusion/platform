@@ -35,14 +35,12 @@ public class TabbedWindowElement extends WindowElement {
         return tabPanel;
     }
 
+    // the same rule a split answers by, and for the same reason: one window here that wants to grow is a window this
+    // element must be able to give room to. Every window in the position votes, shown or not, so that which tab is
+    // selected - which changes while the application runs, long after these sizes are set - cannot change the layout
     @Override
     public boolean isAutoSize(boolean vertical) {
-        for (WindowElement child : children) {
-            if (child.isAutoSize(vertical)) {
-                return true;
-            }
-        }
-        return false;
+        return isAllAutoSize(children, vertical);
     }
 
     @Override

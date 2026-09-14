@@ -27,6 +27,8 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     public String custom;
     public boolean react; // inferred from custom on the server, so the client just reads it
     public boolean single; // one form at a time, drawn alone - what a FORMS window does unless it is TABBED
+    // the window's own orientation: a HORIZONTAL window is a band across, a VERTICAL one a column beside
+    public boolean vertical;
 
     public boolean autoSize;
 
@@ -42,7 +44,11 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
         return "System.forms".equals(canonicalName);
     }
 
+    // AUTOSIZE hugs the window ACROSS its own orientation and never along it: a horizontal band is as tall as what
+    // it draws and still stretches sideways, a vertical panel is as wide as what it draws and still stretches down.
+    // A window declares which way it faces, so this is the one rule that says what AUTOSIZE means, and it is the rule
+    // GNavigatorWindow used to state for its own windows alone (its override now only carries the exception to it)
     public boolean isAutoSize(boolean vertical) {
-        return autoSize;
+        return autoSize && this.vertical != vertical;
     }
 }

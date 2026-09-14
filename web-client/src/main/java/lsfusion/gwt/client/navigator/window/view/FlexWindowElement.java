@@ -100,12 +100,7 @@ public class FlexWindowElement extends WindowElement {
 
     @Override
     public boolean isAutoSize(boolean vertical) {
-        for (WindowElement child : children) {
-            if (child.isAutoSize(vertical)) {
-                return true;
-            }
-        }
-        return false;
+        return isAllAutoSize(children, vertical);
     }
 
     @Override
@@ -118,13 +113,15 @@ public class FlexWindowElement extends WindowElement {
         for (WindowElement child : children) {
             FlexPanel.FlexLayoutData flexLayoutData = ((FlexPanel.WidgetLayoutData) child.getView().getLayoutData()).flex;
 
+            boolean autoSize = child.isAutoSize(vertical);
             String storedSize;
-            if (child.isAutoSize(vertical)) {
+            if (autoSize) {
                 storedSize = flexLayoutData.flexBasis != null ? flexLayoutData.flexBasis.getResizeSize().toString() : null;
             } else {
                 storedSize = String.valueOf(flexLayoutData.flex);
             }
-            storage.setItem(child.getStorageSizeKey(), storedSize);
+            storage.setItem(child.getStorageSizeKey(autoSize), storedSize);
+            storage.removeItem(child.getStorageSizeKey(!autoSize)); // the number in the other unit is stale, and would come back if the declaration turned again
             
             child.storeWindowsSizes(storage);
         }
@@ -133,11 +130,11 @@ public class FlexWindowElement extends WindowElement {
     @Override
     public void restoreWindowsSizes(Storage storage) {
         for (WindowElement child : children) {
-            String sizeString = storage.getItem(child.getStorageSizeKey());
+            boolean autoSize = child.isAutoSize(vertical);
+            String sizeString = storage.getItem(child.getStorageSizeKey(autoSize));
 
             Double storedSize = sizeString != null && !sizeString.equals("null") ? Double.valueOf(sizeString) : null; // it seems that somewhy sizeString can be null
             if (storedSize != null) {
-                boolean autoSize = child.isAutoSize(vertical);
                 panel.setFlex(child.getView(), autoSize ? 0.0 : storedSize, autoSize ? GSize.getResizeNSize((int) Math.round(storedSize)) : GSize.ZERO);
             }
 

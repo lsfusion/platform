@@ -39,6 +39,7 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
     // one form at a time - what a FORMS window does unless it is TABBED. The desktop client draws forms only in
     // its own forms window, so it reads this and ignores it
     public boolean single;
+    public boolean vertical; // the window's own orientation; AUTOSIZE hugs across it
 
     public ClientAbstractWindow(DataInputStream inStream) throws IOException {
         canonicalName = inStream.readUTF();
@@ -67,6 +68,7 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
         custom = SerializationUtil.readString(inStream);
         react = inStream.readBoolean();
         single = inStream.readBoolean();
+        vertical = inStream.readBoolean();
     }
 
     // System.forms - the window this client draws forms in, since it draws them in one. Read off the name, the way

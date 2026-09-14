@@ -25,7 +25,6 @@ public class GNavigatorWindow extends GAbstractWindow {
 
     public List<GNavigatorElement> elements = new ArrayList<>();
 
-    public boolean vertical;
     public boolean showSelect;
 
     public int verticalTextPosition;
@@ -86,10 +85,13 @@ public class GNavigatorWindow extends GAbstractWindow {
         return false; //return MainFrame.useBootstrap && !isSystem() && !isRoot() && !isLogo();
     }
 
+    // logo and system are the two ends of the top strip and hug their content BOTH ways, which is the exception to
+    // the rule the base class states: the strip they sit in is content-sized along its own axis anyway, so their
+    // hugging it too costs nothing. Every other navigator window - root among them - takes the rule as written
     @Override
     public boolean isAutoSize(boolean vertical) {
-        if (isVertical() == vertical && !isLogo() && !isSystem()) {
-            return false;
+        if (isLogo() || isSystem()) {
+            return autoSize;
         }
         return super.isAutoSize(vertical);
     }

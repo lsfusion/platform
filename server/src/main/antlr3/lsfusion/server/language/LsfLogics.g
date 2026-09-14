@@ -5451,6 +5451,7 @@ windowOptions returns [NavigatorWindowOptions options]
 }
 	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
 		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
+		|	'AUTOSIZE' { $options.setAutoSize(true); }
 		|	o=orientation { $options.setOrientation($o.val); }
 		|	dp=dockPosition { $options.setDockPosition($dp.val); }
 		|	bp=borderPosition { $options.setBorderPosition($bp.val); }

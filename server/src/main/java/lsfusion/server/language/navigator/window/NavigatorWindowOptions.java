@@ -8,6 +8,7 @@ public class NavigatorWindowOptions {
 
     private Boolean drawTitle;
     private Boolean drawScrollBars;
+    private boolean autoSize; // AUTOSIZE: the window is as tall as what it draws
 
     private Orientation orientation;
     private BorderPosition borderPosition;
@@ -19,6 +20,14 @@ public class NavigatorWindowOptions {
 
     private FlexAlignment textVAlign;
     private FlexAlignment textHAlign;
+
+    public boolean getAutoSize() {
+        return autoSize;
+    }
+
+    public void setAutoSize(boolean autoSize) {
+        this.autoSize = autoSize;
+    }
 
     public Boolean getDrawTitle() {
         return drawTitle;

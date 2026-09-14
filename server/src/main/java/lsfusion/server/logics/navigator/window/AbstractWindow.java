@@ -66,6 +66,7 @@ public class AbstractWindow {
         return Custom.isReactComponent(custom);
     }
 
+    public boolean vertical; // the window's own orientation: AUTOSIZE hugs ACROSS it
     public boolean autoSize; 
 
     public AbstractWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
@@ -115,6 +116,7 @@ public class AbstractWindow {
         // arrive - the one counted list of forms windows the navigator writes, System.forms among them - so that
         // is not written
         outStream.writeBoolean(isSingleForm());
+        outStream.writeBoolean(vertical);
     }
 
     public boolean isSingleForm() {

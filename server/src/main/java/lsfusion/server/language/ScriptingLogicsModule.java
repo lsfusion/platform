@@ -5678,6 +5678,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
         window.titleShown = nvl(options.getDrawTitle(), true);
+        window.autoSize = options.getAutoSize();
+        window.vertical = options.getOrientation() == Orientation.VERTICAL; // AUTOSIZE hugs across this
 
         addWindow(window);
     }
@@ -5689,6 +5691,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (orientation == null) {
             orientation = Orientation.VERTICAL;
+            options.setOrientation(orientation); // addScriptedWindow reads the orientation back, and a toolbar's default is its own
         }
 
         if (borderPosition != null && dockPosition != null) {

@@ -52,6 +52,23 @@ public abstract class WindowElement {
     public abstract Widget getView();
     public abstract boolean isAutoSize(boolean vertical);
 
+    // a group of windows is sized by its content along an axis only when EVERY window in it is: along the axis a
+    // split stacks on, its size is the sum of its children, so one window that wants to grow makes the group have to
+    // grow too, and across that axis they are all stretched to the group's size, which a group that hugs has none of
+    // to give. The three windows of the standard top strip all hug their height, which is why the strip hugs its own
+    // and the work area below it takes the rest; a group holding an AUTOSIZE window BESIDE an ordinary one must not
+    protected boolean isAllAutoSize(Collection<WindowElement> windows, boolean vertical) {
+        if (windows.isEmpty()) { // vacuously true would make an empty group hug to nothing, which is a change of its own
+            return false;
+        }
+        for (WindowElement child : windows) {
+            if (!child.isAutoSize(vertical)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public abstract String getSID();
 
     protected String getSID(Collection<WindowElement> windows) {
@@ -72,7 +89,11 @@ public abstract class WindowElement {
         return sid.toString();
     }
     
-    public String getStorageSizeKey() {
-        return GwtClientUtils.getLogicsName() + "_" + getSID();
+    // A remembered size is a flex weight or a pixel basis depending on whether the window is content-sized, and the two
+    // are not the same number: 20 as a weight is a fifth of the split, 20 as a basis is twenty pixels. So the unit is
+    // part of the key. An application that adds or drops AUTOSIZE, or turns a window's orientation, then asks for a key
+    // nobody wrote, and the declared size is used - instead of the old number silently read in the wrong unit
+    public String getStorageSizeKey(boolean autoSize) {
+        return GwtClientUtils.getLogicsName() + "_" + getSID() + (autoSize ? "_px" : "");
     }
 }

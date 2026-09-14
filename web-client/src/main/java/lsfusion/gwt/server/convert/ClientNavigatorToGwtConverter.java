@@ -99,6 +99,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.custom = clientWindow.custom;
         window.react = clientWindow.react;
         window.single = clientWindow.single;
+        window.vertical = clientWindow.vertical;
         return window;
     }
 
@@ -129,7 +130,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.horizontalTextPosition = clientWindow.horizontalTextPosition;
         window.verticalTextPosition = clientWindow.verticalTextPosition;
         window.showSelect = clientWindow.showSelect;
-        window.vertical = clientWindow.type == 1;
         return window;
     }
 
