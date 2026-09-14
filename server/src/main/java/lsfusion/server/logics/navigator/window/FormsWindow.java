@@ -11,7 +11,8 @@ public class FormsWindow extends AbstractWindow {
     // is substituted where DOCKED is READ, and System.lsf itself has a bare DOCKED long before it declares this window
     public static final String DEFAULT_DOCKED_WINDOW_NAME = "System.forms";
 
-    public final boolean single; // one form at a time - what a FORMS window does unless it is TABBED
+    public boolean single; // one form at a time - what a FORMS window does unless it is TABBED, which an
+                           // EXTEND WINDOW ... FORMS turns over
 
     public FormsWindow(String canonicalName, LocalizedString caption, boolean single) {
         super(canonicalName, caption);

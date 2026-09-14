@@ -5773,6 +5773,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     // What a renderer MEANS depends on the window's role, and only the role knows: a navigator window is drawn from its
     // navigator elements, the forms window from the forms open in it, the log window from the messages logged in it. So
     // the vocabulary is checked per role here, not once for every window
+    // EXTEND WINDOW ... FORMS [TABBED]: how the window draws the forms opened into it - one at a time, or as tabs.
+    // It is an EXTEND and not only a declaration option because System.forms is declared by the platform: an
+    // application that wants its work area to hold one form at a time has no other way to say so
+    public void setWindowFormsKind(String name, boolean single) throws ScriptingErrorLog.SemanticErrorException {
+        AbstractWindow window = findWindow(name);
+        checks.checkFormsWindowKind(window, name);
+
+        ((FormsWindow) window).single = single;
+    }
+
     public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = findWindow(name);
 

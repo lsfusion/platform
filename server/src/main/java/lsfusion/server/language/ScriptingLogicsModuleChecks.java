@@ -110,6 +110,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkFormsWindowKind(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(window instanceof FormsWindow)) {
+            errLog.emitExtendWindowNotFormsError(parser, name);
+        }
+    }
+
     public void checkFormsWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (!(window instanceof FormsWindow)) {
             errLog.emitDockedWindowNotFormsError(parser, name);

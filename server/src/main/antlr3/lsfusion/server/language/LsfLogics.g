@@ -5416,12 +5416,25 @@ formsKind returns [boolean tabbed]
 	;
 
 windowExtendStatement
-	:	'EXTEND' 'WINDOW' wid=compoundID cst=windowCustom ';'
-		{
-			if (inMainParseState()) {
-				self.setWindowCustom($wid.sid, $cst.custom, $cst.property);
+@init {
+	boolean single = false;
+}
+	:	'EXTEND' 'WINDOW' wid=compoundID
+		(	cst=windowCustom ';'
+			{
+				if (inMainParseState()) {
+					self.setWindowCustom($wid.sid, $cst.custom, $cst.property);
+				}
 			}
-		}
+		// how a window draws the forms opened into it is the other thing an EXTEND can turn over, and the only way
+		// to say it about System.forms, which the platform declares and an application cannot
+		|	'FORMS' fk=formsKind { single = !$fk.tabbed; } ';'
+			{
+				if (inMainParseState()) {
+					self.setWindowFormsKind($wid.sid, single);
+				}
+			}
+		)
 	;
 
 windowCustom returns [String custom, LPWithParams property]

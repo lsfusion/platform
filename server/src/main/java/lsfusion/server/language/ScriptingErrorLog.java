@@ -321,6 +321,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("CUSTOM is specified for NATIVE window '%s', but a native window is filled by the client itself and holds no navigator elements; only a FORMS window and System.log can be drawn by a React component", name));
     }
 
+    public void emitExtendWindowNotFormsError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("EXTEND WINDOW %s FORMS: '%s' holds no forms, and only a window that does is drawn one way or the other", name, name));
+    }
+
     public void emitDockedWindowNotFormsError(ScriptParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("DOCKED %s: '%s' is not a FORMS window, so no form can open into it", name, name));
     }
