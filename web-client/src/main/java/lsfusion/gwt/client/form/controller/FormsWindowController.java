@@ -17,8 +17,6 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
-
 // one FORMS window: the forms open in it, which of them is current, and the view that draws them - the tab strip
 // of a TABBED window, the one form alone otherwise, or the React component named with WINDOW ... CUSTOM.
 // System.forms is one of these, the MAIN one; every other is a WINDOW ... FORMS the application declared, which
@@ -135,10 +133,6 @@ public class FormsWindowController {
             formsView.setCurrent(index);
 
         formsView.formsChanged();
-    }
-
-    public FormDockable findForm(String formCanonicalName) {
-        return findInList(forms, dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(formCanonicalName));
     }
 
     public void addDockable(FormDockable dockable, Integer index) {

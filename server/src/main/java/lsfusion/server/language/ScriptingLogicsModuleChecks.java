@@ -122,6 +122,34 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    // SHOW ... ACTIVATE shows the form that is already open, exactly as it is, so everything the open carries for a
+    // NEW form has nowhere to go. Refusing to compile is the only honest answer: opening anyway would ignore the
+    // objects asked for, and activating anyway would show the wrong ones
+    public void checkShowActivate(boolean window, boolean noWait, boolean noObjects, boolean noContextFilters,
+                                  boolean noReadOnly, boolean noSessionScope, boolean noInitAction,
+                                  boolean noCheckOnOk, boolean noManageSession, boolean noCancel) throws ScriptingErrorLog.SemanticErrorException {
+        if (!window)
+            errLog.emitActivateNotAllowedError(parser, "without WINDOW - only a form opened into a FORMS window can be activated instead");
+        if (!noWait)
+            errLog.emitActivateNotAllowedError(parser, "without NOWAIT - a synchronous open waits for a result that a form already open does not give");
+        if (!noObjects)
+            errLog.emitActivateNotAllowedError(parser, "with OBJECTS");
+        if (!noContextFilters)
+            errLog.emitActivateNotAllowedError(parser, "with FILTERS");
+        if (!noReadOnly)
+            errLog.emitActivateNotAllowedError(parser, "with READONLY");
+        if (!noSessionScope)
+            errLog.emitActivateNotAllowedError(parser, "with a session option");
+        if (!noInitAction)
+            errLog.emitActivateNotAllowedError(parser, "with an initialization block - it runs only when a form is opened");
+        if (!noCheckOnOk)
+            errLog.emitActivateNotAllowedError(parser, "with CHECK");
+        if (!noManageSession)
+            errLog.emitActivateNotAllowedError(parser, "with a session management option");
+        if (!noCancel)
+            errLog.emitActivateNotAllowedError(parser, "with a cancel option");
+    }
+
     public void checkFormAddress(String formId, String formName, String windowName) throws ScriptingErrorLog.SemanticErrorException {
         if (formId == null && formName == null && windowName == null) {
             errLog.emitEmptyFormAddressError(parser);

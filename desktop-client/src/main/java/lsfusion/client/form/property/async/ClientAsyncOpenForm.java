@@ -22,6 +22,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     public String caption;
     public AppImage appImage;
     public FormActivateType activateType;
+    public String formId;
     public boolean modal;
     public WindowFormType type;
 
@@ -36,6 +37,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
         this.caption = SerializationUtil.readString(inStream);
         appImage = IOUtils.readAppImage(inStream);
         this.activateType = FormActivateType.deserialize(inStream.readByte());
+        this.formId = SerializationUtil.readString(inStream);
         this.modal = inStream.readBoolean();
         this.type = WindowFormType.deserialize(inStream);
     }

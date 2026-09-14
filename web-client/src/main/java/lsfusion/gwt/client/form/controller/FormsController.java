@@ -70,8 +70,9 @@ public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     // System.forms, and every WINDOW ... FORMS the application declared, by canonical name: each holds its own
-    // forms and draws them its own way. Filled in initWindow, once the navigator has been read - System.forms FIRST,
-    // which is the order a search over all of them goes in
+    // forms and draws them its own way. Filled in initWindow, once the navigator has been read - System.forms
+    // first, put there by the caller, then the rest in the order they were declared in, which is the order a
+    // search over all of them goes in
     private FormsWindowController main;
     private final Map<String, FormsWindowController> formsWindows = new LinkedHashMap<>();
     // the tabbed view's extra tab widget, built here with its buttons - and built even when a component draws the
@@ -438,12 +439,7 @@ public abstract class FormsController {
     // a NAME no window answers to, which is the mobile web layout and only it, the one client that does not build the
     // application's windows. HIDE WINDOW is not one of the two: it stops a window being drawn and leaves it here
     public FormsWindowController getFormsWindow(GWindowFormType windowType) {
-        if (windowType instanceof GDockedWindowFormType) {
-            FormsWindowController formsWindow = formsWindows.get(((GDockedWindowFormType) windowType).window);
-            if (formsWindow != null)
-                return formsWindow;
-        }
-        return main;
+        return windowType instanceof GDockedWindowFormType ? getFormsWindow(((GDockedWindowFormType) windowType).window) : main;
     }
 
     public FormsWindowController getFormsWindow(FormDockable dockable) {
@@ -488,19 +484,6 @@ public abstract class FormsController {
         FormDockable contextFormDockable = context.contextFormDockable;
         GFormController formController = context.formController;
 
-        if(!asyncOpened) {
-            FormDockable duplicateForm = getDuplicateForm(showFormType.getWindowType(), form.canonicalName, activateType);
-            if (duplicateForm != null) {
-                // the form is built and registered on the server whatever the client decides to do with it, so the
-                // one that is not going to be shown is closed here - through the container it would have had
-                createFormContainer(showFormType.getWindowType(), false, syncType, -1, form.canonicalName, context.editEvent, context.editContext, formController)
-                        .closeOnArrival(this, form, showFormType.isDialog(), formController != null ? formController.getDispatchPriority() : 0, formId);
-
-                setCurrentForm(duplicateForm);
-                return null;
-            }
-        }
-
         // if form is async opened with different type - close it
         GWindowFormType windowType = showFormType.getWindowType();
         if(asyncOpened && !nullEquals(formContainer.getWindowType(), windowType) && !formContainer.isAsyncHidden()) { // by value: a docked type names its window
@@ -522,13 +505,31 @@ public abstract class FormsController {
                     (int)asyncFormController.getEditRequestIndex() * RemoteDispatchAsync.requestIndexDeepStep;
         }
 
+        boolean isDialog = showFormType.isDialog();
+
+        // the window may already hold this very form, and then this open shows the one it holds instead. Asked here,
+        // where the form has arrived, and not only before the open was sent: the answer is only as good as the moment
+        // it was given, and two opens that cross are both told the form is not open. The container this open put in
+        // the window while it waited is not an answer to itself
+        FormDockable duplicateForm = getDuplicateForm(windowType, form.canonicalName, formId, activateType, formContainer);
+        if (duplicateForm != null) {
+            // the form is built and registered on the server whatever the client does with it, so the one that is not
+            // going to be shown is closed here - by the container it would have had, which takes a placeholder out of
+            // the window on its way. A placeholder the user has already closed is out of the window, and hiding it
+            // again would take out whatever now stands where it stood
+            if (asyncOpened && !formContainer.isAsyncHidden())
+                formContainer.closePressed(CancelReason.HIDE);
+            formContainer.closeOnArrival(this, form, isDialog, dispatchPriority, formId);
+
+            setCurrentForm(duplicateForm);
+            return null;
+        }
+
         if (contextFormDockable != null) {
             contextFormDockable.block();
             contextFormDockable.setBlockingForm((FormDockable) formContainer);
             getFormsWindow(contextFormDockable).formsChanged(); // the mask is a projected state, so a component view has to be told the transition happened
         }
-
-        boolean isDialog = showFormType.isDialog();
 
         FormContainer fFormContainer = formContainer; GShowFormType fShowFormType = showFormType; int fDispatchPriority = dispatchPriority;
         Result<WindowHiddenHandler> recursionHiddenHandler = new Result<>();
@@ -547,8 +548,10 @@ public abstract class FormsController {
                         newShowFormType = GModalityShowFormType.MODAL;
                     }
 
-                    // the same form open type
-                    if(newShowFormType.equals(fShowFormType) && formAction.syncType == syncType && GwtClientUtils.nullEquals(formAction.formId, formId)) {
+                    // the same form open type - unless it is an ACTIVATE open of a form the window already holds:
+                    // that one is answered by the form held, and ordinary dispatch below is what finds it
+                    if(newShowFormType.equals(fShowFormType) && formAction.syncType == syncType && GwtClientUtils.nullEquals(formAction.formId, formId)
+                            && getDuplicateForm(newShowFormType.getWindowType(), formAction.form.canonicalName, formId, formAction.activateType, fFormContainer) == null) {
                         recreateForm = formAction.form;
                         lookAhead.drop();
                     }
@@ -630,7 +633,7 @@ public abstract class FormsController {
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
         GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
-        FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.activateType);
+        FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.formId, openForm.activateType, null);
         if (duplicateForm == null) {
             Scheduler.ScheduledCommand runOpenForm = () -> {
                 FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
@@ -672,12 +675,16 @@ public abstract class FormsController {
     }
 
     // a duplicate is looked for in the window the form would open in - after the fallback, so that on the mobile layout,
-    // where every docked form goes to System.forms, it is that window's forms that are checked
-    private FormDockable getDuplicateForm(GWindowFormType windowType, String canonicalName, GFormActivateType activateType) {
-        // FIXED is the application's decision and the setting does not gate it; USER is the user's, and it does
-        if(activateType == GFormActivateType.FIXED || (activateType == GFormActivateType.USER && MainFrame.forbidDuplicateForms)) {
-            return getFormsWindow(windowType).findForm(canonicalName);
-        }
+    // where every docked form goes to System.forms, it is that window's forms that are checked. The two kinds of
+    // activation differ in one thing only: ACTIVATE is the application's invariant, ACTIVATE USER is the user's
+    // preference, so their setting gates it - and in the desktop client Ctrl cancels it for that one open.
+    // A form on its way is not a duplicate: the label is the form's own, so a container without one could only be
+    // matched by an address that names no label - and answering with it would hand back a form nobody has yet
+    private FormDockable getDuplicateForm(GWindowFormType windowType, String canonicalName, String formId, GFormActivateType activateType, FormContainer asking) {
+        if(activateType == GFormActivateType.FIXED || (activateType == GFormActivateType.USER && MainFrame.forbidDuplicateForms))
+            for (FormDockable dockable : getFormsWindow(windowType).getForms())
+                if (dockable != asking && matches(dockable, null, canonicalName) && hasFormId(dockable, formId))
+                    return dockable;
         return null;
     }
 
@@ -699,12 +706,6 @@ public abstract class FormsController {
 
     public void setCurrentForm(FormDockable dockable) {
         getFormsWindow(dockable).setCurrentForm(dockable);
-    }
-
-    public void setCurrentForm(String formCanonicalName) {
-        FormDockable form = findForm(formCanonicalName);
-        if(form != null)
-            setCurrentForm(form);
     }
 
     // ACTIVATE FORM: the first form the address names becomes the current one. A miss is not an error - the form the
@@ -753,6 +754,12 @@ public abstract class FormsController {
         return found;
     }
 
+    // the label a form carries, compared exactly: an open asking about the form it is ABOUT to create means, with no
+    // label, the form opened without one. A form that has not arrived carries none to compare
+    private boolean hasFormId(FormContainer formContainer, String formId) {
+        return formContainer.getForm() != null && GwtClientUtils.nullEquals(formId, formContainer.getForm().formId);
+    }
+
     private boolean matches(FormContainer formContainer, String formId, String formCanonicalName) {
         GFormController form = formContainer.getForm();
 
@@ -772,22 +779,11 @@ public abstract class FormsController {
         return formCanonicalName.equals(canonicalName);
     }
 
-    // the window an address names, after the same fallback an open goes through: a client that draws System.forms
-    // alone holds there the forms every other window would have held, so an address naming one of those has to reach
-    // them rather than find nothing
-    private FormsWindowController getFormsWindow(String windowCanonicalName) {
+    // the window a name means, after the fallback: a client that draws System.forms alone holds there the forms
+    // every other window would have held, so naming one of those has to reach them rather than find nothing
+    public FormsWindowController getFormsWindow(String windowCanonicalName) {
         FormsWindowController window = formsWindows.get(windowCanonicalName);
         return window != null ? window : main;
-    }
-
-    // in any window, System.forms first: ACTIVATE names a form, not a window
-    public FormDockable findForm(String formCanonicalName) {
-        for (FormsWindowController window : formsWindows.values()) {
-            FormDockable form = window.findForm(formCanonicalName);
-            if (form != null)
-                return form;
-        }
-        return null;
     }
 
     public void addDockable(FormDockable dockable, Integer index) {

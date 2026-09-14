@@ -14,14 +14,16 @@ public class AsyncOpenForm extends AsyncExec {
     public String caption;
     public AppServerImage image;
     public FormActivateType activateType;
+    public String formId; // the label the open would give the form, which is part of what says it is the same one
     public boolean modal;
     public WindowFormType type;
 
-    public AsyncOpenForm(String canonicalName, String caption, AppServerImage image, FormActivateType activateType, boolean modal, WindowFormType type) {
+    public AsyncOpenForm(String canonicalName, String caption, AppServerImage image, FormActivateType activateType, String formId, boolean modal, WindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.image = image;
         this.activateType = activateType;
+        this.formId = formId;
         this.modal = modal;
         this.type = type;
     }
@@ -39,6 +41,7 @@ public class AsyncOpenForm extends AsyncExec {
         SerializationUtil.writeString(outStream, caption);
         AppServerImage.serialize(image, outStream);
         outStream.writeByte(activateType != null ? activateType.serialize() : 0);
+        SerializationUtil.writeString(outStream, formId);
         outStream.writeBoolean(modal);
         type.serialize(outStream);
     }

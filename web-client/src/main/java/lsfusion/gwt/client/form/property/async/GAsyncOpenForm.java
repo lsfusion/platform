@@ -20,6 +20,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     public String caption;
     public AppStaticImage appImage;
     public GFormActivateType activateType;
+    public String formId;
     public boolean modal;
     public GWindowFormType type;
 
@@ -27,11 +28,12 @@ public class GAsyncOpenForm extends GAsyncExec {
     public GAsyncOpenForm() {
     }
 
-    public GAsyncOpenForm(String canonicalName, String caption, AppStaticImage appImage, GFormActivateType activateType, boolean modal, GWindowFormType type) {
+    public GAsyncOpenForm(String canonicalName, String caption, AppStaticImage appImage, GFormActivateType activateType, String formId, boolean modal, GWindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
         this.appImage = appImage;
         this.activateType = activateType;
+        this.formId = formId;
         this.modal = modal;
         this.type = type;
     }

@@ -28,7 +28,7 @@ By default, forms in the synchronous mode are shown as windows, in the asynchron
 
 A tab opened in the synchronous mode blocks the calling form until it is closed. If the calling form is itself shown as a window, the opened form is shown as a window instead of a tab.
 
-Each execution of the action opens a new instance of the form, even if the same form is already open. An already open tab of the form is activated instead of a new one only when the form is opened from the [navigator](Navigator.md), and only if duplicate forms are forbidden for the user.
+Each execution of the action opens a new instance of the form, even if the same form is already open, unless the opening is set to activate an instance that is already open: then, if the same form is open in the same window with the same label, that form is [activated](Activation_ACTIVATE.md) instead of a new one. Such an opening does so either always, or only while duplicate forms are forbidden for the user; opening a form from the [navigator](Navigator.md) does the latter.
 
 
 :::info

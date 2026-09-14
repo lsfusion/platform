@@ -171,8 +171,8 @@ public abstract class FormContainer {
     protected void arrived(FormsController formsController) {
     }
 
-    // the form arrived for an open the client answers with another form - the one it already holds. Built and
-    // registered on the server it is all the same, so somebody has to close it, and only a container that has its
+    // the form arrived for an open the client answers with another form - the window already holds this one. Built
+    // and registered on the server it is all the same, so somebody has to close it, and only a container that has its
     // controller can: this one, which exists for that and goes away with it. Never shown, so it takes no place in a
     // window, displaces nothing, and hands nothing back to an opener
     public void closeOnArrival(FormsController formsController, GForm gForm, boolean isDialog, int dispatchPriority, String formId) {

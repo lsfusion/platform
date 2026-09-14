@@ -329,6 +329,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("WINDOW %s: '%s' is not a FORMS window, so no form can open into it", name, name));
     }
 
+    public void emitActivateNotAllowedError(ScriptParser parser, String what) throws SemanticErrorException {
+        emitSimpleError(parser, format("SHOW ... ACTIVATE shows the form that is already open exactly as it is, so it cannot be used %s", what));
+    }
+
     public void emitEmptyFormAddressError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "a form has to be named by at least one of a label, a form name and a window");
     }

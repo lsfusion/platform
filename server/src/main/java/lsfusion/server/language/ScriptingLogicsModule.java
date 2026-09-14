@@ -14,6 +14,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.DockedWindowFormType;
+import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.print.FormPrintType;
@@ -4106,8 +4107,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
                                                                          LAWithParams initAction, List<TypedParameter> objectsContext,
                                                                          List<LPWithParams> contextFilters, List<TypedParameter> oldContext,
-                                                                         String formId) throws ScriptingErrorLog.SemanticErrorException {
+                                                                         String formId, FormActivateType activateType) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
+
+        if (activateType != null)
+            checks.checkShowActivate(windowType instanceof DockedWindowFormType, Boolean.FALSE.equals(syncType),
+                    mappedObjects.isEmpty(), contextFilters.isEmpty(), !readonly,
+                    formSessionScope == FormSessionScope.OLDSESSION, initAction == null,
+                    !checkOnOk, manageSession == ManageSessionType.AUTO, noCancel == FormEntity.DEFAULT_NOCANCEL);
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
         MList<O> mObjects = ListFact.mListMax(mappedObjects.size());
@@ -4129,7 +4136,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
-                syncType, windowType, null, checkOnOk,
+                syncType, windowType, activateType, checkOnOk,
                 readonly, formId, contextEntities.initAction);
 
         for (int usedParam : contextEntities.usedParams) {

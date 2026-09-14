@@ -10,6 +10,7 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.facile.lookandfeel.DockableCollector;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelUtilities;
+import lsfusion.base.BaseUtils;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.controller.MainController;
@@ -189,22 +190,25 @@ public class FormsController implements ColorThemeChangeListener {
         ClientFormDockable page = asyncFormController.removeAsyncForm();
         boolean asyncOpened = page != null;
 
-        if (!asyncOpened) {
-            ClientFormDockable duplicateForm = getDuplicateForm(clientData.canonicalName, activateType);
-            if (duplicateForm != null) {
-                // the form is built and registered on the server whatever the client decides to do with it, so the
-                // one that is not going to be shown is closed here - through a controller that is never put in a
-                // dockable, and so has no caption to show: the base one refuses, and would stop the close before it is sent
-                new ClientFormController(remoteForm, this, clientForm, clientData, navigator, false, false) {
-                    @Override
-                    public void setFormCaption(String caption, String tooltip) {
-                    }
-                }.closePressed(true);
+        // the client may already hold this very form, and then this open shows the one it holds instead. Asked here,
+        // where the form has arrived, and not only before the open was sent: the answer is only as good as the moment
+        // it was given, and two opens that cross are both told the form is not open
+        ClientFormDockable duplicateForm = getDuplicateForm(clientData.canonicalName, formId, activateType, page);
+        if (duplicateForm != null) {
+            // the form is built and registered on the server whatever the client does with it, so the one that is not
+            // going to be shown is closed here - through a controller that is never put in a dockable, and so has no
+            // caption to show: the base one refuses, and would stop the close before it is sent
+            new ClientFormController(remoteForm, this, clientForm, clientData, navigator, false, false) {
+                @Override
+                public void setFormCaption(String caption, String tooltip) {
+                }
+            }.closePressed(true);
+            if (asyncOpened)
+                page.onClosing(); // the placeholder this open put up leaves with it
 
-                duplicateForm.toFront();
-                duplicateForm.requestFocusInWindow();
-                return duplicateForm;
-            }
+            duplicateForm.toFront();
+            duplicateForm.requestFocusInWindow();
+            return duplicateForm;
         }
 
         if (!asyncOpened) {
@@ -226,7 +230,7 @@ public class FormsController implements ColorThemeChangeListener {
     //we don't want flashing, so we use timer
     Timer openFormTimer;
     public void asyncOpenForm(AsyncFormController asyncFormController, ClientAsyncOpenForm asyncOpenForm) {
-        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.activateType) == null) {
+        if (getDuplicateForm(asyncOpenForm.canonicalName, asyncOpenForm.formId, asyncOpenForm.activateType, null) == null) {
             openFormTimer = new Timer(100, e -> {
                 if(openFormTimer != null) {
                     if (asyncFormController.checkNotCompleted()) { //request is not completed yet
@@ -243,11 +247,13 @@ public class FormsController implements ColorThemeChangeListener {
         }
     }
 
-    private ClientFormDockable getDuplicateForm(String canonicalName, FormActivateType activateType) {
-        // FIXED is the application's decision and the setting does not gate it; USER is the user's, and it does
+    // the two kinds of activation differ in one thing only: ACTIVATE is the application's invariant, ACTIVATE USER is
+    // the user's preference, so their setting gates it - and Ctrl cancels it for that one open
+    private ClientFormDockable getDuplicateForm(String canonicalName, String formId, FormActivateType activateType, ClientDockable asking) {
         if (activateType == FormActivateType.FIXED || (MainController.forbidDuplicateForms && activateType == FormActivateType.USER)) {
             List<ClientDockable> formsList = forms.getFormsList();
-            ClientDockable duplicate = formsList.stream().filter(dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(canonicalName)).findFirst().orElse(null);
+            ClientDockable duplicate = formsList.stream().filter(dockable -> dockable != asking && dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(canonicalName)
+                    && !dockable.async && BaseUtils.nullEquals(formId, dockable.formId)).findFirst().orElse(null);
             if (duplicate != null) {
                 CDockable dockable = control.getCDockable(control.getCDockableCount() - formsList.size() + formsList.indexOf(duplicate));
                 if (dockable instanceof ClientFormDockable) {

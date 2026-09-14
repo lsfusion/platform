@@ -36,6 +36,7 @@ sessionScopeType
 cancelType
 READONLY
 CHECK
+ACTIVATE [USER]
 ```
 
 Where `windowType` is one of:
@@ -56,7 +57,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
 - `formId`
 
-    [String literal](Literals.md#strliteral) that uniquely identifies the opened form instance for later form-management actions (for example, to close that exact form). By default, the opened form has no such identifier.
+    [String literal](Literals.md#strliteral) - the label the opened form carries, by which later actions address it: [`ACTIVATE FORM`](ACTIVATE_operator.md) and [`CLOSE FORM`](CLOSE_FORM_operator.md). Several open forms may carry the same label: `CLOSE FORM` requests that each of them close, while `ACTIVATE FORM` activates the first one it finds in the `FORMS` windows. By default, the opened form carries none.
 
 - `formName`
 
@@ -145,6 +146,14 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 - `CHECK`
 
     Keyword. If specified, when the user presses the *OK* system action (`System.formOk[]`), the platform first validates the pending session changes (runs the apply pass — constraints, aggregations, event handlers — without committing); the form closes only if the validation passes, otherwise it stays open.
+
+- `ACTIVATE`
+
+    Keyword. If specified, and the same form is already open in the window with the same `formId`, that form is [activated](ACTIVATE_operator.md) instead and no second one is shown; the form that is already open is shown as it is. An open without `formId` means the form opened without one, not any of them. Since the form already open is shown unchanged, `ACTIVATE` can be specified only together with `WINDOW` and `NOWAIT`, and not together with `OBJECTS`, `FILTERS`, `READONLY`, `CHECK`, a session option, a cancel option or an initialization block — those apply to a form being opened and would have nowhere to go.
+
+    Which form is open is known to the client, and it is the client that answers: the form this statement opens is still created, its [initialization events](FORM_statement.md) run, and it is then closed, running its close events as well. An application for which creating it is itself too much states the condition itself — [`ACTIVATE FORM`](ACTIVATE_operator.md) and its own check around the `SHOW`.
+
+    Adding `USER` leaves the choice to the user: the form is activated only while duplicate forms are forbidden for them (the `forbidDuplicateForms` setting), and in the desktop client holding *Ctrl* opens another instance anyway. Without `USER` neither the setting nor *Ctrl* changes it. `USER` is what a [navigator](../paradigm/Navigator.md) form element does.
 
 ### Examples
 

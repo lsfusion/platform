@@ -29,15 +29,17 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     public final FormSelector formSelector;
 
     private final FormActivateType activateType;
+    private final String formId;
     private final boolean modal;
     private final WindowFormType type;
 
     public final CustomClass propertyClass;
     public final T propertyInterface;
 
-    public AsyncMapOpenForm(FormSelector formSelector, FormActivateType activateType, boolean modal, WindowFormType type, CustomClass propertyClass, T parameterInterface) {
+    public AsyncMapOpenForm(FormSelector formSelector, FormActivateType activateType, String formId, boolean modal, WindowFormType type, CustomClass propertyClass, T parameterInterface) {
         this.formSelector = formSelector;
         this.activateType = activateType;
+        this.formId = formId;
         this.modal = modal;
         this.type = type;
         this.propertyClass = propertyClass;
@@ -46,7 +48,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     }
 
     private <P extends PropertyInterface> AsyncMapOpenForm<P> override(P propertyInterface) {
-        return new AsyncMapOpenForm<P>(formSelector, activateType, modal, type, propertyClass, propertyInterface);
+        return new AsyncMapOpenForm<P>(formSelector, activateType, formId, modal, type, propertyClass, propertyInterface);
     }
     
     @Override
@@ -79,7 +81,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         if (mapJoin instanceof PropertyMapImplement) {
             ValueClass valueClass = ((PropertyMapImplement<?, P>) mapJoin).property.getValueClass(ClassType.tryEditPolicy);
             if(valueClass instanceof CustomClass)
-                return new AsyncMapOpenForm<>(formSelector, activateType, modal, type, (CustomClass)valueClass, null);
+                return new AsyncMapOpenForm<>(formSelector, activateType, formId, modal, type, (CustomClass)valueClass, null);
             mapJoin = null;
         }
         return override((P) mapJoin);
@@ -103,7 +105,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         return new AsyncOpenForm(staticForm != null ? staticForm.getCanonicalName() : null, 
                                  staticForm != null ? staticForm.getLocalizedCaption() : null,
                                  staticForm != null ? staticForm.getImage(context) : null,
-                                 activateType, modal, type);
+                                 activateType, formId, modal, type);
     }
 
     @Override
@@ -132,7 +134,8 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         if(mergedType == null)
             return null;
 
-        return new AsyncMapOpenForm<>(mergedForm, mergeActivateType(activateType, asyncOpenForm.activateType), modal || asyncOpenForm.modal, mergedType, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
+        return new AsyncMapOpenForm<>(mergedForm, mergeActivateType(activateType, asyncOpenForm.activateType),
+                BaseUtils.nullEquals(formId, asyncOpenForm.formId) ? formId : null, modal || asyncOpenForm.modal, mergedType, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
     }
 
     // the branch that would reuse an open form wins, the way OR-ing the flag this replaced did. Returning null for

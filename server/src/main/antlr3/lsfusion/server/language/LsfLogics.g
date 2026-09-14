@@ -70,6 +70,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
+    import lsfusion.interop.form.FormActivateType;
     import lsfusion.server.logics.form.interactive.action.FormAddress;
     import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
     import lsfusion.server.logics.form.interactive.action.async.QuickAccessMode;
@@ -3760,11 +3761,12 @@ formActionDefinitionBody[List<TypedParameter> context, ActionStatementContext ac
 	boolean checkOnOk = false;
 
 	String formId = null;
+	FormActivateType activateType = null;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
-		                                     $ia.action, objectsContext, contextFilters, context, formId);
+		                                     $ia.action, objectsContext, contextFilters, context, formId, activateType);
 	}
 }
 	:	'SHOW' (formIdVal = stringLiteral { formId = $formIdVal.val; } '=' )? mf=mappedForm[context, null, actions, dynamic]
@@ -3783,6 +3785,7 @@ formActionDefinitionBody[List<TypedParameter> context, ActionStatementContext ac
 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
+		|	'ACTIVATE' { activateType = FormActivateType.FIXED; } ('USER' { activateType = FormActivateType.USER; })?
 		)*
 		(ia=listActionDefinitionBody[context, dynamic])?
 	;
