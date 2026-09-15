@@ -634,7 +634,7 @@ public class GFormController implements EditManager {
                 // isShownFormProperty is left alone deliberately: RESOLUTION must go on finding an lsf form-level
                 // draw (or a bare name would fall through to a group that happens to draw the same integration SID
                 // and silently change a cell), so the `lsf` exclusion belongs here, where the MEMBER is made
-                if (reactData.isShownFormProperty(draw, scope) && !draw.isLsfView() && seen.get(draw.integrationSID) == null) {
+                if (draw.integrationSID != null && reactData.isShownFormProperty(draw, scope) && !draw.isLsfView() && seen.get(draw.integrationSID) == null) {
                     seen.put(draw.integrationSID, Boolean.TRUE);
                     push(formProps, draw.integrationSID);
                 }
