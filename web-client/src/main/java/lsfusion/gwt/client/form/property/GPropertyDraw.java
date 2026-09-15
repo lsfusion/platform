@@ -92,9 +92,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean isList;
 
-    // LSF on a grid property: the platform draws it once per ROW and a CUSTOM REACT view places each of those,
-    // so its values feed real renderers instead of the view's data. isLsfView() already answers "is an lsf child
-    // of a react container", which the property is, because LSF requires it to be MOVEd there.
     // A GRID property has no place of its own in the design - the grid draws its cells - so `lsf` on one cannot mean
     // "my direct parent is a react container" the way it does for a container or a panel draw. It means: the platform
     // draws this cell, once per row, and the view that draws the ROWS places each renderer. That view is the container

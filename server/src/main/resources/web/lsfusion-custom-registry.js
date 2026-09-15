@@ -42,7 +42,7 @@
 
 // CUSTOM REACT hooks + <List>, on the same window.lsfusion namespace. DEFINED here (this script loads before any
 // compiled bundle), but INSTALLED lazily — by each compiled bundle's preamble (esbuild banner -> __installReactHooks)
-// right before the bundle body runs, and by ReactContainerView.createRoot at mount for a hand-written global that gets
+// right before the bundle body runs, and by ReactRoot.createRoot at mount for a hand-written global that gets
 // no preamble. That ordering is what lets a bundle alias a helper at module TOP — `const List = window.lsfusion.List;`
 // — and still bind to the FINAL window.React: an app may override React at a less-negative before-system order (after
 // this script but before the bundles / the form), so we must NOT capture React eagerly here. Idempotent; the first
@@ -432,7 +432,7 @@
             return React.createElement(simple ? SimpleList : KeysList, props);
         };
         // <BucketScope>/useBucket/<Buckets>: the pivot/matrix analogue of <List> (bucketKey -> rowKey[] index with
-        // per-cell subscription); the canonical narrative lives on the GWT side (ReactContainerView.installHooks).
+        // per-cell subscription); the canonical narrative lives on the GWT side (this file's own __installReactHooks).
         var EMPTY = Object.freeze([]);
         var BucketCtx = React.createContext(null);
         var makeBucketStore = function (formStore, groupSID, bucketOf) {

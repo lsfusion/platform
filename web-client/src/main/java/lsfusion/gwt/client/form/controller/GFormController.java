@@ -1033,9 +1033,6 @@ public class GFormController implements EditManager {
         getAsyncValues(value, draw, getControllerColumnKey(objectKey), actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
     }
 
-    // (row registration + resolution moved to GGroupObjectValue.registerRow / resolveObject — they use no controller
-    // state: public `key` is the display/diff token, the `objects` handle is resolution identity, raw GGV accepted)
-
     // terminal GControllerResult/ExceptionAction (delivered through GFormActionDispatcher) -> resolve/reject the promise
     public void controllerCallbackResult(long requestIndex, JavaScriptObject result) {
         gController.controllerCallbackResult(requestIndex, result);
