@@ -10,6 +10,7 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import java.util.function.Supplier;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -88,7 +89,7 @@ public class GReactFormData {
             gridRows.put(group, list);
             if (prev != null && prev.equals(list)) // the server re-read the group and sent back the SAME rows in the same
                 return;                            // order: nothing changed, so don't churn the node / list / stable keys
-            markGroupDirty(group, GroupDirty.ORDER); // row set / order changed -> the stable keys array must rebuild too
+            markGridDirty(group, GridDirty.ORDER); // row set / order changed -> the stable keys array must rebuild too
         });
 
         fc.properties.foreachEntry((reader, keyValues) -> {
@@ -126,7 +127,7 @@ public class GReactFormData {
         if (GwtClientUtils.nullEquals(old, key))
             return false;
         currentObjects.put(group, key);
-        markGroupDirty(group, GroupDirty.ROWS); // panel props for the new current; old + new current rows flip isCurrent
+        markCurrentDirty(group); // panel entries are read at the new current; old + new current rows flip isCurrent
         markRowDirty(group, old);
         markRowDirty(group, key);
         return true;
@@ -189,13 +190,16 @@ public class GReactFormData {
             return false;                          // on the group's node, so it goes the column way below
         }
         GGroupObject group = draw.groupObject;
-        if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillSingles reads)
+        if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillFormSingles reads)
             markScopeDirty(descriptorScope(draw));
             return false;
         }
-        // a panel property -> the node rebuilds and its list/rows are reused; a list cell -> the list (+ rows) rebuild too
-        markGroupDirty(group, draw.isList ? GroupDirty.ROWS : GroupDirty.NODE);
-        return draw.isList;
+        if (!draw.isList) { // a panel property -> its own entry, and the node it is assembled into; the grid untouched
+            markPanelDirty(draw);
+            return false;
+        }
+        markGridDirty(group, GridDirty.ROWS); // a list cell -> the grid part, its list and the changed rows
+        return true;
     }
     // a draw APPEARED or DISAPPEARED (a SHOWIF flip, a form-structure drop or restore): its entry's EXISTENCE changed,
     // which for a list draw with CELLS changes the shape of every projected row - per-row dirty keys cannot express that.
@@ -204,7 +208,7 @@ public class GReactFormData {
         if (draw.integrationSID == null)
             return;
         if (draw.isLsfView() && draw.isList) {
-            markGroupDirty(draw.groupObject, GroupDirty.NODE);
+            markGridDirty(draw.groupObject, GridDirty.ENTRIES);
             return;
         }
         if (markPropertyEntryDirty(draw)) // true exactly for a projected LIST draw - the one whose rows change shape
@@ -231,7 +235,7 @@ public class GReactFormData {
                     rows.add(position, key);
                 else
                     rows.add(key);
-                markGroupDirty(group, GroupDirty.ORDER); // optimistic add -> membership changed
+                markGridDirty(group, GridDirty.ORDER); // optimistic add -> membership changed
                 markRowDirty(group, key);
                 changed = true;
             }
@@ -248,7 +252,7 @@ public class GReactFormData {
         GGroupObjectValue current = currentObjects.get(group);
         if (GwtClientUtils.nullEquals(current, key))
             setCurrentObject(group, getNearObject(rows, index));
-        markGroupDirty(group, GroupDirty.ORDER); // optimistic remove -> membership changed
+        markGridDirty(group, GridDirty.ORDER); // optimistic remove -> membership changed
         markRowDirty(group, key);
         return true;
     }
@@ -301,15 +305,42 @@ public class GReactFormData {
     // how much of a group's node the next build has to redo. The levels are MONOTONE - ORDER implies ROWS implies NODE -
     // so a caller states the strongest thing that changed and the implications follow, instead of re-establishing the
     // chain by hand at every site (which is what silently drifts: an order change that forgets to dirty the list).
-    private enum GroupDirty { NODE, ROWS, ORDER }
+    // what a change to the GRID's part touched: only what is written on the node (a column caption, an option), the
+    // rows too, or the membership/order of the rows. Each level is a superset of the one before it.
+    private enum GridDirty { ENTRIES, ROWS, ORDER }
 
-    private void markGroupDirty(GGroupObject group, GroupDirty level) {
+    private void markGridDirty(GGroupObject group, GridDirty level) {
         if (!markPartDirty(group.getDrawComponent(), group)) // nobody draws this group's rows -> there is no grid part
             return;
-        if (level != GroupDirty.NODE)
+        if (level != GridDirty.ENTRIES)
             dirtyLists.put(group, Boolean.TRUE);
-        if (level == GroupDirty.ORDER)
+        if (level == GridDirty.ORDER)
             dirtyOrder.put(group, Boolean.TRUE);
+    }
+
+    // a PANEL property is its own part: it is placed on its own, and what happens to it - a new value, a new current
+    // object, an appearance or a disappearance - concerns nothing else on the node. Its scope is asked of the group
+    // for now, since fillSingles still puts every panel draw of a group on that group's node.
+    private boolean markPanelDirty(GPropertyDraw draw) {
+        GGroupObject group = draw.groupObject;
+        boolean marked = false;
+        for (GContainer scope : getGroupScopes(group)) {
+            dirtyParts.put(partKey(draw, group), Boolean.TRUE);
+            markNodeDirty(scope, group);
+            marked = true;
+        }
+        return marked;
+    }
+
+    // the one CROSS-part edge the base projection has: the current object is the group's, and it is read by parts that
+    // do not otherwise know about each other. The grid's rows flip `isCurrent`; EVERY panel entry of the group is read
+    // at the new key, so its value, and its very existence, change with it; and the index of what the node carries
+    // (`properties`) follows those appearances, which is why the grid part - where that index is built - is dirtied too.
+    private void markCurrentDirty(GGroupObject group) {
+        markGridDirty(group, GridDirty.ROWS);
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && !draw.isList)
+                markPanelDirty(draw);
     }
 
     // a PART must be rebuilt: the component that produces it drew something else - and with it the node it is
@@ -340,9 +371,9 @@ public class GReactFormData {
 
     // rebuild the list AND forbid reusing any cached row: the change altered the SHAPE of every projected row (a
     // property's entry appeared or disappeared in each of them), which per-row dirty keys cannot express. Deliberately
-    // NOT a GroupDirty level: ORDER still reuses surviving rows, while this preserves order but rebuilds them all.
+    // NOT a GridDirty level: ORDER still reuses surviving rows, while this preserves order but rebuilds them all.
     private void invalidateRows(GGroupObject group) {
-        markGroupDirty(group, GroupDirty.ROWS);
+        markGridDirty(group, GridDirty.ROWS);
         lastRows.remove(group);
     }
 
@@ -373,7 +404,7 @@ public class GReactFormData {
             GPropertyDraw draw = (GPropertyDraw) owner;
             if (draw.integrationSID != null) {
                 if (draw.isList && reader.isColumnAttribute(draw)) // a column attribute lives on the group -> rebuild the group only, DON'T churn the list/row refs
-                    markGroupDirty(draw.groupObject, GroupDirty.NODE);
+                    markGridDirty(draw.groupObject, GridDirty.ENTRIES);
                 else // a cell (or single-value) attribute -> the same marking as the value it sits with
                     markPropertyDirty(draw, keyValues);
             }
@@ -389,7 +420,7 @@ public class GReactFormData {
             return;
         // a per-row attribute -> the list + each changed row; a group-scoped one (options) -> the node only
         boolean perRow = reader.getAttributeScope() == GGroupAttributeScope.ROW;
-        markGroupDirty(group, perRow ? GroupDirty.ROWS : GroupDirty.NODE);
+        markGridDirty(group, perRow ? GridDirty.ROWS : GridDirty.ENTRIES);
         if (perRow)
             keyValues.foreachEntry((k, v) -> markRowDirty(group, k));
     }
@@ -421,7 +452,7 @@ public class GReactFormData {
                 continue;
             // the node is this SCOPE's, so it is cached and rebuilt as this scope's: a pass asks for it once, and
             // nothing has to be taken out of the dirty set as it goes. What is shared between scopes is one level
-            // down - the PARTS, which are materialized at most once per pass (getGridPart) - so a part that did not
+            // down - the PARTS, which are materialized at most once per pass (getPart) - so a part that did not
             // change hands every scope the same object and the structural sharing their React.memo depends on holds.
             String key = nodeKey(scope, group);
             JavaScriptObject node = lastNodes.get(key);
@@ -431,7 +462,7 @@ public class GReactFormData {
             }
             setField(data, group.getSID(), node);
         }
-        fillSingles(data, null, GGroupObjectValue.EMPTY, scope); // the form-level properties: their own producer, the scope's top object
+        fillFormSingles(data, scope); // the form-level properties, each on the top object of the scope it sits in
         fillContainers(data, scope);
         lastData.put(scope, data);
         return data;
@@ -563,20 +594,23 @@ public class GReactFormData {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
 
-        copyFields(node, getGridPart(group, current));
+        copyFields(node, getPart(group.getDrawComponent(), group, () -> buildGridPart(group, current)));
         if (current != null) // the panel draws the current object, and without one it draws nothing
             copyFields(node, buildPanelPart(group, current));
+        // the index of what THIS node carries - the assembler's, because only the assembler knows what it assembled
+        setField(node, "properties", buildProperties(group));
 
         setGroupSID(node, group.getSID());
         return node;
     }
 
-    // the grid's part, cached under its producer and rebuilt only when that producer's own dirty flag says so
-    private JavaScriptObject getGridPart(GGroupObject group, GGroupObjectValue current) {
-        String key = partKey(group.getDrawComponent(), group);
+    // a part, cached under its producer and rebuilt only when that producer's own dirty flag says so. Read and write
+    // spell the production identity the same way: this is markPartDirty's (component, group), asked back
+    private JavaScriptObject getPart(GComponent producer, GGroupObject group, Supplier<JavaScriptObject> build) {
+        String key = partKey(producer, group);
         JavaScriptObject part = lastParts.get(key);
         if (part == null || dirtyParts.get(key) != null) {
-            part = buildGridPart(group, current);
+            part = build.get();
             lastParts.put(key, part);
         }
         return part;
@@ -657,9 +691,17 @@ public class GReactFormData {
         return node;
     }
 
+    // each panel entry is a part of its own, cached under the draw that produces it: whether it EXISTS is asked here,
+    // every pass, and only what it holds is cached - so an entry that comes and goes is never revived from the cache
     private JavaScriptObject buildPanelPart(GGroupObject group, GGroupObjectValue current) {
         JavaScriptObject part = newObject();
-        fillSingles(part, group, current, null);
+        for (GPropertyDraw draw : form.propertyDraws) {
+            if (draw.groupObject != group)
+                continue;
+            GGroupObjectValue valueKey = getSingleEntryKey(draw, current);
+            if (valueKey != null)
+                setField(part, draw.integrationSID, getPart(draw, group, () -> buildSingleEntry(draw, valueKey)));
+        }
         return part;
     }
 
@@ -673,10 +715,9 @@ public class GReactFormData {
                 emitAttribute(row, reader, rowKey, null);
     }
 
-    // the GROUP's own attributes, direct on its node beside list/byKey/keys: the names of what it draws, and its
-    // group-scoped readers (options, read once at EMPTY). The mirror of fillRowAttributes, one level up.
+    // the GROUP's own attributes, direct on its node beside list/byKey/keys: its group-scoped readers (options, read
+    // once at EMPTY). The mirror of fillRowAttributes, one level up.
     private void fillGroupAttributes(JavaScriptObject node, GGroupObject group) {
-        setField(node, "properties", buildProperties(group));
         for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
             if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.GROUP)
                 emitAttribute(node, reader, GGroupObjectValue.EMPTY, null);
@@ -703,7 +744,7 @@ public class GReactFormData {
     }
 
     // the names this group's node carries RIGHT NOW, by the SAME two predicates the entries are built by - fillColumns
-    // for a list draw, fillSingles for a panel one, which is emitted for the CURRENT object and not at all without
+    // for a list draw, buildPanelPart for a panel one, which is emitted for the CURRENT object and not at all without
     // one. Asking either of them at another key would list a property that has no entry, or hide one that has.
     // ... and what has a VALUE here, which is a different question and the one a CONTROLLER MEMBER answers to.
     // An `lsf` draw's entry is a DESCRIPTOR - the platform draws its value in its own renderer, the projection writes
@@ -762,7 +803,7 @@ public class GReactFormData {
     }
 
     // ... and the same question for a form-level draw, which has no group node: it is carried by the scope it sits
-    // in, at the top object, and only while it is shown - the predicate fillSingles emits it by
+    // in, at the top object, and only while it is shown - the predicate fillFormSingles emits it by
     public boolean isShownFormProperty(GPropertyDraw draw, GContainer scope) {
         if (draw.groupObject != null || scope == null || descriptorScope(draw) != scope)
             return false;
@@ -772,7 +813,7 @@ public class GReactFormData {
         // that exclusion belongs to the member set (getControllerStructure), not here
         if (draw.isLsfView()) // its entry IS its descriptor, so ask the one function that emits descriptors
             return getProjectedContainerScope(draw) == scope;
-        return getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillSingles writes it under
+        return getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillFormSingles writes it under
     }
     // ... and the draw a BARE name means on the controller: the form-level one this projection is showing, which is
     // the one that has the member. Asked of the projection and not of the form, or the name would answer with a draw
@@ -831,17 +872,15 @@ public class GReactFormData {
                 setField(row, draw.integrationSID, buildCellEntry(draw, rowKey));
     }
 
-    // the SINGLE-valued properties on a target: a group's panel properties on its node, or the form-level properties on
-    // the scope's top object - each one entry with its value and all its attributes
-    private void fillSingles(JavaScriptObject target, GGroupObject group, GGroupObjectValue key, GContainer scope) {
+    // the FORM-LEVEL properties, on the scope's top object: no group, so one value each, read at the empty key, and
+    // each belongs to the scope it sits in
+    private void fillFormSingles(JavaScriptObject data, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws) {
-            if (draw.groupObject != group)
+            if (!isShownFormProperty(draw, scope)) // the same question the member set asks, so the two cannot drift
                 continue;
-            if (group == null && descriptorScope(draw) != scope) // a form-level property belongs to the scope it sits in
-                continue;
-            GGroupObjectValue valueKey = getSingleEntryKey(draw, key);
+            GGroupObjectValue valueKey = getSingleEntryKey(draw, GGroupObjectValue.EMPTY); // ... and null for an lsf
             if (valueKey != null)
-                setField(target, draw.integrationSID, buildSingleEntry(draw, valueKey));
+                setField(data, draw.integrationSID, buildSingleEntry(draw, valueKey));
         }
     }
 
