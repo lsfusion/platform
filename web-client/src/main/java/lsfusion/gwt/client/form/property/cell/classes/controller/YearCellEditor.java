@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.classes.data.GYearType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 public class YearCellEditor extends IntegralCellEditor {
 
     public YearCellEditor(EditManager editManager, GPropertyDraw property) {
-        super(GIntegerType.instance, editManager, property);
+        super(GYearType.instance, editManager, property);
     }
 
     @Override

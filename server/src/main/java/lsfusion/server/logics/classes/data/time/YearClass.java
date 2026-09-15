@@ -6,6 +6,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.text.NumberFormat;
 import java.util.Calendar;
 
 public class YearClass extends IntegerClass {
@@ -35,5 +36,12 @@ public class YearClass extends IntegerClass {
     @Override
     public String getInputType(FormInstanceContext context) {
         return "year";
+    }
+
+    @Override
+    protected NumberFormat getDefaultFormat() {
+        NumberFormat format = NumberFormat.getIntegerInstance();
+        format.setGroupingUsed(false);
+        return format;
     }
 }

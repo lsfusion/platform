@@ -52,6 +52,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GIntegerType.instance;
     }
 
+    @Converter(from = ClientYearClass.class)
+    public GYearType convertYearClass(ClientYearClass clientYearClass) {
+        return GYearType.instance;
+    }
+
     @Converter(from = ClientActionClass.class)
     public GActionType convertActionClass(ClientActionClass clientActionClass) {
         return GActionType.instance;

@@ -65,7 +65,7 @@ public class ClientTypeSerializer {
         if (type == DataType.HTMLTEXT) return new ClientHTMLTextClass();
         if (type == DataType.RICHTEXT) return new ClientRichTextClass();
 
-        if (type == DataType.YEAR) return ClientIntegerClass.instance;
+        if (type == DataType.YEAR) return ClientYearClass.instance;
         if (type == DataType.DATETIME) return ClientDateTimeClass.instance;
         if (type == DataType.ZDATETIME) return ClientZDateTimeClass.instance;
         if (type == DataType.DATEINTERVAL) return ClientIntervalClass.getInstance("DATE");

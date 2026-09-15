@@ -218,6 +218,10 @@ public abstract class IntegralClass<T extends Number> extends FormatClass<T> imp
         if(pattern != null)
             return new DecimalFormat(pattern);
 
+        return getDefaultFormat();
+    }
+
+    protected NumberFormat getDefaultFormat() {
         return NumberFormat.getInstance();
     }
 
