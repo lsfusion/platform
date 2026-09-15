@@ -42,7 +42,7 @@ extractDOY = FORMULA INTEGER PG '(extract(doy from ($1))::integer)', MS 'datepar
 
 currentDay = extractDay(currentDate());
 currentMonth  = extractMonthNumber(currentDate());
-currentYear = extractYear(currentDate());
+currentYear = YEAR(extractYear(currentDate()));
 dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
 
 currentTimeText() =  [FORMULA TEXT 'to_char(now(),($1))']('YYYYMMDDHH24MISSMS'); 
