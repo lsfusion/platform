@@ -775,8 +775,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             GroupObjectEntity group = property.entity.getToDraw(entity);
             boolean columns = !property.entity.getColumnGroupObjects().isEmpty();
             if (group == null) { // a form-level property: one object at data.<integrationSID>
-                ContainerView scope = lsf ? property.getContainer() // an LSF draw's parent IS react (checkLsfViews ran first)
-                        : getOwningReactContainer(property);
+                ContainerView scope = descriptorScope(property); // an LSF draw's entry is its descriptor, in its own container
                 if (scope == null) // nothing projects it, so nothing here has to be able to name it
                     continue;
                 checkProjectedDraw(columns, integrationSID, "form property");
