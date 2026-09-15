@@ -300,7 +300,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
     // into a JSON candidate list). A box marked lsf keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
-        return getOwningReactContainer(getGroupDrawComponent(group)) != null;
+        return partScope(getGroupDrawComponent(group)) != null; // where its ROWS are drawn
     }
 
     // the component that actually DRAWS a group: the tree it belongs to, or its own grid. This is the same component
@@ -324,8 +324,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // next to it. A list because a component may serve several groups (a TREE) and because the caller claims names
     // over whatever it returns.
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
-        ContainerView owner = getOwningReactContainer(getGroupDrawComponent(group));
+        ContainerView owner = partScope(getGroupDrawComponent(group));
         return owner != null ? Collections.singletonList(owner) : Collections.emptyList();
+    }
+
+    // (mirrors GReactFormData.partScope)
+    private ContainerView partScope(ComponentView component) {
+        return getOwningReactContainer(component);
+    }
+
+    // ... and WHERE ITS DESCRIPTOR GOES - the container that labels the boundary it places
+    // (mirrors GReactFormData.descriptorScope)
+    private ContainerView descriptorScope(ComponentView component) {
+        return component.isLsfView() ? component.getContainer() : partScope(component);
     }
 
     // the react container that RENDERS this component, null if a standard view is built for it (mirrors
@@ -747,8 +758,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             GroupObjectEntity group = property.entity.getToDraw(entity);
             boolean columns = !property.entity.getColumnGroupObjects().isEmpty();
             if (group == null) { // a form-level property: one object at data.<integrationSID>
-                ContainerView scope = lsf ? property.getContainer() // an LSF draw's parent IS react (checkLsfViews ran first)
-                        : getOwningReactContainer(property);
+                ContainerView scope = descriptorScope(property); // an LSF draw's entry is its descriptor, in its own container
                 if (scope == null) // nothing projects it, so nothing here has to be able to name it
                     continue;
                 checkProjectedDraw(columns, integrationSID, "form property");
@@ -771,9 +781,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // it - the ownership walk stops at an lsf child. The client's statement of the same rule bears the same name
     // (GReactFormData.getProjectedContainerScope); this one reserves the names that one emits.
     private ContainerView getProjectedContainerScope(ContainerView container) {
-        if (container.isLsfView()) // an lsf child's parent IS a react container - checkLsfViews, which runs first, rejected anything else
-            return container.getContainer();
-        return container.declared ? getOwningReactContainer(container) : null; // declared OR lsf, nothing for the rest
+        return container.isLsfView() || container.declared ? descriptorScope(container) : null; // declared OR lsf, nothing for the rest
     }
 
 

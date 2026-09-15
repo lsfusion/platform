@@ -179,7 +179,7 @@ public class GReactFormData {
             return false;
         GGroupObject group = draw.groupObject;
         if (group == null) { // form-level -> its entry on the top object (fullKey == EMPTY, the key fillSingles reads)
-            markScopeDirty(getTopLevelScope(draw));
+            markScopeDirty(descriptorScope(draw));
             return false;
         }
         // a panel property -> the node rebuilds and its list/rows are reused; a list cell -> the list (+ rows) rebuild too
@@ -431,9 +431,9 @@ public class GReactFormData {
     // the scope whose data carries this container's entry, or null when it has none - THE statement of the container
     // rule, asked by the build (fillContainers) and by the delta path (getContainerReaderScope) alike, so the two cannot
     // drift. The server asks its own copy of the same question under the same name (FormView.getProjectedContainerScope)
-    // to reserve the names this emits. An LSF container is placed by the scope it sits in (getTopLevelScope).
+    // to reserve the names this emits.
     private GContainer getProjectedContainerScope(GComponent component) {
-        return isProjectedContainer(component) ? getTopLevelScope(component) : null;
+        return isProjectedContainer(component) ? descriptorScope(component) : null;
     }
 
     // what the platform computed about a COMPONENT itself (a container, or an lsf property whose value it draws):
@@ -483,12 +483,20 @@ public class GReactFormData {
         return getProjectedContainerScope(getDescriptorOwner(reader));
     }
 
-    // the scope whose data carries this component - a container, or a form-level property (both live directly on the
-    // top object, keyed as the thing is keyed). An LSF component is placed by the scope it is declared in: the
-    // platform draws it, but hands its caption to React. Anything else belongs to the scope that OWNS it, which by
-    // construction is nothing inside an lsf subtree. (A GROUPED property's object lives in its group node, not here.)
-    private GContainer getTopLevelScope(GComponent component) {
-        return component.isLsfView() ? component.container : formController.getOwningReactContainer(component);
+    // WHERE A COMPONENT'S PART GOES - only React draws parts, so this is the one question, and its null for an
+    // `lsf` child is the ANSWER, not a gap: the platform draws that component, so nothing is produced for it here.
+    // Asked lazily, never at construction: getOwningReactContainer answers null for everything until GFormController
+    // has assigned its reactData, which happens after this object's constructor returns.
+    public GContainer partScope(GComponent component) {
+        return formController.getOwningReactContainer(component);
+    }
+
+    // ... and WHERE ITS DESCRIPTOR GOES - the container that must label the boundary it places. For an `lsf` child
+    // that is the container it sits in (the platform draws it, React only frames it); for anything React draws it is
+    // the container that draws it. The two answers are deliberately different functions: the previous version of this
+    // layer used this one for both and thereby sent an lsf component's DATA to the container that merely frames it.
+    public GContainer descriptorScope(GComponent component) {
+        return component.isLsfView() ? component.container : partScope(component);
     }
 
     public boolean isLsfViewDescriptorReader(GPropertyReader reader) {
@@ -650,7 +658,7 @@ public class GReactFormData {
     // ... and the same question for a form-level draw, which has no group node: it is carried by the scope it sits
     // in, at the top object, and only while it is shown - the predicate fillSingles emits it by
     public boolean isShownFormProperty(GPropertyDraw draw, GContainer scope) {
-        return draw.groupObject == null && scope != null && getTopLevelScope(draw) == scope
+        return draw.groupObject == null && scope != null && descriptorScope(draw) == scope
                 && getSingleEntryKey(draw, GGroupObjectValue.EMPTY) != null; // the key fillSingles writes it under
     }
     // ... and the draw a BARE name means on the controller: the form-level one this projection is showing, which is
@@ -715,7 +723,7 @@ public class GReactFormData {
         for (GPropertyDraw draw : form.propertyDraws) {
             if (draw.groupObject != group)
                 continue;
-            if (group == null && getTopLevelScope(draw) != scope) // a form-level property belongs to the scope it sits in
+            if (group == null && descriptorScope(draw) != scope) // a form-level property belongs to the scope it sits in
                 continue;
             GGroupObjectValue valueKey = getSingleEntryKey(draw, key);
             if (valueKey != null)
@@ -838,7 +846,7 @@ public class GReactFormData {
         ArrayList<GContainer> scopes = groupScopes.get(group);
         if (scopes == null) {
             scopes = new ArrayList<>();
-            GContainer owner = formController.getOwningReactContainer(formController.getGroupDrawComponent(group));
+            GContainer owner = partScope(formController.getGroupDrawComponent(group));
             if (owner != null)
                 scopes.add(owner); // it draws the group, and any react container below it is swallowed, not a scope
             groupScopes.put(group, scopes);
