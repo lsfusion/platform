@@ -1552,7 +1552,7 @@ public class GFormController implements EditManager {
     // Asked of the FORM, not of the container's children: such a property is not a child of it (GPropertyDraw.isLsfView).
     public GPropertyDraw getRowLsfViewProperty(String sid, GContainer scope) {
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.isLsfViewPerRow() && sid.equals(draw.sID) && getOwningReactContainer(draw.groupObject.getDrawComponent()) == scope)
+            if (draw.isLsfViewPerRow() && sid.equals(draw.sID) && reactData.drawsRows(draw.groupObject, scope))
                 return draw;
         return null;
     }

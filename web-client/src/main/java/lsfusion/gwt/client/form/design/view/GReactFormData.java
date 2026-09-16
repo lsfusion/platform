@@ -61,6 +61,7 @@ public class GReactFormData {
     private final NativeSIDMap<GGroupObject, Boolean> dirtyOrder = new NativeSIDMap<>();      // group membership/order changed (rebuild the stable keys array) - set ONLY by add/remove/reorder, NOT by value/current changes
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> dirtyRowKeys = new NativeSIDMap<>(); // rows whose values changed
     private final NativeSIDMap<GContainer, Boolean> dirtyScopes = new NativeSIDMap<>();       // scopes whose top object must rebuild
+    private final NativeSIDMap<GContainer, Boolean> placedNotDrawn = new NativeSIDMap<>();    // already told this scope it places rows it does not draw
 
     // ===== there is NO `meta` namespace: every thing the platform computed is projected DIRECTLY, keyed as the thing is
     // keyed, with its value and attributes as sibling fields.
@@ -278,6 +279,7 @@ public class GReactFormData {
         GGroupObjectValue resolved = GGroupObjectValue.resolveObject(keyOrRow); // a row, a clone of one, or a handle
         if (resolved != null)
             return resolved;
+
         // ... or the canonical key string the projection handed out - which is exactly what `byKey` is keyed by, so
         // the group's own index answers it in one lookup. It is rebuilt WITH the rows, so a key whose row has gone
         // finds nothing, rather than a row that is no longer there
@@ -449,6 +451,7 @@ public class GReactFormData {
         }
         fillFormSingles(data, scope); // the form-level properties, each on the top object of the scope it sits in
         fillContainers(data, scope);
+        reportPlacedNotDrawn(scope);
         lastData.put(scope, data);
         return data;
     }
@@ -491,6 +494,27 @@ public class GReactFormData {
         if (component instanceof GContainer) // only a container has children; the recursion stays container-only
             for (GComponent child : ((GContainer) component).children)
                 fillContainers(data, scope, child);
+    }
+
+    // a container that PLACES a group's drawing component - MOVE GRID(d) { lsf = TRUE; } - has a descriptor for it and
+    // no node for the group: the platform draws those rows, so there are none here. That is the whole of the isolation
+    // rule and it is deliberate, but a view written against `data.d.list` meets it as silence - every helper defaults
+    // to nothing at all on a missing node - so it is said once, here, where both halves are known. The relation is
+    // static - a drawing component that is an lsf child of this scope (its descriptor lands here, and an lsf
+    // component has no part) - so it is asked once per scope, at build time.
+    private void reportPlacedNotDrawn(GContainer scope) {
+        if (placedNotDrawn.get(scope) != null)
+            return;
+        for (GGroupObject group : form.groupObjects) {
+            GComponent draw = group.getDrawComponent();
+            if (draw == null || getProjectedContainerScope(draw) != scope)
+                continue;
+            placedNotDrawn.put(scope, Boolean.TRUE);
+            GwtClientUtils.consoleError("'" + scope.sID + "' places '" + draw.sID + "' and the platform draws it, so"
+                    + " data." + group.getSID() + " has no rows here (nor a controller for them); drop `lsf = TRUE` from '"
+                    + draw.sID + "' if React should draw them instead");
+            return;
+        }
     }
 
     // the scope whose data carries this container's entry, or null when it has none - THE statement of the container
@@ -582,7 +606,7 @@ public class GReactFormData {
         JavaScriptObject node = newObject();
         GGroupObjectValue current = currentObjects.get(group);
 
-        if (partScope(group.getDrawComponent()) == scope) // the rows and the columns, where the grid is
+        if (drawsRows(group, scope)) // the rows and the columns, where the grid is
             copyFields(node, getPart(group.getDrawComponent(), group, () -> buildGridPart(group, current)));
         if (current != null) // the panel draws the current object, and without one it draws nothing
             copyFields(node, buildPanelPart(group, current, scope));
@@ -596,10 +620,9 @@ public class GReactFormData {
     // a part, cached under its producer and rebuilt only when that producer's own dirty flag says so. Read and write
     // spell the production identity the same way: this is markPartDirty's (component, group), asked back.
     // ONE PASS ASKS FOR A PART ONCE, and that is structural rather than guarded: a part's scope is partScope(producer),
-    // which is a function, so only one container can ask - the grid part under buildGroupEntry's
-    // `partScope(group.getDrawComponent()) == scope` gate (partScope of the draw component IS the scope), a panel part
-    // under buildPanelPart's `partScope(draw) != scope` skip, a column entry only from inside the grid part. A pass
-    // builds each container once (GFormLayout), so no key is reached twice
+    // which is a function, so only one container can ask - the grid part under drawsRows (partScope of the draw
+    // component IS the scope), a panel part under buildPanelPart's `partScope(draw) != scope` skip, a column entry only
+    // from inside the grid part. A pass builds each container once (GFormLayout), so no key is reached twice
     private JavaScriptObject getPart(GComponent producer, GGroupObject group, Supplier<JavaScriptObject> build) {
         String key = partKey(producer, group);
         JavaScriptObject part = lastParts.get(key);
@@ -760,7 +783,7 @@ public class GReactFormData {
     // view draws over the renderers it places) and no value - so they are one predicate apart, side by side
     private boolean hasEntry(GPropertyDraw draw, GGroupObjectValue current, GContainer scope) {
         if (draw.isList) // a column, where the grid's part is
-            return hasColumnEntry(draw) && partScope(draw.groupObject.getDrawComponent()) == scope;
+            return hasColumnEntry(draw) && drawsRows(draw.groupObject, scope);
         return getSingleEntryKey(draw, current) != null && partScope(draw) == scope; // a panel entry, where the draw is
     }
 
@@ -1001,6 +1024,12 @@ public class GReactFormData {
     // projects costs nothing and a group somebody projects is kept up to date whoever draws its rows
     public boolean isProjectedGroup(GGroupObject group) {
         return group != null && !getGroupScopes(group).isEmpty();
+    }
+
+    // whether this scope draws the group's ROWS - as opposed to seeing the group at all, which a container holding
+    // only a panel property of it also does. `null` is the classic surface, which is the whole form and draws nothing.
+    public boolean drawsRows(GGroupObject group, GContainer scope) {
+        return group != null && scope != null && partScope(group.getDrawComponent()) == scope;
     }
 
     // ... and whether THIS scope is one of them
