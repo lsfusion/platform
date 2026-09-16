@@ -83,7 +83,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
 - `NULL` after the initial value
 
-    Keyword. Allows the passed initial value to be `NULL`. By default, if any passed value is `NULL`, the action is skipped and control passes to the next action.
+    Keyword. Allows the passed initial value to be `NULL`. By default, if any passed value is `NULL`, the action is skipped and control passes to the next action. A passed `NULL` does not become the object's value: it is the same as passing no value, and the group's [default object](../paradigm/Interactive_view.md#defaultobject) becomes current.
 
 - `initActionOperator`
 

@@ -11,11 +11,11 @@ Interactive input of a built-in class value runs in the editor of the form prope
 
 If an object of a built-in class is requested, the platform shows the user an [input control](Value_input.md#execution) matching that class, and the user enters it directly.
 
-If an object of a custom class is requested, the user does not enter it directly but selects it from the class's [selection form](Interactive_view.md#edtClass).
+If an object of a custom class is requested, the user does not enter it directly but selects it: from the class's [selection form](Interactive_view.md#edtClass) or, when a [set of offered values](#list) is given, from that set.
 
 ### Offered values {#list}
 
-The values offered to the user can be limited to a specific set, and that set can be narrowed further by a condition. For a built-in class, such a set is shown to the user as a list of suggestions during input; for a custom class, it limits the objects available for selection.
+The values offered to the user can be limited to a specific set, and that set can be narrowed further by a condition. For a built-in class, such a set is shown to the user as a list of suggestions during input; for a custom class, it limits the objects available for selection. When such an input serves as the change action of a property on a form, the web client may show the offered objects right in the field as a [selection element](Interactive_view.md#select) — under the conditions and thresholds described there; otherwise the object is entered in the editor of the displayed value's class with suggestions from the set, or picked in the selection form.
 
 In addition, if the input is used to [change](Value_input.md#initial) a property, the offered values are by default further limited to those whose selection will not break any [constraint](Constraints.md) existing in the system — the same way as in the [dialog form](In_an_interactive_view_SHOW_DIALOG.md#dialog) of form opening. This limitation can be disabled if needed.
 

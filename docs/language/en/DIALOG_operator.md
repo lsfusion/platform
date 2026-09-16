@@ -101,7 +101,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `NULL` after the initial value
 
-    Keyword. Allows the passed initial value to be `NULL`. By default, if any passed value is `NULL`, the action is skipped and control passes to the next action. Automatically enabled if an `INPUT` / `CHANGE` input marker is specified for the object.
+    Keyword. Allows the passed initial value to be `NULL`. By default, if any passed value is `NULL`, the action is skipped and control passes to the next action. A passed `NULL` does not become the object's value: it is the same as passing no value, and the group's [default object](../paradigm/Interactive_view.md#defaultobject) becomes current. Automatically enabled if an `INPUT` / `CHANGE` input marker is specified for the object.
 
 - `initActionOperator`
 

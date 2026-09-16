@@ -89,7 +89,7 @@ Interactive input of a built-in class value is performed in the editor of the fo
 
 - `listExpr`
 
-    An expression that defines the set of values offered for selection. When inputting a value of a built-in class, it supplies the candidate values shown in the inline list. When inputting a value of a custom class, it maps each candidate object to a displayed value (for example `name(s)`); the value class of `listExpr` determines the inline editor.
+    An expression that defines the set of values offered for selection. When inputting a value of a built-in class, it supplies the candidate values shown in the inline list. When inputting a value of a custom class, it maps each candidate object to a displayed value (for example `name(s)`), which is what the user enters: in the editor of the value class of `listExpr` with suggestions from the set, or, when the web client builds a [selection element](../paradigm/Interactive_view.md#select) for the form property, by picking an option right in the field.
 
 - `listAction`
 
