@@ -344,6 +344,27 @@ Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill
 
 Drawn with [`<Caption>`](#caption) and [`<Image>`](#image), for the reason those exist: a caption is not always plain text, and an image is a string of HTML.
 
+This is what makes a **tab strip** possible, and it is what the entry is for. A component that shows one `lsf` child at a time still has to name the ones it is not showing, and their captions are the only thing it has to name them with. Two things make that work: the entry does not follow the placement — every `lsf` child of the container has one from the start, so a closed tab has a label — and a caption goes on being read while its body is hidden, so a computed caption on a closed tab keeps up to date.
+
+```jsx
+const TABS = ['BOX(o)', 'BOX(i)'];
+
+export function LsfTabs(props) {
+    const [active, setActive] = React.useState(TABS[0]);
+    return <div className="lsf-tabs">
+        <div className="lsf-tabs-strip" role="tablist">
+            {TABS.map(sid => <button key={sid} role="tab" aria-selected={sid === active}
+                                     onClick={() => setActive(sid)}>
+                <Image value={props.data[sid].image}/><Caption value={props.data[sid].caption}/>
+            </button>)}
+        </div>
+        <Lsf key={active} name={active} className="lsf-tabs-body"/>
+    </div>;
+}
+```
+
+Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [below](#lsf-child). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with nothing in it.
+
 These rules bound the placement:
 
 - A property drawn in the **panel** of an object group that the component renders cannot be marked `lsf`, because that group has no lsFusion view to place it in. Set `lsf` on the group's `BOX` instead. (A property drawn in the **table** of such a group is the per-row case below, and is exactly what `LSF` is for.)
