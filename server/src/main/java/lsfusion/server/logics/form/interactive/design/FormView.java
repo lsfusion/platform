@@ -732,8 +732,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // checks: the whole form is then rejected once, when it is built, instead of failing in every browser that opens it.
     // The names below mirror what GReactFormData writes; keep them in sync with it.
     private void checkReactProjectionNames() {
-        // There is no `meta` object: everything sits directly in one flat namespace at each level, so a projected name
-        // that takes an infrastructure key, or that two projected things share, silently overwrites. Reject it here.
         // data.* : groups + form-level props + containers - and, since a group and a form-level property are named on
         // that container's CONTROLLER too (controller.<name>), one claim per scope says both. Their reserved list is
         // the controller's, which contains the projection's; a container's descriptor is data-only and takes the shorter

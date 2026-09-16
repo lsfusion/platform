@@ -42,7 +42,7 @@
 
 // CUSTOM REACT hooks + <List>, on the same window.lsfusion namespace. DEFINED here (this script loads before any
 // compiled bundle), but INSTALLED lazily — by each compiled bundle's preamble (esbuild banner -> __installReactHooks)
-// right before the bundle body runs, and by ReactContainerView.createRoot at mount for a hand-written global that gets
+// right before the bundle body runs, and by ReactRoot.createRoot at mount for a hand-written global that gets
 // no preamble. That ordering is what lets a bundle alias a helper at module TOP — `const List = window.lsfusion.List;`
 // — and still bind to the FINAL window.React: an app may override React at a less-negative before-system order (after
 // this script but before the bundles / the form), so we must NOT capture React eagerly here. Idempotent; the first
@@ -432,11 +432,11 @@
             return React.createElement(simple ? SimpleList : KeysList, props);
         };
         // <BucketScope>/useBucket/<Buckets>: the pivot/matrix analogue of <List> (bucketKey -> rowKey[] index with
-        // per-cell subscription); the canonical narrative lives on the GWT side (ReactContainerView.installHooks).
+        // per-cell subscription); the JSNI twin that held the full narrative is gone - this is the only copy.
         var EMPTY = Object.freeze([]);
         var BucketCtx = React.createContext(null);
         var makeBucketStore = function (formStore, groupSID, bucketOf) {
-            // ref-diff index: O(rows) ref-compares per form change, re-bucketing only the changed rows (see the JSNI twin)
+            // ref-diff index: O(rows) ref-compares per form change, re-bucketing only the changed rows
             var listeners = new Set(), buckets = Object.create(null), rowCache = Object.create(null), lastNode, lastKeys = EMPTY, formUnsub = null, pending = false;
             // an ARRAY means several buckets, not a composite key: each element is coerced on its own and nothing is
             // ever joined. The coercion is `'' + value` because a bucket is an object key, so a cell named 1 and one
@@ -506,7 +506,7 @@
         ns.BucketScope = function (props) { // props: group (SID), bucketOf(row, rowKey) -> bucketKey | bucketKey[] | null, bucketDeps
             var formStore = React.useContext(Ctx).store;
             checkRows(formStore.getSnapshot()[props.group], "<BucketScope group='" + props.group + "'>");
-            // bucketOf is CAPTURED at store creation (see the JSNI twin for the full narrative)
+            // bucketOf is CAPTURED at store creation (see makeBucketStore above)
             var bucketOf = props.bucketOf;
             var store = React.useMemo(function () {
                 return makeBucketStore(formStore, props.group, bucketOf);
