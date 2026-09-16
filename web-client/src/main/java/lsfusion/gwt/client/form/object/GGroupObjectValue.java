@@ -262,6 +262,17 @@ public class GGroupObjectValue implements Serializable {
         }
         return b.toString();
     }
+    // the identity of a key held OUTSIDE a group: the canonical string says what the key's values ARE, which tells two
+    // rows apart within ONE group - every use that has a group (`byKey`, `keys`, the React key). A list an author
+    // builds is scoped to nothing and can hold rows of several groups, and two of those can carry the same value; so
+    // this names the objects the values are OF as well. Built ON the canonical string, so the two cannot part.
+    public String toIdentityString() {
+        StringBuilder b = new StringBuilder().append(size).append(':'); // how many ids follow, or an id could be read as part of the string
+        for (int i = 0; i < size; i++)
+            b.append(getKey(i)).append(':');
+        return b.append(toKeyString()).toString();
+    }
+
     // the EXACT JS String(number) — the canonical string must match what a caller-passed native number coerces
     // to, incl. -0/exponent edge cases Java formatting would diverge on
     private static native String jsNumberString(double value) /*-{ return String(value); }-*/;
