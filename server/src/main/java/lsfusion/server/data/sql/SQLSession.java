@@ -95,7 +95,6 @@ import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -201,11 +200,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public static void updateThreadAllocatedBytesMap() {
         threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap(threadAllocatedBytesBMap);
         threadAllocatedBytesBMap.clear();
-        ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-        Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
-        if (threadMXBeanClass != null && threadMXBeanClass.isInstance(tBean)) {
-            long[] allThreadIds = tBean.getAllThreadIds();
-            long[] threadAllocatedBytes = ReflectionUtils.getMethodValue(threadMXBeanClass, tBean, "getThreadAllocatedBytes", new Class[]{long[].class}, new Object[]{allThreadIds});
+        long[] allThreadIds = ManagementFactory.getThreadMXBean().getAllThreadIds();
+        long[] threadAllocatedBytes = ThreadUtils.getThreadAllocatedBytes(allThreadIds);
+        if (threadAllocatedBytes != null) {
             for (int i=0;i<allThreadIds.length;i++) {
                 threadAllocatedBytesBMap.put(allThreadIds[i], threadAllocatedBytes[i]);
             }

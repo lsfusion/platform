@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.monitor.action;
 
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -81,11 +80,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         else
             threadInfos = new java.lang.management.ThreadInfo[]{};
 
-        long[] allocatedBytes = null;
-        Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
-        if (readAllocatedBytes && threadMXBeanClass != null && threadMXBeanClass.isInstance(tBean)) {
-            allocatedBytes = ReflectionUtils.getMethodValue(threadMXBeanClass, tBean, "getThreadAllocatedBytes", new Class[]{long[].class}, new Object[] {threadIds});
-        }
+        long[] allocatedBytes = readAllocatedBytes ? ThreadUtils.getThreadAllocatedBytes(threadIds) : null;
 
         MExclMap<String, JavaProcess> mResultMap = MapFact.mExclMap();
         for (int i = 0, size = threads.size(); i < size; i++) {

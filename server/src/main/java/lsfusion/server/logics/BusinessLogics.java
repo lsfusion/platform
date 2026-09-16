@@ -2072,9 +2072,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         final long maxAllocatedBytes = Settings.get().getMaxThreadAllocatedBytes();
         final int cacheMissesStatsLimit = Settings.get().getCacheMissesStatsLimit();
 
-        ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-        Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
-        if (threadMXBeanClass != null && threadMXBeanClass.isInstance(tBean) && (boolean) ReflectionUtils.getMethodValue(threadMXBeanClass, tBean, "isThreadAllocatedMemorySupported", new Class[0], new Object[0])) {
+        if (ThreadUtils.isThreadAllocatedBytesSupported()) {
             long time = System.currentTimeMillis();
             long bytesSum = 0;
             long totalBytesSum = 0;
@@ -2145,7 +2143,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         String user = logInfo == null ? null : logInfo.userName;
                         String userRoles = logInfo == null ? null : logInfo.userRoles;
                         String threadName = "";
-                        ThreadInfo threadInfo = thread == null ? null : tBean.getThreadInfo(thread.getId());
+                        ThreadInfo threadInfo = thread == null ? null : ManagementFactory.getThreadMXBean().getThreadInfo(thread.getId());
                         if (threadInfo != null) {
                             threadName = threadInfo.getThreadName();
                         }

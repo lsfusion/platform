@@ -15,6 +15,9 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
+import javax.management.JMException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -122,10 +125,39 @@ public class ThreadUtils {
         }
     }
 
-//    есть подозрение что от такой реализации крэшится JVM
-//    public static ImSet<Thread> getAllThreads() {
-//        return SetFact.toSet((Thread[]) ReflectionUtils.invokePrivateMethod(Thread.class, null, "getThreads", new Class[]{}));
-//    }
+    // com.sun.management.ThreadMXBean is not available on all JVMs, so the platform threading MBean is used through standard JMX
+    private static final ObjectName threadMXBeanName;
+    static {
+        try {
+            threadMXBeanName = new ObjectName(ManagementFactory.THREAD_MXBEAN_NAME);
+        } catch (MalformedObjectNameException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static boolean isThreadAllocatedBytesSupported() {
+        try {
+            return (Boolean) ManagementFactory.getPlatformMBeanServer().getAttribute(threadMXBeanName, "ThreadAllocatedMemorySupported");
+        } catch (JMException | RuntimeException e) { // RuntimeMBeanException, SecurityException
+            return false;
+        }
+    }
+
+    public static long getThreadAllocatedBytes(long threadId) {
+        try {
+            return (Long) ManagementFactory.getPlatformMBeanServer().invoke(threadMXBeanName, "getThreadAllocatedBytes", new Object[]{threadId}, new String[]{"long"});
+        } catch (JMException | RuntimeException e) { // RuntimeMBeanException, SecurityException
+            return 0;
+        }
+    }
+
+    public static long[] getThreadAllocatedBytes(long[] threadIds) {
+        try {
+            return (long[]) ManagementFactory.getPlatformMBeanServer().invoke(threadMXBeanName, "getThreadAllocatedBytes", new Object[]{threadIds}, new String[]{"[J"});
+        } catch (JMException | RuntimeException e) { // RuntimeMBeanException, SecurityException
+            return null;
+        }
+    }
 
     public static Thread getThreadById(long id) {
         for(Thread thread : getAllThreads())

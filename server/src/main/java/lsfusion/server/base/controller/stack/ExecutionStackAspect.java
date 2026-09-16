@@ -3,7 +3,6 @@ package lsfusion.server.base.controller.stack;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
@@ -14,6 +13,7 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.base.controller.remote.stack.RmiCallStackItem;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.HandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -27,8 +27,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -249,10 +247,8 @@ public class ExecutionStackAspect {
     private static Supplier<Long> allocationBytesSupplier = null;
     private static Supplier<Long> getAllocationBytesSupplier() {
         if(!allocationBytesSupplierCalculated) {
-            Class threadMXBeanClass = ReflectionUtils.classForName("com.sun.management.ThreadMXBean");
-            ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-            if(threadMXBeanClass != null && threadMXBeanClass.isInstance(threadMXBean))
-                allocationBytesSupplier = () -> ReflectionUtils.getMethodValue(threadMXBeanClass, threadMXBean, "getThreadAllocatedBytes", new Class[]{long.class}, new Object[] {Thread.currentThread().getId()});
+            if(ThreadUtils.isThreadAllocatedBytesSupported())
+                allocationBytesSupplier = () -> ThreadUtils.getThreadAllocatedBytes(Thread.currentThread().getId());
             else
                 allocationBytesSupplier = () -> 0L;
             allocationBytesSupplierCalculated = true;
