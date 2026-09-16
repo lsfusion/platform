@@ -68,7 +68,10 @@ public class ReactContainerView extends ParkedContainerView {
         super(container, formController);
         // row is absent for an lsf CHILD - one view, one host - and is a row of the group for an LSF grid property,
         // which has one renderer, and so one host, per row
-        root = new ReactRoot(container.getCustom(), formController.controller, new ReactRoot.Placement() {
+        // THIS projection's controller: it names what this container's own `props.data` carries and nothing else -
+        // a view that cannot see its neighbour does not name it either. The classic surfaces (a custom group view, a
+        // custom cell editor, an INTERNAL CLIENT action) keep the form's own controller
+        root = new ReactRoot(container.getCustom(), formController.createReactController(container), new ReactRoot.Placement() {
             @Override
             public void mount(String name, Element host, JavaScriptObject row) {
                 mountComponent(name, host, row);

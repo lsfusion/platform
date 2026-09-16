@@ -224,13 +224,13 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-The value-or-row guess in `changeProperty`, the value formats, and the name qualification rules are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
+The value-or-row guess in `changeProperty`, the value formats, and the name qualification rules are the same as in the [form controller](How-to_Custom_view_controller.md)'s `<group>.<property>.change`; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
 
 ```js
 controller.changeProperties(['start', 'end'], [task, task], [newStart, newEnd]);
 ```
 
-`getPropertyValues` uses the same `mode` values and result format as the form controller's method of the same name, but the property is resolved among this group's columns, and the lookup runs for its current object:
+`getPropertyValues` uses the same `mode` values and result format as the form controller's `<group>.<property>.getValues`, but the property is resolved among this group's columns, and the lookup runs for its current object:
 
 ```js
 controller.getPropertyValues('name', query, result => { ... });
