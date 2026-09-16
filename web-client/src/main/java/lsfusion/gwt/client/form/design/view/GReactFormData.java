@@ -275,11 +275,13 @@ public class GReactFormData {
     // through it has lost the type it was written with. It is still this group's key, and this group's rows are
     // right here, so it is looked up rather than refused. Grid or tree alike: the canonical string is exactly what
     // both `byKey` and `keys` are keyed by, whether the row's key is one object or a whole tree path.
-    public GGroupObjectValue resolveRowKey(GGroupObject group, JavaScriptObject keyOrRow) {
+    public GGroupObjectValue resolveRowKey(GGroupObject group, JavaScriptObject keyOrRow, GContainer scope) {
         GGroupObjectValue resolved = GGroupObjectValue.resolveObject(keyOrRow); // a row, a clone of one, or a handle
         if (resolved != null)
             return resolved;
-
+        if (!drawsRows(group, scope)) // a KEY STRING is resolved through `byKey`, which is the grid's index: a view
+            return null;              // that does not draw the rows was never given one, and would be reading another
+                                      // container's data. A row or a handle carries its objects and stays legal here
         // ... or the canonical key string the projection handed out - which is exactly what `byKey` is keyed by, so
         // the group's own index answers it in one lookup. It is rebuilt WITH the rows, so a key whose row has gone
         // finds nothing, rather than a row that is no longer there

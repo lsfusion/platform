@@ -659,7 +659,7 @@ public class GFormController implements EditManager {
     public void controllerChangeObject(String surface, String groupSID, JavaScriptObject objectOrKey, GContainer scope) {
         String errorPrefix = controllerPrefix(surface);
         GGroupObject group = resolveGroup(errorPrefix, groupSID); // it alone used to answer a typo with silence
-        GGroupObjectValue key = resolveRow(errorPrefix, group, objectOrKey);
+        GGroupObjectValue key = resolveRow(errorPrefix, group, objectOrKey, scope);
         // ... narrowed to a row of THIS group, by the group's own rule - which both checks and cuts. A key that is
         // not this group's row at all answers null, and it would otherwise set the objects it does carry and blank
         // the rest, which the server only asserts about (so: nothing at all in production). And in a TREE a row of a
@@ -818,12 +818,20 @@ public class GFormController implements EditManager {
     // Where the group is known the key can be looked up, so a view can hand back what it was handed; where it is not
     // (an unqualified changeProperty, whose group the object itself has to name) only a row or a handle can say which
     // group it belongs to, and a bare key is still refused
-    private GGroupObjectValue resolveRow(String errorPrefix, GGroupObject group, JavaScriptObject objectOrKey) {
-        GGroupObjectValue key = reactData != null ? reactData.resolveRowKey(group, objectOrKey)
+    private GGroupObjectValue resolveRow(String errorPrefix, GGroupObject group, JavaScriptObject objectOrKey, GContainer scope) {
+        GGroupObjectValue key = reactData != null ? reactData.resolveRowKey(group, objectOrKey, scope)
                                                   : GGroupObjectValue.resolveObject(objectOrKey);
-        if (key == null)
+        if (key == null) {
+            // a key STRING is the projection's own name for a row, looked up in the index built with the rows - so it
+            // is a name only where the rows are. A view that does not draw them was handed no key to hand back, and
+            // the classic changeProperty (no scope) never is
+            if (reactData != null && !reactData.drawsRows(group, scope))
+                throw new RuntimeException(errorPrefix + "expects a row of '" + group.getSID() + "' or its objects"
+                        + " handle: this surface does not draw that group's rows, and a key string is looked up"
+                        + " only by the view that does");
             throw new RuntimeException(errorPrefix + "expects a row of '" + group.getSID() + "', its objects handle,"
                     + " or its key; that is none of them, or names no row the group has now");
+        }
         return key;
     }
 
@@ -835,7 +843,7 @@ public class GFormController implements EditManager {
         GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
         if (objectKey == null) { // ... a KEY resolves too, wherever the name settles which group's rows to look in
             if (nameGroup != null)
-                return resolveRow(controllerPrefix(surface), nameGroup, objectOrKey);
+                return resolveRow(controllerPrefix(surface), nameGroup, objectOrKey, scope);
             // it does not settle it - the property is drawn on several groups, or on none - so the group is what the
             // object argument itself is being asked for, and a bare key names no group
             throw new RuntimeException(controllerPrefix(surface) + "the object argument is not a data row or an objects handle;"
