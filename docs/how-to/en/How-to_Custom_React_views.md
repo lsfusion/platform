@@ -293,7 +293,7 @@ The entry holds `caption` and `image`, and it sits at the same place in `data` t
 | A **panel** property, or a form-level (no-group) property | `data.<componentSID>`, at the top level | The property's design component identifier, `PROPERTY(note)` |
 | A container | `data.<componentSID>`, always at the top level | The container's design component identifier, `BOX(o)` |
 
-A table property is the one keyed by its integration SID, and for the reason the whole table is: React draws that group, so the column's entry sits on the group's node beside the columns React draws itself, and is named the way they are. Everything else here is drawn by the platform whole, and the only name the projection has for it is the design identifier — the same name `<Lsf>` places it by. So one name does both: `<Lsf name="PROPERTY(note)"/>` places it and `data['PROPERTY(note)']` reads it. A panel property is on this row rather than the first because marking one `lsf` is only allowed on a group the platform draws, which has no node here to carry it.
+A table property is the one keyed by its integration SID, and for the reason the whole table is: React draws that group, so the column's entry sits on the group's node beside the columns React draws itself, and is named the way they are. Everything else here is drawn by the platform whole, and the only name the projection has for it is the design identifier — the same name `<Lsf>` places it by. So one name does both: `<Lsf name="PROPERTY(note)"/>` places it and `data['PROPERTY(note)']` reads it. A panel property is on this row rather than the first because the platform draws it whole - one renderer, placed by `<Lsf>` - whoever draws the rows of its group, so its entry is a top-level descriptor keyed by its component SID.
 
 Every container the React scope owns or places gets an entry in `data` when it is declared in the design (`NEW <name>`) or marked `lsf` — except a container inside an `lsf` subtree, which the platform draws whole and the component never looks into. A generated box the component neither placed nor the author named (`TOOLBAR(g)`, `PANEL(g)`, …) gets none. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
 
@@ -418,7 +418,7 @@ What the author gets and what stays theirs:
 - The caption is not drawn in the row. Like an lsf child's, it arrives in the group's column node — `data.o.quantity.caption` — so the component puts it where it belongs, usually once, in a header.
 - A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor; only a row leaving that set loses it.
 
-The declaration is refused, with the property named, when it cannot work: on a grid property whose object group is not drawn by a `CUSTOM REACT` container (nothing would place the per-row editors), on a grid property grouped in columns (a per-row editor cannot address a row-and-column cell), and on a panel property of a group the component itself draws (there is no lsFusion view to place it in — set `lsf` on the group's box instead).
+The declaration is refused, with the property named, when it cannot work: on a grid property whose object group is not drawn by a `CUSTOM REACT` container (nothing would place the per-row editors), and on a grid property grouped in columns (a per-row editor cannot address a row-and-column cell).
 
 ### Extending a container with lsf children
 
