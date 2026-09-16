@@ -24,6 +24,8 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
@@ -283,12 +285,27 @@ public class GFormLayout extends SizedFlexPanel {
             view.widget.setDebugInfo(key.sID);
 
         GAbstractContainerView containerView;
-        if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
+        if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed
+            reportUnplaceable(key, containerView);
             containerView.add(key, view, attachContainer);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
         }
     }
+
+    // the single funnel every built view goes through, and the one place that sees BOTH that a view was built and
+    // where it landed. A react container draws its children from `data` and parks everything else until an <Lsf>
+    // places it; a child with no `lsf = TRUE` that nevertheless has a view of its own - a group's toolbar or filter
+    // box moved in, say - is drawn by nobody: React has no entry for it, and the park is not a place. Marking it
+    // `lsf = TRUE` is what the author means, and then the view names it in an <Lsf>.
+    private void reportUnplaceable(GComponent key, GAbstractContainerView containerView) {
+        if (!(containerView instanceof ReactContainerView) || key.isLsfView() || !unplaceable.add(key.sID))
+            return;
+        GwtClientUtils.consoleError("'" + key.sID + "' has a view of its own inside the react container '"
+                + key.container.sID + "', which draws its children from `data` and has nothing there to draw it with,"
+                + " so it is shown by nobody; mark it `lsf = TRUE` and place it with <Lsf name=\"" + key.sID + "\"/>");
+    }
+    private final Set<String> unplaceable = new HashSet<>(); // said once per component
 
     public void remove(GComponent key) {
         assert !(key instanceof GContainer);
