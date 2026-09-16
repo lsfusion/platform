@@ -1,7 +1,6 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
-import sun.misc.Unsafe;
 
 import java.lang.reflect.*;
 
@@ -12,18 +11,21 @@ public class ReflectionUtils {
     }
 
     /*since java 9 there is 'Illegal reflective access' warning for the first usage of reflection methods,
-    so we just disable IllegalAccessLogger
+    so we just disable IllegalAccessLogger (java 9-16 only, since java 17 there is no such logger and nothing is done)
     https://stackoverflow.com/questions/46454995/how-to-hide-warning-illegal-reflective-access-in-java-9-without-jvm-argument
+    sun.misc.Unsafe is accessed reflectively, since javac does not see the sun.misc package when compiling with --release 8 (IntelliJ)
     */
     private static void disableWarning() {
         try {
-            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            Unsafe u = (Unsafe) theUnsafe.get(null);
-
-            Class cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
-            Field logger = cls.getDeclaredField("logger");
-            u.putObjectVolatile(cls, u.staticFieldOffset(logger), null);
+            Class cls = classForName("jdk.internal.module.IllegalAccessLogger");
+            if(cls != null) {
+                Class unsafeClass = classForName("sun.misc.Unsafe");
+                if(unsafeClass != null) {
+                    Object u = getPrivateStaticFieldValue(unsafeClass, "theUnsafe");
+                    long offset = getMethodValue(unsafeClass, u, "staticFieldOffset", new Class[]{Field.class}, new Object[]{cls.getDeclaredField("logger")});
+                    getMethodValue(unsafeClass, u, "putObjectVolatile", new Class[]{Object.class, long.class, Object.class}, new Object[]{cls, offset, null});
+                }
+            }
         } catch (Exception ignored) {
         }
     }
