@@ -215,13 +215,17 @@ public class CustomCellRenderer extends CellRenderer {
                 return object.objects;
             },
             getObjectsField: function () {
-                return "objects";
+                return @lsfusion.gwt.client.form.object.GGroupObjectValue::ROW_OBJECTS;
             },
             getObjectsString: function (object) {
                 return @GwtClientUtils::jsonStringify(*)(this.getObjects(object));
             },
+            // a platform handle mints a proper row - key and handle stamped together, instead of the handle replaced
+            // and the cloned key left pointing at another row. An author's own handle is kept as it is: it is theirs
             createObject: function (object, objects) {
-                return $wnd.replaceField(object, "objects", objects);
+                var k = @lsfusion.gwt.client.form.object.GGroupObjectValue::resolveObject(*)(objects);
+                if (k !== null) return @lsfusion.gwt.client.form.object.GGroupObjectValue::createRow(*)(object, objects);
+                return $wnd.replaceField(object, @lsfusion.gwt.client.form.object.GGroupObjectValue::ROW_OBJECTS, objects);
             },
             isRenderInputKeyEvent: function (event, multiLine) {
                 return @lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer::isInputKeyEvent(*)(event, updateContext, multiLine);

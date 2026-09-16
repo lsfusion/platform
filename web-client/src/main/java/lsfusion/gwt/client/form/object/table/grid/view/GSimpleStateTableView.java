@@ -632,15 +632,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getObjects(object); // a row of this form or a raw GGV handle; null for anything else (no bare-key/clone resolution)
     }
     protected JavaScriptObject createWithObjects(JavaScriptObject object, JavaScriptObject objects) {
-        // a raw GGV handle or a row of this form (getObjects accepts both); anything else (e.g. a bare key) stays unkeyed
-        GGroupObjectValue key = getObjects(objects);
-        JavaScriptObject created = GwtClientUtils.copyObject(object); // clone the template (registerRow mutates the row below)
-        if (key != null)
-            GGroupObjectValue.registerRow(created, key); // fabricated rows get the full contract: public key + row-carried `objects` handle
-        else
-            GGroupObjectValue.clearRowObjects(created); // the clone copied the template's enumerable `objects`; drop it so an unresolvable identity stays unkeyed (resolution reads `objects`, not key)
-
-        return created;
+        return GGroupObjectValue.createRow(object, objects); // shared with the cell renderer's controller
     }
 
     protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
