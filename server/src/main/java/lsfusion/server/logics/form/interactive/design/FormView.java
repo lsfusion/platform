@@ -787,14 +787,14 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // written at, like any other name this surface owns
     private static final String PROTO = "__proto__";
     private static final String[] TOP_NAMES = {PROTO};
-    // what the controller object itself carries today: the four verbs every controller has (GController.extendController)
-    // plus the form-level mutation methods (GFormController.initController). A projected name equal to one of them
-    // would have to be dropped, since the method is what everything else addresses the form through
-    private static final String[] CONTROLLER_NAMES = {"exec", "eval", "evalAction", "change",
-            "changeProperty", "changeProperties", "changeObject", "getPropertyValues", PROTO};
+    // what a controller carries beside its members: the four verbs every controller has (GController.extendController)
+    // and the batch that is the members' shortcut. A projected name equal to one of them would have to be dropped,
+    // and the verbs are how everything outside this surface is reached
+    private static final String[] CONTROLLER_NAMES = {"exec", "eval", "evalAction", "change", "properties", PROTO};
     private static final String[] GROUP_NODE_NAMES = {"list", "byKey", "keys", "options", "properties", "change", PROTO,
-            "__groupSID"}; // written on the node by GReactFormData.setGroupSID - non-enumerable, and non-writable, so a
-                           // property taking that name would either vanish from the node or throw when it is written
+            "__groupSID", "__member"}; // __groupSID is written on the node by GReactFormData.setGroupSID, __member on
+                           // the group's controller member by GFormController.syncControllerSugar (mark) - both
+                           // non-enumerable and non-writable, so a property taking either name would vanish or throw
     private static final String[] ROW_NAMES = {"key", "isCurrent", "objects", "background", "foreground", "selected", PROTO};
 
     // a group of SEVERAL objects that the author did not name has no SID of its own: it is synthesized from the object
