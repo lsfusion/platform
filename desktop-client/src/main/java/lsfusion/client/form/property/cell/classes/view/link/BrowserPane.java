@@ -21,7 +21,6 @@
 package lsfusion.client.form.property.cell.classes.view.link;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.client.base.log.ClientLoggers;
 import org.fit.cssbox.swingbox.SwingBoxDocument;
 import org.fit.cssbox.swingbox.SwingBoxEditorKit;
@@ -30,7 +29,6 @@ import org.fit.cssbox.swingbox.util.*;
 import org.fit.cssbox.swingbox.util.GeneralEvent.EventType;
 import org.fit.net.DataURLHandler;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
@@ -42,7 +40,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.Provider;
 import java.util.*;
 import java.util.List;
 
@@ -65,24 +62,6 @@ public class BrowserPane extends JEditorPane {
      * Initial settings
      */
     protected void init() {
-        // "support for SSL"
-        String handlerPkgs = System.getProperty("java.protocol.handler.pkgs");
-        if ((handlerPkgs != null) && !(handlerPkgs.isEmpty())) {
-            handlerPkgs = handlerPkgs + "|com.sun.net.ssl.internal.www.protocol";
-        } else {
-            handlerPkgs = "com.sun.net.ssl.internal.www.protocol";
-        }
-        System.setProperty("java.protocol.handler.pkgs", handlerPkgs);
-
-        Class providerClass = ReflectionUtils.classForName("com.sun.net.ssl.internal.ssl.Provider");
-        if (providerClass != null) {
-            try {
-                java.security.Security.addProvider((Provider) providerClass.getDeclaredConstructor().newInstance());
-            } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-                     NoSuchMethodException ignored) {
-            }
-        }
-
         // Create custom EditorKit if needed
         if (swingBoxEditorKit == null) {
             swingBoxEditorKit = new SwingBoxEditorKit();
@@ -275,10 +254,7 @@ public class BrowserPane extends JEditorPane {
         final URLConnection conn = setConnectionProperties(page.openConnection());
         // http://stackoverflow.com/questions/875467/java-client-certificates-over-https-ssl
 
-        if (conn instanceof HttpsURLConnection) {
-            // XXX toto moc nefunguje
-            ClientLoggers.systemLogger.info("$ Connection is HTTPS !!");
-        } else if (conn instanceof HttpURLConnection) {
+        if (conn instanceof HttpURLConnection) { // https as well (HttpsURLConnection extends HttpURLConnection)
             HttpURLConnection hconn = (HttpURLConnection) conn;
             hconn.setInstanceFollowRedirects(false);
             Object postData = getPostData();
@@ -286,14 +262,14 @@ public class BrowserPane extends JEditorPane {
                 handlePostData(hconn, postData);
             }
             int response = hconn.getResponseCode();
-            boolean redirect = (response >= 300 && response <= 399);
+            String loc = conn.getHeaderField("Location");
+            boolean redirect = (response >= 300 && response <= 399 && loc != null);
 
             /*
              * In the case of a redirect, we want to actually change the URL
              * that was input to the new, redirected URL
              */
             if (redirect) {
-                String loc = conn.getHeaderField("Location");
                 if (loc.startsWith("http")) {
                     page = new URL(loc);
                 } else {
