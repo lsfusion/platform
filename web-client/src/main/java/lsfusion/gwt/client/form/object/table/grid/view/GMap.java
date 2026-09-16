@@ -118,10 +118,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             map = initMap(renderElement);
         }
 
-        updateMap(map, markerClusters, grid.getMapTileProvider(), getCustomOptions());
+        JavaScriptObject customOptions = getCustomOptions();
+        updateMap(map, markerClusters, grid.getMapTileProvider(), customOptions);
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
 
+        // an explicit zoom in the options is the view the form asked for, so the markers are no longer fit
+        // into the bounds over it: that fit runs deferred, i.e. after setView, and would win on every load
+        // (the fitBounds property still forces a fit for the rows that ask for it)
+        boolean hasZoomOption = hasZoomOption(customOptions);
         boolean fitBounds = false;
         Map<GGroupObjectValue, JavaScriptObject> oldMarkers = new HashMap<>(markers);
         JsArray<JavaScriptObject> markersToRefresh = JavaScriptObject.createArray().cast();
@@ -146,7 +151,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if(marker == null) {
                 marker = createMarker(map, groupMarker.polygon != null, markerClusters, object);
                 markers.put(key, marker);
-                fitBounds = true;
+                if(!hasZoomOption)
+                    fitBounds = true;
             }
             setGroupMarker(marker, groupMarker); // we need to update model in the coordinates change
 
@@ -239,6 +245,10 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return customOptions != null ? customOptions.markerClusterOptions : null;
     }-*/;
 
+    protected native static boolean hasZoomOption(JavaScriptObject customOptions)/*-{
+        return customOptions != null && customOptions.zoom != null;
+    }-*/;
+
     protected native boolean hasFitBoundsProperty(JavaScriptObject object)/*-{
         return object.hasOwnProperty('fitBounds') ? object.fitBounds : false;
     }-*/;
@@ -323,6 +333,13 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     protected native void removeMap(JavaScriptObject map)/*-{
+        // the tile layer is taken off before the map is torn down: leaflet's remove() fires "unload" first and only
+        // then removes the layers, and the yandex plugin drops its container on "unload" while still expecting to
+        // detach that container on its own "remove" (Cannot read properties of undefined (reading 'remove'))
+        if (map.tile != null) {
+            map.tile.removeFrom(map);
+            map.tile = null;
+        }
         map.remove();
     }-*/;
 
