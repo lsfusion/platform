@@ -337,13 +337,12 @@ export function Board(props) {
 
 ```jsx
 <section className="board-panel">
-    <h3><span dangerouslySetInnerHTML={{ __html: props.data['BOX(o)'].image }}/>
-        {props.data['BOX(o)'].caption}</h3>
+    <h3><Image value={props.data['BOX(o)'].image}/><Caption value={props.data['BOX(o)'].caption}/></h3>
     <Lsf name="BOX(o)"/>
 </section>
 ```
 
-`image` — строка с HTML изображения, поэтому вставляется как HTML; `caption` — обычный текст.
+Рисуются через [`<Caption>`](#caption) и [`<Image>`](#image) — ровно затем они и есть: заголовок не всегда обычный текст, а изображение — строка с HTML.
 
 Размещение ограничено следующими правилами:
 

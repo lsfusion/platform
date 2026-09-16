@@ -337,13 +337,12 @@ Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill
 
 ```jsx
 <section className="board-panel">
-    <h3><span dangerouslySetInnerHTML={{ __html: props.data['BOX(o)'].image }}/>
-        {props.data['BOX(o)'].caption}</h3>
+    <h3><Image value={props.data['BOX(o)'].image}/><Caption value={props.data['BOX(o)'].caption}/></h3>
     <Lsf name="BOX(o)"/>
 </section>
 ```
 
-`image` is a string with the image HTML, so it is inserted as HTML; `caption` is plain text.
+Drawn with [`<Caption>`](#caption) and [`<Image>`](#image), for the reason those exist: a caption is not always plain text, and an image is a string of HTML.
 
 These rules bound the placement:
 
