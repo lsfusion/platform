@@ -79,11 +79,21 @@ public class GGridController extends GAbstractTableController implements GFormGr
         return groupObject.mapTileProvider;
     }
 
-    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
+    // P1: a group's TABLE and its CHROME are different base components, and React taking the rows says nothing about
+    // the rest. In chromeOnly mode this controller builds the toolbar and NOT the table - nor the user-filter box,
+    // which is fed by the table (update) and whose conditions are the projection's own business where React draws the
+    // rows - so a group whose rows a CUSTOM REACT container draws keeps its toolbar, and a scripted FILTER / ORDER on
+    // it says so once instead of vanishing with no message because the whole controller was skipped.
+    public final boolean chromeOnly;
+
+    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences, boolean chromeOnly) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
+        this.chromeOnly = chromeOnly;
 
-        if (isList()) {
+        if (isList() && chromeOnly) {
+            configureToolbar(); // the chrome alone: initGridView is what makes a TABLE, and there is none here
+        } else if (isList()) {
             initGridView();
 
             // proceeding recordView
@@ -225,7 +235,7 @@ public class GGridController extends GAbstractTableController implements GFormGr
     protected void configureToolbar() {
         assert isList();
 
-        if(groupObject.toolbar.showViews) {
+        if(groupObject.toolbar.showViews && !chromeOnly) { // a view switch needs a table to switch
             GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
             gridTableButton = new GToolbarButton(StaticImage.GRID, messages.formGridTableView()) {
                 @Override
@@ -286,11 +296,11 @@ public class GGridController extends GAbstractTableController implements GFormGr
             addToToolbar(viewButtonGroup);
         }
 
-        if (groupObject.toolbar.showFilters && showFilter()) {
+        if (groupObject.toolbar.showFilters && showFilter() && !chromeOnly) { // the filter box is fed by the table (update)
             initFilters();
         }
 
-        if (groupObject.toolbar.showSettings) {
+        if (groupObject.toolbar.showSettings && !chromeOnly) { // ... and the settings dialog edits a table's columns
             GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
 
             settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
@@ -409,6 +419,8 @@ public class GGridController extends GAbstractTableController implements GFormGr
     }
 
     public void update(long requestIndex, GFormChanges fc) {
+        if (chromeOnly) // there is no table to update; the rows are the react controller's
+            return;
         Boolean updateState = null;
         if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
@@ -661,11 +673,26 @@ public class GGridController extends GAbstractTableController implements GFormGr
     }
     public boolean changeOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert isList();
+        if (chromeOnly) { // the sortings are a TABLE's state, and there is none here
+            reportNoTable("ORDER", "sorting");
+            return false;
+        }
         return table.changePropertyOrders(orders, alreadySet);
     }
 
+    // the rows are drawn from the projection, which holds its own sorting and its own conditions on this branch - so
+    // a scripted ORDER / FILTER has no table to land on, and says so once rather than silently doing nothing
+    private boolean saidNoTable;
+    private void reportNoTable(String action, String state) {
+        if (saidNoTable)
+            return;
+        saidNoTable = true;
+        GwtClientUtils.consoleError(action + " for object group '" + groupObject.getSID() + "': its rows are drawn by a"
+                + " CUSTOM REACT component, which holds its own " + state + " - the platform has no table here");
+    }
+
     public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
-        boolean hasUserPreferences = isList() && table.hasUserPreferences();
+        boolean hasUserPreferences = isList() && !chromeOnly && table.hasUserPreferences();
         if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
         return null;
     }
@@ -737,6 +764,10 @@ public class GGridController extends GAbstractTableController implements GFormGr
     }
 
     public void changeFilters(List<GPropertyFilter> filters) {
+        if (chromeOnly) { // the user filters are a TABLE's state, and there is no filter box here (initFilters)
+            reportNoTable("FILTER", "conditions");
+            return;
+        }
         filter.changeFilters(filters);
     }
 
