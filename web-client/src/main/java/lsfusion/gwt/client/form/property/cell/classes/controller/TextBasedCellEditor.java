@@ -228,24 +228,25 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 String cbText = CopyPasteUtils.getEventClipboardData(event);
                 String modifiedPastedText = (String) editContext.modifyPastedString(cbText);
                 if (modifiedPastedText != null && !modifiedPastedText.equals(cbText)) { // to paste via default mechanism otherwise
-                    pasteClipboardText(event, modifiedPastedText);
+                    insertText(event, modifiedPastedText);
                 }
             }
             plainPaste = false;
         });
     }
 
-    protected native boolean pasteClipboardText(Event event, String pastedText)/*-{
+    // inputs the text instead of what the event (paste, key press) was going to input
+    protected native boolean insertText(Event event, String text)/*-{
         var eventTarget = event.target;
         var cursorPosStart = eventTarget.selectionStart;
         var cursorPosEnd = eventTarget.selectionEnd;
         var v = eventTarget.value;
-        var mergedText = v.substring(0, cursorPosStart) + pastedText + v.substring(cursorPosEnd, v.length);
+        var mergedText = v.substring(0, cursorPosStart) + text + v.substring(cursorPosEnd, v.length);
         if (this.@lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor::isStringValid(*)(mergedText)) {
             event.stopPropagation();
             event.preventDefault();
             eventTarget.value = mergedText;
-            eventTarget.selectionStart = eventTarget.selectionEnd = cursorPosStart + pastedText.length;
+            eventTarget.selectionStart = eventTarget.selectionEnd = cursorPosStart + text.length;
             return true;
         }
         return false;
