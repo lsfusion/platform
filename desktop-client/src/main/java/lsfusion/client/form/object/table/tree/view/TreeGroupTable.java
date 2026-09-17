@@ -62,8 +62,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
@@ -252,7 +250,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
                 // should be synchronized with checkMouseEvent (see below)
                 if (!e.isConsumed() && MouseStrokes.isDblClickEvent(e) && !editPerformed) {
                     final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
-                    if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer().getUI(), path, e.getX(), e.getY())) {
+                    if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer(), path, e.getX(), e.getY())) {
                         final TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
 
                         if (node.isExpandable() && node.group != null) {
@@ -1292,16 +1290,20 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         return null;
     }
 
-    protected boolean isLocationInExpandControl(TreeUI ui, TreePath path, int mouseX, int mouseY) {
-        if (ui instanceof BasicTreeUI) {
-            try {
-                Method declaredMethod = BasicTreeUI.class.getDeclaredMethod("isLocationInExpandControl", TreePath.class, int.class, int.class);
-                declaredMethod.setAccessible(true);
-                Object result = declaredMethod.invoke(ui, path, mouseX, mouseY);
-                if (result != null) {
-                    return (Boolean) result;
-                }
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+    // same as the protected BasicTreeUI.isLocationInExpandControl, but through the public API (path bounds start at the row x + insets)
+    protected boolean isLocationInExpandControl(JTree tree, TreePath path, int mouseX, int mouseY) {
+        TreeUI treeUI = tree.getUI();
+        if (treeUI instanceof BasicTreeUI && path != null && !tree.getModel().isLeaf(path.getLastPathComponent())) {
+            BasicTreeUI ui = (BasicTreeUI) treeUI;
+            Rectangle bounds = ui.getPathBounds(tree, path);
+            if (bounds != null) {
+                int boxWidth = ui.getExpandedIcon() != null ? ui.getExpandedIcon().getIconWidth() : 8;
+                int boxLeftX;
+                if (tree.getComponentOrientation().isLeftToRight())
+                    boxLeftX = bounds.x - ui.getRightChildIndent() + 1 - (int) Math.ceil(boxWidth / 2.0);
+                else
+                    boxLeftX = bounds.x + bounds.width + ui.getRightChildIndent() - 1 - (int) Math.floor(boxWidth / 2.0);
+                return mouseX >= boxLeftX && mouseX < boxLeftX + boxWidth;
             }
         }
         return false;

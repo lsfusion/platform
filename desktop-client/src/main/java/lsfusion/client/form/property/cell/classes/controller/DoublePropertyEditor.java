@@ -9,9 +9,9 @@ import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -20,11 +20,19 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
     boolean hasMask = false;
     public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ClientPropertyDraw property, Class formatterValueClass, final boolean hasMask) {
         super(property);
-        df = format != null ? (DecimalFormat) format : new DecimalFormat();
+        df = format != null ? (DecimalFormat) format.clone() : new DecimalFormat(); // the property format is shared with the renderer, and the symbols are changed below
         this.hasMask = hasMask;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
         final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
         final char groupingSeparator = df.getDecimalFormatSymbols().getGroupingSeparator();
+
+        // the other decimal separator (. or ,) should also be allowed to be typed (see replaceSeparators in stringToValue below):
+        // NumberFormatter allows the characters of the DecimalFormatSymbols, and the monetary decimal separator is one of them, while a non-currency pattern doesn't use it
+        if (df.toPattern().indexOf('¤') == -1) {
+            DecimalFormatSymbols symbols = df.getDecimalFormatSymbols();
+            symbols.setMonetaryDecimalSeparator(separator == '.' ? ',' : '.');
+            df.setDecimalFormatSymbols(symbols);
+        }
 
         NumberFormatter formatter = new NullNumberFormatter(df, isGroupSeparatorDot ? 0 : 0.0, String.valueOf(separator)) {
             public boolean lastTextEndsWithSeparator;
@@ -87,19 +95,6 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 return count;
             }
         };
-
-        //через reflection добавляем к разрешённым символам второй decimal separator (. или ,)
-        try {
-            Field field = NumberFormatter.class.getDeclaredField("specialChars");
-            field.setAccessible(true);
-            String specialChars = (String) field.get(formatter);
-            if(!specialChars.contains("."))
-                specialChars +=".";
-            if(!specialChars.contains(","))
-                specialChars +=",";
-            field.set(formatter, specialChars);
-        } catch (NoSuchFieldException | IllegalAccessException ignored) {
-        }
 
         formatter.setValueClass(formatterValueClass);
         formatter.setAllowsInvalid(false);

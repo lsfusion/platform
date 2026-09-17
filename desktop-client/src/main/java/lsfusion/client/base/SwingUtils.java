@@ -18,7 +18,6 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.SwingXUtilities;
 import sun.font.FontUtilities;
-import sun.print.ProxyPrintGraphics;
 import sun.swing.PrintColorUIResource;
 
 import javax.swing.Timer;
@@ -35,7 +34,6 @@ import java.awt.font.TextLayout;
 import java.awt.print.PrinterGraphics;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -1106,8 +1104,6 @@ public class SwingUtils {
     private static Graphics2D getGraphics2D(Graphics g) {
         if (g instanceof Graphics2D) {
             return (Graphics2D) g;
-        } else if (g instanceof ProxyPrintGraphics) {
-            return (Graphics2D) (((ProxyPrintGraphics) g).getGraphics());
         } else {
             return null;
         }
