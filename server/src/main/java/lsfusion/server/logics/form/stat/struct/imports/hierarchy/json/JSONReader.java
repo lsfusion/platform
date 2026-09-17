@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.imports.hierarchy.json;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.io.input.BOMInputStream;
@@ -48,7 +47,17 @@ public class JSONReader {
     }
 
     public static void writeObject(Object object, Writer w) {
-        ReflectionUtils.invokePrivateMethod(JSONObject.class, null, "writeValue", new Class[]{Writer.class, Object.class, int.class, int.class}, w, object, 0, 0);
+        if (object instanceof JSONObject)
+            ((JSONObject) object).write(w);
+        else if (object instanceof JSONArray)
+            ((JSONArray) object).write(w);
+        else {
+            try {
+                w.write(JSONObject.valueToString(object));
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
     }
 
     public static JSONObject read(String url) throws IOException, JSONException {

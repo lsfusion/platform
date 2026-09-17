@@ -74,7 +74,7 @@
         <aspectj.maven.version>1.12.1</aspectj.maven.version>
 
         <validation.api.version>1.0.0.GA</validation.api.version>
-        <json.version>20240303</json.version>
+        <json.version>20260814</json.version>
         <java-json-canonicalization.version>1.1</java-json-canonicalization.version>
         <java-json-canonicalization.version>1.1</java-json-canonicalization.version>
         <junrar.version>7.5.10</junrar.version>
