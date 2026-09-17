@@ -7,6 +7,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.UserInfo;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.interop.session.remote.RemoteSessionInterface;
 import lsfusion.server.base.controller.context.Context;
@@ -58,6 +59,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
     @Override
     public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
+        userContextInitialized = false; // the user is not initialized yet (or is the previous one when the pooled session is reinitialized), so the client context should not be changed in getExecSession
         try {
             this.connectionInfo = connectionInfo;
             super.initConnectionContext(token, connectionInfo, stack);
@@ -65,6 +67,24 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             authException = e;
             super.initConnectionContext(AuthenticationToken.ANONYMOUS, connectionInfo, stack);
         }
+    }
+
+    // the client context is not persisted for the API sessions : the API user is usually shared by many clients / threads
+    // (and the session context is reinitialized on almost every request), so persisting it would update the same user row
+    // on every request with different values (which leads to update conflicts)
+    // the changes are made in the session (so the request sees its client context in the user properties) before every request
+    // (see getExecSession), and stay there until the session is cleaned / closed (or applied by the request itself)
+    private boolean userContextInitialized;
+    @Override
+    protected void initUserContext(UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
+        changeUserContext(userInfo, session);
+        try {
+            initUserContext(session);
+        } finally { // the connection initialization can apply the session (see initComputer), so the changes should not stay in it
+            session.cancelSession(SetFact.EMPTY());
+        }
+
+        userContextInitialized = true;
     }
 
     @Override
@@ -143,7 +163,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    public ExecSession getExecSession() {
+    public ExecSession getExecSession() throws SQLException, SQLHandledException {
+        if(userContextInitialized) // the client context is not changed yet (after the initialization), or the changes could have been canceled (when the pooled session was cleaned, or by the previous request in the same session)
+            changeUserContext(connectionInfo.userInfo, dataSession);
+
         return new ExecSession(dataSession);
     }
 }

@@ -132,9 +132,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         this.token = token;
         user = securityManager.getUser(securityManager.parseToken(token), session);
 
-        saveUserContext(userInfo, stack, session);
-
-        initUserContext(session);
+        initUserContext(userInfo, session, stack);
     }
 
     private void initComputer(ExecutionStack stack, ComputerInfo computerInfo, DataSession session) {
@@ -147,14 +145,21 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         logInfo = null;
     }
 
-    protected void saveUserContext(UserInfo userInfo, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+    // persists the client context and reads the user context (with the persisted client context in mind)
+    protected void initUserContext(UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
+        changeUserContext(userInfo, session);
+        session.applyException(businessLogics, stack);
+
+        initUserContext(session);
+    }
+
+    protected void changeUserContext(UserInfo userInfo, DataSession session) throws SQLException, SQLHandledException {
         TimeZone timeZone = userInfo.timeZone;
         businessLogics.authenticationLM.clientTimeZone.change(timeZone != null ? timeZone.getID() : null, session, user);
         businessLogics.authenticationLM.clientLanguage.change(userInfo.language, session, user);
         businessLogics.authenticationLM.clientCountry.change(userInfo.country, session, user);
         businessLogics.authenticationLM.clientDateFormat.change(userInfo.dateFormat, session, user);
         businessLogics.authenticationLM.clientTimeFormat.change(userInfo.timeFormat, session, user);
-        session.applyException(businessLogics, stack);
     }
 
     protected void initUserContext(DataSession session) throws SQLException, SQLHandledException {
@@ -760,7 +765,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return formatReturnValue(returnValue, returnProperty.getType(), charset, paramName);
     }
 
-    protected abstract ExecSession getExecSession() throws SQLException;
+    protected abstract ExecSession getExecSession() throws SQLException, SQLHandledException;
 
     private ExternalResponse logFromExternalSystemRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
         RequestLog.Builder logBuilder = null;
