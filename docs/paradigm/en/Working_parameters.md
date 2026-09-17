@@ -10,9 +10,12 @@ The platform working parameters can be set in one of the following ways (in the 
 -   In Java code in the `lsfusion.server.physics.admin.Settings.java` file (relevant for platform forks)
 -   In `lsfusion.properties` which are typically part of the project and therefore function for all installations by default - parameter name should start with `settings` (e.g., settings.enableUI)
 -   In `conf/settings.properties` (for specific installations) - parameter name should start with `settings`
+-   In environment variables - the variable name is `SETTINGS_<PARAMETER NAME>` (e.g., `SETTINGS_ENABLEUI`)
 -   In [Java startup parameters](Launch_parameters.md#appjava) - parameter name should start with `D` prefix plus `settings` (e.g., `-Dsettings.enableUI=2`)
 -   In the database: `Administration > System > Settings > Parameters`. In this interface, you can set both global settings and settings for specific roles
 -   During the execution of an action using system actions: `Service.pushSetting[STRING, STRING]`, `Service.popSetting[STRING]` (overriding the value of the property for the entire current thread).
+
+Any parameter of the settings class can be set through the files, the environment variables and the startup parameters; a key with the `settings` prefix that matches no parameter is ignored, in a file or in the startup parameters, with a warning in the log at startup. Before version 7.0 only the parameters listed in the platform configuration `lsfusion.xml` could be set this way, and the other keys were ignored silently.
 
 Parameters that control query execution (for example, the timeouts of the query materialization mechanism) do not take effect for already compiled queries: the execution state computed for a query — its statement timeouts and materialization steps — is cached together with the query in the compiled-query cache, so a changed parameter applies only to newly compiled queries. Constant literals are parameterized during compilation, so a query differing only in a literal reuses the already compiled query as well. When experimenting with such parameters, combine `Service.pushSetting[STRING, STRING]` / `Service.popSetting[STRING]` with dropping the caches, so that the queries are recompiled with the new values — both after the change and after restoring the previous ones: `Service.dropLRUCustom[DOUBLE, BOOLEAN]` (the percentage to drop and the random-drop flag), or `Service.dropLRU[]`, which takes them from `Service.dropLRUPercent[]` / `Service.randomDropLRU[]` and does nothing while the percentage is empty.
 

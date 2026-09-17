@@ -15,6 +15,8 @@ AFTER action(param1, ..., paramN) DO aspectAction;
 
 The `AFTER` statement defines an action (let's call it an *aspect*) that will be called after the specified action.
 
+The aspect receives the same parameter values as the main action and runs after its body, including when the body ended with the [`RETURN` operator](RETURN_operator.md). If the call was canceled by an aspect of the [`BEFORE` statement](BEFORE_statement.md) or interrupted by an error, the aspect does not run. An exit from the aspect itself ends only the aspect. Several aspects of one action run in the order of their declaration.
+
 ### Parameters
 
 - `action`

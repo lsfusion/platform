@@ -167,7 +167,7 @@ The following system actions are automatically added to any form (their names ar
 -   Save (`System.formApply`) - saves the changes made on the form to the database.
 -   Cancel (`System.formCancel`) - cancels all changes made on the *form*.
 -   OK (`System.formOk`) – closes the current form and, if the form is the session owner, applies the changes to the database.
--   Close (`System.formClose`) - closes the current *form* and does nothing with the changes.
+-   Close (`System.formClose`) - closes the current *form* and does nothing with the changes. If the form is the session owner and its session has unapplied changes to stored data (and the form is not shown as an in-place editor), the user is first asked to confirm the closing (see [pre-execution](#preexec)).
 -   Drop (`System.formDrop`) – closes the current form and returns `NULL` as the selected object.
 
 By default, these system actions have the following visibility conditions:
