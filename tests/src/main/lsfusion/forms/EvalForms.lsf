@@ -1,0 +1,20 @@
+MODULE EvalForms;
+
+REQUIRE TestUtils;
+
+CLASS Item 'Item';
+name 'Name' = DATA STRING[50] (Item);
+
+FORM items 'Items'
+    OBJECTS i = Item
+    PROPERTIES(i) name
+;
+
+evaluated = DATA LOCAL BOOLEAN ();
+
+// a [FILTER Form.groupObject] reference resolved from script text compiled at runtime used to blow up with
+// "NF COLLECTION RESTARTED" : the module owning the form is long final by then (fixed for #1801)
+testEvalGroupObjectRef 'A group object row property resolves inside EVAL' () {
+    EVAL 'itemFilter = FILTER items.i; run() \{ evaluated() <- TRUE; \}';
+    assertTrue(evaluated(), 'the evaluated script did not run');
+}
