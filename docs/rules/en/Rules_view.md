@@ -322,6 +322,17 @@ title: 'Rules: view logic'
    parse error — there, declare a named property with the
    cast and add it by its ID.
 
+   In a panel, the assistant MUST give a `TEXT`, `RICHTEXT` or
+   `HTMLTEXT` property an explicit value cell size and the caption
+   above the value (`captionVertical = TRUE`): by default it is
+   a four-line box that does not grow with its content, and
+   a caption on the left takes width away from it. Editable text
+   gets a height suited to its expected length, in lines
+   (`charHeight`) or pixels (`valueHeight`), with an extension
+   coefficient
+   (`PROPERTY(comment(t)) { fill = 1; charHeight = 10; captionVertical = TRUE; }`),
+   rendered HTML and read-only text get `autoSize = TRUE`.
+
 8. To display data, the assistant MUST first consider
    the standard object group view types: the table,
    the pivot table with its charts (`PIVOT`), the calendar

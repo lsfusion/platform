@@ -75,7 +75,7 @@ This component layout algorithm is a special case of [CSS Flexible Box Layout](h
 
 The column container breaks its static (horizontal) direction into `N` identical parts (where `N` is the number of columns): each part then has its own components, as if this part were a separate vertical container.
 
-For base components, you can specify the *automatic size* option (`autoSize`): in this case, the base size will change automatically in to enclose exactly the entire contents of this base component (for example, for a table: all its records plus a title).
+For base components, you can specify the *automatic size* option (`autoSize`): in this case, the base size will change automatically in to enclose exactly the entire contents of this base component (for example, for a table: all its records plus a title). For a property this option applies to the value cell: its height, and in a panel also its width, unless set explicitly in pixels, follow the content instead of being determined by the value class; the width of a table column is still determined by the value class with this option.
 
 The properties layout in a table (or rather, the columns that display their values) is done the same way as if the table were a horizontal container, and the columns of the table were internal components of this container. 
 
@@ -130,7 +130,7 @@ The following formulas are used by default to determine the width of a property 
 |`TIME`              |Sample value |`10:55:55`|
 |User classes        |In characters|`13`|
 
-The default height of a property value cell is equal to the height of the font used, except properties whose values belong to the `TEXT` class (in this case, the height is four times the font height).
+The default height of a property value cell is equal to the height of the font used, except properties whose values belong to the `TEXT`, `RICHTEXT` and `HTMLTEXT` classes (in this case, the height is four times the font height, and the width is that of a string of unlimited length). In a panel this height is the base size of the cell, which does not change with the content: text longer than four lines scrolls inside the input field or the rich text editor, while the content of a cell shown as is - HTML, read-only text - is clipped by default.
 
 ### Window size
 

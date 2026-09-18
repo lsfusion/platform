@@ -147,7 +147,7 @@ To access design components, you can use their names or address property compone
 |`background`|The color to be used for the component background|Expression ([COLOR](Literals.md#colorliteral) value)|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
 |`foreground`|The color to be used for the component text|Expression (COLOR value)|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
 |`panelCaptionVertical`|**deprecated since version 6, use `captionVertical`**|Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`captionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`captionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel, and the caption of a container above its content|Logical literal|`FALSE` for a property or action, `TRUE` for a container|`TRUE`<br/>`FALSE`|
 |`panelCaptionLast`|**deprecated since version 6, use `captionLast`**|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`captionLast`|Indicates that the value should be drawn on the panel prior to the property caption|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAlignment`|**deprecated since version 6, use `captionAlignmentHorz`**|Alignment type|`START`|`STRETCH`|
@@ -185,7 +185,7 @@ To access design components, you can use their names or address property compone
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`autoSize`|Automatic component size option. Applies to text components only|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`autoSize`|Automatic component size option. Applies to text components only: the height of the value cell, and in a panel also its width, unless set explicitly in pixels (`valueWidth`, `valueHeight`), follow the content instead of the value class - multi-line text (`TEXT`, `RICHTEXT`, `HTMLTEXT`) gets its height from the content instead of the default four lines; the width of a table column is still determined by the value class with this option|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
