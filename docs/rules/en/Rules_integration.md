@@ -53,13 +53,27 @@ title: 'Rules: integration'
    The form SHOULD mirror the external structure with:
    - `FILTERS` for parent-child links
    - `EXTID`, `FORMEXTID`, groups, and `ATTR`
-     only where the external schema requires them
+     only where the external schema requires them —
+     a root-level `JSON` array is one such place (rule 7)
 
    The assistant MUST remember that importing into a form
    cancels pending changes to imported form properties
    in the current session.
 
-7. The assistant MUST choose format options explicitly
+7. For a root-level `JSON` array the assistant MUST give
+   the object group of the import form
+   the export/import name `value`
+   (`OBJECTS receipts = INTEGER EXTID 'value'`):
+   the platform reads such a file as `{ "value" : [ ... ] }`
+   (see [predefined value](../paradigm/Structured_view.md#value)).
+
+   An object group whose
+   [export/import name](../paradigm/Structured_view.md#extid)
+   matches no key of the file imports zero records
+   with no error or warning, so the assistant MUST check
+   a new import form on a non-empty sample.
+
+8. The assistant MUST choose format options explicitly
    when the external contract depends on them:
    - `HEADER` / `NOHEADER`
    - `SHEET`
@@ -70,7 +84,7 @@ title: 'Rules: integration'
    because `NOHEADER` can silently map missing
    or mistyped columns to `NULL`.
 
-8. The assistant MUST validate referenced business keys
+9. The assistant MUST validate referenced business keys
    before creating or updating persistent objects.
 
    Typical keys in this project are `id`, `number`,
@@ -88,15 +102,15 @@ title: 'Rules: integration'
    Missing master data or malformed payloads
    MUST stop the import or surface a clear error.
 
-9. The assistant SHOULD separate raw import
-   from domain resolution:
-   - first parse the file or payload
-     into locals or an import form
-   - then check references such as
-     item, partner, status, type, or other lookups
-   - only then create or update domain objects
+10. The assistant SHOULD separate raw import
+    from domain resolution:
+    - first parse the file or payload
+      into locals or an import form
+    - then check references such as
+      item, partner, status, type, or other lookups
+    - only then create or update domain objects
 
-10. For user-started batch imports and external integrations,
+11. For user-started batch imports and external integrations,
     the assistant SHOULD isolate persistence in `NEWSESSION`,
     and SHOULD `APPLY;` after the domain writes of one import.
 
@@ -116,7 +130,7 @@ title: 'Rules: integration'
     The rest of them are in the domain-logic article:
     `lsfusion_get_guidance(rules='logic')`.
 
-11. The assistant MUST NOT partially persist
+12. The assistant MUST NOT partially persist
     a failed import silently. For failures the assistant
     detects on its own (missing references, malformed
     payload, pre-`APPLY` validation), it SHOULD use
@@ -126,7 +140,7 @@ title: 'Rules: integration'
     - API or background integration
       -> exception or explicit failure state
 
-12. For create-or-update synchronization imports,
+13. For create-or-update synchronization imports,
     the assistant MUST separate object creation
     from property updates.
 
@@ -154,7 +168,7 @@ title: 'Rules: integration'
     If full synchronization is required,
     the assistant SHOULD add an explicit delete step.
 
-13. If `LOCAL` staging properties
+14. If `LOCAL` staging properties
     are used only in one import action,
     the assistant MUST declare them
     inside that action.

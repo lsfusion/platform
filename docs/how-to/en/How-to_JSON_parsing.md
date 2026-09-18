@@ -163,7 +163,7 @@ importBooksFlat 'Import books' () {
 
 Unlike the form-based variant, staging properties are not needed here; the [`imported[INTEGER]`](../language/IMPORT_operator.md) property is also absent, because there is no explicit iteration — the `DO` part plays that role.
 
-`FIELDS … DO` is the right choice when the values are needed exactly once and validation does not require multiple passes. If a flow needs to validate references first, then create objects in bulk, and only then fill their properties — switch to the form-based variant or to intermediate `LOCAL` properties (see [Example 5](#example-5)).
+`FIELDS … DO` is the right choice when the values are needed exactly once and validation does not require multiple passes. If a flow needs to validate references first, then create objects in bulk, and only then fill their properties — switch to the form-based variant or to intermediate `LOCAL` properties (see [Example 5](#example-5); for a root-level array like the one here — [Example 6](#example-6)).
 
 ## Example 4
 
@@ -288,6 +288,55 @@ importBookName(INTEGER i) <- NULL WHERE importBookName(i) = '';
 The object creation runs in `NEWSESSION` so the import does not accidentally apply pending edits sitting on the `books` form itself. `APPLY` commits the changes; if a constraint fails, it shows the error text to the user on its own.
 
 ## Example 6
+
+### Task
+
+Similar to [**Example 5**](#example-5), but the file is a JSON array at the root level — the shape in which external services usually return lists:
+
+```json
+[
+    {"name": "Crime and Punishment",   "year": 1866, "price": 14.50},
+    {"name": "The Brothers Karamazov", "year": 1880, "price": 18.99},
+    {"name": "Notes from Underground", "year": 1864, "price":  6.25}
+]
+```
+
+### Solution
+
+```lsf
+FORM importBooksArray
+    OBJECTS books = INTEGER EXTID 'value'
+    PROPERTIES(books) importBookName  EXTID 'name',
+                      importBookYear  EXTID 'year',
+                      importBookPrice EXTID 'price'
+;
+
+importBooksFromJSONArray 'Import from JSON array' () {
+    INPUT f = FILE DO NEWSESSION {
+        IMPORT importBooksArray JSON FROM f;
+
+        IF NOT (GROUP SUM 1 IF importBookName(INTEGER r)) THEN {
+            MESSAGE 'No books were read from the file';
+            RETURN;
+        }
+
+        FOR importBookName(INTEGER i) NEW b = Book DO {
+            name(b)  <- importBookName(i);
+            year(b)  <- importBookYear(i);
+            price(b) <- importBookPrice(i);
+        }
+        APPLY;
+    }
+}
+```
+
+The form differs from the one in [example 5](#example-5) only by `EXTID 'value'` on the object group. An object group reads its records from the array under the key equal to its [export/import name](../paradigm/Structured_view.md#extid), and a root-level array has no key: the platform reads such a file as `{ "value" : [ ... ] }` (see the [predefined `value` conversion](../paradigm/Structured_view.md#value)), so the group that reads it must have the export/import name `value`. The object keeps its own name `books`: `EXTID` changes only the name under which the group is looked up in the file.
+
+With any other name the import completes without an error and reads no rows: an object group whose name matches no key is skipped together with everything under it. The same happens in [example 5](#example-5) when the group is named differently from the key, and when `ROOT` names the key of the array itself — `IMPORT importBooks JSON ROOT 'books' FROM f` makes that array the root, so it is again read only by a group named `value`. Nothing reports such a mismatch, which is why the action checks that at least one row was read before going on. The check cannot tell a mismatched name from a file with an empty array, so it belongs where an empty file is not expected.
+
+The `FIELDS` variant from [example 3](#example-3) needs no such name: the object group of the form it creates automatically is already named `value`.
+
+## Example 7
 
 ### Task
 
