@@ -9,6 +9,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.ArCol;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -887,22 +888,57 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    // находит свойство входящее в "верхнюю" сильносвязную компоненту
-    private static HSet<Link> buildOrder(ActionOrProperty<?> property, MAddMap<ActionOrProperty, HSet<Link>> linksMap, List<ActionOrProperty> order, ImSet<Link> removedLinks, boolean include, ImSet<ActionOrProperty> component, boolean events, boolean recursive, boolean checkNotRecursive) {
-        HSet<Link> linksIn = linksMap.get(property);
-        if (linksIn == null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
-            assert !(recursive && checkNotRecursive);
-            linksIn = new HSet<>();
-            linksMap.add(property, linksIn);
+    private static class OrderFrame {
+        private final ActionOrProperty<?> property;
+        private final Link pendingLink; // связь, она попадёт в reversedGraph этого свойства когда будет пройдено всё его поддерево
+        private int index; // позиция в getSortedLinks, с которой продолжается обход
 
-            ImOrderSet<Link> links = property.getSortedLinks(events);
-            for (Link link : links)
-                if (!removedLinks.contains(link) && component.contains(link.to) == include)
-                    buildOrder(link.to, linksMap, order, removedLinks, include, component, events, true, checkNotRecursive).add(link);
-            if(order != null)
-                order.add(property);
+        private OrderFrame(ActionOrProperty<?> property, Link pendingLink) {
+            this.property = property;
+            this.pendingLink = pendingLink;
         }
-        return linksIn;
+    }
+
+    // первый проход: обход по исходным рёбрам, заполняет reversedGraph и постпорядок order, последнее свойство которого входит в "верхнюю" сильно-связную компоненту
+    private static void buildOrder(ActionOrProperty<?> root, MAddMap<ActionOrProperty, ArCol<Link>> reversedGraph, List<ActionOrProperty> order, ImSet<Link> removedLinks, boolean include, ImSet<ActionOrProperty> component, boolean events, boolean checkNotRecursive) {
+        if (reversedGraph.get(root) != null) // уже были, reversedGraph - одновременно используется и как пометки, и как список пройденных свойств
+            return;
+
+        List<OrderFrame> stack = new ArrayList<>();
+        reversedGraph.add(root, new ArCol<>(1));
+        stack.add(new OrderFrame(root, null));
+
+        while (!stack.isEmpty()) {
+            OrderFrame frame = stack.get(stack.size() - 1);
+            ImOrderSet<Link> forwardLinks = frame.property.getSortedLinks(events);
+
+            boolean descended = false;
+            for (int i = frame.index, linksSize = forwardLinks.size(); i < linksSize; i++) {
+                Link link = forwardLinks.get(i);
+                if (!removedLinks.contains(link) && component.contains(link.to) == include) {
+                    ArCol<Link> toReversedLinks = reversedGraph.get(link.to);
+                    if (toReversedLinks == null) { // свойство ещё не обходили - уходим вглубь, связь добавится при выходе из его поддерева
+                        assert !checkNotRecursive;
+                        reversedGraph.add(link.to, new ArCol<>(1));
+
+                        frame.index = i + 1;
+                        stack.add(new OrderFrame(link.to, link));
+
+                        descended = true;
+                        break;
+                    }
+                    toReversedLinks.add(link); // свойство уже обходили - связь добавляется сразу
+                }
+            }
+            if (descended)
+                continue;
+
+            if (order != null)
+                order.add(frame.property);
+            stack.remove(stack.size() - 1);
+            if (frame.pendingLink != null)
+                reversedGraph.get(frame.property).add(frame.pendingLink);
+        }
     }
 
     public final static Comparator<ActionOrProperty> actionOrPropComparator = (o1, o2) -> {
@@ -1031,18 +1067,34 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return minProp;
     }
     
-    // ищем компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить)
-    private static void findComponent(ActionOrProperty<?> property, LinkType linkType, MAddMap<ActionOrProperty, HSet<Link>> linksMap, HSet<ActionOrProperty> proceeded, HMap<ActionOrProperty, LinkType> component) {
-        boolean checked = component.containsKey(property);
-        component.add(property, linkType);
-        if (checked)
-            return;
+    private static class ComponentFrame {
+        private final ArCol<Link> reversedLinks;
+        private int index; // позиция в reversedLinks, с которой продолжается обход
 
-        HSet<Link> linksIn = linksMap.get(property);
-        for (int i = 0; i < linksIn.size; i++) {
-            Link link = linksIn.get(i);
+        private ComponentFrame(ArCol<Link> reversedLinks) {
+            this.reversedLinks = reversedLinks;
+        }
+    }
+
+    // второй проход: обход по развёрнутым рёбрам, собирает компоненту (отдельно от findMinCycle нужно для детерминированности)
+    private static void findComponent(ActionOrProperty<?> root, LinkType rootLinkType, MAddMap<ActionOrProperty, ArCol<Link>> reversedGraph, HSet<ActionOrProperty> proceeded, HMap<ActionOrProperty, LinkType> component) {
+        List<ComponentFrame> stack = new ArrayList<>();
+        component.add(root, rootLinkType);
+        stack.add(new ComponentFrame(reversedGraph.get(root)));
+
+        while (!stack.isEmpty()) {
+            ComponentFrame frame = stack.get(stack.size() - 1);
+            if (frame.index == frame.reversedLinks.size) { // свойство пройдено
+                stack.remove(stack.size() - 1);
+                continue;
+            }
+
+            Link link = frame.reversedLinks.get(frame.index++);
             if (!proceeded.contains(link.from)) { // если не в верхней компоненте
-                findComponent(link.from, link.type, linksMap, proceeded, component);
+                boolean checked = component.containsKey(link.from);
+                component.add(link.from, link.type); // тип домердживается и на повторном заходе
+                if (!checked) // вглубь заходим только на первом заходе, дальше достаточно типа
+                    stack.add(new ComponentFrame(reversedGraph.get(link.from)));
             }
         }
     }
@@ -1069,20 +1121,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return 0;
     }
 
-    private static List<Link> findMinCycle(ActionOrProperty<?> property, MAddMap<ActionOrProperty, HSet<Link>> linksMap, ImSet<ActionOrProperty> component) {
+    private static List<Link> findMinCycle(ActionOrProperty<?> property, MAddMap<ActionOrProperty, ArCol<Link>> reversedGraph, ImSet<ActionOrProperty> component) {
         // поиск в ширину
         HSet<ActionOrProperty> inQueue = new HSet<>();
         Link[] queue = new Link[component.size()];
-        Integer[] from = new Integer[component.size()];
+        int[] from = new int[component.size()];
         int left = -1; int right = 0;
         int sright = right;
         List<Link> minCycle = null;
 
         while(true) {
             ActionOrProperty current = left >= 0 ? queue[left].from : property;
-            HSet<Link> linksIn = linksMap.get(current);
-            for (int i = 0; i < linksIn.size; i++) {
-                Link link = linksIn.get(i);
+            ArCol<Link> reversedLinks = reversedGraph.get(current);
+            for (int i = 0; i < reversedLinks.size; i++) {
+                Link link = reversedLinks.get(i);
 
                 if(BaseUtils.hashEquals(link.from, property)) { // нашли цикл
                     List<Link> cycle = new ArrayList<>();
@@ -1147,38 +1199,66 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result.get(bestMinIndex);
     }
 
-    // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<ActionOrProperty> buildList(HSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, HMap<Link, List<Link>> removedLinkCycles, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
-        HSet<ActionOrProperty> proceeded;
+    private static class BuildListCycle { // компонента, которую надо разложить ещё раз, вместе со всем, что нужно для отладочного вывода
+        private final HSet<ActionOrProperty> component;
+        private final ActionOrProperty<?> minProperty;
+        private final Link minLink;
+        private final List<Link> minCycle;
 
+        private BuildListCycle(HSet<ActionOrProperty> component, ActionOrProperty<?> minProperty, Link minLink, List<Link> minCycle) {
+            this.component = component;
+            this.minProperty = minProperty;
+            this.minLink = minLink;
+            this.minCycle = minCycle;
+        }
+    }
+
+    private static class BuildListFrame {
+        private final List<Object> entries; // ActionOrProperty - выдать, BuildListCycle - разложить ещё раз
+        private final DebugInfoWriter debugInfoWriter;
+        private int index;
+
+        private BuildListFrame(List<Object> entries, DebugInfoWriter debugInfoWriter) {
+            this.entries = entries;
+            this.debugInfoWriter = debugInfoWriter;
+        }
+    }
+
+    // один проход разложения на компоненты: все компоненты уровня дизъюнктны, а рвущиеся внутри компоненты связи строго внутренние для нее,
+    // поэтому выбор разрываемой связи для одной компоненты не зависит от того, что происходит внутри другой, и весь набор можно выбрать сразу
+    private static BuildListFrame buildListPass(HSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, HMap<Link, List<Link>> removedLinkCycles, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter, Result<HSet<ActionOrProperty>> rProceeded) {
         List<ActionOrProperty> order = new ArrayList<>();
-        MAddMap<ActionOrProperty, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
+        MAddMap<ActionOrProperty, ArCol<Link>> reversedGraph = MapFact.mAddOverrideMap();
         for (int i = 0, size = props.size(); i < size ; i++) {
             ActionOrProperty property = props.get(i);
-            if (linksMap.get(property) == null) // проверка что не было
-                buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, events, false, false);
+            if (reversedGraph.get(property) == null) // проверка что не было
+                buildOrder(property, reversedGraph, order, removedLinks, exclude == null, exclude != null ? exclude : props, events, false);
         }
 
-        proceeded = new HSet<>();
+        List<Object> entries = null; // заводится только когда появилось что откладывать - пока откладывать нечего, одиночки выдаются сразу
+        HSet<ActionOrProperty> proceeded = new HSet<>();
         for (int i = 0; i < order.size(); i++) {
             ActionOrProperty orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
-                HMap<ActionOrProperty, LinkType> innerComponentOutTypes = new HMap<>(LinkType.minLinkAdd());                
-                findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
+                HMap<ActionOrProperty, LinkType> innerComponentOutTypes = new HMap<>(LinkType.minLinkAdd());
+                findComponent(orderProperty, LinkType.MAX, reversedGraph, proceeded, innerComponentOutTypes);
 
                 HSet<ActionOrProperty> innerComponent = innerComponentOutTypes.keys();
-                        
+
                 assert innerComponent.size() > 0;
                 if (innerComponent.size() == 1) { // если цикла нет все ОК
                     ActionOrProperty innerProperty = innerComponent.single();
-                    if(debugInfoWriter != null)
-                        debugInfoWriter.addLines(innerProperty.toString());
-                    mResult.exclAdd(innerProperty);
+                    if (entries == null) {
+                        if (debugInfoWriter != null)
+                            debugInfoWriter.addLines(innerProperty.toString());
+                        mResult.exclAdd(innerProperty);
+                    } else
+                        entries.add(innerProperty);
                 } else { // нашли цикл
                     ActionOrProperty minProperty = findMinProperty(innerComponentOutTypes);
 
                     // assert что minProperty один из ActionProperty.getChangeExtProps
-                    List<Link> minCycle = findMinCycle(minProperty, linksMap, innerComponent);
+                    List<Link> minCycle = findMinCycle(minProperty, reversedGraph, innerComponent);
                     assert BaseUtils.hashEquals(minCycle.get(0).from, minProperty) && BaseUtils.hashEquals(minCycle.get(minCycle.size()-1).to, minProperty);
 
                     Link minLink = getMinLink(minCycle);
@@ -1186,35 +1266,81 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     if(removedLinkCycles != null)
                         removedLinkCycles.exclAdd(minLink, minCycle);
 
-                    DebugInfoWriter pushDebugInfoWriter = null;
-                    if(debugInfoWriter != null) {
-                        pushDebugInfoWriter = debugInfoWriter.pushPrefix(minProperty.toString());
-
-                        String result = "";
-                        for(Link link : minCycle) {
-                            result += " " + link.to;
-                        }
-                        pushDebugInfoWriter.addLines("REMOVE LINK : " + minLink + " FROM CYCLE : " + result);
-                    }
-
-//                    printCycle("Features", minLink, innerComponent, minCycle);
-                    if (minLink.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
-                        MOrderExclSet<ActionOrProperty> mCycle = SetFact.mOrderExclSet();
-                        buildList(innerComponent, null, removedLinks, removedLinkCycles, mCycle, events, pushDebugInfoWriter);
-                        ImOrderSet<ActionOrProperty> cycle = mCycle.immutableOrder();
-
-                        String print = "";
-                        for (ActionOrProperty property : cycle)
-                            print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
-                        throw new RuntimeException(ThreadLocalContext.localize("{message.cycle.detected}") + " : " + print + " -> " + minLink.to);
-                    }
-                    buildList(innerComponent, null, removedLinks, removedLinkCycles, mResult, events, pushDebugInfoWriter);
+                    if (entries == null)
+                        entries = new ArrayList<>();
+                    entries.add(new BuildListCycle(innerComponent, minProperty, minLink, minCycle));
                 }
                 proceeded.exclAddAll(innerComponent);
             }
         }
 
-        return proceeded;
+        if(rProceeded != null)
+            rProceeded.set(proceeded);
+        return entries == null ? null : new BuildListFrame(entries, debugInfoWriter); // ни одного цикла - кадр не нужен
+    }
+
+    // upComponent нужен так как изначально неизвестны все элементы
+    private static HSet<ActionOrProperty> buildList(HSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, HMap<Link, List<Link>> removedLinkCycles, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
+        Result<HSet<ActionOrProperty>> rProceeded = new Result<>();
+
+        List<BuildListFrame> stack = new ArrayList<>();
+        BuildListFrame first = buildListPass(props, exclude, removedLinks, removedLinkCycles, mResult, events, debugInfoWriter, rProceeded);
+        if (first != null)
+            stack.add(first);
+
+        while (!stack.isEmpty()) {
+            BuildListFrame frame = stack.get(stack.size() - 1);
+
+            BuildListCycle cycle = null;
+            while (frame.index < frame.entries.size()) {
+                Object entry = frame.entries.get(frame.index);
+                frame.entries.set(frame.index++, null); // не удерживаем израсходованное, иначе память все равно растет с глубиной
+                if (entry instanceof BuildListCycle) {
+                    cycle = (BuildListCycle) entry;
+                    break;
+                }
+                ActionOrProperty innerProperty = (ActionOrProperty) entry;
+                if (frame.debugInfoWriter != null)
+                    frame.debugInfoWriter.addLines(innerProperty.toString());
+                mResult.exclAdd(innerProperty);
+            }
+
+            if (cycle == null) {
+                stack.remove(stack.size() - 1);
+                continue;
+            }
+
+            DebugInfoWriter pushDebugInfoWriter = null;
+            if (frame.debugInfoWriter != null) {
+                pushDebugInfoWriter = frame.debugInfoWriter.pushPrefix(cycle.minProperty.toString());
+
+                String result = "";
+                for (Link link : cycle.minCycle) {
+                    result += " " + link.to;
+                }
+                pushDebugInfoWriter.addLines("REMOVE LINK : " + cycle.minLink + " FROM CYCLE : " + result);
+            }
+
+//            printCycle("Features", cycle.minLink, cycle.component, cycle.minCycle);
+            if (cycle.minLink.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
+                MOrderExclSet<ActionOrProperty> mCycle = SetFact.mOrderExclSet();
+                buildList(cycle.component, null, removedLinks, removedLinkCycles, mCycle, events, pushDebugInfoWriter);
+                ImOrderSet<ActionOrProperty> cycleList = mCycle.immutableOrder();
+
+                String print = "";
+                for (ActionOrProperty property : cycleList)
+                    print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
+                throw new RuntimeException(ThreadLocalContext.localize("{message.cycle.detected}") + " : " + print + " -> " + cycle.minLink.to);
+            }
+
+            if (frame.index == frame.entries.size()) // кадру больше нечего делать - не держим его на стеке
+                stack.remove(stack.size() - 1);
+            BuildListFrame next = buildListPass(cycle.component, null, removedLinks, removedLinkCycles, mResult, events, pushDebugInfoWriter, null);
+            if (next != null)
+                stack.add(next);
+        }
+
+        return rProceeded.result;
     }
 
     private static void outputLink(StringBuilder result, boolean forward, Link link) {
@@ -1492,18 +1618,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private static Graph<ActionOrProperty> buildGraph(ImOrderSet<ActionOrProperty> props, ImSet<Link> removedLinks) {
-        MAddMap<ActionOrProperty, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
+        MAddMap<ActionOrProperty, ArCol<Link>> reversedGraph = MapFact.mAddOverrideMap();
         for (int i = 0, size = props.size(); i < size; i++) {
             ActionOrProperty property = props.get(i);
-            if (linksMap.get(property) == null) // проверка что не было
-                buildOrder(property, linksMap, null, removedLinks, true, props.getSet(), true, false, true);
+            if (reversedGraph.get(property) == null) // проверка что не было
+                buildOrder(property, reversedGraph, null, removedLinks, true, props.getSet(), true, true);
         }
 
-        MExclMap<ActionOrProperty, ImSet<ActionOrProperty>> mEdgesIn = MapFact.mExclMap(linksMap.size());
-        for(int i=0,size=linksMap.size();i<size;i++) {
-            final ActionOrProperty property = linksMap.getKey(i);
-            HSet<Link> links = linksMap.getValue(i);
-            mEdgesIn.exclAdd(property, links.mapSetValues(value -> {
+        MExclMap<ActionOrProperty, ImSet<ActionOrProperty>> mEdgesIn = MapFact.mExclMap(reversedGraph.size());
+        for(int i=0,size=reversedGraph.size();i<size;i++) {
+            final ActionOrProperty property = reversedGraph.getKey(i);
+            ArCol<Link> links = reversedGraph.getValue(i);
+            mEdgesIn.exclAdd(property, links.mapColSetValues(value -> {
                 assert BaseUtils.hashEquals(value.to, property);
                 return value.from;
             }));
