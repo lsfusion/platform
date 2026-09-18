@@ -4,6 +4,7 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.interop.form.event.KeyStrokes;
+import org.jdesktop.swingx.JXTableCellEditorRemover;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
@@ -16,6 +17,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
+import java.util.EventObject;
 
 public abstract class ClientFormTreeTable extends JXTreeTable implements TableTransferHandler.TableInterface {
 
@@ -36,6 +38,12 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
         //remove default enter and shift-enter actions
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "none");
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getShiftEnter(), "none");
+    }
+
+    @Override
+    public boolean editCellAt(int row, int column, EventObject e) {
+        JXTableCellEditorRemover.install(this);
+        return super.editCellAt(row, column, e);
     }
 
     @Override

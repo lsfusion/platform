@@ -15,6 +15,7 @@ import lsfusion.client.form.property.cell.classes.view.PDFPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.VideoPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRenderer;
 import lsfusion.client.view.MainFrame;
+import org.jdesktop.swingx.JXTableCellEditorRemover;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 
@@ -145,6 +146,12 @@ public class GroupingTreeTable extends JXTreeTable {
         }
     }
     
+    @Override
+    public boolean editCellAt(int row, int column, EventObject e) {
+        JXTableCellEditorRemover.install(this);
+        return super.editCellAt(row, column, e);
+    }
+
     public TreeTableNode getRoot() {
         return treeTableModel.getRoot();
     }
