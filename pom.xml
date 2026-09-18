@@ -20,6 +20,7 @@
         <module>desktop-client</module>
         <module>server</module>
         <module>web-client</module>
+        <module>tests</module>
     </modules>
 
     <properties>

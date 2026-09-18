@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- an ordinary lsFusion logics, like any application project : src/main/lsfusion is the source root -->
+    <parent>
+        <groupId>lsfusion.platform.build</groupId>
+        <artifactId>logics</artifactId>
+        <version>7.0-SNAPSHOT</version>
+        <relativePath>../build/logics/pom.xml</relativePath>
+    </parent>
+
+    <groupId>lsfusion.platform</groupId>
+    <artifactId>tests</artifactId>
+    <packaging>jar</packaging>
+    <name>Tests</name>
+
+    <properties>
+        <!-- build/base turns tests off for the whole platform; this is the module they are turned on for -->
+        <maven.test.skip>false</maven.test.skip>
+        <!-- the test logics is nobody's dependency, and must not reach the repository -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.compiler.source>11</maven.compiler.source>
+        <surefire.version>3.2.5</surefire.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <!-- version spelled out : junit is managed in build/platform-base, which a logics does not inherit from -->
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- the runners start the server in a jvm of its own, so they need the classpath maven resolved -->
+                        <id>server-classpath</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/server-classpath.txt</outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

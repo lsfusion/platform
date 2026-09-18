@@ -1,0 +1,31 @@
+MODULE TestUtils;
+
+REQUIRE System;
+
+// the only way to make a test action fail : the message ends up in the http response the runner reports
+fail 'Fail' (STRING message) INTERNAL 'lsfusion.tests.FailAction' (STRING);
+
+assertTrue (BOOLEAN value, STRING message) {
+    IF NOT value THEN
+        fail(message);
+}
+
+assertFalse (BOOLEAN value, STRING message) {
+    IF value THEN
+        fail(message);
+}
+
+assertNull (value, STRING message) {
+    IF value THEN
+        fail(message);
+}
+
+assertNotNull (value, STRING message) {
+    IF NOT value THEN
+        fail(message);
+}
+
+assertEquals (a, b, STRING message) {
+    IF NOT (a = b) THEN
+        fail(message);
+}
