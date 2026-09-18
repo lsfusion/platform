@@ -224,7 +224,7 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-The value-or-row guess in `changeProperty`, the value formats, and the name qualification rules are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
+The value-or-row guess in `changeProperty`, the value formats, the name qualification rules, and the rule for an action are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name; a property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
 
 ```js
 controller.changeProperties(['start', 'end'], [task, task], [newStart, newEnd]);

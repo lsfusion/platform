@@ -110,7 +110,7 @@ The `SCHEDULE` event is a [timer of the form](../paradigm/Form_events.md): the h
 
 - `replaceMode`
 
-    Controls whether the handler replaces previously defined handlers for this event or is added to them. `REPLACE` replaces all handlers previously defined for the event; `NOREPLACE` adds the handler to them. When omitted, the default is `REPLACE` for `QUERYOK` and `QUERYCLOSE` and `NOREPLACE` for all other events. `replaceMode` does not apply to the plain `PROPERTY` event form (without `BEFORE` / `AFTER`), which always replaces its single handler.
+    Controls whether the handler replaces previously defined handlers for this event or is added to them. `REPLACE` replaces all handlers previously defined for the event; `NOREPLACE` adds the handler to them. The previously defined handlers include the [default handlers](../paradigm/Form_events.md#default) — for example, the standard message about successful saving (`System.formApplied[]`). When omitted, the default is `REPLACE` for `QUERYOK` and `QUERYCLOSE` and `NOREPLACE` for all other events. `replaceMode` does not apply to the plain `PROPERTY` event form (without `BEFORE` / `AFTER`), which always replaces its single handler.
 
 - `eventActionId`
 
@@ -145,7 +145,10 @@ FORM invoice 'Invoice' // creating a form for editing an invoice
         // by clicking the formDrop button, showing a message that this cannot be, 
         // since this button by default will be shown only in the form for choosing an invoice, 
         // and this form is basically an invoice edit form
-        ON DROP showImpossibleMessage() 
+        ON DROP showImpossibleMessage(),
+        // the form reports the save itself, so the standard message about successful
+        // saving (the default handler) is replaced with its own
+        ON APPLY AFTER REPLACE { MESSAGE 'Invoice saved' NOWAIT LOG; }
 ;
 
 CLASS Shift;

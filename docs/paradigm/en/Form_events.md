@@ -88,11 +88,15 @@ For some events, the platform automatically creates default handlers:
 
 - `QUERYCLOSE`
 
-    Calls the `System.formClose` action
+    Calls the `System.formClose[]` action
 
 - `QUERYOK`
 
-    Calls the `System.formOk` action
+    Calls the `System.formOk[]` action
+
+- `APPLY AFTER`
+
+    Calls the `System.formApplied[]` action, which shows the user a [message](Show_message_MESSAGE_ASK.md#type) that the changes were saved successfully (`Changes were successfully written...`) — in the `System.log` window, without a dialog box. When the form reports the result of saving itself, this handler is removed by defining a handler of this event that replaces the previously defined ones: the default handler is replaced along with them. The `System.formApplied[]` action is abstract with a list of implementations, so a project can add its own implementation to it: on a form that keeps the default handler, it is executed after the session is saved successfully, before the standard message.
 
 - `CHANGE`
 
