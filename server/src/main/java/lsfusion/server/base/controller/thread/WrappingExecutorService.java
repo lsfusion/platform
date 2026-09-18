@@ -16,6 +16,10 @@ public abstract class WrappingExecutorService implements ExecutorService {
         this.delegate = checkNotNull(delegate);
     }
 
+    public ExecutorService getDelegate() {
+        return delegate;
+    }
+
     /**
      * Wraps a {@code Callable} for submission to the underlying executor. This
      * method is also applied to any {@code Runnable} passed to the default

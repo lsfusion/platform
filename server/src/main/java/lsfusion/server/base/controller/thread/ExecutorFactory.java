@@ -22,6 +22,10 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -360,6 +364,17 @@ public class ExecutorFactory {
         };
     }
 
+    // the threads of the pool (the services created here are wrapped, and their threads are created by ClosableDaemonThreadFactory)
+    public static Collection<Thread> getThreads(ExecutorService executor) {
+        ExecutorService service = executor instanceof WrappingExecutorService ? ((WrappingExecutorService) executor).getDelegate() : executor;
+        if (service instanceof ThreadPoolExecutor) {
+            ThreadFactory threadFactory = ((ThreadPoolExecutor) service).getThreadFactory();
+            if (threadFactory instanceof ClosableDaemonThreadFactory)
+                return ((ClosableDaemonThreadFactory) threadFactory).getThreads();
+        }
+        return Collections.emptyList();
+    }
+
     private static ExecutorService wrapService(ExecutorService service, final TaskAspect aspect) {
         return new WrappingExecutorService(service) {
             @Override
@@ -605,9 +620,28 @@ public class ExecutorFactory {
     public static class ClosableDaemonThreadFactory extends DaemonThreadFactory {
         protected final WeakReference<LogicsInstance> wLogicsInstance;
 
+        private final Set<Thread> threads = Collections.newSetFromMap(new ConcurrentHashMap<>()); // the threads created by this factory that have not terminated yet
+
         public ClosableDaemonThreadFactory(LogicsInstance instance, String threadNamePrefix) {
             super(threadNamePrefix);
             wLogicsInstance = new WeakReference<>(instance);
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = super.newThread(r);
+            removeTerminatedThreads();
+            threads.add(thread);
+            return thread;
+        }
+
+        public Collection<Thread> getThreads() {
+            removeTerminatedThreads();
+            return new ArrayList<>(threads);
+        }
+
+        private void removeTerminatedThreads() {
+            threads.removeIf(thread -> thread.getState() == Thread.State.TERMINATED);
         }
 
         protected Thread newThreadInstance(ThreadGroup group, Runnable r, String name, int stackSize) {
