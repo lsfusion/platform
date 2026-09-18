@@ -42,7 +42,7 @@ IMPORT formName [importFormat] [FROM (fileExpr | groupId1 = fileExpr1 [, ..., gr
 
 The hierarchical formats (**JSON**, **XML**) are read from one file, the flat ones (**CSV**, **XLS**, **DBF**, **TABLE**) from one file per object group; the empty group is named `root`. Without `FROM`, `System.importFile` is used.
 
-An imported form is restricted: objects of numeric or concrete user classes only, exactly one object per group, properties and filters changeable (as a rule, [data properties](Brief_logic.md#properties)). Flat import is a special case of it, with the form built by the platform itself. The mechanism is [in a structured view](../paradigm/In_a_structured_view_EXPORT_IMPORT.md), and the form's views are in [Brief: forms](Brief_view.md#forms).
+An imported form is restricted: objects of numeric or concrete user classes only, exactly one object per group, properties and filters changeable (as a rule, [data properties](Brief_logic.md#properties)). For every object read, the default value is written to each filter of its group: `FILTERS order(od) = o` records the link to the upper object, `FILTERS imported(o)` the mark of a read object; without such a filter `System.imported[INTEGER]` is not filled. Flat import is a special case of it, with the form built by the platform itself. The mechanism is [in a structured view](../paradigm/In_a_structured_view_EXPORT_IMPORT.md), and the form's views are in [Brief: forms](Brief_view.md#forms).
 
 ### Formats and field mapping
 

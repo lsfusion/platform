@@ -153,7 +153,7 @@ The first passed file is used to automatically determine a flat file format by i
 
 - `whereId`
 
-    Property ID to which [a default value](../paradigm/Built-in_classes.md#defaultvalue) of the class of this property value will be written for each imported object. Property parameters and classes must match the imported objects and their classes. If the property is not specified and the number of imported objects is greater than `0`, a property with the name `imported` and classes of imported objects (e.g. `System.imported[INTEGER]`) is used.
+    Property ID to which [a default value](../paradigm/Built-in_classes.md#defaultvalue) of the class of this property value will be written for each imported object. Property parameters and classes must match the imported objects and their classes. If the property is not specified and the number of imported objects is greater than `0`, a property with the name `imported` and classes of imported objects (e.g. `System.imported[INTEGER]`) is used. This default applies to the `TO` option only: with `FIELDS`, `System.imported[INTEGER]` is not filled, and when a form is imported, the objects read are marked only by the [filters of the form](../paradigm/In_a_structured_view_EXPORT_IMPORT.md#importForm), so it is filled only if the form has a filter with it.
 
 - `propClassId1, ..., propClassIdN`
 

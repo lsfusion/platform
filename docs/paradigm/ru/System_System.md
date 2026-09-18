@@ -95,7 +95,7 @@ title: 'System'
 
 - **`export…`** — куда `EXPORT` пишет промежуточный результат. По одному свойству на каждый встроенный класс: `exportObject[]`, `exportInteger[]`, `exportLong[]`, `exportDouble[]`, `exportNumeric[]`, `exportString[]`, `exportText[]`, `exportRichText[]`, `exportHTMLText[]`, `exportDate[]`, `exportTime[]`, `exportDateTime[]`, `exportZDateTime[]`, `exportYear[]`, `exportBoolean[]`, `exportTBoolean[]`, `exportInterval<Type>[]` для всех интервалов, `exportColor[]`, `exportJSON[]` / `exportJSONText[]`, `exportXML[]`, `exportHTML[]`, и аналогичные `export<Class>File[]` / `export<Class>Link[]` для всех файловых и ссылочных классов.
 - **`requested…`** — те же буферы, объявленные как `NESTED` для пакетного запроса значений у пользователя (`INPUT` / `REQUEST`).
-- **Импорт**: `importFile[]`, `imported[INTEGER]` и `importedString[STRING[10]]` — признак того, что соответствующая «строка» дошла из плоского файла. `inputList[INTEGER]` / `displayInputList[INTEGER]` — буфер списка значений и подписей. `readFile[]`, `readDialogPath[]`, `showResult[]` — результаты чтения файла, выбора пути и вывода сообщения.
+- **Импорт**: `importFile[]` — файл, из которого по умолчанию импортируется форма. `imported[INTEGER]` и `importedString[STRING[10]]` — признак того, что соответствующая «строка» прочитана из файла: `imported[INTEGER]` по умолчанию служит условием [импорта данных](Data_import_IMPORT.md), а при [импорте формы](In_a_structured_view_EXPORT_IMPORT.md#importForm) заполняется, только если используется в ее фильтре. `inputList[INTEGER]` / `displayInputList[INTEGER]` — буфер списка значений и подписей. `readFile[]`, `readDialogPath[]`, `showResult[]` — результаты чтения файла, выбора пути и вывода сообщения.
 
 ### Идентичность приложения
 

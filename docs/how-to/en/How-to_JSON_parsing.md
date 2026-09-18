@@ -277,7 +277,7 @@ The `importBooks` form mirrors the JSON shape: for the `books` array there is an
 
 [`IMPORT … JSON FROM`](../language/IMPORT_operator.md) reads the file and fills the local properties — `importBookName(i)`, `importBookYear(i)`, `importBookPrice(i)` — for every row `i`.
 
-`FOR importBookName(INTEGER i)` walks every row whose imported name is not `NULL` and creates a `Book` object for each. The system `imported[INTEGER]` property should not be used for iteration here — unlike with flat formats (`IMPORT XLS`, `IMPORT CSV`), it is not set under `IMPORT … JSON FROM`; the "this row came from the file" role is played by any non-empty staging property instead.
+`FOR importBookName(INTEGER i)` walks every row whose imported name is not `NULL` and creates a `Book` object for each. The system `imported[INTEGER]` property cannot be used for iteration here: form import writes only to the properties and filters of the form, and this form has no filter with `imported[INTEGER]` (after `IMPORT … TO` it is filled because the form the platform creates for that operator has such a filter). Here the "this row came from the file" role is played by a non-empty staging property; [Example 8](#example-8) shows how to get such a mark when no field of a record is mandatory.
 
 Keep in mind that an empty string `""` in the JSON file is imported as an empty non-`NULL` string, not as `NULL` (see [Structured view](../paradigm/Structured_view.md)). Such a value satisfies non-`NULL` conditions — the `FOR` above, `IF`, aggregates like `GROUP LAST`. When empty strings should behave as missing values, normalize them right after the import:
 
@@ -405,3 +405,57 @@ Every nested array gets its own `OBJECTS` block over `INTEGER`, exactly like the
 The innermost array holds strings, not objects; per the [predefined `value` conversion](../paradigm/Structured_view.md#value) each such element is read as an object `{ "value" : ... }`, so the staging property is mapped with `EXTID 'value'`.
 
 When a nested array lies not directly in the element but under an intermediate object key (say, `"status": {"details": [...]}`), declare a [property group](../language/GROUP_statement.md) with that export/import name and add the child `OBJECTS` block to it with `IN`. The group nests under the object group of the iterated element — per the same hierarchy building — not under the form root.
+
+## Example 8
+
+### Task
+
+Similar to [**Example 7**](#example-7), but no field of a record is mandatory: a docflow may come without `number`, and an event may be an empty object.
+
+```json
+{
+    "docflows": [
+        {
+            "number": "DF-1001",
+            "events": [
+                {"type": "sent"},
+                {}
+            ]
+        },
+        {
+            "events": []
+        }
+    ]
+}
+```
+
+We need to process every element of both arrays, whatever fields it has — here, to count the events of each docflow.
+
+### Solution
+
+```lsf
+eventImported = DATA LOCAL BOOLEAN (INTEGER);
+
+FORM importDocflowsMarked
+    OBJECTS d = INTEGER EXTID 'docflows'
+    PROPERTIES(d) docflowNumber EXTID 'number'
+    FILTERS imported(d)
+
+    OBJECTS e = INTEGER EXTID 'events'
+    PROPERTIES(e) eventType EXTID 'type'
+    FILTERS eventDocflow(e) = d
+    FILTERS eventImported(e)
+;
+
+countEvents (FILE f) {
+    IMPORT importDocflowsMarked JSON FROM f;
+
+    FOR imported(INTEGER d) DO
+        MESSAGE (OVERRIDE docflowNumber(d), 'without number') + ': ' +
+            (OVERRIDE (GROUP SUM 1 IF eventImported(INTEGER e) AND eventDocflow(e) = d), 0) + ' events';
+}
+```
+
+A staging property cannot serve as the row mark here: `FOR docflowNumber(INTEGER d)` would skip the docflow without a number. The mark is set by a filter instead: [for every object read from the file the platform writes the default value to each filter of its object group](../paradigm/In_a_structured_view_EXPORT_IMPORT.md#importForm), and for a `BOOLEAN` property that value is `TRUE`. So after the import `imported[INTEGER]` is `TRUE` for both docflows, and `eventImported[INTEGER]` for both events, including the empty one.
+
+The system `imported[INTEGER]` property suits one object group only. Every object group numbers its rows from 0, so with `imported[INTEGER]` in the filters of both groups the marks of docflows and events would end up in the same rows of one property. That is why the nested group gets a mark property of its own, `eventImported[INTEGER]`.
