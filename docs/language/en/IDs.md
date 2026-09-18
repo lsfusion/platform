@@ -65,7 +65,7 @@ System.FormResult.ok
 
 ### Property or action ID {#propertyid}
 
-*Property ID* or *action ID* is used to reference a property (action). In the simple case it is a composite ID that specifies the name of the property (action) and possibly its namespace, similar to any other named system element. In the general case, this composite ID is supplemented by a description of the property (action) signature, which describes the classes of the property (action) parameters. The signature is specified as a list of class IDs enclosed in square brackets. If the parameter class is unknown or not important for uniquely identifying the property (action), its ID in the list can be replaced with a question mark `?`.
+*Property ID* or *action ID* is used to reference a property (action). In the simple case it is a composite ID that specifies the name of the property (action) and possibly its namespace, similar to any other named system element. In the general case, this composite ID is supplemented by a description of the property (action) signature, which describes the classes of the property (action) parameters. The signature is specified as a list of class IDs enclosed in square brackets. If the parameter class is unknown or not important for uniquely identifying the property (action), its ID in the list can be replaced with a question mark `?`. The namespace in a property (action) ID is the namespace of the module declaring the property (action), whatever the namespaces of the classes in its signature: `Security.userRole[System.User]` is the property `userRole` of the `Security` namespace declared for the class `User` of the `System` namespace.
 
 #### Examples
 
@@ -73,6 +73,7 @@ System.FormResult.ok
 userRole
 Security.userRole
 userRole[System.User]
+Security.userRole[System.User]
 cross[Circle, Line]
 quantity[Document, ?, Store]
 ```

@@ -7,7 +7,7 @@ title: 'Data properties (DATA)'
 
 ### Local data properties {#local}
 
-Data properties can be *local*. Such properties retain their values only within the [session](Change_sessions.md), i.e. they are not saved to the database, which means when applying changes these values are reset to `NULL` by default.
+Data properties can be *local*. Such properties retain their values only within the [session](Change_sessions.md), i.e. they are not saved to the database, which means when applying changes these values are reset to `NULL` by default. A local data property is `NULL` in a session unless values have been assigned to it there or carried into it by session-management operations; a property computed from it uses that `NULL` for it.
 
 A regular local property is convenient as temporary storage inside one session or one interaction flow. If the value must survive session-management operations, the local property can be made [nested](Session_management.md#nested).
 

@@ -17,6 +17,8 @@ An expression can be described by the following set of recursive rules:
 |`expression` := `expression binaryOp expression`|A binary operator with the expressions passed to it as operands|
 |`expression` := `( expression )`|Expression in parentheses|
 
+When the syntax of an operator ends with a comma-separated list of expressions without enclosing parentheses (as in `OVERRIDE expr1, expr2`), the list extends to the end of the expression the operator is part of: the operators to the right belong to its last element, and a comma after it adds one more element rather than ending an enclosing list such as the arguments of a property call. When an operator to the right must apply to the result of such an operator, or another argument must follow it in an enclosing call, the operator together with its operands is enclosed in parentheses: `(OVERRIDE a, b) + 1`, `f((OVERRIDE a, b), c)`.
+
 An expression cannot include [context-independent](Property_operators.md#contextindependent) property operators.
 
 ### Using actions inside expressions

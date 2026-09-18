@@ -115,7 +115,7 @@ While a custom-class object has no current value — the *undefined* default obj
 It is worth noting that the selection of objects by default is pretty the same as the [object search](Activation_ACTIVATE.md#search) operation, where the search objects are:
 
 -   for type `PREV`
-    -   on opening a form: either the passed objects, or, if there are none, the last used objects for the form object class.
+    -   on opening a form: either the passed objects, or, if there are none, the last used objects for the form object class — the objects of that class (or of its descendants) that were current in the interactive forms of the same connection: the object this object group last had on this form, otherwise the one another group of this form last had, otherwise the one most recently current on any form.
     -   in other cases: the previous current object values
 -   for other types
     -   on opening the form - passed objects
