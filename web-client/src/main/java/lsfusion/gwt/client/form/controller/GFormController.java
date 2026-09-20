@@ -957,7 +957,23 @@ public class GFormController implements EditManager {
     }
 
     public void closePressed(EndReason reason) {
-        GFormEventClose eventClose = new GFormEventClose(reason instanceof CommitReason);
+        closePressed(reason, false);
+    }
+
+    // unshown: the client is closing a form it is not going to show - it arrived for an open answered with another
+    // form, or its container was closed while it was on its way. Nobody asked for this close, so nobody is asked
+    // about it either: the close carries its own confirmation, and none of what an ordinary one does around it -
+    // no close reason to hand the response, no local question, and no optimistic hiding of a form that is in no
+    // window to hide
+    public void closePressed(EndReason reason, boolean unshown) {
+        GFormEventClose eventClose = new GFormEventClose(!unshown && reason instanceof CommitReason);
+
+        if (unshown) {
+            ExecuteFormEventAction closeAction = new ExecuteFormEventAction(eventClose);
+            closeAction.pushAsyncResult = new GPushAsyncClose();
+            syncResponseDispatch(closeAction);
+            return;
+        }
 
         executeFormEventAction(eventClose, new ServerResponseCallback() {
             @Override

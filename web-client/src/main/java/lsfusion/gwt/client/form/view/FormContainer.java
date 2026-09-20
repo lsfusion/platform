@@ -36,7 +36,6 @@ public abstract class FormContainer {
     public boolean captionInitialized;
 
     private boolean asyncHidden;
-    private EndReason asyncHiddenReason;
     public boolean isAsyncHidden() {
         return asyncHidden;
     }
@@ -93,7 +92,6 @@ public abstract class FormContainer {
 //            asyncFormController.removeAsyncForm();
             hide(reason);
             asyncHidden = true;
-            asyncHiddenReason = reason;
         } else {
             form.closePressed(reason);
         }
@@ -157,7 +155,7 @@ public abstract class FormContainer {
 
         boolean closing = isAsyncHidden();
         if(closing)
-            form.closePressed(asyncHiddenReason);
+            form.closePressed(CancelReason.HIDE, true);
         else
             setContent(form.getWidget());
 
@@ -171,6 +169,16 @@ public abstract class FormContainer {
     // a dockable tells the window holding it, which is where a window that draws one form at a time asks the others
     // to close; every other container is on its own and has nobody to tell
     protected void arrived(FormsController formsController) {
+    }
+
+    // the form arrived for an open the client answers with another form - the one it already holds. Built and
+    // registered on the server it is all the same, so somebody has to close it, and only a container that has its
+    // controller can: this one, which exists for that and goes away with it. Never shown, so it takes no place in a
+    // window, displaces nothing, and hands nothing back to an opener
+    public void closeOnArrival(FormsController formsController, GForm gForm, boolean isDialog, int dispatchPriority, String formId) {
+        asyncHidden = true; // what initForm reads to close the form it is given instead of showing it
+        initForm(formsController, (lookAhead, asyncFormController, reason) -> formsController.removeFormContainer(this),
+                gForm, isDialog, dispatchPriority, formId);
     }
 
     public abstract Widget getCaptionWidget();

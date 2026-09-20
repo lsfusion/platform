@@ -191,6 +191,15 @@ public class FormsController implements ColorThemeChangeListener {
         if (!asyncOpened) {
             ClientFormDockable duplicateForm = getDuplicateForm(clientData.canonicalName, forbidDuplicate);
             if (duplicateForm != null) {
+                // the form is built and registered on the server whatever the client decides to do with it, so the
+                // one that is not going to be shown is closed here - through a controller that is never put in a
+                // dockable, and so has no caption to show: the base one refuses, and would stop the close before it is sent
+                new ClientFormController(remoteForm, this, clientForm, clientData, navigator, false, false) {
+                    @Override
+                    public void setFormCaption(String caption, String tooltip) {
+                    }
+                }.closePressed(true);
+
                 duplicateForm.toFront();
                 duplicateForm.requestFocusInWindow();
                 return duplicateForm;

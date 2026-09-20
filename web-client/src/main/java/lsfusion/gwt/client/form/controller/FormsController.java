@@ -490,6 +490,11 @@ public abstract class FormsController {
         if(!asyncOpened) {
             FormDockable duplicateForm = getDuplicateForm(showFormType.getWindowType(), form.canonicalName, forbidDuplicate);
             if (duplicateForm != null) {
+                // the form is built and registered on the server whatever the client decides to do with it, so the
+                // one that is not going to be shown is closed here - through the container it would have had
+                createFormContainer(showFormType.getWindowType(), false, syncType, -1, form.canonicalName, context.editEvent, context.editContext, formController)
+                        .closeOnArrival(this, form, showFormType.isDialog(), formController != null ? formController.getDispatchPriority() : 0, formId);
+
                 setCurrentForm(duplicateForm);
                 return null;
             }

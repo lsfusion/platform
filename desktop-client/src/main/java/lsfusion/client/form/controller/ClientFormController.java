@@ -1833,11 +1833,21 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void closePressed() {
-        commitOrCancelCurrentEditing();
+        closePressed(false);
+    }
+
+    // unshown: the client is closing a form it is not going to show - it arrived for an open answered with another
+    // form. Nobody asked for this close, so nobody is asked about it either: the close carries its own confirmation,
+    // and there is no editing of its own to commit first - the form was never put in front of anyone
+    public void closePressed(boolean unshown) {
+        if (!unshown)
+            commitOrCancelCurrentEditing();
+
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("closePressed") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, new FormEventClose(false), null);
+                return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, new FormEventClose(false),
+                        unshown ? new ClientPushAsyncClose().serialize() : null);
             }
         });
     }
