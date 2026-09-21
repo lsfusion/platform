@@ -1229,8 +1229,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private static BuildListFrame buildListPass(HSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, HMap<Link, List<Link>> removedLinkCycles, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter, Result<HSet<ActionOrProperty>> rProceeded) {
         List<ActionOrProperty> order = new ArrayList<>();
         MAddMap<ActionOrProperty, ArCol<Link>> reversedGraph = MapFact.mAddOverrideMap();
+        // сортируем для того, чтобы получить детерминированный порядок
+        // вложенные компоненты уже определены обходом от корней верхнего уровня, их сортировать не нужно
+        ImOrderSet<ActionOrProperty> sortedRoots = exclude != null ? props.sortSet(actionOrPropComparator) : null;
         for (int i = 0, size = props.size(); i < size ; i++) {
-            ActionOrProperty property = props.get(i);
+            ActionOrProperty property = sortedRoots != null ? sortedRoots.get(i) : props.get(i);
             if (reversedGraph.get(property) == null) // проверка что не было
                 buildOrder(property, reversedGraph, order, removedLinks, exclude == null, exclude != null ? exclude : props, events, false);
         }

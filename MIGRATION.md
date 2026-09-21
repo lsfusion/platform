@@ -2,6 +2,25 @@
 
 ## 7.0
 
+### The execution order of global events follows from the logic
+
+The order in which global events run is built at startup from the dependencies between them, and
+events with a dependency between them have always been ordered by it. For events with no dependency
+the order was whatever the traversal happened to produce, and the traversal started from the
+properties in the order the server had created them - an order that is not reproducible between
+starts, so the same logic could run two such events one way on one start and the other way on the
+next. The traversal now starts from an order that follows from the logic itself.
+
+What an upgrading application can notice: two events with no dependency between them can run in a
+different order than they did before. That shows up where the application relied on their order
+without expressing it - two events writing the same property, or one reading what the other writes
+through something the platform does not see as a dependency.
+
+There is no setting to go back, and nothing to go back to: the previous order was not one order but
+a different one on each start. An application that needs a particular order states it with `AFTER`
+(`GOAFTER`) in the event description block. Until it does, what used to appear and disappear across
+restarts now behaves the same way every time, which is what makes it possible to find.
+
 ### A temporary table returned inside a transaction is emptied with `DELETE`
 
 Inside a transaction `TRUNCATE` is the expensive way to empty a session (temporary) table: it holds an
