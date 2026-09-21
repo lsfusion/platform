@@ -37,6 +37,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class JDBCTable {
     public final boolean singleRow;
@@ -203,12 +205,21 @@ public class JDBCTable {
 
         int cc = metaData.getColumnCount();
         MAddCol<Type> types = ListFact.mAddCol(cc);
+        Set<String> labels = new HashSet<>(); // the original labels are reserved, so that a generated name never takes the name of another column
+        for(int i=1;i<=cc;i++)
+            labels.add(metaData.getColumnLabel(i));
+        Set<String> usedFields = new HashSet<>();
         o.writeInt(cc);
         for(int i=1;i<=cc;i++) {
             String field = metaData.getColumnLabel(i);
-            //если имени колонки нет (например, используется coalesce), то генерим его самостоятельно
-            if(field.isEmpty())
-                field = "zxcvb" + i;
+            // a column without a label (for example, coalesce) or with a repeated one (several count(*) columns, ?column? in PostgreSQL) would collapse into another field when the table is read back (the fields are mapped by name), so it gets a generated name that no other column has
+            if(field.isEmpty() || !usedFields.add(field)) {
+                String base = field.isEmpty() ? "zxcvb" : field + "_";
+                int n = i;
+                do
+                    field = base + n++;
+                while(labels.contains(field) || !usedFields.add(field));
+            }
             BaseUtils.serializeString(o, field);
             Type type = getType(metaData, i);
             types.add(type);
