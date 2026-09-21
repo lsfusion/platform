@@ -16,6 +16,7 @@ import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.function.Function;
 
 public class ClientAsyncOpenForm extends ClientAsyncExec {
     public String canonicalName;
@@ -49,8 +50,13 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
     }
 
     @Override
-    public void exec(long requestIndex) {
-        ((DockableMainFrame) (MainFrame.instance)).asyncOpenForm(this, requestIndex);
+    public long exec(Function<ClientPushAsyncResult, Long> execute, boolean ctrl, boolean sync) {
+        DockableMainFrame mainFrame = (DockableMainFrame) MainFrame.instance;
+        ClientPushAsyncResult push = mainFrame.reuseOpenForm(this, ctrl);
+        long requestIndex = execute.apply(push);
+        if (!sync && push == null)
+            mainFrame.asyncOpenForm(this, requestIndex);
+        return requestIndex;
     }
 
     public boolean isDesktopEnabled(boolean canShowDockedModal) { // should correspond SwingClientActionDispatcher.getModalityType

@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GFormActivateType;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -54,6 +55,9 @@ public class GAsyncOpenForm extends GAsyncExec {
 
     @Override
     public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GAsyncExecutor asyncExecutor) {
-        formsController.asyncOpenForm(asyncExecutor.execute(), this, editEvent, null, null, formController);
+        GPushAsyncResult push = formsController.reuseOpenForm(this, editEvent);
+        GAsyncFormController asyncFormController = asyncExecutor.execute(push);
+        if (push == null && !asyncExecutor.sync)
+            formsController.asyncOpenForm(asyncFormController, this, editEvent, null, null, formController);
     }
 }

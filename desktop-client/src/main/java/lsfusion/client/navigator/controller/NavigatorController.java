@@ -125,10 +125,7 @@ public class NavigatorController implements INavigatorController {
     public void openElement(ClientNavigatorElement element, int modifiers) {
         if (element instanceof ClientNavigatorAction) {
             boolean sync = !element.isDesktopAsync();
-            long requestIndex = mainNavigator.openAction((ClientNavigatorAction) element, modifiers, sync);
-            if(!sync) {
-                element.asyncExec.exec(requestIndex);
-            }
+            mainNavigator.openAction((ClientNavigatorAction) element, modifiers, sync);
         }
     }
 

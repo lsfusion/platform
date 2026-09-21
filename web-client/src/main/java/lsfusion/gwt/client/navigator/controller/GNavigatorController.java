@@ -3,14 +3,12 @@ package lsfusion.gwt.client.navigator.controller;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GNavigatorScheduler;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorSchedulerAction;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.view.GAbstractNavigatorView;
@@ -19,7 +17,6 @@ import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public abstract class GNavigatorController implements GINavigatorController {
@@ -213,15 +210,7 @@ public abstract class GNavigatorController implements GINavigatorController {
 
     @Override
     public void openElement(GNavigatorAction element, NativeEvent nativeEvent) {
-        if (element instanceof GNavigatorAction) {
-            boolean sync = element.asyncExec == null;
-            Function asyncExec = pushAsyncResult -> formsController.executeNavigatorAction(element.canonicalName, nativeEvent, sync);
-            if(sync) {
-                asyncExec.apply(null);
-            } else {
-                element.asyncExec.exec(formsController, null, null, nativeEvent instanceof Event ? (Event) nativeEvent : null, new GAsyncExecutor(formsController.getDispatcher(), asyncExec));
-            }
-        }
+        formsController.executeNavigatorAction(element, nativeEvent, element.asyncExec == null);
     }
 
     private void onSelectedElement(GNavigatorElement selectedElement) {

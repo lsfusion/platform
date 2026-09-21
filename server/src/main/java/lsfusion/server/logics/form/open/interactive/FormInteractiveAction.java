@@ -165,12 +165,15 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         boolean syncType = heuristicSyncType(context, this.syncType);
         ShowFormType showFormType = getShowFormType(syncType);
 
+        // The client reused a form at click time. Only this matching open is answered by that activation;
+        // the surrounding action, its permissions and its aspects still execute on the server.
+        if (!syncType && !showFormType.isModal() && showFormType.getWindowType() instanceof DockedWindowFormType
+                && context.isPushedActivatedForm(form.getCanonicalName(), formId,
+                        ((DockedWindowFormType) showFormType.getWindowType()).window, activateType))
+            return;
+
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
-        // SHOW ... ACTIVATE: whether the form this opens is already open only the client knows, and it is the client
-        // that answers it - on arrival, by showing the one it holds and closing the one that came. Which means this
-        // form is built either way, INIT events and all; an application that must not build it says so itself, with
-        // ACTIVATE FORM and its own condition around the SHOW
         if(!Settings.get().isNoExecuteLocalEventsOnFormShowFallback())
             // we need to execute it before changing session scope (adding extra form in registerForm) to align prev values in the global context with prev values in this extra form
             context.executeSessionEvents();

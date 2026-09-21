@@ -1,13 +1,13 @@
 package lsfusion.client.form.property.async;
 
-import lsfusion.interop.form.remote.serialization.SerializationUtil;
-
 import java.io.DataInputStream;
-import java.io.IOException;
+import java.util.function.Function;
 
 public abstract class ClientAsyncExec extends ClientAsyncEventExec {
 
-    public abstract void exec(long requestIndex);
+    public long exec(Function<ClientPushAsyncResult, Long> execute, boolean ctrl, boolean sync) {
+        return execute.apply(null);
+    }
 
     public ClientAsyncExec() {
     }

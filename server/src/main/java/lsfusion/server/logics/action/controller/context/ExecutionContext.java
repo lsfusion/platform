@@ -1,5 +1,6 @@
 package lsfusion.server.logics.action.controller.context;
 
+import lsfusion.interop.form.FormActivateType;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
@@ -585,6 +586,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         if (pushedAsyncResult instanceof PushAsyncAdd)
             return ((PushAsyncAdd) dropPushedAsyncResult(true)).value;
         return null;
+    }
+
+    public boolean isPushedActivatedForm(String canonicalName, String formId, String window, FormActivateType activateType) {
+        if (pushedAsyncResult instanceof PushAsyncActivate
+                && ((PushAsyncActivate) pushedAsyncResult).matches(canonicalName, formId, window, activateType)) {
+            dropPushedAsyncResult(true);
+            return true;
+        }
+        return false;
     }
 
     public boolean isPushedConfirmedClose() {

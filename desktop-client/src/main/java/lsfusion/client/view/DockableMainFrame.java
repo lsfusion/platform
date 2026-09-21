@@ -43,6 +43,8 @@ import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.print.view.ReportDialog;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
+import lsfusion.client.form.property.async.ClientPushAsyncActivate;
+import lsfusion.client.form.property.async.ClientPushAsyncResult;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.ClientNavigatorAction;
@@ -80,6 +82,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.mergeLinked;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -230,17 +233,18 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     public long executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate, boolean sync) {
-        return executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, sync);
+        Function<ClientPushAsyncResult, Long> execute = push -> executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate, sync, push);
+        return action.asyncExec != null ? action.asyncExec.exec(execute, suppressForbidDuplicate, sync) : execute.apply(null);
     }
 
     public void executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate) {
-        executeNavigatorAction(actionSID, type, action, suppressForbidDuplicate, true);
+        executeNavigatorAction(actionSID, type, action, suppressForbidDuplicate, true, null);
     }
 
-    private long executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync) {
+    private long executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync, ClientPushAsyncResult pushAsyncResult) {
         if (action != null) {
             if (lock.tryAcquire()) {
-                return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
+                return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync, pushAsyncResult);
             } else {
                 SwingUtils.invokeLater(() -> {
                     Timer timer = new Timer(1000, e -> action.run());
@@ -251,7 +255,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
         } else {
             lock.acquireUninterruptibly();
-            return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync);
+            return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync, pushAsyncResult);
         }
     }
 
@@ -274,12 +278,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         });
     }
 
-    private long tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate, boolean sync) {
+    private long tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate, boolean sync, ClientPushAsyncResult pushAsyncResult) {
         try {
             RmiRequest<ServerResponse> request = new RmiRequest<ServerResponse>("executeNavigatorAction") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-                    return remoteNavigator.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, actionSID, type);
+                    return remoteNavigator.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, actionSID, type, pushAsyncResult != null ? pushAsyncResult.serialize() : null);
                 }
 
                 @Override
@@ -338,6 +342,10 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     public void clearForms() {
         formsController.getForms().clear();
+    }
+
+    public ClientPushAsyncActivate reuseOpenForm(ClientAsyncOpenForm asyncOpenForm, boolean ctrl) {
+        return formsController.reuseOpenForm(asyncOpenForm, ctrl);
     }
 
     public void asyncOpenForm(ClientAsyncOpenForm asyncOpenForm, long requestIndex) {

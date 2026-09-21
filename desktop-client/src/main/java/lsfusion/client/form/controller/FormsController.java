@@ -1,5 +1,6 @@
 package lsfusion.client.form.controller;
 
+import lsfusion.interop.form.DockedWindowFormType;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CWorkingArea;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
@@ -18,6 +19,7 @@ import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
+import lsfusion.client.form.property.async.ClientPushAsyncActivate;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.navigator.ClientNavigator;
@@ -225,6 +227,20 @@ public class FormsController implements ColorThemeChangeListener {
             openForm(page);
         }
         return page;
+    }
+
+    public ClientPushAsyncActivate reuseOpenForm(ClientAsyncOpenForm openForm, boolean ctrl) {
+        if (openForm.modal || !(openForm.type instanceof DockedWindowFormType)
+                || (ctrl && openForm.activateType == FormActivateType.USER))
+            return null;
+
+        ClientFormDockable duplicateForm = getDuplicateForm(openForm.canonicalName, openForm.formId, openForm.activateType, null);
+        if (duplicateForm == null)
+            return null;
+
+        duplicateForm.toFront();
+        duplicateForm.requestFocusInWindow();
+        return new ClientPushAsyncActivate();
     }
 
     //we don't want flashing, so we use timer

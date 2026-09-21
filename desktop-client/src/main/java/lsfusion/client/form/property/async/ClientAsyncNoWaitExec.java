@@ -14,10 +14,6 @@ public class ClientAsyncNoWaitExec extends ClientAsyncExec{
     }
 
     @Override
-    public void exec(long requestIndex) {
-    }
-
-    @Override
     public boolean isDesktopEnabled(boolean canShowDockedModal) {
         return false;
     }

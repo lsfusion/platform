@@ -35,6 +35,8 @@ import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.async.GPushAsyncClose;
+import lsfusion.gwt.client.form.property.async.GPushAsyncActivate;
+import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
@@ -60,6 +62,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -185,7 +188,7 @@ public abstract class FormsController {
                 }
                 @Override
                 public void exec(Event event) {
-                    executeNavigatorAction(element.canonicalName, event, true);
+                    executeNavigatorAction(element, event, true);
                 }
             });
         }
@@ -631,6 +634,19 @@ public abstract class FormsController {
         return formContainer;
     }
 
+    public GPushAsyncActivate reuseOpenForm(GAsyncOpenForm openForm, NativeEvent editEvent) {
+        if (openForm.canonicalName == null || openForm.modal || !(openForm.type instanceof GDockedWindowFormType)
+                || (editEvent != null && editEvent.getCtrlKey() && openForm.activateType == GFormActivateType.USER))
+            return null;
+
+        FormDockable duplicateForm = getDuplicateForm(openForm.type, openForm.canonicalName, openForm.formId, openForm.activateType, null);
+        if (duplicateForm == null)
+            return null;
+
+        setCurrentForm(duplicateForm);
+        return new GPushAsyncActivate();
+    }
+
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
         GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
         FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.formId, openForm.activateType, null);
@@ -833,11 +849,15 @@ public abstract class FormsController {
     }
 
     public void executeAction(String actionSID, Runnable onRequestFinished) {
-        executeNavigatorAction(actionSID, false, true, 0, onRequestFinished);
+        executeNavigatorAction(actionSID, false, true, 0, onRequestFinished, null);
     }
     // there is no event when the element is activated from code rather than by a click, and then no modifier is held
-    public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
-        return executeNavigatorAction(actionSID, event != null && event.getCtrlKey(), sync, 1, null);
+    public void executeNavigatorAction(GNavigatorElement element, NativeEvent event, boolean sync) {
+        Function<GPushAsyncResult, Long> execute = push -> executeNavigatorAction(element.canonicalName, event != null && event.getCtrlKey(), sync, 1, null, push);
+        if (element.asyncExec != null)
+            element.asyncExec.exec(this, null, null, event instanceof Event ? (Event) event : null, new GAsyncExecutor(getDispatcher(), execute, sync));
+        else
+            execute.apply(null);
     }
     public void executeNotificationAction(Integer id, String result, Runnable onRequestFinished) {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
@@ -851,10 +871,10 @@ public abstract class FormsController {
             }
             executeVoidAction(-1);
         } else
-            executeNavigatorAction(notification, false, true, 2, null);
+            executeNavigatorAction(notification, false, true, 2, null, null);
     }
-    public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
-        ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type);
+    public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished, GPushAsyncResult pushAsyncResult) {
+        ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type, pushAsyncResult);
         ServerResponseCallback callback = new ServerResponseCallback(disableForbidDuplicate) {
             @Override
             protected Runnable getOnRequestFinished() {

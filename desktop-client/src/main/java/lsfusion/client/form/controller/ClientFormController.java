@@ -1127,11 +1127,14 @@ public class ClientFormController implements AsyncListener {
         commitOrCancelCurrentEditing();
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
+        // An input-list action has its own prediction, but the request is decoded by the property's input.
+        ClientPushAsyncResult activated = property.getAsyncEventExec(actionSID) == asyncOpenForm
+                ? ((DockableMainFrame) MainFrame.instance).reuseOpenForm(asyncOpenForm, false) : null;
 
         long requestIndex = rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("openForm", dispatcher) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID);
+                return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, activated);
             }
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
@@ -1142,7 +1145,8 @@ public class ClientFormController implements AsyncListener {
             }
         });
 
-        ((DockableMainFrame) MainFrame.instance).asyncOpenForm(dispatcher.getAsyncFormController(requestIndex), asyncOpenForm);
+        if (activated == null)
+            ((DockableMainFrame) MainFrame.instance).asyncOpenForm(dispatcher.getAsyncFormController(requestIndex), asyncOpenForm);
     }
 
     private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID) throws RemoteException {

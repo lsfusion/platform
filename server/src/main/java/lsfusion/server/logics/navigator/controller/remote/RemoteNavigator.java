@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator.controller.remote;
 
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -624,7 +625,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String actionSID, final int type) throws RemoteException {
+    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String actionSID, final int type, byte[] pushAsyncResult) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             if (type == 2) {
                 //временно, так как иначе все контроллеры идут от верхней сессии, в частности, currentUser получается чужой
@@ -633,7 +634,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
             } else {
                 try (DataSession session = createSession()) {
-                    runAction(session, actionSID, type == 1, stack);
+                    runAction(session, actionSID, type == 1, pushAsyncResult, stack);
                 }
             }
         });
@@ -822,8 +823,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final LA<?> action;
+    private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, byte[] pushAsyncResult, ExecutionStack stack) throws SQLException, SQLHandledException {
+        final Action<?> action;
         if (isNavigatorAction) {
             final NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
 
@@ -835,11 +836,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
-            action = new LA(((NavigatorAction) element).getAction());
+            action = ((NavigatorAction) element).getAction();
         } else {
-            action = businessLogics.findAction(canonicalName);
+            action = businessLogics.findAction(canonicalName).action;
         }
-        action.execute(session, stack);
+        PushAsyncResult asyncResult = AsyncEventExec.deserializePush(pushAsyncResult,
+                () -> Action.getAsyncExec(action.getAsyncEventExec(false), getRemoteContext()));
+        action.execute(MapFact.EMPTY(), session, stack, null, asyncResult);
     }
 
     @Override

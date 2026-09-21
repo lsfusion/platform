@@ -8,6 +8,7 @@ import lsfusion.base.file.ReadUtils;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.async.ClientPushAsyncAdd;
+import lsfusion.client.form.property.async.ClientPushAsyncActivate;
 import lsfusion.client.form.property.async.ClientPushAsyncClose;
 import lsfusion.client.form.property.async.ClientPushAsyncInput;
 import lsfusion.gwt.client.GFormEventClose;
@@ -30,6 +31,7 @@ import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.async.GPushAsyncAdd;
+import lsfusion.gwt.client.form.property.async.GPushAsyncActivate;
 import lsfusion.gwt.client.form.property.async.GPushAsyncClose;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.cell.classes.*;
@@ -174,6 +176,11 @@ public class GwtToClientConverter extends ObjectConverter {
     public byte[] convertPushAsyncChange(GPushAsyncInput pushAsync) {
         return new ClientPushAsyncInput(convertOrCast(pushAsync.result)).serialize();
     }
+    @Converter(from = GPushAsyncActivate.class)
+    public byte[] convertPushAsyncActivate(GPushAsyncActivate pushAsync) {
+        return new ClientPushAsyncActivate().serialize();
+    }
+
     @Converter(from = GPushAsyncClose.class)
     public byte[] convertPushASyncClose(GPushAsyncClose pushAsyncChange) {
         return new ClientPushAsyncClose().serialize();

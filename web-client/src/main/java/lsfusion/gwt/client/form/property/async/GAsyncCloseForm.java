@@ -24,11 +24,9 @@ public class GAsyncCloseForm extends GAsyncExec {
 
     @Override
     public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GAsyncExecutor asyncExecutor) {
-        formController.asyncCloseForm(asyncExecutor);
-    }
-
-    @Override
-    public GPushAsyncResult getPushAsyncResult() {
-        return new GPushAsyncClose();
+        if (asyncExecutor.sync)
+            asyncExecutor.execute();
+        else
+            formController.asyncCloseForm(asyncExecutor);
     }
 }

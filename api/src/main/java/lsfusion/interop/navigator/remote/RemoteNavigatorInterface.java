@@ -21,7 +21,7 @@ public interface RemoteNavigatorInterface extends RemoteConnectionInterface {
 
     ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String script) throws RemoteException;
 
-    ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int type) throws RemoteException;
+    ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int type, byte[] pushAsyncResult) throws RemoteException;
 
     ServerResponse executeNavigatorSchedulerAction(long requestIndex, long lastReceivedRequestIndex, NavigatorScheduler navigatorScheduler) throws RemoteException;
 

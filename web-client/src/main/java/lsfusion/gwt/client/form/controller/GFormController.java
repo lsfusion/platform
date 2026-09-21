@@ -1857,8 +1857,13 @@ public class GFormController implements EditManager {
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
-            formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, execContext, this);
+        // External changes can use a different prediction on the server, including another open form.
+        GPushAsyncResult activated = pushAsyncResult == null && (eventSource == GEventSource.EDIT || eventSource == GEventSource.BINDING)
+                ? formsController.reuseOpenForm(asyncOpenForm, handler != null ? handler.event : null) : null;
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler,
+                activated != null ? activated : pushAsyncResult, eventSource, requestIndex -> {
+            if (activated == null)
+                formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, execContext, this);
         }, onExec);
     }
 

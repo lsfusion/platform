@@ -24,11 +24,6 @@ public class ClientAsyncCloseForm extends ClientAsyncExec {
     }
 
     @Override
-    public void exec(long requestIndex) {
-        //do nothing
-    }
-
-    @Override
     public boolean isDesktopEnabled(boolean canShowDockedModal) {
         return false;
     }

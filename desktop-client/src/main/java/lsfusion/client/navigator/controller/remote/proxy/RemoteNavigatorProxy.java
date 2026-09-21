@@ -45,8 +45,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type) throws RemoteException {
-        return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type);
+    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type, byte[] pushAsyncResult) throws RemoteException {
+        return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type, pushAsyncResult);
     }
 
     @Override

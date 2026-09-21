@@ -7,10 +7,5 @@ import lsfusion.gwt.client.form.controller.GFormController;
 
 public abstract class GAsyncExec extends GAsyncEventExec {
 
-    // without remote call
     public abstract void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GAsyncExecutor asyncExecutor);
-
-    public GPushAsyncResult getPushAsyncResult() {
-        return null;
-    }
 }

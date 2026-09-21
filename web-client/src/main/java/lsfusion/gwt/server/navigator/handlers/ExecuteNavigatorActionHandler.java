@@ -3,6 +3,7 @@ package lsfusion.gwt.server.navigator.handlers;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.navigator.NavigatorServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
@@ -15,6 +16,6 @@ public class ExecuteNavigatorActionHandler extends NavigatorServerResponseAction
 
     @Override
     public ServerResponseResult executeEx(ExecuteNavigatorAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, getRemoteNavigator(action).executeNavigatorAction(action.requestIndex, action.lastReceivedRequestIndex, action.actionSID, action.type));
+        return getServerResponseResult(action, getRemoteNavigator(action).executeNavigatorAction(action.requestIndex, action.lastReceivedRequestIndex, action.actionSID, action.type, GwtToClientConverter.getInstance().convertOrCast(action.pushAsyncResult)));
     }
 }
