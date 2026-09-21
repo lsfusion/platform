@@ -172,7 +172,7 @@ When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file 
 
 |Class name  |Extension       |
 |------------|----------------|
-|`RAWFILE`   |The empty string|
+|`RAWFILE`   |The empty string (dat for explicit type conversion)|
 |`JSONFILE`  |json            |
 |`XMLFILE`   |xml             |
 |`CSVFILE`   |csv             |
@@ -203,7 +203,7 @@ Values of classes other than files of a specific type can also be cast into a fi
 |`HTML`      |html            |
 |`XML`       |xml             |
 |`JSON`, `JSONTEXT`|json      |
-|Strings, `LINK`, links to files of a specific type|The empty string|
+|Strings, `LINK`, links to files of a specific type|dat|
 
 ## Result properties {#export}
 

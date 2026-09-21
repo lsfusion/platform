@@ -144,7 +144,7 @@ CREATE OR REPLACE FUNCTION cast_static_file_to_named_file(file bytea, name varch
 $$
 BEGIN
 name = COALESCE(name, 'file');
-ext = COALESCE(ext, 'dat');
+ext = COALESCE(NULLIF(ext, ''), 'dat'); -- as in cast_static_file_to_dynamic_file : chr(0) for an empty extension is not allowed in PostgreSQL
 RETURN chr(length(name::bytea))::bytea || name::bytea || chr(length(ext::bytea))::bytea || ext::bytea || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;

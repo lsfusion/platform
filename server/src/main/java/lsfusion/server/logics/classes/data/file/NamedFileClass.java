@@ -59,7 +59,7 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
         Result<String> rExtension = new Result<>();
         String castValue = StaticFormatFileClass.getCastToStatic(typeFrom, value, rExtension);
         if(castValue != null)
-            return "cast_static_file_to_named_file(" + value + ", null, '" + rExtension.result + "')";
+            return "cast_static_file_to_named_file(" + castValue + ", null, '" + rExtension.result + "')";
 
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }

@@ -74,7 +74,7 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
         Result<String> rExtension = new Result<>();
         String castValue = StaticFormatFileClass.getCastToStatic(typeFrom, value, rExtension);
         if(castValue != null)
-            return "cast_static_file_to_dynamic_file(" + value + ", '" + rExtension.result + "')";
+            return "cast_static_file_to_dynamic_file(" + castValue + ", '" + rExtension.result + "')";
 
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }

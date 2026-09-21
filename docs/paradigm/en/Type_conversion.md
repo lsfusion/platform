@@ -19,7 +19,7 @@ String types can be converted to human-readable file types (`CSVFILE`, `XMLFILE`
 
 
 :::info
-Converting dynamic-type files (`FILE`) to strings and vice versa is prohibited in the current implementation, but if necessary this can be done via an intermediate human-readable type - for example, by first converting to `CSVFILE`, and only then to `FILE` (the resulting file [will have the extension](Built-in_classes.md#extension) CSV)
+Dynamic-type files (`FILE`, `NAMEDFILE`) convert to strings and back directly: the file content is read as UTF-8 text (when it is not valid UTF-8 text, the result is `NULL`), and a string is written as the content of a file with the `dat` [extension](Built-in_classes.md#extension) (a value of the `HTML` class — with the `html` extension). To get a different extension, convert the string to a file of a specific type first — for example, to `CSVFILE`, and only then to `FILE`: the resulting file will have the csv extension
 :::
 
 ### Implicit conversions
