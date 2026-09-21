@@ -235,6 +235,8 @@ Data is exported with the [`EXPORT` operator](../language/EXPORT_operator.md).
 
 3. When a form is exported to a flat format, destinations should be listed for every exported object group; the group of objects without a name is called `root`.
 
+4. To return a value from an action called by an external system, the assistant MUST use `RETURN`, not `EXPORT`: `RETURN` delivers the value from any place in the action, including after `APPLY` and from inside a `NEWSESSION` block, whereas the result of `EXPORT` stays in the session in which it ran and the response comes back empty.
+
 ### Delivering the result
 
 1. The action should be split into preparing the data, the `EXPORT` itself, and delivering the file to the recipient — writing it to the file system, sending it to an external system, or storing it in a property. This split allows the same export to be reused with different delivery methods.
