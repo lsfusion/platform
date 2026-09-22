@@ -160,7 +160,7 @@ annotationSetting
         - `CHANGE` - occurs when the user tries to change the value of a property.
         - `CHANGEWYS` - occurs when the user tries to change the value of the specified property using a special input mechanism. 
         - `GROUPCHANGE` - occurs when the user tries to change the property value for all objects in the table (group editing).  
-        - `EDIT` - occurs when the user tries to edit the object that is the value of the specified property. 
+        - `EDIT` - occurs when the user tries to edit the object behind the specified property: its value or an object the property is computed for (see the [default handler](../paradigm/Form_events.md#default) of this event). 
         - `CONTEXTMENU [caption]` - the user has selected the specified item in the property context menu on the form. If necessary, you can also define the `caption` of this menu item ([string literal](Literals.md#strliteral)). If it is not specified, then, by default, it will be the same as the action caption.
 
     - `actionOperator`

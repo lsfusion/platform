@@ -36,7 +36,9 @@ LIMIT [STRICT]
 
 The `PARTITION` operator creates a property that, for each object collection, either computes an [aggregate function](../paradigm/Set_operations.md#func) over the partition window (`SUM`, `PREV`, `LAST`, `CUSTOM`) or distributes a value among the object collections of the group (`UNGROUP`).
 
-The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group.
+The window of a group consists of the object collections for which all main expressions and all group expressions are non-`NULL`; a collection whose main expression is `NULL` neither receives a value nor takes a position in the order; with an order unique within the group, `PARTITION SUM 1 IF cond ORDER x` numbers the collections where `cond` holds consecutively from 1.
+
+The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group. A parameter of the created property does not split the groups by itself: only the values of the `BY` expressions do, so object collections that differ only in a parameter absent from `BY` fall into one window.
 
 The `ORDER` block defines the order in which the aggregate function will be calculated or the distribution will take place. If this function is [non-commutative](../paradigm/Set_operations.md), the specified order must be uniquely determined. If a new parameter (not used earlier in the `PARTITION` and `BY` options and in the upper context) is declared in the expressions defining the order, the condition of non-`NULL`ness of all these expressions is automatically added when calculating the resulting value.
 

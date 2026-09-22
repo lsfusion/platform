@@ -32,7 +32,7 @@ While the application is running, there is a number of events for each form that
 -   `CHANGE BEFORE` / `CHANGE AFTER` - occurs on the form immediately before or after the value of a specific property changes.
 -   `CHANGEWYS` - the user initiated a WYSIWYG property change using the PASTE operation or a special input mechanism.
 -   `GROUPCHANGE` - the user initiated a property change for all objects in the table.
--   `EDIT` - the user initiated editing of an object.
+-   `EDIT` - the user initiated editing of the object behind the property: its value or an object the property is computed for (see the [default handler](#default)). It is triggered by the F9 key on the property, by a double click on a property that has no change handler and no custom renderer, by a click on it in the link mode of the web client (the Ctrl key held down, or the link mode chosen with the edit-mode button on the toolbar), or by the `Follow the link` item of its context menu.
 -   `CONTEXTMENU [caption]` - the user selected the specified item in the context menu of a property (action) on the form. If necessary, you can also define the caption of this menu item ([string literal](Constant.md)). If it is not specified, then, by default, it will be the same as the action caption.
 -   `KEYPRESS key` - the user has pressed the specified `key` (string literal) on keyboard.
 
@@ -106,6 +106,10 @@ For some events, the platform automatically creates default handlers:
 
     Calls the `CHANGE` event handler for all objects that meet the filter conditions of the object group in which the changed property is displayed. 
 
+- `EDIT`
+
+    Opens the object behind the property: for a value of a [custom class](User_classes.md) — its default [edit form](Interactive_view.md#edtClass) (the `System.formEditObject[Object]` action), for a file or link value — that file or link. If the value has no opening action, the handler is taken from the property supplying the only argument of a [composition](Composition_JOIN.md), and then from the class of the property's only argument (a property with a text, `JSON` or `XML` value gets no default opening action for a custom-class argument). The handler is available to the user only if the [security policy](Security_policy.md) permits following the property; only then does the property get the `Follow the link` item in its context menu and the event can be raised in the ways listed above. A handler defined by the developer replaces the default one; an empty handler keeps the menu item but makes it do nothing.
+
 
 :::info
 If property event handler uses (even [implicitly](Value_request_REQUEST.md#implicit)) the [value request](Value_request_REQUEST.md) operator, then default handler can be created [in a different way](Value_request_REQUEST.md#defaultChange).
@@ -120,7 +124,7 @@ For an *object request* from the user, depending on the type of class, the follo
 
 ### Standard handlers {#predefined}
 
-For properties and actions on the form, it is also possible to define the following *standard* change event handlers (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`):
+For properties and actions on the form, it is also possible to define the following *standard* change event handlers (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`):
 
 -   *Read Only* (`READONLY`) - if the property is displayed in the table, the handler will be similar to `CHANGE` default handler when the property is not mutable (that is, the user filter mechanism will be called). If the property is not displayed in the table, nothing will happen. You can also make this option conditional (`READONLYIF`) (that is, change only if the value of some property is not `NULL`).
 -   *Selector* (`SELECTOR`) - when you try to make a change, a dialog will be shown in which the user will be asked to change the current value of the object.

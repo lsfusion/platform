@@ -54,6 +54,8 @@ By default, the caption of each property on the form is the title of the propert
 
 In addition to the captions, you can define colors (both the background color and the text color) for each property view on a form, as well as a condition that needs to be met for the property to be displayed. Like the caption, each of these parameters is defined using some property.
 
+After a change made in the form's [session](Change_sessions.md), the form reads again only the views whose property depends on the changed data, together with the views of the object groups whose objects or rows changed; the other views keep the values they have.
+
 A property whose value is an object of a [user class](User_classes.md) displays only the internal identifier of that object — a number that tells the user nothing. So instead of the object link itself, a form usually displays a [composition](Composition_JOIN.md) through it — for example, the caption of the linked object; a write through such a composition [passes](Property_change_CHANGE.md) into the link, so when editing, the user chooses the linked object.
 
 <a className="lsdoc-anchor" id="select"/>

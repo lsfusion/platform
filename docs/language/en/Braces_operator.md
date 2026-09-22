@@ -26,6 +26,8 @@ LOCAL [NESTED [manageType]] name1, ..., nameN = returnClass (paramClass1, ..., p
 
 A sequence of [action operators](Action_operators.md) and `LOCAL` operators enclosed in braces creates a new action that sequentially executes specified actions and creates specified [local properties](../paradigm/Data_properties_DATA.md). The area of visibility of the local properties created inside the `{...}` operator ends at the end of this operator.
 
+[Parameters](IDs.md#paramid) introduced locally by an assignment, `FOR` or `NEW` are visible only within that operator; the same name in a subsequent operator introduces an independent parameter. The parameters of the enclosing action or operator remain available in every operator of the sequence.
+
 ### Parameters
 
 - `actionOperator`

@@ -29,7 +29,7 @@ An abstract action stores implementations in an ordered list. New implementation
 This affects behavior as follows:
 
 -   If the abstract action allows several simultaneously applicable implementations, the first applicable implementation in that list is executed.
--   In the sequential form, all implementations are executed in the order of that list.
+-   In the sequential form, all implementations are executed in the order of that list within the one call of the abstract action: an [exit](Exit_RETURN.md) from an implementation ends that call, and the remaining implementations are skipped.
 -   In the mutually exclusive mode, there must be exactly one applicable implementation for a given set of arguments.
 
 So implementation order is part of the extension contract, not just a technical detail.

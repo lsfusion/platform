@@ -71,7 +71,7 @@ A role can have one of three access statuses for actions on properties:
 
 `Change` - defines whether a user can change the value of the property
 
-`Follow` – if the property value is an object, defines whether a user can access the object to change it
+`Follow` – defines whether the user may trigger the [edit-object event](Form_events.md#property) of the property; when forbidden, the `Follow the link` item is hidden from the property's context menu and the event cannot be triggered
 
 The access status for Properties is set in the same way as for Forms. However, given the large number of different properties in the application, on the `Properties` tab it is convenient to define the access level to the property group corresponding to the upper branches of the tree, or to view the status of role permissions in terms of properties. 
 

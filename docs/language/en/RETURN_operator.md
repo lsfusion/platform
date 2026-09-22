@@ -13,7 +13,7 @@ RETURN [resultExpr]
 
 ### Description
 
-The `RETURN` operator creates an action that exits from the innermost enclosing [action call](../paradigm/Call_EXEC.md). If `resultExpr` is specified, its value becomes the result of that call. Otherwise the call simply exits without producing a value. In an aspect of the [`BEFORE` statement](BEFORE_statement.md), the `RETURN` operator also ends the call of the main action: its body is not executed.
+The `RETURN` operator creates an action that exits from the innermost enclosing [action call](../paradigm/Call_EXEC.md). If `resultExpr` is specified, its value becomes the result of that call. Otherwise the call simply exits without producing a value. In an aspect of the [`BEFORE` statement](BEFORE_statement.md), the `RETURN` operator also ends the call of the main action: its body is not executed. An implementation added to an [abstract action](../paradigm/Action_extension.md) is not a separate call: `RETURN` in it exits the call of the abstract action itself, so in the `LIST` form the implementations following it are not executed.
 
 The result class of the surrounding action is determined in one of two ways:
 

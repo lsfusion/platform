@@ -158,7 +158,7 @@ In the current platform implementation, if the name and caption are not specifie
     Specifying [standard handlers](../paradigm/Form_events.md#predefined) for property/action change events. It is specified by one of the keywords:
 
     - `CHANGEABLE` calls the corresponding handler of the triggered event. Default value. It makes sense to use it explicitly only when another modifier is defined for the entire block but should not be applied to a specific property.
-    - `READONLY` will either turn on the filtering mechanism or simply ignore the event when the user tries to change the property.
+    - `READONLY` will either turn on the filtering mechanism or simply ignore the event when the user tries to change the property. The `EDIT` event is not affected.
     - `DISABLE` The property is not available for changing.
     - `SELECTOR` shows a dialog for changing the current value of the object (not the property value) when the user tries to change the property. Applicable only for properties with one parameter.
 
@@ -423,7 +423,7 @@ In the current platform implementation, if the name and caption are not specifie
         - `CHANGE BEFORE` / `CHANGE AFTER` — occurs directly before (`BEFORE`) or after (`AFTER`) the value of the property being added is changed.
         - `CHANGEWYS` — the user tries to change the displayed value of the property. It is triggered when the user inserts a text into the added property (by pressing Ctrl + V or similarly). 
         - `GROUPCHANGE` — the user tries to change the property value for all objects in the table (group change).
-        - `EDIT` — editing of the object passed to the property as input.
+        - `EDIT` — editing of the object behind the property: its value or an object the property is computed for, as chosen by the [default handler](../paradigm/Form_events.md#default) of this event. An empty handler (`ON EDIT { }`) keeps the `Follow the link` item in the context menu of the property but makes it do nothing.
         - `KEYPRESS key` — the user presses the `key` key, specified with a string literal.
         - `CONTEXTMENU [caption]` is the event type which adds a menu item executing the specified action to the context menu of the property (action) on the form. You can also specify the caption for this menu item (as string literal). If it is not specified, then, by default, it will be the same as the action caption.
 
