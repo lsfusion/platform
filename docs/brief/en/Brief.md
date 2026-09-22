@@ -30,8 +30,8 @@ Which branch: `language` — statement / operator syntax; `paradigm` — concept
 - A project is composed of **modules**; how data is stored and made fast is the
   physical model, and exchange with anything outside is integration.
 
-Two misreadings worth pre-empting, because everything downstream depends on
-them:
+Three misreadings worth pre-empting, because everything downstream depends
+on them:
 
 - A class does not map to a table. A table holds property values; its key
   fields hold object ids and are typed by the parameter classes of those
@@ -39,6 +39,11 @@ them:
 - The system modules are a library of ordinary properties and actions, not
   built-in language operators. Only `System` is implicit; the rest need
   `REQUIRE` before their declarations are reachable.
+- `.lsf` is not a shell around code in another language. The application —
+  its model, computations, checks, reactions to changes, forms and access
+  rights — is written in these elements; Java and JavaScript enter it only
+  where the platform itself admits them (`INTERNAL`, `EXTERNAL`, `FORMULA`,
+  `CUSTOM`) and for what those operators are for.
 
 ## The brief articles — which one to open
 

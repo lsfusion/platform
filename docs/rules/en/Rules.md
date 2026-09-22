@@ -59,6 +59,43 @@ the name in the first column.
    the user which area went unread, and MUST NOT present the result as
    rule-checked.
 
+## Choice of mechanism (MANDATORY)
+
+1. PLATFORM MECHANISMS FIRST. An application on lsFusion is
+   written in `.lsf`. Wherever the platform provides a
+   mechanism — the data model, computations, constraints,
+   events, actions, session control, forms, access rights —
+   the assistant MUST implement it with that mechanism:
+   classes, properties, actions, `CONSTRAINT`, `WHEN`,
+   `NEWSESSION` / `APPLY`, `FORM`, the security policy.
+   The assistant MUST NOT use `.lsf` as a shell over its own
+   implementation of these mechanisms in Java, JavaScript or
+   another language: a separate server part, a separate
+   interface with its own data operations, a computation or
+   a check duplicated outside the platform.
+
+2. WHAT IS NOT APPLICATION CODE. The rule concerns the
+   application's own code. It does not concern the platform's
+   own Java implementation (the server and the clients),
+   auxiliary development tooling (build, test and verification
+   scripts), or the operators through which the platform itself
+   admits code in another language, used for what they are for:
+   `EXTERNAL` and `INTERNAL` for reaching a system outside the
+   platform or a component of its own deployment, `FORMULA` for
+   an SQL expression, `CUSTOM` and a custom view on a React
+   component for rendering that the standard views do not
+   provide. Java or JavaScript present in the project is not a
+   violation in itself; business logic moved out of `.lsf` is.
+
+3. WHEN CODE OUTSIDE `.lsf` IS ALLOWED. Only at an established
+   limitation of the platform or an explicit requirement of the
+   user, and only for the part that limitation or requirement
+   covers. A documentation search with no suitable result does
+   not establish a limitation: before deciding on such code the
+   assistant MUST read the area's brief
+   (`lsfusion_get_guidance(brief='<name>')`) and search
+   `paradigm` and `how-to`.
+
 ## Mandatory workflow
 
 1. ELEMENT IDENTIFICATION ORDER (MANDATORY)
