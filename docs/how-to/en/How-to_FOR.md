@@ -149,3 +149,23 @@ addSelectedBooks 'Add marked books' (Order o)  {
 ```
 
 Both these implementations will provide the same result.
+
+## Example 5
+
+### Task
+
+Similar to [**Example 3**](#example-3).
+
+We need to create an action that shows the total price of the order lines for each book of the order.
+
+### Solution
+
+```lsf
+showBookTotals 'Show totals by book' (Order o)  {
+    FOR NUMERIC[14,2] total = [GROUP SUM price(OrderDetail d) IF order(d) = o BY book(d)](Book b) DO {
+        MESSAGE name(b) + ': ' + total;
+    }
+}
+```
+
+The groups to iterate over are defined by the `BY` block, so the [`GROUP` operator](../language/GROUP_operator.md) is written as an inline definition in the brackets of the [`JOIN` operator](../language/JOIN_operator.md), and its argument declares the new parameter `b`: the loop iterates over the books that have lines in the order. The order `o` is used inside the brackets, so it is passed automatically and is not listed among the arguments. The parameter `d` declared inside the brackets belongs to the `GROUP` operator and is not available in the loop.

@@ -243,6 +243,16 @@ title: 'Rules: domain logic'
     to the parameters not used in the expressions;
     a mismatch in count or classes is an error.
 
+    In the inline form `[GROUP ... BY ...](...)` such parameters
+    are passed automatically: the arguments correspond in order
+    only to the `BY` expressions
+    (`[GROUP SUM f(x) IF g(x) = s BY h(x)](y)`), and listing `s`
+    among them is a parameter-count error. The assistant MUST
+    make sure that a name used inside the brackets without
+    a class is already declared outside, earlier in the text:
+    otherwise it silently becomes a parameter of the `GROUP`
+    itself, and the aggregate runs over all its values.
+
 20. `MAX` and `MIN` are prefix operators over a comma-separated
     operand list (`MAX a, b`), not infix ones: `a MAX b`
     does not parse — the platform reports
@@ -371,7 +381,10 @@ title: 'Rules: domain logic'
    outside of it; in particular it cannot serve as the loop
    variable of the enclosing `FOR`. Declare the variable as
    the `FOR`'s own parameter and use the aggregate only as
-   a boolean condition over it.
+   a boolean condition over it. To iterate over the groups
+   of an aggregate together with its value, apply the inline
+   form to new typed parameters:
+   `FOR NUMERIC[16,2] q = [GROUP SUM f(x) BY h(x)](Class y) DO ...`.
 
 3. The assistant SHOULD avoid introducing `LOCAL`
    properties without a concrete need.
