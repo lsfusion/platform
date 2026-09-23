@@ -15,6 +15,8 @@ import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.PDFPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.VideoPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRenderer;
+import lsfusion.client.form.property.panel.view.SingleCellTable;
+import lsfusion.interop.form.event.MouseStrokes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,6 +38,13 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
     public ClientPropertyTableUIHandler(ClientPropertyTable table) {
         this.table = table;
+    }
+
+    private boolean isChangeOnDoubleClick(int row, int col) {
+        if (!(table instanceof SingleCellTable))
+            return false;
+        Boolean changeOnSingleClick = table.getProperty(row, col).changeOnSingleClick;
+        return changeOnSingleClick != null && !changeOnSingleClick;
     }
 
     @SuppressWarnings("deprecation")
@@ -95,7 +104,8 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
         // todo: теперь rowHasFocus не обязательно, работает и без него,
         // todo: поэтому есть возможность корректно реализовать логику changeOnSingleClick, если понадобится
-        if (isLeftMouseButton && !(withCtrl || withShift) && (rowHasFocus || e.getClickCount() > 1)) {
+        boolean edit = isChangeOnDoubleClick(pressedRow, pressedCol) ? MouseStrokes.isDblClickEvent(e) : (rowHasFocus || e.getClickCount() > 1);
+        if (isLeftMouseButton && !(withCtrl || withShift) && edit) {
             final ClientPropertyDraw property = table.getProperty(pressedRow, pressedCol);
             RmiQueue.runAction(new Runnable() {
                 @Override
