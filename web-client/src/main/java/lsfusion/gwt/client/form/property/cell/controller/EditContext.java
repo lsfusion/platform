@@ -52,4 +52,8 @@ public interface EditContext extends ExecContext {
     default Object modifyPastedString(String pastedText) { return pastedText; }
 
     RendererType getRendererType();
+
+    default boolean isPanel() {
+        return false;
+    }
 }

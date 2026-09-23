@@ -31,6 +31,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
+    public boolean isPanel() {
+        return true;
+    }
+
+    @Override
     protected void onEditEvent(EventHandler handler) {
         form.executePropertyEventAction(handler, this);
     }

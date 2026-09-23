@@ -514,6 +514,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         return GEditBindingMap.changeOrGroupChange(!isList || noGroupChange);
     }
 
+    private boolean isPanelDoubleClickChange(Event editEvent, ExecuteEditContext editContext) {
+        return editContext.isPanel() && changeOnSingleClick != null && !changeOnSingleClick && GEditBindingMap.getToolbarAction(editEvent) == null;
+    }
+
+    public boolean isSuppressedPanelSingleClick(Event editEvent, ExecuteEditContext editContext) {
+        return GMouseStroke.isChangeEvent(editEvent) && isPanelDoubleClickChange(editEvent, editContext);
+    }
+
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if(isBinding)
@@ -556,9 +564,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         }
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
+            if (isSuppressedPanelSingleClick(editEvent, editContext))
+                return null;
+
             contextAction.set((Integer) GEditBindingMap.getToolbarAction(editEvent));
             return changeOrGroupChange();
         }
+
+        if (GMouseStroke.isDoubleChangeEvent(editEvent) && isPanelDoubleClickChange(editEvent, editContext))
+            return changeOrGroupChange();
 
         if (GKeyStroke.isGroupChangeKeyEvent(editEvent))
             return GEditBindingMap.GROUP_CHANGE;

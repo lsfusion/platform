@@ -1632,8 +1632,16 @@ public class GFormController implements EditManager {
         } else {
             lsfusion.gwt.client.base.Result<Integer> contextAction = new lsfusion.gwt.client.base.Result<>();
             String actionSID = property.getEventSID(event, isBinding, editContext, contextAction);
-            if(actionSID == null)
+            if(actionSID == null) {
+                if(this.editContext != editContext && property.isSuppressedPanelSingleClick(event, editContext)) {
+                    Element editElement = editContext.getEditElement();
+                    Element nativeEventElement = editElement != null ? InputBasedCellRenderer.getFocusEventTarget(editElement, event) : null;
+                    if(nativeEventElement != null)
+                        MainFrame.preventClickAfterDown(nativeEventElement, event);
+                    handler.consume(false, true);
+                }
                 return;
+            }
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
             if (isChangeEvent(actionSID) && (editContext.isReadOnly() != null || (contextAction.result == null && !property.hasUserChangeAction)))

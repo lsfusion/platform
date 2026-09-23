@@ -186,7 +186,7 @@ To access design components, you can use their names or address property compone
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`autoSize`|Automatic component size option. Applies to text components only: the height of the value cell, and in a panel also its width, unless set explicitly in pixels (`valueWidth`, `valueHeight`), follow the content instead of the value class - multi-line text (`TEXT`, `RICHTEXT`, `HTMLTEXT`) gets its height from the content instead of the default four lines; the width of a table column is still determined by the value class with this option|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`changeOnSingleClick`|Specifying whether the change event is triggered by a single click (`TRUE`) or requires a double click (`FALSE`) on the property component|Extended Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
