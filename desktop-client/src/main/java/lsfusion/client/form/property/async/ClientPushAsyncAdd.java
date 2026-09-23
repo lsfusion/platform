@@ -16,6 +16,11 @@ public class ClientPushAsyncAdd extends ClientPushAsyncResult {
     }
 
     @Override
+    protected byte getTypeId() {
+        return 4;
+    }
+
+    @Override
     protected void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeLong(id);
     }

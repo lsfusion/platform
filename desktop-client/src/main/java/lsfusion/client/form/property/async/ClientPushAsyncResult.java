@@ -14,6 +14,7 @@ public abstract class ClientPushAsyncResult {
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
+            dataStream.writeByte(getTypeId());
             serialize(dataStream);
         } catch (IOException e) {
             throw Throwables.propagate(e);
@@ -21,6 +22,9 @@ public abstract class ClientPushAsyncResult {
 
         return outStream.toByteArray();
     }
+
+    // The type of async prediction whose decoder can read this result.
+    protected abstract byte getTypeId();
 
     protected abstract void serialize(DataOutputStream outStream) throws IOException;
 }

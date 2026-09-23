@@ -18,6 +18,10 @@ public abstract class AsyncEventExec {
     public PushAsyncResult deserializePush(byte[] value) {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(value));
         try {
+            // a push is read only by a prediction of its own kind: a client can send one the server does not
+            // predict (a custom view pushes its value whatever the handler is), and a decoder must not read it
+            if (inStream.readByte() != getTypeId())
+                return null;
             return deserializePush(inStream);
         } catch (IOException e) {
             throw Throwables.propagate(e);

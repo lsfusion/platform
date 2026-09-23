@@ -9,6 +9,11 @@ public class ClientPushAsyncClose extends ClientPushAsyncResult {
     }
 
     @Override
+    protected byte getTypeId() {
+        return 2;
+    }
+
+    @Override
     protected void serialize(DataOutputStream outStream) throws IOException {
     }
 }
