@@ -58,7 +58,7 @@ number 'Номер' = DATA INTEGER (Order) IN id;
 numerator 'Нумератор' = DATA Numerator (Order);
 WHEN CHANGED(numerator(Order o)) AND NOT CHANGED(number(o)) DO {
     number(o) <- value(numerator(o));
-    value (Numerator n) <- value(n) (+) 1 WHERE n == numerator(o);
+    value (Numerator n) <- value(n) (+) 1 WHERE n = numerator(o);
 }
 ```
 

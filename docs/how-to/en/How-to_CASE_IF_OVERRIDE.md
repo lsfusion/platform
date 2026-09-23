@@ -29,7 +29,7 @@ We need to define a property that returns the color of a given book.
 nameColor1 'Color' (Book b) = caption(color(b));
 
 // Option 2
-nameColor2 'Color' (Book b) = IF color(b) == Color.white THEN 'White' ELSE 'Black';
+nameColor2 'Color' (Book b) = IF color(b) = Color.white THEN 'White' ELSE 'Black';
 ```
 
 These two expressions provide identical results.

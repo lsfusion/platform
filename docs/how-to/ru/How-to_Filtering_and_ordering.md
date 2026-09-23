@@ -68,13 +68,13 @@ FORM onStockLocal 'Остатки'
     PROPERTIES READONLY name(s), name(b), balance(b, s)
     ORDERS name(s), name(b)
 
-    FILTERS s == filterStock() OR NOT filterStock()
+    FILTERS s = filterStock() OR NOT filterStock()
 ;
 ```
 
 В данном случае, склад нельзя объявлять через конструкцию `OBJECTS`, поскольку тогда не будет возможности не указывать склад для фильтрации.
 
-Условие `s == filterStock() OR NOT filterStock()` — стандартный приём *необязательного фильтра*: пока значение фильтра не задано (`filterStock()` равно `NULL`), ветка `OR NOT` истинна для каждой строки и форма показывает все записи; как только склад выбран, остаются только его строки.
+Условие `s = filterStock() OR NOT filterStock()` — стандартный приём *необязательного фильтра*: пока значение фильтра не задано (`filterStock()` равно `NULL`), ветка `OR NOT` истинна для каждой строки и форма показывает все записи; как только склад выбран, остаются только его строки.
 
 ## Пример 3
 
@@ -111,7 +111,7 @@ FORM orders 'Заказы'
     PROPERTIES(o) READONLY do = date, nameCustomer
     ORDERS do DESC
     FILTERS date(o) >= dateFrom, date(o) <= dateTo,
-            customer(o) == filterCustomer() OR NOT filterCustomer()
+            customer(o) = filterCustomer() OR NOT filterCustomer()
 ;
 ```
 

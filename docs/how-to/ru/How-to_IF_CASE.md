@@ -32,7 +32,7 @@ setPriceIf 'Установить цену' (Book b)  {
     IF NOT category(b) THEN
         MESSAGE 'Не выбрана категория для книги';
     ELSE
-        IF category(b) == Category.novel THEN
+        IF category(b) = Category.novel THEN
             price(b) <- 50.0;
         ELSE
             price(b) <- 100.0;
@@ -52,11 +52,11 @@ setPriceIf 'Установить цену' (Book b)  {
 ```lsf
 setPriceCase 'Установить цену' (Book b)  {
     CASE
-        WHEN category(b) == Category.novel THEN
+        WHEN category(b) = Category.novel THEN
             price(b) <- 50.0;
-        WHEN category(b) == Category.thriller THEN
+        WHEN category(b) = Category.thriller THEN
             price(b) <- 100.0;
-        WHEN category(b) == Category.fiction THEN
+        WHEN category(b) = Category.fiction THEN
             price(b) <- 150.0;
     ELSE
         price(b) <- 0.0;

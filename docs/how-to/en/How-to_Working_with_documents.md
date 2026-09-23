@@ -36,7 +36,7 @@ FORM order 'Order'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;
@@ -102,9 +102,9 @@ changeQuantity 'Change quantity' (Order o, Book b)  {
         IF lastOrderDetail(o, b) THEN { // checking if there is at least one row
             IF q THEN // inputting a number
                 // writing the quantity in the last row with such a book
-                quantity(OrderDetail d) <- q IF d == lastOrderDetail(o, b) WHERE order(d) == o AND book(d) == b; 
+                quantity(OrderDetail d) <- q IF d = lastOrderDetail(o, b) WHERE order(d) = o AND book(d) = b; 
             ELSE // the number is dropped - deleting the row
-                DELETE OrderDetail d WHERE order(d) == o AND book(d) == b;
+                DELETE OrderDetail d WHERE order(d) = o AND book(d) = b;
         } ELSE
             IF q THEN
                 NEW d = OrderDetail { // creating a new row
@@ -143,7 +143,7 @@ If the quantity changes on the `Selection` tab, the system will automatically ch
 If an order has two or more lines with one book, the system will reset the quantity in the first lines and set the total in the last line. If you want the change to affect the last line only, you need to use the following action during saving:
 
 ```lsf
-quantity(OrderDetail d) <- q WHERE d == lastOrderDetail(o, b);
+quantity(OrderDetail d) <- q WHERE d = lastOrderDetail(o, b);
 ```
 
 However, users may not understand this behavior, since after they enter a particular quantity on the `Selection` tab, the total quantity for all lines will be shown in the same column and it will be different from the entered value.
@@ -225,7 +225,7 @@ FORM userInvoice 'Invoice (custom)'
 
     OBJECTS d = UserInvoiceDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS userInvoice(d) == i
+    FILTERS userInvoice(d) = i
 
     EDIT UserInvoice OBJECT i
 ;

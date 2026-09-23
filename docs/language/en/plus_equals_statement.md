@@ -72,5 +72,5 @@ name = DATA ISTRING[64] (PersonDocumentType);
 caption = ABSTRACT CASE ISTRING[100] (Person, PersonDocumentType);
 
 caption(Person p, PersonDocumentType t) +=
-    WHEN p IS Person AND name(t) == 'Passport' THEN 'Passport';
+    WHEN p IS Person AND name(t) = 'Passport' THEN 'Passport';
 ```

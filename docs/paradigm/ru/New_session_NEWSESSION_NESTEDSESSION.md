@@ -43,7 +43,7 @@ isolatedRun (Currency c)  {
 inheritedEdit (Sku s)  {
     name(s) <- 'temp'; // изменение во внешней сессии
     NESTEDSESSION {
-        // здесь видно name(s) == 'temp' из внешней сессии
+        // здесь видно name(s) = 'temp' из внешней сессии
         name(s) <- 'final';
         APPLY; // изменение копируется обратно во внешнюю сессию, в базу не пишется
     }

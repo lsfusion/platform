@@ -11,8 +11,8 @@ title: 'Операторы изменений (SET, CHANGED, ...)'
 |---------------|------------------------------------------------------------------|------------------------------|
 |`SET`          |`f AND NOT PREV(f)`                                               |Установлено значение          |
 |`DROPPED`      |`NOT f AND PREV(f)`                                               |Сброшено значение             |
-|`CHANGED`      |`(f OR PREV(f)) AND NOT f==PREV(f)`                               |Изменено значение             |
-|`SETCHANGED`   |`f AND NOT f==PREV(f)`<br/>или<br/>`CHANGED(f) AND NOT DROPPED(f)`|Значение изменено на не `NULL`|
+|`CHANGED`      |`(f OR PREV(f)) AND NOT f=PREV(f)`                               |Изменено значение             |
+|`SETCHANGED`   |`f AND NOT f=PREV(f)`<br/>или<br/>`CHANGED(f) AND NOT DROPPED(f)`|Значение изменено на не `NULL`|
 |`DROPCHANGED`  |`CHANGED(f) AND NOT SET(f)`                                       |Значение или сброшено, или изменено с одного не `NULL` на другое не `NULL`|
 |`SETDROPPED`   |`SET(f) OR DROPPED(f)`                                            |Значение или сброшено или установлено с `NULL` на не `NULL`|
 

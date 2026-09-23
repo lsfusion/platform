@@ -140,7 +140,7 @@ FORM orderPayments 'Order payments'
 
     OBJECTS p = Payment
     PROPERTIES(p) date, sum, NEW, DELETE
-    FILTERS order(p) == o
+    FILTERS order(p) = o
 ;
 
 editPayments 'Edit payments' (Order o)  {

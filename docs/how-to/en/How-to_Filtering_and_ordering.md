@@ -68,13 +68,13 @@ FORM onStockLocal 'Balances'
     PROPERTIES READONLY name(s), name(b), balance(b, s)
     ORDERS name(s), name(b)
 
-    FILTERS s == filterStock() OR NOT filterStock()
+    FILTERS s = filterStock() OR NOT filterStock()
 ;
 ```
 
 In this case a warehouse cannot be declared via the `OBJECTS` block, because then not specifying a warehouse for filtering will not be an option.
 
-The condition `s == filterStock() OR NOT filterStock()` is the standard *optional filter* pattern: while the filter value is empty (`filterStock()` is `NULL`), the `OR NOT` branch is true for every row and the form shows all records; once a warehouse is selected, only its rows remain.
+The condition `s = filterStock() OR NOT filterStock()` is the standard *optional filter* pattern: while the filter value is empty (`filterStock()` is `NULL`), the `OR NOT` branch is true for every row and the form shows all records; once a warehouse is selected, only its rows remain.
 
 ## Example 3
 
@@ -111,7 +111,7 @@ FORM orders 'Orders'
     PROPERTIES(o) READONLY do = date, nameCustomer
     ORDERS do DESC
     FILTERS date(o) >= dateFrom, date(o) <= dateTo,
-            customer(o) == filterCustomer() OR NOT filterCustomer()
+            customer(o) = filterCustomer() OR NOT filterCustomer()
 ;
 ```
 

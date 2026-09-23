@@ -26,7 +26,7 @@ CLASS Direction {
 
 // здесь константное свойство создается из объекта Direction.north, которое затем используется 
 // оператором сравнения для построения свойства isNorth
-isNorth (Direction d) = d == Direction.north;  
+isNorth (Direction d) = d = Direction.north;  
 
 // здесь константное свойство создается из литерала, описывающего дату
 defaultDate() = 1982_07_13;                         

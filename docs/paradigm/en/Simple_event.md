@@ -37,6 +37,6 @@ CLASS OrderDetail;
 order = DATA Order (OrderDetail) NONULL DELETE;
 discount = DATA NUMERIC[6,2] (OrderDetail);
 
-WHEN LOCAL CHANGED(customer(Order o)) AND name(customer(o)) == 'Best customer' DO
-    discount(OrderDetail d) <- 50 WHERE order(d) == o;
+WHEN LOCAL CHANGED(customer(Order o)) AND name(customer(o)) = 'Best customer' DO
+    discount(OrderDetail d) <- 50 WHERE order(d) = o;
 ```

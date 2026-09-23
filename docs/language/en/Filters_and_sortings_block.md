@@ -68,7 +68,7 @@ FORM onStock 'Balances' // creating a form in which the balances of products can
     OBJECTS st = Stock // adding the warehouse object
     PROPERTIES name(st) READONLY // adding the warehouse name
     // adding a filter so that only warehouses of the selected region are shown
-    FILTERS region(st) == r 
+    FILTERS region(st) = r 
 
     OBJECTS s = Sku // adding products
     // adding the name of the group of products, assigning it groupName as the name of the property on the form, 

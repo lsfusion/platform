@@ -35,10 +35,10 @@ testNestedSession ()  {
         APPLY; 
     }
 
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // returns all rows
+    MESSAGE (GROUP SUM 1 IF name(Sku s) = 'aaa'); // returns all rows
     CANCEL;
     // returns NULL if there was no Sku named aaa in the database before
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); 
+    MESSAGE (GROUP SUM 1 IF name(Sku s) = 'aaa'); 
 
 }
 

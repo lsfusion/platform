@@ -101,14 +101,14 @@ discountPrice 'Цена со скидкой' = DATA NUMERIC[14,2] (OrderDetail);
 ```lsf
 makeDiscount 'Сделать скидку' (Order o)  {
     // Вариант 1
-    FOR order(OrderDetail d) == o AND price(d) > 100 DO {
+    FOR order(OrderDetail d) = o AND price(d) > 100 DO {
         discount(d) <- 10;
         discountPrice(d) <- price(d) * (100.0 - discount(d)) / 100.0;
     }
 
     // Вариант 2
-    discount(OrderDetail d) <- 10 WHERE order(d) == o AND price(d) > 100;
-    discountPrice(OrderDetail d) <- price(d) * (100.0 - discount(d)) / 100.0 WHERE order(d) == o AND price(d) > 100;
+    discount(OrderDetail d) <- 10 WHERE order(d) = o AND price(d) > 100;
+    discountPrice(OrderDetail d) <- price(d) * (100.0 - discount(d)) / 100.0 WHERE order(d) = o AND price(d) > 100;
 }
 ```
 
@@ -140,7 +140,7 @@ addSelectedBooks 'Добавить отмеченные книги' (Order o)  {
     }
 
     // Вариант 2
-    FOR price(Book b) == NUMERIC[14,2] p AND p > 100 NEW d = OrderDetail DO {
+    FOR price(Book b) = NUMERIC[14,2] p AND p > 100 NEW d = OrderDetail DO {
         order(d) <- o;
         book(d) <- b;
         price(d) <- p;

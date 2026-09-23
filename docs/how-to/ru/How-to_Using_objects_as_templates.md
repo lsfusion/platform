@@ -77,7 +77,7 @@ FORM order 'Заказ'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;
@@ -107,7 +107,7 @@ FORM invoice 'Счет'
 
     OBJECTS d = InvoiceDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS invoice(d) == i
+    FILTERS invoice(d) = i
 ;
 ```
 
@@ -122,7 +122,7 @@ createInvoice 'Создать счет' (Order o)  {
             date(i) <- date(o);
             number(i) <- number(o);
 
-            FOR order(OrderDetail od) == o NEW id = InvoiceDetail DO {
+            FOR order(OrderDetail od) = o NEW id = InvoiceDetail DO {
                 invoice(id) <- i;
 
                 book(id) <- book(od);
@@ -156,7 +156,7 @@ fillOrder 'Заполнить по заказу' (Invoice i)  {
         date(i) <- date(o);
         number(i) <- number(o);
 
-        FOR order(OrderDetail od) == o NEW id = InvoiceDetail DO {
+        FOR order(OrderDetail od) = o NEW id = InvoiceDetail DO {
             invoice(id) <- i;
 
             book(id) <- book(od);

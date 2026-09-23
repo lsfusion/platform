@@ -557,9 +557,9 @@ changeQuantity (Order o, Sku s)  {
     INPUT n = NUMERIC[10,2] DO {
         IF lastDetail(o, s) THEN {
             IF n THEN
-                quantity(OrderDetail d) <- n WHERE d == lastDetail(o, s);
+                quantity(OrderDetail d) <- n WHERE d = lastDetail(o, s);
             ELSE
-                DELETE OrderDetail d  WHERE d == lastDetail(o, s);
+                DELETE OrderDetail d  WHERE d = lastDetail(o, s);
         } ELSE IF n THEN {
             NEW d = OrderDetail {
                 order(d) <- o;
@@ -618,7 +618,7 @@ FORM order 'Заказ'
                   NEW, 
                   DELETE // добавляем действие, которое будет удалять строку заказа
     // указываем, что должны показываться только строки, относящиеся к данному заказу
-    FILTERS order(d) == o 
+    FILTERS order(d) = o 
 
     // добавляем объект sku, в который мы будем выводить итоги по каждому sku в заказе
     OBJECTS s = Sku 
@@ -676,7 +676,7 @@ FORM orderReport 'Продажи по складам'
     OBJECTS c = Customer // добавляем объект покупатели
                          // специально не добавляем ни одного свойства, чтобы он был "невидимым", 
                          // но он нужен для того, чтобы отображать покупателей в колонки
-    FILTERS region(c) == r // ставим фильтр на то, чтобы покупатели были только из этого региона
+    FILTERS region(c) = r // ставим фильтр на то, чтобы покупатели были только из этого региона
 
     // добавляем объект sku, в таблице которого и будет показываться основная информация
     OBJECTS s = Sku 

@@ -48,10 +48,10 @@ delete (Book b)  {
 clear (Order o)  {
 
     // Вариант 1
-    DELETE OrderDetail d WHERE order(d) == o;
+    DELETE OrderDetail d WHERE order(d) = o;
 
     // Вариант 2
-    FOR order(OrderDetail d) == o DO
+    FOR order(OrderDetail d) = o DO
         DELETE d;
 }
 ```

@@ -26,7 +26,7 @@ CLASS Direction {
 
 // A constant property is created from a Direction.north object which is then used 
 // by the comparison operator to construct the isNorth property
-isNorth (Direction d) = d == Direction.north;  
+isNorth (Direction d) = d = Direction.north;  
 
 // A constant property is created from a literal describing the date
 defaultDate() = 1982_07_13;                         

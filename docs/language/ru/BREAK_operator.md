@@ -20,7 +20,7 @@ BREAK
 ```lsf
 testBreak ()  {
     FOR iterate(INTEGER i, 1, 100) DO {
-        IF i == 50 THEN BREAK; // дойдет только до 50
+        IF i = 50 THEN BREAK; // дойдет только до 50
     }
 }
 ```

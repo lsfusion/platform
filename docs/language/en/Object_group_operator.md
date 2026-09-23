@@ -57,7 +57,7 @@ FORM stores
 ;
 countF 'Number of filtered warehouses' = GROUP SUM 1 IF [ VIEW stores.s](Store s);
 orderF 'Order in an object group' (Store s) = PARTITION SUM 1 IF [ FILTER stores.s](s) ORDER [ ORDER stores.s](s), s;
-isPivot 'Stores shown as pivot' () = [ VIEWTYPE stores.s]() == ListViewType.pivot;
+isPivot 'Stores shown as pivot' () = [ VIEWTYPE stores.s]() = ListViewType.pivot;
 selectedCount 'Number of selected stores' () = GROUP SUM 1 IF [ SELECT stores.s](Store s);
 selectActive 'The selection is set' () = [ SELECT ACTIVE stores.s]();
 nameSelected 'Name property is selected' () = [ SELECT PROPERTY stores.name(s)]();

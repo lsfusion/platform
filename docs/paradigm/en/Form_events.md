@@ -209,7 +209,7 @@ changePrice (Sku s)  {
     INPUT n = NUMERIC[10,2] DO price(s) <- n;
     // showing the message only when the user edited the price directly,
     // not when it was pasted or set through the client API
-    IF System.eventSource() == 'EDIT' THEN
+    IF System.eventSource() = 'EDIT' THEN
         MESSAGE 'Price changed to ' + price(s);
 }
 

@@ -61,7 +61,7 @@ copyDetail (Order o)  {
     NEW n = Order {
         date(n) <- date(o);
         customer(n) <- customer(o);
-        FOR order(OrderDetail od) == o NEW nd = OrderDetail DO {
+        FOR order(OrderDetail od) = o NEW nd = OrderDetail DO {
             order(nd) <- n;
             book(nd) <- book(od);
             price(nd) <- price(od);

@@ -38,11 +38,11 @@ FORM orders 'Заказы'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) READONLY nameBook, quantity, price
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     OBJECTS p = Payment
     PROPERTIES(p) READONLY date, sum
-    FILTERS order(p) == o
+    FILTERS order(p) = o
 ;
 
 NAVIGATOR {
@@ -104,7 +104,7 @@ EXTEND FORM orders
 
     PROPERTIES(o) READONLY nameCustomer
     FILTERS date(o) >= dateFrom, date(o) <= dateTo,
-            customer(o) == filterCustomer() OR NOT filterCustomer()
+            customer(o) = filterCustomer() OR NOT filterCustomer()
 ;
 ```
 

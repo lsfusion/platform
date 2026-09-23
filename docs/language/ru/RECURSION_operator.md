@@ -44,29 +44,29 @@ CLASS Node;
 edge = DATA BOOLEAN (Node, Node);
 
 // итерация по integer от from к to (это свойство по умолчанию входит в модуль System)
-iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
+iterate(i, from, to) = RECURSION i=from AND from IS INTEGER AND to IS INTEGER STEP i=$i+1 AND i<=to CYCLES IMPOSSIBLE;
 
 // считает количество различных путей от a до b в графе
-pathes 'Кол-во путей' (a, b) = RECURSION 1 AND a IS Node AND b==a STEP 1 IF edge(b, $b);
+pathes 'Кол-во путей' (a, b) = RECURSION 1 AND a IS Node AND b=a STEP 1 IF edge(b, $b);
 
 // не NULL, если parent — предок группы child или сама эта группа (тем самым свойство отбирает всех потомков parent);
 // числовое значение — количество путей от child к parent по свойству parent, в дереве всегда 1
 parent = DATA Group (Group);
-isParent 'Является родителем' (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent == child
-                                                                      STEP 1 IF parent == parent($parent);
+isParent 'Является родителем' (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent = child
+                                                                      STEP 1 IF parent = parent($parent);
 
 // уровень группы в иерархии — количество её предков вместе с ней самой (для корня 1)
 level 'Уровень' (Group child) = GROUP SUM 1 IF isParent(child, Group parent);
 
 // числа Фибоначчи, свойство высчитывает все числа Фибоначи до значения to, (после будет возвращать null)
-fib(i, to) = RECURSION 1 IF (i==0 OR i==1) AND to IS INTEGER STEP 1 IF (i==$i+1 OR i==$i+2) AND i<to CYCLES IMPOSSIBLE;
+fib(i, to) = RECURSION 1 IF (i=0 OR i=1) AND to IS INTEGER STEP 1 IF (i=$i+1 OR i=$i+2) AND i<to CYCLES IMPOSSIBLE;
 ```
 
 
 Заметим, что числа Фибоначчи можно реализовать без добавления параметра to:
 
 ```lsf
-fib(i) = RECURSION 1 IF (i==0 OR i==1) STEP 1 IF (i==$i+1 OR i==$i+2);
+fib(i) = RECURSION 1 IF (i=0 OR i=1) STEP 1 IF (i=$i+1 OR i=$i+2);
 ```
 
 Но в текущей реализации оптимизатор платформы в меньшей степени ориентирован на работу с числами, поэтому пока не может определить, что функция шага возрастающая, и сам остановить рекурсию, искусственно создав соответствующие условие, как это сделано в верхнем примере. Еще больше вопросов возникает, когда это свойство необходимо отображать в динамическом списке (а в статическом списке это невозможно сделать, так как количество не `NULL` значений бесконечно). В этом случае необходимо также учитывать текущей порядок в этом списке, и также проталкивать его внутрь запроса. Эти ограничения будут устранены в будущих версиях, но в текущей версии их рекомендуется учитывать.

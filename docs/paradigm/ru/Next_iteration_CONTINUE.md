@@ -15,7 +15,7 @@ title: 'Следующая итерация (CONTINUE)'
 testContinue ()  {
     FOR iterate(INTEGER i, 1, 5) DO {
         MESSAGE 'before';
-        IF i == 3 THEN CONTINUE; // no message 'after' for i == 3
+        IF i = 3 THEN CONTINUE; // no message 'after' for i = 3
         MESSAGE 'after';
     }
 }

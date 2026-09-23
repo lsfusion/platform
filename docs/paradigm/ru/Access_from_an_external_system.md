@@ -365,7 +365,7 @@ lsfCode = ("run(INTEGER no, DATE date, FILE detail) {\n"
            "            }\n"
            "        }\n"
            "        APPLY;\n"
-           "        EXPORT JSON FROM price = price(FOrderDetail od), id = id(od) WHERE order(od) == o;\n"
+           "        EXPORT JSON FROM price = price(FOrderDetail od), id = id(od) WHERE order(od) = o;\n"
            "        EXPORT FROM orderPrice(o), exportFile();\n"
            "    }\n"
            "}")

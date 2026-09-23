@@ -70,7 +70,7 @@ The `ABSTRACT` operator is a [context-independent action operator](Action_operat
 
 ```lsf
 exportXls 'Export to Excel' ABSTRACT CASE OVERRIDE LAST (Order);
-exportXls (Order o) + WHEN name(currency(o)) == 'USD' THEN {
+exportXls (Order o) + WHEN name(currency(o)) = 'USD' THEN {
     MESSAGE 'Export USD not implemented';
 }
 

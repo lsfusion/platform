@@ -26,7 +26,7 @@ We need to build a form with a tree, where the category is shown above and the p
 FORM books 'Books'
     TREE cb c = Category, b = Book
     PROPERTIES name(c), name(b)
-    FILTERS category(b) == c
+    FILTERS category(b) = c
 ;
 ```
 
@@ -62,8 +62,8 @@ We need to create a form with a category tree, so that the books that belong to 
 ### Solution
 
 ```lsf
-isParent 'Is parent' (Category child, Category parent) = RECURSION 1 IF child IS Category AND parent == child
-                                                                   STEP 1 IF parent == parent($parent) MATERIALIZED;
+isParent 'Is parent' (Category child, Category parent) = RECURSION 1 IF child IS Category AND parent = child
+                                                                   STEP 1 IF parent = parent($parent) MATERIALIZED;
 
 FORM categoryBooks 'Books by category'
     TREE categories c = Category PARENT parent(c)

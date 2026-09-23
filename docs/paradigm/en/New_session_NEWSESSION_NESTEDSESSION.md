@@ -43,7 +43,7 @@ isolatedRun (Currency c)  {
 inheritedEdit (Sku s)  {
     name(s) <- 'temp'; // change in the outer session
     NESTEDSESSION {
-        // sees name(s) == 'temp' from the outer session
+        // sees name(s) = 'temp' from the outer session
         name(s) <- 'final';
         APPLY; // copies the change back to the outer session, not to the database
     }

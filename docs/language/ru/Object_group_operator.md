@@ -57,7 +57,7 @@ FORM stores
 ;
 countF 'Кол-во фильтр. складов' = GROUP SUM 1 IF [ VIEW stores.s](Store s);
 orderF 'Порядок в группе объектов' (Store s) = PARTITION SUM 1 IF [ FILTER stores.s](s) ORDER [ ORDER stores.s](s), s;
-isPivot 'Склады в виде сводной таблицы' () = [ VIEWTYPE stores.s]() == ListViewType.pivot;
+isPivot 'Склады в виде сводной таблицы' () = [ VIEWTYPE stores.s]() = ListViewType.pivot;
 selectedCount 'Количество выделенных складов' () = GROUP SUM 1 IF [ SELECT stores.s](Store s);
 selectActive 'Выделение задано' () = [ SELECT ACTIVE stores.s]();
 nameSelected 'Свойство name выделено' () = [ SELECT PROPERTY stores.name(s)]();

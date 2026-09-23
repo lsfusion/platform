@@ -209,7 +209,7 @@ changePrice (Sku s)  {
     INPUT n = NUMERIC[10,2] DO price(s) <- n;
     // показываем сообщение, только когда пользователь изменил цену напрямую,
     // а не когда она была вставлена или установлена через клиентский API
-    IF System.eventSource() == 'EDIT' THEN
+    IF System.eventSource() = 'EDIT' THEN
         MESSAGE 'Цена изменена на ' + price(s);
 }
 

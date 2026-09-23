@@ -41,7 +41,7 @@ id = DATA INTEGER (Sku);
 
 in = DATA LOCAL BOOLEAN (Sku);
 applyIn()  {
-    in(Sku s) <- TRUE WHERE id(s) == 123;
+    in(Sku s) <- TRUE WHERE id(s) = 123;
     APPLY NESTED (in[Sku]) {};
     IF canceled() THEN
         MESSAGE applyMessage();

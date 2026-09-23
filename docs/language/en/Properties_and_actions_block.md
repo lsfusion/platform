@@ -557,9 +557,9 @@ changeQuantity (Order o, Sku s)  {
     INPUT n = NUMERIC[10,2] DO {
         IF lastDetail(o, s) THEN {
             IF n THEN
-                quantity(OrderDetail d) <- n WHERE d == lastDetail(o, s);
+                quantity(OrderDetail d) <- n WHERE d = lastDetail(o, s);
             ELSE
-                DELETE OrderDetail d  WHERE d == lastDetail(o, s);
+                DELETE OrderDetail d  WHERE d = lastDetail(o, s);
         } ELSE IF n THEN {
             NEW d = OrderDetail {
                 order(d) <- o;
@@ -614,7 +614,7 @@ FORM order 'Order'
                   quantity, price, sum, // adding quantity, price, amount
                   NEW, // adding the predefined NEW action that adds a new order line
                   DELETE // adding an action that will delete the order line
-    FILTERS order(d) == o // indicating that only lines related to this order should be shown
+    FILTERS order(d) = o // indicating that only lines related to this order should be shown
 
     // adding a sku object to which the totals for each sku in the order will be written
     OBJECTS s = Sku 
@@ -671,7 +671,7 @@ FORM orderReport 'Sales by warehouse'
     // but it is needed in order to display customers in columns
     OBJECTS c = Customer 
                          
-    FILTERS region(c) == r // setting a filter so that customers are only from this region
+    FILTERS region(c) = r // setting a filter so that customers are only from this region
 
     // adding a sku object, in the table of which basic information will be displayed
     OBJECTS s = Sku 

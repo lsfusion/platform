@@ -77,7 +77,7 @@ FORM orders 'Заказы'
 
     OBJECTS o = Order
     PROPERTIES(o) READONLY date, number
-    FILTERS g == genre(book(o))
+    FILTERS g = genre(book(o))
 ;
 
 NAVIGATOR {

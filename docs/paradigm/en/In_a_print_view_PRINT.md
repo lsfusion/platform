@@ -39,7 +39,7 @@ FORM printOrder
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) idSku, price
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 ;
 
 print (Order o) {

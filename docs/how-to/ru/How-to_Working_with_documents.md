@@ -36,7 +36,7 @@ FORM order 'Заказ'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;
@@ -102,9 +102,9 @@ changeQuantity 'Изменить кол-во' (Order o, Book b)  {
         IF lastOrderDetail(o, b) THEN { // проверяем, есть ли хоть одна строка
             IF q THEN // ввели число
                 // записываем количество в последнюю строку с такой книгой
-                quantity(OrderDetail d) <- q IF d == lastOrderDetail(o, b) WHERE order(d) == o AND book(d) == b; 
+                quantity(OrderDetail d) <- q IF d = lastOrderDetail(o, b) WHERE order(d) = o AND book(d) = b; 
             ELSE // сбросили число - удаляем строку
-                DELETE OrderDetail d WHERE order(d) == o AND book(d) == b;
+                DELETE OrderDetail d WHERE order(d) = o AND book(d) = b;
         } ELSE
             IF q THEN
                 NEW d = OrderDetail { // создаем новую строку
@@ -143,7 +143,7 @@ DESIGN order {
 В случае, если в заказе будет две или более строк с одной книгой, то система сбросит количество в первых строках и проставит введенное количество в последней строке. Чтобы изменение касалось только последней строки, то нужно при записи количество использовать следующее действие:
 
 ```lsf
-quantity(OrderDetail d) <- q WHERE d == lastOrderDetail(o, b);
+quantity(OrderDetail d) <- q WHERE d = lastOrderDetail(o, b);
 ```
 
 Однако, такое поведение будет не понятно пользователю, так как после ввода определенного количества на вкладке `Подбор`, в этой же колонке будет показываться суммарное количество по всем строкам, которое отличается от введенного.
@@ -227,7 +227,7 @@ FORM userInvoice 'Счет (пользовательский)'
 
     OBJECTS d = UserInvoiceDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS userInvoice(d) == i
+    FILTERS userInvoice(d) = i
 
     EDIT UserInvoice OBJECT i
 ;

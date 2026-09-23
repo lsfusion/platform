@@ -26,7 +26,7 @@ category 'Категория' = DATA Category (Book);
 FORM books 'Книги'
     TREE cb c = Category, b = Book
     PROPERTIES name(c), name(b)
-    FILTERS category(b) == c
+    FILTERS category(b) = c
 ;
 ```
 
@@ -62,8 +62,8 @@ FORM categories 'Категории'
 ### Решение
 
 ```lsf
-isParent 'Является родителем' (Category child, Category parent) = RECURSION 1 IF child IS Category AND parent == child
-                                                                            STEP 1 IF parent == parent($parent) MATERIALIZED;
+isParent 'Является родителем' (Category child, Category parent) = RECURSION 1 IF child IS Category AND parent = child
+                                                                            STEP 1 IF parent = parent($parent) MATERIALIZED;
 
 FORM categoryBooks 'Книги по категориям'
     TREE categories c = Category PARENT parent(c)

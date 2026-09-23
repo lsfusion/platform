@@ -80,7 +80,7 @@ FORM order
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, sum
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 ;
 ```
 

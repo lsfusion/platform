@@ -38,7 +38,7 @@ FORM order 'Заказ'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;
@@ -71,7 +71,7 @@ NAVIGATOR {
 EXTEND FORM orders
     OBJECTS d = OrderDetail
     PROPERTIES(d) READONLY nameBook, quantity, price
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 ;
 ```
 

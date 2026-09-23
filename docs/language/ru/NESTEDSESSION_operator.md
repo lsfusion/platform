@@ -34,10 +34,10 @@ testNestedSession ()  {
         APPLY; // на самом деле изменения применятся не в базу данных, а в "верхнюю" сессию
     }
 
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); // возвращает все строки
+    MESSAGE (GROUP SUM 1 IF name(Sku s) = 'aaa'); // возвращает все строки
     CANCEL;
     // возвращает NULL, если в базе не было раньше Sku с именем aaa
-    MESSAGE (GROUP SUM 1 IF name(Sku s) == 'aaa'); 
+    MESSAGE (GROUP SUM 1 IF name(Sku s) = 'aaa'); 
 
 }
 

@@ -28,6 +28,6 @@ EXTEND FORM items
     PROPERTIES(g) READONLY name
     // if the object was added after the object with products, then filtering 
     // would go by the group of products, and not by products
-    FILTERS itemGroup(i) == g 
+    FILTERS itemGroup(i) = g 
 ;
 ```

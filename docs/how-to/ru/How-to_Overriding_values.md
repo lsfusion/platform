@@ -22,8 +22,8 @@ markup 'Надбавка' = DATA NUMERIC[8,2] (Category);
 Используя [оператор `RECURSION`](../language/RECURSION_operator.md) для любых двух категорий посчитаем свойство `'Уровень'`, которое будет равно двойке возведенной в степень расстояния между ними.
 
 ```lsf
-level 'Уровень' (Category child, Category parent) = RECURSION 1l IF child IS Category AND parent == child
-                                                                 STEP 2l IF parent == parent($parent) MATERIALIZED;
+level 'Уровень' (Category child, Category parent) = RECURSION 1l IF child IS Category AND parent = child
+                                                                 STEP 2l IF parent = parent($parent) MATERIALIZED;
 ```
 
 Значение шага на каждой итерации умножается на значение предыдущей, поэтому `STEP 2l` и даёт степень двойки. Литералы имеют класс `LONG` (`1l`, `2l`) из-за ограничения политики `CYCLES NO`, действующей по умолчанию: оно срабатывает, когда значение превышает половину маркера цикла, что в дереве допускает расстояние до `30` для `LONG` и только до `14` для `INTEGER`. Тот же набор свойств — `level[Category, Category]`, `level[Category]`, `isParent[Category, Category]` и `category[Category, LONG]`, аналог объявляемого ниже `parent[Category, LONG]`, — даёт метакод `@defineHierarchyCustom(category, Category)` системного модуля [`Hierarchy`](../paradigm/Utils_Hierarchy.md); при его использовании ручные объявления `nameParent[Category]`, `level[Category, Category]` и `parent[Category, LONG]` из этого примера не нужны.

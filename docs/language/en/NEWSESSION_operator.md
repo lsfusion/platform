@@ -72,11 +72,11 @@ testNewSession ()  {
     LOCAL local = BPSTRING[10] (Currency);
     local(Currency c) <- 'Local';
     NEWSESSION {
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); // will return NULL
+        MESSAGE (GROUP SUM 1 IF local(Currency c) = 'Local'); // will return NULL
     }
     NEWSESSION NESTED (local[Currency]) {
         // will return the number of objects of class Currency
-        MESSAGE (GROUP SUM 1 IF local(Currency c) == 'Local'); 
+        MESSAGE (GROUP SUM 1 IF local(Currency c) = 'Local'); 
     }
 
     NEWSESSION {

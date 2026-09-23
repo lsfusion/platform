@@ -23,5 +23,5 @@ FORM stores
     OBJECTS s = Store
     PROPERTIES(s) name
 ;
-isPivot 'Склады в виде сводной таблицы' () = [ VIEWTYPE stores.s]() == ListViewType.pivot;
+isPivot 'Склады в виде сводной таблицы' () = [ VIEWTYPE stores.s]() = ListViewType.pivot;
 ```

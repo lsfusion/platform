@@ -30,7 +30,7 @@ A user has one main role and any number of additional roles; the effective membe
 | `mainRole[User]`                  | the user's main role                                                        |
 | `nameMainRole[User]` / `sidMainRole[CustomUser]` | name / code of the main role                                |
 | `currentUserMainRoleName[]`       | name of the current user's main role                                       |
-| `overIn[User, UserRole]`          | abstract membership flag; the base implementation adds the main role (`mainRole(user) == role`) |
+| `overIn[User, UserRole]`          | abstract membership flag; the base implementation adds the main role (`mainRole(user) = role`) |
 | `in[CustomUser, UserRole]`        | explicit assignment of an additional role                                  |
 | `has[User, UserRole]`             | effective membership — `in[CustomUser, UserRole]` or `overIn[User, UserRole]` (materialized) |
 | `userRoles[User]`                 | comma-separated names of all roles the user has, ordered by name           |

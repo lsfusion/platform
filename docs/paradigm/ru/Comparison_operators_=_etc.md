@@ -28,7 +28,7 @@ title: 'Операторы сравнения (=, >, <, ...)'
 ### Примеры
 
 ```lsf
-equalBarcodes = barcode(a) == barcode(b);
+equalBarcodes = barcode(a) = barcode(b);
 outOfIntervalValue1(value, left, right) = value < left OR value > right;
 outOfIntervalValue2(value, left, right) = NOT (value >= left AND value <= right);
 isPhoneNumber(value) = value LIKE '(___) ___-____';

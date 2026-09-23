@@ -47,7 +47,7 @@ FORM order 'Order'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, nameCurrency, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;

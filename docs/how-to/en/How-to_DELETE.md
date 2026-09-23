@@ -48,10 +48,10 @@ We need to create an action that clears the order by deleting all its lines.
 clear (Order o)  {
 
     // Option 1
-    DELETE OrderDetail d WHERE order(d) == o;
+    DELETE OrderDetail d WHERE order(d) = o;
 
     // Option 2
-    FOR order(OrderDetail d) == o DO
+    FOR order(OrderDetail d) = o DO
         DELETE d;
 }
 ```

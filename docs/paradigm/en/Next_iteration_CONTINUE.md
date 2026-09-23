@@ -15,7 +15,7 @@ The next iteration operator syntax is described by the [`CONTINUE` operator](../
 testContinue ()  {
     FOR iterate(INTEGER i, 1, 5) DO {
         MESSAGE 'before';
-        IF i == 3 THEN CONTINUE; // no message 'after' for i == 3
+        IF i = 3 THEN CONTINUE; // no message 'after' for i = 3
         MESSAGE 'after';
     }
 }

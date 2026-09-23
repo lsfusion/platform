@@ -48,7 +48,7 @@ customer = DATA Customer (Order);
 discount = DATA NUMERIC[6,2] (Order);
 
 ON LOCAL {
-    FOR CHANGED(customer(Order o)) AND name(customer(o)) == 'Best customer' DO
+    FOR CHANGED(customer(Order o)) AND name(customer(o)) = 'Best customer' DO
         discount(o) <- 50;
 }
 ```

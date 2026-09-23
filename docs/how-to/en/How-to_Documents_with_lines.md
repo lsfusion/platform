@@ -38,7 +38,7 @@ FORM order 'Order'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;
@@ -71,7 +71,7 @@ We need to add order specification to the order list form.
 EXTEND FORM orders
     OBJECTS d = OrderDetail
     PROPERTIES(d) READONLY nameBook, quantity, price
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 ;
 ```
 

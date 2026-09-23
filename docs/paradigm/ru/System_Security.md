@@ -30,7 +30,7 @@ title: 'Security'
 | `mainRole[User]`                  | главная роль пользователя                                                   |
 | `nameMainRole[User]` / `sidMainRole[CustomUser]` | имя / код главной роли                                       |
 | `currentUserMainRoleName[]`       | имя главной роли текущего пользователя                                      |
-| `overIn[User, UserRole]`          | абстрактный признак принадлежности; базовая реализация добавляет главную роль (`mainRole(user) == role`) |
+| `overIn[User, UserRole]`          | абстрактный признак принадлежности; базовая реализация добавляет главную роль (`mainRole(user) = role`) |
 | `in[CustomUser, UserRole]`        | явное назначение дополнительной роли                                        |
 | `has[User, UserRole]`             | итоговая принадлежность — `in[CustomUser, UserRole]` или `overIn[User, UserRole]` (материализованная) |
 | `userRoles[User]`                 | имена всех ролей пользователя через запятую, по порядку имени               |

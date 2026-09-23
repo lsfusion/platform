@@ -47,7 +47,7 @@ FORM booksByCategories 'Books by category'
 
     OBJECTS b = Book
     PROPERTIES(b) name, nameCategory
-    FILTERS category(b) == c
+    FILTERS category(b) = c
 ;
 ```
 
@@ -162,7 +162,7 @@ FORM invoice 'Invoice'
 
     OBJECTS d = InvoiceDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS invoice(d) == i
+    FILTERS invoice(d) = i
 
     EDIT Invoice OBJECT i
 ;
@@ -304,7 +304,7 @@ FORM order 'Order'
 
     OBJECTS d = OrderDetail
     PROPERTIES(d) nameBook, quantity, price, NEW, DELETE
-    FILTERS order(d) == o
+    FILTERS order(d) = o
 
     EDIT Order OBJECT o
 ;
@@ -333,19 +333,19 @@ FORM customerInfo 'Customer information'
 
     OBJECTS o = Order
     PROPERTIES(o) date, number
-    FILTERS customer(o) == c
+    FILTERS customer(o) = c
 
     OBJECTS od = OrderDetail
     PROPERTIES(od) nameBook, quantity, price
-    FILTERS order(od) == o
+    FILTERS order(od) = o
 
     OBJECTS i = Invoice
     PROPERTIES(i) date, number
-    FILTERS customer(i) == c
+    FILTERS customer(i) = c
 
     OBJECTS id = InvoiceDetail
     PROPERTIES(id) nameBook, quantity, price
-    FILTERS invoice(id) == i
+    FILTERS invoice(id) = i
 ;
 
 printInfo 'Print information' (Customer c)  {

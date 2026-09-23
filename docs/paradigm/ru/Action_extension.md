@@ -70,7 +70,7 @@ title: 'Расширение действий'
 
 ```lsf
 exportXls 'Выгрузить в Excel' ABSTRACT CASE OVERRIDE LAST (Order);
-exportXls (Order o) + WHEN name(currency(o)) == 'USD' THEN {
+exportXls (Order o) + WHEN name(currency(o)) = 'USD' THEN {
     MESSAGE 'Export USD not implemented';
 }
 
@@ -115,8 +115,8 @@ name = DATA STRING[100] (Human);
 
 testName  ABSTRACT CASE ( Human);
 
-testName (Human h) + WHEN name(h) == 'John' THEN {  MESSAGE 'I am John'; }
-testName (Human h) + WHEN name(h) == 'Bob' THEN {  MESSAGE 'I am Bob'; }
+testName (Human h) + WHEN name(h) = 'John' THEN {  MESSAGE 'I am John'; }
+testName (Human h) + WHEN name(h) = 'Bob' THEN {  MESSAGE 'I am Bob'; }
 
 CLASS Issue;
 CLASS Language;

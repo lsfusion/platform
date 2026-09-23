@@ -32,7 +32,7 @@ setPriceIf 'Set price' (Book b)  {
     IF NOT category(b) THEN
         MESSAGE 'No category selected for the book';
     ELSE
-        IF category(b) == Category.novel THEN
+        IF category(b) = Category.novel THEN
             price(b) <- 50.0;
         ELSE
             price(b) <- 100.0;
@@ -52,11 +52,11 @@ We need to create an action that sets pre-defined prices for books associated wi
 ```lsf
 setPriceCase 'Set price' (Book b)  {
     CASE
-        WHEN category(b) == Category.novel THEN
+        WHEN category(b) = Category.novel THEN
             price(b) <- 50.0;
-        WHEN category(b) == Category.thriller THEN
+        WHEN category(b) = Category.thriller THEN
             price(b) <- 100.0;
-        WHEN category(b) == Category.fiction THEN
+        WHEN category(b) = Category.fiction THEN
             price(b) <- 150.0;
     ELSE
         price(b) <- 0.0;

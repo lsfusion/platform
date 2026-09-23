@@ -85,10 +85,10 @@ name = DATA STRING[100] (Human);
 
 testName ABSTRACT CASE (Human);
 
-testName(Human h) + WHEN name(h) == 'John' THEN {
+testName(Human h) + WHEN name(h) = 'John' THEN {
     MESSAGE 'I am John';
 }
-testName(Human h) + WHEN name(h) == 'Bob' THEN {
+testName(Human h) + WHEN name(h) = 'Bob' THEN {
     MESSAGE 'I am Bob';
 }
 ```

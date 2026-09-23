@@ -29,7 +29,7 @@ color 'Цвет' = DATA Color (Book);
 nameColor1 'Цвет' (Book b) = caption(color(b));
 
 // Вариант 2
-nameColor2 'Цвет' (Book b) = IF color(b) == Color.white THEN 'Белый' ELSE 'Черный';
+nameColor2 'Цвет' (Book b) = IF color(b) = Color.white THEN 'Белый' ELSE 'Черный';
 ```
 
 В данном случае эти два варианта идентичны.

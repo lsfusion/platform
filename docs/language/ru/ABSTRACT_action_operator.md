@@ -69,7 +69,7 @@ ABSTRACT [type [exclusionType] [order]] [FULL] [(argClassName1, ..., argClassNam
 
 ```lsf
 exportXls 'Выгрузить в Excel' ABSTRACT CASE OVERRIDE LAST (Order);
-exportXls (Order o) + WHEN name(currency(o)) == 'USD' THEN {
+exportXls (Order o) + WHEN name(currency(o)) = 'USD' THEN {
     MESSAGE 'Export USD not implemented';
 }
 

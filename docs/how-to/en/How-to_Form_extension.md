@@ -45,7 +45,7 @@ EXTEND FORM sku // creating the Item form
     OBJECTS b = Barcode // adding the barcode object
     PROPERTIES(b) id // adding the barcode number to the barcode table
     PROPERTIES(b) NEW, DELETE // adding actions to create and delete barcodes
-    FILTERS sku(b) == s // making that only barcodes of this sku are displayed
+    FILTERS sku(b) = s // making that only barcodes of this sku are displayed
 ;
 
 DESIGN sku { // expanding the design of the Item form
