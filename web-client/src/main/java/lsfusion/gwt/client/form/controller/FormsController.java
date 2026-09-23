@@ -703,15 +703,15 @@ public abstract class FormsController {
             setCurrentForm(form);
     }
 
+    // CLOSE FORM: every form with that id, each through the ordinary close - which is a request, so a form with unsaved
+    // changes asks the user and may stay. That is why nothing is dropped from formContainers here: a container leaves
+    // that list when the form is actually hidden, and dropping it on the request alone put a form that refused to close
+    // out of reach of the next CLOSE FORM. Over a copy, since a close may take a container out of the list at once
     public void closeForm(String formId) {
-        ListIterator<FormContainer> iterator = formContainers.listIterator();
-        while(iterator.hasNext()){
-            FormContainer formContainer = iterator.next();
+        for (FormContainer formContainer : new ArrayList<>(formContainers)) {
             GFormController form = formContainer.getForm();
-            if(form != null && formId.equals(form.formId)) {
+            if(form != null && formId.equals(form.formId))
                 formContainer.closePressed();
-                iterator.remove();
-            }
         }
     }
 
