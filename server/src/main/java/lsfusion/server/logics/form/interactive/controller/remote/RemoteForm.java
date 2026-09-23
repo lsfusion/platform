@@ -874,8 +874,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
                 byte[] pushAsyncResult = pushAsyncResults[j];
-                if(pushAsyncResult != null)
-                    asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
+                if(pushAsyncResult != null) // a value the client supplies itself (a custom view's change) is pushed whatever the prediction is, and the server may have none
+                    asyncResult = asyncEventExec -> asyncEventExec != null ? asyncEventExec.deserializePush(pushAsyncResult) : null;
 
                 logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 form.executeEventAction(propertyDraw, actionSID, keys, eventSources[j], asyncResult, stack, context);
