@@ -17,17 +17,15 @@ The `language`, `paradigm` and `how-to` branches are reference material,
 searched with `lsfusion_retrieve_docs`; they are not a mandatory reading
 list. The workflow below states when a lookup is required.
 
-The `rules` branch is different in two ways. It is not searched: an
-article is named and delivered whole, so no part of it can be withheld
-without the assistant being able to tell. And reading it is not
-optional: before working in a technical area, the assistant MUST read
-that area's rules article and apply each rule according to its stated
-strength (MUST / MUST NOT or SHOULD / SHOULD NOT).
+The `rules` branch is not searched: an article is named and delivered
+whole, so no part of it can be withheld without the assistant being
+able to tell. The next section states when reading one is
+mandatory.
 
 ## The rules articles — what to read and when
 
 This article does NOT contain the rules below. Each row is a separate
-article, read whole with `lsfusion_get_guidance(rules='<name>')` using
+article, requested with `lsfusion_get_guidance(rules='<name>')` using
 the name in the first column.
 
 | name | governs | read it before |
@@ -328,10 +326,9 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    and each following word starts with a capital letter.
 
 2. For an object's own primitive attributes,
-   the assistant MUST prefer the shortest stable business name
-   already used in the project.
+   the assistant MUST prefer the shortest stable business name.
 
-   Typical base names in the source are:
+   Typical base names are:
    `id`, `name`, `fullName`, `number`, `date`, `dateTime`,
    `status`, `type`, `note`, `details`, `price`, `quantity`,
    `amount`, `email`, `phone`, `address`, `city`, `state`,

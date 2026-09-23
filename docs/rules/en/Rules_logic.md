@@ -97,11 +97,7 @@ title: 'Rules: domain logic'
 7. The assistant MUST NOT create multiple properties
    with identical expressions.
 
-8. If a property is calculated from another property
-   but has different parameters, the assistant SHOULD try
-   to keep the same property name.
-
-9. To check whether a property is `NULL`,
+8. To check whether a property is `NULL`,
    the assistant SHOULD use `IF NOT property(...)`.
 
    To check that it is not `NULL`,
@@ -128,14 +124,14 @@ title: 'Rules: domain logic'
    only reports a warning when it loads the module, the code still
    compiles and starts.
 
-10. The assistant SHOULD specify `CHARWIDTH`
+9. The assistant SHOULD specify `CHARWIDTH`
    in the property definition rather than in form design.
 
    For a simple property composition that only forwards
    another property, the assistant SHOULD NOT repeat
    `CHARWIDTH` on the derived property unless it must differ.
 
-11. For static objects, the assistant MUST NOT use
+10. For static objects, the assistant MUST NOT use
     `staticCaption` or `staticName` properties.
 
     The assistant MUST use `caption` and `name` instead.
@@ -152,17 +148,10 @@ title: 'Rules: domain logic'
     When the part after the dot is needed, the assistant
     SHOULD use `basicName` from the `Utils` system module.
 
-12. Property names SHOULD be concise
-    and avoid unnecessary words.
-
-13. The assistant SHOULD NOT use words in a property name
-    that duplicate parameter class names
-    unless required for clarity.
-
-14. The assistant SHOULD NOT specify an explicit namespace
+11. The assistant SHOULD NOT specify an explicit namespace
     for a property unless necessary.
 
-15. When creating a DATA property — or a simple composition
+12. When creating a DATA property — or a simple composition
     over a DATA property (for example, pulling the name of a
     related object) — for a single object's own attribute,
     the assistant MUST deliberately decide
@@ -177,7 +166,7 @@ title: 'Rules: domain logic'
     A property SHOULD NOT be placed in `id` or `base`
     when it is not the object's own primary attribute.
 
-16. When dividing values of integer classes, the assistant MUST
+13. When dividing values of integer classes, the assistant MUST
     cast one of the operands to `NUMERIC`, not the result.
 
     The ratio of two integers is integer division,
@@ -185,11 +174,11 @@ title: 'Rules: domain logic'
     silently drops the fractional part;
     the correct form is `NUMERIC[16,4](a) * b / c`.
 
-17. The class of an expression's result can be wider than
+14. The class of an expression's result can be wider than
     the classes it is built from, and the assistant MUST
-    account for that wherever a narrower class is required —
-    above all in a `+=` implementation, where it is
-    a server startup error.
+    account for that wherever a narrower class is required
+    (a `+=` implementation above all: the abstract property
+    rules).
 
     Arithmetic widens further than it looks:
 
@@ -216,11 +205,11 @@ title: 'Rules: domain logic'
 
     A narrower class is obtained only by an explicit cast of
     the whole expression. With operands of integer classes
-    the operand cast of rule 16 does not bound the result —
+    the operand cast of rule 13 does not bound the result —
     the division still widens to scale `32` — so both casts
     are needed: `NUMERIC[16,2](NUMERIC[16,2](a(x)) / b(x))`.
 
-18. A parameter's class annotation (`prop(SubClass x)`) is a
+15. A parameter's class annotation (`prop(SubClass x)`) is a
     signature, not a runtime filter: it resolves same-named
     properties and sets the signature, but the computed set is
     determined by the properties used in the expression.
@@ -232,7 +221,7 @@ title: 'Rules: domain logic'
     an explicit `x IS SubClass` condition (or use a property
     declared on that subclass).
 
-19. In the `GROUP ... BY` operator the assistant MUST NOT
+16. In the `GROUP ... BY` operator the assistant MUST NOT
     list in the `BY` block the upper parameters used
     in the operator's expressions: each such parameter
     is already implicitly a group — a parameter of the
@@ -253,7 +242,7 @@ title: 'Rules: domain logic'
     otherwise it silently becomes a parameter of the `GROUP`
     itself, and the aggregate runs over all its values.
 
-20. `MAX` and `MIN` are prefix operators over a comma-separated
+17. `MAX` and `MIN` are prefix operators over a comma-separated
     operand list (`MAX a, b`), not infix ones: `a MAX b`
     does not parse — the platform reports
     `no viable alternative at input 'MAX'`.
@@ -268,7 +257,7 @@ title: 'Rules: domain logic'
     These operators compare the operands of a single row;
     a maximum across rows is `GROUP MAX`.
 
-21. `AND`, `OR`, `XOR` and `NOT` always yield `BOOLEAN`
+18. `AND`, `OR`, `XOR` and `NOT` always yield `BOOLEAN`
     (`TRUE` or `NULL`), never the value of an operand:
     `name(o) AND active(o)` is `TRUE`, not the name, and
     `a OR b` is `TRUE`, not the first non-`NULL` value.
@@ -286,7 +275,7 @@ title: 'Rules: domain logic'
    class and the declared one.
 
    An expression that widens the value class — arithmetic
-   above all, and division most of all (rule 17 of the
+   above all, and division most of all (rule 14 of the
    property rules) — the assistant MUST wrap in an explicit
    cast to the declared class:
    `f(X x) += NUMERIC[16,2](a(x) / b(x));`
@@ -545,15 +534,14 @@ title: 'Rules: domain logic'
    only where sharing the session is deliberate AND the two
    are known not to run at the same time.
 
-   What the wrapping buys inside an `APPLY` transaction
-   depends on WHEN the body actually starts. `NEWSESSION`,
-   `NEWSQL` included, creates no session while the transaction
-   is still open — the action is deferred into the current one
-   — and the check happens at the moment the body runs, not at
-   the moment it is scheduled. A `SCHEDULE DELAY` is a number
-   of milliseconds, not a barrier waiting for the apply, so it
-   guarantees nothing either. The assistant MUST NOT count on
-   a thread started from a global handler being isolated.
+   Inside an `APPLY` transaction the wrapping creates no
+   session (change-session rule 1), and whether the body is
+   inside that transaction is decided at the moment the body
+   runs, not at the moment it is scheduled. A `SCHEDULE DELAY`
+   is a number of milliseconds, not a barrier waiting for the
+   apply, so it guarantees nothing either. The assistant MUST
+   NOT count on a thread started from a global handler being
+   isolated.
 
    A client executor is the opposite case: the action is
    delivered to the user's connection and runs there in its
@@ -681,11 +669,11 @@ title: 'Rules: domain logic'
 
 1. Before introducing `NEWSESSION`, the assistant MUST decide
    which session behavior is required. None of the choices below
-   applies during an `APPLY` transaction — inside a global event
-   handler or an applied action — where no session is created at
-   all: the inner action is deferred and runs in the current
-   session, inside the same transaction. The assistant MUST NOT
-   expect an independent commit there.
+   — `NEWSQL` included — applies during an `APPLY` transaction:
+   inside a global event handler or an applied action no session
+   is created at all, the inner action is deferred and runs in
+   the current session, inside the same transaction. The
+   assistant MUST NOT expect an independent commit there.
    - isolated independent unit -> `NEWSESSION`
    - isolated unit that must also see selected local properties
      from the upper session -> `NEWSESSION NESTED (...)`
@@ -693,37 +681,30 @@ title: 'Rules: domain logic'
      from the upper session -> `NEWSESSION NESTED LOCAL`
    - child dialog or editor that must work with unsaved upper-session
      objects and return its changes to that upper session
-     -> `NESTEDSESSION`
+     -> `NESTEDSESSION`; the assistant MUST NOT replace it with
+     plain `NEWSESSION` while the parent object may still be
+     unsaved in the form session
 
-2. For actions added to forms,
-   there are two main patterns:
-
-   - readonly form pattern:
-     the form is effectively browse-only, so actions added to it
-     SHOULD run in a new session by default
-   - editable form pattern:
-     the form has editable properties, so any action added to it
-     that uses `NEWSESSION` MUST either:
-     `APPLY;`
-     `IF canceled() THEN RETURN;`
-     before `NEWSESSION`, or be fully independent
-     from unsaved changes in that form
-
-3. Plain `NEWSESSION` is the default
+2. Plain `NEWSESSION` is the default
    for isolated work that must not accidentally apply
-   the caller's pending form changes.
-
-   Typical patterns in the source:
+   the caller's pending form changes:
    - readonly list forms with
      `PROPERTIES(...) NEWSESSION NEW, EDIT, DELETE`
-   - status transitions or dependent document creation
-     after a preceding `APPLY`
    - external or integration actions that isolate HTTP calls
      and persist their own results
    - small immediate UI updates with
      `NEWSESSION { APPLY { ... } }`
 
-4. If inner logic depends on upper-session local state
+   An action started on a form with editable properties MUST
+   either be fully independent of that form's unsaved changes
+   or save them first:
+   `APPLY;`
+   `IF canceled() THEN RETURN;`
+   `NEWSESSION { ... }`
+   This is the pattern before status changes, dependent
+   document creation and other isolated follow-up actions.
+
+3. If inner logic depends on upper-session local state
    such as selections, marks, or import buffers,
    the assistant MUST carry that state explicitly
    through `NESTED (...)` or `NESTED LOCAL`
@@ -735,10 +716,23 @@ title: 'Rules: domain logic'
    MUST NOT combine `NEWSQL` with a dependency on
    upper-session local state.
 
-5. A successful `APPLY` clears the session, and with it
-   every `LOCAL` property in it by default: after such an
-   `APPLY` returns, a plain `LOCAL` is empty again. An
-   `APPLY` that fails or is cancelled leaves the session
+4. A successful `APPLY` clears the session, and with it
+   every plain `LOCAL` property in it: after such an
+   `APPLY` returns, the `LOCAL` is empty again. A `LOCAL`
+   survives a successful `APPLY` only when it is declared
+   `NESTED` (`LOCAL NESTED name = Type ();` or
+   `name = DATA LOCAL NESTED Type (...);`) or when the
+   `APPLY` preserves it explicitly —
+   `APPLY NESTED (name1, ..., nameN)` or `APPLY NESTED LOCAL`
+   for all locals. A staged value that must outlive `APPLY` —
+   for example, an import buffer read during post-apply
+   follow-up — MUST take one of these routes; so must the
+   locals carried in by `NEWSESSION NESTED (...)` or
+   `NEWSESSION NESTED LOCAL` when their result is to be copied
+   back to the upper session, since it is the cleared values
+   that would be copied back.
+
+   An `APPLY` that fails or is cancelled leaves the session
    as it was, locals included — which is why the assistant
    MUST NOT read a `LOCAL` after `APPLY` to tell success
    from failure; `canceled()` is what tells them apart.
@@ -746,51 +740,7 @@ title: 'Rules: domain logic'
    the changes are copied to the parent session and the
    nested one is left standing, locals and all.
 
-   Outside a nested session, a `LOCAL` value survives
-   a SUCCESSFUL `APPLY` when EITHER:
-   - the `LOCAL` is declared as `NESTED` at declaration
-     time (`LOCAL NESTED name = Type ();` or
-     `name = DATA LOCAL NESTED Type (...);`), OR
-   - the `APPLY` explicitly preserves it via
-     `APPLY NESTED (name1, ..., nameN)`
-     or `APPLY NESTED LOCAL` for all locals.
-
-   The assistant MUST NOT rely on a plain `LOCAL` value
-   computed before a SUCCESSFUL `APPLY` to still be readable
-   after it. Two cases keep it: a nested session, which clears
-   nothing at all, and an apply that failed or was cancelled,
-   which leaves the session as it was.
-   If a staged value must outlive `APPLY` — for example,
-   an import buffer read during post-apply follow-up —
-   the assistant MUST either declare it with `NESTED`,
-   or list it in `APPLY NESTED (...)` (or use
-   `APPLY NESTED LOCAL`) at the call site.
-
-6. When using `NEWSESSION NESTED (...)` or
-   `NEWSESSION NESTED LOCAL`, the assistant SHOULD preserve
-   the same nested local properties on `APPLY`
-   if the result must be copied back to the upper session,
-   for example with `APPLY NESTED (...)`
-   or `APPLY NESTED LOCAL`.
-
-7. The assistant MUST NOT replace `NESTEDSESSION`
-   with plain `NEWSESSION` for child forms or dialogs
-   attached to a parent object that may still be unsaved
-   in the current form session.
-
-8. Before opening a fresh `NEWSESSION` from an action
-   started on an edit form, the assistant SHOULD decide
-   whether current form changes must be saved first.
-
-   The common pattern is:
-   `APPLY;`
-   `IF canceled() THEN RETURN;`
-   `NEWSESSION { ... }`
-
-   This pattern is used before status changes,
-   document generation, and other isolated follow-up actions.
-
-9. After `APPLY`, the assistant MUST check `canceled()`
+5. After `APPLY`, the assistant MUST check `canceled()`
    only when later logic depends on whether the save
    succeeded — to early-return, skip a follow-up side
    effect, or roll back staged work.
@@ -811,24 +761,24 @@ title: 'Rules: domain logic'
    offending data is fixed or the changes are discarded
    (for example with `CANCEL`).
 
-10. The assistant SHOULD keep `NEWSESSION` blocks small
-    and purpose-specific: isolate one unit of work,
-    apply it if needed, and exit.
+6. The assistant SHOULD keep `NEWSESSION` blocks small
+   and purpose-specific: isolate one unit of work,
+   apply it if needed, and exit.
 
-    The assistant MUST NOT introduce `NEWSESSION`
-    merely to hide session-visibility bugs.
-    If upper-session changes must remain visible,
-    nested session semantics are required.
+   The assistant MUST NOT introduce `NEWSESSION`
+   merely to hide session-visibility bugs.
+   If upper-session changes must remain visible,
+   nested session semantics are required.
 
-11. The body of `APPLY` may run more than once. The apply
-    transaction MAY be retried automatically after an update
-    conflict, a deadlock or a timeout — whether it is depends
-    on the failure and on the attempt limit — and the applied
-    action and the synchronous global handlers are inside what
-    a retry repeats.
+7. The body of `APPLY` may run more than once. The apply
+   transaction MAY be retried automatically after an update
+   conflict, a deadlock or a timeout — whether it is depends
+   on the failure and on the attempt limit — and the applied
+   action and the synchronous global handlers are inside what
+   a retry repeats.
 
-    So they MUST be safe to repeat. An irreversible external
-    side effect — sending mail, calling an HTTP API, printing,
-    writing a file — MUST NOT be done there: it belongs after
-    the apply has succeeded, where `canceled()` says whether
-    it did.
+   So they MUST be safe to repeat. An irreversible external
+   side effect — sending mail, calling an HTTP API, printing,
+   writing a file — MUST NOT be done there: it belongs after
+   the apply has succeeded, where `canceled()` says whether
+   it did.
