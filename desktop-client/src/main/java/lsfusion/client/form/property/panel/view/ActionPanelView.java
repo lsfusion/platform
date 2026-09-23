@@ -92,6 +92,8 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
         //listen to mouse press and all other key press events
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
+                if (isSuppressedSingleClick(ae))
+                    return;
                 if (form.commitCurrentEditing()) {
                     RmiQueue.runAction(new Runnable() {
                         @Override
@@ -163,6 +165,13 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
         if (property != null) { // first call from constructor
             setIcon(ClientImages.getImage(property.image));
         }
+    }
+
+    private boolean isSuppressedSingleClick(ActionEvent ae) {
+        if ((ae.getModifiers() & BUTTON1_MASK) == 0 || property.changeOnSingleClick == null || property.changeOnSingleClick)
+            return false;
+        AWTEvent currentEvent = EventQueue.getCurrentEvent();
+        return !(currentEvent instanceof MouseEvent && ((MouseEvent) currentEvent).getClickCount() % 2 == 0);
     }
 
     private boolean executePropertyEventAction(String actionSID) {
