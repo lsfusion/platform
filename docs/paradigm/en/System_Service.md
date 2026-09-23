@@ -55,6 +55,16 @@ These flags switch how database service and recalculation run. Each is a stored 
 | `reupdateMode[]`              | turns on the re-update mode used while recalculating; wired with its own `setReupdateMode[BOOLEAN]` / `refreshReupdateMode[]` pair |
 | `singleTransaction[]`         | runs the service routine inside a single transaction                                    |
 
+### Server launch mode
+
+These parameterless flags reflect the server's [launch parameters](Launch_parameters.md) and let the logic take into account the mode the server was started in.
+
+| Property              | What it means                                                                 |
+|-----------------------|-------------------------------------------------------------------------------|
+| `inDevMode[]`         | the server runs in development mode (`-Dlsfusion.server.devmode`)             |
+| `isLightStart[]`      | the server was started in light start mode (`-Dlsfusion.server.lightstart`): the [reflection](System_Reflection.md) synchronization, except for tables, was skipped |
+| `inTestMode[]`        | the server runs in test mode (`-Dlsfusion.server.testmode`)                   |
+
 ### Virtual machine and memory
 
 These actions inspect and reclaim server JVM resources, surfaced in the `virtualMachine` block of the `maintenance` form.
@@ -108,7 +118,7 @@ These per-`User` flags turn on extra logging and query diagnostics for a single 
 | `explainAnalyzeMode[User]`        | `EXPLAIN ANALYZE` logging of executed queries (`turnExplainAnalizeOnCurrentUser[]` turns it on for the current user) |
 | `loggerDebugEnabled[User]`        | debug-level server logging                                                 |
 | `explainTemporaryTablesEnabled[User]` | inclusion of temporary tables in query explains                        |
-| `remoteLoggerDebugEnabled[User]`  | debug-level logging of remote calls                                        |
+| `remoteLoggerDebugEnabled[User]`  | debug-level logging of remote calls: the user's remote calls are written to `server-remote.log` with their arguments regardless of their duration, not only calls longer than the `remoteLogTime` [parameter](Working_parameters.md) |
 | `remoteExLogEnabled[User]`        | logging of remote-call execution                                           |
 | `remotePausableLogEnabled[User]`  | logging of pausable remote calls                                           |
 | `explainAppEnabled[User]`         | allocation (memory) explains                                               |

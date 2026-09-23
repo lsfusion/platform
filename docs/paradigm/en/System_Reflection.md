@@ -5,7 +5,7 @@ title: 'Reflection'
 
 `Reflection` is a [system module](System_modules.md) that exposes the application's own metadata — the navigator, forms, properties, actions, and physical-model tables — as classes, properties, and forms, so that the running logic can introspect its own structure. It is pulled in via `REQUIRE Reflection` (`System` and `Authentication` are pulled in automatically).
 
-The module stores one object per metadata element (one `Property` per property, one `Form` per form, one `Table` per table, and so on), filled by the platform at startup. Lookup properties recover an object from its canonical name or SID; statistics, storage attributes, and user column preferences hang off these objects; and the forms at the end of the module display them under the `metadata` navigator folder.
+The module stores one object per metadata element (one `Property` per property, one `Form` per form, one `Table` per table, and so on), filled by the platform at startup (a [light start](Launch_parameters.md) skips most of this synchronization — everything except tables — so forms, navigator elements, properties and actions added after the last full start are missing from the module). Lookup properties recover an object from its canonical name or SID; statistics, storage attributes, and user column preferences hang off these objects; and the forms at the end of the module display them under the `metadata` navigator folder.
 
 ### Property groups
 

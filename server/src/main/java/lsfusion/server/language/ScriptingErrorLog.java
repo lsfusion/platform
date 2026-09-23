@@ -514,7 +514,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNoExtendContextError(ScriptParser parser, List<String> newParameters) throws SemanticErrorException {
-        emitSimpleError(parser, "introducing new parameters (" + newParameters + ") is not allowed in this context");
+        emitSimpleError(parser, "introducing new parameters (" + newParameters + ") is not allowed in this context (declare them as parameters of the action, or introduce them first with an operator such as FOR)");
     }
 
     public void emitNestedRecursionError(ScriptParser parser) throws SemanticErrorException {

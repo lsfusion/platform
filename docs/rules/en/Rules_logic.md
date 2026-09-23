@@ -463,6 +463,11 @@ title: 'Rules: domain logic'
    a computed key" by analogy with imperative
    `map[key] = value` easily breaks this.
 
+   A key that is an expression over a new parameter is
+   written from the loop that introduces that parameter:
+   `FOR cond(Cls x) DO out(rowNum(x)) <- value(x);`
+   (`rowNum[Cls]` computed beforehand, e.g. by `PARTITION SUM 1`).
+
    So when remapping self-referential links while
    deep-copying an object graph, the assistant SHOULD keep
    an inverse map and iterate with the TARGET object as the

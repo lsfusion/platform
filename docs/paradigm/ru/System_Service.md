@@ -55,6 +55,16 @@ title: 'Service'
 | `reupdateMode[]`              | включает режим повторного обновления при пересчёте; разведён собственной парой `setReupdateMode[BOOLEAN]` / `refreshReupdateMode[]` |
 | `singleTransaction[]`         | выполняет цикл обслуживания внутри одной транзакции                                      |
 
+### Режим запуска сервера
+
+Эти признаки без параметров отражают [параметры запуска](Launch_parameters.md) сервера и позволяют логике учитывать режим, в котором он запущен.
+
+| Свойство              | Что означает                                                                 |
+|-----------------------|-------------------------------------------------------------------------------|
+| `inDevMode[]`         | сервер запущен в режиме разработки (`-Dlsfusion.server.devmode`)             |
+| `isLightStart[]`      | сервер запущен в режиме облегчённого запуска (`-Dlsfusion.server.lightstart`): синхронизация [рефлексии](System_Reflection.md), кроме таблиц, пропущена |
+| `inTestMode[]`        | сервер запущен в тестовом режиме (`-Dlsfusion.server.testmode`)              |
+
 ### Виртуальная машина и память
 
 Эти действия осматривают и освобождают ресурсы JVM сервера; вынесены в блок `virtualMachine` формы `maintenance`.
@@ -108,7 +118,7 @@ title: 'Service'
 | `explainAnalyzeMode[User]`        | журналирование `EXPLAIN ANALYZE` выполняемых запросов (`turnExplainAnalizeOnCurrentUser[]` включает его для текущего пользователя) |
 | `loggerDebugEnabled[User]`        | журналирование сервера на уровне debug                                     |
 | `explainTemporaryTablesEnabled[User]` | включение временных таблиц в explain запросов                          |
-| `remoteLoggerDebugEnabled[User]`  | журналирование удалённых вызовов на уровне debug                           |
+| `remoteLoggerDebugEnabled[User]`  | журналирование удалённых вызовов на уровне debug: в `server-remote.log` удалённые вызовы пользователя пишутся с аргументами независимо от длительности, а не только вызовы дольше [параметра](Working_parameters.md) `remoteLogTime` |
 | `remoteExLogEnabled[User]`        | журналирование выполнения удалённых вызовов                                |
 | `remotePausableLogEnabled[User]`  | журналирование приостанавливаемых удалённых вызовов                        |
 | `explainAppEnabled[User]`         | explain выделения памяти                                                   |

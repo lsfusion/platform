@@ -3,7 +3,7 @@ slug: "/Type_conversion"
 title: 'Type conversion'
 ---
 
-The *type conversion* operator creates a [property](Properties.md) that converts an object of one [built-in class](Built-in_classes.md) to an object of another built-in class. The result belongs to the target built-in class. If type conversion is not possible, the property value will be `NULL`. For [user classes](User_classes.md) no conversion is defined; a value narrowed to a user class is given by [classification](Classification_IS_AS.md).
+The *type conversion* operator creates a [property](Properties.md) that converts an object of one [built-in class](Built-in_classes.md) to an object of another built-in class. The result belongs to the target built-in class. If type conversion is not possible, the property value will be `NULL`. An object of a [user class](User_classes.md) is converted to a numeric or string class — the result is its internal identifier, an integer or its text form — and to the logical class, giving `TRUE`. There is no conversion to a user class: an object is found by its identifier with a grouping (see [operation correctness](Set_operations.md#correct)), and a value narrowed to a user class is given by [classification](Classification_IS_AS.md).
 
 ### Supported conversions
 
