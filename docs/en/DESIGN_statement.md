@@ -180,7 +180,7 @@ To access design components, you can use their names or address property compone
 |---|---|---|---|---|
 |`autoSize`|Automatic component size option. Applies to text components only|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`boxed`|Drawing a frame (box) around a component|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`changeOnSingleClick`|Specifying whether the change event is triggered by a single click (`TRUE`) or requires a double click (`FALSE`) on the property component|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|

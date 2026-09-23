@@ -466,6 +466,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean hasFooter;
 
+    private boolean isPanelDoubleClickChange(Event editEvent, ExecuteEditContext editContext) {
+        return editContext.isPanel() && changeOnSingleClick != null && !changeOnSingleClick && GEditBindingMap.getToolbarAction(editEvent) == null;
+    }
+
+    public boolean isSuppressedPanelSingleClick(Event editEvent, ExecuteEditContext editContext) {
+        return GMouseStroke.isChangeEvent(editEvent) && isPanelDoubleClickChange(editEvent, editContext);
+    }
+
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if(isBinding)
@@ -508,6 +516,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         }
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
+            if (isSuppressedPanelSingleClick(editEvent, editContext))
+                return null;
+
             Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
             if(actionIndex == null) {
                 actionIndex = getDialogInputActionIndex();
@@ -515,6 +526,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
             contextAction.set(actionIndex);
             return GEditBindingMap.changeOrGroupChange();
         }
+
+        if (GMouseStroke.isDoubleChangeEvent(editEvent) && isPanelDoubleClickChange(editEvent, editContext))
+            return GEditBindingMap.changeOrGroupChange();
 
         if (GKeyStroke.isGroupChangeKeyEvent(editEvent))
             return GEditBindingMap.GROUP_CHANGE;
