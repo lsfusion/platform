@@ -22,6 +22,7 @@ text 'Text' = DATA TEXT (Message);
 
 author = DATA CustomUser (Message);
 nameAuthor 'Author' (Message m) = name(author(m));
+own (Message m) = author(m) = currentUser();
 
 replyTo = DATA Message (Message);
 nameAuthorReplyTo (Message m) = nameAuthor(replyTo(m));
@@ -30,102 +31,125 @@ textReplyTo (Message m) = text(replyTo(m));
 
 ### Отображение списка сообщений
 
-Список сообщений в чате на форме будем отображать как записи в таблице с одной колонкой. 
-Для этой колонки будет изменен компонент отображения значения на тот, который будет написан на JavaScript.
-Проще всего значение представить в виде строки формата JSON, в которой будут храниться все параметры сообщения.
-Для формирования этой строки воспользуемся оператором JSON :
+Список сообщений в чате на форме будем отображать компонентом, написанным на JavaScript.
+Каждое сообщение показывает сразу несколько значений — автора, время, текст, цитируемое сообщение, — а компонент свойства получает только значение своего свойства.
+Поэтому список сообщений отображается [пользовательским компонентом группы объектов](How-to_Custom_components_objects.md): все нужные свойства добавляются на форму как обычно, и компонент получает их значения по именам свойств на форме.
+Компонент свойства понадобится ниже — для поля ввода нового сообщения.
+
+Создадим форму чата. При помощи ключевого слова **CUSTOM** указывается, что список сообщений должен отображаться при помощи функции _chatMessages_, которая будет написана на JavaScript:
 
 ```lsf
-json (Message m) = 
-    JSON FROM
-         author = nameAuthor(m), 
-         time = dateTime(m), 
-         text = text(m), 
-         own = IF author(m) = currentUser() THEN 1 ELSE 0, 
-         replyAuthor = nameAuthorReplyTo(m), 
-         replyText = textReplyTo(m), 
-         replyMessage = replyTo(m);
+FORM chat 'Chat'
+    OBJECTS msg = Message CUSTOM 'chatMessages' LAST
+    PROPERTIES(msg) READONLY nameAuthor, dateTime, text, own, nameAuthorReplyTo, textReplyTo
+;
 ```
-Пример значения:
-```json
-{
-    "author":"John Doe",
-    "time":"2021-10-05T15:28:05",
-    "text":"Hello, Jack!",
-    "own":1,
-    "replyAuthor":"Jack Smith",
-    "replyText":"Hello, John",
-    "replyMessage":31302
+
+Далее настраиваем дизайн формы, помещая список сообщений в новый контейнер с идентификатором _chat_, а также удаляем ненужные компоненты, созданные автоматически:
+```lsf
+DESIGN chat {
+    OBJECTS {
+        NEW chat {
+            fill = 1; 
+            MOVE GRID(msg);
+            REMOVE BOX(msg);
+        }
+    }
+    REMOVE TOOLBARBOX;       
+}
+```
+
+Добавляем форму в навигатор:
+```lsf
+NAVIGATOR {
+    NEW chat;
 }
 ```
 
 Далее создадим при помощи JavaScript и CSS компонент, который будет отображать сообщения в браузере.
 Компонент создадим в файле chat.js, который расположим в папке _resources/web_. Это путь без сборки — обычный файл `.js`, без JSX и упаковки; где размещается пользовательский JS и о варианте со сборкой см. [How-to: Пользовательские клиентские JS-модули](How-to_Custom_client_JS_modules.md). `controller`, который получают эти классические компоненты, описан в [How-to: API контроллера пользовательского представления](How-to_Custom_view_controller.md). 
 
-Внутри файла chat.js создадим функцию _chatMessageRender_. Она будет возвращать объект, состоящий из двух функций: _render_ и _update_.
+Внутри файла chat.js создадим функцию _chatMessages_. Она будет возвращать объект, состоящий из двух функций: _render_ и _update_.
 
-Функция _render_ принимает на вход элемент, внутри которого должны создаваться новые элементы, необходимые для отображения данных:
+Функция _render_ принимает на вход элемент, внутри которого должны создаваться новые элементы, необходимые для отображения данных, а также контроллер. В ней создается и запоминается контейнер, в котором будут отображаться сообщения:
 ```js
-render: function (element) { 
-    let message = document.createElement("div")
-    message.classList.add("chat-message");
+render: function (element, controller) { 
+    let messages = document.createElement("div");
+    messages.classList.add("chat-messages");
 
-    let header = document.createElement("div");
-    header.classList.add("chat-header");
-
-    let author = document.createElement("div");
-    author.classList.add("chat-author");
-
-    element.author = author;
-    header.appendChild(author);
-
-    let replyAction = document.createElement("a");
-    replyAction.classList.add("chat-reply-action");
-
-    let replyCaption = document.createTextNode("Reply");
-    replyAction.appendChild(replyCaption);
-
-    element.replyAction = replyAction;
-    header.appendChild(replyAction);
-
-    message.appendChild(header);
-
-    let replyContent = document.createElement("div");
-    replyContent.classList.add("chat-reply-content");
-
-    let replyAuthor = document.createElement("div");
-    replyAuthor.classList.add("chat-reply-author");
-
-    element.replyAuthor = replyAuthor;
-    replyContent.appendChild(replyAuthor);
-
-    let replyText = document.createElement("div");
-    replyText.classList.add("chat-reply-text");
-
-    element.replyText = replyText;
-    replyContent.appendChild(replyText);
-
-    element.replyContent = replyContent;
-    message.appendChild(replyContent);
-
-    let text = document.createElement("div");
-    text.classList.add("chat-text");
-
-    element.text = text;
-    message.appendChild(text);
-
-    let time = document.createElement("div");
-    time.classList.add("chat-time");
-
-    element.time = time;
-    message.appendChild(time);
-
-    element.message = message;
-    element.appendChild(message);
+    element.messages = messages;
+    element.appendChild(messages);
 }
 ```
-В этом коде внутри _element_ создаются и сохраняются новые div для каждого сообщения, которые затем будут использованы для отрисовки частей сообщения.
-В результате будет создана следующая структура компонентов:
+
+Для обновления отображаемых значений платформа будет каждый раз вызывать функцию _update_, в которую будет передан тот же _element_, 
+что и в функции _render_, контроллер, а также список сообщений _list_. Каждый элемент списка содержит значения свойств, добавленных на форму, в полях с именами этих свойств: _nameAuthor_, _dateTime_, _text_ и так далее.
+Функция удаляет ранее созданные элементы и создает для каждого сообщения из списка свою структуру элементов:
+```js
+update: function (element, controller, list) {
+    while (element.messages.lastElementChild) {
+        element.messages.removeChild(element.messages.lastElementChild);
+    }
+
+    for (let item of list) {
+        let message = document.createElement("div");
+        message.classList.add("chat-message");
+        if (item.own)
+            message.classList.add("chat-message-own");
+        if (controller.isCurrent(item))
+            message.classList.add("chat-message-current");
+
+        let header = document.createElement("div");
+        header.classList.add("chat-header");
+
+        let author = document.createElement("div");
+        author.classList.add("chat-author");
+        author.innerText = item.nameAuthor || '';
+        header.appendChild(author);
+
+        let replyAction = document.createElement("a");
+        replyAction.classList.add("chat-reply-action");
+        replyAction.appendChild(document.createTextNode("Reply"));
+        header.appendChild(replyAction);
+
+        message.appendChild(header);
+
+        let replyContent = document.createElement("div");
+        replyContent.classList.add("chat-reply-content");
+
+        let replyAuthor = document.createElement("div");
+        replyAuthor.classList.add("chat-reply-author");
+        replyAuthor.innerText = item.nameAuthorReplyTo || '';
+        replyContent.appendChild(replyAuthor);
+
+        let replyText = document.createElement("div");
+        replyText.classList.add("chat-reply-text");
+        replyText.innerText = item.textReplyTo || '';
+        replyContent.appendChild(replyText);
+
+        message.appendChild(replyContent);
+
+        let text = document.createElement("div");
+        text.classList.add("chat-text");
+        text.innerText = item.text || '';
+        message.appendChild(text);
+
+        let time = document.createElement("div");
+        time.classList.add("chat-time");
+        time.innerText = item.dateTime ? item.dateTime.toLocaleString() : '';
+        message.appendChild(time);
+
+        element.messages.appendChild(message);
+    }
+
+    let current = element.messages.querySelector(".chat-message-current");
+    if (current)
+        current.scrollIntoView({ block: "nearest" });
+}
+```
+Значения свойств приходят преобразованными в значения JS: текстовые — строками, _own_ — логическим значением, _dateTime_ — объектом `Date`, поэтому время форматируется средствами браузера.
+Текущее сообщение группы определяется методом _isCurrent_ контроллера и выделяется классом _chat-message-current_; после обновления оно прокручивается в видимую область.
+В результате для каждого сообщения будет создана следующая структура элементов:
 ```html
 <div class="chat-message chat-message-own">
    <div class="chat-header">
@@ -137,11 +161,16 @@ render: function (element) {
       <div class="chat-reply-text"></div>
    </div>
    <div class="chat-text">Hello world !</div>
-   <div class="chat-time">2021-10-05T15:28:05</div>
+   <div class="chat-time">05.10.2021, 15:28:05</div>
 </div>
 ```
 Для каждого элемента задается свой класс, который используется для дизайна при помощи CSS :
 ```css
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+}
+
 .chat-message {
     margin: 6px;
     border: 1px solid;
@@ -150,6 +179,10 @@ render: function (element) {
 
     display: flex;
     flex-direction: column;
+}
+
+.chat-message-current {
+    border-color: blue;
 }
 
 .chat-header {
@@ -165,10 +198,6 @@ render: function (element) {
 .chat-reply-action {
     cursor: pointer;
     margin-left: 4px;
-}
-
-.chat-reply {
-    display: flex;
 }
 
 .chat-reply-content {
@@ -204,35 +233,14 @@ render: function (element) {
 }
 ```
 
-Для обновления отображаемых значений платформа будет каждый раз вызывать функцию _update_, в которую будет передан тот же _element_, 
-что и в функции _render_, а также само значение:
+Чтобы объединить эти две функции в одну, создается новая функция _chatMessages_, которая возвращает их внутри одного объекта:
 ```js
-update: function (element, controller, value) {
-    element.author.innerHTML = value.author || '';
-
-    element.replyAuthor.innerHTML = value.replyAuthor || '';
-    element.replyText.innerHTML = value.replyText || '';
-
-    element.time.innerHTML = value.time;
-    element.text.innerHTML = value.text || '';
-
-    if (value.own)
-        element.message.classList.add('chat-message-own');
-    else
-        element.message.classList.remove('chat-message-own');
-}
-```
-В эту функцию параметром _value_ передается JavaScript-объект, который рассчитан из ранее описанного свойства _json_.
-Значения всех полей записываются в элементы, которые были ранее построены в функции _render_.  
-
-Чтобы объединить эти две функции в одну, создается новая функция _chatMessageRender_, которая возвращает их внутри одного объекта:
-```js
-function chatMessageRender() {
+function chatMessages() {
     return {
-        render: function (element) {
+        render: function (element, controller) {
             ...
         },
-        update: function (element, controller, value) {
+        update: function (element, controller, list) {
             ...
         }
     }
@@ -257,81 +265,39 @@ onWebClientInit() + {
 В первом случае будет осуществлен переход к исходному сообщению, а во втором - запоминание этого сообщения в [локальное свойство](../paradigm/Data_properties_DATA.md#---local) 
 и установка фокуса в поле ввода нового сообщения.
 
-Для уведомления сервера о событии, сделанном пользователе, используется параметр _controller_, передаваемый в функцию _update_:
-```js
-element.replyAction.onclick = function(event) {
-    controller.change({ action : 'reply' });
-    $(this).closest("div[lsfusion-container='chat']").find(".chat-message-input-area").focus();
-}
-
-element.replyContent.onmousedown = function(event) {
-    controller.change({ action : 'goToReply' });
-}
-```
-По нажатию на цитируемое сообщение также происходит поиск поля для ввода сообщения при помощи jQuery и установка в него текущего фокуса.
-Элемент DOM с классом chat-message-input-area будет создан позднее.
-
-В зависимости от сделанного пользователем действия у контроллера вызывается метод _change_, в который передается информация о событии в виде JSON-объекта.
-Платформа автоматически передаст значение в объявленное [действие](../paradigm/Actions.md) _changeMessage_ :
+Объявим для них [действия](../paradigm/Actions.md) и добавим их на форму:
 ```lsf
 replyTo = DATA LOCAL Message ();
 
-changeMessage (Message m) {
-    INPUT f = JSON DO
-        IMPORT JSON FROM f FIELDS() STRING action DO { // импортируем файл как json в локальные свойства
-            IF action = 'goToReply' THEN
-                seek(replyTo(m)); // переходим к цитируемому сообщению
-    
-            IF action = 'reply' THEN
-                replyTo() <- m; // запоминаем текущее сообщение в локальное свойство
-        }
-}
-```
-В этом действии происходит считывание объекта, передаваемого из JavaScript, разбор JSON, а затем выполнение соответствующих действий.
+goToReply (Message m) { seek(replyTo(m)); } // переходим к цитируемому сообщению
+reply (Message m) { replyTo() <- m; } // запоминаем текущее сообщение в локальное свойство
 
-Наконец создаем форму чата и добавляем туда таблицу со списком сообщений. В таблице будет ровно одна колонка, значением в которой будет построенный ранее JSON.
-При помощи ключевого слова **CUSTOM** указывается, что значение должно отображаться при помощи созданной ранее функции _chatMessageRender_.
-Действие, указанное после ключевого слова **ON CHANGE**, вызывается при выполнении метода _controller.change_ для соответствующего сообщения.
-
-```lsf
-FORM chat 'Chat'
-    OBJECTS msg = Message LAST
-    PROPERTIES(msg) json CUSTOM 'chatMessageRender' ON CHANGE changeMessage(msg)
+EXTEND FORM chat
+    PROPERTIES(msg) goToReply, reply
 ;
 ```
 
-Далее настраиваем дизайн формы, помещая таблицу со списком сообщений в новый контейнер с идентификатором _chat_, а также удаляем ненужные компоненты, созданные автоматически:
-```lsf
-DESIGN chat {
-    OBJECTS {
-        NEW chat {
-            fill = 1; 
-            MOVE GRID(msg) {
-                captionHeight = 0;
-                PROPERTY(json(msg)) {
-                    autoSize = TRUE;
-                }
-            }
-            REMOVE BOX(msg);
-        }
-    }
-    REMOVE TOOLBARBOX;       
+Для выполнения этих действий используется параметр _controller_, передаваемый в функцию _update_: его метод _changeProperty_ выполняет действие, добавленное на форму, для переданного сообщения.
+Обработчики добавляются в функции _update_ при создании элементов сообщения:
+```js
+replyAction.onclick = function(event) {
+    controller.changeProperty('reply', item);
+    $(this).closest("div[lsfusion-container='chat']").find(".chat-message-input-area").focus();
 }
-```
 
-Добавляем форму в навигатор:
-```lsf
-NAVIGATOR {
-    NEW chat;
+replyContent.onmousedown = function(event) {
+    controller.changeProperty('goToReply', item);
 }
 ```
+По нажатию на кнопку Reply также происходит поиск поля для ввода сообщения при помощи jQuery и установка в него текущего фокуса.
+Элемент DOM с классом chat-message-input-area будет создан позднее.
 
 ### Отправка нового сообщения
 
 Осталось добавить на форму возможность пользователю создавать новые сообщения. 
 
-Для начала создадим действие _send_, которое будет создавать новое сообщение в отдельной [сессии](../paradigm/Change_sessions.md) 
-на основе локального свойства _message_ и определенного ранее свойства _replyTo_:
+Для начала создадим действие `send[]`, которое будет создавать новое сообщение в отдельной [сессии](../paradigm/Change_sessions.md) 
+на основе локального свойства `message[]` и определенного ранее свойства `replyTo[]`, а затем очищать их:
 ```lsf
 message = DATA LOCAL TEXT ();
 
@@ -346,97 +312,49 @@ send 'Send' () {
             APPLY;
         }
     }
+    message() <- NULL;
+    replyTo() <- NULL;
 } 
 ```
 
-По аналогии со свойством _json_, описанным ранее, создаем новое свойство _jsonInputMessage_, которое будет использоваться компонентом для ввода нового сообщения:
+Цитируемое сообщение покажем над полем ввода обычными свойствами формы, а для отмены цитирования объявим действие:
 ```lsf
-jsonInputMessage () = JSON FROM
-            replyAuthor = nameAuthor(replyTo()),
-            replyText = text(replyTo()),
-            text = message();  
+replyAuthor 'Reply to' () = nameAuthor(replyTo());
+replyText '' () = STRING(text(replyTo()));
+
+removeReply 'Cancel reply' () { replyTo() <- NULL; }
 ```
 
-Далее создаем функцию, которая будет генерировать компонент, для отображения и ввода нового сообщения. 
-Для этого будем использовать элемент _div_ с атрибутом _contentEditable_:
+Поле ввода нового сообщения — это компонент свойства `message[]`: платформа передает в него текущее значение свойства, а введенный текст компонент возвращает через контроллер.
+Создадим функцию _chatMessageInput_, которая будет генерировать этот компонент. Для ввода будем использовать элемент _div_ с атрибутом _contentEditable_:
 ```js
-function chatMessageInputRender() {
+function chatMessageInput() {
     return {
-        render: function (element) {
-        let input = document.createElement("div");
-        input.classList.add("chat-message-input");
+        render: function (element, controller) {
+            let text = document.createElement("div");
+            text.classList.add("chat-message-input-area");
+            text.contentEditable = "true";
 
-        let reply = document.createElement("div");
-        reply.classList.add("chat-reply");
-
-        let replyContent = document.createElement("div");
-        replyContent.classList.add("chat-reply-content");
-
-        let replyAuthor = document.createElement("div");
-        replyAuthor.classList.add("chat-reply-author");
-
-        element.replyAuthor = replyAuthor;
-        replyContent.appendChild(replyAuthor);
-
-        let replyText = document.createElement("div");
-        replyText.classList.add("chat-reply-text");
-
-        element.replyText = replyText;
-        replyContent.appendChild(replyText);
-
-        element.replyContent = replyContent;
-        reply.appendChild(replyContent);
-
-        let replyRemove = document.createElement("div");
-        replyRemove.classList.add("chat-reply-remove");
-
-        element.replyRemove = replyRemove;
-        reply.appendChild(replyRemove);
-
-        input.appendChild(reply);
-
-        let text = document.createElement("div");
-        text.classList.add("chat-message-input-area");
-        text.contentEditable = "true";
-
-        element.text = text;
-        input.appendChild(text);
-
-        element.appendChild(input);
-    },
-    update: function (element, controller, value) {
-        if (value !== null) {
-            element.replyAuthor.innerHTML = value.replyAuthor || '';
-            element.replyText.innerHTML = value.replyText || '';
-
-            element.replyRemove.innerHTML = value.replyAuthor ? '❌' : '';
-
-            element.text.innerHTML = value.text || '';
+            element.text = text;
+            element.appendChild(text);
+        },
+        update: function (element, controller, value) {
+            element.text.innerText = value || '';
         }
     }
 }
 ```
-CSS для создаваемых элементов будет выглядеть следующим образом:
+В функцию _update_ параметром _value_ передается значение свойства `message[]` — строка либо `null`, если свойство пусто.
+
+CSS для создаваемого элемента будет выглядеть следующим образом:
 ```css
-.chat-message-input {
-    display: flex;
-    flex-direction: column;
+.chat-message-input-area {
     flex: 1;
     align-self: stretch;
     max-height: 300px;
     min-height: 90px;
-}
-
-.chat-reply-remove {
-    justify-content: flex-end;
-    align-items: center;
-    display: flex;
-    cursor: pointer;
-    margin-right: 10px;
-}
-
-.chat-message-input-area {
     padding: 4px;
+    overflow: auto;
 }
 ```
 
@@ -444,63 +362,52 @@ CSS для создаваемых элементов будет выглядет
 
 ![](../images/How-to_Custom_components_input.png)
 
-Далее добавляем обработчики событий, которые будут удалять цитируемое сообщение, отсылать сообщение по нажатию CTRL+ENTER,
-а также записывать введенное сообщение в локальное свойство при потере компонентом фокуса.
-
-На стороне браузера будет следующий JavaScript код:
+Далее добавляем обработчики событий, которые будут отсылать сообщение по нажатию CTRL+ENTER,
+а также записывать введенное сообщение в свойство `message[]` при потере компонентом фокуса.
+Введенный текст передается методом _change_ контроллера: он попадает в обработку изменения свойства `message[]` так же, как значение, введенное штатным редактором, — для первичного свойства это запись значения в него.
+Действие `send[]` выполняется методом _changeProperty_ [контроллера формы](How-to_Custom_view_controller.md), доступного как `controller.form`; запросы выполняются на сервере в порядке вызова, поэтому к моменту выполнения `send[]` введенный текст уже записан в `message[]`.
+Обработчики добавляются в функции _update_:
 ```js
-element.replyRemove.onclick = function(event) {
-    controller.change({ action : 'replyRemove' });
-}
-
 element.text.onkeydown = function(event) {
     if (event.keyCode == 10 || event.keyCode == 13)
-        if (event.ctrlKey)
-            controller.change({ action : 'send', value : element.text.innerHTML })
-        else
+        if (event.ctrlKey) {
+            controller.change(element.text.innerText);
+            controller.form.changeProperty('send');
+        } else
             event.stopPropagation(); // останавливаем дальнейшую обработку нажатия клавиши ENTER
 }
 
 element.text.onblur = function (event) {
-    controller.change({ action : 'change', value : element.text.innerHTML });
+    controller.change(element.text.innerText);
 }
 ```
 
-Принимать на сервере эти события будет действие _changeInputMessage_:
-```lsf
-changeInputMessage () {
-    INPUT f = JSON DO
-        IMPORT JSON FROM f FIELDS() STRING action, TEXT value DO {
-            IF action = 'replyRemove' THEN
-                replyTo() <- NULL;
-    
-            IF action = 'send' THEN {
-                message() <- value;
-                send();
-            }
-            
-            IF action = 'change' THEN
-                message() <- value;
-        }
-}
-```
+Добавляем поле для ввода и цитируемое сообщение на форму, а также кнопку _Send_.
+При помощи ключевого слова **CUSTOM** указывается, что значение свойства `message[]` должно отображаться при помощи созданной ранее функции _chatMessageInput_.
+Если после свойства указано действие с ключевым словом **ON CHANGE**, вместо стандартной обработки изменения выполняется оно, а значение, переданное методом _change_, подставляется вместо ввода пользователя в его [запрос значения](../paradigm/Value_request_REQUEST.md):
 
-Добавляем поле для ввода на форму на основе объявленных ранее функций и действий, а также кнопку _Send_:
 ```lsf
 EXTEND FORM chat
-    PROPERTIES jsonInputMessage() CUSTOM 'chatMessageInputRender' ON CHANGE changeInputMessage(), 
+    PROPERTIES replyAuthor() READONLY SHOWIF replyTo(), replyText() READONLY SHOWIF replyTo(), removeReply() SHOWIF replyTo(),
+               message() CUSTOM 'chatMessageInput', 
                send()
 ;
 ```
 
-Изменяем дизайн формы, чтобы поле для ввода сообщения и кнопка _Send_ располагались под списком сообщений:
+Изменяем дизайн формы, чтобы цитируемое сообщение, поле для ввода сообщения и кнопка _Send_ располагались под списком сообщений:
 ```lsf
 DESIGN chat {
     chat {
+        NEW reply {
+            horizontal = TRUE;
+            MOVE PROPERTY(replyAuthor());
+            MOVE PROPERTY(replyText());
+            MOVE PROPERTY(removeReply());
+        }
         NEW chatMessage {
             horizontal = TRUE;
             alignment = STRETCH;
-            MOVE PROPERTY(jsonInputMessage()) {
+            MOVE PROPERTY(message()) {
                 fill = 1;
                 autoSize = TRUE;
                 width = 0;
