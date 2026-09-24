@@ -902,9 +902,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }
                 joinSources = mJoinSources.immutable();
 
-                if(outerOrLateralPending)
+                if(outerOrLateralPending) {
+                    // inner joins are already filled, so a key still hanging here will never get a source (e.g. it is constrained only by NOT) - the same case getSource(KeyExpr) reports
+                    if(mOuterOrLateralPendingJoins == null)
+                        throw getIncorrectOperationException();
                     mOuterOrLateralPendingJoins.exclAdd(this);
-                else
+                } else
                     mJoins.add(this);
             }
 
