@@ -960,6 +960,41 @@ If IDE validation is not available,
 the assistant MUST use a syntax-checking tool,
 if such a tool exists.
 
+Every code example
+MUST be correct
+and work as written:
+a reader may copy it
+and run it.
+An example
+MUST NOT contain,
+as code,
+a variant
+that is incorrect
+or fails with an error.
+When the documentation
+needs to show
+how a similar case
+goes wrong,
+the example
+MUST show
+the correct variant,
+and its comment
+MUST name
+the part
+that makes it correct
+and the situation
+in which a similar example
+would be incorrect;
+the comment
+MAY quote
+that incorrect variant.
+The stated situation
+MUST be verified as well —
+by running it
+when the failure
+appears only
+at execution.
+
 ----------------------------------------------------------------
 
 RULES FOR ERRORS, PROHIBITIONS, AND RECOMMENDATIONS
