@@ -1,0 +1,62 @@
+MODULE PartitionUnboundedKey;
+
+REQUIRE TestUtils;
+
+CLASS Row 'Row';
+code 'Code' = DATA INTEGER (Row);
+locked 'Locked' = DATA BOOLEAN (Row);
+
+row (INTEGER c) = GROUP AGGR Row r BY code(r);
+
+number = DATA LOCAL INTEGER (Row);
+
+// a PARTITION condition that is only a NOT leaves the row key without any table to come from ;
+// it has to be reported as an incorrect set operation (it used to be a NullPointerException in the query compiler, fixed for #1839)
+numberNotLocked (Row r) = PARTITION SUM 1 IF NOT locked(r) ORDER code(r), r;
+
+seedRows () {
+    IF NOT (GROUP SUM 1 IF Row r IS Row) THEN {
+        NEW r = Row { code(r) <- 1; }
+        NEW r = Row { code(r) <- 2; locked(r) <- TRUE; }
+        NEW r = Row { code(r) <- 3; }
+        APPLY;
+    }
+}
+
+testPartitionNotOnlyInline 'PARTITION with only a NOT condition reports an incorrect set operation' () {
+    seedRows();
+    TRY {
+        number(Row r) <- PARTITION SUM 1 IF NOT locked(r) ORDER code(r), r;
+    } CATCH
+        assertTrue(messageCaughtException() LIKE '%Set_operations/%', 'unexpected error: ' + messageCaughtException());
+    assertNotNull(messageCaughtException(), 'no error for an unbounded PARTITION key');
+}
+
+testPartitionNotOnlyDeclared 'A declared PARTITION with only a NOT condition reports an incorrect set operation' () {
+    seedRows();
+    TRY {
+        number(Row r) <- numberNotLocked(r);
+    } CATCH
+        assertTrue(messageCaughtException() LIKE '%Set_operations/%', 'unexpected error: ' + messageCaughtException());
+    assertNotNull(messageCaughtException(), 'no error for an unbounded PARTITION key');
+}
+
+testPartitionNotWithIs 'PARTITION with NOT and an explicit IS numbers the rows' () {
+    seedRows();
+    number(Row r) <- PARTITION SUM 1 IF NOT locked(r) AND r IS Row ORDER code(r), r;
+    assertEquals(number(row(1)), 1, 'the first unlocked row');
+    assertEquals(number(row(3)), 2, 'the second unlocked row');
+    assertNull(number(row(2)), 'the locked row');
+}
+
+testGroupNotOuterParam 'GROUP with only a NOT condition on an outer parameter' () {
+    seedRows();
+    number(Row r) <- GROUP SUM 1 IF NOT locked(r);
+    assertEquals(number(row(1)), 1, 'an unlocked row');
+    assertNull(number(row(2)), 'the locked row');
+}
+
+testGroupNotInnerParam 'GROUP with only a NOT condition on its own parameter' () {
+    seedRows();
+    assertEquals((GROUP SUM 1 IF NOT locked(Row r)), 2, 'the unlocked rows');
+}
