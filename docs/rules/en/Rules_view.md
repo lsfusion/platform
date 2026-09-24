@@ -180,9 +180,8 @@ title: 'Rules: view logic'
 7. The default `CHANGE` handling of a property shown on a form
     is derived not from what its expression looks like, but from
     the property's write path: changeable properties are data
-    properties, the selection operator, and compositions of
-    changeable properties — a write is passed through the
-    composition into the underlying changeable property. The
+    properties and the selection operator, and a composition
+    through an object link is edited through that link. The
     write path is not visible at the usage site, so the assistant
     MUST NOT assume that a computed-looking property is
     non-editable.
@@ -192,6 +191,17 @@ title: 'Rules: view logic'
       the user is offered a choice of the linked object,
       and the link (`customer(o)`) is written;
       this is the usual way of entering data;
+    - a composition through several links (`name(agent(listing(i)))`
+      on a form with the object `i`) — the user is offered a
+      choice of the object of the first link (`Listing`, displayed
+      by the rest of the chain), and `listing(i)` is written; the
+      further links and their objects do not change. Such an entry
+      re-points the row object's own link under a caption that
+      names something else, so it MUST be marked `READONLY` unless
+      re-pointing that link is what the entry is for; changing the
+      object behind a further link (`agent(listing(i))`) has no
+      default write path and needs its own action or the form of
+      that object;
     - an attribute of the row object itself (`name(c)`) — the
       entered value is written in place, that is, the object
       is renamed;

@@ -56,7 +56,7 @@ In addition to the captions, you can define colors (both the background color an
 
 After a change made in the form's [session](Change_sessions.md), the form reads again only the views whose property depends on the changed data, together with the views of the object groups whose objects or rows changed; the other views keep the values they have.
 
-A property whose value is an object of a [user class](User_classes.md) displays only the internal identifier of that object — a number that tells the user nothing. So instead of the object link itself, a form usually displays a [composition](Composition_JOIN.md) through it — for example, the caption of the linked object; a write through such a composition [passes](Property_change_CHANGE.md) into the link, so when editing, the user chooses the linked object.
+A property whose value is an object of a [user class](User_classes.md) displays only the internal identifier of that object — a number that tells the user nothing. So instead of the object link itself, a form usually displays a [composition](Composition_JOIN.md) through it — for example, the caption of the linked object; a write through such a composition [passes](Property_change_CHANGE.md) into the link, so when editing, the user chooses the linked object. When the composition goes through several links in a row (`name(agent(listing(i)))` on a form with the object `i`), the write goes into the first link from the form object — `listing(i)`: the user is offered the objects of that link's class (`Listing`), displayed by the rest of the chain (`name(agent(l))`), and not the objects behind the further links; those further links (`agent(...)`) and their objects are not changed.
 
 <a className="lsdoc-anchor" id="select"/>
 
