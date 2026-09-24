@@ -87,22 +87,9 @@ title: 'Rules: view logic'
    `ON CHANGE`, which disables the selection element.
 
    The rule concerns what the user sees. In a container with
-   the `custom` attribute (a custom view on a React component,
-   form design rule 8) the platform does not show property
-   values but hands them to the component in the `props.data`
-   projection, where an object value is the numeric identifier.
-   Object links (`assignedTo(s)`, `customer(o)`) are needed there
-   in exactly that form: by the identifier the view lays rows
-   out into cells, matches a row with a row of another group —
-   in a single-object group of a custom class a row's `row.key`
-   numerically equals that object's identifier — and writes the
-   link back through `changeProperty`. So in such a container
-   the assistant MAY add an object-valued property to the form
-   as is — for the component's logic, not for display; if the
-   link is shown to the user, its caption MUST be added as a
-   separate entry — the caption composition, as above. A property
-   marked `LSF` is drawn by the platform, and the rule applies to
-   it as usual.
+   the `custom` attribute the platform does not show the
+   values but hands them to the component, and an object link
+   may be needed there as is — see the `custom` rules.
 
 5. A `PANEL` object of a user-defined class
    is NOT user-selectable by default.
@@ -224,19 +211,9 @@ title: 'Rules: view logic'
     for input. The explicit mark also documents intent
     for the code reader.
 
-    In a container with the `custom` attribute (form design
-    rule 8) the component draws the values and decides itself
-    what is edited: an edit goes through the controller
-    (`changeProperty`). A static `READONLY` mark does not reach
-    the `props.data` projection — only the data-dependent
-    `readOnly` from `READONLYIF` arrives there — but the server
-    refuses a change to a marked property, and an edit through
-    the controller is silently not performed. So there `READONLY`
-    marks the properties the view does not change, and a
-    property the view changes through the controller MUST NOT
-    carry `READONLY`. A property marked `LSF` is drawn by the
-    platform with its own editor, and the rule applies to it as
-    usual.
+    In a container with the `custom` attribute the component
+    decides itself what is edited, and `READONLY` there follows
+    the `custom` rules.
 
 ### Flow rules (`WAIT`, `NOWAIT`)
 
@@ -346,42 +323,12 @@ title: 'Rules: view logic'
 8. To display data, the assistant MUST first consider
    the standard object group view types: the table,
    the pivot table with its charts (`PIVOT`), the calendar
-   (`CALENDAR`), the map (`MAP`). A custom view on a React
-   component — a `DESIGN` container with the `custom`
-   attribute; web client only, the desktop client renders
-   the container's regular subtree — is used when something
-   beyond a simple table, a simple calendar, a simple
-   chart, or a pivot table is needed: a kanban board,
-   a timetable, a card feed, a seating chart,
-   drag-and-drop the standard views do not provide,
-   a nonstandard layout or interactivity. Before creating
-   such a view, the assistant MUST retrieve the
-   `How-to_Custom_React_views` documentation.
-
-   For a form with such a container opened as a window
-   (`FLOAT`; the default location for `DIALOG`), the assistant
-   MUST give the container a base size — `size = (w, h)` or
-   the separate `width` and `height` attributes: the
-   window size is computed from the content at the moment of
-   opening, when the component has not drawn anything yet, so
-   without it a window with a single such container collapses
-   to the caption and the system buttons, and the content
-   drawn later pushes the OK / Close buttons past the window's
-   edge. For a form with no tables and content of moderate
-   height, the assistant MAY instead leave the container
-   without a base size and set `size = (-1, -1)` on the main
-   container of the form itself: the window is then not fixed
-   and follows the content (details in `Form_design`).
-
-   A tab (`WINDOW`) is sized by the forms window, but the
-   base size bounds the height of the container itself there
-   too: the assistant SHOULD give a base height (`height`)
-   that fits on the form to a container whose component draws
-   more than fits on the form — a card feed, a view with
-   `useSeekOnScroll`: without it the container stretches the
-   form, with it the container expands into the free space by
-   its extension coefficient (`fill`) and scrolls its content
-   inside.
+   (`CALENDAR`), the map (`MAP`). A custom view — the `CUSTOM`
+   option of a property or of an object group, a `DESIGN`
+   container with the `custom` attribute — is used when
+   something beyond them is needed, and is governed by the
+   `custom` rules (`lsfusion_get_guidance(rules='custom')`),
+   which the assistant MUST read before creating one.
 
 9. `FALSE` is valid in the logical attributes of a `DESIGN`
    block — `defaultComponent`, `activated` and the like —
@@ -401,20 +348,14 @@ title: 'Rules: view logic'
 
 11. For data a form has to keep current — quotes, a queue,
     a monitor — the assistant MUST use the form's `SCHEDULE`
-    event: `EVENTS ON SCHEDULE PERIOD n formRefresh()`. It MUST
-    NOT poll the server from a custom React component with a
-    timer of its own through `controller.changeProperty('<action>')`:
-    an action drawn without `NOWAIT` goes as a synchronous
-    request that blocks input to the whole web client on every
-    tick, and the component's timer keeps polling while the
-    form is hidden — a background tab, or a form the
-    forms-window component places nowhere. The scheduled event
+    event: `EVENTS ON SCHEDULE PERIOD n formRefresh()`. It
     goes as an asynchronous request and runs only while the
     form is shown on screen. `formRefresh[]` re-reads the whole
     form on every run, so such a form is kept small: there is
     no refresh of one object group — `forceUpdate[STRING]`
     only applies the pending update of a group in manual
-    update mode.
+    update mode. A custom component MUST NOT poll the server
+    with a timer of its own — see the `custom` rules.
 
 ## Navigator
 

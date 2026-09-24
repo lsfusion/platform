@@ -88,7 +88,7 @@ printOrder (Order o) { PRINT printOrder OBJECTS o = o XLSX TO orderFile; }
 
 Иерархию меняет [инструкция `DESIGN`](../language/DESIGN_statement.md): `NEW` создает контейнер, `MOVE` переносит компонент, `REMOVE` убирает его, имя компонента с блоком редактирует его, `propertyName = value` задает свойство. Компонент выбирается по имени или конструкциями `PROPERTY(...)`, `GRID(...)`, `BOX(...)`, `PANEL(...)`, `TOOLBARBOX`, `GROUP(...)`, `PARENT(...)`; позиция вставки — `FIRST`, `LAST`, `BEFORE`, `AFTER`.
 
-Раскладку потомков задают опции контейнера `horizontal`, `tabbed`, `lines` (вместе с `grid`), внешний вид — `caption`, `image` ([иконки](../paradigm/Icons.md)), `border`, `collapsible` (из кода такой контейнер сворачивают действия [`EXPAND` и `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md)), `popup`, `showIf` и `custom` — React-компонент или HTML-шаблон, только веб-клиент.
+Раскладку потомков задают опции контейнера `horizontal`, `tabbed`, `lines` (вместе с `grid`), внешний вид — `caption`, `image` ([иконки](../paradigm/Icons.md)), `border`, `collapsible` (из кода такой контейнер сворачивают действия [`EXPAND` и `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md)), `popup`, `showIf` и `custom` — React-компонент или HTML-шаблон, только веб-клиент. Данные попадают в пользовательское представление через группы объектов — строки группы в `props.data.<g>.list` для React-компонента, список `update` для `CUSTOM`-представления группы объектов — с серверным листанием и фильтрами; свойство JSON несёт значение одного объекта.
 
 ```lsf
 DESIGN order {

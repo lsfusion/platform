@@ -88,7 +88,7 @@ The [form design](../paradigm/Form_design.md) describes how a form looks in the 
 
 The hierarchy is changed by the [`DESIGN` statement](../language/DESIGN_statement.md): `NEW` creates a container, `MOVE` moves a component, `REMOVE` takes it out, a component name with a block edits it, and `propertyName = value` sets a property. A component is picked by its name or by `PROPERTY(...)`, `GRID(...)`, `BOX(...)`, `PANEL(...)`, `TOOLBARBOX`, `GROUP(...)`, `PARENT(...)`; the insertion position is `FIRST`, `LAST`, `BEFORE`, `AFTER`.
 
-The layout of the children is set by the container options `horizontal`, `tabbed`, `lines` (together with `grid`), and its look by `caption`, `image` ([icons](../paradigm/Icons.md)), `border`, `collapsible` (from code such a container is collapsed by the [`EXPAND` and `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) actions), `popup`, `showIf`, and `custom` — a React component or an HTML template, web client only.
+The layout of the children is set by the container options `horizontal`, `tabbed`, `lines` (together with `grid`), and its look by `caption`, `image` ([icons](../paradigm/Icons.md)), `border`, `collapsible` (from code such a container is collapsed by the [`EXPAND` and `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) actions), `popup`, `showIf`, and `custom` — a React component or an HTML template, web client only. Data reaches a custom view through object groups — the group's rows in `props.data.<g>.list` for a React component, the `update` list for a `CUSTOM` object-group view — with server-side paging and filters; a JSON property carries one object's value.
 
 ```lsf
 DESIGN order {

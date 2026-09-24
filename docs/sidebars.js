@@ -673,6 +673,7 @@ module.exports = {
           items: [
             'rules/Rules_logic',
             'rules/Rules_view',
+            'rules/Rules_custom',
             'rules/Rules_physical',
             'rules/Rules_integration',
           ]
