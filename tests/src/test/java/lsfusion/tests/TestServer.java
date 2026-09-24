@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 // starts the platform's bootstrap in a jvm of its own, with the command line production uses
 class TestServer {
@@ -41,9 +42,28 @@ class TestServer {
         return new String(Files.readAllBytes(file), Charset.defaultCharset());
     }
 
-    // the log opens with the whole classpath on one line, so a failure has to be reported from its end
-    static String tail(String output) {
-        List<String> lines = Arrays.asList(output.split("\n"));
-        return String.join("\n", lines.subList(Math.max(0, lines.size() - 50), lines.size()));
+    // the two ways the server reports it could not start: LogicsInstance.start logs so every exception it stops on,
+    // BusinessLogicsBootstrap.start a spring context that could not be built
+    private static final Pattern START_FAILURE = Pattern.compile("Exception while starting logics instance|Error creating logics instance");
+
+    // what a failure quotes of the server's log: its last 50 lines, and above them, when it lies further up, the first
+    // report of why the server could not start - under a long stack trace the end holds nothing of it but frames. Only
+    // that report is looked for, not any error: the server logs errors it goes on after too (the tess4j one of every full
+    // start, an ambiguous implementation), and not every failure gets one (a jvm that did not start, a hang). Lines are
+    // cut at 500 chars, as the log opens with the whole classpath on one line
+    static String excerpt(String output) {
+        List<String> lines = new ArrayList<>();
+        for (String line : output.split("\n"))
+            lines.add(line.length() > 500 ? line.substring(0, 500) + " ..." : line);
+        int tail = Math.max(0, lines.size() - 50);
+        String end = String.join("\n", lines.subList(tail, lines.size()));
+
+        int failure = 0;
+        while (failure < tail && !START_FAILURE.matcher(lines.get(failure)).find())
+            failure++;
+        if (failure == tail) // no report, or it is in the end anyway
+            return end;
+        int failureEnd = Math.min(failure + 20, tail);
+        return String.join("\n", lines.subList(failure, failureEnd)) + "\n" + (failureEnd < tail ? "... " + (tail - failureEnd) + " lines ...\n" : "") + end;
     }
 }

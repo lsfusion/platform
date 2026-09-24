@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import static lsfusion.tests.TestServer.BASE;
 import static lsfusion.tests.TestServer.read;
-import static lsfusion.tests.TestServer.tail;
+import static lsfusion.tests.TestServer.excerpt;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -68,17 +68,17 @@ public class LsfCompileTest {
                 "settings.dryRun=true", "logics.includePaths=" + includePaths);
         if (!server.waitFor(10, TimeUnit.MINUTES)) { // a compiler that loops would hold the build until someone stops it
             server.destroyForcibly();
-            fail("did not compile in 10 minutes\n" + tail(read(log)));
+            fail("did not compile in 10 minutes\n" + excerpt(read(log)));
         }
         int exitCode = server.exitValue();
         String output = read(log);
 
         if (expected == null) {
-            assertEquals(tail(output), 0, exitCode);
+            assertEquals(excerpt(output), 0, exitCode);
         } else {
-            assertTrue("compiled, but was expected to fail\n" + tail(output), exitCode != 0);
+            assertTrue("compiled, but was expected to fail\n" + excerpt(output), exitCode != 0);
             for (String line : expected)
-                assertTrue("not among the errors reported: " + line + "\n" + tail(output), output.contains(line));
+                assertTrue("not among the errors reported: " + line + "\n" + excerpt(output), output.contains(line));
         }
     }
 }

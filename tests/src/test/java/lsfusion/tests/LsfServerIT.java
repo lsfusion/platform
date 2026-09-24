@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 import static lsfusion.tests.TestServer.BASE;
 import static lsfusion.tests.TestServer.read;
-import static lsfusion.tests.TestServer.tail;
+import static lsfusion.tests.TestServer.excerpt;
 
 /** The behaviour tests. One server and one database for the whole run. Every action named test* is called through
  *  the external http /exec, which runs it in a session of its own and, since a test action does not apply, throws
@@ -123,7 +123,7 @@ public class LsfServerIT {
         long deadline = System.currentTimeMillis() + Duration.ofMinutes(10).toMillis();
         while (!read(log).contains("Server has successfully started")) {
             if (!server.isAlive() || System.currentTimeMillis() > deadline)
-                throw new IllegalStateException("the test server did not start\n" + tail(read(log)));
+                throw new IllegalStateException("the test server did not start\n" + excerpt(read(log)));
             Thread.sleep(1000);
         }
     }
