@@ -553,8 +553,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return;
         }
 
-        // if the sql session is inside ANOTHER session's transaction (this session was created before that transaction started), there is nothing to defer to
-        // and the new session would nest - newSession below throws then
+        // this session is in no transaction of its own, but the sql session may still be in one :
+        // - of THIS execution - another session's, on this thread or on the submitter waiting for it : there is nothing to defer to
+        //   and the new session would nest, so newSession below throws;
+        // - of another thread - another form of the same navigator applying : nothing nests there, the new session waits for that
+        //   transaction on the connection's lock like every other operation, so newSession below lets it through
         try (NewSession<P> newContext = newSession()) {
             NewSessionBody.run(newContext, body);
             if(autoApply)
