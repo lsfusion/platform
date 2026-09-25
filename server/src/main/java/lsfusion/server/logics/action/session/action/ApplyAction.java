@@ -103,6 +103,10 @@ public class ApplyAction extends KeepContextAction {
     public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {
         if (type == ChangeFlowType.APPLY)
             return true;
+        // the execution waits here as it waits for the user : the apply is a transaction, it takes its time and can
+        // fail, so nothing written after it may be shown to the client ahead of the server's answer
+        if (type == ChangeFlowType.INTERACTIVEWAIT)
+            return true;
         if (type.isManageSession())
             return true;
         return super.hasFlow(type, recursiveAbstracts);

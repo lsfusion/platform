@@ -614,21 +614,19 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return bestAsyncExec;
     }
     protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, ImSet<Action<?>> recursive) {
-        boolean wasInteractiveWait = false;
         AsyncMapEventExec<X> bestAsyncExec = null;
         for (ActionMapImplement<?, X> action : actions) {
             AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
-            if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
-                 if(asyncActionExec != null && !(wasInteractiveWait && asyncActionExec instanceof AsyncMapInput) && (bestAsyncExec == null || asyncActionExec.getOptimisticPriority() > bestAsyncExec.getOptimisticPriority()))
-                     bestAsyncExec = asyncActionExec;
+            if(asyncActionExec != AsyncMapExec.RECURSIVE() && asyncActionExec != null && (bestAsyncExec == null || asyncActionExec.getOptimisticPriority() > bestAsyncExec.getOptimisticPriority()))
+                bestAsyncExec = asyncActionExec;
 
-                if(!optimistic && !wasInteractiveWait && action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) { // we want to "stop async" once we have an interaction
-                    wasInteractiveWait = true;
-
-                    if(bestAsyncExec != null)
-                        return bestAsyncExec;
-                }
-            }
+            // the execution waits here - for the user, or for the database (an apply declares the same flow) - so what
+            // stands after it is not true at the click and is not run ahead of the answer. the effect of the waiting
+            // action itself is taken : that one IS what happens now - a form opened and then waited for is shown as an
+            // empty window right away. asked of every action, a recursive abstract included : that one contributes no
+            // effect of its own, but the execution can wait inside it just the same
+            if(!optimistic && action.hasFlow(ChangeFlowType.INTERACTIVEWAIT))
+                return bestAsyncExec;
         }
 
         return bestAsyncExec;

@@ -14,7 +14,7 @@ public class ChangeFlowType {
 
     public static final ChangeFlowType READONLYCHANGE = new ChangeFlowType(); // has changes in this session (no other opening forms, because in that case security policy will work)
     public static final ChangeFlowType INTERACTIVEFORM = new ChangeFlowType(); // has opening interactive forms inside
-    public static final ChangeFlowType INTERACTIVEWAIT = new ChangeFlowType(); // has interaction that waits for the user action
+    public static final ChangeFlowType INTERACTIVEWAIT = new ChangeFlowType(); // has interaction that waits for the user action - or, for the same reason and with the same effect, waits for the database (see ApplyAction) : whatever stands after it is not true yet, so it is not run ahead of the answer (see Action.getListAsyncEventExec)
     public static final ChangeFlowType INTERACTIVEAPI = new ChangeFlowType(); // has interaction that needs ui in the api (not handled with processClientAction)
     public static final ChangeFlowType HASSESSIONUSAGES = new ChangeFlowType(); // checks if action uses this session (used for formAction WAIT | NOWAIT heuristic)
     public static final ChangeFlowType NEEDMORESESSIONUSAGES = new ChangeFlowType(); // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
