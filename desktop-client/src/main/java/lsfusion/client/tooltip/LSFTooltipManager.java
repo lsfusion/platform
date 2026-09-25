@@ -1,7 +1,6 @@
 package lsfusion.client.tooltip;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.object.table.grid.view.GridTable;
@@ -11,7 +10,6 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.positioners.BasicBalloonTipPositioner;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
-import org.jdesktop.swingx.HorizontalLayout;
 import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
@@ -22,11 +20,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.nio.file.Paths;
+import java.net.URLEncoder;
 
 import static lsfusion.base.BaseUtils.isEmpty;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -205,95 +204,71 @@ public class LSFTooltipManager {
         addDefaultComponentMouseListeners(tooltipPanel);
 
         if (MainController.showDetailedInfo && creationPath != null && path != null) {
-            String projectLSFDir = MainController.projectLSFDir;
-
-            if (projectLSFDir != null) {
-                tooltipPanel.add(getLinkComponent(projectLSFDir, creationPath, path));
-            } else {
-                JPanel buttonPanel = new JPanel(new VerticalLayout());
-                buttonPanel.setVisible(false);
-
-                JButton selectProjectDirButton = new JButton(MainController.userDebugPath == null ? getString("select.lsfusion.dir") : "reset");
-                selectProjectDirButton.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (MainController.userDebugPath == null) {
-                            JFileChooser fileChooser = new JFileChooser();
-                            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                            fileChooser.setDialogTitle(getString("select.lsfusion.dir"));
-                            MainController.userDebugPath =
-                                    fileChooser.showOpenDialog(tooltipPanel) == JFileChooser.APPROVE_OPTION ? fileChooser.getSelectedFile().getAbsolutePath() : null;
-
-                        } else {
-                            MainController.userDebugPath = null;
-                        }
-                        closeBalloon();
-                    }
-                });
-                addDefaultComponentMouseListeners(selectProjectDirButton);
-                buttonPanel.add(selectProjectDirButton);
-
-                JPanel horizontalPanel = new JPanel(new HorizontalLayout());
-                horizontalPanel.add(getLinkComponent(MainController.userDebugPath == null ? "use_default_path" : MainController.userDebugPath, creationPath, path));
-
-                JButton preferencesButton = new JButton(new ImageIcon(ClientImages.get("userPreferences.png").getImage()));
-                preferencesButton.setContentAreaFilled(false);
-                preferencesButton.setBorderPainted(false);
-                preferencesButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-                preferencesButton.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        boolean panelVisible = buttonPanel.isVisible();
-                        buttonPanel.setVisible(!panelVisible);
-
-                        int height = buttonPanel.getComponent(0).getHeight();
-
-                        balloonTip.setSize(balloonTip.getWidth(), balloonTip.getHeight() + (panelVisible ? -height : height));
-                    }
-                });
-                addDefaultComponentMouseListeners(preferencesButton);
-                horizontalPanel.add(preferencesButton);
-
-                tooltipPanel.add(horizontalPanel);
-                tooltipPanel.add(buttonPanel);
-            }
+            tooltipPanel.add(getLinkComponent(creationPath, path));
         }
         return tooltipPanel;
     }
 
-    private static JTextPane getLinkComponent(String projectLSFDir, String creationPath, String path) {
+    private static final String OPEN_IN_IDE = "open-in-ide";
+
+    private static JTextPane getLinkComponent(String creationPath, String path) {
         JTextPane showInEditorLink = new JTextPane();
         showInEditorLink.setEditable(false);
         showInEditorLink.setContentType("text/html");
-        //use "**" instead "="
-        String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
-                "&path**" + Paths.get(projectLSFDir, path);
-        //replace spaces and slashes because this link going through url
-        String link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                "\" target=\"_blank\">" + getString("show.in.editor") + "</a> &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)";
+        String link = "<a href=\"" + OPEN_IN_IDE + "\">" + getString("show.in.editor") + "</a> &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)";
         showInEditorLink.setText(link);
         addDefaultComponentMouseListeners(showInEditorLink);
 
         showInEditorLink.addHyperlinkListener(e -> {
-            try {
-                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                    //stub for using custom-protocol
-                    URL url = new URL(null, e.getDescription(), new URLStreamHandler() {
-                        @Override
-                        protected URLConnection openConnection(URL u) {
-                            return null;
-                        }
-                    });
-                    Desktop.getDesktop().browse(url.toURI());
-                    closeBalloon();
+            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                if (OPEN_IN_IDE.equals(e.getDescription())) {
+                    openInIDE(creationPath, path);
+                } else {
+                    try {
+                        Desktop.getDesktop().browse(new URI(e.getDescription()));
+                    } catch (IOException | URISyntaxException ex) {
+                        throw Throwables.propagate(ex);
+                    }
                 }
-            } catch (IOException | URISyntaxException ex) {
-                throw Throwables.propagate(ex);
+                closeBalloon();
             }
         });
 
         return showInEditorLink;
+    }
+
+    // creationPath is "Module(line:column)" (1-based, the column may carry a trailing meta marker), path is the module
+    // file relative to the source root. The lsFusion IDEA plugin serves /api/lsfusion-open on the IDE's built-in web
+    // server, which takes the first free port from 63342 up; the ports are tried in turn until an IDE answers 200
+    // (a 404 is another IDE without the plugin). In turn, not at once: two IDEs with the plugin would both open the
+    // file. The long read timeout is for the IDE itself, which asks the user whether to trust this client before
+    // answering the first request; a stalled unrelated service on one of these JetBrains ports would cost a minute.
+    private static void openInIDE(String creationPath, String path) {
+        String position = creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(")"));
+        int line = Integer.parseInt(position.substring(0, position.indexOf(":")));
+        int column = Integer.parseInt(position.substring(position.indexOf(":") + 1).replaceAll("[^0-9]", ""));
+        String query;
+        try {
+            query = "path=" + URLEncoder.encode(path, "UTF-8") + "&line=" + line + "&column=" + column;
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
+        Thread probe = new Thread(() -> {
+            for (int port = 63342; port <= 63352; port++) {
+                try {
+                    HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:" + port + "/api/lsfusion-open?" + query).openConnection();
+                    connection.setConnectTimeout(500);
+                    connection.setReadTimeout(60000); // the IDE may be asking the user whether to trust this client
+                    int status = connection.getResponseCode();
+                    connection.disconnect();
+                    if (status == HttpURLConnection.HTTP_OK)
+                        return;
+                } catch (IOException ignored) { // nothing listens on this port
+                }
+            }
+        }, "lsfusion-open-in-ide");
+        probe.setDaemon(true); // a stalled port must not keep the client alive on exit
+        probe.start();
     }
 
     private static void addDefaultComponentMouseListeners(JComponent component) {
