@@ -3,24 +3,15 @@ package lsfusion.gwt.client.base;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.PopupOwner;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.Date;
 import java.util.function.Supplier;
 
 public class TooltipManager {
-    private static final ClientMessages messages = ClientMessages.Instance.get();
-
     public static JavaScriptObject initTooltip(Widget widget, final TooltipHelper tooltipHelper) {
         return initTooltip(new PopupOwner(widget), tooltipHelper, null);
     }
@@ -63,75 +54,22 @@ public class TooltipManager {
         Element tooltipElement = EscapeUtils.toHTML(tooltip).getElement();
 
         if (MainFrame.showDetailedInfo) {
-            String projectLSFDir = MainFrame.projectLSFDir;
-
-            if (!projectLSFDir.isEmpty()) {
-                setLinks(tooltipHelper, projectLSFDir, tooltipElement);
-            } else {
-                VerticalPanel verticalPanel = new VerticalPanel();
-                verticalPanel.setVisible(false);
-
-                TextBox textBox = new TextBox();
-                textBox.getElement().getStyle().setMarginLeft(5, Style.Unit.PX);
-                textBox.getElement().getStyle().setProperty("padding", "0px 3px");
-                textBox.getElement().setPropertyString("placeholder", messages.absolutePathToLsfusionDir());
-                textBox.setText(Cookies.getCookie("debugPath"));
-
-                HorizontalPanel userPathPanel = new HorizontalPanel();
-                userPathPanel.add(new Label(messages.enterPath()));
-                userPathPanel.add(textBox);
-                verticalPanel.add(userPathPanel);
-                verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-
-                FormButton button = new FormButton(messages.applyLabel());
-                button.getElement().getStyle().setProperty("padding", "0px 3px");
-                button.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
-                verticalPanel.add(button);
-                DOM.sinkEvents(button.getElement(), Event.ONCLICK);
-                DOM.setEventListener(button.getElement(), event -> {
-                    if (DOM.eventGetType(event) == Event.ONCLICK) {
-                        String textBoxText = textBox.getText();
-                        if (!textBoxText.trim().isEmpty())
-                            Cookies.setCookie("debugPath", textBoxText, new Date(System.currentTimeMillis() + 2592000000L)); //cookies expire after 30 days
-                        else
-                            Cookies.removeCookie("debugPath");
-
-                        GwtClientUtils.hideTippy(tippy, false, false);
-                    }
-                });
-
-                GToolbarButton preferencesButton = new GToolbarButton(StaticImage.USERPREFERENCES) {
-                    @Override
-                    public ClickHandler getClickHandler() {return event -> {};}
-                };
-                DOM.sinkEvents(preferencesButton.getElement(), Event.ONCLICK);
-                DOM.setEventListener(preferencesButton.getElement(), event -> {
-                    if (DOM.eventGetType(event) == Event.ONCLICK)
-                        verticalPanel.setVisible(!verticalPanel.isVisible());
-                });
-                GwtClientUtils.addClassName(preferencesButton, "tooltip-path-preferences-button");
-
-                String debugPath = Cookies.getCookie("debugPath");
-                setLinks(tooltipHelper, debugPath == null ? "use_default_path" : debugPath, tooltipElement);
-
-                tooltipElement.appendChild(preferencesButton.getElement());
-                tooltipElement.appendChild(verticalPanel.getElement());
-            }
+            setLinks(tooltipHelper, tooltipElement);
         }
 
         return tooltipElement;
     }
 
-    private static void setLinks(TooltipHelper tooltipHelper, String projectLSFDir, Element tooltipElement) {
+    private static void setLinks(TooltipHelper tooltipHelper, Element tooltipElement) {
         for (int i = 0; i < tooltipElement.getChildCount(); i++) {
             Node child = tooltipElement.getChild(i);
             if (child.getNodeName().equals("A")) {
                 Element childElement = Element.as(child);
                 String elementClass = childElement.getAttribute("class");
                 if (elementClass.equals("lsf-tooltip-path"))
-                    setLink(childElement, projectLSFDir, tooltipHelper.getCreationPath(), tooltipHelper.getPath());
+                    setLink(childElement, tooltipHelper.getCreationPath(), tooltipHelper.getPath());
                 else if (elementClass.equals("lsf-form-property-declaration"))
-                    setLink(childElement, projectLSFDir, tooltipHelper.getFormDeclaration(), tooltipHelper.getFormRelativePath());
+                    setLink(childElement, tooltipHelper.getFormDeclaration(), tooltipHelper.getFormRelativePath());
                 else if ((elementClass.equals("lsf-tooltip-help") && tooltipHelper.getCreationPath() != null ) ||
                         (elementClass.equals("lsf-tooltip-form-decl-help") && tooltipHelper.getFormPath() != null))
                     fillLinkElement(childElement, "https://github.com/lsfusion/platform/issues/649", "_blank", " ? ");
@@ -139,23 +77,52 @@ public class TooltipManager {
         }
     }
 
-    private static void setLink(Element element, String projectLSFDir, String declaration, String relativePath) {
+    // declaration is "Module(line:column)" (1-based, column may carry a trailing meta marker), relativePath is the
+    // module file relative to the source root
+    private static void setLink(Element element, String declaration, String relativePath) {
         element.getPreviousSibling().setNodeValue(" ");
 
         if (declaration != null) {
-            //use "**" instead "="
-            String command = "--line**" + Integer.parseInt(declaration.substring(declaration.lastIndexOf("(") + 1, declaration.lastIndexOf(":"))) +
-                    "&path**" + projectLSFDir + relativePath;
+            String position = declaration.substring(declaration.lastIndexOf("(") + 1, declaration.lastIndexOf(")"));
+            int line = Integer.parseInt(position.substring(0, position.indexOf(":")));
+            int column = Integer.parseInt(position.substring(position.indexOf(":") + 1).replaceAll("[^0-9]", ""));
 
-            //replace spaces and slashes because this command going through url
-            fillLinkElement(element, "lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/"),
-                    "_blank", declaration);
+            fillLinkElement(element, "#", null, declaration);
+            DOM.sinkEvents(element, Event.ONCLICK);
+            DOM.setEventListener(element, event -> {
+                if (DOM.eventGetType(event) == Event.ONCLICK) {
+                    event.preventDefault();
+                    openInIDE(relativePath, line, column);
+                }
+            });
         }
     }
 
+    // The lsFusion IDEA plugin serves /api/lsfusion-open on the IDE's built-in web server, which takes the first free
+    // port from 63342 up; the ports are tried in turn until an IDE answers 200 (a 404 is another IDE without the plugin,
+    // anything else some unrelated service). In turn, not at once: two IDEs with the plugin would both open the file.
+    // A request may legitimately hang for a while: the IDE asks the user whether to trust this host before answering
+    // the first one, hence the long timeout; a stalled unrelated service on one of these JetBrains ports would cost
+    // a minute.
+    private static native void openInIDE(String path, int line, int column) /*-{
+        var query = 'path=' + encodeURIComponent(path) + '&line=' + line + '&column=' + column;
+        var tryPort = function (port) {
+            if (port > 63352)
+                return;
+            var controller = $wnd.AbortController ? new $wnd.AbortController() : null;
+            var timeout = controller ? $wnd.setTimeout(function () { controller.abort(); }, 60000) : null;
+            var next = function () { tryPort(port + 1); };
+            $wnd.fetch('http://localhost:' + port + '/api/lsfusion-open?' + query, {cache: 'no-store', signal: controller ? controller.signal : undefined})
+                .then(function (response) { if (response.status !== 200) next(); }, next)
+                .then(function () { if (timeout !== null) $wnd.clearTimeout(timeout); });
+        };
+        tryPort(63342);
+    }-*/;
+
     private static void fillLinkElement(Element element, String href, String target, String innerText) {
         element.setAttribute("href", href);
-        element.setAttribute("target", target);
+        if (target != null)
+            element.setAttribute("target", target);
         element.setInnerText(innerText);
     }
 
