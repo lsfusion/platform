@@ -85,6 +85,8 @@ The user can change existing orders or add their own, as well as add their own f
 -   Orders – by double-clicking on the column heading.
 -   Filters – by using the corresponding button under the table for each object group. By default, the filter is set to the active property in the table, and filters it for equality to the entered value (for all types except case-insensitive string types, where the filter is set to include the entered string). If necessary, the developer can specify the default filtering type explicitly by using the corresponding option.
 
+The developer can also declare a user filter for a property of the form in advance: its condition row is then shown in the user filter component of the property's object group as soon as the form opens, with the property and the comparison set and an empty value, and it filters nothing until the user enters a value. Such a row is permanent: the user changes its value and, with the filter controls shown, its comparison, but cannot remove it, and resetting all the filters only empties its value. The row is shown only while its component is present in the [form design](Form_design.md), where it can be moved or removed.
+
 When several filters are chained together with AND/OR, by default the junction between two conditions is drawn as a separator glyph (a vertical bar); the working parameter `useTextAsFilterSeparator` draws it as a clickable "AND"/"OR" text label instead, which also switches the junction when clicked.
 
 ### Async input value list {#async}

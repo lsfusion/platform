@@ -16,7 +16,7 @@ CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyI
 
 The `CONSTRAINT` statement creates a constraint. If the constraint is violated, the user will be shown the [message](../paradigm/Constraints.md#message) defined in the statement.
 
-Also, by using the `CHECKED` option you can use the constraint when showing dialogs for changing properties whose values may violate the constraint if changed. In this instance an additional filter will be set in the dialog so that, when the property value changes, the constraint is not violated. If it is necessary to limit the set of properties for which the above filtering will be performed, the list of properties can be specified after the keyword `BY`. The filter works only in these change dialogs; input mechanisms that offer values in some other way do not use it — there a violating value is rejected only when the constraint itself is checked.
+Also, by using the `CHECKED` option you can use the constraint when showing dialogs for changing properties whose values may violate the constraint if changed. In this instance an additional filter will be set in the dialog so that, when the property value changes, the constraint is not violated. The filter is computed from the condition as written (before the automatic `SET` wrapping): for every offered value the condition is evaluated as if the property being changed had been set to that value for the object being edited, on top of the changes already made in the form's session, and the values for which the condition becomes non-`NULL` are hidden. The other parameters of the condition are bound to the object being edited; the [`PREV` operator](PREV_operator.md) inside it reads the value before the session's changes, and a [change operator](../paradigm/Change_operators_SET_CHANGED_etc.md) compares the offered value with that previous value - so under such a condition the stored value of the property remains offered, and for an object whose previous value is `NULL` a condition on that previous value hides nothing. If it is necessary to limit the set of properties for which the above filtering will be performed, the list of properties can be specified after the keyword `BY`. The filter works only in these change dialogs; input mechanisms that offer values in some other way do not use it — there a violating value is rejected only when the constraint itself is checked.
 
 
 :::info
@@ -73,5 +73,15 @@ in = DATA BOOLEAN (Sku, Customer);
 CONSTRAINT sku(OrderDetail d) AND NOT in(sku(d), customer(order(d)))
     CHECKED BY sku[OrderDetail] // a filter by available sku when selecting an item for an order line will be applied
     MESSAGE 'In the order, a product unavailable to the user is selected for the selected customer';
+
+CLASS Task;
+CLASS Status;
+allowed = DATA BOOLEAN (Status, Status); // from which status to which one the transition is allowed
+status = DATA Status (Task);
+// only the transitions allowed from the stored status: the status selection dialog offers the stored status
+// and the statuses allowed from it, and all statuses for a task without a stored status
+CONSTRAINT SETCHANGED(status(Task t)) AND PREV(status(t)) AND NOT allowed(PREV(status(t)), status(t))
+    CHECKED BY status[Task]
+    MESSAGE 'The status transition is not allowed';
 ```
 

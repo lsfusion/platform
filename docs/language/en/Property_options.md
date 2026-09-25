@@ -111,7 +111,7 @@ annotationSetting
 
 - `HINT | NOHINT`
 
-    Keywords controlling automatic incremental caching of a property's changes. `HINT` forces this caching for the property when applicable; `NOHINT` disables it for the property and the properties depending on it. Without either, the platform decides automatically (heuristically).
+    Keywords controlling automatic incremental caching of a property's changes. `HINT` forces this caching for the property when applicable; `NOHINT` disables it for the property and the properties depending on it. Without either, the platform decides automatically (heuristically). The cached values only supplement the definition of the property in the queries that read it: even with the caching, the property is not computed in a separate query - that is what [materialization](../paradigm/Materializations.md) does.
 
 - `NONULL [DELETE] eventClause`
 

@@ -37,6 +37,8 @@ The mechanism itself is described in [materializations](../paradigm/Materializat
 
 5. After a materialized property's definition changes, or after a direct data fix in the database, the stored values SHOULD be recomputed with the [`RECALCULATE` operator](../language/RECALCULATE_operator.md).
 
+6. When an aggregation over another aggregated property fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)); the `HINT` / `NOHINT` options do not split such a query.
+
 ### Indexes
 
 The mechanism itself is described in [indexes](../paradigm/Indexes.md).

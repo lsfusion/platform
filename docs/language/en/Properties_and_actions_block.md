@@ -124,7 +124,7 @@ In the current platform implementation, if the name and caption are not specifie
     
     Alternatively, you may use [object operators](../paradigm/Interactive_view.md#objectoperators) instead of the property/action IDs:
 
-    - `VALUE` displays the object value (or the object ID for custom classes).
+    - `VALUE` displays the object value: for an object of a [built-in class](../paradigm/Built-in_classes.md) (for example, `STRING` or `DATE`) it is the property through which the value of that object is shown on the form - in a panel or as a table column - and entered by the user; for custom classes it displays the object ID.
     - `INTERVAL` displays the interval between the values of a pair of objects of the same date or time class.
     - `NEW` creates a new object.
     - `EDIT` edits the object.
@@ -357,7 +357,7 @@ In the current platform implementation, if the name and caption are not specifie
 
     - `USER`
 
-        The property is added as a user filter. This is the default behavior.
+        The property is added as a [user filter](../paradigm/Interactive_view.md#userfilters): its condition row is shown as soon as the form opens. This is the default behavior (unlike the fixed filters block, where the fixed filter is the default).
 
     - `FIXED`
 
@@ -571,6 +571,7 @@ changeQuantity (Order o, Sku s)  {
 }
 
 stopOrder = DATA BOOLEAN (Sku);
+barcode = DATA STRING[15] (Sku);
 onStock = DATA NUMERIC[10,2] (Sku);
 ordered = DATA NUMERIC[10,2] (Sku);
 
@@ -686,6 +687,15 @@ FORM orderReport 'Sales by warehouse'
                     // as there will be rows in the customer object, taking into account filters, and they will be
                     // displayed in the same order
         HEADER name(c) // setting that the name of the customer will be used as the column heading
+;
+
+// a form whose rows are the values of an object of a built-in class: the barcodes of skus
+FORM barcodes 'Barcodes'
+    OBJECTS b = STRING[15]
+    // adding the value of the string object as a column, with its own name and caption on the form
+    PROPERTIES barcode 'Barcode' = VALUE(b) READONLY
+    // limiting the rows to the barcodes that are set for some sku
+    FILTERS [GROUP SUM 1 BY barcode(Sku s)](b)
 ;
 ```
 

@@ -303,7 +303,7 @@ TREE treeSelector
 
 - `filterName`
 
-    Имя [фильтра на форме](Filters_and_sortings_block.md). [Простой идентификатор](IDs.md#id).
+    Имя на форме свойства, для которого объявлен [пользовательский фильтр](../paradigm/Interactive_view.md#userfilters) - опцией `FILTER` в [блоке свойств и действий](Properties_and_actions_block.md) или в [блоке фиксированных фильтров](Filters_and_sortings_block.md#fixedfilters) с типом `USER`, - записанное как `formPropertyName`. Селектор обращается к компоненту строки условия этого фильтра; объявить фильтр в дизайне нельзя.
 
 - `filterGroupName`
 

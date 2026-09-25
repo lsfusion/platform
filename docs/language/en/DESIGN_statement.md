@@ -304,7 +304,7 @@ To access design components, you can use their names or address property compone
 
 - `filterName`
 
-    The name of [a filter on the form](Filters_and_sortings_block.md). [Simple ID](IDs.md#id).
+    The name on the form of the property for which a [user filter](../paradigm/Interactive_view.md#userfilters) is declared - with the `FILTER` option of the [property and action block](Properties_and_actions_block.md) or in the [fixed filters block](Filters_and_sortings_block.md#fixedfilters) with the `USER` type - written as `formPropertyName`. The selector addresses the component of that filter's condition row; a filter cannot be declared in the design.
 
 - `filterGroupName`
 

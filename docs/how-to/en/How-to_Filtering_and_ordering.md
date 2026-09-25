@@ -118,3 +118,23 @@ FORM orders 'Orders'
 It should be noted that the dates in this case should always be selected (by default, the current date will be set when the form is opened). But it is possible not to select a customer.
 
 Also, note that what is set in `ORDER BY` is not an expression but a specific property added to the form. Thus, we cannot order by a property that has not been added to the form.
+
+## Example 4
+
+### Task
+
+Similar to [**Example 3**](#example-3).
+
+We need the orders form to let the user filter by customer without a separate property in a panel: the filter row should be shown above the table as soon as the form opens.
+
+### Solution
+
+```lsf
+FORM ordersFiltered 'Orders'
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY date, nameCustomer FILTER
+    ORDERS date(o) DESC
+;
+```
+
+The `FILTER` option declares a [user filter](../paradigm/Interactive_view.md#userfilters) for the customer property. When the form opens, its condition row is already shown with an empty value and filters nothing; once the user enters a customer, only that customer's orders remain. The user cannot remove the row - resetting the filters only clears its value - but, unlike the local property of [**Example 3**](#example-3), with the filter controls shown the user can change the comparison, and no property outside the form is needed.

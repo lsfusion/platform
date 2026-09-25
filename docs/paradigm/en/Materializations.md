@@ -7,6 +7,8 @@ Almost any aggregated [property](Properties.md) in the platform can be *material
 
 A property can be materialized if and only if for it there is a finite number of object collections for which the value of this property is not `NULL` (that is, the iteration operation for all of its non-`NULL` values is [correct](Set_operations.md#correct))
 
+A property that is not materialized is computed inside every query that reads it: an aggregated property becomes a subquery of that query. When such a property is read inside another aggregation, its subquery is included in the text of the outer query - once for every place and every form in which it is read there (for example, its new and its previous values separately while changes are being computed) - so the text of one query grows with the number of such places and the size of the nested definitions. The length of the text of one query is limited by the [working parameter](Working_parameters.md) `queryLengthLimit` (`2000000` characters by default): a longer query is rejected by the application server before it is executed (the `TOO LONG QUERY` error), whatever the number of rows it would return, and is not retried. Materializing the inner property replaces its subquery with a read of the stored values.
+
 The stored values of a materialized property can be *recalculated* — recomputed from scratch from the property's definition. This is useful when those values may have diverged from the definition, for example after the property's definition changes or after a direct data fix.
 
 ### Recalculation {#recalculate}

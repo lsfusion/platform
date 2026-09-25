@@ -11,7 +11,7 @@ Compared to implementation via simple events, constraints have a set of addition
 
 -   There is a global checking procedure upon a working database for constraints (similarly to "recalculation" technique in simple events which is not applicable here as long as the handler contains the cancel changes operator)
 -   Constraints are more understandable and readable since, unlike simple events, they emphasize the static/declarative nature of these rules, i.e. their independence from the moment in time.
--   You can use the created constraint when showing dialogs for changing properties used in this constraint. In this case, an additional filter will be set in the dialog so that, when the property value changes to the selected one, the constraint is not violated.
+-   You can use the created constraint when showing dialogs for changing properties used in this constraint. In this case, an additional filter will be set in the dialog so that, when the property value changes to the selected one, the constraint is not violated. The filter evaluates the condition for every offered value as if the property had already been changed to it for the object being edited, on top of the other changes of the session, and hides the values for which the condition holds; the previous values it reads are the values before the session's changes, so a condition that compares the new value with the previous one keeps the stored value offered.
 
 Note that in some cases, instead of showing a message to the user and canceling the transaction, it is necessary, for example, to automatically resolve the violated constraint. In that case, it is recommended to use [simple constraints](Simple_constraints.md), or, if it is impossible, simple events.
 
