@@ -112,11 +112,12 @@ public class LsfServerIT {
 
     @BeforeClass
     public static void startServer() throws Exception {
-        httpPort = freePort(); // not the default 7651 : whoever runs this usually has a server of their own up
+        int[] ports = freePorts(4);
+        httpPort = ports[0]; // not the default 7651 : whoever runs this usually has a server of their own up
         Path log = BASE.resolve("target/server.log");
         server = TestServer.start(TestServer.classPath("target/classes"), log,
                 "db.name=" + DATABASE, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
-                "http.port=" + httpPort, "rmi.port=" + freePort(), "webSocket.port=" + freePort(), "debugger.port=" + freePort(),
+                "http.port=" + httpPort, "rmi.port=" + ports[1], "webSocket.port=" + ports[2], "debugger.port=" + ports[3],
                 "settings.enableAPI=2"); // anonymous, so a test action needs no user
         System.out.println("lsFusion test server: database " + DATABASE + ", http port " + httpPort + ", log " + log);
 
@@ -145,9 +146,16 @@ public class LsfServerIT {
         }
     }
 
-    private static int freePort() throws IOException {
-        try (ServerSocket socket = new ServerSocket(0)) {
-            return socket.getLocalPort();
+    // all open at once : taken one by one, each closed before the next is opened, two of them could get the same port
+    private static int[] freePorts(int count) throws IOException {
+        List<ServerSocket> sockets = new ArrayList<>();
+        try {
+            for (int i = 0; i < count; i++)
+                sockets.add(new ServerSocket(0));
+            return sockets.stream().mapToInt(ServerSocket::getLocalPort).toArray();
+        } finally {
+            for (ServerSocket socket : sockets)
+                socket.close();
         }
     }
 
