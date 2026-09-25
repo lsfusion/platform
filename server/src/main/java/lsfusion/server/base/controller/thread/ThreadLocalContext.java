@@ -18,6 +18,7 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -332,6 +333,17 @@ public class ThreadLocalContext {
     }
     public static NewThreadExecutionStack getStack() {
         return stack.get();
+    }
+
+    // the transaction THIS execution is inside : its own thread's, or the submitter's when it waits for this thread and
+    // so holds its transaction for whatever this thread does. a transaction of another user of the same sql session is
+    // not this execution's - that one holds the connection's write lock, and an operation here simply waits on it
+    public static boolean isInTransaction() {
+        if(SQLSession.isThreadInTransaction())
+            return true;
+
+        NewThreadExecutionStack stack = getStack();
+        return stack != null && stack.isInTransaction();
     }
     
     private static void checkThread(Context prevContext, boolean assertTop, ThreadInfo threadInfo) {

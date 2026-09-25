@@ -515,9 +515,14 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return newSession(getSession().sql, fixedForms);
     }
     public NewSession<P> newSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
-        // a new session on an sql that is already in a transaction (its own or another session's) would nest the sql transaction on apply - the deferring form has to be used there
+        // a new session on an sql that is in a transaction OF THIS EXECUTION would nest the sql transaction on apply - the
+        // deferring form has to be used there. a transaction of another user of that sql session (another form of the same
+        // navigator - they share it) is not that : it holds the connection's write lock for its whole length, so the new
+        // session waits for it on that lock like every other operation of every other form, instead of nesting anything.
+        // failing here on it would also be a race - the transaction can start right after the check - and the message
+        // would advise a deferring form that has nothing to defer to, this execution being in no transaction of its own
         // an explicitly created sql (the NEW SESSION NEWSQL path) is not in a transaction, so it passes
-        if(sql.isInTransaction())
+        if(sql.isInTransaction() && ThreadLocalContext.isInTransaction())
             throw new IllegalStateException("NEW SESSION IN TRANSACTION, USE newSession(body) INSTEAD (IN A TRANSACTION IT DEFERS THE BODY TO THE APPLY RECURSION)");
 
         return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), scheduledService, connectionService, form, stack);

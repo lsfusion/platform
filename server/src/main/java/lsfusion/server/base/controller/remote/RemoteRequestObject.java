@@ -334,11 +334,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     }
 
     private static boolean isInTransaction() {
-        if(SQLSession.isThreadInTransaction()) // this thread's own
-            return true;
-
-        NewThreadExecutionStack stack = ThreadLocalContext.getStack(); // the submitter's, when it waits for this thread - then it holds its transaction for whatever this thread does
-        return stack != null && stack.isInTransaction();
+        return ThreadLocalContext.isInTransaction();
     }
 
     // ---- form/navigator JS controller: exec(action) / eval(script) / change(property) over the pausable channel ----
