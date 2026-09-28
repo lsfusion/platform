@@ -2653,7 +2653,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addWatchLocalDataProperty(LP lp, LocalPropertyData localPropertyData) {
         assert lp.property instanceof SessionDataProperty;
 
-        addModuleLAP(lp, localPropertyData.name, localPropertyData.signature);
+        addWatchLocal(lp, localPropertyData);
     }
 
     public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, NamedPropertyUsage toUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {

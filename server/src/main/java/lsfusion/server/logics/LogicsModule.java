@@ -2699,6 +2699,12 @@ public abstract class LogicsModule {
         lcp.setExplicitClasses(data.signature);
     }
 
+    // a local of the action paused in the debugger, for a watch: the live property itself, named by addLocal when that
+    // action was parsed. Registered as a local, it wins over a global of the same name, as it does in the action's code
+    protected void addWatchLocal(LP<?> lcp, LocalPropertyData data) {
+        locals.put(lcp, data);
+    }
+
     protected void removeLocal(LP<?> lcp) {
         assert locals.containsKey(lcp);
         locals.remove(lcp);
