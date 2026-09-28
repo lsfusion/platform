@@ -5,7 +5,7 @@ title: 'Scheduler'
 
 The scheduler is designed to automatically execute certain tasks with specified frequency.
 
-The scheduler is configured on the `Administration > Scheduler > Tasks` form. It is started automatically together with the application server; the same form lets you stop it (`Stop scheduler`) and start it again (`Start scheduler`). If a server is specified in the system settings, the scheduler can be started only from that server (Fig. 1.).
+The scheduler is configured on the `Administration > Scheduler > Tasks` form. It is started automatically together with the application server. The same form lets you stop it (`Stop scheduler`) and start it again (`Start scheduler`). If a server is specified in the system settings, the scheduler can be started only from that server (Fig. 1.).
 
 ![](../images/Scheduler_server.png)
 
@@ -17,7 +17,7 @@ Fig. 2. Scheduler start/stop
 
 This form determines the composition of Tasks – buttons `Add`, `Delete`.  The scheduler will execute only active Tasks – `Active` mark. For each task the following required parameters are set:
 
--   `Start date` – the task will be executed only after the specified date. The time in this field is not tied to the start date; it is tied to the current date and indicates the time of the first task launch within a day. The task repetition is counted from this time. The frequency is set in the `Repeat every (seconds)` field. If the period is more than a day (86400 seconds), then the starting date is the date of the server start (restart).
+-   `Start date` – the task will be executed only after the specified date. The time in this field is not tied to the start date. It is tied to the current date and indicates the time of the first task launch within a day. The task repetition is counted from this time. The frequency is set in the `Repeat every (seconds)` field. If the period is more than a day (86400 seconds), then the starting date is the date of the server start (restart).
 -   `Repeat every (seconds)` – the task execution frequency.
 -   `Countdown` – indicates the time from which to count down the time for the repeated task: either `From the end of the previous` or `From the start of the previous`.
 

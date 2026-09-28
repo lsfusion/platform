@@ -45,7 +45,7 @@ title: 'Rules: domain logic'
    so `TRUE AND NULL` is `NULL`.
    `GROUP LAST` skips a `NULL` only while it has no `WHERE`,
    where non-`NULL`ness of the aggregated expression is what
-   serves as the condition; given an explicit `WHERE`, a row
+   serves as the condition. Given an explicit `WHERE`, a row
    satisfying it contributes its value even when that value
    is `NULL`.
 
@@ -74,7 +74,7 @@ title: 'Rules: domain logic'
    the assistant SHOULD first rewrite the operator
    without `BY`, replacing each grouping
    with an equality condition on an outer parameter
-   (`GROUP SUM f(x) IF g(x) = y`); otherwise,
+   (`GROUP SUM f(x) IF g(x) = y`). Otherwise,
    apply the inline form `[GROUP ... BY ...](...)`
    to arguments or declare a separate property
    and refer to it.
@@ -160,7 +160,7 @@ title: 'Rules: domain logic'
 
     Attributes that form the object's business identity
     and appear in its representation SHOULD go in the `id`
-    group; other primary attributes go in the `base` group
+    group, and other primary attributes go in the `base` group
     (`id` is nested under `base`).
 
     A property SHOULD NOT be placed in `id` or `base`
@@ -262,12 +262,12 @@ title: 'Rules: domain logic'
     `name(o) AND active(o)` is `TRUE`, not the name, and
     `a OR b` is `TRUE`, not the first non-`NULL` value.
     The assistant MUST NOT use them to select or pass a value
-    through; for that use `expr IF cond` and `OVERRIDE a, b`.
+    through. For that use `expr IF cond` and `OVERRIDE a, b`.
 
 ### Abstract property rules (`+=`)
 
 1. The value class of a `+=` implementation MUST fit within
-   the value class declared on the abstract property; there
+   the value class declared on the abstract property. There
    is no implicit cast — an implementation with a wider
    class is rejected at server startup with a
    "wrong value class of implementation" error, whose
@@ -292,7 +292,7 @@ title: 'Rules: domain logic'
 
    The platform does fill an incomplete order in on its own for
    several of these, so the symptom is not randomness between
-   runs; it is that the row chosen is whichever one a service
+   runs. It is that the row chosen is whichever one a service
    order over the interfaces selects, which is not what the
    domain asked for. Writing the tiebreak is how the choice
    becomes the intended one.
@@ -313,7 +313,7 @@ title: 'Rules: domain logic'
 4. A `PARTITION` does not split its window by the parameters of
    the property: to number rows separately for each `loc` in
    `idx(loc, x) <- PARTITION SUM 1 IF cond(loc, x) ORDER x`, the
-   assistant MUST add `BY loc`; without it the numbering runs
+   assistant MUST add `BY loc`. Without it the numbering runs
    across all values of `loc`. Rows whose summed expression is
    `NULL` are not in the window, so `SUM 1 IF cond` by itself
    numbers, under a unique order, the rows where `cond` holds
@@ -376,7 +376,7 @@ title: 'Rules: domain logic'
 
    Conversely, a parameter declared inside a `GROUP`
    aggregate belongs to that aggregate and is NOT visible
-   outside of it; in particular it cannot serve as the loop
+   outside of it. In particular it cannot serve as the loop
    variable of the enclosing `FOR`. Declare the variable as
    the `FOR`'s own parameter and use the aggregate only as
    a boolean condition over it. To iterate over the groups
@@ -394,7 +394,7 @@ title: 'Rules: domain logic'
    keyed by row number, per-object values). A parameterless
    `LOCAL` holds at most one row and always stays in
    memory, so parameterless flags and single values are
-   cheap; avoid them to keep the number of entities
+   cheap. Avoid them to keep the number of entities
    down, not because of cost.
 
 4. A `LOCAL` is normally justified when BOTH conditions hold:
@@ -420,7 +420,7 @@ title: 'Rules: domain logic'
 
    Established `LOCAL` patterns mandated by other rules
    (e.g. import staging, nested-session carry-over)
-   remain valid; the assistant SHOULD still keep such
+   remain valid. The assistant SHOULD still keep such
    `LOCAL`s minimal in count and scope.
 
 7. A parameter introduced locally by a top-level statement of
@@ -509,7 +509,7 @@ title: 'Rules: domain logic'
    `WHILE` is the operator that re-reads, but it does so per
    STEP, not per row: one step re-evaluates the condition,
    reads the whole matching set and runs the body for every
-   row of it, and only then is the set read again; iteration
+   row of it, and only then is the set read again. Iteration
    stops when it comes back empty. So a row already in the
    current step still gets its turn even if an earlier row of
    that same step has made the condition false for it.
@@ -599,7 +599,7 @@ title: 'Rules: domain logic'
    Which change operators those are is decided by the
    transition each of them covers: `DROPPED`, `CHANGED`,
    `DROPCHANGED` and `SETDROPPED` include non-`NULL` to
-   `NULL` and therefore fire on deletion; `SET` and
+   `NULL` and therefore fire on deletion. `SET` and
    `SETCHANGED` require the new value to be non-`NULL` and
    do not.
 
@@ -690,7 +690,7 @@ title: 'Rules: domain logic'
      from the upper session -> `NEWSESSION NESTED LOCAL`
    - child dialog or editor that must work with unsaved upper-session
      objects and return its changes to that upper session
-     -> `NESTEDSESSION`; the assistant MUST NOT replace it with
+     -> `NESTEDSESSION`. The assistant MUST NOT replace it with
      plain `NEWSESSION` while the parent object may still be
      unsaved in the form session
 
@@ -735,7 +735,7 @@ title: 'Rules: domain logic'
    `APPLY NESTED (name1, ..., nameN)` or `APPLY NESTED LOCAL`
    for all locals. A staged value that must outlive `APPLY` —
    for example, an import buffer read during post-apply
-   follow-up — MUST take one of these routes; so must the
+   follow-up — MUST take one of these routes. So must the
    locals carried in by `NEWSESSION NESTED (...)` or
    `NEWSESSION NESTED LOCAL` when their result is to be copied
    back to the upper session, since it is the cleared values
@@ -744,7 +744,7 @@ title: 'Rules: domain logic'
    An `APPLY` that fails or is cancelled leaves the session
    as it was, locals included — which is why the assistant
    MUST NOT read a `LOCAL` after `APPLY` to tell success
-   from failure; `canceled()` is what tells them apart.
+   from failure: `canceled()` is what tells them apart.
    Inside a nested session there is no clearing at all:
    the changes are copied to the parent session and the
    nested one is left standing, locals and all.

@@ -75,7 +75,7 @@ WHEN SET(Order o IS Order) AND NOT CHANGED(numerator(o)) DO
     numerator(o) <- defaultNumerator();
 ```
 
-The platform ships a ready-to-use implementation of this approach — series, leading zeros, default numerators, and conflict-safe generation — in the [`Numerator`](../paradigm/Utils_Numerator.md) module. The patterns below build on it; in each of them the number is filled only when it has not been set already, so a value typed by the user or loaded by import is never overwritten.
+The platform ships a ready-to-use implementation of this approach — series, leading zeros, default numerators, and conflict-safe generation — in the [`Numerator`](../paradigm/Utils_Numerator.md) module. The patterns below build on it. In each of them the number is filled only when it has not been set already, so a value typed by the user or loaded by import is never overwritten.
 
 ### Sequential number for a class
 
@@ -87,7 +87,7 @@ CLASS Adjustment 'Adjustment';
 @defineNumeratedDefault(Adjustment, 'Adjustments', 'INV');
 ```
 
-`@defineNumbered` adds the stored `number` and `series` properties (here the series is a three-character string) plus their indexed concatenation. `@defineNumeratedDefault` adds a default numerator to the class, assigned to every new object, while the creation of the initial numerator named `Adjustments` with series `INV` is registered as an implementation of the abstract `loadDefaultNumerators[]` action — the metacode itself does not create it. On a fresh database this action must be run once (with the `Load default numerators` button or the overall `Load default data` button on the `Default data` form); until then the default numerator is empty and no numbers are assigned. Once loaded, on creation the number is filled from that numerator and its counter is advanced, so the first adjustment becomes `INV00001`, the next `INV00002`, and so on.
+`@defineNumbered` adds the stored `number` and `series` properties (here the series is a three-character string) plus their indexed concatenation. `@defineNumeratedDefault` adds a default numerator to the class, assigned to every new object, while the creation of the initial numerator named `Adjustments` with series `INV` is registered as an implementation of the abstract `loadDefaultNumerators[]` action — the metacode itself does not create it. On a fresh database this action must be run once (with the `Load default numerators` button or the overall `Load default data` button on the `Default data` form). Until then the default numerator is empty and no numbers are assigned. Once loaded, on creation the number is filled from that numerator and its counter is advanced, so the first adjustment becomes `INV00001`, the next `INV00002`, and so on.
 
 ### Separate sequence per document type
 
@@ -129,4 +129,4 @@ partner (STRING[20] id) = GROUP AGGR Partner p BY id(p);
 @defineNumeratedID(Partner, 'Partners');
 ```
 
-`@defineNumeratedID` adds a default numerator for the class and an event that, on creation, writes the series and the padded counter value into the object's own `id` and advances the counter. The `id` property and a lookup by it are declared as usual; the generated code keeps that lookup unique. The numerator itself is chosen on the `Master data > Default numerators` form, so an administrator can switch series or starting value without code changes.
+`@defineNumeratedID` adds a default numerator for the class and an event that, on creation, writes the series and the padded counter value into the object's own `id` and advances the counter. The `id` property and a lookup by it are declared as usual. The generated code keeps that lookup unique. The numerator itself is chosen on the `Master data > Default numerators` form, so an administrator can switch series or starting value without code changes.

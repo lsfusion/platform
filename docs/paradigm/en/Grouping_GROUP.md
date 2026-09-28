@@ -31,8 +31,8 @@ In addition to the standard types of aggregate functions for grouping, there are
 
 User-defined DBMS aggregate functions and custom aggregate functions declared in the database can also be used in grouping. Functionally, there are two different scenarios here:
 
-- a regular custom aggregate computes its result from the values being aggregated inside the group; if order is specified, it defines the processing order of those values
-- an ordered-set aggregate computes its result from an ordered sample of values inside the group, while additional arguments act as parameters of the function itself rather than elements of that sample; percentile-like functions belong to this category
+- a regular custom aggregate computes its result from the values being aggregated inside the group, and if order is specified, it defines the processing order of those values
+- an ordered-set aggregate computes its result from an ordered sample of values inside the group, while additional arguments act as parameters of the function itself rather than elements of that sample. Percentile-like functions belong to this category
 
 The result class of a custom aggregate may be set explicitly. Otherwise it is inferred from the values that drive the aggregation: the aggregated operand values for a regular custom aggregate, or the ordered sample for an ordered-set aggregate.
 

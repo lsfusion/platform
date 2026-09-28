@@ -26,7 +26,7 @@ The `SCREENSHOT` operator creates an action that captures the currently rendered
 
 - `HTML`
 
-    Keyword. If specified, the inner HTML markup of the target is captured. The target property must accept `HTMLFILE` or one of the generic file types `FILE`, `NAMEDFILE`. If omitted, the target is captured as a PNG image; the target property must then accept `IMAGEFILE` or one of the generic file types `FILE`, `NAMEDFILE`.
+    Keyword. If specified, the inner HTML markup of the target is captured. The target property must accept `HTMLFILE` or one of the generic file types `FILE`, `NAMEDFILE`. If omitted, the target is captured as a PNG image. The target property must then accept `IMAGEFILE` or one of the generic file types `FILE`, `NAMEDFILE`.
 
 - `captureTarget`
 

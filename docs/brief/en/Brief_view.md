@@ -15,7 +15,7 @@ title: 'Brief: view logic'
 
 A form is the universal element describing which objects and which properties for them are read. It is declared by the [`FORM` statement](../language/FORM_statement.md) and consists of blocks:
 
-- `OBJECTS` — the form's objects with their classes; objects in one pair of parentheses form an *object group*, whose sets are their cartesian product;
+- `OBJECTS` — the form's objects with their classes, and objects in one pair of parentheses form an *object group*, whose sets are their cartesian product;
 - `PROPERTIES` — the properties and actions the form's objects are passed to;
 - `FILTERS` — condition properties: only the object sets with a non-`NULL` value remain;
 - `ORDERS` — the ordering of the object sets;
@@ -36,7 +36,7 @@ FORM orders
 
 ### Interactive view
 
-In the [interactive view](../paradigm/Interactive_view.md) the user works with the open form: picks current objects, changes data properties, runs actions. Data is read as needed and changes are visible immediately. An object group is shown as a table or a panel, and only the groups listed in a `TREE` block are joined into one tree; the user can add filters and orderings of their own. Data that keeps changing while the form is open is refreshed by the form's `SCHEDULE` event, see [periodic execution](Brief_logic.md#periodic-execution).
+In the [interactive view](../paradigm/Interactive_view.md) the user works with the open form: picks current objects, changes data properties, runs actions. Data is read as needed and changes are visible immediately. An object group is shown as a table or a panel, and only the groups listed in a `TREE` block are joined into one tree. The user can add filters and orderings of their own. Data that keeps changing while the form is open is refreshed by the form's `SCHEDULE` event, see [periodic execution](Brief_logic.md#periodic-execution).
 
 A property is displayed in exactly one object group — its *display group*, by default the last group whose objects it takes as arguments. A property that has no display group at all — one with no parameters, for instance — goes into the form's top-level `PANEL`, or into `TOOLBARBOX` in the `TOOLBAR` view.
 
@@ -44,9 +44,9 @@ Which view is used is set not in the form but in the operator that opens it, so 
 
 ### Print view
 
-The [print view](../paradigm/Print_view.md) is one of the two [static](../paradigm/Static_view.md) ones: all data is read at the moment the form is opened, with no feedback. The object groups are arranged into a hierarchy — a parent group's properties are output once for each of its own object sets, with the matching child sets under it, and then again for the next one. A file comes out of it only when a format is given; without one the report is rendered interactively — shown to the user, sent to the printer, or delivered as a message. The object groups are arranged into a hierarchy — the properties of a parent group are output once, those of a child group for all of its object sets.
+The [print view](../paradigm/Print_view.md) is one of the two [static](../paradigm/Static_view.md) ones: all data is read at the moment the form is opened, with no feedback. The object groups are arranged into a hierarchy — a parent group's properties are output once for each of its own object sets, with the matching child sets under it, and then again for the next one. A file comes out of it only when a format is given. Without one the report is rendered interactively — shown to the user, sent to the printer, or delivered as a message. The object groups are arranged into a hierarchy — the properties of a parent group are output once, those of a child group for all of its object sets.
 
-It produces **PDF**, **DOC**, **DOCX**, **XLS**, **XLSX**, **HTML**, **RTF**: a preview, printing on a printer, or a file. The layout is described by a [report design](../paradigm/Report_design.md) — a `.jrxml` template found by the form's canonical name; where no template is found the platform generates an automatic design from the form structure ([Brief: reports](Brief_view.md#reports)).
+It produces **PDF**, **DOC**, **DOCX**, **XLS**, **XLSX**, **HTML**, **RTF**: a preview, printing on a printer, or a file. The layout is described by a [report design](../paradigm/Report_design.md) — a `.jrxml` template found by the form's canonical name. Where no template is found the platform generates an automatic design from the form structure ([Brief: reports](Brief_view.md#reports)).
 
 ### Structured view
 
@@ -74,9 +74,9 @@ printOrder (Order o) { PRINT printOrder OBJECTS o = o XLSX TO orderFile; }
 
 ### Passing objects and the opening mode
 
-The `OBJECTS` block of the opening operator passes object values to the form: the passed value becomes the current object in the interactive view, and a filter for equality to it in a static one. By default a `NULL` among the passed values cancels the action; the `NULL` keyword after the value allows it, and a `DIALOG` object marked `INPUT` or `CHANGE` allows it automatically.
+The `OBJECTS` block of the opening operator passes object values to the form: the passed value becomes the current object in the interactive view, and a filter for equality to it in a static one. By default a `NULL` among the passed values cancels the action. The `NULL` keyword after the value allows it, and a `DIALOG` object marked `INPUT` or `CHANGE` allows it automatically.
 
-`SHOW` and `DIALOG` also set the form location — `FLOAT`, `WINDOW`, `EMBEDDED`, `POPUP`, `IN`. `SHOW` takes `WAIT` / `NOWAIT`; a `DIALOG` has no such option and runs synchronously whenever its result is consumed — by a `DO` / `ELSE` continuation or by a `CHANGE` write-back.
+`SHOW` and `DIALOG` also set the form location — `FLOAT`, `WINDOW`, `EMBEDDED`, `POPUP`, `IN`. `SHOW` takes `WAIT` / `NOWAIT`. A `DIALOG` has no such option and runs synchronously whenever its result is consumed — by a `DO` / `ELSE` continuation or by a `CHANGE` write-back.
 
 In detail — [Opening a form](../paradigm/Open_form.md). A form is also opened by picking a [navigator](../paradigm/Navigator.md) item, see [Brief: navigator](Brief_view.md#navigator).
 
@@ -86,9 +86,9 @@ In detail — [Opening a form](../paradigm/Open_form.md). A form is also opened 
 
 The [form design](../paradigm/Form_design.md) describes how a form looks in the [interactive view](../paradigm/Interactive_view.md). It is a hierarchy of *containers* and of the *base components* the platform creates from the form structure: the table / tree (`GRID`), the system toolbar (`TOOLBARSYSTEM`), the user filter (`FILTERS`), the column calculations (`CALCULATIONS`), the filter group (`FILTERGROUP`), the property panel (`PROPERTY`).
 
-The hierarchy is changed by the [`DESIGN` statement](../language/DESIGN_statement.md): `NEW` creates a container, `MOVE` moves a component, `REMOVE` takes it out, a component name with a block edits it, and `propertyName = value` sets a property. A component is picked by its name or by `PROPERTY(...)`, `GRID(...)`, `BOX(...)`, `PANEL(...)`, `TOOLBARBOX`, `GROUP(...)`, `PARENT(...)`; the insertion position is `FIRST`, `LAST`, `BEFORE`, `AFTER`.
+The hierarchy is changed by the [`DESIGN` statement](../language/DESIGN_statement.md): `NEW` creates a container, `MOVE` moves a component, `REMOVE` takes it out, a component name with a block edits it, and `propertyName = value` sets a property. A component is picked by its name or by `PROPERTY(...)`, `GRID(...)`, `BOX(...)`, `PANEL(...)`, `TOOLBARBOX`, `GROUP(...)`, `PARENT(...)`. The insertion position is `FIRST`, `LAST`, `BEFORE`, `AFTER`.
 
-The layout of the children is set by the container options `horizontal`, `tabbed`, `lines` (together with `grid`), and its look by `caption`, `image` ([icons](../paradigm/Icons.md)), `border`, `collapsible` (from code such a container is collapsed by the [`EXPAND` and `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) actions), `popup`, `showIf`, and `custom` — a React component or an HTML template, web client only. Data reaches a custom view through object groups — the group's rows in `props.data.<g>.list` for a React component, the `update` list for a `CUSTOM` object-group view — with server-side paging and filters; a JSON property carries one object's value.
+The layout of the children is set by the container options `horizontal`, `tabbed`, `lines` (together with `grid`), and its look by `caption`, `image` ([icons](../paradigm/Icons.md)), `border`, `collapsible` (from code such a container is collapsed by the [`EXPAND` and `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) actions), `popup`, `showIf`, and `custom` — a React component or an HTML template, web client only. Data reaches a custom view through object groups — the group's rows in `props.data.<g>.list` for a React component, the `update` list for a `CUSTOM` object-group view — with server-side paging and filters. A JSON property carries one object's value.
 
 ```lsf
 DESIGN order {
@@ -104,13 +104,13 @@ DESIGN order {
 
 ### Sizes and alignment
 
-A component is given a *base size* in pixels (`size`, `width`, `height`). Beyond that, [along the main direction](../paradigm/Form_design.md#components) of a container the free space is divided between the children in proportion to their *extension coefficient* `flex` (the `fill` option sets it together with the alignment), and across that direction the *alignment* `align` applies — `START`, `CENTER`, `END`, `STRETCH`. **Analogy**: CSS Flexible Box Layout, where `flex` is `flex-grow` and the base size is `flex-basis`; in the web client the layout is implemented through it.
+A component is given a *base size* in pixels (`size`, `width`, `height`). Beyond that, [along the main direction](../paradigm/Form_design.md#components) of a container the free space is divided between the children in proportion to their *extension coefficient* `flex` (the `fill` option sets it together with the alignment), and across that direction the *alignment* `align` applies — `START`, `CENTER`, `END`, `STRETCH`. **Analogy**: CSS Flexible Box Layout, where `flex` is `flex-grow` and the base size is `flex-basis`. In the web client the layout is implemented through it.
 
 For a property, the size of the [value cell](../paradigm/Form_design.md#valueWidth) is set separately from the whole component: `valueWidth` and `valueHeight` in pixels, `charWidth` and `charHeight` in characters. It is also what sets the column width when the property is shown in a table. The `autoSize` option fits the base size to the content, and applies to text components only.
 
 ### The default design
 
-The platform builds a [default design](../paradigm/Form_design.md#defaultDesign) from the form structure — the form's `BOX` with a ready container inside it for every object group and tree and for their tables, toolbars and panels — and `DESIGN` edits exactly that; the `CUSTOM` keyword in the statement header builds a design from scratch.
+The platform builds a [default design](../paradigm/Form_design.md#defaultDesign) from the form structure — the form's `BOX` with a ready container inside it for every object group and tree and for their tables, toolbars and panels — and `DESIGN` edits exactly that. The `CUSTOM` keyword in the statement header builds a design from scratch.
 
 Which container a property component lands in is determined by its view on the form (`GRID`, `PANEL`, `TOOLBAR`, `POPUP`) and by its display group — the form's top-level `PANEL` or `TOOLBARBOX` when it has none — which is why a design usually comes down to moving ready containers around rather than creating components.
 
@@ -120,7 +120,7 @@ Which container a property component lands in is determined by its view on the f
 
 The [navigator](../paradigm/Navigator.md) is the tree the user starts working with the application from. Its elements come in three types: a *folder* groups other elements, a *form element* opens a [form](Brief_view.md#forms) in the interactive view, and an *action element* runs an action that takes no arguments. The root is the `System.root` folder. **Analogy**: the application menu together with its routing.
 
-The navigator is filled by the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md) as nested blocks: `NEW FOLDER`, `NEW FORM` and `NEW ACTION` create an element as a child of the current one, `MOVE` moves an existing one, and an element name with a block edits it; the position is `FIRST`, `LAST`, `BEFORE`, `AFTER`. The element options are: `WINDOW` — the [window](../paradigm/Navigator_design.md) for its children (with `PARENT`, for the element itself as well), `HEADER` — a caption from a property, `SHOWIF` — visibility, `IMAGE` / `NOIMAGE` — the [icon](../paradigm/Icons.md), `CHANGEKEY` and `CHANGEMOUSE` — a hot key and a mouse binding, `CLASS` — a CSS class. The `SCHEDULE PERIOD` statement creates a scheduler that runs an action with the given period in seconds — on the client, for the whole connection (see [periodic execution](Brief_logic.md#periodic-execution)).
+The navigator is filled by the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md) as nested blocks: `NEW FOLDER`, `NEW FORM` and `NEW ACTION` create an element as a child of the current one, `MOVE` moves an existing one, and an element name with a block edits it. The position is `FIRST`, `LAST`, `BEFORE`, `AFTER`. The element options are: `WINDOW` — the [window](../paradigm/Navigator_design.md) for its children (with `PARENT`, for the element itself as well), `HEADER` — a caption from a property, `SHOWIF` — visibility, `IMAGE` / `NOIMAGE` — the [icon](../paradigm/Icons.md), `CHANGEKEY` and `CHANGEMOUSE` — a hot key and a mouse binding, `CLASS` — a CSS class. The `SCHEDULE PERIOD` statement creates a scheduler that runs an action with the given period in seconds — on the client, for the whole connection (see [periodic execution](Brief_logic.md#periodic-execution)).
 
 ```lsf
 NAVIGATOR {
@@ -140,13 +140,13 @@ The [navigator design](../paradigm/Navigator_design.md) is a set of *windows*, a
 
 Which window an element is drawn in is set by the `WINDOW` option of its parent folder. An element that ended up in a window other than the window of its folder is shown only when that folder is the one [selected](../paradigm/Navigator_design.md#selectedfolder) by the user in its own window — this is how a folder switches the content of a neighbouring window.
 
-The [system windows](../paradigm/Navigator_design.md#systemwindows) are created by the platform: `System.forms` — the window forms open in, `System.log` — messages to the user, `System.root` and `System.toolbar` — the horizontal and vertical navigator toolbars, `System.system` — the system buttons, `System.logo` — the logo. The `EXTEND WINDOW ... CUSTOM` statement changes the renderer of an already declared window, and `HIDE WINDOW` hides it. `System.log` among the `NATIVE` windows and the `FORMS` windows — `System.forms` and those an application declares — take a renderer, and only a React component — one that is handed what the window holds instead of navigator elements; the other `NATIVE` windows hold no navigator elements and take neither a component nor a template.
+The [system windows](../paradigm/Navigator_design.md#systemwindows) are created by the platform: `System.forms` — the window forms open in, `System.log` — messages to the user, `System.root` and `System.toolbar` — the horizontal and vertical navigator toolbars, `System.system` — the system buttons, `System.logo` — the logo. The `EXTEND WINDOW ... CUSTOM` statement changes the renderer of an already declared window, and `HIDE WINDOW` hides it. `System.log` among the `NATIVE` windows and the `FORMS` windows — `System.forms` and those an application declares — take a renderer, and only a React component — one that is handed what the window holds instead of navigator elements. The other `NATIVE` windows hold no navigator elements and take neither a component nor a template.
 
 ## Reports
 
 ### The print view
 
-A *report* is a template that a document is built from by substituting data into it. A form's [print view](../paradigm/Print_view.md) consists of a set of reports, each given its own set of the form's [object groups](../paradigm/Form_structure.md#objects); how the groups are split between reports and how the `SUBREPORT` option on a group makes it a separate report — a *subreport* — is described in [building the report hierarchy](../paradigm/Print_view.md#buildhierarchy).
+A *report* is a template that a document is built from by substituting data into it. A form's [print view](../paradigm/Print_view.md) consists of a set of reports, each given its own set of the form's [object groups](../paradigm/Form_structure.md#objects). How the groups are split between reports and how the `SUBREPORT` option on a group makes it a separate report — a *subreport* — is described in [building the report hierarchy](../paradigm/Print_view.md#buildhierarchy).
 
 What happens to the document is chosen by the options of the [`PRINT` operator](../language/PRINT_operator.md), which come in two forms. `MESSAGE` shows the form to the user as a message: the properties of the root group become its header, and the table under it comes from the FIRST child group — a form with no child group gives an empty table, and every child group after the first is left out. The other form is the [interactive](../paradigm/In_a_print_view_PRINT.md#interactive) one: `previewMode` is either `PREVIEW`, the default, where the report is shown to the user, or `NOPREVIEW`, where it goes straight to the printer (`TO <expression>` picks the printer), while a format — `PDF`, `DOC`, `DOCX`, `XLS`, `XLSX`, `HTML`, `RTF` — together with `TO <property>` writes the document into a file on the server. `SHEET` and `PASSWORD` are available for `XLS` and `XLSX`.
 
@@ -165,7 +165,7 @@ print (Order o) { PRINT printOrder OBJECTS o = o DOCX TO orderFile; }
 
 ### Report design
 
-The [report design](../paradigm/Report_design.md) is how a report is laid out in the document. A report is described by a [template](../paradigm/Report_design.md#template) — a [`.jrxml` file](../paradigm/Report_design.md#format) of the JasperReports technology that the platform looks up in the server classpath by a name derived from the form's canonical name; the fields of the template are the form's properties, and their names and types match. The exact naming and what a wrong name costs are in [Rules: reports](../rules/Rules_view.md).
+The [report design](../paradigm/Report_design.md) is how a report is laid out in the document. A report is described by a [template](../paradigm/Report_design.md#template) — a [`.jrxml` file](../paradigm/Report_design.md#format) of the JasperReports technology that the platform looks up in the server classpath by a name derived from the form's canonical name. The fields of the template are the form's properties, and their names and types match. The exact naming and what a wrong name costs are in [Rules: reports](../rules/Rules_view.md).
 
 A report need not have a template of its own: if at least one is not found, the platform builds an [automatic design](../paradigm/Report_design.md#auto) from the form structure. A template can also be set explicitly, by a property holding either a file name or the template file itself: the `REPORT` block of the [`FORM` statement](../language/FORM_statement.md) for the top report, `REPORTS` (the synonym `REPORTFILES`) for the listed object groups, and the expression after `SUBREPORT` in an [object block](../language/Object_blocks.md) for that group.
 
@@ -173,14 +173,14 @@ A report need not have a template of its own: if at least one is not found, the 
 
 ### Localizing strings and captions
 
-Localization is reached for when one logic runs in several languages. A user-visible string — the caption of a class, a property, an action, a form, the text of a message — is localized by a string data identifier in curly braces inside a [string literal](../language/String_literal.md#localization). When the value is sent to the client, the platform looks each identifier up in the project files whose name ends with `ResourceBundle`, in the required locale, and substitutes the translation found; if there is no translation, the identifier itself is left without the braces.
+Localization is reached for when one logic runs in several languages. A user-visible string — the caption of a class, a property, an action, a form, the text of a message — is localized by a string data identifier in curly braces inside a [string literal](../language/String_literal.md#localization). When the value is sent to the client, the platform looks each identifier up in the project files whose name ends with `ResourceBundle`, in the required locale, and substitutes the translation found. If there is no translation, the identifier itself is left without the braces.
 
 ```lsf
 CLASS Book '{use.case.i18n.book}';
 name '{use.case.i18n.book.name}' = DATA STRING[40] (Book);
 ```
 
-The current locale — language, country, timezone — is taken from the `Authentication.language[CustomUser]` property and the like, and for actions started by the system, from the server locale; user data is not translated. The mechanism is described in [internationalization](../paradigm/Internationalization.md).
+The current locale — language, country, timezone — is taken from the `Authentication.language[CustomUser]` property and the like, and for actions started by the system, from the server locale. User data is not translated. The mechanism is described in [internationalization](../paradigm/Internationalization.md).
 
 **Analogy**: ResourceBundle keys written straight into the caption text instead of a call to a translation function.
 

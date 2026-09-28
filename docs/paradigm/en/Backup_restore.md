@@ -18,8 +18,8 @@ Backup parameters are configured on the `Settings` tab of the `Backup` form (Fig
 Fig. 2. Backup settings
 
 - `Bin Directory Path PostgreSQL` – path to the PostgreSQL `bin` directory containing `pg_dump`, `pg_restore`, `createdb`, and `dropdb`. If the field is empty, the platform calls these utilities by name from the system `PATH`.
-- `Dump Directory Path PostgreSQL` – directory where backup files are written. If the directory does not exist, the platform tries to create it; if neither is possible, the backup is canceled with an error message.
-- `Thread count PostgreSQL backup` – number of parallel `pg_dump` jobs. With a value greater than 1 the backup is created in PostgreSQL `directory` format (a folder containing several files); otherwise it is created as a single file in the `custom` format. The default value is 1.
+- `Dump Directory Path PostgreSQL` – directory where backup files are written. If the directory does not exist, the platform tries to create it. If neither is possible, the backup is canceled with an error message.
+- `Thread count PostgreSQL backup` – number of parallel `pg_dump` jobs. With a value greater than 1 the backup is created in PostgreSQL `directory` format (a folder containing several files), and otherwise it is created as a single file in the `custom` format. The default value is 1.
 - `Leave Monday's backup (from a week to a month)` – when set, a backup made on a Monday is kept until it becomes older than a month, even if it would otherwise be deleted by the retention rules.
 - `Leave a backup for the first day of the month (older than a month)` – when set, a backup made on the first day of a month is kept regardless of its age.
 - `Maximum number of saved backups` – upper limit on the number of backups kept after thinning. If this field and both of the previous flags are empty, the limit defaults to 30.
@@ -39,20 +39,20 @@ The platform ships with a default scheduled task `Backup` that runs daily at 01:
 Each created backup is stored as a row on the `Backups` tab with the following columns:
 
 - `Partial backup` – set if the backup was created with `Create a backup (partial)`.
-- `Date`, `Time` – the moment the backup was started; the file name in `Dump Directory Path PostgreSQL` has the form `yyyy-MM-dd-HH-mm-ss.backup`.
+- `Date`, `Time` – the moment the backup was started. The file name in `Dump Directory Path PostgreSQL` has the form `yyyy-MM-dd-HH-mm-ss.backup`.
 - `File address` – full path to the backup file (or directory, for multithread backups).
 - `Multithread` – set if the backup was created with several threads, that is, in `directory` format.
 - `File is deleted` – set after the backup file has been removed by `Delete` or by thinning.
 - `Not completed` – set if `pg_dump` exited with a non-empty log and no successful completion record.
 - `Log` – the full text of the `pg_dump` log written to the file with the `.log` suffix next to the backup file.
 
-By default the list is filtered by `Not deleted` and `Only succeeded`; both filters can be turned off to see all rows.
+By default the list is filtered by `Not deleted` and `Only succeeded`. Both filters can be turned off to see all rows.
 
-The `Download` button on the row of a backup downloads the backup file to the client. A backup stored in `directory` format is packed into a single ZIP archive before downloading. The `Delete` button removes the backup file (or directory) and the corresponding log file from `Dump Directory Path PostgreSQL` and marks the row as `File is deleted`; the row itself stays in the list for reference.
+The `Download` button on the row of a backup downloads the backup file to the client. A backup stored in `directory` format is packed into a single ZIP archive before downloading. The `Delete` button removes the backup file (or directory) and the corresponding log file from `Dump Directory Path PostgreSQL` and marks the row as `File is deleted`. The row itself stays in the list for reference.
 
 #### Partial backups
 
-A partial backup omits the data of selected tables; the table structure and the data of all other tables are saved as usual. Tables are excluded in two ways (Fig. 3.):
+A partial backup omits the data of selected tables. The table structure and the data of all other tables are saved as usual. Tables are excluded in two ways (Fig. 3.):
 
 - by setting the `Exclude from partial backup` flag on a row of the table list shown on the same tab. This setting is persistent and is applied every time `Create a backup (partial)` is pressed;
 - by listing the table names, separated by commas, in the `Excluded` field below the table list. This is convenient for tables that are not yet present in the table list at configuration time.
@@ -95,7 +95,7 @@ A full restore replaces the entire working database with the contents of a backu
 
 Fig. 5. Full restore command sequence
 
-A backup created in `directory` format (with `Thread count PostgreSQL backup` greater than 1) must be restored with `pg_restore --format=d <backup_dir>`; for the `custom` single-file format `pg_restore` auto-detects the format from the file header.
+A backup created in `directory` format (with `Thread count PostgreSQL backup` greater than 1) must be restored with `pg_restore --format=d <backup_dir>`. For the `custom` single-file format `pg_restore` auto-detects the format from the file header.
 
 #### Selective restore
 
@@ -116,10 +116,10 @@ The restore is executed as follows. The platform calls `createdb` to create a te
 The two per-row flags control how the data is written:
 
 - `Restore deleted objects` – when set, rows whose object identifier is no longer present in the working database are restored by creating an object with the original identifier. When not set, such rows are skipped.
-- `Do not replace` – when set on a column, the value from the backup is written only for those objects where the column is currently empty; existing values are left as they are.
+- `Do not replace` – when set on a column, the value from the backup is written only for those objects where the column is currently empty. Existing values are left as they are.
 
 If the backup file does not exist or no tables are marked with `Incl`, the restore is canceled with an error message.
 
 :::info
-The selective restore reads tables from the backup by their physical names. Tables that have been renamed, deleted, or split since the backup was created may be unreadable; in this case the corresponding line in the `pg_restore` log will indicate the missing table, and no data will be imported for it.
+The selective restore reads tables from the backup by their physical names. Tables that have been renamed, deleted, or split since the backup was created may be unreadable. In this case the corresponding line in the `pg_restore` log will indicate the missing table, and no data will be imported for it.
 :::

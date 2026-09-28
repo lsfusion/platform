@@ -28,7 +28,7 @@ The mechanism described above allows distribution only in "one-to-many" mode. Ho
 In the extended form of this operator, the conditions for the distribution result are changed as follows:
 
 1.  Limiting - it is not the distribution result itself that must not exceed the value of the specified property, but rather the grouping of the distribution result by certain additional groups must not exceed this value.
-2.  Proportional - similar; that is, it is not the result of the distribution itself that must be directly proportional to the value of a certain property, but its grouping by additional groups.
+2.  Proportional - similar. That is, it is not the result of the distribution itself that must be directly proportional to the value of a certain property, but its grouping by additional groups.
 
 The algorithm of the operator’s work likewise changes accordingly.
 

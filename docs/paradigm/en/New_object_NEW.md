@@ -7,7 +7,7 @@ The *new object* operator creates an [action](Actions.md) that creates objects o
 
 The operator has two forms.
 
--   In the *bulk* form, an object is created for every set of arguments where some expression (*condition*) is not `NULL`. The created object can be written to a specified target data property on each row; if no target is specified, the created object is not written anywhere.
+-   In the *bulk* form, an object is created for every set of arguments where some expression (*condition*) is not `NULL`. The created object can be written to a specified target data property on each row. If no target is specified, the created object is not written anywhere.
 -   In the *block* form, exactly one object is created and a body that follows the action has read access to the new object through a local name. This form is the natural way to create one object and initialize its properties in the same action.
 
 Objects can also be created inside the [loop](Loop_FOR.md) action, which creates one object per loop iteration and exposes it to the loop body — see the [loop](Loop_FOR.md#addobject) article for the corresponding option.

@@ -3,7 +3,7 @@ slug: "/Search_"
 title: 'Search'
 ---
 
-Each element in the system contains certain information that allows it [to be uniquely identified](Element_identification.md) among other elements of the system. However, providing all the information about the element in each place it is used is rather cumbersome; so the platform has a special *search* algorithm, which allows you to find the desired element with only part of the information about it (for example, only a short [name](Naming.md) and the [module](Modules.md) which uses the item you are searching for).
+Each element in the system contains certain information that allows it [to be uniquely identified](Element_identification.md) among other elements of the system. However, providing all the information about the element in each place it is used is rather cumbersome, so the platform has a special *search* algorithm, which allows you to find the desired element with only part of the information about it (for example, only a short [name](Naming.md) and the [module](Modules.md) which uses the item you are searching for).
 
 ## Search steps
 

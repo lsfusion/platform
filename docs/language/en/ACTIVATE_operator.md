@@ -32,8 +32,8 @@ The syntax of `ACTIVATE` depends on the kind of form element being activated.
 
 The `ACTIVATE FORM`, `ACTIVATE TAB` and `ACTIVATE PROPERTY` forms create an action that activates a form, a tab, or a property (action) on a form. The action has no parameters and uses no [context](Action_operators.md#contextdependent). The behavior depends on the keyword:
 
-- `FORM` — activates for the user the first form the address names among the forms open in the [`FORMS` windows](WINDOW_statement.md) (sent to the client as a delayed user-interaction request). The address names a form by any combination of the label it was opened with, its name, and the window it was opened into; at least one of the three has to be specified, and a part that is not specified does not narrow the address. If several forms match, the windows are searched in turn, `System.forms` first, and within a window the forms in the order they were opened. If the address names no open form, the action has no effect.
-- `TAB` — selects the specified tab in the containing tab panel. The activation happens only if the form that owns the tab is the currently active form at the moment of execution; otherwise, the action has no effect. Empty containers (with no children) cannot be activated as tabs.
+- `FORM` — activates for the user the first form the address names among the forms open in the [`FORMS` windows](WINDOW_statement.md) (sent to the client as a delayed user-interaction request). The address names a form by any combination of the label it was opened with, its name, and the window it was opened into. At least one of the three has to be specified, and a part that is not specified does not narrow the address. If several forms match, the windows are searched in turn, `System.forms` first, and within a window the forms in the order they were opened. If the address names no open form, the action has no effect.
+- `TAB` — selects the specified tab in the containing tab panel. The activation happens only if the form that owns the tab is the currently active form at the moment of execution. Otherwise, the action has no effect. Empty containers (with no children) cannot be activated as tabs.
 - `PROPERTY` — moves the focus to the specified property or action displayed on the currently active form. The specified property must be placed on the form that is executing the action.
 
 #### Activating objects in a group
@@ -66,9 +66,9 @@ The `ACTIVATE ... formObjectId = expr` and `ACTIVATE ... formGroupObjectId [OBJE
 
     Option. It specifies the [seek direction](../paradigm/Activation_ACTIVATE.md#direction). Possible values:
 
-    - `FIRST` - for additional objects, the **first** matching collection is selected; for seek objects, if the required collection is not found, the **next** closest one is selected.
-    - `LAST` - for additional objects, the **last** matching collection is selected; for seek objects, if the required collection is not found, the **previous** closest one is selected.
-    - `NULL` - the current values of the objects of the specified object group are reset to `NULL`. For the single-object form and for the group form with an `OBJECTS` block, all objects of the group not listed explicitly in the operator (including *additional* ones) are reset; the explicitly listed objects take the specified values.
+    - `FIRST` - for additional objects, the **first** matching collection is selected. For seek objects, if the required collection is not found, the **next** closest one is selected.
+    - `LAST` - for additional objects, the **last** matching collection is selected. For seek objects, if the required collection is not found, the **previous** closest one is selected.
+    - `NULL` - the current values of the objects of the specified object group are reset to `NULL`. For the single-object form and for the group form with an `OBJECTS` block, all objects of the group not listed explicitly in the operator (including *additional* ones) are reset. The explicitly listed objects take the specified values.
 
     If this option is omitted, the [default objects type](Object_blocks.md) set on the object group is used (`PREV` cannot be written directly in the operator).
 

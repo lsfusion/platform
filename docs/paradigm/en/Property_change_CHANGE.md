@@ -3,7 +3,7 @@ slug: "/Property_change_CHANGE"
 title: 'Property change (CHANGE)'
 ---
 
-The *property change* operator creates an [action](Actions.md) that writes the value of an expression (*source*) into a property (*destination*) for every set of arguments where a third expression (*condition*) is not `NULL`. The condition may be omitted; in that case it is considered to always hold.
+The *property change* operator creates an [action](Actions.md) that writes the value of an expression (*source*) into a property (*destination*) for every set of arguments where a third expression (*condition*) is not `NULL`. The condition may be omitted, in which case it is considered to always hold.
 
 The source and the condition share the same arguments as the destination property. If the source evaluates to `NULL` for a set of arguments matched by the condition, `NULL` is written for that set, which erases the previously stored value.
 

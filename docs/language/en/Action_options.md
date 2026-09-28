@@ -104,7 +104,7 @@ EXTID extID
 
     - `ACTION`
 
-        Keyword. If specified, it is considered that the action is set in `propertyId`. If not specified, it is initially considered that a property is defined in `propertyId`; otherwise, if no property is found, it is considered that an action is specified in `propertyId`.
+        Keyword. If specified, it is considered that the action is set in `propertyId`. If not specified, it is initially considered that a property is defined in `propertyId`. Otherwise, if no property is found, it is considered that an action is specified in `propertyId`.
 
 - `imageSetting`
 
@@ -279,4 +279,4 @@ Action annotation. Begins with `@@`. The following annotations are supported:
 
 - `CONFIRM`
 
-    Keyword. If specified, the user will be asked to confirm the action when executing it interactively on a form. The confirmation is requested by the client only on interactive activation (for example, a button click); when the action is invoked from another action or through the [external API](../paradigm/Access_from_an_external_system.md), no confirmation is requested. Sets the value for the default design ([`askConfirm` attribute](DESIGN_statement.md)) and can be overridden in the `DESIGN` statement.
+    Keyword. If specified, the user will be asked to confirm the action when executing it interactively on a form. The confirmation is requested by the client only on interactive activation (for example, a button click). When the action is invoked from another action or through the [external API](../paradigm/Access_from_an_external_system.md), no confirmation is requested. Sets the value for the default design ([`askConfirm` attribute](DESIGN_statement.md)) and can be overridden in the `DESIGN` statement.

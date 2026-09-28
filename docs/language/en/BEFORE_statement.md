@@ -15,7 +15,7 @@ BEFORE action(param1, ..., paramN) DO aspectAction;
 
 The `BEFORE` statement defines an action (let's call it an *aspect*) that will be called before the specified one.
 
-The aspect receives the same parameter values as the main action and runs before its body on every call of that action. If the aspect ends with the [`RETURN` operator](RETURN_operator.md), the body of the main action is not executed, nor are its remaining aspects, including the aspects of the [`AFTER` statement](AFTER_statement.md) - this is how an aspect cancels the call, for example after checking a condition; for the calling action the call still completes normally, and it continues with the next action. Several aspects of one action run in the order of their declaration.
+The aspect receives the same parameter values as the main action and runs before its body on every call of that action. If the aspect ends with the [`RETURN` operator](RETURN_operator.md), the body of the main action is not executed, nor are its remaining aspects, including the aspects of the [`AFTER` statement](AFTER_statement.md) - this is how an aspect cancels the call, for example after checking a condition. For the calling action the call still completes normally, and it continues with the next action. Several aspects of one action run in the order of their declaration.
 
 ### Parameters
 

@@ -26,7 +26,7 @@ Where `inputValue` is a class name, or an expression that gives the initial valu
 [alias] = expr
 ```
 
-For a built-in class the `=` may be omitted (`INPUT STRING`); for a custom class the `=` is required (`INPUT o = Customer`).
+For a built-in class the `=` may be omitted (`INPUT STRING`), while for a custom class the `=` is required (`INPUT o = Customer`).
 
 Where `listSource` supplies the candidate values, either as a property or as an action that returns them:
 

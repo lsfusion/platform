@@ -51,7 +51,7 @@ IN containerName
 
 ### Description
 
-The `SHOW` operator creates an action that opens the specified form. The `OBJECTS` block sets [initial values](../paradigm/Open_form.md#params) for the form's objects (in the class-form, the single `= expr` plays the same role for the form's only object, which is implicitly named `object` and can be referenced by that name inside `FILTERS` expressions). Inside `formActionOptions`, the `FILTERS` clause attaches [additional filters](../paradigm/Open_form.md#contextFilters) computed from the calling context; the remaining options control the form-opening behavior — flow, layout, session, system-action visibility, and other modifiers. The trailing block `{initActionOperator}` runs once when the form is opened.
+The `SHOW` operator creates an action that opens the specified form. The `OBJECTS` block sets [initial values](../paradigm/Open_form.md#params) for the form's objects (in the class-form, the single `= expr` plays the same role for the form's only object, which is implicitly named `object` and can be referenced by that name inside `FILTERS` expressions). Inside `formActionOptions`, the `FILTERS` clause attaches [additional filters](../paradigm/Open_form.md#contextFilters) computed from the calling context. The remaining options control the form-opening behavior — flow, layout, session, system-action visibility, and other modifiers. The trailing block `{initActionOperator}` runs once when the form is opened.
 
 ### Parameters
 
@@ -103,7 +103,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
     - `WAIT` — synchronous (wait for the form to close)
     - `NOWAIT` — asynchronous (continue immediately after opening)
 
-    By default, the platform picks `WAIT` when the call is itself made from a modal form, when more session usages will follow in the same call, or when the chosen window-type is itself modal (`FLOAT`, `EMBEDDED`, `POPUP`); otherwise `NOWAIT`.
+    By default, the platform picks `WAIT` when the call is itself made from a modal form, when more session usages will follow in the same call, or when the chosen window-type is itself modal (`FLOAT`, `EMBEDDED`, `POPUP`), and otherwise `NOWAIT`.
 
 - `windowType`
 
@@ -111,7 +111,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
     - `windowName`
 
-        Name of the window the form is docked into. [Composite ID](IDs.md#cid) of a window declared with `WINDOW ... FORMS`; any other window is an error. The mobile web client and the desktop client draw `System.forms` alone, so there the form opens in `System.forms`, as a tab.
+        Name of the window the form is docked into. [Composite ID](IDs.md#cid) of a window declared with `WINDOW ... FORMS`. Any other window is an error. The mobile web client and the desktop client draw `System.forms` alone, so there the form opens in `System.forms`, as a tab.
 
 - `manageSessionType`
 
@@ -145,11 +145,11 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
 - `CHECK`
 
-    Keyword. If specified, when the user presses the *OK* system action (`System.formOk[]`), the platform first validates the pending session changes (runs the apply pass — constraints, aggregations, event handlers — without committing); the form closes only if the validation passes, otherwise it stays open.
+    Keyword. If specified, when the user presses the *OK* system action (`System.formOk[]`), the platform first validates the pending session changes (runs the apply pass — constraints, aggregations, event handlers — without committing). The form closes only if the validation passes, otherwise it stays open.
 
 - `ACTIVATE`
 
-    Keyword. If specified, and the same form is already open in the window with the same `formId`, that form is [activated](ACTIVATE_operator.md) instead and no second one is shown; the form that is already open is shown as it is. An open without `formId` means the form opened without one, not any of them. Since the form already open is shown unchanged, `ACTIVATE` can be specified only together with `WINDOW` and `NOWAIT`, and not together with `OBJECTS`, `FILTERS`, `READONLY`, `CHECK`, a session option, a cancel option or an initialization block — those apply to a form being opened and would have nowhere to go.
+    Keyword. If specified, and the same form is already open in the window with the same `formId`, that form is [activated](ACTIVATE_operator.md) instead and no second one is shown. The form that is already open is shown as it is. An open without `formId` means the form opened without one, not any of them. Since the form already open is shown unchanged, `ACTIVATE` can be specified only together with `WINDOW` and `NOWAIT`, and not together with `OBJECTS`, `FILTERS`, `READONLY`, `CHECK`, a session option, a cancel option or an initialization block — those apply to a form being opened and would have nowhere to go.
 
     When the client predicts this opening and finds the form already open, it activates that form immediately and sends the action to the server. If the action reaches a matching `SHOW`, the server skips creating the form, so its [initialization events](FORM_statement.md) and close events do not run. Other statements and action event handlers execute as usual.
 
@@ -157,7 +157,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
     Reuse is decided when the action is invoked. If the form closes afterwards, this opening does not recreate it. The activation is retained even if the action is rejected or does not reach this `SHOW`.
 
-    Without an early activation, the client checks again when the new form arrives. If a matching form is already open then, the client activates it and closes the new one; in this case the new form's initialization and close events run.
+    Without an early activation, the client checks again when the new form arrives. If a matching form is already open then, the client activates it and closes the new one. In this case the new form's initialization and close events run.
 
     Adding `USER` leaves the choice to the user: the form is activated only while duplicate forms are forbidden for them (the `forbidDuplicateForms` setting), and holding *Ctrl* when invoking an action from the navigator opens another instance anyway. Without `USER` neither the setting nor *Ctrl* changes it. `USER` is what a [navigator](../paradigm/Navigator.md) form element does.
 

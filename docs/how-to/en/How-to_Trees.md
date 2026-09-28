@@ -84,7 +84,7 @@ DESIGN categoryBooks {
 }
 ```
 
-The `isParent[Category, Category]` property is not `NULL` when its second argument is an ancestor of the first or the same category (its numeric value is the number of paths between them, always `1` in a tree), so the filter selects the books of the current category and of all its descendants. The same set of properties for a hierarchy by `parent[Category]` — `isParent[Category, Category]`, `level[Category]`, `canonicalName[Category]` and others — is provided by the `@defineHierarchy` metacode of the [`Hierarchy`](../paradigm/Utils_Hierarchy.md) system module; here, where the `parent[Category]` property is already declared, it is attached by `@defineHierarchyCustom(category, Category)`, and `isParent[Category, Category]` then need not be declared by hand — the metacode creates it with the same meaning and the value `TRUE`.
+The `isParent[Category, Category]` property is not `NULL` when its second argument is an ancestor of the first or the same category (its numeric value is the number of paths between them, always `1` in a tree), so the filter selects the books of the current category and of all its descendants. The same set of properties for a hierarchy by `parent[Category]` — `isParent[Category, Category]`, `level[Category]`, `canonicalName[Category]` and others — is provided by the `@defineHierarchy` metacode of the [`Hierarchy`](../paradigm/Utils_Hierarchy.md) system module. Here, where the `parent[Category]` property is already declared, it is attached by `@defineHierarchyCustom(category, Category)`, and `isParent[Category, Category]` then need not be declared by hand — the metacode creates it with the same meaning and the value `TRUE`.
 
 ## Example 4
 
@@ -131,4 +131,4 @@ FORM categories 'Categories'
 ;
 ```
 
-The `addCategory[Category]` action is bound to the tree object and creates a category under the current one; an action with a `Category` parameter is available only while a category is selected, so a root category is created by the parameterless `addRootCategory[]` action. The parent of an existing category is changed by editing `nameParent[Category]` on its edit form, which opens a dialog for choosing the new parent. For a subcategory the standard `NEW` action would also do: `parent[Category]` declared by the metacode is set automatically to the current category when an object is created.
+The `addCategory[Category]` action is bound to the tree object and creates a category under the current one. An action with a `Category` parameter is available only while a category is selected, so a root category is created by the parameterless `addRootCategory[]` action. The parent of an existing category is changed by editing `nameParent[Category]` on its edit form, which opens a dialog for choosing the new parent. For a subcategory the standard `NEW` action would also do: `parent[Category]` declared by the metacode is set automatically to the current category when an object is created.

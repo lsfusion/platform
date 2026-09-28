@@ -36,7 +36,7 @@ LIMIT [STRICT]
 
 The `PARTITION` operator creates a property that, for each object collection, either computes an [aggregate function](../paradigm/Set_operations.md#func) over the partition window (`SUM`, `PREV`, `LAST`, `CUSTOM`) or distributes a value among the object collections of the group (`UNGROUP`).
 
-The window of a group consists of the object collections for which all main expressions and all group expressions are non-`NULL`; a collection whose main expression is `NULL` neither receives a value nor takes a position in the order; with an order unique within the group, `PARTITION SUM 1 IF cond ORDER x` numbers the collections where `cond` holds consecutively from 1.
+The window of a group consists of the object collections for which all main expressions and all group expressions are non-`NULL`. A collection whose main expression is `NULL` neither receives a value nor takes a position in the order. With an order unique within the group, `PARTITION SUM 1 IF cond ORDER x` numbers the collections where `cond` holds consecutively from 1.
 
 The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group. A parameter of the created property does not split the groups by itself: only the values of the `BY` expressions do, so object collections that differ only in a parameter absent from `BY` fall into one window.
 
@@ -59,7 +59,7 @@ The `TOP` and `OFFSET` blocks restrict the subset of records selected inside eac
     Distribution strategy. One of:
 
     - `PROPORTION` — proportional distribution: the value of `propertyId` is split among the object collections of the group in proportion to the main expression and rounded to `digits` decimal places.
-    - `LIMIT` — limit-based distribution: the value of `propertyId` is assigned to the first (in the `ORDER`) object collection up to the limit given by the main expression; the remainder is then assigned to the next collection, and so on. The limits are given in the same units as the distributed value.
+    - `LIMIT` — limit-based distribution: the value of `propertyId` is assigned to the first (in the `ORDER`) object collection up to the limit given by the main expression. The remainder is then assigned to the next collection, and so on. The limits are given in the same units as the distributed value.
 
 - `STRICT`
 

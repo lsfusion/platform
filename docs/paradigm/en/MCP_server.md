@@ -90,7 +90,7 @@ A Java web application deployed under `/lsfusion` only owns `/lsfusion/*`, so th
 https://host/lsfusion/.well-known/oauth-authorization-server
 ```
 
-The metadata document itself is correct once reached; only the strict discovery URL is outside the web application's context. The protected-resource metadata URL emitted by the platform's `WWW-Authenticate` header is already in-context, so that hop works without a rewrite.
+The metadata document itself is correct once reached. Only the strict discovery URL is outside the web application's context. The protected-resource metadata URL emitted by the platform's `WWW-Authenticate` header is already in-context, so that hop works without a rewrite.
 
 A strict OAuth client does not fall back from the RFC 8414 host-root URL to the in-context URL on a `404`: it stops discovery, and the user sees a generic "couldn't reach the server" error with no useful server-side log. The `claude.ai` connector behaves this way.
 

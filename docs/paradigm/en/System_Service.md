@@ -3,7 +3,7 @@ slug: "/System_Service"
 title: 'Service'
 ---
 
-`Service` is a [system module](System_modules.md) that gathers the server's administration surface: database service and recalculation actions, virtual-machine and memory control, scheduled server restart, application-wide settings, per-user diagnostics and logging flags, per-user client GUI preferences, database scaling, and the server-settings API exported to clients. It is pulled in via `REQUIRE Service` (it does `REQUIRE System, Security, SystemEvents`; its own declarations live in `NAMESPACE Service`).
+`Service` is a [system module](System_modules.md) that gathers the server's administration surface: database service and recalculation actions, virtual-machine and memory control, scheduled server restart, application-wide settings, per-user diagnostics and logging flags, per-user client GUI preferences, database scaling, and the server-settings API exported to clients. It is pulled in via `REQUIRE Service` (it does `REQUIRE System, Security, SystemEvents`, and its own declarations live in `NAMESPACE Service`).
 
 Most actions are declared through the `INTERNAL` operator over a Java implementation class, so they expose server operations that have no pure-`.lsf` body. The module also publishes the forms `maintenance`, `settings`, and `scaling` together with the matching navigator entries under the system folder.
 
@@ -79,7 +79,7 @@ These actions inspect and reclaim server JVM resources, surfaced in the `virtual
 
 ### Server restart
 
-The module controls a graceful server restart and a login lock. `restartPushed[]` records that a restart was requested; `notRestartPushed[]` is its negation and drives which control the form shows.
+The module controls a graceful server restart and a login lock. `restartPushed[]` records that a restart was requested, and `notRestartPushed[]` is its negation and drives which control the form shows.
 
 | Property / action                     | What it does                                                                   |
 |---------------------------------------|---------------------------------------------------------------------------------|
@@ -93,7 +93,7 @@ The module controls a graceful server restart and a login lock. `restartPushed[]
 
 ### Settings
 
-The `Setting` mechanism stores named application-wide settings whose value can be overridden per [user role](System_Authentication.md). A `Setting` object is identified by its `name[Setting]` (`ISTRING`); `setting[ISTRING]` looks a setting up by name.
+The `Setting` mechanism stores named application-wide settings whose value can be overridden per [user role](System_Authentication.md). A `Setting` object is identified by its `name[Setting]` (`ISTRING`). `setting[ISTRING]` looks a setting up by name.
 
 A setting carries three stored values and resolves them by `OVERRIDE`, taking the first non-empty one:
 
@@ -103,11 +103,11 @@ A setting carries three stored values and resolves them by `OVERRIDE`, taking th
 | `baseValue[Setting]`            | the value set for the setting as a whole — checked next                        |
 | `defaultValue[Setting]`         | the built-in default — checked last                                            |
 
-So `value[Setting, UserRole]` resolves to `baseValue[Setting, UserRole]`, then `baseValue[Setting]`, then `defaultValue[Setting]`; `value[Setting]` (no role) resolves to `baseValue[Setting]`, then `defaultValue[Setting]`. `overBaseValue[Setting, UserRole]` is the role-or-global base value (without the default).
+So `value[Setting, UserRole]` resolves to `baseValue[Setting, UserRole]`, then `baseValue[Setting]`, then `defaultValue[Setting]`. `value[Setting]` (no role) resolves to `baseValue[Setting]`, then `defaultValue[Setting]`. `overBaseValue[Setting, UserRole]` is the role-or-global base value (without the default).
 
 To read a setting by name from logic: `valueSetting[ISTRING]` returns the resolved string value of the named setting, and `valueSettingBoolean[ISTRING]` returns whether that value equals `'true'`.
 
-`pushSetting[STRING, STRING]` and `popSetting[STRING]` temporarily set and restore a setting value on the server. `writeDefaultSettings[]` seeds the default values; `updateSetting[Setting, UserRole, BOOLEAN]` and the helper `updateGlobalSetting` push a changed value into the running server (the system user, role-less users, and each role), driven by `WHEN CHANGED` on `baseValue` and re-applied in `onInit`. The platform ships a number of named settings (read through `valueSetting` / `valueSettingBoolean` across the platform); the seeded defaults are not listed here.
+`pushSetting[STRING, STRING]` and `popSetting[STRING]` temporarily set and restore a setting value on the server. `writeDefaultSettings[]` seeds the default values. `updateSetting[Setting, UserRole, BOOLEAN]` and the helper `updateGlobalSetting` push a changed value into the running server (the system user, role-less users, and each role), driven by `WHEN CHANGED` on `baseValue` and re-applied in `onInit`. The platform ships a number of named settings (read through `valueSetting` / `valueSettingBoolean` across the platform). The seeded defaults are not listed here.
 
 ### Per-user diagnostics
 
@@ -126,7 +126,7 @@ These per-`User` flags turn on extra logging and query diagnostics for a single 
 
 ### Per-user runtime settings
 
-These per-user properties tune query execution and client behavior. `execEnv[User]` (class `TypeExecEnv`, with objects `materialize`, `disablenestloop`, `none`) selects the query execution environment and pushes the selected `id[TypeExecEnv]` into the server through the same `set…` / `refresh…` / `WHEN CHANGED` pattern as the diagnostics flags; `nameExecEnv[User]` is its caption. A user for whom no environment is chosen gets the one set by the [working parameter](Working_parameters.md) `defaultTypeExecuteEnvironment`.
+These per-user properties tune query execution and client behavior. `execEnv[User]` (class `TypeExecEnv`, with objects `materialize`, `disablenestloop`, `none`) selects the query execution environment and pushes the selected `id[TypeExecEnv]` into the server through the same `set…` / `refresh…` / `WHEN CHANGED` pattern as the diagnostics flags. `nameExecEnv[User]` is its caption. A user for whom no environment is chosen gets the one set by the [working parameter](Working_parameters.md) `defaultTypeExecuteEnvironment`.
 
 | Property                      | What it controls                                                                |
 |-------------------------------|----------------------------------------------------------------------------------|
@@ -150,7 +150,7 @@ The module lets an administrator pull logs and a thread dump from a connected us
 
 ### Client GUI per user
 
-The `settings` form lets per-user (and default) client GUI preferences be set. Colors are stored per `User`: `selectedRowBackgroundColor[User]`, `selectedCellBackgroundColor[User]`, `focusedCellBackgroundColor[User]`, `focusedCellBorderColor[User]`, `tableGridColor[User]`; the `override…` variants (`overrideFocusedCellBorderColor[]`, `overrideTableGridColor[]`) take the current user's value first and the application default otherwise. `resetWindowsLayout[]` resets the saved window layout.
+The `settings` form lets per-user (and default) client GUI preferences be set. Colors are stored per `User`: `selectedRowBackgroundColor[User]`, `selectedCellBackgroundColor[User]`, `focusedCellBackgroundColor[User]`, `focusedCellBorderColor[User]`, `tableGridColor[User]`. The `override…` variants (`overrideFocusedCellBorderColor[]`, `overrideTableGridColor[]`) take the current user's value first and the application default otherwise. `resetWindowsLayout[]` resets the saved window layout.
 
 SSL credentials for the external (HTTP) server are kept here as well, in two alternatives controlled by `useKeystore[]`:
 
@@ -161,13 +161,13 @@ SSL credentials for the external (HTTP) server are kept here as well, in two alt
 
 ### Database scaling {#database-scaling}
 
-A `DBServer` (abstract) is a database node with a `host[DBServer]` and an `snmpPort[DBServer]`. The concrete classes are `DBMaster` (the primary node; its `host` is the configured database server) and `DBSlave` (a replica; its `host` is `slaveHost[DBSlave]`). The `scaling` form lists the servers and their monitoring locals — `load`, `lsn`, `readyStatus`, `availability`, `lag`, `usedCpu`, `numberConnections` (all `DATA LOCAL` per `DBServer`, refreshed by `updateServersAction[]`).
+A `DBServer` (abstract) is a database node with a `host[DBServer]` and an `snmpPort[DBServer]`. The concrete classes are `DBMaster` (the primary node, whose `host` is the configured database server) and `DBSlave` (a replica, whose `host` is `slaveHost[DBSlave]`). The `scaling` form lists the servers and their monitoring locals — `load`, `lsn`, `readyStatus`, `availability`, `lag`, `usedCpu`, `numberConnections` (all `DATA LOCAL` per `DBServer`, refreshed by `updateServersAction[]`).
 
-`addSlave[DBSlave]` and `removeSlave[DBSlave]` register and unregister a replica on the running server; the async wrappers `asyncAddSlave` / `asyncRemoveSlave` run them in a new session and thread. Changing a slave's host re-registers it, and every slave is registered on `onStarted`.
+`addSlave[DBSlave]` and `removeSlave[DBSlave]` register and unregister a replica on the running server. The async wrappers `asyncAddSlave` / `asyncRemoveSlave` run them in a new session and thread. Changing a slave's host re-registers it, and every slave is registered on `onStarted`.
 
 ### Server-settings API
 
-Three actions export the server configuration to clients as JSON; all are declared `@@noauth` so they are reachable before sign-in. Each is an abstract `CASE` action with a default implementation that gathers the configuration and emits it with the `EXPORT JSON` operator.
+Three actions export the server configuration to clients as JSON. All are declared `@@noauth` so they are reachable before sign-in. Each is an abstract `CASE` action with a default implementation that gathers the configuration and emits it with the `EXPORT JSON` operator.
 
 | Action                          | What it exports                                                                         |
 |---------------------------------|------------------------------------------------------------------------------------------|
@@ -175,9 +175,9 @@ Three actions export the server configuration to clients as JSON; all are declar
 | `getInitSettings[]`             | the web-client init resources loaded on client startup                                   |
 | `getClientSettings[]`           | the per-user client configuration: colors, fonts, locale, picker ranges, and the many `valueSetting` / `valueSettingBoolean`-driven client options |
 
-`resetServerSettingsCacheAction[]` drops the cached server settings; it is fired by `WHEN CHANGED` on `lsfParams` and on the application name / graphics so the next API call rebuilds them.
+`resetServerSettingsCacheAction[]` drops the cached server settings. It is fired by `WHEN CHANGED` on `lsfParams` and on the application name / graphics so the next API call rebuilds them.
 
-Two [working parameters](Working_parameters.md) travel through this API. `sessionConfigTimeout` (`0` by default, meaning unchanged) is part of the settings `getServerSettings[]` returns, but takes effect only once the client authenticates and its navigator is created: if positive, it then overrides the servlet container's default idle-session expiration (in seconds) for the web client's HTTP session, which is the HTTP-layer session and unrelated to how long an lsFusion application session stays open. `hideDesktopClientLink` (`true` by default) gates whether the server bothers generating JNLP launch URLs for the Java-Web-Start desktop client at all; while it is on, `getServerSettings[]` reports no such URLs and the login page offers no desktop-client download link.
+Two [working parameters](Working_parameters.md) travel through this API. `sessionConfigTimeout` (`0` by default, meaning unchanged) is part of the settings `getServerSettings[]` returns, but takes effect only once the client authenticates and its navigator is created: if positive, it then overrides the servlet container's default idle-session expiration (in seconds) for the web client's HTTP session, which is the HTTP-layer session and unrelated to how long an lsFusion application session stays open. `hideDesktopClientLink` (`true` by default) gates whether the server bothers generating JNLP launch URLs for the Java-Web-Start desktop client at all. While it is on, `getServerSettings[]` reports no such URLs and the login page offers no desktop-client download link.
 
 ### Forms and navigator
 

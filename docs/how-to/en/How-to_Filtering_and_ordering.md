@@ -74,7 +74,7 @@ FORM onStockLocal 'Balances'
 
 In this case a warehouse cannot be declared via the `OBJECTS` block, because then not specifying a warehouse for filtering will not be an option.
 
-The condition `s = filterStock() OR NOT filterStock()` is the standard *optional filter* pattern: while the filter value is empty (`filterStock()` is `NULL`), the `OR NOT` branch is true for every row and the form shows all records; once a warehouse is selected, only its rows remain.
+The condition `s = filterStock() OR NOT filterStock()` is the standard *optional filter* pattern: while the filter value is empty (`filterStock()` is `NULL`), the `OR NOT` branch is true for every row and the form shows all records. Once a warehouse is selected, only its rows remain.
 
 ## Example 3
 
@@ -137,4 +137,4 @@ FORM ordersFiltered 'Orders'
 ;
 ```
 
-The `FILTER` option declares a [user filter](../paradigm/Interactive_view.md#userfilters) for the customer property. When the form opens, its condition row is already shown with an empty value and filters nothing; once the user enters a customer, only that customer's orders remain. The user cannot remove the row - resetting the filters only clears its value - but, unlike the local property of [**Example 3**](#example-3), with the filter controls shown the user can change the comparison, and no property outside the form is needed.
+The `FILTER` option declares a [user filter](../paradigm/Interactive_view.md#userfilters) for the customer property. When the form opens, its condition row is already shown with an empty value and filters nothing. Once the user enters a customer, only that customer's orders remain. The user cannot remove the row - resetting the filters only clears its value - but, unlike the local property of [**Example 3**](#example-3), with the filter controls shown the user can change the comparison, and no property outside the form is needed.

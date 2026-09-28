@@ -117,7 +117,7 @@ title: 'Rules: custom views'
    the link back through `changeProperty`. So in such a
    container the assistant MAY add an object-valued property
    to the form as is — for the component's logic, not for
-   display; if the link is shown to the user, its caption MUST
+   display. If the link is shown to the user, its caption MUST
    be added as a separate entry — the caption composition of
    the `view` rules (`captionStatus 'Status' = caption(status(p))`).
    A property marked `LSF` is drawn by the platform, and the
@@ -217,7 +217,7 @@ title: 'Rules: custom views'
    is genuinely part of that API. `CUSTOMS` does not restrict
    the argument values the component passes, so every listed
    entry MUST stay safe for an arbitrary id and arbitrary
-   values; `eval` / `evalAction` run arbitrary script and stay
+   values. `eval` / `evalAction` run arbitrary script and stay
    under the gate.
 
 ## Client code
@@ -241,7 +241,7 @@ title: 'Rules: custom views'
    event — or outside it, listed in `onWebClientInit` with an
    integer order when order matters (a library that must load
    before the component using it) or the load is conditional.
-   Such a file cannot `import` local modules; `.jsx` is
+   Such a file cannot `import` local modules. `.jsx` is
    transformed when served, and a `.js` file writes
    `React.createElement` against `window.React`.
 

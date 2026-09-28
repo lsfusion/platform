@@ -3,7 +3,7 @@ slug: "/How-to_Custom_components_server_calls"
 title: 'How-to: Custom Components (server calls)'
 ---
 
-A custom view calls the server through the form controller's `exec` / `eval` / `evalAction` / `change` methods; the mechanics — the authorization gate, sessions, value conversion — are described in [Calling the server](How-to_Custom_components_objects.md#calling-the-server), and the method signatures in the [form controller API](How-to_Custom_view_controller.md#calling-the-server). This page is an end-to-end example: one CUSTOM component that calls actions and properties through the form's `CUSTOMS` clause with every major kind of parameter.
+A custom view calls the server through the form controller's `exec` / `eval` / `evalAction` / `change` methods. The mechanics — the authorization gate, sessions, value conversion — are described in [Calling the server](How-to_Custom_components_objects.md#calling-the-server), and the method signatures in the [form controller API](How-to_Custom_view_controller.md#calling-the-server). This page is an end-to-end example: one CUSTOM component that calls actions and properties through the form's `CUSTOMS` clause with every major kind of parameter.
 
 ### Task
 
@@ -213,11 +213,11 @@ After "Discount 15%", "One of each", "Add to cart" on the coffee card, and "Hide
 
 ### Parameters and the result
 
-The calls pass parameters positionally as plain JS values: `addToCart` receives the object as its numeric id — the `item.key` of the card's row — and the `INTEGER`, `STRING` and `DATE` primitives directly (an actual `Date` for `DATE`); `addSet` receives a plain JS array for its `JSON` parameter. The `preview` promise resolves to the number produced by the action's `RETURN`.
+The calls pass parameters positionally as plain JS values: `addToCart` receives the object as its numeric id — the `item.key` of the card's row — and the `INTEGER`, `STRING` and `DATE` primitives directly (an actual `Date` for `DATE`). `addSet` receives a plain JS array for its `JSON` parameter. The `preview` promise resolves to the number produced by the action's `RETURN`.
 
 ### Sessions
 
-On the form the calls run in the form's session: the cart line and the "hidden" flag are visible immediately, but reach the database only when the form is saved. When a change affects the component's own list — hiding a card here — the platform calls its `update`, and the component rebuilds the DOM from scratch, so transient state kept in DOM nodes — the "≈ 807.5" text on the preview button — is wiped by the next such update; to display a result persistently, put it into a form property.
+On the form the calls run in the form's session: the cart line and the "hidden" flag are visible immediately, but reach the database only when the form is saved. When a change affects the component's own list — hiding a card here — the platform calls its `update`, and the component rebuilds the DOM from scratch, so transient state kept in DOM nodes — the "≈ 807.5" text on the preview button — is wiped by the next such update. To display a result persistently, put it into a form property.
 
 ### The gate
 

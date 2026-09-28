@@ -53,7 +53,7 @@ CLASS [NATIVE] name [caption] [{ objectName1 [objectCaption1], ... }] [: parent1
 
 [Свойство](../paradigm/Properties.md) принимает набор объектов-параметров и возвращает ровно одно значение — как чистая функция, но вычисляемая сразу на всей базе, как колонка SQL-запроса. Значение либо хранится ([первичное свойство](../paradigm/Data_properties_DATA.md), [оператор `DATA`](../language/DATA_operator.md)), либо вычисляется выражением: арифметика, логика (`AND`, `OR`, `NOT`), сравнения, операции со строками, проверка и приведение класса (`IS`, `AS`). Функции строк, чисел и дат (`lpad`, `substr`, `mod`, `currentDate`) — не операторы, а свойства модулей `Utils` и `Time`.
 
-Подстановка свойства в выражение другого свойства — [композиция](../paradigm/Composition_JOIN.md); [оператор `JOIN`](../language/JOIN_operator.md) записывает ее явно. Список создающих свойства операторов — [Операторы](../paradigm/Property_operators_paradigm.md).
+Подстановка свойства в выражение другого свойства — [композиция](../paradigm/Composition_JOIN.md), а [оператор `JOIN`](../language/JOIN_operator.md) записывает ее явно. Список создающих свойства операторов — [Операторы](../paradigm/Property_operators_paradigm.md).
 
 ```lsf
 price = DATA NUMERIC[14,2] (Item);
@@ -94,7 +94,7 @@ place (Team t) = PARTITION SUM 1 ORDER DESC points(t), t BY conference(t);
 
 Эти операторы работают не со значениями, а с объектами.
 
-`GROUP AGGR` — форма [оператора `GROUP`](../language/GROUP_operator.md), возвращающая сам объект группы. Получается отображение, обратное перечисленным в `BY` свойствам, — например, поиск объекта по коду; платформа добавляет ограничение, что в группе такой объект не более одного.
+`GROUP AGGR` — форма [оператора `GROUP`](../language/GROUP_operator.md), возвращающая сам объект группы. Получается отображение, обратное перечисленным в `BY` свойствам, — например, поиск объекта по коду. Платформа добавляет ограничение, что в группе такой объект не более одного.
 
 [Оператор `AGGR`](../language/AGGR_operator.md) идет дальше: он сам создает объект, когда агрегируемое выражение становится не `NULL`, и удаляет, когда оно снова `NULL`, заполняя свойства-отображения на параметры. Механизм — [агрегации](../paradigm/Aggregations.md).
 
@@ -105,11 +105,11 @@ shipment (Invoice i) = AGGR ShipmentInvoice WHERE createShipment(i);
 
 ### Выбор и переопределение (CASE, IF, OVERRIDE)
 
-[Оператор выбора](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) проверяет условия по порядку и возвращает результат первого выполненного; условие выполнено, если его значение не `NULL`.
+[Оператор выбора](../paradigm/Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) проверяет условия по порядку и возвращает результат первого выполненного. Условие выполнено, если его значение не `NULL`.
 
 - [`CASE`](../language/CASE_operator.md) — явные пары `WHEN ... THEN ...` и необязательный `ELSE`.
-- [`IF`](../language/IF_operator.md) — постфиксная одиночная форма `result IF condition`; [`IF ... THEN`](../language/IF_..._THEN_operator.md) добавляет блок `ELSE`.
-- [`OVERRIDE`](../language/OVERRIDE_operator.md) — первый операнд, не равный `NULL`; так же подставляется значение по умолчанию вместо `NULL`.
+- [`IF`](../language/IF_operator.md) — постфиксная одиночная форма `result IF condition`. [`IF ... THEN`](../language/IF_..._THEN_operator.md) добавляет блок `ELSE`.
+- [`OVERRIDE`](../language/OVERRIDE_operator.md) — первый операнд, не равный `NULL`. Так же подставляется значение по умолчанию вместо `NULL`.
 - [`EXCLUSIVE`](../language/EXCLUSIVE_operator.md) — то же плюс декларация, что не `NULL` не более одного операнда.
 - [`MULTI`](../language/MULTI_operator.md) — операнд выбирается по совместимости классов аргументов с его сигнатурой.
 
@@ -120,7 +120,7 @@ price (Item i) = OVERRIDE salePrice(i), basePrice(i), 0;
 
 ### Рекурсия (RECURSION)
 
-[Оператор `RECURSION`](../language/RECURSION_operator.md) создает свойство, вычисляемое итерациями; к нему обращаются на деревьях, графах и транзитивных замыканиях — все предки объекта, достижимость по цепочке ссылок, а через подсчёт предков — уровень узла. Его части — `STEP`, префикс `$` перед параметром и опция `CYCLES` — и то, как считаются итерации, описаны в [рекурсии](../paradigm/Recursion_RECURSION.md). Для иерархии по свойству `parent[class]` готовый набор таких свойств даёт системный модуль [`Hierarchy`](../paradigm/Utils_Hierarchy.md).
+[Оператор `RECURSION`](../language/RECURSION_operator.md) создает свойство, вычисляемое итерациями. К нему обращаются на деревьях, графах и транзитивных замыканиях — все предки объекта, достижимость по цепочке ссылок, а через подсчёт предков — уровень узла. Его части — `STEP`, префикс `$` перед параметром и опция `CYCLES` — и то, как считаются итерации, описаны в [рекурсии](../paradigm/Recursion_RECURSION.md). Для иерархии по свойству `parent[class]` готовый набор таких свойств даёт системный модуль [`Hierarchy`](../paradigm/Utils_Hierarchy.md).
 
 ```lsf
 isParent (Group child, Group parent) = RECURSION 1 IF child IS Group AND parent = child
@@ -170,11 +170,11 @@ setDiscount () {
 name [caption] [(param1, ..., paramN)] { actionBody } [options]
 ```
 
-Тело в фигурных скобках — [последовательность](../paradigm/Sequence.md): вложенные действия выполняются в порядке записи; внутри блока можно объявить свойства `LOCAL`, живущие только во время его выполнения. [Вызов действия](../paradigm/Call_EXEC.md) записывается именем с аргументами, `[EXEC] actionId(expression1, ..., expressionN) [TO toProperty]`, либо подставляется прямо как значение. **Аналогия**: вызов процедуры.
+Тело в фигурных скобках — [последовательность](../paradigm/Sequence.md): вложенные действия выполняются в порядке записи. Внутри блока можно объявить свойства `LOCAL`, живущие только во время его выполнения. [Вызов действия](../paradigm/Call_EXEC.md) записывается именем с аргументами, `[EXEC] actionId(expression1, ..., expressionN) [TO toProperty]`, либо подставляется прямо как значение. **Аналогия**: вызов процедуры.
 
 ### Циклы (FOR, WHILE)
 
-[Оператор `FOR`](../language/FOR_operator.md) выполняет тело по разу на каждый набор объектов, для которого условие не `NULL`; [оператор `WHILE`](../language/WHILE_operator.md) пересчитывает условие на каждом шаге, поэтому изменения из тела учитываются:
+[Оператор `FOR`](../language/FOR_operator.md) выполняет тело по разу на каждый набор объектов, для которого условие не `NULL`, а [оператор `WHILE`](../language/WHILE_operator.md) пересчитывает условие на каждом шаге, поэтому изменения из тела учитываются:
 
 ```
 FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
@@ -201,7 +201,7 @@ createDetails (Order o) {
 
 ### Ветвление (CASE, IF)
 
-[Ветвление](../paradigm/Branching_CASE_IF_MULTI.md) вызывает действие, соответствующее выполнившемуся условию; условие выполнено, если его значение не `NULL`. В операторах [`IF ... THEN`](../language/IF_..._THEN_action_operator.md) и [`CASE`](../language/CASE_action_operator.md) условие записывается явно, в [операторе `MULTI`](../language/MULTI_action_operator.md) условие — соответствие аргументов вызова сигнатуре действия, то есть диспетчеризация по классу аргумента:
+[Ветвление](../paradigm/Branching_CASE_IF_MULTI.md) вызывает действие, соответствующее выполнившемуся условию. Условие выполнено, если его значение не `NULL`. В операторах [`IF ... THEN`](../language/IF_..._THEN_action_operator.md) и [`CASE`](../language/CASE_action_operator.md) условие записывается явно, в [операторе `MULTI`](../language/MULTI_action_operator.md) условие — соответствие аргументов вызова сигнатуре действия, то есть диспетчеризация по классу аргумента:
 
 ```
 IF condition
@@ -226,12 +226,12 @@ message (Shape s) { MULTI { message[Square](s); }, { message[Circle](s); } }
 ### Управление потоком
 
 - [`BREAK`](../paradigm/Interruption_BREAK.md) выходит из ближайшего цикла, [`CONTINUE`](../paradigm/Next_iteration_CONTINUE.md) переходит к следующей итерации, [`RETURN [выражение]`](../paradigm/Exit_RETURN.md) выходит из ближайшего вызова действия с указанным значением как результатом.
-- [`TRY action [CATCH catchAction] [FINALLY finallyAction]`](../language/TRY_operator.md) — `CATCH` поглощает [ошибку](../paradigm/Exception_handling_TRY.md), давая доступ к ней через `messageCaughtException[]` и `lsfStackTraceCaughtException[]`; `FINALLY` выполняется в любом случае. **Аналогия**: `try` / `catch` / `finally`.
+- [`TRY action [CATCH catchAction] [FINALLY finallyAction]`](../language/TRY_operator.md) — `CATCH` поглощает [ошибку](../paradigm/Exception_handling_TRY.md), давая доступ к ней через `messageCaughtException[]` и `lsfStackTraceCaughtException[]`. `FINALLY` выполняется в любом случае. **Аналогия**: `try` / `catch` / `finally`.
 - [`NEWTHREAD action [dispatchClause]`](../language/NEWTHREAD_operator.md) — выполнение в [отдельном потоке](../paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md), сразу или по расписанию (`SCHEDULE`: задержка и период). [`NEWEXECUTOR`](../language/NEWEXECUTOR_operator.md) выбирает, куда отправить поток: в серверный пул, где тело работает в [сессии изменений](../paradigm/Change_sessions.md) вызывающего кода, или в клиентское соединение (`CLIENT`), где оно получает собственную новую сессию в навигаторе этого соединения.
 
 ### Действия на форме
 
-- [`SHOW`](../language/SHOW_operator.md) — [открытие формы](../paradigm/In_an_interactive_view_SHOW_DIALOG.md) в интерактивном представлении; переданные объекты становятся текущими.
+- [`SHOW`](../language/SHOW_operator.md) — [открытие формы](../paradigm/In_an_interactive_view_SHOW_DIALOG.md) в интерактивном представлении. Переданные объекты становятся текущими.
 - [`DIALOG`](../language/DIALOG_operator.md) — то же открытие как диалог ввода значения: каждый объект, помеченный `INPUT` или `CHANGE`, возвращает в блок `DO` свое последнее текущее значение.
 - [`ACTIVATE`](../language/ACTIVATE_operator.md) — [активация](../paradigm/Activation_ACTIVATE.md) формы, вкладки, свойства или набора объектов в группе объектов.
 - [`EXPAND`](../language/EXPAND_operator.md) / `COLLAPSE` — разворачивание и сворачивание [контейнера формы](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) и узлов [дерева объектов](../paradigm/Object_tree_visibility_EXPAND_COLLAPSE.md).
@@ -295,7 +295,7 @@ FORM sku 'Товар'
 
 ### Периодическое выполнение {#periodic-execution}
 
-Действие по таймеру запускают четыре механизма; они различаются тем, где таймер, где выполняется действие и к чему оно привязано:
+Действие по таймеру запускают четыре механизма. Они различаются тем, где таймер, где выполняется действие и к чему оно привязано:
 
 | Механизм | Таймер | Действие выполняется | Привязка |
 | --- | --- | --- | --- |
@@ -310,13 +310,13 @@ FORM sku 'Товар'
 
 Обработки локальных событий выполняются не в момент изменения данных, а в определенные моменты жизни сессии — см. [выполнение локальных событий](../paradigm/Events.md#local). Обработки синхронных глобальных событий выполняются внутри транзакции [применения изменений](../paradigm/Apply_changes_APPLY.md), вместе с проверками [ограничений](../paradigm/Constraints.md).
 
-Порядок между обработками, реагирующими на одно и то же изменение, определяют зависимости по данным; явно он задается ключевым словом `AFTER` (синоним `GOAFTER`) в [блоке описания события](../language/Event_description_block.md).
+Порядок между обработками, реагирующими на одно и то же изменение, определяют зависимости по данным. Явно он задается ключевым словом `AFTER` (синоним `GOAFTER`) в [блоке описания события](../language/Event_description_block.md).
 
 ## Ограничения
 
 ### Ограничения (CONSTRAINT)
 
-[Ограничение](../paradigm/Constraints.md) — свойство, значение которого всегда должно быть `NULL`. Проверяется оно на событии, заданном [блоком описания события](../language/Event_description_block.md) инструкции, а по умолчанию — на глобальном событии `APPLY`; если к этому моменту оно стало не `NULL` хотя бы на одном наборе объектов, платформа показывает сообщение с этими наборами и [отменяет](../paradigm/Cancel_changes_CANCEL.md) изменения. Создается [инструкцией `CONSTRAINT`](../language/CONSTRAINT_statement.md):
+[Ограничение](../paradigm/Constraints.md) — свойство, значение которого всегда должно быть `NULL`. Проверяется оно на событии, заданном [блоком описания события](../language/Event_description_block.md) инструкции, а по умолчанию — на глобальном событии `APPLY`. Если к этому моменту оно стало не `NULL` хотя бы на одном наборе объектов, платформа показывает сообщение с этими наборами и [отменяет](../paradigm/Cancel_changes_CANCEL.md) изменения. Создается [инструкцией `CONSTRAINT`](../language/CONSTRAINT_statement.md):
 
 ```
 CONSTRAINT [eventClause] constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
@@ -335,7 +335,7 @@ CONSTRAINT balance(Sku s, Stock st) < 0 MESSAGE 'Остаток не может 
 
 ### Агрегируемые объекты и ограничения
 
-[Агрегация](../paradigm/Aggregations.md) создает *агрегируемый* объект, когда агрегируемое свойство становится не `NULL` на наборе значений параметров, и удаляет этот объект, когда свойство снова становится `NULL`. Создает и удаляет объект только [оператор `AGGR`](../language/AGGR_operator.md); [`GROUP AGGR`](../language/GROUP_operator.md) строит обратное свойство — от значений параметров к объекту. Оба описаны в [Brief: свойства](Brief_logic.md#свойства).
+[Агрегация](../paradigm/Aggregations.md) создает *агрегируемый* объект, когда агрегируемое свойство становится не `NULL` на наборе значений параметров, и удаляет этот объект, когда свойство снова становится `NULL`. Создает и удаляет объект только [оператор `AGGR`](../language/AGGR_operator.md). [`GROUP AGGR`](../language/GROUP_operator.md) строит обратное свойство — от значений параметров к объекту. Оба описаны в [Brief: свойства](Brief_logic.md#свойства).
 
 Для целостности это еще один инвариант, который платформа поддерживает сама: на набор значений параметров приходится не более одного агрегируемого объекта. `GROUP AGGR` добавляет его как ограничение на свою группу, а `AGGR` держит в его рамках соответствие между объектами и значениями параметров. Как это ограничение поддерживается, описано в [агрегациях](../paradigm/Aggregations.md) и [простых ограничениях](../paradigm/Simple_constraints.md).
 
@@ -348,7 +348,7 @@ shipment (Invoice i) = AGGR ShipmentInvoice WHERE createShipment(i);
 
 ### Что такое сессия
 
-[Сессия изменений](../paradigm/Change_sessions.md) — место, где изменения накапливаются локально, а не пишутся в базу сразу. В нее попадают изменения [первичных свойств](../paradigm/Data_properties_DATA.md), в том числе локальных, и изменения классов объектов — созданные и удаленные объекты, `CHANGECLASS`. Пока изменения не применены, они остаются в этой сессии; что из них увидит другая сессия, решают вместе открывающий ее оператор — `NESTEDSESSION` показывает все изменения верхней сессии, `NEWSESSION` читает из базы, перенося локальные свойства, названные его `NESTED` — списком в скобках либо все сразу через `NESTED LOCAL`, — изменения классов, если задан `CLASSES`, и, перечислено оно или нет, всё объявленное `DATA LOCAL NESTED`, — и объявления самих свойств, ведь объявленное `DATA LOCAL NESTED` переносится само; текущую сессию действию задает контекст выполнения — сессия формы, сессия вызывающего действия либо сессия, переданная платформой.
+[Сессия изменений](../paradigm/Change_sessions.md) — место, где изменения накапливаются локально, а не пишутся в базу сразу. В нее попадают изменения [первичных свойств](../paradigm/Data_properties_DATA.md), в том числе локальных, и изменения классов объектов — созданные и удаленные объекты, `CHANGECLASS`. Пока изменения не применены, они остаются в этой сессии. Что из них увидит другая сессия, решают вместе открывающий ее оператор — `NESTEDSESSION` показывает все изменения верхней сессии, `NEWSESSION` читает из базы, перенося локальные свойства, названные его `NESTED` — списком в скобках либо все сразу через `NESTED LOCAL`, — изменения классов, если задан `CLASSES`, и, перечислено оно или нет, всё объявленное `DATA LOCAL NESTED`, — и объявления самих свойств, ведь объявленное `DATA LOCAL NESTED` переносится само. Текущую сессию действию задает контекст выполнения — сессия формы, сессия вызывающего действия либо сессия, переданная платформой.
 
 Значение свойства на начало сессии возвращает [оператор `PREV`](../paradigm/Previous_value_PREV.md), а производные от него [операторы изменений](../paradigm/Change_operators_SET_CHANGED_etc.md) `SET`, `DROPPED`, `CHANGED`, `SETCHANGED`, `DROPCHANGED`, `SETDROPPED` отвечают, что именно изменилось в сессии.
 
@@ -356,7 +356,7 @@ shipment (Invoice i) = AGGR ShipmentInvoice WHERE createShipment(i);
 
 ### NEWSESSION и NESTEDSESSION
 
-[Оператор `NEWSESSION`](../language/NEWSESSION_operator.md) выполняет вложенное действие в отдельной [сессии](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md), изолированной от текущей; [оператор `NESTEDSESSION`](../language/NESTEDSESSION_operator.md) — во вложенной, которая копирует в себя изменения текущей сессии, а применение внутри нее возвращает изменения обратно. Если любой из этих операторов выполняется во время [транзакции применения](../paradigm/Apply_changes_APPLY.md) текущей сессии, в этот момент сессия не создается — вложенное действие откладывается и выполняется в текущей сессии внутри той же транзакции.
+[Оператор `NEWSESSION`](../language/NEWSESSION_operator.md) выполняет вложенное действие в отдельной [сессии](../paradigm/New_session_NEWSESSION_NESTEDSESSION.md), изолированной от текущей, а [оператор `NESTEDSESSION`](../language/NESTEDSESSION_operator.md) — во вложенной, которая копирует в себя изменения текущей сессии, а применение внутри нее возвращает изменения обратно. Если любой из этих операторов выполняется во время [транзакции применения](../paradigm/Apply_changes_APPLY.md) текущей сессии, в этот момент сессия не создается — вложенное действие откладывается и выполняется в текущей сессии внутри той же транзакции.
 
 ```
 NEWSESSION [NEWSQL] [FORMS formId1, ..., formIdM] [NESTED [nestedPropertySelector] [CLASSES]] [SINGLE] action

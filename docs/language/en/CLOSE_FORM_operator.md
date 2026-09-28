@@ -23,7 +23,7 @@ WINDOW windowName
 
 The `CLOSE FORM` operator creates an action that closes, for the user, every open form the address names (sent to the client as a request). The action has no parameters and uses no [context](Action_operators.md#contextdependent). Closing is a request: a form with unsaved changes asks the user and may stay open. If the address names no open form, the action has no effect.
 
-The address names a form by any combination of the label it was opened with, its name, and the window it was opened into; at least one of the three has to be specified, and a part that is not specified does not narrow the address.
+The address names a form by any combination of the label it was opened with, its name, and the window it was opened into. At least one of the three has to be specified, and a part that is not specified does not narrow the address.
 
 ### Parameters
 

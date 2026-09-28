@@ -84,7 +84,7 @@ The `FORM` statement declares a new form and adds it to the current [module](../
 
 - `caption`
 
-    Form caption. [String literal](Literals.md#strliteral). If the caption is not defined, the form's name will be its caption. In the interactive view the caption of the form (of its window or tab) is the caption of its main container `BOX`, to which this literal is assigned; a data-dependent caption is set on that container in the [`DESIGN` statement](DESIGN_statement.md#containerprops).
+    Form caption. [String literal](Literals.md#strliteral). If the caption is not defined, the form's name will be its caption. In the interactive view the caption of the form (of its window or tab) is the caption of its main container `BOX`, to which this literal is assigned. A data-dependent caption is set on that container in the [`DESIGN` statement](DESIGN_statement.md#containerprops).
 
 ### Form options (`formOptions`)
 
@@ -114,9 +114,9 @@ The `FORM` statement declares a new form and adds it to the current [module](../
 
     Embeds into the form the contents of the listed previously declared forms: their objects, object groups and trees, properties and actions, filters and filter groups, orderings, events, hints (`HINTNOUPDATE`, `HINTTABLE`), and the design. The embedded elements keep their names and can be accessed in the subsequent blocks of this form, as well as in the [`EXTEND FORM`](EXTEND_FORM_statement.md) and [`DESIGN`](DESIGN_statement.md) statements, in the same way as the explicitly declared ones.
 
-    Without the `EXTEND` keyword, all elements of the embedded form are added as new ones, and its design is added as a separate block to the `OBJECTS` container of the [default design](../paradigm/Form_design.md#defaultDesign) of the current form. The default design containers of the embedded form then get names with the `(FORM f)` suffix, where `f` is the `alias`, or, if it is not specified, the name of the embedded form; such containers can be accessed in the `DESIGN` statement (for example `BOX(FORM f)`).
+    Without the `EXTEND` keyword, all elements of the embedded form are added as new ones, and its design is added as a separate block to the `OBJECTS` container of the [default design](../paradigm/Form_design.md#defaultDesign) of the current form. The default design containers of the embedded form then get names with the `(FORM f)` suffix, where `f` is the `alias`, or, if it is not specified, the name of the embedded form. Such containers can be accessed in the `DESIGN` statement (for example `BOX(FORM f)`).
 
-    With the `EXTEND` keyword, the elements of the embedded form for which the current form already has elements with the same names are not added as new ones but are identified with them: the contents and settings of the embedded form's element are transferred to the existing element, and the references to it from the other embedded elements are redirected. Name matching is performed for objects, properties and actions, filter groups, and design containers; automatically created elements (for example, the containers of an object group) follow the elements they belong to. The design is then merged with the design of the current form.
+    With the `EXTEND` keyword, the elements of the embedded form for which the current form already has elements with the same names are not added as new ones but are identified with them: the contents and settings of the embedded form's element are transferred to the existing element, and the references to it from the other embedded elements are redirected. Name matching is performed for objects, properties and actions, filter groups, and design containers. Automatically created elements (for example, the containers of an object group) follow the elements they belong to. The design is then merged with the design of the current form.
 
     - `alias`
 
@@ -135,11 +135,11 @@ The `FORM` statement declares a new form and adds it to the current [module](../
         - `FILTERGROUPS` - filter groups
         - `DESIGN` - design components
 
-        With the `EXTEND` keyword, the elements of the types for which no mapping block is specified are mapped automatically by name matching; an explicitly specified block disables the automatic mapping for the elements of its type.
+        With the `EXTEND` keyword, the elements of the types for which no mapping block is specified are mapped automatically by name matching. An explicitly specified block disables the automatic mapping for the elements of its type.
 
     - `newName1 = oldName1, ..., newNameK = oldNameK`
 
-        List of mapping pairs; the names are specified with [simple IDs](IDs.md#id). `oldName` is the name of an element on the embedded form, `newName` is the name on the current form. If an element named `newName` already exists on the current form, the element of the embedded form is identified with it; otherwise it is embedded under the name `newName`.
+        List of mapping pairs. The names are specified with [simple IDs](IDs.md#id). `oldName` is the name of an element on the embedded form, `newName` is the name on the current form. If an element named `newName` already exists on the current form, the element of the embedded form is identified with it. Otherwise it is embedded under the name `newName`.
 
 - `OBJECTS ...`
 

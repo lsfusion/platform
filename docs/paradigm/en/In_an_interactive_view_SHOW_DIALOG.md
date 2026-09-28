@@ -12,7 +12,7 @@ The operator works in two modes:
 -   *Synchronous* (`WAIT`) - waits for the user to **close** the form, then saves the execution results and passes control to the next action.
 -   *Asynchronous* (`NOWAIT`) - passes control to the next action right after **opening** a form on the client end.
 
-If neither mode is specified, the platform chooses one automatically: the operator works synchronously when the opened form is shown in a modal location, when the form it is opened from is itself modal, or when the current session may still be used after this action; otherwise it works asynchronously.
+If neither mode is specified, the platform chooses one automatically: the operator works synchronously when the opened form is shown in a modal location, when the form it is opened from is itself modal, or when the current session may still be used after this action. Otherwise it works asynchronously.
 
 ### Form location {#location}
 
@@ -28,11 +28,11 @@ By default, forms in the synchronous mode are shown as windows, in the asynchron
 
 A tab opened in the synchronous mode blocks the calling form until it is closed. If the calling form is itself shown as a window, the opened form is shown as a window instead of a tab.
 
-Each execution of the action opens a new instance of the form, even if the same form is already open, unless the opening is set to activate an instance that is already open: then, if the same form is open in the same window with the same label, that form is [activated](Activation_ACTIVATE.md) instead of a new one. Such an opening does so either always, or only while duplicate forms are forbidden for the user; opening a form from the [navigator](Navigator.md) does the latter.
+Each execution of the action opens a new instance of the form, even if the same form is already open, unless the opening is set to activate an instance that is already open: then, if the same form is open in the same window with the same label, that form is [activated](Activation_ACTIVATE.md) instead of a new one. Such an opening does so either always, or only while duplicate forms are forbidden for the user. Opening a form from the [navigator](Navigator.md) does the latter.
 
 
 :::info
-In the current implementation of the platform, the floating window, the embedded form, and the popup are modal; the tab and the container form are not. This is the modality the platform uses when choosing the mode automatically (see above).
+In the current implementation of the platform, the floating window, the embedded form, and the popup are modal, while the tab and the container form are not. This is the modality the platform uses when choosing the mode automatically (see above).
 :::
 
 ### System action management
@@ -59,7 +59,7 @@ The operator dialog form is available in the synchronous mode only.
 
 When opening a form, you can specify that all of its properties should be available in the "read-only"mode. In this case, the behavior will be identical to the behavior when during form creation, the "read-only" mode is specified for each [property view](Interactive_view.md#property).
 
-You can also specify that, when the form is closed with `System.formOk`, all [constraints](Constraints.md) are checked first; if any of them is violated, the form stays open and is not closed.
+You can also specify that, when the form is closed with `System.formOk`, all [constraints](Constraints.md) are checked first. If any of them is violated, the form stays open and is not closed.
 
 Also, when calling the form, you can specify that it will be opened in a [new](New_session_NEWSESSION_NESTEDSESSION.md) (nested) session. In this case, [passing objects](Open_form.md#params) and value input will be performed in the current session (so it makes sense to use this option only if you need to pass objects and/or input a value; otherwise, it makes more sense to use a [new session](New_session_NEWSESSION_NESTEDSESSION.md) operator).
 

@@ -5,7 +5,7 @@ title: 'Time'
 
 `Time` is a [system module](System_modules.md) that collects properties, actions, and classes for working with time: reading the current date and time, converting between time classes, extracting date parts, date and time arithmetic, intervals, and calendar classes (months, days of the week). It is pulled in via `REQUIRE Time` (`System` is pulled in automatically).
 
-The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (without time zone) and `ZDATETIME` (with time zone), as well as `INTEGER` / `LONG` for counts of days, seconds, milliseconds, and so on. Most properties are thin wrappers over the matching PostgreSQL date/time functions; the underlying PostgreSQL expression is given in each row where the property maps directly to one (`$1`, `$2`, … are the arguments in the listed order). The rest are compositions of other `Time` properties, and the composition is named instead.
+The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (without time zone) and `ZDATETIME` (with time zone), as well as `INTEGER` / `LONG` for counts of days, seconds, milliseconds, and so on. Most properties are thin wrappers over the matching PostgreSQL date/time functions. The underlying PostgreSQL expression is given in each row where the property maps directly to one (`$1`, `$2`, … are the arguments in the listed order). The rest are compositions of other `Time` properties, and the composition is named instead.
 
 ### Current value
 
@@ -106,7 +106,7 @@ Lookup by number runs the other way: `month[INTEGER]`, `DOW[INTEGER]`. The forms
 
 ### Recipes
 
-The most common date calculations in schedules are compositions of the properties above. Day counts are whole days; `d` is any `DATE`.
+The most common date calculations in schedules are compositions of the properties above. Day counts are whole days, and `d` is any `DATE`.
 
 ```lsf
 // today plus N days (N may be negative)

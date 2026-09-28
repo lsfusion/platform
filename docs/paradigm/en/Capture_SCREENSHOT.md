@@ -30,7 +30,7 @@ The captured content is written to the target property when a target property is
 
 ### Client support {#client}
 
-The capture operator runs only in the web client. It relies on the live DOM in the browser to render the screenshot; on the desktop client the action is not supported and any attempt to execute it fails.
+The capture operator runs only in the web client. It relies on the live DOM in the browser to render the screenshot. On the desktop client the action is not supported and any attempt to execute it fails.
 
 ### Language
 

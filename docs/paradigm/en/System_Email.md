@@ -81,7 +81,7 @@ A sent folder is marked per account: `sentFolder[Account]` is the folder that ou
 
 `AttachmentEmail` is the class of a message attachment. `email[AttachmentEmail]` is the message it belongs to (with cascade `DELETE`), `name[AttachmentEmail]` is the attachment name, `file[AttachmentEmail]` is its contents, and `filename[AttachmentEmail]` joins the name with the file extension. `attachment0[Email, INTEGER]` returns the attachment at a given zero-based position within a message, by the per-message order in `index`.
 
-`openFile[AttachmentEmail]` opens the attachment on the client; `saveFile[AttachmentEmail]` saves it through a client save dialog under the attachment name.
+`openFile[AttachmentEmail]` opens the attachment on the client, and `saveFile[AttachmentEmail]` saves it through a client save dialog under the attachment name.
 
 ### Receiving mail
 
@@ -95,7 +95,7 @@ A sent folder is marked per account: `sentFolder[Account]` is the folder that ou
 
 `receiveEmailAction[]`, `receiveEmailAction[Account]`, `receiveEML[Account]`, and `importEML[Account, LONG, FILE]` are native actions bound through the `INTERNAL` operator to the platform's mail-receiving Java implementation.
 
-The receiving connection itself is configured by two [working parameters](Working_parameters.md). `mailReceiveTimeout` (`5000` ms by default) sets the timeout for waiting on the mail server's answer: a read that does not fit into that time aborts the receive with an error. A value of `0` removes the timeout entirely rather than tightening it. The timeout for establishing the connection itself is not set by this parameter, and sending is not affected by it. `ignoreBodyStructureSizeFix` (`false` by default) tells the platform not to trust the size of a message part reported by the IMAP server and to read the attachment until the data actually ends; this is a workaround for servers that report a wrong size, which otherwise makes attachments arrive truncated. On an attachment with a `.dbf` extension the trailing line break is cut off as well, if it ended up there. For POP3 accounts the parameter changes nothing.
+The receiving connection itself is configured by two [working parameters](Working_parameters.md). `mailReceiveTimeout` (`5000` ms by default) sets the timeout for waiting on the mail server's answer: a read that does not fit into that time aborts the receive with an error. A value of `0` removes the timeout entirely rather than tightening it. The timeout for establishing the connection itself is not set by this parameter, and sending is not affected by it. `ignoreBodyStructureSizeFix` (`false` by default) tells the platform not to trust the size of a message part reported by the IMAP server and to read the attachment until the data actually ends. This is a workaround for servers that report a wrong size, which otherwise makes attachments arrive truncated. On an attachment with a `.dbf` extension the trailing line break is cut off as well, if it ended up there. For POP3 accounts the parameter changes nothing.
 
 ### Sending and composing
 
@@ -103,7 +103,7 @@ The receiving connection itself is configured by two [working parameters](Workin
 
 `writeMessage` opens the compose dialog for an `Email` and sends it. It comes in two forms:
 
-- `writeMessage[STRING, STRING, STRING, STRING, STRING, RICHTEXT, STRING, STRING]` — the full form; creates a new `Email` in a fresh session, fills its from / to / cc / bcc / subject / body and the quoted reply text, opens the `writeMessage` dialog, and on confirmation builds the final HTML body (the message followed by the quoted reply) and calls `send[Email]`.
+- `writeMessage[STRING, STRING, STRING, STRING, STRING, RICHTEXT, STRING, STRING]` — the full form. Creates a new `Email` in a fresh session, fills its from / to / cc / bcc / subject / body and the quoted reply text, opens the `writeMessage` dialog, and on confirmation builds the final HTML body (the message followed by the quoted reply) and calls `send[Email]`.
 - `writeMessage[Account]` — composes a new message from the given account, taking the sender address from `fromAddress[Account]` (or the account `name[Account]`).
 
 `reply[Email]` opens the compose dialog as a reply to a message: it swaps sender and recipient, prefixes the subject with `Re:`, and quotes the original body and its send date and sender as the reply header.
@@ -121,7 +121,7 @@ The navigator gets the `mail` form under the `notification` folder.
 
 ### Language
 
-- [`EMAIL` operator](../language/EMAIL_operator.md) — sends a message; `send[Email]` is written with it.
+- [`EMAIL` operator](../language/EMAIL_operator.md) — sends a message. `send[Email]` is written with it.
 - [`INTERNAL` operator](../language/INTERNAL_operator.md) — binds the mail-receiving actions to their Java implementation.
 
 ### See also
@@ -129,5 +129,5 @@ The navigator gets the `mail` form under the `notification` folder.
 - [`System modules`](System_modules.md) — the general list of platform modules.
 - [`SystemEvents`](System_SystemEvents.md) — the server-lifecycle module pulled in with `Email`.
 - [`Reflection`](System_Reflection.md) — the metadata module pulled in with `Email`.
-- [`Access to an external system (EXTERNAL)`](Access_to_an_external_system_EXTERNAL.md) — calling out to external services; mail is one such external system.
+- [`Access to an external system (EXTERNAL)`](Access_to_an_external_system_EXTERNAL.md) — calling out to external services. Mail is one such external system.
 - [`Security`](System_Security.md) — uses email to send a password-reset message.

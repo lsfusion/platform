@@ -111,7 +111,7 @@ annotationSetting
 
 - `HINT | NOHINT`
 
-    Keywords controlling automatic incremental caching of a property's changes. `HINT` forces this caching for the property when applicable; `NOHINT` disables it for the property and the properties depending on it. Without either, the platform decides automatically (heuristically). The cached values only supplement the definition of the property in the queries that read it: even with the caching, the property is not computed in a separate query - that is what [materialization](../paradigm/Materializations.md) does.
+    Keywords controlling automatic incremental caching of a property's changes. `HINT` forces this caching for the property when applicable, while `NOHINT` disables it for the property and the properties depending on it. Without either, the platform decides automatically (heuristically). The cached values only supplement the definition of the property in the queries that read it: even with the caching, the property is not computed in a separate query - that is what [materialization](../paradigm/Materializations.md) does.
 
 - `NONULL [DELETE] eventClause`
 
@@ -127,7 +127,7 @@ annotationSetting
 
 - `AGGR`
 
-    Keyword marking the property as an [aggregation](../paradigm/Aggregations.md) property. It is intended for a property that takes a single parameter of a [user-defined class](../paradigm/Classes.md) and returns the object into which that parameter is aggregated; only such a property is registered as an aggregation property of that class. The platform then treats it like the property that the [`AGGR` operator](AGGR_operator.md) creates automatically to look up the aggregated object from its parameters: for a given parameter object it finds the existing aggregated object, which lets the platform check the aggregation's consistency and reuse that object instead of creating a duplicate. This is a property option and must not be confused with the `AGGR` operator, which is a property definition.
+    Keyword marking the property as an [aggregation](../paradigm/Aggregations.md) property. It is intended for a property that takes a single parameter of a [user-defined class](../paradigm/Classes.md) and returns the object into which that parameter is aggregated. Only such a property is registered as an aggregation property of that class. The platform then treats it like the property that the [`AGGR` operator](AGGR_operator.md) creates automatically to look up the aggregated object from its parameters: for a given parameter object it finds the existing aggregated object, which lets the platform check the aggregation's consistency and reuse that object instead of creating a duplicate. This is a property option and must not be confused with the `AGGR` operator, which is a property definition.
 
 - `AUTOSET`
 
@@ -147,7 +147,7 @@ annotationSetting
 
 - `customView`
 
-    Specifying a custom view of the property value when the property is added to the form. It uses the `customView` syntax of the [property block](Properties_and_actions_block.md) of the [`FORM` statement](FORM_statement.md), including `CUSTOM`, `SELECT` and `NOSELECT`, and is described there; the rendering and editing settings specified in the property block override the corresponding settings of the declaration, and the omitted ones stay inherited.
+    Specifying a custom view of the property value when the property is added to the form. It uses the `customView` syntax of the [property block](Properties_and_actions_block.md) of the [`FORM` statement](FORM_statement.md), including `CUSTOM`, `SELECT` and `NOSELECT`, and is described there. The rendering and editing settings specified in the property block override the corresponding settings of the declaration, and the omitted ones stay inherited.
 
 - `ON eventType { actionOperator }`
 
@@ -354,7 +354,7 @@ Property annotation. Begins with `@@`. The following annotations are supported:
 
     Keywords. `STICKY` indicates that the property in the table will be pinned to the left and remain visible when scrolling to the right. `NOSTICKY` removes this pinning. By default, `STICKY` or `NOSTICKY` is determined heuristically: a property (but not an action) is pinned if it belongs to the `System.id` [group](../paradigm/Groups_of_properties_and_actions.md). Other properties are pinned if the classes of their parameters not fixed by form objects outside the object group of the table are inferable and, in addition, either its name contains the word `name`, `id`, `number` or `caption` and it is a [data property](../paradigm/Data_properties_DATA.md) itself or is obtained from data properties by string addition or concatenation, a class cast, parameter reordering or a selection, or, according to the table statistics, one property value corresponds to one row of the object group (with a row count estimate not above `minInterfaceStatForValueUnique`, `100` by default, the statistics are not consulted).
 
-    In the web client the pinned columns are limited to the share of the table width set by the `maxStickyLeft` server setting (`0.33` by default): the columns are pinned from left to right as long as their total width fits into that share; the column with which the total would exceed it, and every `STICKY` column to the right of it, are not pinned and scroll with the rest. So a wide `STICKY` column can stay unpinned in a narrow window; room for it is freed by `NOSTICKY` on the columns to its left that are pinned by the heuristic.
+    In the web client the pinned columns are limited to the share of the table width set by the `maxStickyLeft` server setting (`0.33` by default): the columns are pinned from left to right as long as their total width fits into that share. The column with which the total would exceed it, and every `STICKY` column to the right of it, are not pinned and scroll with the rest. So a wide `STICKY` column can stay unpinned in a narrow window. Room for it is freed by `NOSTICKY` on the columns to its left that are pinned by the heuristic.
 
 - `syncType`
 

@@ -19,13 +19,13 @@ EXTEND FORM formName
 
 The `EXTEND FORM` statement allows you to extend an existing form with additional [form blocks](FORM_statement.md#blocks), written just as in a form declaration. Within these blocks you can refer to the objects, properties, and actions already declared on the form — for example, to place a new element relative to an existing one, or to filter an added object group by an object already on the form.
 
-Besides the blocks that add new elements to the form, the statement can use *extension blocks* that modify the elements already added to the form: the [object extension block](Object_blocks.md#extendobjects), the [object tree extension block](Object_blocks.md#extendtree), the [property and action extension block](Properties_and_actions_block.md#extendproperties), and the [filter group extension block](Filters_and_sortings_block.md#filtergroup). The object, object tree, and property and action extension blocks are available starting with platform version 7.0; in earlier versions the filter group extension block is the only extension block.
+Besides the blocks that add new elements to the form, the statement can use *extension blocks* that modify the elements already added to the form: the [object extension block](Object_blocks.md#extendobjects), the [object tree extension block](Object_blocks.md#extendtree), the [property and action extension block](Properties_and_actions_block.md#extendproperties), and the [filter group extension block](Filters_and_sortings_block.md#filtergroup). The object, object tree, and property and action extension blocks are available starting with platform version 7.0. In earlier versions the filter group extension block is the only extension block.
 
 ## Parameters
 
 - `formName`
 
-    The name of the form being extended. [Composite ID](IDs.md#cid). It must refer to a form that already exists, declared in this or another [module](../paradigm/Modules.md); a new form is not created. The form keeps the caption and icon set at its declaration; they are not specified here.
+    The name of the form being extended. [Composite ID](IDs.md#cid). It must refer to a form that already exists, declared in this or another [module](../paradigm/Modules.md). A new form is not created. The form keeps the caption and icon set at its declaration, and they are not specified here.
 
 - `formBlock1 ... formBlockN`
 

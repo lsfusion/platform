@@ -7,7 +7,7 @@ The *loop* operator creates an [action](Actions.md) that iterates all object col
 
 The set of iterated object collections is fixed before the loop starts: the condition is evaluated once, the matching object collections are read, and the main action is then executed once per collection in that set. Changes made by the main action — even to the data underlying the condition — do not affect the set being iterated.
 
-By default, object collections are iterated in arbitrary order. The developer can explicitly define this order by specifying a list of properties used as sort keys: object collections are compared by the value of the first property, ties are broken by the second property, and so on. The whole list is used in ascending order by default; the developer can request descending order, in which case it applies to the entire list.
+By default, object collections are iterated in arbitrary order. The developer can explicitly define this order by specifying a list of properties used as sort keys: object collections are compared by the value of the first property, ties are broken by the second property, and so on. The whole list is used in ascending order by default. The developer can request descending order, in which case it applies to the entire list.
 
 As for other [set operations](Set_operations.md), the condition must be such that the operation is [correct](Set_operations.md#correct).
 

@@ -13,7 +13,7 @@ RECALCULATE [CLASSES | NOCLASSES] propertyId(expr1, ..., exprN) [WHERE whereExpr
 
 ### Description
 
-The `RECALCULATE` operator creates an action that recomputes the stored values of a materialized property from its definition, for every set of arguments where `whereExpr` is not `NULL`. The argument list may introduce new local parameters; such parameters correspond to objects being iterated and are not parameters of the created action.
+The `RECALCULATE` operator creates an action that recomputes the stored values of a materialized property from its definition, for every set of arguments where `whereExpr` is not `NULL`. The argument list may introduce new local parameters. Such parameters correspond to objects being iterated and are not parameters of the created action.
 
 ### Parameters
 
@@ -23,11 +23,11 @@ The `RECALCULATE` operator creates an action that recomputes the stored values o
 
 - `expr1, ..., exprN`
 
-    A list of [expressions](Expression.md) or [typed parameters](IDs.md#paramid) defining the arguments of the property. When using typed parameters, you can both reference already declared parameters and declare new local parameters; when using expressions, new local parameters cannot be added. The number of items in this list must equal the number of parameters of the property.
+    A list of [expressions](Expression.md) or [typed parameters](IDs.md#paramid) defining the arguments of the property. When using typed parameters, you can both reference already declared parameters and declare new local parameters. When using expressions, new local parameters cannot be added. The number of items in this list must equal the number of parameters of the property.
 
 - `CLASSES | NOCLASSES`
 
-    Keyword limiting what is recalculated. `CLASSES` recalculates only the property's class data, not its values; `NOCLASSES` recomputes only the values, assuming the class data is valid. If neither is specified, the values are recomputed (and the class data is refreshed when needed).
+    Keyword limiting what is recalculated. `CLASSES` recalculates only the property's class data, not its values, while `NOCLASSES` recomputes only the values, assuming the class data is valid. If neither is specified, the values are recomputed (and the class data is refreshed when needed).
 
 - `whereExpr`
 

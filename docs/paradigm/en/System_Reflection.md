@@ -49,7 +49,7 @@ The [navigator](Navigator.md) tree is represented by `NavigatorElement` and its 
 
 ### Actions and properties metadata
 
-`ActionOrProperty` is the abstract base for both properties and actions; `Property` and `Action` are its concrete subclasses.
+`ActionOrProperty` is the abstract base for both properties and actions, while `Property` and `Action` are its concrete subclasses.
 
 | Property                                                    | What it holds                                                                  |
 |------------------------------------------------------------|--------------------------------------------------------------------------------|
@@ -113,7 +113,7 @@ The display of a column can be tuned globally and overridden per user. Each pref
 
 `hasUserPreferences[GroupObject]` and `hasUserPreferences[GroupObject, CustomUser]` flag a group object whose column layout has been customized globally or for a given user. When such preferences exist, a newly added placement is set to `Hide` so it does not appear until explicitly enabled, and the preferences are reset if every shown column is removed from the form.
 
-`GroupObject` is one object group on a form; it carries its own display settings, again in a global and a per-user form: `fontSize`, `isFontBold`, `isFontItalic`, `pageSize` (rows per page), and `headerHeight`.
+`GroupObject` is one object group on a form. It carries its own display settings, again in a global and a per-user form: `fontSize`, `isFontBold`, `isFontItalic`, `pageSize` (rows per page), and `headerHeight`.
 
 `FormGrouping` is a saved grouping over a group object's placements: `name[FormGrouping]`, `groupObject[FormGrouping]`, `itemQuantity[FormGrouping]`, and per-placement `groupOrder` / `sum` / `max` / `pivot` settings.
 
@@ -174,6 +174,6 @@ All five forms are placed in a `metadata` navigator folder under the system `Adm
 - [`Indexes`](Indexes.md) — table indexes.
 - [`Materializations`](Materializations.md) — materialized columns recalculated by the service actions.
 - [`System`](System_System.md) — the root module pulled in automatically.
-- [`Authentication`](System_Authentication.md) — users and contacts, pulled in via `REQUIRE`; per-user form preferences are keyed by `CustomUser`.
+- [`Authentication`](System_Authentication.md) — users and contacts, pulled in via `REQUIRE`. Per-user form preferences are keyed by `CustomUser`.
 - [`Security`](System_Security.md) — sets access permissions on the navigator elements, properties, and actions reflected here.
 - [`Service`](System_Service.md) — service actions over the tables and materialized columns reflected here.

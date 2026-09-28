@@ -79,7 +79,7 @@ title: 'Rules: view logic'
    `name(t) IF active(t) IF in(b, t)`, a `TOP` limit or a
    condition without a write path leave an ordinary
    non-editable string. The options are all objects with a
-   non-empty view; to offer not all objects of the class, the
+   non-empty view. To offer not all objects of the class, the
    assistant SHOULD take the view under an additional condition
    in its own parentheses —
    `GROUP CONCAT (name(Tag t) IF active(t)) IF in(b, t), ', ' ORDER name(t), t` —
@@ -159,7 +159,7 @@ title: 'Rules: view logic'
     An entry whose expression carries a comma not enclosed in
     brackets of its own needs a form this block accepts: with
     no common-parameter header, write it as `alias = (expr)`,
-    since a bare `(expr)` is a parse error; with
+    since a bare `(expr)` is a parse error. With
     `PROPERTIES(o)`, an entry is a property usage even after
     `alias =`, so no expression is accepted at all and the
     only remedy is a named property added by its ID.
@@ -181,11 +181,11 @@ title: 'Rules: view logic'
     - a composition through several links (`name(agent(listing(i)))`
       on a form with the object `i`) — the user is offered a
       choice of the object of the first link (`Listing`, displayed
-      by the rest of the chain), and `listing(i)` is written; the
+      by the rest of the chain), and `listing(i)` is written. The
       further links and their objects do not change. Such an entry
       re-points the row object's own link under a caption that
       names something else, so it MUST be marked `READONLY` unless
-      re-pointing that link is what the entry is for; changing the
+      re-pointing that link is what the entry is for. Changing the
       object behind a further link (`agent(listing(i))`) has no
       default write path and needs its own action or the form of
       that object;
@@ -250,7 +250,7 @@ title: 'Rules: view logic'
    alignment model, or the container idioms. They give only
    placement meta-advice.
    Before writing or modifying any `DESIGN`, the assistant MUST
-   retrieve the `Form_design` documentation; it MUST NOT rely on
+   retrieve the `Form_design` documentation. It MUST NOT rely on
    these rules as if they described the layout model.
 
    The complete tables of the properties of components of every
@@ -373,7 +373,7 @@ title: 'Rules: view logic'
 
 1. Before designing or editing jrxml report templates, or reasoning
    about report structure or template naming, the assistant MUST
-   retrieve the `Report_design` documentation; it MUST NOT rely on
+   retrieve the `Report_design` documentation. It MUST NOT rely on
    these rules as a template-format or layout reference.
 
 2. When a form has no object groups independent of each other
@@ -453,7 +453,7 @@ title: 'Rules: view logic'
    and is substituted in the current locale at runtime:
    `'position'` can become `'pozycja'`.
    Leading and trailing spaces take no part in the match and
-   are kept around the substitution; a literal that is empty
+   are kept around the substitution. A literal that is empty
    or made of spaces alone is never replaced.
 
    The substitution also affects a literal a value is compared

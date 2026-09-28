@@ -10,7 +10,7 @@ map that says which article to open. It is deliberately not a short version of
 those articles. What is here is enough to classify a task and answer a rough conceptual
 question.
 
-Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`; when unsure which one, omit the filter and it searches all three and merges them.
+Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`. When unsure which one, omit the filter and it searches all three and merges them.
 
 `brief` and `rules` are not searched. Each is a small set of articles, named and delivered whole by `lsfusion_get_guidance`: `brief` says what an area offers, `rules` states the constraints on using it. The `rules` map, in the top `Rules` article, says when reading one of its articles becomes mandatory.
 
@@ -20,28 +20,28 @@ Which branch: `language` — statement / operator syntax; `paradigm` — concept
   action is signed by the classes of its parameters.
 - A **property** computes a fact and changes nothing. It is either stored
   (`DATA`) or calculated from an expression.
-- An **action** changes state. Properties say what is true; actions say how it
+- An **action** changes state. Properties say what is true, and actions say how it
   evolves.
 - A **form** describes objects and the properties shown for them, and the same
   description serves the interactive view, the printed one and the structured
   one.
 - Changes do not reach the database as they are made. They collect in a
   **change session** until `APPLY` writes them or `CANCEL` drops them.
-- A project is composed of **modules**; how data is stored and made fast is the
+- A project is composed of **modules**. How data is stored and made fast is the
   physical model, and exchange with anything outside is integration.
 
 Three misreadings worth pre-empting, because everything downstream depends
 on them:
 
-- A class does not map to a table. A table holds property values; its key
+- A class does not map to a table. A table holds property values, and its key
   fields hold object ids and are typed by the parameter classes of those
   properties.
 - The system modules are a library of ordinary properties and actions, not
-  built-in language operators. Only `System` is implicit; the rest need
+  built-in language operators. Only `System` is implicit, and the rest need
   `REQUIRE` before their declarations are reachable.
 - `.lsf` is not a shell around code in another language. The application —
   its model, computations, checks, reactions to changes, forms and access
-  rights — is written in these elements; Java and JavaScript enter it only
+  rights — is written in these elements. Java and JavaScript enter it only
   where the platform itself admits them (`INTERNAL`, `EXTERNAL`, `FORMULA`,
   `CUSTOM`) and for what those operators are for.
 
@@ -88,5 +88,5 @@ branch for it.
 10. `EXTEND / ABSTRACT / += / +{` → extension and polymorphism points.
 11. `WHEN`, `<- WHEN` → events on a data change; `ON` inside a `FORM` → a form
     event.
-12. `Utils` / `Time` / `System` / `Authentication` → system modules; string,
+12. `Utils` / `Time` / `System` / `Authentication` → system modules: string,
     number and date functions, `currentUser`, `currentDate` live there.

@@ -543,6 +543,61 @@ for that concept
 in the same
 or related articles.
 
+Punctuation:
+
+In the Russian text
+the assistant MUST NOT
+join two independent clauses
+with a semicolon:
+in ordinary Russian prose
+the mark is rare,
+reserved for long,
+internally complex sentences,
+and otherwise reads
+as punctuation
+carried over
+from English.
+Such clauses
+MUST be written
+as separate sentences,
+or joined
+by a comma
+with a conjunction,
+whichever reads
+more naturally.
+The rewrite
+MUST NOT leave
+two independent clauses
+joined by a bare comma
+with no conjunction:
+where no conjunction fits,
+the clauses
+become separate sentences.
+The semicolon
+MAY stay
+only where Russian
+normally keeps it:
+between the items
+of an enumeration,
+whether they are
+list items
+or parts
+of one sentence.
+Inside code
+it is part
+of the syntax
+and MUST be
+left alone.
+In the English text
+the assistant SHOULD
+apply the same preference
+wherever the semicolon
+is only
+a stylistic choice,
+so that the two
+language versions
+stay parallel.
+
 The assistant MUST NOT describe a construction
 by metaphor, analogy,
 or a label imported

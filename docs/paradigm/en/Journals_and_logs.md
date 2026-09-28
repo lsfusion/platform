@@ -40,7 +40,7 @@ Stores information about the dates and times when the application server was sta
 
 Contains more detailed information about the changes which were reflected in the `Session` section of the connection log. The `Change` column displays a list of Properties (columns) where the values changed, as well as the number of changes (rows). Only changes in the current form are logged: dependent Properties that change simultaneously on other tables do not feature on this list.
 
-By default the list of changed properties is not logged — only the summary counts remain in the `Change` column; full logging is enabled by the `logChangesSession` setting.
+By default the list of changed properties is not logged — only the summary counts remain in the `Change` column. Full logging is enabled by the `logChangesSession` setting.
 
 The form lets you filter the changes made by users (excluding system changes) by checking `Only user changes`.
 

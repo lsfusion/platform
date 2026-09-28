@@ -7,7 +7,7 @@ The [form](Forms.md) [extension](Extensions.md) technique allows the developer t
 
 Form extension allows you to extract a specific functionality into a separate module, which when loaded will cause new components to be "embedded" into existing forms. The disadvantage of this approach is that this module must know the precise structure and design of the form which it depends on, and when these are modified the module may become inoperative.
 
-A contributed object, property, or action can be given a chosen position relative to the ones already on the form — before or after a specific one, or at the start or end. For objects this position sets their place in the form's [order of object groups](Form_structure.md#objects); that order in turn governs a property's [display group](Form_structure.md#drawgroup) and the [object group a filter applies to](Form_structure.md#filters).
+A contributed object, property, or action can be given a chosen position relative to the ones already on the form — before or after a specific one, or at the start or end. For objects this position sets their place in the form's [order of object groups](Form_structure.md#objects). That order in turn governs a property's [display group](Form_structure.md#drawgroup) and the [object group a filter applies to](Form_structure.md#filters).
 
 ### Language
 

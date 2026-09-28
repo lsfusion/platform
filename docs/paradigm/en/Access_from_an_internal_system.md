@@ -12,7 +12,7 @@ This way is especially convenient and efficient when the interaction is very clo
 It is worth noting that in order to access the Java elements of the lsFusion system directly, you must first obtain a link to an object that will have interfaces for finding these Java elements. This is usually done in one of two ways:
 
 1.  If the initial call comes from the lsFusion system via the [Java interaction](Access_to_an_internal_system_INTERNAL_FORMULA.md#javato) mechanism, the action object "through which" the call is done may be used as the "search object" (the class of this action must be inherited from `lsfusion.server.physics.dev.integration.internal.to.InternalAction`, which in turn has all the required interfaces). What exactly is available in such a call and an example Java class are covered in [internal call (`INTERNAL`)](Internal_call_INTERNAL.md#java).
-2.  If the object from whose method the lsFusion system must be accessed is a Spring bean, the required platform dependencies are obtained through dependency injection. The canonical pattern for such a component is to extend the `EventServer` hierarchy; for details see [custom Spring bean (`EventServer`)](Custom_Spring_bean_EventServer.md).
+2.  If the object from whose method the lsFusion system must be accessed is a Spring bean, the required platform dependencies are obtained through dependency injection. The canonical pattern for such a component is to extend the `EventServer` hierarchy. For details see [custom Spring bean (`EventServer`)](Custom_Spring_bean_EventServer.md).
 
 The Java classes and methods shared by both paths (`LP` / `LA`, `DataSession`, `ExecutionStack`, `InternalAction` / `EventServer`, and so on) are catalogued in [Java API for integrations](Java_integration_API.md).
 

@@ -7,9 +7,9 @@ The *profiler* is a built-in platform mechanism that collects execution statisti
 
 ### Start and stop
 
-Data collection is controlled by a pair of actions, *Start profiling* and *Stop profiling*, available on the `Administration > System > Profiler` form. From start to stop the platform records property and action invocations; the data is persisted on the application server and becomes available for analysis once profiling is stopped.
+Data collection is controlled by a pair of actions, *Start profiling* and *Stop profiling*, available on the `Administration > System > Profiler` form. From start to stop the platform records property and action invocations. The data is persisted on the application server and becomes available for analysis once profiling is stopped.
 
-On stop, the collected arcs are written to the database in batches; the batch size is set by the [working parameter](Working_parameters.md) `profilerBatchSize` (`10000` arcs by default). It also decides how fine-grained the progress bar shown during that write is.
+On stop, the collected arcs are written to the database in batches. The batch size is set by the [working parameter](Working_parameters.md) `profilerBatchSize` (`10000` arcs by default). It also decides how fine-grained the progress bar shown during that write is.
 
 ### Call graph
 
@@ -53,7 +53,7 @@ The collected data is shown on several tabs:
 |Call tree|A hierarchical view of arcs — *down* (what the selected node calls) and *up* (who calls it)|
 |Raw data|Full list of arcs for arbitrary analysis|
 
-User and form filters narrow the selection to a specific context; metrics are recomputed from the same underlying data set, no rerun of the profiler is required.
+User and form filters narrow the selection to a specific context. Metrics are recomputed from the same underlying data set, no rerun of the profiler is required.
 
 ### Query-plan analysis settings
 
@@ -65,6 +65,6 @@ The same form has a separate `SQL` tab that configures parameters affecting how 
 |Compile plan|Log the compile plan as well, not only the execution plan|
 |Time threshold|Minimum query execution time starting from which a plan reaches the log|
 
-The values on this tab are stored in the database as the [working parameters](Working_parameters.md) of the same names (`explainJavaStack`, `explainCompile`, `explainThreshold`) and stay in effect after a restart until changed here or in the settings form; like any value from the database, they take priority over the values set in the settings files and startup parameters.
+The values on this tab are stored in the database as the [working parameters](Working_parameters.md) of the same names (`explainJavaStack`, `explainCompile`, `explainThreshold`) and stay in effect after a restart until changed here or in the settings form. Like any value from the database, they take priority over the values set in the settings files and startup parameters.
 
 These parameters are a separate mechanism, not included in the graph the profiler collects, but typically used alongside it for in-depth analysis of specific «hot spots».

@@ -7,7 +7,7 @@ The *new thread* operator executes an action in a thread other than the current 
 
 By default, an action is executed once in a new thread, immediately after the creation of this thread. However, if necessary, the action can be executed with a defined delay and/or performed continuously at a specified time interval.
 
-If needed, a thread can return a value; it is written into a designated property after the thread completes, provided the enclosing execution-service operator waits for completion (see below).
+If needed, a thread can return a value. It is written into a designated property after the thread completes, provided the enclosing execution-service operator waits for completion (see below).
 
 The thread-creation operator itself does not open a new [change session](Change_sessions.md) or a separate SQL connection. The environment in which the body actually runs depends on the execution service (see below).
 
@@ -17,15 +17,15 @@ Beyond the thread itself, it is useful to specify where it runs — which pool o
 
 #### Server-side execution
 
-A fixed-size server-side thread pool — thread actions run on the application server in its worker threads and share the change session with the calling code. Since change sessions are not thread-safe, the thread body is typically wrapped in a [new session](New_session_NEWSESSION_NESTEDSESSION.md); if a separate database transaction is required, a [new session on a separate SQL connection](New_session_NEWSESSION_NESTEDSESSION.md#newsql) is used. The pool size is given by an integer value. Delayed and periodic dispatches are served by the server-side pool scheduler.
+A fixed-size server-side thread pool — thread actions run on the application server in its worker threads and share the change session with the calling code. Since change sessions are not thread-safe, the thread body is typically wrapped in a [new session](New_session_NEWSESSION_NESTEDSESSION.md). If a separate database transaction is required, a [new session on a separate SQL connection](New_session_NEWSESSION_NESTEDSESSION.md#newsql) is used. The pool size is given by an integer value. Delayed and periodic dispatches are served by the server-side pool scheduler.
 
 #### Client-side execution
 
-A client-side dispatcher tied to a user's [connection](User_IS_interaction.md) — thread actions are delivered to that connection and executed on the application server in their own fresh change session at the connection's navigator level, not bound to any opened form. The caller's session is not inherited, so wrapping the body in a new session is not needed. This mode lets the inner action use [user-interaction](User_IS_interaction.md) operators, including [opening forms](Open_form.md) in [interactive view](In_an_interactive_view_SHOW_DIALOG.md) — they target the UI of that connection; a form opened by such a thread gets its own session through the usual rules. Delayed and periodic dispatches are scheduled by the client-side timer in the browser or the desktop client.
+A client-side dispatcher tied to a user's [connection](User_IS_interaction.md) — thread actions are delivered to that connection and executed on the application server in their own fresh change session at the connection's navigator level, not bound to any opened form. The caller's session is not inherited, so wrapping the body in a new session is not needed. This mode lets the inner action use [user-interaction](User_IS_interaction.md) operators, including [opening forms](Open_form.md) in [interactive view](In_an_interactive_view_SHOW_DIALOG.md) — they target the UI of that connection. A form opened by such a thread gets its own session through the usual rules. Delayed and periodic dispatches are scheduled by the client-side timer in the browser or the desktop client.
 
 #### Synchronization
 
-Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md). In the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout; if some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](Exception_handling_TRY.md).
+Regardless of the execution location, the service operator supports two synchronization modes. In the synchronous mode it waits for the nested threads to complete and writes their return values into properties of the current [session](New_session_NEWSESSION_NESTEDSESSION.md). In the asynchronous mode it returns as soon as all threads are dispatched. The synchronous mode may take a wait timeout. If some threads do not fit within it, the operator throws, but values written by threads that completed earlier are still applied and visible in an enclosing [`TRY ... CATCH`](Exception_handling_TRY.md).
 
 ### Language
 

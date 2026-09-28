@@ -5,7 +5,7 @@ title: 'Aggregations'
 
 Aggregation is the creation of a unique (*aggregate*) object for each distinct combination of parameter values at which some *aggregated* property is non-`NULL`. Each such object is assumed to have properties that map this object to each aggregated property parameter, and, conversely, a property that maps the aggregated property parameters to this object.
 
-For each distinct combination of parameter values at which the aggregated property is non-`NULL`, at most one aggregated object exists; this uniqueness is the key invariant that aggregation maintains.
+For each distinct combination of parameter values at which the aggregated property is non-`NULL`, at most one aggregated object exists. This uniqueness is the key invariant that aggregation maintains.
 
 The aggregated object and each aggregated property parameter must belong to a specified [class](Classes.md).
 
@@ -19,14 +19,14 @@ In a particular aggregation all three events may coincide, or the create and del
 
 By default all three events are global (see [event types](Events.md#type)), that is, they run when changes are [applied](Apply_changes_APPLY.md). So inside a [change session](Change_sessions.md), before it is applied, properties are read without the creation and deletion that have not run yet: the aggregated object for a combination of parameter values that has just appeared does not exist yet, while the object of a combination that has just disappeared is not deleted yet and — as long as the parameter objects still belong to their declared classes — is still returned by the aggregation's result property. If aggregated objects are needed already within the session, the events are given local scope (see [executing local events](Events.md#local)).
 
-All three events react only to changes made in [change sessions](Change_sessions.md); the correspondence is not established retroactively. In particular, if an aggregation is added when data on which the aggregated property is non-`NULL` already exists in the database, aggregated objects for such existing parameter combinations are not created — neither at server start nor later, as long as the aggregated property merely stays non-`NULL` (the create event fires when the property *becomes* non-`NULL`, not on arbitrary changes of its value). Missing aggregated objects can be created manually by making exactly the changes the create event makes (see the expansion below): for every combination of parameter values on which the aggregated property is non-`NULL` and the property mapping the parameters to the object returns nothing yet, create a new aggregated object and write the parameter values into its properties. The properties mapping the object to the parameters are ordinary [data properties](Data_properties_DATA.md), and objects created this way are indistinguishable for the aggregation from objects created by its own events.
+All three events react only to changes made in [change sessions](Change_sessions.md). The correspondence is not established retroactively. In particular, if an aggregation is added when data on which the aggregated property is non-`NULL` already exists in the database, aggregated objects for such existing parameter combinations are not created — neither at server start nor later, as long as the aggregated property merely stays non-`NULL` (the create event fires when the property *becomes* non-`NULL`, not on arbitrary changes of its value). Missing aggregated objects can be created manually by making exactly the changes the create event makes (see the expansion below): for every combination of parameter values on which the aggregated property is non-`NULL` and the property mapping the parameters to the object returns nothing yet, create a new aggregated object and write the parameter values into its properties. The properties mapping the object to the parameters are ordinary [data properties](Data_properties_DATA.md), and objects created this way are indistinguishable for the aggregation from objects created by its own events.
 
 :::info
 At its core, aggregation is equivalent to the following explicit combination of properties and events. Unrolled, it expands into:
 
 - for each parameter — a property that remembers what value that parameter had on each aggregated object;
 - the reverse direction — a lookup from the parameter values back to the aggregated object (a grouping over those properties gives you exactly that);
-- two event handlers: one creates a new aggregated object (and fills in its parameter values) the moment the aggregated property becomes non-`NULL` for a parameter combination that doesn't have an object yet; the other deletes the object once its parameter combination's aggregated property drops back to `NULL`.
+- two event handlers: one creates a new aggregated object (and fills in its parameter values) the moment the aggregated property becomes non-`NULL` for a parameter combination that doesn't have an object yet, while the other deletes the object once its parameter combination's aggregated property drops back to `NULL`.
 
 Here's the expansion spelled out for two parameters:
 

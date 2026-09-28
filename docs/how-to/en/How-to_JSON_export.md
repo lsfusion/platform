@@ -20,7 +20,7 @@ respond () {
 }
 ```
 
-The [`EXPORT` operator](../language/EXPORT_operator.md) with the `JSON` format takes a list of named columns and writes the result to the file given after `TO`. The expressions in `FROM` carry no row parameters, so the platform produces exactly one JSON object — `{"code":"OK","message":"привет"}`. Key names come from the left side of `=`; without one, the column is named `exprN`.
+The [`EXPORT` operator](../language/EXPORT_operator.md) with the `JSON` format takes a list of named columns and writes the result to the file given after `TO`. The expressions in `FROM` carry no row parameters, so the platform produces exactly one JSON object — `{"code":"OK","message":"привет"}`. Key names come from the left side of `=`. Without one, the column is named `exprN`.
 
 Reading the result: `fileToString(f(), 'UTF-8')` (from the [`Utils`](../paradigm/System_Utils.md) module) fills the system local property `resultString[]`, which `MESSAGE` displays.
 
@@ -221,8 +221,8 @@ exportOrdersForm () {
 `EXPORT formName JSON` builds JSON by the [form hierarchy](../paradigm/In_a_structured_view_EXPORT_IMPORT.md): the root is an object whose keys are the names of property groups, object groups, or parameterless scalar properties on the form, and whose values are the corresponding nested objects, arrays of rows, or the scalars themselves. Here:
 
 - `title = 'Orders'` is a parameterless scalar property — it lands as a root-level scalar;
-- `GROUP store;` declares a [property group](../paradigm/Groups_of_properties_and_actions.md); `PROPERTIES IN store id = 'S-7', name = 'Main warehouse'` puts two scalars inside it — on export this becomes a **nested object** `"store":{"id":"S-7","name":"Main warehouse"}` (no array appears because the group contains no object groups);
-- the group `OBJECTS orders = Order` becomes the **array** `orders`; the keys inside an element are `number` and `customer` (the latter renamed from `customerName` via `customer = customerName`);
+- `GROUP store;` declares a [property group](../paradigm/Groups_of_properties_and_actions.md), and `PROPERTIES IN store id = 'S-7', name = 'Main warehouse'` puts two scalars inside it — on export this becomes a **nested object** `"store":{"id":"S-7","name":"Main warehouse"}` (no array appears because the group contains no object groups);
+- the group `OBJECTS orders = Order` becomes the **array** `orders`, and the keys inside an element are `number` and `customer` (the latter renamed from `customerName` via `customer = customerName`);
 - the nested group `OBJECTS lines = OrderLine` with `FILTERS order(lines) = orders` lands as a `lines` array inside every `orders` element.
 
 The resulting JSON has the same structure as in Example 5 — same keys, same values, same nesting:
@@ -238,4 +238,4 @@ The resulting JSON has the same structure as in Example 5 — same keys, same va
      {"item":"SKU-300","quantity":5,"price":12}]}]}
 ```
 
-Key names in the form-based variant come from the names of object groups and form columns; a column can be renamed by the same `EXTID` mechanism as in the reverse [form-based import](How-to_JSON_parsing.md#example-5).
+Key names in the form-based variant come from the names of object groups and form columns. A column can be renamed by the same `EXTID` mechanism as in the reverse [form-based import](How-to_JSON_parsing.md#example-5).

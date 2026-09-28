@@ -15,7 +15,7 @@ DO action
 [ELSE alternativeAction]
 ```
 
-It is possible to include a `NEW` block in the operator but not to specify a condition (considered equal to `TRUE`); in this case, the syntax is as follows:
+It is possible to include a `NEW` block in the operator but not to specify a condition (considered equal to `TRUE`). In this case, the syntax is as follows:
 
 ```
 NEW [alias =] className
@@ -28,7 +28,7 @@ The `FOR` operator creates an action that implements a loop. This operator can a
 
 The object iteration order in the `FOR` operator can be specified with an `ORDER` block. If a new parameter is declared in the expressions that define the order (a parameter not previously encountered in the `FOR` clause or in the upper context), the condition that all these expressions are non-`NULL` is automatically added.
 
-The main action is specified after the keyword `DO`; an alternative may be specified after the keyword `ELSE`.
+The main action is specified after the keyword `DO`, and an alternative may be specified after the keyword `ELSE`.
 
 In the case when the operator contains a `NEW` block, and no condition is specified, the main action will be called for the created object.
 

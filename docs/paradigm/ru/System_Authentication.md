@@ -18,7 +18,7 @@ title: 'Authentication'
 | `colorTheme[DesignEnv]`                   | итоговая тема: `designEnvColorTheme[DesignEnv]`, если задана, иначе `clientColorTheme[DesignEnv]` |
 | `isDarkTheme[]`                           | признак, что `colorTheme[DesignEnv]` текущей среды равна `ColorTheme.dark`                  |
 
-`name[ColorTheme]` возвращает название темы; `colorThemeName[DesignEnv]` — название выбранной темы. Форма `dialogColorThemes` показывает две темы для выбора.
+`name[ColorTheme]` возвращает название темы, а `colorThemeName[DesignEnv]` — название выбранной темы. Форма `dialogColorThemes` показывает две темы для выбора.
 
 ### Компьютеры
 
@@ -29,7 +29,7 @@ title: 'Authentication'
 | `currentComputer[]`               | компьютер текущего соединения                                                   |
 | `hostnameCurrentComputer[]`       | `hostname[Computer]` от `currentComputer[]`                                     |
 
-Форма `computers` показывает компьютеры (с созданием, редактированием и удалением); `computersDialog` — диалог выбора. Поиск `computer[]` находит последний компьютер по имени хоста.
+Форма `computers` показывает компьютеры (с созданием, редактированием и удалением), а `computersDialog` — диалог выбора. Поиск `computer[]` находит последний компьютер по имени хоста.
 
 ### Контакты
 
@@ -83,7 +83,7 @@ title: 'Authentication'
 
 Модуль хранит настройки внешних механизмов аутентификации.
 
-**LDAP**: `useLDAP[]` включает аутентификацию через LDAP; `serverLDAP[]`, `portLDAP[]`, `baseDNLDAP[]`, `userDNSuffixLDAP[]`, `allowOnlyBaseDNUsers[]`, `allowOnlyGroupUsers[]` — настройки подключения и фильтрации. `useDefaultAuthentication[]` разрешает откатиться на встроенную парольную аутентификацию, когда LDAP недоступен, а `disableEmailLoginFallback[]` ограничивает поиск пользователя только логином (без поиска по почте). `useServiceUser[]`, `serviceUser[]`, `serviceUserPassword[]` задают служебную учётную запись для чтения каталога.
+**LDAP**: `useLDAP[]` включает аутентификацию через LDAP, а `serverLDAP[]`, `portLDAP[]`, `baseDNLDAP[]`, `userDNSuffixLDAP[]`, `allowOnlyBaseDNUsers[]`, `allowOnlyGroupUsers[]` — настройки подключения и фильтрации. `useDefaultAuthentication[]` разрешает откатиться на встроенную парольную аутентификацию, когда LDAP недоступен, а `disableEmailLoginFallback[]` ограничивает поиск пользователя только логином (без поиска по почте). `useServiceUser[]`, `serviceUser[]`, `serviceUserPassword[]` задают служебную учётную запись для чтения каталога.
 
 **OAuth2 (роль клиента)**: приложение передаёт вход внешнему провайдеру (Google, GitHub и т. п.). Класс `OAuth2` хранит настройку одного провайдера — `id[OAuth2]`, `clientId[OAuth2]`, `clientSecret[OAuth2]`, `clientAuthenticationMethod[OAuth2]`, `scope[OAuth2]`, `authorizationUri[OAuth2]`, `tokenUri[OAuth2]`, `jwkSetUri[OAuth2]`, `userInfoUri[OAuth2]`, `userNameAttributeName[OAuth2]`, `clientName[OAuth2]`. Поиск `auth[STRING]` находит провайдера по идентификатору. Действие `writeDefaultCredentials[]` создаёт стандартные записи провайдеров (GitHub, Google, Facebook, Yandex).
 
@@ -111,7 +111,7 @@ title: 'Authentication'
 
 ### API-действия
 
-Эти действия — HTTP-эндпоинты (помечены `@@api`); помеченные `@@noauth` доступны без предварительной аутентификации. Они читают входные данные из `JSONFILE` и записывают результат через `EXPORT FROM`.
+Эти действия — HTTP-эндпоинты (помечены `@@api`). Помеченные `@@noauth` доступны без предварительной аутентификации. Они читают входные данные из `JSONFILE` и записывают результат через `EXPORT FROM`.
 
 | Действие                          | Что делает                                                                    |
 |-----------------------------------|-------------------------------------------------------------------------------|
@@ -174,11 +174,11 @@ title: 'Authentication'
 
 ### Блокировки объектов
 
-Блокировка фиксирует, какой пользователь удерживает объект, чтобы два пользователя не редактировали его одновременно. `locked[Object]` — удерживающий пользователь. `lock[Object]` берёт блокировку в сериализуемой сессии, удаваясь только когда объект ещё не удерживается; `unlock[Object]` снимает её.
+Блокировка фиксирует, какой пользователь удерживает объект, чтобы два пользователя не редактировали его одновременно. `locked[Object]` — удерживающий пользователь. `lock[Object]` берёт блокировку в сериализуемой сессии, удаваясь только когда объект ещё не удерживается, а `unlock[Object]` снимает её.
 
 ### Диапазоны пикеров даты-времени
 
-Каждый пользователь выбирает, какие предопределённые диапазоны показываются в пикерах одиночной даты и интервала дат. `isDateTimeRangeSelected[DateTimePickerRanges, CustomUser]` и `isIntervalRangeSelected[DateTimeIntervalPickerRanges, CustomUser]` — признаки выбора по каждому диапазону; больше семи каждого вида выбрать нельзя. `setDefaultRanges[CustomUser]` включает стандартный начальный набор и выполняется автоматически при создании `CustomUser`. Сами классы пикеров приходят из [`Time`](System_Time.md).
+Каждый пользователь выбирает, какие предопределённые диапазоны показываются в пикерах одиночной даты и интервала дат. `isDateTimeRangeSelected[DateTimePickerRanges, CustomUser]` и `isIntervalRangeSelected[DateTimeIntervalPickerRanges, CustomUser]` — признаки выбора по каждому диапазону. Больше семи каждого вида выбрать нельзя. `setDefaultRanges[CustomUser]` включает стандартный начальный набор и выполняется автоматически при создании `CustomUser`. Сами классы пикеров приходят из [`Time`](System_Time.md).
 
 ### Формы и навигатор
 
@@ -195,7 +195,7 @@ title: 'Authentication'
 
 ### Язык
 
-- [Заголовок модуля](../language/Module_header.md) — синтаксис `MODULE` / `REQUIRE`; модуль `Authentication` подключается через `REQUIRE Authentication`.
+- [Заголовок модуля](../language/Module_header.md) — синтаксис `MODULE` / `REQUIRE`. Модуль `Authentication` подключается через `REQUIRE Authentication`.
 - [Оператор `DATA`](../language/DATA_operator.md) — объявляет хранимые свойства пользователей, контактов и настроек.
 
 ### Связано

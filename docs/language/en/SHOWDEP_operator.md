@@ -16,7 +16,7 @@ SHOWREC [propertyId1, ..., propertyIdN]
 
 The `SHOWDEP` operator creates an action that builds a textual representation of the dependency graph for the listed properties and actions and writes it to the system property `System.showResult` (of class `TEXT`).
 
-The `SHOWREC` operator creates an action that turns on runtime tracking for the listed actions: any action in the list is marked, all others are unmarked. While an apply transaction is in progress, the platform tracks the row-set on which a marked action would fire and writes an entry to the system log whenever that set changes — making it easy to see which other change re-triggered the same event. Calling `SHOWREC` again replaces the tracked set; calling it with an empty list switches tracking off completely.
+The `SHOWREC` operator creates an action that turns on runtime tracking for the listed actions: any action in the list is marked, all others are unmarked. While an apply transaction is in progress, the platform tracks the row-set on which a marked action would fire and writes an entry to the system log whenever that set changes — making it easy to see which other change re-triggered the same event. Calling `SHOWREC` again replaces the tracked set, while calling it with an empty list switches tracking off completely.
 
 ### Parameters
 

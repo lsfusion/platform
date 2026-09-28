@@ -75,7 +75,7 @@ lsFusion startup parameters for the web server can be set in one of the followin
     -   in a web application in the file `/META-INF/context.xml`, `Context` tag, `Parameter` tag (relevant for platform forks)
     -   in Tomcat, in the file `$CATALINA_BASE/conf/[enginename]/[hostname]/[contextpath].xml`, tag `Context`, tag `Parameter`, where:
         -   `$CATALINA_BASE$` is the folder where Tomcat is installed (for example, with [automatic](Execution_auto.md#settings) installation, this folder is `$INSTALL_DIR/Client`)
-        -   `[contextpath]` - contextual path of the web application (for example, with [automatic](Execution_auto.md#settings) installation this name is empty by default, which in Tomcat is equivalent to the name `ROOT`; with [manual](Execution_manual.md#appservice) installation it depends on the name of the war file), 
+        -   `[contextpath]` - contextual path of the web application (for example, with [automatic](Execution_auto.md#settings) installation this name is empty by default, which in Tomcat is equivalent to the name `ROOT`, while with [manual](Execution_manual.md#appservice) installation it depends on the name of the war file), 
         -   `[enginename]` and `[hostname]` are the names of the tomcat implementation mechanism and the web server computer (for example, with [automatic](Execution_auto.md#settings) installation these names are `catalina` and `localhost` respectively)
     -   in Tomcat, in the file `$CATALINA_BASE/conf/server.xml`, `Context` tag, `Parameter` tag (not recommended)
 -   In URL parameters (e.g. `http://tryonline.lsfusion.org?host=3.3.3.3&port=4444`)

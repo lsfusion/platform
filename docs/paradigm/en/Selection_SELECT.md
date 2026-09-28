@@ -9,7 +9,7 @@ The selection operators create [properties](Properties.md) that report the user'
 -   the property of the group as a whole returns `TRUE` if the user selected rows in the group, and `NULL` otherwise;
 -   the property of a column returns `TRUE` if that column is currently selected by the user, and `NULL` otherwise.
 
-As long as the user has not selected any row, the property of an object collection returns `TRUE` for the current row of the object group; once there is a selection, it returns `TRUE` for the selected rows that pass all the form's filter conditions. The selected rows are kept as a range in the current order of the object group, so changing the order recomputes the set of selected rows. The column the current cell belongs to counts as selected.
+As long as the user has not selected any row, the property of an object collection returns `TRUE` for the current row of the object group. Once there is a selection, it returns `TRUE` for the selected rows that pass all the form's filter conditions. The selected rows are kept as a range in the current order of the object group, so changing the order recomputes the set of selected rows. The column the current cell belongs to counts as selected.
 
 ### Language
 

@@ -44,7 +44,7 @@ lsfusion.server.physics.exec.db.controller.manager.DBManager
 lsfusion.interop.server.RmiServerInterface
 ```
 
-`ScriptingErrorLog.SemanticErrorException` — внутренний класс `ScriptingErrorLog`; бросается резолвящими методами (`findProperty` / `findAction` / `findClass` / `findGroup` / `findForm`), поэтому конструкторы подклассов `InternalAction`, которые их вызывают, обычно объявляют `throws ScriptingErrorLog.SemanticErrorException`. Базовый `InternalAction(LM, classes...)` checked-исключений не объявляет. В lifecycle-методах bean-ов (которые тоже checked-исключений не объявляют) `SemanticErrorException` обычно ловится и заворачивается в `RuntimeException`.
+`ScriptingErrorLog.SemanticErrorException` — внутренний класс `ScriptingErrorLog`. Бросается резолвящими методами (`findProperty` / `findAction` / `findClass` / `findGroup` / `findForm`), поэтому конструкторы подклассов `InternalAction`, которые их вызывают, обычно объявляют `throws ScriptingErrorLog.SemanticErrorException`. Базовый `InternalAction(LM, classes...)` checked-исключений не объявляет. В lifecycle-методах bean-ов (которые тоже checked-исключений не объявляют) `SemanticErrorException` обычно ловится и заворачивается в `RuntimeException`.
 
 ### Корневые объекты
 
@@ -70,7 +70,7 @@ lsfusion.interop.server.RmiServerInterface
 `LP<?>` — Java-обёртка над [свойством](Properties.md).
 - `read(session, ObjectValue... params)` → `Object` — текущее значение (Java-значение для скалярных свойств; `Long`/идентификатор объекта для свойств объектного класса)
 - `read(context, ObjectValue... params)` → `Object`
-- `readClasses(session, ObjectValue... params)` → `ObjectValue` — для свойств объектного класса возвращает `DataObject` с правильным конкретным классом (или `NullValue`); удобно, когда значение нужно сразу передать в `LP.change` / `LA.execute` без ручного восстановления класса
+- `readClasses(session, ObjectValue... params)` → `ObjectValue` — для свойств объектного класса возвращает `DataObject` с правильным конкретным классом (или `NullValue`). Удобно, когда значение нужно сразу передать в `LP.change` / `LA.execute` без ручного восстановления класса
 - `readClasses(context, ObjectValue... params)` → `ObjectValue`
 - `change(value, session, DataObject... params)` — запись Java-значения в сессию
 - `change(value, context, DataObject... params)`
@@ -83,15 +83,15 @@ lsfusion.interop.server.RmiServerInterface
 
 ### Параметры-объекты
 
-`ObjectValue` — общий базовый тип для значения объектного класса; либо `DataObject` (не-`NULL`), либо `NullValue` (`NullValue.instance`).
+`ObjectValue` — общий базовый тип для значения объектного класса: либо `DataObject` (не-`NULL`), либо `NullValue` (`NullValue.instance`).
 
 `DataObject(Object value, ConcreteClass cls)` — конструктор не-`NULL`-параметра с явным указанием класса (нужен, например, для дат и пользовательских классов). Ни `BusinessLogics.findClass(name)` (возвращает `CustomClass`), ни `LM.findClass(name)` (возвращает `ValueClass`) не дают `ConcreteClass` напрямую — для пользовательского класса требуется приведение к `ConcreteCustomClass`: `new DataObject(userId, (ConcreteCustomClass) BL.findClass("CustomUser"))`. Для встроенных классов используется их `instance`: `new DataObject(LocalDate.of(...), DateClass.instance)`. Для нескольких встроенных скалярных типов есть convenience-перегрузки без второго аргумента: `String`, `Integer`, `Long`, `Boolean`, `Double`.
 
 ### Сессия изменений
 
 `DataSession` — [сессия изменений](Change_sessions.md), накапливает изменения до явного применения. Открывается через `EventServer.createSession()` или `dbManager.createSession()`. Реализует `AutoCloseable` — корректно использовать в `try`-with-resources, неприменённая сессия откатывается.
-- `applyException(BL, stack)` — применить; бросить исключение при ошибке
-- `applyMessage(BL, stack)` → `String` — применить; вернуть текст ошибки или `null`
+- `applyException(BL, stack)` — применить, бросив исключение при ошибке
+- `applyMessage(BL, stack)` → `String` — применить, вернув текст ошибки или `null`
 
 ### `InternalAction`
 
@@ -132,11 +132,11 @@ lsfusion.interop.server.RmiServerInterface
 
 `MonitorServer extends EventServer` — `getStack()` через `ThreadLocalContext.assureMonitor(this)`. Для большинства Spring bean-компонентов.
 
-`RmiServer extends EventServer` — `getStack()` через `ThreadLocalContext.assureRmi(this)`. Для bean-ов, экспортируемых через RMI; remote-интерфейс должен наследоваться от `lsfusion.interop.server.RmiServerInterface`.
+`RmiServer extends EventServer` — `getStack()` через `ThreadLocalContext.assureRmi(this)`. Для bean-ов, экспортируемых через RMI. Remote-интерфейс должен наследоваться от `lsfusion.interop.server.RmiServerInterface`.
 
 ### Потоки
 
-`ExecutorFactory` — фабрики потоковых пулов в нужном thread-контексте; задачи в этих пулах могут вызывать `getStack()`.
+`ExecutorFactory` — фабрики потоковых пулов в нужном thread-контексте. Задачи в этих пулах могут вызывать `getStack()`.
 - `createMonitorThreadService(Integer threads, MonitorServer monitor)` → `ExecutorService`
 - `createMonitorScheduledThreadService(Integer threads, MonitorServer monitor)` → `ScheduledExecutorService`
 - `createRMIThreadService(Integer threads, RmiServer rmi)` → `ExecutorService`
@@ -153,7 +153,7 @@ lsfusion.interop.server.RmiServerInterface
 
 1. RMI-входящие вызовы — оборачиваются `RemoteContextAspect`-ом (Spring AOP).
 2. Задачи в потоках из `ExecutorFactory.createMonitorThreadService(...)` / `createMonitorScheduledThreadService(...)` / `createRMIThreadService(...)` — каждый поток таких пулов входит и выходит из контекста через `aspectBefore...` / `aspectAfter...` без участия пользователя.
-3. lifecycle-методы `EventServer` (`onInit`, `onStarted`, `onStopping`) — выполняются в *lifecycle*-контексте; здесь работает `getTopStack()`, но не `getStack()`.
+3. lifecycle-методы `EventServer` (`onInit`, `onStarted`, `onStopping`) — выполняются в *lifecycle*-контексте. Здесь работает `getTopStack()`, но не `getStack()`.
 4. Внутри `InternalAction.executeInternal` — контекст уже установлен (вызов через action-flow платформы).
 
 **Когда контекст ставится вручную** — на callback-потоках внешних библиотек (RabbitMQ-клиент, MINA, WebSocket-провайдер и т.п.), в потоках от `Executors.newFixedThreadPool` (не от `ExecutorFactory`), в ручных `new Thread(...)`. Парность обязательна, всегда `try`/`finally`:
@@ -182,8 +182,8 @@ try {
 - **`Executors.newFixedThreadPool(N)` или `newScheduledThreadPool(N)` без `ExecutorFactory`** — то же самое, aspect-ов нет.
 - **`aspectBefore...` без парного `aspectAfter...`** — следующая задача на этом потоке унаследует чужой ThreadLocal.
 - **Передача `ExecutionContext` в фоновый поток как есть** — после возврата из родительского action-а его сессия может быть закрыта, продолжать работу с ним нельзя.
-- **`getStack()` внутри `onInit` / `onStarted` / `onStopping`** — там lifecycle-контекст, а не monitor; нужен `getTopStack()`.
-- **`DataSession` shared между потоками** — `DataSession` не thread-safe; всегда открывайте и закрывайте в одном потоке (try-with-resources).
+- **`getStack()` внутри `onInit` / `onStarted` / `onStopping`** — там lifecycle-контекст, а не monitor. Нужен `getTopStack()`.
+- **`DataSession` shared между потоками** — `DataSession` не thread-safe. Всегда открывайте и закрывайте в одном потоке (try-with-resources).
 - **Работа с `RemoteForm` / клиентским контекстом из произвольного потока без `pushNotification`** — клиентские структуры не thread-safe, доставка должна идти через notification-канал.
 
 **Несколько одновременных потоков в одном bean-е** — фиксированный пул с monitor-контекстом:
@@ -207,7 +207,7 @@ private void handleMessage(byte[] body) {
 }
 ```
 
-Каждая задача — своя `DataSession` (не разделять между задачами). Исключения внутри submit-нутой задачи всегда ловить и логировать; в `scheduleAtFixedRate` пропущенное исключение **подавит дальнейшие запуски**, в обычном `submit` оно потеряется молча.
+Каждая задача — своя `DataSession` (не разделять между задачами). Исключения внутри submit-нутой задачи всегда ловить и логировать. В `scheduleAtFixedRate` пропущенное исключение **подавит дальнейшие запуски**, в обычном `submit` оно потеряется молча.
 
 ### RMI-экспорт
 
@@ -216,4 +216,4 @@ private void handleMessage(byte[] body) {
 - `unbindAndUnexport(String name, Remote remote)` — обратная операция
 - `export(Remote)` / `unexport(Remote)` / `bind(name, Remote)` / `unbind(name)` — низкоуровневые
 
-Remote-интерфейс наследуется от `lsfusion.interop.server.RmiServerInterface`; remote-методы объявляют `throws RemoteException`.
+Remote-интерфейс наследуется от `lsfusion.interop.server.RmiServerInterface`. Remote-методы объявляют `throws RemoteException`.

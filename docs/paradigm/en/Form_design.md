@@ -18,7 +18,7 @@ All children of any container make an ordered list. It is necessary to determine
 
 By default, any container being created is vertical.
 
-A container can be given a *caption* — a fixed text or the current value of a property, in which case it depends on data and changes with it. The caption of the form's main container (`BOX` in the [default design](#defaultDesign)) is the caption of the form in the interactive view: it is shown as the caption of the form's window or tab. By default it is the caption given when the form is declared; it does not affect the caption of the form element in the [navigator](Navigator.md).
+A container can be given a *caption* — a fixed text or the current value of a property, in which case it depends on data and changes with it. The caption of the form's main container (`BOX` in the [default design](#defaultDesign)) is the caption of the form in the interactive view: it is shown as the caption of the form's window or tab. By default it is the caption given when the form is declared. It does not affect the caption of the form element in the [navigator](Navigator.md).
 
 If at some point a container has no child components , or they are invisible, it is automatically hidden. In turn, if a component is not a child of any container, then it will not be shown on the form.
 
@@ -45,9 +45,9 @@ When defining the form design, the developer can use the following base componen
 
 ### Value cell rendering {#cellrender}
 
-In the web client, a property value cell is normally an ordinary block that turns into an editor when the user starts editing. A property of a text-based class shown in a panel can instead be drawn as a real input field right away, which is what the [working parameter](Working_parameters.md) `useInputTagForTextBasedInPanel` (`1` by default) decides: `0` draws it as an input field in every theme, `1` only in a bootstrap theme, `2` never. The property still has to be editable and its class has to have a matching input type; HTML, rich text and links are never drawn this way, while a `BOOLEAN` always is, regardless of this parameter.
+In the web client, a property value cell is normally an ordinary block that turns into an editor when the user starts editing. A property of a text-based class shown in a panel can instead be drawn as a real input field right away, which is what the [working parameter](Working_parameters.md) `useInputTagForTextBasedInPanel` (`1` by default) decides: `0` draws it as an input field in every theme, `1` only in a bootstrap theme, `2` never. The property still has to be editable and its class has to have a matching input type. HTML, rich text and links are never drawn this way, while a `BOOLEAN` always is, regardless of this parameter.
 
-Over the value cell the client draws a *cell toolbar*: the loading indicator of the property, and the buttons of the actions moved into the cell for quick access. Three parameters remove it: `noToolbarForInputTagInPanel` (`false` by default) for a panel property drawn as an input field, `noToolbarForBoolean` (`true`, so on out of the box) for every `BOOLEAN` in a panel and in a table alike, and `noToolbarForSelectDropdownInPanel` (`false`) for a property whose values are chosen from a dropdown, which is then drawn as a native selection element; despite its name that last one is not limited to a panel, and since such a property has no quick-access buttons anyway, what it removes in practice is the loading indicator over it. The `toolbar` option of the [form design](#defaultDesign) wins over all three.
+Over the value cell the client draws a *cell toolbar*: the loading indicator of the property, and the buttons of the actions moved into the cell for quick access. Three parameters remove it: `noToolbarForInputTagInPanel` (`false` by default) for a panel property drawn as an input field, `noToolbarForBoolean` (`true`, so on out of the box) for every `BOOLEAN` in a panel and in a table alike, and `noToolbarForSelectDropdownInPanel` (`false`) for a property whose values are chosen from a dropdown, which is then drawn as a native selection element. Despite its name that last one is not limited to a panel, and since such a property has no quick-access buttons anyway, what it removes in practice is the loading indicator over it. The `toolbar` option of the [form design](#defaultDesign) wins over all three.
 
 ### Dimensions and components layout {#components}
 
@@ -65,7 +65,7 @@ For each container, one of the directions is considered to be *dynamic*, and the
 
 
 :::info
-For example, in the case of a vertical upper container, if the component is set to align at the start then it will be located on the maximum left of the container; if it is set to Stretch, the component will occupy all the space from the left to the right border.
+For example, in the case of a vertical upper container, if the component is set to align at the start then it will be located on the maximum left of the container. If it is set to Stretch, the component will occupy all the space from the left to the right border.
 :::
 
 
@@ -75,7 +75,7 @@ This component layout algorithm is a special case of [CSS Flexible Box Layout](h
 
 The column container breaks its static (horizontal) direction into `N` identical parts (where `N` is the number of columns): each part then has its own components, as if this part were a separate vertical container.
 
-For base components, you can specify the *automatic size* option (`autoSize`): in this case, the base size will change automatically in to enclose exactly the entire contents of this base component (for example, for a table: all its records plus a title). For a property this option applies to the value cell: its height, and in a panel also its width, unless set explicitly in pixels, follow the content instead of being determined by the value class; the width of a table column is still determined by the value class with this option.
+For base components, you can specify the *automatic size* option (`autoSize`): in this case, the base size will change automatically in to enclose exactly the entire contents of this base component (for example, for a table: all its records plus a title). For a property this option applies to the value cell: its height, and in a panel also its width, unless set explicitly in pixels, follow the content instead of being determined by the value class. The width of a table column is still determined by the value class with this option.
 
 The properties layout in a table (or rather, the columns that display their values) is done the same way as if the table were a horizontal container, and the columns of the table were internal components of this container. 
 
@@ -136,7 +136,7 @@ The default height of a property value cell is equal to the height of the font u
 
 If the form opens in [window](In_an_interactive_view_SHOW_DIALOG.md#location) mode it does not have an upper container, so you need to determine this window's initial size. This size is determined similarly to the default base size, the only difference is that for tables/trees the default size is determined not as a constant (the default is `130`, `70`) but in such a way that it contains their whole contents (similar to the automatic sizing mechanism), but no less than `130` in width and `140` in height.
 
-The size is computed from the content present at the moment the window opens and does not change afterwards (only the user can resize the window). In the web client, the content of a container rendered by a React component is drawn by the component itself — after the window size has been computed — so such a container without a base size counts as empty, and its content then does not fit the window and pushes the components below it, including the system buttons, past its edge. A component's base size is taken as the minimum when the window size is computed, so such a container is given a base size; content that does not fit in it scrolls inside the container by default.
+The size is computed from the content present at the moment the window opens and does not change afterwards (only the user can resize the window). In the web client, the content of a container rendered by a React component is drawn by the component itself — after the window size has been computed — so such a container without a base size counts as empty, and its content then does not fit the window and pushes the components below it, including the system buttons, past its edge. A component's base size is taken as the minimum when the window size is computed, so such a container is given a base size. Content that does not fit in it scrolls inside the container by default.
 
 Measuring and fixing the size at opening is the default mode of the form's main container. If the form's design explicitly gives the main container the base size `-1` — in both directions or only in height — the window is not measured and not fixed in that direction but follows the content, including content drawn later. The window is then centered only at opening, by the content present at that moment, its height is not capped at the screen height — a window taller than the screen scrolls as a whole — and tables on such a form do not fit their height to their rows, keeping their base height with their own scrolling.
 
@@ -197,7 +197,7 @@ The hierarchy of containers and components in the default design will look like 
 
 ### Language
 
-To set up the design of the form, use the [`DESIGN` statement](../language/DESIGN_statement.md); its article also gives the complete tables of the properties of components of every kind (containers, components of properties and actions on the form, toolbars, grids) set by this statement.
+To set up the design of the form, use the [`DESIGN` statement](../language/DESIGN_statement.md). Its article also gives the complete tables of the properties of components of every kind (containers, components of properties and actions on the form, toolbars, grids) set by this statement.
 
 ### Examples
 

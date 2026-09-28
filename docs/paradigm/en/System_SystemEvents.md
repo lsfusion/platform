@@ -7,7 +7,7 @@ title: 'SystemEvents'
 
 ### Launch events
 
-These abstract action lists are the [launch-event](Launch_events.md) handlers — a developer plugs initialization logic into them, and the platform runs the matching list at the corresponding moment of a server or client start. `onStarted[]` is the application-server start handler; the full set of handlers and the moments they fire are described in [`Launch events`](Launch_events.md).
+These abstract action lists are the [launch-event](Launch_events.md) handlers — a developer plugs initialization logic into them, and the platform runs the matching list at the corresponding moment of a server or client start. `onStarted[]` is the application-server start handler. The full set of handlers and the moments they fire are described in [`Launch events`](Launch_events.md).
 
 | Handler                          | When it runs                                                                                  |
 |----------------------------------|------------------------------------------------------------------------------------------------|
@@ -21,7 +21,7 @@ These abstract action lists are the [launch-event](Launch_events.md) handlers �
 | `onWebClientInit[STRING]`        | per-resource list keyed by a CSS / JS resource path, run when the web client initializes       |
 | `onLoginInit[STRING]`            | per-resource list run on the login page                                                        |
 
-`notFirstStart[]` is the stored flag that the server has started before; `firstStart[]` is its negation and selects the first start. Each handler has an `…Apply` wrapper (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onClientStartedApply[]`) that runs the list and commits with `APPLY`; `onStartedApply[]` additionally runs `onFirstStarted[]` on the first start and sets `notFirstStart[]`.
+`notFirstStart[]` is the stored flag that the server has started before, and `firstStart[]` is its negation and selects the first start. Each handler has an `…Apply` wrapper (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onClientStartedApply[]`) that runs the list and commits with `APPLY`. `onStartedApply[]` additionally runs `onFirstStarted[]` on the first start and sets `notFirstStart[]`.
 
 ### Version info
 
@@ -61,9 +61,9 @@ Each setting has a per-environment value (`designEnv…`), a server-wide default
 
 `ColorTheme` (light / dark / auto) is toggled by `toggleColorTheme[]`, which cycles light → dark → auto for the current environment, applies, and refreshes the form. The navigator pin mode is cycled by `toggleNavigatorPinMode[]`.
 
-The `design` form edits the current environment's appearance (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]`, and the toggles above) and reloads the client on apply when a setting that needs a reload changed; `showDesign[]` opens it as a floating window. In the navigator's `system` window the module adds the `showDesign`, `toggleNavigatorPinMode`, and `toggleColorTheme` entries.
+The `design` form edits the current environment's appearance (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]`, and the toggles above) and reloads the client on apply when a setting that needs a reload changed. `showDesign[]` opens it as a floating window. In the navigator's `system` window the module adds the `showDesign`, `toggleNavigatorPinMode`, and `toggleColorTheme` entries.
 
-The module also implements the CSS classes of the navigator windows declared in [System](System_System.md) and of its own navigator entries; these abstract properties select the implementation by its value, so a project's implementation, which a module requiring `SystemEvents` adds after this one, is checked first and replaces the module's classes whenever it returns a value. Each value the module computes is the base classes followed by helper classes added under the listed conditions (`isWebDesktop[]` / `isWebMobile[]` are the client type, the settings are those above):
+The module also implements the CSS classes of the navigator windows declared in [System](System_System.md) and of its own navigator entries. These abstract properties select the implementation by its value, so a project's implementation, which a module requiring `SystemEvents` adds after this one, is checked first and replaces the module's classes whenever it returns a value. Each value the module computes is the base classes followed by helper classes added under the listed conditions (`isWebDesktop[]` / `isWebMobile[]` are the client type, the settings are those above):
 
 | Property (window or entry)                              | Base classes                       | Helper classes and their conditions |
 |---------------------------------------------------------|------------------------------------|-------------------------------------|
@@ -80,7 +80,7 @@ On web-client initialization `onWebClientInit[STRING]` registers the CSS and JS 
 
 ### Exceptions
 
-The `Exception` class hierarchy records server- and client-side errors. `Exception` is the abstract root, split into `ServerException` and `ClientException`; the client branch refines further:
+The `Exception` class hierarchy records server- and client-side errors. `Exception` is the abstract root, split into `ServerException` and `ClientException`. The client branch refines further:
 
 | Class                      | Place in the hierarchy                                                  |
 |----------------------------|-------------------------------------------------------------------------|
@@ -182,7 +182,7 @@ A ping record stores per-computer memory readings over an interval, keyed by `(C
 | `minTotalMemoryFromTo[…]` / `maxTotalMemoryFromTo[…]`                     | the minimum / maximum total memory over the interval     |
 | `minUsedMemoryFromTo[…]` / `maxUsedMemoryFromTo[…]`                       | the minimum / maximum used memory over the interval      |
 
-`limitPing[]`, `limitMaxTotalMemory[]`, and `limitMaxUsedMemory[]` set the alert thresholds; the `…Sum` properties total the time spent above each threshold and the `average…DateFrom` properties give the time-weighted averages over a range. The `pings` form shows the per-computer readings, the per-computer hardware taken from the last connection, and the thresholds and averages. `countDaysClearPings[]` sets how many days of ping records to keep; the `clearApplicationLog[]` extension deletes the older ones.
+`limitPing[]`, `limitMaxTotalMemory[]`, and `limitMaxUsedMemory[]` set the alert thresholds. The `…Sum` properties total the time spent above each threshold and the `average…DateFrom` properties give the time-weighted averages over a range. The `pings` form shows the per-computer readings, the per-computer hardware taken from the last connection, and the thresholds and averages. `countDaysClearPings[]` sets how many days of ping records to keep, and the `clearApplicationLog[]` extension deletes the older ones.
 
 ### Push notifications and client interaction
 
@@ -199,13 +199,13 @@ A ping record stores per-computer memory readings over an interval, keyed by `(C
 | `evalServer[TEXT]`                                       | runs the given code on the server                                            |
 | `evalInAllCurrentConnections[TEXT, TEXT]`               | runs the given code on every connected client                               |
 
-`customize[STRING, STRING]` opens the `customizeForm` dialog for adjusting a form: the base code and the `EXTEND FORM` code held in `dataExtendCode[Form]` (for all users) and `dataExtendCode[Form, User]` (for the current user). `formCustomizeBackground[]` and `formCustomizeShowIf[]` tint and gate the customization entry. The two code fragments are joined with a line break and compiled on every form open; if the result does not compile, the error is reported and the form is opened without the customization, so the dialog stays reachable to fix or drop the code.
+`customize[STRING, STRING]` opens the `customizeForm` dialog for adjusting a form: the base code and the `EXTEND FORM` code held in `dataExtendCode[Form]` (for all users) and `dataExtendCode[Form, User]` (for the current user). `formCustomizeBackground[]` and `formCustomizeShowIf[]` tint and gate the customization entry. The two code fragments are joined with a line break and compiled on every form open. If the result does not compile, the error is reported and the form is opened without the customization, so the dialog stays reachable to fix or drop the code.
 
 Since `customizeForm` always edits the code of the current user, someone else's customization is reached from the `forms` metadata form instead: `hasExtendCodeAll[Form]` tells whether the selected form is customized for all users and `countExtendCode[Form]` counts the users who customized it for themselves, while the form's customization tab holds both code fragments and lets them be dropped - for one user or for the form as a whole.
 
 ### Logo
 
-`logo[]` is the navigator logo image; `logoAction[]` is the logo navigator entry, which shows the current version and user. The module places `logoAction` in the `logo` window of the navigator. Its header `logoHeader[]` — the application name on the mobile web client and with a vertical navbar — is an abstract property in the same value-based form as the class properties above, so a project overrides it the same way.
+`logo[]` is the navigator logo image, and `logoAction[]` is the logo navigator entry, which shows the current version and user. The module places `logoAction` in the `logo` window of the navigator. Its header `logoHeader[]` — the application name on the mobile web client and with a vertical navbar — is an abstract property in the same value-based form as the class properties above, so a project overrides it the same way.
 
 ### Language
 
@@ -216,7 +216,7 @@ Since `customizeForm` always edits the code of the current user, someone else's 
 ### See also
 
 - [`System modules`](System_modules.md) — the general list of platform modules.
-- [`Launch events`](Launch_events.md) — the launch-event concept; the lifecycle handlers (`onStarted`, `onWebClientStarted`, …) declared by this module live there.
+- [`Launch events`](Launch_events.md) — the launch-event concept. The lifecycle handlers (`onStarted`, `onWebClientStarted`, …) declared by this module live there.
 - [`Journals and logs`](Journals_and_logs.md) — the system journals this module fills (exceptions, launches, connections, sessions, pings).
 - [`Process monitor`](Process_monitor.md) — monitoring running connections and server activity.
 - [`Navigator`](Navigator.md) — the navigator entries this module adds (logo, appearance, logs).

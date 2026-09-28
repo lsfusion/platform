@@ -3,7 +3,7 @@ slug: "/Internal_call_INTERNAL"
 title: 'Internal call (INTERNAL)'
 ---
 
-The platform allows an lsFusion-based system to invoke code running inside its own deployment components — the application-server JVM, the user's web client, or the database the platform uses — using various types of internal calls, as the internal counterpart to [access to an external system](Access_to_an_external_system_EXTERNAL.md). The interface of such an access is the execution of code in the environment of the target component with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). For call types where parameters and results cross a serialization boundary (`CLIENT`, `DB`), values must belong to [built-in classes](Built-in_classes.md); the Java target runs on the same JVM as the platform, so inside `executeInternal` objects of user-defined classes are passed as `DataObject` / `ObjectValue` directly, without serialization.
+The platform allows an lsFusion-based system to invoke code running inside its own deployment components — the application-server JVM, the user's web client, or the database the platform uses — using various types of internal calls, as the internal counterpart to [access to an external system](Access_to_an_external_system_EXTERNAL.md). The interface of such an access is the execution of code in the environment of the target component with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). For call types where parameters and results cross a serialization boundary (`CLIENT`, `DB`), values must belong to [built-in classes](Built-in_classes.md). The Java target runs on the same JVM as the platform, so inside `executeInternal` objects of user-defined classes are passed as `DataObject` / `ObjectValue` directly, without serialization.
 
 ## Types of internal calls
 
@@ -11,9 +11,9 @@ The platform currently supports the following types of internal calls:
 
 ### Java - executing Java code in the application-server JVM {#java}
 
-The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`; its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified (compiled class or inline Java fragment) is covered by the `INTERNAL` operator.
+The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. Its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified (compiled class or inline Java fragment) is covered by the `INTERNAL` operator.
 
-The classes of the action's parameters and the behaviour for `NULL` arguments are defined by the `INTERNAL` operator; by default the action rejects `NULL` parameter values, and on the Java side `NULL` acceptance can also be controlled by overriding `allowNulls()`.
+The classes of the action's parameters and the behaviour for `NULL` arguments are defined by the `INTERNAL` operator. By default the action rejects `NULL` parameter values, and on the Java side `NULL` acceptance can also be controlled by overriding `allowNulls()`.
 
 Inside the Java code the platform runtime is reached through the `context` parameter (the current change [session](Change_sessions.md), parameter values, and execution environment) and through the resolving methods of `InternalAction`. Returning results in this call type needs no separate mechanism: the Java code writes values directly into lsFusion properties from the body of the action itself, within the same change session.
 
@@ -23,11 +23,11 @@ Java access to the lsFusion system from objects that are not themselves `Interna
 
 ### CLIENT - invoking code or a file in the user's web client {#client}
 
-For this type of interaction, the name of a client-side target is specified — a JavaScript function already loaded in the user's web client, or a client-side file (bundled with the application or referenced externally at runtime, typically by URL but also by other file/path references resolved on the application server). Which of the two kinds of target a particular invocation addresses is decided at call time from the shape of the resource name. Scripts, stylesheets and fonts are handled by the client specially, via the mechanisms appropriate to each kind; all other file types, including images, are exposed to the client as generic files.
+For this type of interaction, the name of a client-side target is specified — a JavaScript function already loaded in the user's web client, or a client-side file (bundled with the application or referenced externally at runtime, typically by URL but also by other file/path references resolved on the application server). Which of the two kinds of target a particular invocation addresses is decided at call time from the shape of the resource name. Scripts, stylesheets and fonts are handled by the client specially, via the mechanisms appropriate to each kind. All other file types, including images, are exposed to the client as generic files.
 
-Client calls are asynchronous by default: the server does not wait for the client to complete. Synchronous execution has to be requested explicitly; capturing a result in the inline form additionally forces synchronous execution.
+Client calls are asynchronous by default: the server does not wait for the client to complete. Synchronous execution has to be requested explicitly. Capturing a result in the inline form additionally forces synchronous execution.
 
-Auxiliary operations on already-loaded file resources — such as unloading a previously-loaded script or stylesheet — are expressed through a reserved prefix on the resource name; see the `INTERNAL` operator article for the exact syntax.
+Auxiliary operations on already-loaded file resources — such as unloading a previously-loaded script or stylesheet — are expressed through a reserved prefix on the resource name. See the `INTERNAL` operator article for the exact syntax.
 
 ### DB - SQL against the platform's own database {#db}
 

@@ -3,7 +3,7 @@ slug: "/Class_change_CHANGECLASS_DELETE"
 title: 'Class change (CHANGECLASS, DELETE)'
 ---
 
-The *class change* operator creates an [action](Actions.md) that assigns a target [class](Classes.md) to all objects matching a condition. The condition is an expression of the same arguments as the object expression; it may be omitted, in which case it is considered to always hold. The target class must be a concrete [custom class](User_classes.md).
+The *class change* operator creates an [action](Actions.md) that assigns a target [class](Classes.md) to all objects matching a condition. The condition is an expression of the same arguments as the object expression. It may be omitted, in which case it is considered to always hold. The target class must be a concrete [custom class](User_classes.md).
 
 A related form of the operator — *deletion* — removes the matching objects from the system instead of assigning them another class.
 
@@ -11,7 +11,7 @@ When an object changes its class or is deleted, any data property whose stored v
 
 ### Language
 
-To declare an action that changes object classes, use the [`CHANGECLASS` operator](../language/CHANGECLASS_operator.md); for the deletion case use the [`DELETE` operator](../language/DELETE_operator.md).
+To declare an action that changes object classes, use the [`CHANGECLASS` operator](../language/CHANGECLASS_operator.md), and for the deletion case use the [`DELETE` operator](../language/DELETE_operator.md).
 
 ### Examples
 

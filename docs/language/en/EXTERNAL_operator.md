@@ -37,13 +37,13 @@ NOENCODE
 
 ### Description
 
-The `EXTERNAL` operator creates an action that performs a single call to an external system. The call type (`HTTP`, `SQL`, `LSF`, `TCP`, `UDP`, `DBF`) selects the protocol or interface used; each type accepts its own clauses on top of the shared `PARAMS` and `TO` lists.
+The `EXTERNAL` operator creates an action that performs a single call to an external system. The call type (`HTTP`, `SQL`, `LSF`, `TCP`, `UDP`, `DBF`) selects the protocol or interface used. Each type accepts its own clauses on top of the shared `PARAMS` and `TO` lists.
 
 ### Parameters
 
 - `HTTP`, `TCP`, `UDP`, `SQL`, `LSF`, `DBF`
 
-    Keywords. Select the type of external call; see [Access to an external system](../paradigm/Access_to_an_external_system_EXTERNAL.md) for the semantics of each.
+    Keywords. Select the type of external call. See [Access to an external system](../paradigm/Access_to_an_external_system_EXTERNAL.md) for the semantics of each.
 
 - `requestType`
 
@@ -87,11 +87,11 @@ The `EXTERNAL` operator creates an action that performs a single call to an exte
 
 - `headersPropertyId`, `headersToPropertyId`
 
-    [Property IDs](IDs.md#propertyid). Each property has one string-class parameter (the header name) and a string-class value (the header value). Without `HEADERS` no custom request headers are sent; without `HEADERSTO` response headers are not captured.
+    [Property IDs](IDs.md#propertyid). Each property has one string-class parameter (the header name) and a string-class value (the header value). Without `HEADERS` no custom request headers are sent, and without `HEADERSTO` response headers are not captured.
 
 - `cookiesPropertyId`, `cookiesToPropertyId`
 
-    [Property IDs](IDs.md#propertyid). Each property has one string-class parameter (the cookie name) and a string-class value (the cookie value). Without `COOKIES` no custom cookies are sent; without `COOKIESTO` cookies are not captured.
+    [Property IDs](IDs.md#propertyid). Each property has one string-class parameter (the cookie name) and a string-class value (the cookie value). Without `COOKIES` no custom cookies are sent, and without `COOKIESTO` cookies are not captured.
 
 - `NOENCODE`
 

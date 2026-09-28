@@ -54,7 +54,7 @@ The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filter
 
 The `SELECT PROPERTY` event occurs when the [selection](../paradigm/Selection_SELECT.md) of the columns of the specified form property changes - when the user selects a column or unselects it, including by moving the cursor into it or out of it. If the property is drawn by several columns, the event occurs when any of them changes. Each of the two selection events follows its own property: `SELECT` follows the row selection of an object group, `SELECT PROPERTY` follows the selection of the columns of a form property.
 
-The `SCHEDULE` event is a [timer of the form](../paradigm/Form_events.md): the handler runs every `intPeriod` seconds while the form is shown on screen, and a run of a hidden form is skipped. The usual handler is `System.formRefresh[]` - a periodic refresh (polling, auto-update) of what the form shows; on the web client the request does not block the user's input.
+The `SCHEDULE` event is a [timer of the form](../paradigm/Form_events.md): the handler runs every `intPeriod` seconds while the form is shown on screen, and a run of a hidden form is skipped. The usual handler is `System.formRefresh[]` - a periodic refresh (polling, auto-update) of what the form shows. On the web client the request does not block the user's input.
 
 ### Parameters 
 
@@ -98,7 +98,7 @@ The `SCHEDULE` event is a [timer of the form](../paradigm/Form_events.md): the h
 
 - `eventPhase`
 
-    One of `BEFORE`, `AFTER`. When omitted from `OK` / `APPLY`, the handler runs on the event itself; when omitted from `PROPERTY`, it sets the single `CHANGE` handler for the property (see `replaceMode`).
+    One of `BEFORE`, `AFTER`. When omitted from `OK` / `APPLY`, the handler runs on the event itself. When omitted from `PROPERTY`, it sets the single `CHANGE` handler for the property (see `replaceMode`).
 
 - `intPeriod`
 
@@ -106,11 +106,11 @@ The `SCHEDULE` event is a [timer of the form](../paradigm/Form_events.md): the h
 
 - `FIXED`
 
-    Keyword. By default the period to the next run is counted from the end of the current run, once its response has been processed. With `FIXED` it is counted from the start of the run, so the runs keep a fixed pace whatever each takes; a run that has not completed when the period is up is followed by the next one, queued behind it.
+    Keyword. By default the period to the next run is counted from the end of the current run, once its response has been processed. With `FIXED` it is counted from the start of the run, so the runs keep a fixed pace whatever each takes. A run that has not completed when the period is up is followed by the next one, queued behind it.
 
 - `replaceMode`
 
-    Controls whether the handler replaces previously defined handlers for this event or is added to them. `REPLACE` replaces all handlers previously defined for the event; `NOREPLACE` adds the handler to them. The previously defined handlers include the [default handlers](../paradigm/Form_events.md#default) — for example, the standard message about successful saving (`System.formApplied[]`). When omitted, the default is `REPLACE` for `QUERYOK` and `QUERYCLOSE` and `NOREPLACE` for all other events. `replaceMode` does not apply to the plain `PROPERTY` event form (without `BEFORE` / `AFTER`), which always replaces its single handler.
+    Controls whether the handler replaces previously defined handlers for this event or is added to them. `REPLACE` replaces all handlers previously defined for the event, while `NOREPLACE` adds the handler to them. The previously defined handlers include the [default handlers](../paradigm/Form_events.md#default) — for example, the standard message about successful saving (`System.formApplied[]`). When omitted, the default is `REPLACE` for `QUERYOK` and `QUERYCLOSE` and `NOREPLACE` for all other events. `replaceMode` does not apply to the plain `PROPERTY` event form (without `BEFORE` / `AFTER`), which always replaces its single handler.
 
 - `eventActionId`
 

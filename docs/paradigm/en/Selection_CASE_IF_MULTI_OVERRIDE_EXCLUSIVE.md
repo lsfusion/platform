@@ -22,7 +22,7 @@ The selection operator lets you specify that all its conditions are *mutually ex
 
 ### Implicit definition
 
-This operator supports [implicit definition](Property_extension.md), where its conditions and results are added piecemeal across modules. When such an implicitly defined operator is also declared mutually exclusive, its conditions across all modules must not overlap; the platform verifies this at module finalization. For an operator defined inline, the same requirement is taken on trust.
+This operator supports [implicit definition](Property_extension.md), where its conditions and results are added piecemeal across modules. When such an implicitly defined operator is also declared mutually exclusive, its conditions across all modules must not overlap. The platform verifies this at module finalization. For an operator defined inline, the same requirement is taken on trust.
 
 ### Single form {#single}
 
@@ -40,7 +40,7 @@ To create a property implementing the general form of selection — explicit con
 
 In the polymorphic form, [`MULTI`](../language/MULTI_operator.md) selects the operand whose signature matches the parameter classes; [`OVERRIDE`](../language/OVERRIDE_operator.md) returns the first operand whose value is not `NULL`; [`EXCLUSIVE`](../language/EXCLUSIVE_operator.md) does the same as `OVERRIDE` and additionally declares that at most one operand has a non-`NULL` value.
 
-In the single form, the [`IF`](../language/IF_operator.md) operator returns the result when the condition is met; the [`IF ... THEN`](../language/IF_..._THEN_operator.md) operator additionally accepts an alternative result returned when the condition is not met.
+In the single form, the [`IF`](../language/IF_operator.md) operator returns the result when the condition is met, while the [`IF ... THEN`](../language/IF_..._THEN_operator.md) operator additionally accepts an alternative result returned when the condition is not met.
 
 ### Examples
 

@@ -37,7 +37,7 @@ The mechanism itself is described in [materializations](../paradigm/Materializat
 
 5. After a materialized property's definition changes, or after a direct data fix in the database, the stored values SHOULD be recomputed with the [`RECALCULATE` operator](../language/RECALCULATE_operator.md).
 
-6. When an aggregation over another aggregated property fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)); the `HINT` / `NOHINT` options do not split such a query.
+6. When an aggregation over another aggregated property fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)). The `HINT` / `NOHINT` options do not split such a query.
 
 ### Indexes
 
@@ -47,7 +47,7 @@ The mechanism itself is described in [indexes](../paradigm/Indexes.md).
 
 2. Only materialized properties can be indexed, so an index on a calculated property requires materializing it — and that decision is made on the materialization rules of this article — a property is materialized because it is read, or used in a filter, considerably more often than the data it depends on changes, not for the sake of the index.
 
-3. A composite index SHOULD be created when filtering uses several fields of one table at once; the fields restricted by equality SHOULD come first and the one restricted by a range after them, since that is the shape a btree scan narrows on.
+3. A composite index SHOULD be created when filtering uses several fields of one table at once. The fields restricted by equality SHOULD come first and the one restricted by a range after them, since that is the shape a btree scan narrows on.
 
 4. An index duplicating the automatically created ones SHOULD NOT be created: the unique index on all key fields of a table and the indexes on the key suffixes already exist.
 
@@ -160,7 +160,7 @@ INDEX customer(Order o), date(o);
 1. Renaming a property or action, or moving it to another
    namespace, changes its canonical name. Whenever the assistant
    renames or re-namespaces an existing element, it MUST record
-   the change in `migration.script` in the same edit; otherwise
+   the change in `migration.script` in the same edit. Otherwise
    the platform treats the old and new names as unrelated
    elements — the old one is dropped and the new one starts empty.
 
@@ -179,6 +179,6 @@ INDEX customer(Order o), date(o);
 3. Renaming a custom class, or moving it to another namespace,
    MUST be recorded as a `CLASS` change to preserve its objects
    and their data. Such a class rename can also change the
-   canonical names of its `DATA` properties; these are not tracked
+   canonical names of its `DATA` properties. These are not tracked
    automatically and MUST be added as their own `STORED PROPERTY`
    changes.

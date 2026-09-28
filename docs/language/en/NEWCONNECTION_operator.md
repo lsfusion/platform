@@ -13,7 +13,7 @@ NEWCONNECTION action
 
 ### Description
 
-The `NEWCONNECTION` operator creates an action inside which every `EXTERNAL SQL`, `EXTERNAL TCP`, `EXTERNAL DBF` to the same endpoint reuses the previously opened connection instead of opening a new one on each call. An empty connection string (or an empty `host` for TCP) in a nested `EXTERNAL` resolves to the single already-open connection of that type; if there is not exactly one already-open connection of that type at this point (zero or more than one), the platform throws. Every connection opened inside the block is closed when the block exits, regardless of whether the inner action completed normally or threw.
+The `NEWCONNECTION` operator creates an action inside which every `EXTERNAL SQL`, `EXTERNAL TCP`, `EXTERNAL DBF` to the same endpoint reuses the previously opened connection instead of opening a new one on each call. An empty connection string (or an empty `host` for TCP) in a nested `EXTERNAL` resolves to the single already-open connection of that type. If there is not exactly one already-open connection of that type at this point (zero or more than one), the platform throws. Every connection opened inside the block is closed when the block exits, regardless of whether the inner action completed normally or threw.
 
 ### Parameters
 

@@ -15,7 +15,7 @@ OVERRIDE expr1, ..., exprN
 
 The `OVERRIDE` operator creates a property whose value will be the value of one of the properties specified in the operator. Selection is made among properties with a non-`NULL` value. If multiple properties are non-`NULL`, the value of the first of these properties is selected.
 
-Parentheses immediately after `OVERRIDE` group its first operand; they do not delimit the operand list, so `OVERRIDE(expr1, expr2)` is not accepted.
+Parentheses immediately after `OVERRIDE` group its first operand. They do not delimit the operand list, so `OVERRIDE(expr1, expr2)` is not accepted.
 
 ### Parameters
 

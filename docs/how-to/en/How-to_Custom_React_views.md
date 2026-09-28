@@ -34,7 +34,7 @@ The base size also bounds the height of the container itself, wherever the form 
 
 ### The component
 
-`OrderBoard` is a named export from a `.jsx` module under `src/main/web`; how the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served; `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
+`OrderBoard` is a named export from a `.jsx` module under `src/main/web`. How the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
 
 The component is a plain function that receives `props.data` and `props.controller`:
 
@@ -45,7 +45,7 @@ export function OrderBoard(props) {
 }
 ```
 
-`props.data` is the form projection — its own for each `CUSTOM REACT` container, holding only what that container owns, so a second React container on the form gets a separate one. Every property, group and container it projects is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. It contains a group only when that group's box is nested inside the custom container the view renders: `props.data.<g>` is `{ list, byKey, keys, count, options }` for each such group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `list`, `byKey` and `keys` are always present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A group whose box is outside the container — or `REMOVE`'d from the design — is **absent** from `props.data` (`props.data.<g>` is `undefined`), so to feed a group's data to the view keep its box inside the custom container. A group's panel properties are members of the group itself, keyed by integration SID and present once the group has a current object, and each form-level (no-group) property is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.changeProperty('<group>.<action>', row)` runs it; its `value` field is there too but carries nothing. `count` and `options` are the group's own [display options](#display-options). Each row carries:
+`props.data` is the form projection — its own for each `CUSTOM REACT` container, holding only what that container owns, so a second React container on the form gets a separate one. Every property, group and container it projects is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. It contains a group only when that group's box is nested inside the custom container the view renders: `props.data.<g>` is `{ list, byKey, keys, count, options }` for each such group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `list`, `byKey` and `keys` are always present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A group whose box is outside the container — or `REMOVE`'d from the design — is **absent** from `props.data` (`props.data.<g>` is `undefined`), so to feed a group's data to the view keep its box inside the custom container. A group's panel properties are members of the group itself, keyed by integration SID and present once the group has a current object, and each form-level (no-group) property is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.changeProperty('<group>.<action>', row)` runs it. Its `value` field is there too but carries nothing. `count` and `options` are the group's own [display options](#display-options). Each row carries:
 
 | Field | Meaning |
 | --- | --- |
@@ -57,7 +57,7 @@ export function OrderBoard(props) {
 
 A property grouped in columns (`COLUMNS`) is not projected at all: it has neither a column entry nor a cell entry, and nothing is reported — its values are addressed by a row-and-column key the projection has no place for. Declare an ordinary property if the view has to read those values.
 
-`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names; `list`, `byKey`, `keys`, `count` and `options` are reserved on the group. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built.
+`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names, and `list`, `byKey`, `keys`, `count` and `options` are reserved on the group. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built.
 
 A property's `value` is converted to a JS value depending on the property's class:
 
@@ -85,7 +85,7 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 {rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
 ```
 
-Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the scroll must be still, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The scrolling element is the nearest ancestor of the rows that actually scrolls: for a container without a [base height](#selecting-the-component) whose content overflows the form, that is the form's main container, and reseating the current record corrects the scroll of the whole form; with a base height that fits on the form, the rows scroll inside the container itself while the rest of the form stays put. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#lsf-child) alike — follows.
+Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the scroll must be still, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The scrolling element is the nearest ancestor of the rows that actually scrolls: for a container without a [base height](#selecting-the-component) whose content overflows the form, that is the form's main container, and reseating the current record corrects the scroll of the whole form. With a base height that fits on the form, the rows scroll inside the container itself while the rest of the form stays put. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#lsf-child) alike — follows.
 
 `data.<g>.count` is the number of rows read — the length of `list` — not how many rows the group's filters admit, so under paged reading the projection alone cannot show "6 of 23". The total is a separate property that counts the rows under the form's current filter with the [`FILTER` operator](../paradigm/Filter_FILTER.md), as in [How-to: Table status](How-to_Table_status.md), placed inside the container so that it reaches `data`:
 
@@ -101,7 +101,7 @@ const { o, filteredCount } = props.data;
 <div>{o.count} of {filteredCount.value ?? 0}</div>
 ```
 
-Drawn for the group instead (`PROPERTIES() filteredCount DRAW o PANEL`), the property needs no `MOVE`: its default place is in `PANEL(o)`, inside `BOX(o)`; it is a member of the group node, read as `data.o.filteredCount.value`.
+Drawn for the group instead (`PROPERTIES() filteredCount DRAW o PANEL`), the property needs no `MOVE`: its default place is in `PANEL(o)`, inside `BOX(o)`. It is a member of the group node, read as `data.o.filteredCount.value`.
 
 ```jsx
 function Row(props) {
@@ -146,14 +146,14 @@ The projection follows what an option describes — a whole column, one cell, or
 | `data.<integrationSID>` | A form-level (no-group) property — its `value` and attributes |
 | `data.<containerSID>` | The `caption` and `image` of a container the component can be asked to draw them for — one **declared** in the design (`NEW <name>`), or an `lsf` child like `BOX(o)` — keyed by its design component identifier, always at the top level, whatever the container is nested in. Such a container is always there, `{}` when it has neither. A generated container the author neither declared nor marked `lsf` (`BOX(g)`, `TOOLBAR(g)`, `PANEL(g)`, …) is not projected |
 
-Each attribute is delivered at one point, already resolved: the server folds a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result into a single effective value, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`; its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
+Each attribute is delivered at one point, already resolved: the server folds a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result into a single effective value, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`, while its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
 
 ```jsx
 const caption = props.data.o.sum.caption;   // a column attribute, once for the column
 const cell = row.sum;                        // { value, background, readOnly, ... } for this row
 ```
 
-The server computes a dynamic `IMAGE` for a property once at the column key (using the current object), while an action's dynamic `IMAGE` is computed for every row. The projection preserves that distinction: a property's image is on its column node `data.<g>.<prop>`; an action's image is on its row cell `data.<g>.list[i].<action>`.
+The server computes a dynamic `IMAGE` for a property once at the column key (using the current object), while an action's dynamic `IMAGE` is computed for every row. The projection preserves that distinction: a property's image is on its column node `data.<g>.<prop>`, while an action's image is on its row cell `data.<g>.list[i].<action>`.
 
 An option the platform computed nothing for is absent — a property with no `BACKGROUND` has no `background` in its cell entry — and a row the platform computed no row options for has no `background`, `foreground` or `selected`.
 
@@ -175,7 +175,7 @@ An option the platform computed nothing for is absent — a property with no `BA
 | `options` | The property's custom options | parsed JSON value |
 | `defaultValue` | The value editing starts with | string |
 
-Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column; the rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected — directly, not inside any property entry.
+Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected — directly, not inside any property entry.
 
 ```jsx
 function Row(props) {
@@ -193,7 +193,7 @@ function Row(props) {
 
 ### Rendering rows {#rendering-rows}
 
-Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first; without an alias, call it through `React.createElement`. The alias is read where the module runs, which for a compiled bundle and for a `.jsx` resource is before anything renders, so it can sit at the top of the module. In a resource written as `.js`, which is served as it is, read the platform's components and hooks inside the component instead — the module runs before the first view mounts, and they are installed at that mount:
+Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first. Without an alias, call it through `React.createElement`. The alias is read where the module runs, which for a compiled bundle and for a `.jsx` resource is before anything renders, so it can sit at the top of the module. In a resource written as `.js`, which is served as it is, read the platform's components and hooks inside the component instead — the module runs before the first view mounts, and they are installed at that mount:
 
 ```jsx
 const List = window.lsfusion.List;
@@ -223,7 +223,7 @@ props.data.o.list.map(r => <MRow key={r.key} row={r} />)
 
 A `React.memo(Row)` created inside the component on each render is a new component type every time, which defeats the memoization and re-renders every row.
 
-A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or as the default for every `List` by setting `window.lsfusion.listSimple = true`. It maps the list and memoizes the row component instead, relying on the projection reusing the row reference of an unchanged row; the row component receives the same props.
+A simpler variant of `window.lsfusion.List` is available as `<List simple/>`, or as the default for every `List` by setting `window.lsfusion.listSimple = true`. It maps the list and memoizes the row component instead, relying on the projection reusing the row reference of an unchanged row. The row component receives the same props.
 
 ### Bucketing rows into cells {#bucketing}
 
@@ -258,7 +258,7 @@ export function Board(props) {
 }
 ```
 
-`<BucketScope group bucketOf bucketDeps>` wraps the grid markup. `group` is the group object SID. `bucketOf(row, rowKey)` computes the row's cell key from the row's property values — a string (any value is coerced to a string), an array of keys to place the row into several cells, or `null` for none. `bucketDeps` lists the outside values `bucketOf` closes over — like a hook dependency array, the index is rebuilt when they change; keep the array's length constant.
+`<BucketScope group bucketOf bucketDeps>` wraps the grid markup. `group` is the group object SID. `bucketOf(row, rowKey)` computes the row's cell key from the row's property values — a string (any value is coerced to a string), an array of keys to place the row into several cells, or `null` for none. `bucketDeps` lists the outside values `bucketOf` closes over — like a hook dependency array, the index is rebuilt when they change. Keep the array's length constant.
 
 `useBucket(cellKey)` returns the array of row keys currently in that cell, in the group's display order, and subscribes the component to only that cell. Call it once per cell component, with that cell's fixed key (the usual hook rules). An empty cell always returns the same frozen empty array. The cell component resolves each row key to a row component that subscribes to its own row via `useData(d => d.<g>.byKey[rowKey])`, as above.
 
@@ -310,7 +310,7 @@ The entry holds `caption` and `image`, and it sits at the same place in `data` t
 | A form-level (no-group) property | `data.<integrationSID>` | The property's integration SID, `note` |
 | A container | `data.<containerSID>`, always at the top level | The container's design component identifier, `BOX(o)` |
 
-A container is keyed by its design identifier because that is the only name it has; a property is keyed by its integration SID, the name its value is keyed by, not by the design identifier `PROPERTY(qty)`. The `name` passed to `<Lsf>` is a different name: it is the design identifier of the child in the container, so an `lsf` property is placed as `<Lsf name="PROPERTY(note)"/>` and read as `data.note`.
+A container is keyed by its design identifier because that is the only name it has. A property is keyed by its integration SID, the name its value is keyed by, not by the design identifier `PROPERTY(qty)`. The `name` passed to `<Lsf>` is a different name: it is the design identifier of the child in the container, so an `lsf` property is placed as `<Lsf name="PROPERTY(note)"/>` and read as `data.note`.
 
 Every container the React scope owns or places gets an entry in `data` when it is declared in the design (`NEW <name>`) or marked `lsf` — except a container inside an `lsf` subtree, which the platform draws whole and the component never looks into. A generated box the component neither placed nor the author named (`TOOLBAR(g)`, `PANEL(g)`, …) gets none. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
 
@@ -360,16 +360,16 @@ Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill
 </section>
 ```
 
-`image` is a string with the image HTML, so it is inserted as HTML; `caption` is plain text.
+`image` is a string with the image HTML, so it is inserted as HTML. `caption` is plain text.
 
 These rules bound the placement:
 
 - A property drawn in the **panel** of an object group that the component renders cannot be marked `lsf`, because that group has no lsFusion view to place it in. Set `lsf` on the group's `BOX` instead. (A property drawn in the **table** of such a group is the per-row case below, and is exactly what `LSF` is for.)
 - A child of a container the component itself draws cannot be marked `lsf` either: that container has no view of its own, so nothing would place the child. Mark the container `lsf` as well, and it gets one.
-- Each lsf child is placed by at most one host. A child no host places is not shown; a duplicate host reports itself in the page and in the console, and the first one keeps the child.
+- Each lsf child is placed by at most one host. A child no host places is not shown. A duplicate host reports itself in the page and in the console, and the first one keeps the child.
 - The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, an `<Lsf>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
 - The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
-- `lsf` may be set only on a direct child of a `CUSTOM REACT` container; anywhere else the form is rejected when it is built.
+- `lsf` may be set only on a direct child of a `CUSTOM REACT` container. Anywhere else the form is rejected when it is built.
 
 A placement that cannot work says so in the host itself, not only in the console: a name that names no child of the container, a child without `lsf`, a second host for the same child, a name that is not an `LSF` grid property, and a `row` that is not a row each render their message into the host and mark it with the class `lsf-view-error`.
 
@@ -415,7 +415,7 @@ What the author gets and what stays theirs:
 - The editor is the platform's, with everything that implies: editing, `READONLYIF`, `BACKGROUND` and the other per-cell options, all read for **that row**.
 - The property leaves the rows: it is a component now, so `row.quantity` is not there (its column entry stays, with the caption). Declare a second, ordinary property if the value is also wanted as data.
 - The caption is not drawn in the row. Like an lsf child's, it arrives in the group's column node — `data.o.quantity.caption` — so the component puts it where it belongs, usually once, in a header.
-- A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor; only a row leaving that set loses it.
+- A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor. Only a row leaving that set loses it.
 
 The declaration is refused, with the property named, when it cannot work: on a grid property whose object group is not drawn by a `CUSTOM REACT` container (nothing would place the per-row editors), on a grid property grouped in columns (a per-row editor cannot address a row-and-column cell), and on a panel property of a group the component itself draws (there is no lsFusion view to place it in — set `lsf` on the group's box instead).
 
@@ -430,7 +430,7 @@ DESIGN orders {
 }
 ```
 
-The component does not pick it up on its own. Every lsf child is placed by an `<Lsf>` that names it, so a child no `<Lsf>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`; the children stay as declared.
+The component does not pick it up on its own. Every lsf child is placed by an `<Lsf>` that names it, so a child no `<Lsf>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`. The children stay as declared.
 
 ### Choosing between a React component and an HTML template
 
@@ -469,8 +469,8 @@ DESIGN quotes {
 The scheduled run differs from a request the component would make itself. A timer of the component's own that calls `controller.changeProperty('refresh')` polls the server the way a click on the form would — as a synchronous request that blocks input until it completes, unless the action is drawn with `NOWAIT` — and, as the third point shows, goes on polling while the form is hidden.
 
 - **It does not block the user.** The web client sends it as an asynchronous request, without blocking input and without the [busy indicator](../paradigm/Interactive_view.md#busy) a synchronous request gets, so the user keeps working while the form is re-read.
-- **It runs only while the form is on screen.** For a form in a background tab, a form the [forms window](#forms-window) component places nowhere, or a form under a modal dialog, the run is skipped; the timer keeps counting, and the next run comes once the form is shown again.
-- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component; a timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden.
+- **It runs only while the form is on screen.** For a form in a background tab, a form the [forms window](#forms-window) component places nowhere, or a form under a modal dialog, the run is skipped. The timer keeps counting, and the next run comes once the form is shown again.
+- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden.
 
 ### A navigator window {#navigator-window}
 
@@ -526,13 +526,13 @@ An element declared [`LSF`](../language/NAVIGATOR_statement.md) is drawn by the 
 
 The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not. `props.controller` is the navigator controller, whose [`activate`](How-to_Custom_view_controller.md#navigator-controller) does what clicking the element does: selects a folder, or runs an action.
 
-So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child that lands in another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself sits in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component. A component that draws only the elements it knows about loses such sections; everything the window was given is reached through `root` and `children`.
+So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child that lands in another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself sits in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component. A component that draws only the elements it knows about loses such sections. Everything the window was given is reached through `root` and `children`.
 
 Only the desktop web client draws the component. The mobile web client and the desktop client render their standard menu for that window, so the navigator stays usable in all of them.
 
 #### The standard button {#standard-button}
 
-An element the component does not want to draw itself is placed with `<Lsf name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior; the node itself is left as the component rendered it, without the marks a form's host is given.
+An element the component does not want to draw itself is placed with `<Lsf name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior. The node itself is left as the component rendered it, without the marks a form's host is given.
 
 ```jsx
 const { Lsf } = window.lsfusion;
@@ -633,7 +633,7 @@ and each edit mode in `editModes` carries what the mode button shows it with:
 
 A form the component places nowhere stays **open and hidden**, which is what a background tab already is: the standard strip only hides the forms it does not show. So a component that places only the current form gives an application without tabs, where every form opened so far is still there, and placing one again shows it as it was left. A form is closed only through `close(name)` or `closeAll()`, or the way it is closed without a component view.
 
-The platform's own toolbar — edit mode, full screen, the mobile menu — sits in the standard tab strip, so a window drawn by a component does not show it. What it does to the window itself the component does through the controller: `setEditMode(name)` chooses an edit mode, the way the mode button does, where `name` is the name of a mode in `editModes`, and `toggleFullScreen()` expands the forms window to the full screen and brings it back, the way the full screen button and ALT+F11 do. What the standard tab's context menu offers is here too: `closeAll()` asks every open form to close, starting from the last one in that order; closing each of them is a request as well, so a form that did not close stays open and the rest are closed. The chosen mode and the full screen are state the platform holds itself, which is why it projects them: a mode chosen by the component and a full screen entered with ALT+F11 are both seen the same way, in `props.data`. The mobile menu is not something a component needs: on the mobile web client the platform draws the forms window.
+The platform's own toolbar — edit mode, full screen, the mobile menu — sits in the standard tab strip, so a window drawn by a component does not show it. What it does to the window itself the component does through the controller: `setEditMode(name)` chooses an edit mode, the way the mode button does, where `name` is the name of a mode in `editModes`, and `toggleFullScreen()` expands the forms window to the full screen and brings it back, the way the full screen button and ALT+F11 do. What the standard tab's context menu offers is here too: `closeAll()` asks every open form to close, starting from the last one in that order. Closing each of them is a request as well, so a form that did not close stays open and the rest are closed. The chosen mode and the full screen are state the platform holds itself, which is why it projects them: a mode chosen by the component and a full screen entered with ALT+F11 are both seen the same way, in `props.data`. The mobile menu is not something a component needs: on the mobile web client the platform draws the forms window.
 
 Only the desktop web client draws the component. The mobile web client and the desktop client keep their standard forms window.
 
@@ -754,7 +754,7 @@ Everything the component shows comes from the projection it reads with `useData(
 
 The input is **uncontrolled** on purpose - it is not given `value={query}` - and that is the one thing a view like this must get right. A change is a round trip to the server, so between the keystroke and the new value coming back the projection still holds the query as it was. A React-controlled field would be redrawn from it, and the character just typed would be lost. So the field owns what the user types, and follows the projection only when something else changed it and the user is not in the field, catching up when the user leaves it. Until the projection shows the value the field sent last, kept in `sent`, the projection is behind the field rather than changed by something else, so the field does not follow it then either. This relies on the query being stored as typed: it is a `DATA` property, and `maxLength` keeps the input within its `ISTRING[100]`. A change the server rejected or stored differently would never show up in the projection, and the field would stop following it. A click runs the action drawn on the group for the clicked row, `changeProperty('c.openCustomer', row)`, and the record opens where a form opens by default, as a tab in `System.forms`. The header stays: a `FORMS` window draws one form at a time, so a form the application later opens `WINDOW header` replaces it, while `WINDOW` without a window leaves it alone.
 
-Two things make it read as a header rather than as a document. `REMOVE TOOLBARBOX` takes the form's own toolbar away - there is nothing here for the user to save, cancel or close, and the buttons are drawn by that container. (This is what `POPUP` and `EMBEDDED` get for free: every system button's `SHOWIF` is built from the form's environment properties, and an in-place editor sets `isEditing`, which those conditions negate. A form drawn as a header is not an in-place editor, so it says what it wants in its design instead.) The results are drawn through a **portal into the page body**, not inside the container, and that is the second thing this kind of view must get right. A window is short by design, and it clips what its form draws - a list left inside a header band is cut off after the first row. Nor is a high `z-index` enough: the window's own element is a stacking context (`position: relative; z-index: 0`), so a layer inside it can never rise above the neighbouring windows. A portal leaves both behind; the layer is then positioned from the field's `getBoundingClientRect()` and has to follow it on resize and scroll, and go away on Escape.
+Two things make it read as a header rather than as a document. `REMOVE TOOLBARBOX` takes the form's own toolbar away - there is nothing here for the user to save, cancel or close, and the buttons are drawn by that container. (This is what `POPUP` and `EMBEDDED` get for free: every system button's `SHOWIF` is built from the form's environment properties, and an in-place editor sets `isEditing`, which those conditions negate. A form drawn as a header is not an in-place editor, so it says what it wants in its design instead.) The results are drawn through a **portal into the page body**, not inside the container, and that is the second thing this kind of view must get right. A window is short by design, and it clips what its form draws - a list left inside a header band is cut off after the first row. Nor is a high `z-index` enough: the window's own element is a stacking context (`position: relative; z-index: 0`), so a layer inside it can never rise above the neighbouring windows. A portal leaves both behind. The layer is then positioned from the field's `getBoundingClientRect()` and has to follow it on resize and scroll, and go away on Escape.
 
 `AUTOSIZE` on the window is what keeps the band from being a tall empty strip: the header is as tall as its form - here one input - while still stretching across, and the `fill = 1` container inside it fills that height rather than hugging its own content. A window is sized by the layout rather than by the form in it, so without it the band keeps the share of the height its `POSITION` asks for, empty or not. Note also that the client remembers a size the user dragged, and restores it over the declared one - `Service.resetWindowsLayout` is what puts the declared sizes back. Two things about `POSITION` are worth knowing before the header looks wrong. The numbers are not a rectangle the window is drawn in but the way the layout splits the space, so a header of `POSITION(20, 6, 80, 10)` becomes a band to the right of the toolbar and above `System.forms`. And unless the navigator is fully pinned its panel is an overlay that hangs over the windows beside it: a click aimed at the header then lands on the menu underneath and runs whatever that menu item runs.
 
@@ -805,7 +805,7 @@ and each message carries:
 
 A message is markup, so what the projection carries is only what the standard panel writes itself beside that markup. The name is the platform's own: two messages can carry the same text, caption and second, so nothing about a message identifies it.
 
-`props.controller` does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. Pinning is a setting of the display environment, shared with the desktop client, so the component cannot do it itself; it is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
+`props.controller` does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. Pinning is a setting of the display environment, shared with the desktop client, so the component cannot do it itself. It is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
 
 A message the component places nowhere is still logged and still in the projection: nothing drops one, exactly as the standard panel keeps every message it printed. So a component that shows only the last message, or only the failed ones, loses nothing — an earlier message placed again is shown as it was. There is no clearing and no dismissing, in the projection or in the controller, because the platform has none.
 
@@ -824,7 +824,7 @@ const { Image } = window.lsfusion;
 <Image value={row.photo.value} className="avatar"/>
 ```
 
-The projected value is either an address or a ready element, since a font icon has no address at all, and `Image` draws whichever it was given. A view that wants the address itself — for a CSS background, say — still has it in the value; `Image` is there so that no view has to insert the platform's markup by hand. A missing image draws nothing.
+The projected value is either an address or a ready element, since a font icon has no address at all, and `Image` draws whichever it was given. A view that wants the address itself — for a CSS background, say — still has it in the value. `Image` is there so that no view has to insert the platform's markup by hand. A missing image draws nothing.
 
 ### Drawing a caption {#caption}
 

@@ -40,9 +40,9 @@ Form import is the operation opposite to opening the form in the [structured vie
 IMPORT formName [importFormat] [FROM (fileExpr | groupId1 = fileExpr1 [, ..., groupIdM = fileExprM])]
 ```
 
-The hierarchical formats (**JSON**, **XML**) are read from one file, the flat ones (**CSV**, **XLS**, **DBF**, **TABLE**) from one file per object group; the empty group is named `root`. Without `FROM`, `System.importFile` is used.
+The hierarchical formats (**JSON**, **XML**) are read from one file, the flat ones (**CSV**, **XLS**, **DBF**, **TABLE**) from one file per object group. The empty group is named `root`. Without `FROM`, `System.importFile` is used.
 
-An imported form is restricted: objects of numeric or concrete user classes only, exactly one object per group, properties and filters changeable (as a rule, [data properties](Brief_logic.md#properties)). For every object read, the default value is written to each filter of its group: `FILTERS order(od) = o` records the link to the upper object, `FILTERS imported(o)` the mark of a read object; without such a filter `System.imported[INTEGER]` is not filled. Flat import is a special case of it, with the form built by the platform itself. The mechanism is [in a structured view](../paradigm/In_a_structured_view_EXPORT_IMPORT.md), and the form's views are in [Brief: forms](Brief_view.md#forms).
+An imported form is restricted: objects of numeric or concrete user classes only, exactly one object per group, properties and filters changeable (as a rule, [data properties](Brief_logic.md#properties)). For every object read, the default value is written to each filter of its group: `FILTERS order(od) = o` records the link to the upper object, `FILTERS imported(o)` the mark of a read object. Without such a filter `System.imported[INTEGER]` is not filled. Flat import is a special case of it, with the form built by the platform itself. The mechanism is [in a structured view](../paradigm/In_a_structured_view_EXPORT_IMPORT.md), and the form's views are in [Brief: forms](Brief_view.md#forms).
 
 ### Formats and field mapping
 
@@ -57,9 +57,9 @@ DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetStr]
 TABLE [WHERE whereExpr]
 ```
 
-`XLS` reads both `xls` and `xlsx`; there is no separate `XLSX` keyword on import. Without an explicit format it is determined by the file's class — `JSONFILE`, `XMLFILE`, `CSVFILE`, `EXCELFILE`, `DBFFILE`, `TABLEFILE` — and for the `FILE` class by the extension.
+`XLS` reads both `xls` and `xlsx`. There is no separate `XLSX` keyword on import. Without an explicit format it is determined by the file's class — `JSONFILE`, `XMLFILE`, `CSVFILE`, `EXCELFILE`, `DBFFILE`, `TABLEFILE` — and for the `FILE` class by the extension.
 
-The column for a property is given as `= columnId`, a simple name or a string literal; without it the column following the one given for the previous property is taken. In `FIELDS` without an alias the file's field name becomes the parameter name. `WHERE whereExpr` selects rows by a textual condition of the form `field sign value`.
+The column for a property is given as `= columnId`, a simple name or a string literal. Without it the column following the one given for the previous property is taken. In `FIELDS` without an alias the file's field name becomes the parameter name. `WHERE whereExpr` selects rows by a textual condition of the form `field sign value`.
 
 ### Handling imported data
 
@@ -96,7 +96,7 @@ EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat]
   [TO exportTo]
 ```
 
-In the first form each listed expression becomes a column of the result, `WHERE` sets the rows, `ORDER` their order. In the second form the structure of the export is set by the form itself: its object groups, the properties shown for them, its filters; the objects fixed in the `OBJECTS` block act as additional filters. The mechanism is described in [data export](../paradigm/Data_export_EXPORT.md).
+In the first form each listed expression becomes a column of the result, `WHERE` sets the rows, `ORDER` their order. In the second form the structure of the export is set by the form itself: its object groups, the properties shown for them, its filters. The objects fixed in the `OBJECTS` block act as additional filters. The mechanism is described in [data export](../paradigm/Data_export_EXPORT.md).
 
 ```lsf
 exportSkus (Store store) {
@@ -154,7 +154,7 @@ exportSku (Store store) {
 - The format, if not specified, is **JSON**.
 - `WHERE`, if not specified, is the disjunction of all exported properties: the exported object sets are those for which at least one of them is not `NULL`.
 - Column names, if not set, are `expr1`, ..., `exprN` by the position of the expression in the list.
-- A `NULL` value is omitted from the record in **JSON** and **XML** (the key or the element is absent) and is written as an empty cell in the flat formats; the record itself remains while the `WHERE` condition holds.
+- A `NULL` value is omitted from the record in **JSON** and **XML** (the key or the element is absent) and is written as an empty cell in the flat formats. The record itself remains while the `WHERE` condition holds.
 - `ORDER` takes arbitrary expressions: an expression that is not among the exported ones is added to the internal query as a hidden column and does not appear in the result.
 - Exporting a single value without a column name gives the value itself in **JSON**, not an object with a field.
 
@@ -193,7 +193,7 @@ LSF connectionStrExpr lsfExecType execStrExpr
 DBF connectionStrExpr APPEND [CHARSET charsetLiteral]
 ```
 
-`HTTP` is a request to the given string, `TCP` and `UDP` send a file's bytes to a socket, `SQL` runs a command on a third-party SQL server, `LSF` calls an action on another lsFusion server, `DBF` appends table rows to a `.dbf` file ([access to an external system](../paradigm/Access_to_an_external_system_EXTERNAL.md)). `SQL`, `TCP` and `DBF` connections are reused inside a [`NEWCONNECTION`](../language/NEWCONNECTION_operator.md) block; a file is fetched by URL with the [`READ` operator](../language/READ_operator.md).
+`HTTP` is a request to the given string, `TCP` and `UDP` send a file's bytes to a socket, `SQL` runs a command on a third-party SQL server, `LSF` calls an action on another lsFusion server, `DBF` appends table rows to a `.dbf` file ([access to an external system](../paradigm/Access_to_an_external_system_EXTERNAL.md)). `SQL`, `TCP` and `DBF` connections are reused inside a [`NEWCONNECTION`](../language/NEWCONNECTION_operator.md) block. A file is fetched by URL with the [`READ` operator](../language/READ_operator.md).
 
 ```lsf
 readRate () {
@@ -211,7 +211,7 @@ INTERNAL [syncType] <{anyTokens}> [NULL]
 INTERNAL internalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1, ..., propertyIdM]
 ```
 
-The Java target is a class extending `InternalAction`, given by its name or as an inline code fragment in `<{ }>`. Such code writes values straight into lsFusion properties within the same [change session](Brief_logic.md#change-sessions); what it can reach is in [Java API for integrations](../paradigm/Java_integration_API.md). The mechanism of all three types is [internal call (`INTERNAL`)](../paradigm/Internal_call_INTERNAL.md), and the operator's place next to `FORMULA` is [access to an internal system](../paradigm/Access_to_an_internal_system_INTERNAL_FORMULA.md).
+The Java target is a class extending `InternalAction`, given by its name or as an inline code fragment in `<{ }>`. Such code writes values straight into lsFusion properties within the same [change session](Brief_logic.md#change-sessions). What it can reach is in [Java API for integrations](../paradigm/Java_integration_API.md). The mechanism of all three types is [internal call (`INTERNAL`)](../paradigm/Internal_call_INTERNAL.md), and the operator's place next to `FORMULA` is [access to an internal system](../paradigm/Access_to_an_internal_system_INTERNAL_FORMULA.md).
 
 ```lsf
 setNoCancelInTransaction() INTERNAL <{ context.getSession().setNoCancelInTransaction(true); }>;
@@ -219,13 +219,13 @@ setNoCancelInTransaction() INTERNAL <{ context.getSession().setNoCancelInTransac
 
 ### Declarative integration (FORMULA, CUSTOM, JSON)
 
-The [`FORMULA` operator](../language/FORMULA_operator.md) creates a property computed by an SQL expression, possibly a different one per DBMS; the table-valued form maps the property onto a whole table ([custom formula](../paradigm/Custom_formula_FORMULA.md)).
+The [`FORMULA` operator](../language/FORMULA_operator.md) creates a property computed by an SQL expression, possibly a different one per DBMS. The table-valued form maps the property onto a whole table ([custom formula](../paradigm/Custom_formula_FORMULA.md)).
 
 ```
 FORMULA [NULL] [className [valueId]] implList [( paramList )] [NULL]
 ```
 
-`CUSTOM` hands rendering to a JavaScript function in the client: on an object group as `CUSTOM renderFunction [OPTIONS optionsExpr]` ([object blocks](../language/Object_blocks.md)), on a property as `CUSTOM renderFunction [CHANGE [editFunction]]` ([properties and actions block](../language/Properties_and_actions_block.md)). The function is given the view's own local controller, which reads and changes what this view shows; the form controller — and with it the server calls — is reached from it as `controller.form` ([How-to: Custom Components](../how-to/How-to_Custom_components_objects.md)).
+`CUSTOM` hands rendering to a JavaScript function in the client: on an object group as `CUSTOM renderFunction [OPTIONS optionsExpr]` ([object blocks](../language/Object_blocks.md)), on a property as `CUSTOM renderFunction [CHANGE [editFunction]]` ([properties and actions block](../language/Properties_and_actions_block.md)). The function is given the view's own local controller, which reads and changes what this view shows. The form controller — and with it the server calls — is reached from it as `controller.form` ([How-to: Custom Components](../how-to/How-to_Custom_components_objects.md)).
 
 The [`JSON` and `JSONTEXT` operators](../language/JSON_operator.md) create a property building JSON out of a list of properties or out of a form.
 

@@ -7,7 +7,7 @@ The *chat* is a built-in platform mechanism for exchanging text messages between
 
 ### Chats, dialogs and participants
 
-A *chat* is an entity with a set of participants. A user becomes a participant when added to the chat; for each participant a per-user *read-only* flag is stored independently, forbidding that participant from sending messages.
+A *chat* is an entity with a set of participants. A user becomes a participant when added to the chat. For each participant a per-user *read-only* flag is stored independently, forbidding that participant from sending messages.
 
 A *dialog* is the special case of a chat with exactly two participants. The dialog between two users is unique: an attempt to open a dialog with an interlocutor with whom one already exists uses the existing dialog rather than creating a new one.
 
@@ -33,11 +33,11 @@ For each user and each chat an *unread* message count is maintained — the numb
 
 ### System messages
 
-The platform uses the chat for its own notifications — for example, about the start and restart of the application server. System messages are broadcast to all users into a dedicated system chat; a separate retention period of 30 days applies to them, so the service event log does not accumulate indefinitely.
+The platform uses the chat for its own notifications — for example, about the start and restart of the application server. System messages are broadcast to all users into a dedicated system chat. A separate retention period of 30 days applies to them, so the service event log does not accumulate indefinitely.
 
 ### Push notifications
 
-When a new message appears, push notifications are sent to the participants' currently connected clients. Delivery runs on a separate thread, so as not to delay the send action. Having received a notification, the client redraws the chat list and updates the unread counter; if the form of the corresponding chat is open, the message appears in the feed without a reload.
+When a new message appears, push notifications are sent to the participants' currently connected clients. Delivery runs on a separate thread, so as not to delay the send action. Having received a notification, the client redraws the chat list and updates the unread counter. If the form of the corresponding chat is open, the message appears in the feed without a reload.
 
 ### Forms
 

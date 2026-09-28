@@ -65,7 +65,7 @@ The `Downloads` folder in the user folder is considered to be the current folder
 
 - `APPEND`
 
-    Keyword. If specified, the file is re-read from `fileExpr` and appended to the file at `urlExpr`. Supported only when writing to the file system (URL type `file`); for `ftp`, `ftps`, and `sftp`, using `APPEND` raises a runtime error. It also cannot be combined with `CLIENT DIALOG`. Behavior by file extension:
+    Keyword. If specified, the file is re-read from `fileExpr` and appended to the file at `urlExpr`. Supported only when writing to the file system (URL type `file`). For `ftp`, `ftps`, and `sftp`, using `APPEND` raises a runtime error. It also cannot be combined with `CLIENT DIALOG`. Behavior by file extension:
 
     - **csv**, **txt** — data is appended to the end of the file;
     - **xls**, **xlsx** — all sheets from the `fileExpr` file are copied into the file at the specified `urlExpr`;

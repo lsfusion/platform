@@ -37,7 +37,7 @@ The result class is determined as:
 |`*`     |`NUMERIC[p1.IntegerPart + p1.Precision + p2.IntegerPart + p2.Precision, p1.Precision + p2.Precision]`|
 |`/`     |`NUMERIC[p1.IntegerPart + p2.Precision + s, s]`|
 
-The `NUMERIC[ , ]` formulas for the product and the ratio apply only when at least one operand belongs to `NUMERIC[ , ]`; otherwise the result is the common ancestor ("Numbers" family) of the two operand classes, so the product or ratio of two integers is itself an integer — the ratio being integer (truncating) division. In the ratio formula `s` is the maximum `NUMERIC` scale (`32` by default).
+The `NUMERIC[ , ]` formulas for the product and the ratio apply only when at least one operand belongs to `NUMERIC[ , ]`. Otherwise the result is the common ancestor ("Numbers" family) of the two operand classes, so the product or ratio of two integers is itself an integer — the ratio being integer (truncating) division. In the ratio formula `s` is the maximum `NUMERIC` scale (`32` by default).
 
 The sum and the difference also operate on date/time values, where a whole number is counted in base units — days for `DATE`, seconds for `DATETIME`, `ZDATETIME`, and `TIME`:
 
@@ -47,7 +47,7 @@ The sum and the difference also operate on date/time values, where a whole numbe
 |`DATE` `-` `DATE`|`INTEGER` (number of days)|
 |`DATETIME` / `ZDATETIME` / `TIME` `-` a value of the same class|`LONG` (number of base units)|
 
-If either operand of the `+` operator belongs to a string class, the result is a string class; its length, case-insensitivity, and other parameters follow the string-concatenation rules — see [string operators](String_operators_plus_CONCAT_SUBSTRING.md).
+If either operand of the `+` operator belongs to a string class, the result is a string class. Its length, case-insensitivity, and other parameters follow the string-concatenation rules — see [string operators](String_operators_plus_CONCAT_SUBSTRING.md).
 
 ### Language
 

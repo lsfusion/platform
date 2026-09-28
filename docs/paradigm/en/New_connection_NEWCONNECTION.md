@@ -9,7 +9,7 @@ Typical cases — a series of SQL queries against the same external database, a 
 
 Every connection opened inside the block is closed when the block exits, regardless of whether the inner action completed normally or threw.
 
-The block runs in the current [session](New_session_NEWSESSION_NESTEDSESSION.md); nothing besides the external-connection reuse policy is changed.
+The block runs in the current [session](New_session_NEWSESSION_NESTEDSESSION.md). Nothing besides the external-connection reuse policy is changed.
 
 ### Language
 

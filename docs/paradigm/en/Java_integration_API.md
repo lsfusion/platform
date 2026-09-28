@@ -44,7 +44,7 @@ lsfusion.server.physics.exec.db.controller.manager.DBManager
 lsfusion.interop.server.RmiServerInterface
 ```
 
-`ScriptingErrorLog.SemanticErrorException` is an inner class of `ScriptingErrorLog`; thrown by the resolving methods (`findProperty` / `findAction` / `findClass` / `findGroup` / `findForm`), so subclass constructors of `InternalAction` that call them usually declare `throws ScriptingErrorLog.SemanticErrorException`. The base `InternalAction(LM, classes...)` itself declares no checked exceptions. In bean lifecycle methods (which also declare no checked exceptions) `SemanticErrorException` is commonly caught and wrapped in a `RuntimeException`.
+`ScriptingErrorLog.SemanticErrorException` is an inner class of `ScriptingErrorLog`. Thrown by the resolving methods (`findProperty` / `findAction` / `findClass` / `findGroup` / `findForm`), so subclass constructors of `InternalAction` that call them usually declare `throws ScriptingErrorLog.SemanticErrorException`. The base `InternalAction(LM, classes...)` itself declares no checked exceptions. In bean lifecycle methods (which also declare no checked exceptions) `SemanticErrorException` is commonly caught and wrapped in a `RuntimeException`.
 
 ### Root objects
 
@@ -70,7 +70,7 @@ lsfusion.interop.server.RmiServerInterface
 `LP<?>` — Java wrapper over a [property](Properties.md).
 - `read(session, ObjectValue... params)` → `Object` — current value (a Java value for scalar properties; a `Long` id for object-class properties)
 - `read(context, ObjectValue... params)` → `Object`
-- `readClasses(session, ObjectValue... params)` → `ObjectValue` — for object-class properties returns a `DataObject` with the concrete class set (or `NullValue`); convenient when the value has to be passed straight into `LP.change` / `LA.execute` without rebuilding the class manually
+- `readClasses(session, ObjectValue... params)` → `ObjectValue` — for object-class properties returns a `DataObject` with the concrete class set (or `NullValue`). Convenient when the value has to be passed straight into `LP.change` / `LA.execute` without rebuilding the class manually
 - `readClasses(context, ObjectValue... params)` → `ObjectValue`
 - `change(value, session, DataObject... params)` — write a Java value into the session
 - `change(value, context, DataObject... params)`
@@ -83,15 +83,15 @@ lsfusion.interop.server.RmiServerInterface
 
 ### Object parameters
 
-`ObjectValue` — common base type for an object-class value; either `DataObject` (non-`NULL`) or `NullValue` (`NullValue.instance`).
+`ObjectValue` — common base type for an object-class value: either `DataObject` (non-`NULL`) or `NullValue` (`NullValue.instance`).
 
 `DataObject(Object value, ConcreteClass cls)` — non-`NULL` parameter constructor with an explicit class (needed for instance for dates and user-defined classes). Neither `BusinessLogics.findClass(name)` (returns `CustomClass`) nor `LM.findClass(name)` (returns `ValueClass`) gives a `ConcreteClass` directly — for a user-defined class a cast to `ConcreteCustomClass` is required: `new DataObject(userId, (ConcreteCustomClass) BL.findClass("CustomUser"))`. For built-in classes use the `instance` field: `new DataObject(LocalDate.of(...), DateClass.instance)`. For a few built-in scalar types convenience one-arg constructors exist: `String`, `Integer`, `Long`, `Boolean`, `Double`.
 
 ### Change session
 
 `DataSession` — change [session](Change_sessions.md), accumulates changes until applied. Opened through `EventServer.createSession()` or `dbManager.createSession()`. Implements `AutoCloseable` — properly used in try-with-resources, an unapplied session is rolled back.
-- `applyException(BL, stack)` — apply; throw on failure
-- `applyMessage(BL, stack)` → `String` — apply; return error message or `null`
+- `applyException(BL, stack)` — apply, throwing on failure
+- `applyMessage(BL, stack)` → `String` — apply, returning the error message or `null`
 
 ### `InternalAction`
 
@@ -132,18 +132,18 @@ lsfusion.interop.server.RmiServerInterface
 
 `MonitorServer extends EventServer` — `getStack()` via `ThreadLocalContext.assureMonitor(this)`. Used for most Spring bean components.
 
-`RmiServer extends EventServer` — `getStack()` via `ThreadLocalContext.assureRmi(this)`. Used for beans exported over RMI; the remote interface must extend `lsfusion.interop.server.RmiServerInterface`.
+`RmiServer extends EventServer` — `getStack()` via `ThreadLocalContext.assureRmi(this)`. Used for beans exported over RMI. The remote interface must extend `lsfusion.interop.server.RmiServerInterface`.
 
 ### Threads
 
-`ExecutorFactory` — thread pool factories that bring up threads in the right thread context; tasks in these pools can call `getStack()`.
+`ExecutorFactory` — thread pool factories that bring up threads in the right thread context. Tasks in these pools can call `getStack()`.
 - `createMonitorThreadService(Integer threads, MonitorServer monitor)` → `ExecutorService`
 - `createMonitorScheduledThreadService(Integer threads, MonitorServer monitor)` → `ScheduledExecutorService`
 - `createRMIThreadService(Integer threads, RmiServer rmi)` → `ExecutorService`
 
 `ThreadLocalContext` — manual thread-context setup for callback threads not created through `ExecutorFactory`:
 - `aspectBeforeMonitorHTTP(MonitorServer)` / `aspectAfterMonitorHTTP(MonitorServer)` — wrap a block in monitor context (`MyServer.this` inside an anonymous class).
-- `assureRmi(RmiServer)` — defensive call inside remote methods (usually unnecessary; the RMI aspect sets up the context automatically).
+- `assureRmi(RmiServer)` — defensive call inside remote methods (usually unnecessary, since the RMI aspect sets up the context automatically).
 
 ### Working with threads correctly
 
@@ -153,7 +153,7 @@ Every thread that is going to reach the lsFusion system through `getStack()`, `L
 
 1. RMI inbound calls — wrapped by `RemoteContextAspect` (Spring AOP).
 2. Tasks running in threads from `ExecutorFactory.createMonitorThreadService(...)` / `createMonitorScheduledThreadService(...)` / `createRMIThreadService(...)` — every thread of such pools enters and leaves the context via `aspectBefore...` / `aspectAfter...` without user intervention.
-3. `EventServer` lifecycle methods (`onInit`, `onStarted`, `onStopping`) — run in *lifecycle* context; `getTopStack()` works there, but `getStack()` does not.
+3. `EventServer` lifecycle methods (`onInit`, `onStarted`, `onStopping`) — run in *lifecycle* context. `getTopStack()` works there, but `getStack()` does not.
 4. Inside `InternalAction.executeInternal` — the context is already set (the call comes through the platform's action flow).
 
 **When the context has to be set up manually** — on callback threads of external libraries (RabbitMQ client, MINA, WebSocket provider, etc.), on threads from `Executors.newFixedThreadPool` (not from `ExecutorFactory`), on hand-rolled `new Thread(...)`. Pairing is mandatory, always `try`/`finally`:
@@ -181,9 +181,9 @@ Skipping the `aspectAfter...` is not an option: the ThreadLocal stays dirty, and
 - **`new Thread(() -> lp.read(session, ...)).start()`** — the thread is not in the monitor context, `getStack()` fails.
 - **`Executors.newFixedThreadPool(N)` or `newScheduledThreadPool(N)` without `ExecutorFactory`** — same problem, no aspects.
 - **`aspectBefore...` without a paired `aspectAfter...`** — the next task on this thread inherits foreign ThreadLocal state.
-- **Passing `ExecutionContext` into a background thread as-is** — once the parent action returns, its session may be closed; further work on it breaks invariants.
-- **`getStack()` inside `onInit` / `onStarted` / `onStopping`** — that is lifecycle context, not monitor; use `getTopStack()`.
-- **`DataSession` shared across threads** — `DataSession` is not thread-safe; always open and close it in the same thread (try-with-resources).
+- **Passing `ExecutionContext` into a background thread as-is** — once the parent action returns, its session may be closed. Further work on it breaks invariants.
+- **`getStack()` inside `onInit` / `onStarted` / `onStopping`** — that is lifecycle context, not monitor. Use `getTopStack()`.
+- **`DataSession` shared across threads** — `DataSession` is not thread-safe. Always open and close it in the same thread (try-with-resources).
 - **Touching `RemoteForm` / client structures from an arbitrary thread without `pushNotification`** — client structures are not thread-safe, delivery must go through the notification channel.
 
 **Multiple concurrent threads inside one bean** — a fixed pool with monitor context:
@@ -207,7 +207,7 @@ private void handleMessage(byte[] body) {
 }
 ```
 
-Each task gets its own `DataSession` (do not share). Always catch and log exceptions inside a submitted task; in `scheduleAtFixedRate` an uncaught exception **suppresses further runs**, in a plain `submit` it is silently lost.
+Each task gets its own `DataSession` (do not share). Always catch and log exceptions inside a submitted task. In `scheduleAtFixedRate` an uncaught exception **suppresses further runs**, in a plain `submit` it is silently lost.
 
 ### RMI export
 
@@ -216,4 +216,4 @@ Each task gets its own `DataSession` (do not share). Always catch and log except
 - `unbindAndUnexport(String name, Remote remote)` — reverse
 - `export(Remote)` / `unexport(Remote)` / `bind(name, Remote)` / `unbind(name)` — lower-level
 
-The remote interface extends `lsfusion.interop.server.RmiServerInterface`; remote methods declare `throws RemoteException`.
+The remote interface extends `lsfusion.interop.server.RmiServerInterface`. Remote methods declare `throws RemoteException`.

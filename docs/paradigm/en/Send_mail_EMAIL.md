@@ -3,7 +3,7 @@ slug: "/Send_mail_EMAIL"
 title: 'Send mail (EMAIL)'
 ---
 
-The *send mail* operator creates an [action](Actions.md) that sends an email message. The message has a sender address, a list of recipient addresses each with a visibility flag, a subject, a body, and a list of attachments; in addition, the action itself is configured with a completion mode — synchronous or asynchronous.
+The *send mail* operator creates an [action](Actions.md) that sends an email message. The message has a sender address, a list of recipient addresses each with a visibility flag, a subject, a body, and a list of attachments. In addition, the action itself is configured with a completion mode — synchronous or asynchronous.
 
 ### Sender address
 
@@ -11,7 +11,7 @@ The sender address is specified by a separate property. This address is used to 
 
 ### Recipients
 
-Recipients are given as a list; each list entry consists of an address and a visibility flag. Three flags are supported:
+Recipients are given as a list. Each list entry consists of an address and a visibility flag. Three flags are supported:
 
 |Flag|Meaning|
 |---|---|
@@ -19,13 +19,13 @@ Recipients are given as a list; each list entry consists of an address and a vis
 |copy|secondary recipient whose address is visible to the others|
 |blind copy|recipient whose address is hidden from the others|
 
-The list must contain at least one *primary* recipient; a list consisting only of *copy* or *blind copy* entries is not allowed — the action raises an exception when executed.
+The list must contain at least one *primary* recipient. A list consisting only of *copy* or *blind copy* entries is not allowed — the action raises an exception when executed.
 
 ### Subject and body
 
 The subject is given by a property returning a string. If the subject is not specified, the value `'{mail.nosubject}'` is used.
 
-The body is given by a property returning either a string or a file value; the message content is taken from that value. The message is always sent as HTML.
+The body is given by a property returning either a string or a file value. The message content is taken from that value. The message is always sent as HTML.
 
 ### Attachments
 

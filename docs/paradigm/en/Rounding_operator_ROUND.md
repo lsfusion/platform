@@ -18,7 +18,7 @@ The result class depends on whether the precision is given as a constant integer
 |Literal `s` (or absent, which is equivalent to `0`)|`NUMERIC[number.IntegerPart + s, s]`|
 |Computed (not a literal)|Class of the number being rounded|
 
-When the precision is a constant literal, the result is a `NUMERIC` whose scale equals that precision and whose integer part is the integer part of the number being rounded; this holds for any literal `s`, so a precision of `0` (or no precision) rounds to the nearest integer, and a negative precision rounds within the integer part. When the precision is computed rather than a literal, the result keeps the class of the number being rounded.
+When the precision is a constant literal, the result is a `NUMERIC` whose scale equals that precision and whose integer part is the integer part of the number being rounded. This holds for any literal `s`, so a precision of `0` (or no precision) rounds to the nearest integer, and a negative precision rounds within the integer part. When the precision is computed rather than a literal, the result keeps the class of the number being rounded.
 
 ### Language
 

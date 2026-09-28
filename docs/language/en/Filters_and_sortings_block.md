@@ -114,7 +114,7 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
     Whether the group contains the `(All)` filter, which allows no filters to be applied. It is specified by one of the keywords:
 
     - `NULL` - the `(All)` filter is added to the group (default value)
-    - `NONULL` - the `(All)` filter is not added to the group; when the group is declared, the first filter becomes selected by default (unless the `DEFAULT` option specifies another one)
+    - `NONULL` - the `(All)` filter is not added to the group. When the group is declared, the first filter becomes selected by default (unless the `DEFAULT` option specifies another one)
 
     Since the `(All)` filter is present in the group by default, a separate filter with an always-true condition should not be added to the group — it would only duplicate the `(All)` filter.
 

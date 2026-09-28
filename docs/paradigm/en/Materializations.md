@@ -19,7 +19,7 @@ Recalculating a materialized property compares its stored values with its defini
 
 `recalculateMaterializationsMixedSerializable` (`false` by default) changes how a recalculation that runs in its own transaction holds its isolation level: the mismatched rows are collected first, outside the transaction, and only writing them back is done at the strictest level. It costs an extra temporary table and a second query, and it does nothing for a recalculation the administrator asked to run inside a single shared transaction.
 
-`maxRecalculateTime` (`300000` milliseconds) is not a timeout - nothing is interrupted by it. An operation that took longer than it is added to the report the service action returns, so that the slow tables and properties can be seen; `0` puts practically every operation into it, since the comparison is strict.
+`maxRecalculateTime` (`300000` milliseconds) is not a timeout - nothing is interrupted by it. An operation that took longer than it is added to the report the service action returns, so that the slow tables and properties can be seen. `0` puts practically every operation into it, since the comparison is strict.
 
 `groupByTables` (`true` by default) groups the properties being recalculated by the table they are stored in: in a multi-threaded recalculation the properties of one table run one after another rather than at the same time, so they do not wait on each other's locks. It is also what updates, at server start, the statistics of the columns that the synchronization of the database schema has just created or moved. With it off that statistics update is skipped entirely, and queries over those columns keep their poor plans until the statistics are recalculated by other means, so it is better left on.
 

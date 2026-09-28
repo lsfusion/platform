@@ -3,7 +3,7 @@ slug: "/Security_policy"
 title: 'Security policy'
 ---
 
-The security policy determines which system elements — forms in the navigator, form properties, and so on — each user has access to. Access is granted not to individual users but to roles; a user is assigned a primary role and, where needed, additional roles. The effective access is combined across all of the user's roles: access is granted if any role explicitly permits it (`Permit`); otherwise, granted unless some role explicitly forbids it (`Forbid`); in the remaining case (every role says `Default`) — granted. For each role, access to navigator forms (`Permit` / `Forbid` / `Default`) and access to form properties (`View` / `Change` / `Follow` / `Group Change`) are configured separately.
+The security policy determines which system elements — forms in the navigator, form properties, and so on — each user has access to. Access is granted not to individual users but to roles. A user is assigned a primary role and, where needed, additional roles. The effective access is combined across all of the user's roles: access is granted if any role explicitly permits it (`Permit`); otherwise, granted unless some role explicitly forbids it (`Forbid`); in the remaining case (every role says `Default`) — granted. For each role, access to navigator forms (`Permit` / `Forbid` / `Default`) and access to form properties (`View` / `Change` / `Follow` / `Group Change`) are configured separately.
 
 ### Customizing user roles
 
@@ -71,7 +71,7 @@ A role can have one of three access statuses for actions on properties:
 
 `Change` - defines whether a user can change the value of the property
 
-`Follow` – defines whether the user may trigger the [edit-object event](Form_events.md#property) of the property; when forbidden, the `Follow the link` item is hidden from the property's context menu and the event cannot be triggered
+`Follow` – defines whether the user may trigger the [edit-object event](Form_events.md#property) of the property. When forbidden, the `Follow the link` item is hidden from the property's context menu and the event cannot be triggered
 
 The access status for Properties is set in the same way as for Forms. However, given the large number of different properties in the application, on the `Properties` tab it is convenient to define the access level to the property group corresponding to the upper branches of the tree, or to view the status of role permissions in terms of properties. 
 
@@ -85,7 +85,7 @@ To set up access rights to a particular property on a form, it is convenient to 
 
 Fig. 7. Option for configuring access to an individual property
 
-The `View` and `Change` statuses are coupled, and the coupling is configured by two [working parameters](Working_parameters.md). An action a role is explicitly forbidden to change is by default not shown to it either; `disableActionForbidViewOnForbidChange` (`false` by default) removes that coupling, and an action forbidden to run stays visible. The second parameter, `disableDefaultChangeOnReadOnlyChange` (`false` by default), concerns change handlers that do not actually change anything, a value selector for example: by default such a handler counts as navigation rather than a change, and the `Change` status is not applied to it, while a value of `true` makes it be checked on a par with ordinary changes. Neither parameter affects the built-in `Readonly` role — for it both the coupling of the statuses and the skipping of the check always apply.
+The `View` and `Change` statuses are coupled, and the coupling is configured by two [working parameters](Working_parameters.md). An action a role is explicitly forbidden to change is by default not shown to it either. `disableActionForbidViewOnForbidChange` (`false` by default) removes that coupling, and an action forbidden to run stays visible. The second parameter, `disableDefaultChangeOnReadOnlyChange` (`false` by default), concerns change handlers that do not actually change anything, a value selector for example: by default such a handler counts as navigation rather than a change, and the `Change` status is not applied to it, while a value of `true` makes it be checked on a par with ordinary changes. Neither parameter affects the built-in `Readonly` role — for it both the coupling of the statuses and the skipping of the check always apply.
 
 #### Users Tab
 
@@ -132,6 +132,6 @@ IF NOT customUserLogin('jsmith') THEN
 ```
 
 - The user's name `name[Contact]` is computed as `firstName[Contact]` and `lastName[Contact]` joined by a space, so it is these two properties that are written, not the name itself.
-- The password is stored as a hash in `sha256Password[CustomUser]`; the action `setSHA256Password[CustomUser, STRING]` hashes the given password and writes the hash there.
-- The main role is written to `mainRole[User]`; an additional role is assigned by writing `TRUE` to `in[CustomUser, UserRole]`. `userRoleSID[STRING]` finds a role by its code, and `customUserLogin[ISTRING]` finds a user by login. When the changes are saved, a newly created user is also assigned the `default` additional role automatically (and the `admin` role too when the login is `admin`).
+- The password is stored as a hash in `sha256Password[CustomUser]`. The action `setSHA256Password[CustomUser, STRING]` hashes the given password and writes the hash there.
+- The main role is written to `mainRole[User]`, and an additional role is assigned by writing `TRUE` to `in[CustomUser, UserRole]`. `userRoleSID[STRING]` finds a role by its code, and `customUserLogin[ISTRING]` finds a user by login. When the changes are saved, a newly created user is also assigned the `default` additional role automatically (and the `admin` role too when the login is `admin`).
 - An application object (for example, an employee) is linked to its user by an ordinary data property declared in the application: `user = DATA CustomUser (Employee);`.

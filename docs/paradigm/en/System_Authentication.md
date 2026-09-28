@@ -18,7 +18,7 @@ A *design environment* is the entity that personal interface settings (navigator
 | `colorTheme[DesignEnv]`                   | the resolved theme: `designEnvColorTheme[DesignEnv]` if set, otherwise `clientColorTheme[DesignEnv]` |
 | `isDarkTheme[]`                           | flag set when `colorTheme[DesignEnv]` of the current design environment equals `ColorTheme.dark` |
 
-`name[ColorTheme]` returns the theme caption; `colorThemeName[DesignEnv]` returns the name of the chosen theme. The form `dialogColorThemes` lists the two themes for selection.
+`name[ColorTheme]` returns the theme caption, while `colorThemeName[DesignEnv]` returns the name of the chosen theme. The form `dialogColorThemes` lists the two themes for selection.
 
 ### Computers
 
@@ -29,7 +29,7 @@ A *design environment* is the entity that personal interface settings (navigator
 | `currentComputer[]`               | the computer of the current connection                                          |
 | `hostnameCurrentComputer[]`       | `hostname[Computer]` of `currentComputer[]`                                     |
 
-The form `computers` lists the computers (with creation, editing, and deletion); `computersDialog` is the selection dialog. The lookup `computer[]` finds the last computer by host name.
+The form `computers` lists the computers (with creation, editing, and deletion), and `computersDialog` is the selection dialog. The lookup `computer[]` finds the last computer by host name.
 
 ### Contacts
 
@@ -83,7 +83,7 @@ Lookups: `customUserLogin[ISTRING]` finds a user by login (case-insensitively), 
 
 The module keeps the configuration for the external authentication mechanisms.
 
-**LDAP**: `useLDAP[]` switches LDAP authentication on; `serverLDAP[]`, `portLDAP[]`, `baseDNLDAP[]`, `userDNSuffixLDAP[]`, `allowOnlyBaseDNUsers[]`, `allowOnlyGroupUsers[]` are the connection and filtering settings. `useDefaultAuthentication[]` allows falling back to the built-in password authentication when LDAP is unavailable, and `disableEmailLoginFallback[]` restricts login lookup to the login only (no email fallback). `useServiceUser[]`, `serviceUser[]`, `serviceUserPassword[]` configure the service account used to read the directory.
+**LDAP**: `useLDAP[]` switches LDAP authentication on, while `serverLDAP[]`, `portLDAP[]`, `baseDNLDAP[]`, `userDNSuffixLDAP[]`, `allowOnlyBaseDNUsers[]`, `allowOnlyGroupUsers[]` are the connection and filtering settings. `useDefaultAuthentication[]` allows falling back to the built-in password authentication when LDAP is unavailable, and `disableEmailLoginFallback[]` restricts login lookup to the login only (no email fallback). `useServiceUser[]`, `serviceUser[]`, `serviceUserPassword[]` configure the service account used to read the directory.
 
 **OAuth2 (client role)**: the application delegates sign-in to an external provider (Google, GitHub, and so on). The class `OAuth2` holds one provider configuration — `id[OAuth2]`, `clientId[OAuth2]`, `clientSecret[OAuth2]`, `clientAuthenticationMethod[OAuth2]`, `scope[OAuth2]`, `authorizationUri[OAuth2]`, `tokenUri[OAuth2]`, `jwkSetUri[OAuth2]`, `userInfoUri[OAuth2]`, `userNameAttributeName[OAuth2]`, `clientName[OAuth2]`. The lookup `auth[STRING]` finds a provider by id. The `writeDefaultCredentials[]` action seeds the standard provider entries (GitHub, Google, Facebook, Yandex).
 
@@ -111,7 +111,7 @@ The lookups `oauthClient[STRING]` and `oauthRefreshToken[STRING]` find a client 
 
 ### API actions
 
-These actions are HTTP endpoints (marked with `@@api`); the ones marked `@@noauth` are reachable without prior authentication. They read their input from a `JSONFILE` and write the outcome through `EXPORT FROM`.
+These actions are HTTP endpoints (marked with `@@api`). The ones marked `@@noauth` are reachable without prior authentication. They read their input from a `JSONFILE` and write the outcome through `EXPORT FROM`.
 
 | Action                            | What it does                                                                  |
 |-----------------------------------|-------------------------------------------------------------------------------|
@@ -174,11 +174,11 @@ The resolved values are computed as follows:
 
 ### Object locks
 
-A lock records which user holds an object, so two users do not edit it at once. `locked[Object]` is the holding user. `lock[Object]` takes the lock in a serializable session, succeeding only when the object is not already held; `unlock[Object]` releases it.
+A lock records which user holds an object, so two users do not edit it at once. `locked[Object]` is the holding user. `lock[Object]` takes the lock in a serializable session, succeeding only when the object is not already held, and `unlock[Object]` releases it.
 
 ### Date-time picker ranges
 
-Each user selects which predefined ranges appear in the single-date and date-interval pickers. `isDateTimeRangeSelected[DateTimePickerRanges, CustomUser]` and `isIntervalRangeSelected[DateTimeIntervalPickerRanges, CustomUser]` are the per-range selection flags; no more than seven of each may be selected. `setDefaultRanges[CustomUser]` turns on the standard starting set, and runs automatically when a `CustomUser` is created. The picker classes themselves come from [`Time`](System_Time.md).
+Each user selects which predefined ranges appear in the single-date and date-interval pickers. `isDateTimeRangeSelected[DateTimePickerRanges, CustomUser]` and `isIntervalRangeSelected[DateTimeIntervalPickerRanges, CustomUser]` are the per-range selection flags. No more than seven of each may be selected. `setDefaultRanges[CustomUser]` turns on the standard starting set, and runs automatically when a `CustomUser` is created. The picker classes themselves come from [`Time`](System_Time.md).
 
 ### Forms and navigator
 
@@ -195,7 +195,7 @@ The navigator gets a `security` folder (under `System`, holding `customUsers` an
 
 ### Language
 
-- [Module header](../language/Module_header.md) — the `MODULE` / `REQUIRE` syntax; `Authentication` is pulled in via `REQUIRE Authentication`.
+- [Module header](../language/Module_header.md) — the `MODULE` / `REQUIRE` syntax. `Authentication` is pulled in via `REQUIRE Authentication`.
 - [`DATA` operator](../language/DATA_operator.md) — declares the stored properties of the users, contacts, and settings.
 
 ### See also

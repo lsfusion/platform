@@ -23,7 +23,7 @@ NEW [alias =] className [AUTOSET] action
 
 ### Description
 
-In the *bulk* form, an object is created for every set of arguments where `whereExpr` is not `NULL`. The `WHERE` block introduces local parameters used to iterate; these parameters correspond to objects being iterated and are not parameters of the created action. If `TO` is specified, the created object is written into the [data property](../paradigm/Data_properties_DATA.md) `propertyId` at the arguments `prm1, ..., prmN` on each row; if `TO` is omitted, the created object is not written anywhere.
+In the *bulk* form, an object is created for every set of arguments where `whereExpr` is not `NULL`. The `WHERE` block introduces local parameters used to iterate. These parameters correspond to objects being iterated and are not parameters of the created action. If `TO` is specified, the created object is written into the [data property](../paradigm/Data_properties_DATA.md) `propertyId` at the arguments `prm1, ..., prmN` on each row. If `TO` is omitted, the created object is not written anywhere.
 
 In the *block* form, exactly one object is created. The action that follows the operator reads the new object through the local name `alias` (or the default name `added` if `alias` is omitted). The `AUTOSET` clause optionally enables auto-filling of parent links from the form context.
 
@@ -45,7 +45,7 @@ To create one object per iteration of a loop, use the `NEW` option of the [`FOR`
 
 - `prm1, ..., prmN`
 
-    List of [typed parameters](IDs.md#paramid) used as arguments of `propertyId`. Must reference parameters introduced in the `WHERE` block; existing context parameters are not allowed. The number of parameters must equal the number of parameters of `propertyId`.
+    List of [typed parameters](IDs.md#paramid) used as arguments of `propertyId`. Must reference parameters introduced in the `WHERE` block. Existing context parameters are not allowed. The number of parameters must equal the number of parameters of `propertyId`.
 
 - `alias`
 

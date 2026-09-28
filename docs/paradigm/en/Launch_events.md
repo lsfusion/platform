@@ -3,7 +3,7 @@ slug: "/Launch_events"
 title: 'Launch events'
 ---
 
-A launch event occurs when one of the platform's components starts. For each launch event the platform provides a predefined action that runs as the event's handler; a developer plugs initialization logic into this handler.
+A launch event occurs when one of the platform's components starts. For each launch event the platform provides a predefined action that runs as the event's handler. A developer plugs initialization logic into this handler.
 
 | Component          | Handler                                 | When the event occurs                                                                       |
 | ------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------- |

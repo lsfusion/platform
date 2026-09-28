@@ -3,7 +3,7 @@ slug: "/How-to_Custom_view_controller"
 title: 'How-to: Custom view controller API'
 ---
 
-A custom view written in JavaScript communicates with the form through a *controller* object — with it the view sets the current object of a group, changes property values, looks up suggestions, and calls actions or scripts on the server. There are three kinds of custom view; they obtain the controller differently, but all reach the same form-level controller, whose methods are documented on this page.
+A custom view written in JavaScript communicates with the form through a *controller* object — with it the view sets the current object of a group, changes property values, looks up suggestions, and calls actions or scripts on the server. There are three kinds of custom view. They obtain the controller differently, but all reach the same form-level controller, whose methods are documented on this page.
 
 Properties and actions are addressed by their integration name — the name on the form (or the alias / `NEW` / `DELETE` integration name of a button), the same name the [external JSON/REST API](How-to_Integration.md) uses.
 
@@ -46,9 +46,9 @@ These methods are the same wherever the form controller is reached — directly 
 | `stopEditing(element)` | declare that they are not — only if `element` is the declared one | — |
 | `isEditing(element)` | whether that declaration stands | `boolean` |
 
-The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update; the server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, qualify the group directly in the name — `'groupSID.property'`; a group named this way has priority. When an object is passed, the property is resolved by that object's own group, so the group needs to be named only for a change with no object (the current object, or the two-argument `changeProperty(property, value)`). A bare, unqualified name drawn on more than one group must not be used — such a call fails with an error instead of silently changing the wrong group.
+The mutating methods (`changeObject` / `changeProperty` / `changeProperties`) return nothing — the new state arrives with the next form update. The server-calling methods (`exec` / `eval` / `evalAction` / `change`) return a `Promise`. When a property's integration name is not unique across the form, qualify the group directly in the name — `'groupSID.property'`. A group named this way has priority. When an object is passed, the property is resolved by that object's own group, so the group needs to be named only for a change with no object (the current object, or the two-argument `changeProperty(property, value)`). A bare, unqualified name drawn on more than one group must not be used — such a call fails with an error instead of silently changing the wrong group.
 
-Running an action with `changeProperty` is the same request as clicking it on the form: synchronous, blocking input until it completes and showing the [busy indicator](../paradigm/Interactive_view.md#busy) after its delay, unless the action is drawn with `NOWAIT` (the `syncType` [property option](../language/Property_options.md)); `exec`, `eval`, `evalAction` and `change` go as asynchronous requests. So a refresh on a timer is not made through the controller — see [Live data](How-to_Custom_React_views.md#live-data).
+Running an action with `changeProperty` is the same request as clicking it on the form: synchronous, blocking input until it completes and showing the [busy indicator](../paradigm/Interactive_view.md#busy) after its delay, unless the action is drawn with `NOWAIT` (the `syncType` [property option](../language/Property_options.md)). `exec`, `eval`, `evalAction` and `change` go as asynchronous requests. So a refresh on a timer is not made through the controller — see [Live data](How-to_Custom_React_views.md#live-data).
 
 The same two groups also differ along two more axes — whether they are gated, and how an object is addressed in them:
 
@@ -59,7 +59,7 @@ The same two groups also differ along two more axes — whether they are gated, 
 
 A custom view normally reads state from `props.data` and changes it through the form-edit methods — including running an action drawn on the form with `changeProperty('action')`. The server-call methods (`exec` / `eval` / `evalAction` / `change`) are an escape hatch, used only for what the form does not express — ad-hoc server computation, a global write, or creating an object.
 
-Editing the form goes through the ordinary edit channel and is not gated; the server calls are (see [Calling the server](How-to_Custom_components_objects.md#calling-the-server)). The edited row is addressed by a handle; any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
+Editing the form goes through the ordinary edit channel and is not gated. The server calls are (see [Calling the server](How-to_Custom_components_objects.md#calling-the-server)). The edited row is addressed by a handle, while any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
 
 #### Using the structured shorthand {#structured-shorthand}
 
@@ -81,7 +81,7 @@ controller.o.customer.getValues(text, 'objects', ok, fail);
 controller.total.change(500);          // a form-level property: changeProperty('total', 500)
 ```
 
-At each node `.change(...)` mutates that node — a property's value, or a group's current object; a property's `.change(...)` reuses `changeProperty`'s value-or-row guess and `.getValues(...)` reuses `getPropertyValues`'s lookup modes, since each is a plain forward to the flat method. The shorthand is form-wide — every object group and every drawn property carrying an integration name; `props.data` carries the subset inside the view's own container. A name that would shadow an existing member is kept as that member, not the accessor: a group SID or form-level property coinciding with a controller method (`changeProperty`, `exec`, `change`, …), a form-level property coinciding with a group SID, or a group property named `change`. Address it with the string form instead.
+At each node `.change(...)` mutates that node — a property's value, or a group's current object. A property's `.change(...)` reuses `changeProperty`'s value-or-row guess and `.getValues(...)` reuses `getPropertyValues`'s lookup modes, since each is a plain forward to the flat method. The shorthand is form-wide — every object group and every drawn property carrying an integration name. `props.data` carries the subset inside the view's own container. A name that would shadow an existing member is kept as that member, not the accessor: a group SID or form-level property coinciding with a controller method (`changeProperty`, `exec`, `change`, …), a form-level property coinciding with a group SID, or a group property named `change`. Address it with the string form instead.
 
 #### Changing the current object and property values
 
@@ -104,7 +104,7 @@ function orderView(props) {
 }
 ```
 
-In the two-argument `changeProperty(property, X)` form the platform decides whether `X` is a value or a row by `X` alone: it is read as the row when it resolves to one — a data row or a raw handle — and the call execs on it; in every other case `X` is the value and the call changes the current object. The property is not consulted, so the same argument always means the same thing: an id, a string, a number, a `Date`, `null` are values, whatever the property's own type or way of being edited. The single exception is an action drawn in an object group: it has no value to set, so a second argument that does not resolve to a row fails with an error naming what was expected — except `null`, which names the current object there, as it does wherever a row is passed. An action drawn outside any object group has no row to exec on either, so its second argument is always a value, delivered as in the three-argument form below; if such an action requests no value, it is called with no second argument at all: `changeProperty('act')`.
+In the two-argument `changeProperty(property, X)` form the platform decides whether `X` is a value or a row by `X` alone: it is read as the row when it resolves to one — a data row or a raw handle — and the call execs on it. In every other case `X` is the value and the call changes the current object. The property is not consulted, so the same argument always means the same thing: an id, a string, a number, a `Date`, `null` are values, whatever the property's own type or way of being edited. The single exception is an action drawn in an object group: it has no value to set, so a second argument that does not resolve to a row fails with an error naming what was expected — except `null`, which names the current object there, as it does wherever a row is passed. An action drawn outside any object group has no row to exec on either, so its second argument is always a value, delivered as in the three-argument form below. If such an action requests no value, it is called with no second argument at all: `changeProperty('act')`.
 
 In the three-argument form the value reaches a property's change handler or an action only when they request a value from the user — the [default handler](../paradigm/Form_events.md#default), or a handler or an action with a [value request](../paradigm/Value_request_REQUEST.md): the passed value is taken instead of the user's input. For an action that requests no value, no value may be passed — the argument is omitted: `changeProperty('edit', object)`. An explicit `null` in that position is not the same as an omitted argument: like any other value, it is sent to the server as a value, and for an action that requests no value such a call may fail with a server error.
 
@@ -116,7 +116,7 @@ controller.changeProperties(['note', 'qty'], [null, row], ['checked', 5]);
 
 A built-in primitive-class object group — a `DATE` navigator, for instance — is moved to a value by writing the object's value (`changeProperty('VALUE', d)` with a real JS `Date`), by `changeObject` to a row from `props.data.<g>.list` (which carries the `objects` handle), or, when the group is filtered by a data property, by changing that filter property. `changeProperty` runs a date value through a conversion that assumes a JS `Date` (an unchecked cast): a non-`Date` argument — a date-input *string*, a timestamp — throws `getFullYear is not a function`, so pass an actual `Date`, e.g. `new Date(year, month - 1, day)`.
 
-`changeProperty` and `changeProperties` behave the same way; the format depends on what is set as the value:
+`changeProperty` and `changeProperties` behave the same way, and the format depends on what is set as the value:
 
 | value | how it is passed |
 | --- | --- |
@@ -125,12 +125,12 @@ A built-in primitive-class object group — a `DATE` navigator, for instance —
 | an object (FK value) | the target object's id — `row.key` of its row (for a single-object group it already is its numeric id), or an id-valued property on the form (e.g. `LONG(obj)`) — not a handle |
 
 :::info
-Passing a handle (`otherRow.objects`) as an FK value silently sets it to `NULL`, with no error. A handle is only for the `object` argument (the edited row) and for `changeObject`; to set an FK, pass the target object's id.
+Passing a handle (`otherRow.objects`) as an FK value silently sets it to `NULL`, with no error. A handle is only for the `object` argument (the edited row) and for `changeObject`. To set an FK, pass the target object's id.
 :::
 
 The format is the same in the read direction: an object property's value arrives in the data row as this same numeric id, so it can be compared with the target row's `row.key` (in a single-object group) or passed back as an FK value without conversion.
 
-Like a user edit in the standard table, the change is made in the form's [change session](../paradigm/Change_sessions.md): the view sees the new value in `props.data` at once, while it reaches the database when the session is applied — with the Save button or an action with the [`APPLY`](../language/APPLY_operator.md) operator. If the edited property is marked with the [`APPLY` option](../language/Properties_and_actions_block.md#options) on the form, its standard change handler applies the change at once (by default, by committing the whole form session), so `changeProperty` needs no separate save; the details are described with the option. For a simple edit from a view — a move, a resize, an in-place value edit — this is preferable to a separate server action; the server action (`exec`) stays for what a property change cannot express: creating an object (`NEW`), multi-step logic, opening a form.
+Like a user edit in the standard table, the change is made in the form's [change session](../paradigm/Change_sessions.md): the view sees the new value in `props.data` at once, while it reaches the database when the session is applied — with the Save button or an action with the [`APPLY`](../language/APPLY_operator.md) operator. If the edited property is marked with the [`APPLY` option](../language/Properties_and_actions_block.md#options) on the form, its standard change handler applies the change at once (by default, by committing the whole form session), so `changeProperty` needs no separate save. The details are described with the option. For a simple edit from a view — a move, a resize, an in-place value edit — this is preferable to a separate server action. The server action (`exec`) stays for what a property change cannot express: creating an object (`NEW`), multi-step logic, opening a form.
 
 ```js
 // move an object to another parent and edit a primitive in one call:
@@ -140,14 +140,14 @@ controller.changeProperties(['parent', 'value'], [item, item], [targetColumn.key
 
 #### Looking up values
 
-`getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`; `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`.
+`getPropertyValues` asks the server for a capped suggestion list for a property. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`. `more` is `true` when the list was truncated, so it is a suggestion list, not a full `SELECT DISTINCT`.
 
 ```js
 controller.getPropertyValues(property[, object], value[, mode], ok, fail[, count]);
 ```
 
 - `value` — the typed query to match against.
-- `object` — an optional row (data row or raw handle) that scopes the lookup to that row; omit it for the current object.
+- `object` — an optional row (data row or raw handle) that scopes the lookup to that row. Omit it for the current object.
 - `mode` — one of:
 
   | `mode` | result | `item.objects` |
@@ -179,12 +179,12 @@ controller.getPropertyValues('customer', text, 'objects', result => {
 
 `exec`, `eval`, `evalAction` and `change` each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls — see [Calling the server](How-to_Custom_components_objects.md#calling-the-server) for the gate, parameter binding, and the result-to-JS conversion table. An end-to-end example of these calls from a CUSTOM view is in [How-to: Custom Components (server calls)](How-to_Custom_components_server_calls.md).
 
-- `exec(action, ...params)` — runs a named action; resolves to its `RETURN` value.
+- `exec(action, ...params)` — runs a named action. Resolves to its `RETURN` value.
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
-- `change(property, ...keyParams, value)` — changes a global property; the last argument is the value, the preceding ones are the keys. When the property's value is an object, the value is its id, and the platform assigns the object with that id — the object picker opens only for interactive editing.
+- `change(property, ...keyParams, value)` — changes a global property. The last argument is the value, the preceding ones are the keys. When the property's value is an object, the value is its id, and the platform assigns the object with that id — the object picker opens only for interactive editing.
 
-Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter). An lsFusion object is passed as its numeric id; when an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
+Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter). An lsFusion object is passed as its numeric id. When an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
 
 That id is the `row.key` of the object's row (see [Row identity](#row-identity-contract)) or an id-valued property on the form. It has to be a number: a key read out of `data.<group>.byKey` or `data.<group>.keys` is a *string*, because keys of a JS object are always strings, and a string in a class-typed parameter is rejected with `Number is required`.
 
@@ -203,7 +203,7 @@ While a form is editing, a binding whose `editing` scope is the default does not
 The form knows the editors it created itself. A field a view drew for itself it does not know, so the view declares it:
 
 - `startEditing(element)` — from now on the user is editing in `element`;
-- `stopEditing(element)` — the user is no longer editing in `element`; the declaration is cleared only when `element` is the declared one;
+- `stopEditing(element)` — the user is no longer editing in `element`, and the declaration is cleared only when `element` is the declared one;
 - `isEditing(element)` — whether `element` is the declared one.
 
 There is one declaration per form: declaring another element replaces the previous one. While the form's own editor is open it takes precedence over the declaration, which is read again once that editing ends.
@@ -217,7 +217,7 @@ function Note({ controller }) {
 }
 ```
 
-This example declares on focus; a property's own editor starts editing on the first character typed, not on focus.
+This example declares on focus. A property's own editor starts editing on the first character typed, not on focus.
 
 Declaring on a wrapper covers every field inside it — including a nested [`lsf` child](How-to_Custom_React_views.md#lsf-child) and the editor the platform renders there. Declare on a narrower element when that is not wanted.
 
@@ -229,9 +229,9 @@ A single key the view needs regardless of the editing state — a shortcut of it
 
 ### The navigator controller {#navigator-controller}
 
-An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept; and it has `activate`:
+An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept. And it has `activate`:
 
-- `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md); `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
+- `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md). `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
 
 Activating an element that does not exist, or one hidden by `SHOWIF`, throws — activation by name reaches exactly what the navigator shows. Running an action reports no completion, just as a click does not.
 

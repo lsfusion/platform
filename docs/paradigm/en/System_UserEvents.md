@@ -26,7 +26,7 @@ The `orders` form exposes the order rows (one `INTEGER` object, with `property` 
 
 1. read the current filters of the group object — `EVAL ACTION 'FILTERS ' + groupObject + ';'` fills the `filters` form's buffers from the form's live filters for that group object;
 2. import them into the staging structure with `IMPORT filters FROM filters()`, giving one row per current filter;
-3. modify the structure — for the row whose `property` equals the given property, set `value[INTEGER]` to the new value; when no such row exists, append a new row (at the index one past the largest filled row, or `0` when none are filled) carrying the property name and the value;
+3. modify the structure — for the row whose `property` equals the given property, set `value[INTEGER]` to the new value, and when no such row exists, append a new row (at the index one past the largest filled row, or `0` when none are filled) carrying the property name and the value;
 4. write the structure back with `EXPORT filters TO filters`, refilling the `filters` form from the edited rows;
 5. re-apply — `EVAL ACTION 'FILTER ' + groupObject + ';'` applies the staged filters back to the group object on the running form.
 

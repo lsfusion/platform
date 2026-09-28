@@ -7,7 +7,7 @@ title: 'Utils'
 
 ### File system
 
-The `(ISTRING path, ...)` actions run on the server by default; the `isClient = TRUE` flag (or a separate client-side overload) performs the same operation on the client.
+The `(ISTRING path, ...)` actions run on the server by default. The `isClient = TRUE` flag (or a separate client-side overload) performs the same operation on the client.
 
 | Action / property                                         | What it does                                                                |
 |-----------------------------------------------------------|------------------------------------------------------------------------------|
@@ -165,7 +165,7 @@ This section collects the wrappers around PostgreSQL's `jsonb_*` functions that 
 
 `array[JSON, INTEGER]` and `arrayText[JSON, INTEGER]` are table-valued wrappers around `jsonb_array_elements` and `jsonb_array_elements_text`. The `INTEGER row` parameter is not referenced in the SQL text, so the platform fills it with the row number from `ROW_NUMBER() OVER ()` — a special shortcut for an unreferenced `INTEGER` parameter with exactly that name. In practice the parameter plays a double role: an index for direct access (`array(j, 1)` returns the first element) and the iteration variable in expressions like `array(j, INTEGER o)`, where `o` is declared in place and walks every array index.
 
-`map[JSON, STRING]` and `mapText[JSON, STRING]` are table-valued wrappers around `jsonb_each` and `jsonb_each_text`, returning `(key, value)` pairs of a JSON object. The `STRING key` parameter is unreferenced in the SQL text and therefore becomes the key column of the result; the name `key` matches the column name in the `jsonb_each` result.
+`map[JSON, STRING]` and `mapText[JSON, STRING]` are table-valued wrappers around `jsonb_each` and `jsonb_each_text`, returning `(key, value)` pairs of a JSON object. The `STRING key` parameter is unreferenced in the SQL text and therefore becomes the key column of the result. The name `key` matches the column name in the `jsonb_each` result.
 
 `arrayElement[JSON, INTEGER]` is a separate shortcut for direct indexed access. It goes through the PostgreSQL `->` operator, takes a 1-based index, and shifts it to 0-based on its own. It returns `STRING` — the textual representation of jsonb. Useful for logging and debugging, when a raw view of the element is needed rather than a parsed value.
 

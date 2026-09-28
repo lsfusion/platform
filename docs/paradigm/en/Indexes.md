@@ -7,7 +7,7 @@ An *index* stores the values of one or more table fields in the database in an o
 
 Only [materialized](Materializations.md) properties can be indexed.
 
-An index can also be built on several fields of one [table](Tables.md) at once (this is effective if, for example, filtering uses several such fields simultaneously). A composite index of this kind can include both materialized properties and parameters referring to the table key fields. Such an index must contain at least one materialized property; all properties in it must be stored in one table and use the same set of parameters.
+An index can also be built on several fields of one [table](Tables.md) at once (this is effective if, for example, filtering uses several such fields simultaneously). A composite index of this kind can include both materialized properties and parameters referring to the table key fields. Such an index must contain at least one materialized property. All properties in it must be stored in one table and use the same set of parameters.
 
 In addition to the usual index, the platform supports special `LIKE` and `MATCH` index types intended for the operators with the same names. For string fields, `LIKE` adds a specialized index for `LIKE` operations, and `MATCH` adds specialized indexes for `MATCH` and `LIKE` when the current DB adapter has the corresponding trigram/full-text support enabled. The string `MATCH` index uses the current full-text search language. For a single field of type `TSVECTOR`, the `MATCH` index creates only the specialized GIN index by that field itself.
 

@@ -68,9 +68,9 @@ IN containerName
 
 ### Description
 
-The `DIALOG` operator creates an action that opens the specified form for value input: every object marked with `INPUT` or `CHANGE` returns its last current value when the form closes. The `OBJECTS` block sets [initial values](../paradigm/Open_form.md#params) for the form's objects (in the class-form, the per-object spec attaches directly to the class and plays the same role for the form's only object, which is implicitly named `object` and serves as the default `alias` and as the parameter name inside `FILTERS` and `DO` expressions). Inside `formActionOptions`, the `FILTERS` clause attaches [additional filters](../paradigm/Open_form.md#contextFilters) computed from the calling context; the remaining options control the form-opening behavior — layout, session, system-action visibility, and other modifiers. The trailing block `{initActionOperator}` runs once when the form is opened.
+The `DIALOG` operator creates an action that opens the specified form for value input: every object marked with `INPUT` or `CHANGE` returns its last current value when the form closes. The `OBJECTS` block sets [initial values](../paradigm/Open_form.md#params) for the form's objects (in the class-form, the per-object spec attaches directly to the class and plays the same role for the form's only object, which is implicitly named `object` and serves as the default `alias` and as the parameter name inside `FILTERS` and `DO` expressions). Inside `formActionOptions`, the `FILTERS` clause attaches [additional filters](../paradigm/Open_form.md#contextFilters) computed from the calling context. The remaining options control the form-opening behavior — layout, session, system-action visibility, and other modifiers. The trailing block `{initActionOperator}` runs once when the form is opened.
 
-When the user closes the form via the *OK* action (`System.formOk[]`), the chosen object values are returned; via the *Drop* action (`System.formDrop[]`), `NULL` values are returned. In both cases the input is [completed successfully](../paradigm/Value_input.md#result), and `actionOperator` runs with the returned values bound to the corresponding `alias` parameters. When the user closes the form any other way (`System.formClose[]`), the input is canceled and `elseActionOperator` runs instead.
+When the user closes the form via the *OK* action (`System.formOk[]`), the chosen object values are returned, while via the *Drop* action (`System.formDrop[]`), `NULL` values are returned. In both cases the input is [completed successfully](../paradigm/Value_input.md#result), and `actionOperator` runs with the returned values bound to the corresponding `alias` parameters. When the user closes the form any other way (`System.formClose[]`), the input is canceled and `elseActionOperator` runs instead.
 
 The operator runs synchronously (waits for the form to close) whenever the input result is consumed downstream — when a `DO`/`ELSE` continuation is given, or when at least one object has `CHANGE` without `NOCHANGE` (the implicit write-back is in effect). Otherwise the synchronization mode is inferred from the calling context (the same heuristic as for the `WAIT`/`NOWAIT` option of [`SHOW`](SHOW_operator.md)) and may still come out synchronous, for example when the dialog is opened from an already-modal form.
 
@@ -123,7 +123,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `CHANGE`
 
-    Keyword. Like `INPUT`, but additionally writes the returned value back to a property. By default the written-to property is the one supplied as the initial value (`expr`); to use a different one, give `changeExpr` after `CHANGE`. Also, by default `CHANGE` adds a filter to the form so that only those object values are selectable that would not break any existing [constraint](../paradigm/Constraints.md) when assigned.
+    Keyword. Like `INPUT`, but additionally writes the returned value back to a property. By default the written-to property is the one supplied as the initial value (`expr`). To use a different one, give `changeExpr` after `CHANGE`. Also, by default `CHANGE` adds a filter to the form so that only those object values are selectable that would not break any existing [constraint](../paradigm/Constraints.md) when assigned.
 
 - `NOCONSTRAINTFILTER`
 
@@ -131,7 +131,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `NOCHANGE`
 
-    Keyword. Suppresses the write-back; the returned value is bound to `alias` but no property is updated. Use to get the `CHANGE` constraint-filter behavior without the implicit assignment.
+    Keyword. Suppresses the write-back. The returned value is bound to `alias` but no property is updated. Use to get the `CHANGE` constraint-filter behavior without the implicit assignment.
 
 - `alias`
 
@@ -139,7 +139,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `NULL` in the `INPUT` / `CHANGE` marker
 
-    Keyword. Allows the user to return `NULL` via the *Drop* system action (`System.formDrop[]`). Enabled by default after `CHANGE`; otherwise disabled by default.
+    Keyword. Allows the user to return `NULL` via the *Drop* system action (`System.formDrop[]`). Enabled by default after `CHANGE`, and disabled by default otherwise.
 
 - `propId`
 
@@ -165,7 +165,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
     - `windowName`
 
-        Name of the window the form is docked into. [Composite ID](IDs.md#cid) of a window declared with `WINDOW ... FORMS`; any other window is an error.
+        Name of the window the form is docked into. [Composite ID](IDs.md#cid) of a window declared with `WINDOW ... FORMS`. Any other window is an error.
 
 - `manageSessionType`
 
@@ -199,7 +199,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `CHECK`
 
-    Keyword. If specified, when the user presses the *OK* system action (`System.formOk[]`), the platform first validates the pending session changes (runs the apply pass — constraints, aggregations, event handlers — without committing); the dialog closes only if the validation passes, otherwise it stays open.
+    Keyword. If specified, when the user presses the *OK* system action (`System.formOk[]`), the platform first validates the pending session changes (runs the apply pass — constraints, aggregations, event handlers — without committing). The dialog closes only if the validation passes, otherwise it stays open.
 
 ### Examples
 

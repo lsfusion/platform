@@ -58,7 +58,7 @@ groupName1 = limitExpr1, ..., groupNameK = limitExprK
 
 ### Description
 
-The `PRINT` operator creates an action that opens the specified form in print view. In the `OBJECTS` block, [equality filters](../paradigm/Open_form.md#params) on form objects are added; the `FILTERS` clause adds further filter expressions.
+The `PRINT` operator creates an action that opens the specified form in print view. In the `OBJECTS` block, [equality filters](../paradigm/Open_form.md#params) on form objects are added, while the `FILTERS` clause adds further filter expressions.
 
 The operator has two top-level modes — the *interactive mode* (a preview window, direct printing, or export to a file) and the *message mode* (a popup message).
 
@@ -143,7 +143,7 @@ The operator has two top-level modes — the *interactive mode* (a preview windo
     - `RTF` — exported to an RTF file.
     - `HTML` — exported to an HTML file.
 
-    If omitted, no file is produced; the report is rendered through the interactive mode (see `previewMode` and `executionType` for the resulting behavior).
+    If omitted, no file is produced. The report is rendered through the interactive mode (see `previewMode` and `executionType` for the resulting behavior).
 
 - `sheetExpr`
 
@@ -155,7 +155,7 @@ The operator has two top-level modes — the *interactive mode* (a preview windo
 
 - `filePropertyId`
 
-    [Property ID](IDs.md#propertyid) to which the generated file is written. The property must have no parameters and its value must be of a file class. When given, the report is built on the server and the file is written to the property without any client interaction; otherwise the file is sent to the client and opened by the operating system. Has no effect with `SERVER` (the report is sent directly to a server-side printer instead). May appear only when `format` is specified.
+    [Property ID](IDs.md#propertyid) to which the generated file is written. The property must have no parameters and its value must be of a file class. When given, the report is built on the server and the file is written to the property without any client interaction. Otherwise the file is sent to the client and opened by the operating system. Has no effect with `SERVER` (the report is sent directly to a server-side printer instead). May appear only when `format` is specified.
 
 - `previewMode`
 

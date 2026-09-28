@@ -169,9 +169,9 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
         - `CONFIG configFunction`
 
-            Specifying the name of a client JavaScript function that overrides the pivot table display options; `configFunction` is a [string literal](Literals.md#strliteral). Similar to the same option in the [pivot block](Pivot_block.md).
+            Specifying the name of a client JavaScript function that overrides the pivot table display options. `configFunction` is a [string literal](Literals.md#strliteral). Similar to the same option in the [pivot block](Pivot_block.md).
 
-        The same options can also be specified for the group in the [pivot table settings block](Pivot_block.md); the two specifications are combined option by option, and if the same option is specified in both, the later one takes effect.
+        The same options can also be specified for the group in the [pivot table settings block](Pivot_block.md). The two specifications are combined option by option, and if the same option is specified in both, the later one takes effect.
  
     - `MAP [tileProvider]`
 
@@ -190,11 +190,11 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
         Keyword that, when specified, selects the *calendar* view type. The object collections of the group are displayed as calendar events:
 
-        - The event date is given by one of the group's properties added to the form with the `DATE`, `DATETIME` or `ZDATETIME` class; at least one such property must be present on the form. By default, the property with the integration SID `date`, `dateTime`, `dateFrom` or `dateTimeFrom` is selected, otherwise — the first suitable property in the order of adding to the form; the selected property can be switched with a drop-down list in the calendar header.
-        - A property with the integration SID `dateFrom` or `dateTimeFrom` gives the start of the event period; the end of the period is given by the paired property with the SID `dateTo` or `dateTimeTo` respectively, which in this case must also be present on the form — regardless of other suitable properties (this requirement, like the presence of at least one date property, is checked at server startup). A property with the SID `dateTo` or `dateTimeTo` without the paired period start is treated as a regular event date property. Object collections whose value of the selected date property or of its paired period end is not set are not displayed in the calendar.
-        - For a property of the `DATE` class the event takes the whole day, and the calendar shows the month and week views; for `DATETIME` / `ZDATETIME` the day view with a time scale is additionally available.
+        - The event date is given by one of the group's properties added to the form with the `DATE`, `DATETIME` or `ZDATETIME` class. At least one such property must be present on the form. By default, the property with the integration SID `date`, `dateTime`, `dateFrom` or `dateTimeFrom` is selected, otherwise — the first suitable property in the order of adding to the form. The selected property can be switched with a drop-down list in the calendar header.
+        - A property with the integration SID `dateFrom` or `dateTimeFrom` gives the start of the event period, while the end of the period is given by the paired property with the SID `dateTo` or `dateTimeTo` respectively, which in this case must also be present on the form — regardless of other suitable properties (this requirement, like the presence of at least one date property, is checked at server startup). A property with the SID `dateTo` or `dateTimeTo` without the paired period start is treated as a regular event date property. Object collections whose value of the selected date property or of its paired period end is not set are not displayed in the calendar.
+        - For a property of the `DATE` class the event takes the whole day, and the calendar shows the month and week views. For `DATETIME` / `ZDATETIME` the day view with a time scale is additionally available.
         - The event title is taken from the value of the property with the integration SID `name`; if there is none, and there are at least two properties with the `STICKY` option — from their first values (up to three); otherwise — from the value of the first property of an integer or string class.
-        - Dragging an event writes the new date into the selected property, resizing — into the period end property; the write is performed only if the corresponding property is changeable.
+        - Dragging an event writes the new date into the selected property, resizing — into the period end property. The write is performed only if the corresponding property is changeable.
         - The event color is given by the `BACKGROUND` / `FOREGROUND` options of the object group.
         - The calendar reads the object collections of the visible date range only (up to `1000` by default), automatically applying a filter on the selected property.
 
@@ -260,7 +260,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
 - `PAGESIZE pageSize`
 
-    Specification of the number of readable objects in the table. By default, the quantity is determined dynamically depending on the size of the component in the user interface and equals to `3 * <number of visible rows in the table>`. For an object group with a view type other than the table and the calendar, `1000` objects are read by default; the calendar reads the object collections of the visible date range (up to `1000`). A value of `0` means that all objects must be read.
+    Specification of the number of readable objects in the table. By default, the quantity is determined dynamically depending on the size of the component in the user interface and equals to `3 * <number of visible rows in the table>`. For an object group with a view type other than the table and the calendar, `1000` objects are read by default. The calendar reads the object collections of the visible date range (up to `1000`). A value of `0` means that all objects must be read.
 
     - `pageSize`
 

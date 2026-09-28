@@ -20,9 +20,9 @@ The interpreter accepts four kinds of source code — the chosen mode determines
 
 ### Execution
 
-The entered code is executed the same way as the [eval operator](Eval_EVAL.md): with full visibility of every loaded module of the project and inside a new [session](Change_sessions.md). Local [data properties](Data_properties_DATA.md#local) filled only in another, unrelated session are empty here; a property computed from such a local property gets `NULL` in its place, and what it returns then depends on its definition — an empty result alone does not establish that stored data is absent. To persist data changes to the database, the code itself must perform the [apply](Apply_changes_APPLY.md). The same restrictions on the executable code apply as for eval: it can add new local elements and call existing ones, but cannot change the project's persistent structure.
+The entered code is executed the same way as the [eval operator](Eval_EVAL.md): with full visibility of every loaded module of the project and inside a new [session](Change_sessions.md). Local [data properties](Data_properties_DATA.md#local) filled only in another, unrelated session are empty here. A property computed from such a local property gets `NULL` in its place, and what it returns then depends on its definition — an empty result alone does not establish that stored data is absent. To persist data changes to the database, the code itself must perform the [apply](Apply_changes_APPLY.md). The same restrictions on the executable code apply as for eval: it can add new local elements and call existing ones, but cannot change the project's persistent structure.
 
-If an exception is thrown during execution, the platform opens a form with the exception message and the Java-side and lsFusion-side stack traces; the form lets you copy all of this to the clipboard.
+If an exception is thrown during execution, the platform opens a form with the exception message and the Java-side and lsFusion-side stack traces. The form lets you copy all of this to the clipboard.
 
 ### Log
 
@@ -30,7 +30,7 @@ Each interpreter run is recorded in the script log (`Script log` form) together 
 
 ### Data table
 
-The interpreter form contains a table whose columns hold strings (`string1`..`string10`, class `STRING[1000]`), numbers (`numeric1`..`numeric5`, class `NUMERIC[20,7]`), and dates (`date1`..`date3`, class `DATE`); the executed code can read and write the objects of this table directly. This makes it possible to hand-enter input data for the script and immediately see the result on the same form. The rows are stored in the database: running the script applies the changes made on the form beforehand, so the entered values are kept between runs, are visible to every user of the form, and remain until they are explicitly deleted.
+The interpreter form contains a table whose columns hold strings (`string1`..`string10`, class `STRING[1000]`), numbers (`numeric1`..`numeric5`, class `NUMERIC[20,7]`), and dates (`date1`..`date3`, class `DATE`). The executed code can read and write the objects of this table directly. This makes it possible to hand-enter input data for the script and immediately see the result on the same form. The rows are stored in the database: running the script applies the changes made on the form beforehand, so the entered values are kept between runs, are visible to every user of the form, and remain until they are explicitly deleted.
 
 ### Access
 

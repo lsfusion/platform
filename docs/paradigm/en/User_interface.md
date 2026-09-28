@@ -9,7 +9,7 @@ By default the settings are stored separately for each user. Some of the appeara
 
 ### Appearance {#appearance}
 
-Appearance settings are set in the user profile and in the appearance settings form; the color theme and the navigator pinning can also be switched directly from the system toolbar.
+Appearance settings are set in the user profile and in the appearance settings form. The color theme and the navigator pinning can also be switched directly from the system toolbar.
 
 | Setting | Values | Purpose |
 |---|---|---|
@@ -30,7 +30,7 @@ The size is chosen on the client side by the pixel area of the viewport, its wid
 
 ### Regional settings
 
-The user can set the interface language, country, time zone, and the date and time formats. Each of these values is taken from the client side (the browser or the operating system) if the user allows it; otherwise the value set by the user explicitly is used, then the default value set by the administrator, and finally the server value.
+The user can set the interface language, country, time zone, and the date and time formats. Each of these values is taken from the client side (the browser or the operating system) if the user allows it. Otherwise the value set by the user explicitly is used, then the default value set by the administrator, and finally the server value.
 
 ### Form table settings
 
@@ -38,4 +38,4 @@ For each table on a form the user can change the set of displayed columns, their
 
 The user can save their table settings or reset them to the general ones. The administrator can set general settings that apply to all users who have none of their own.
 
-Until the page size is set for a table, the number of rows it reads in its first batch is the [working parameter](Working_parameters.md) `pageSizeDefaultValue` (`50` by default); the client sizes the batches that follow itself, to the height of the table.
+Until the page size is set for a table, the number of rows it reads in its first batch is the [working parameter](Working_parameters.md) `pageSizeDefaultValue` (`50` by default). The client sizes the batches that follow itself, to the height of the table.

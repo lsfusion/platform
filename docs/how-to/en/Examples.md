@@ -15,7 +15,7 @@ Using this example you can get an idea of how to quickly develop "Excel-style" a
 
 The [Materials management](Materials_management.md) example describes how to create a simple stock management business application. In it, the user can record receipt and shipment documents and obtain item balances.
 
-This example shows how to create an application that processes documents that have a header and lines. All forms are created in "Dialog style." In this approach, for each class in the system a form with the list of its objects is created, in which only the buttons for creating, editing, and deleting objects are available; clicking the corresponding button opens a separate dialog form, with which the user adds a new object or edits an existing one.
+This example shows how to create an application that processes documents that have a header and lines. All forms are created in "Dialog style." In this approach, for each class in the system a form with the list of its objects is created, in which only the buttons for creating, editing, and deleting objects are available. Clicking the corresponding button opens a separate dialog form, with which the user adds a new object or edits an existing one.
 
 ### UEFA country coefficient calculation
 

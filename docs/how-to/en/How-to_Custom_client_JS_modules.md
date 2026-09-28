@@ -59,7 +59,7 @@ The build and no-build paths compare as follows:
 
 ### Lightweight .jsx (no build)
 
-A no-build file can also be written in JSX: a _.jsx_ file under _src/main/resources/web_ is transformed on the server when it is served, so the JSX syntax works with no `node`, no esbuild, and no build step, and the browser receives a plain script. Only the syntax changes — the file is still a no-build file: the JSX compiles to `React.createElement` calls against the platform-provided `window.React`, and the file runs as a classic top-level script, so a top-level `function` declaration is already a name on `window` — nothing else is needed. An `import` or `export` in a _.jsx_ file is an error, reported in the browser console with the file skipped — importing modules is what the build (_src/main/web_) adds. Eligible components are also memoized automatically (React Compiler) during the same server-side transformation, so a no-build component re-renders only when its inputs change — no annotations, no build step. Because that transformation runs on the server, the application server must run on Java 11 through 23 — the JS engine performing it does not support newer JVMs yet. Outside that range a served _.jsx_ reports the requirement to the browser console instead of rendering; a plain _.js_ resource is unaffected, and so is the compiled _src/main/web_ tier below, which places no requirement on the server JVM at all.
+A no-build file can also be written in JSX: a _.jsx_ file under _src/main/resources/web_ is transformed on the server when it is served, so the JSX syntax works with no `node`, no esbuild, and no build step, and the browser receives a plain script. Only the syntax changes — the file is still a no-build file: the JSX compiles to `React.createElement` calls against the platform-provided `window.React`, and the file runs as a classic top-level script, so a top-level `function` declaration is already a name on `window` — nothing else is needed. An `import` or `export` in a _.jsx_ file is an error, reported in the browser console with the file skipped — importing modules is what the build (_src/main/web_) adds. Eligible components are also memoized automatically (React Compiler) during the same server-side transformation, so a no-build component re-renders only when its inputs change — no annotations, no build step. Because that transformation runs on the server, the application server must run on Java 11 through 23 — the JS engine performing it does not support newer JVMs yet. Outside that range a served _.jsx_ reports the requirement to the browser console instead of rendering. A plain _.js_ resource is unaffected, and so is the compiled _src/main/web_ tier below, which places no requirement on the server JVM at all.
 
 A _.jsx_ file is loaded the same two ways as a plain _.js_: dropped into _resources/web/init_ it auto-loads with no wiring, and anywhere else under _resources/web_ it is listed in `onWebClientInit`:
 
@@ -77,7 +77,7 @@ DESIGN orders {
 }
 ```
 
-Load order: a _.jsx_ file loads and runs at its resource slot, exactly like a plain _.js_ — the `onWebClientInit` order holds verbatim across _.js_ and _.jsx_ files in both directions, so at load time either kind may read a global defined by any earlier resource; the one reserved range is the platform's own — a _.jsx_ registered at an order of -108 or below runs before the platform-provided memoization runtime and is out of contract.
+Load order: a _.jsx_ file loads and runs at its resource slot, exactly like a plain _.js_ — the `onWebClientInit` order holds verbatim across _.js_ and _.jsx_ files in both directions, so at load time either kind may read a global defined by any earlier resource. The one reserved range is the platform's own — a _.jsx_ registered at an order of -108 or below runs before the platform-provided memoization runtime and is out of contract.
 
 ### Named exports and auto-registration
 
@@ -161,21 +161,21 @@ formatOrderSum 'Format' (Order o) {
 }
 ```
 
-The build compiles _orderUtil.js_ into _web/.compiled/orderUtil.js_ and registers `formatSum`; when the form opens, the action resolves the name from the registry and calls the function. No `onWebClientInit` entry is written for the module.
+The build compiles _orderUtil.js_ into _web/.compiled/orderUtil.js_ and registers `formatSum`. When the form opens, the action resolves the name from the registry and calls the function. No `onWebClientInit` entry is written for the module.
 
 ### Styles
 
-A module can `import` CSS. esbuild gathers all CSS reachable from the module — its own `import "./styles.css"` and the CSS of any third-party library it imports — into a sibling _web/.compiled/&lt;name&gt;.css_, which is loaded automatically together with the bundle (no `onWebClientInit` entry, and no separate registration for a library's CSS). Fonts and images that the CSS references through `url()` are inlined into the compiled stylesheet as data URLs, so it is self-contained; load large images separately (for example through `onWebClientInit`) to keep the stylesheet from growing.
+A module can `import` CSS. esbuild gathers all CSS reachable from the module — its own `import "./styles.css"` and the CSS of any third-party library it imports — into a sibling _web/.compiled/&lt;name&gt;.css_, which is loaded automatically together with the bundle (no `onWebClientInit` entry, and no separate registration for a library's CSS). Fonts and images that the CSS references through `url()` are inlined into the compiled stylesheet as data URLs, so it is self-contained. Load large images separately (for example through `onWebClientInit`) to keep the stylesheet from growing.
 
 Recommended styling:
 
 - **CSS modules** (`import styles from "./Component.module.css"`, used as `className={styles.root}`) for a component's own styles — the class names are scoped per module, so styles of different components on the same form do not collide.
 - **Inline `style={{ ... }}`** for values computed from data (per-row colors and sizes, conditional styling).
-- A plain `import "./Component.css"` (or a third-party library's CSS) is global; use it for vendor or deliberately global styles, and give the class names a namespace prefix. Do not register the compiled _.css_ manually — it is already auto-loaded.
+- A plain `import "./Component.css"` (or a third-party library's CSS) is global. Use it for vendor or deliberately global styles, and give the class names a namespace prefix. Do not register the compiled _.css_ manually — it is already auto-loaded.
 
-For a full styling system beyond static class names, a **runtime CSS-in-JS** library (such as `styled-components` or `@emotion`) works as an ordinary `org.mvnpm` dependency: it is bundled with the module and injects its styles at runtime. Use the `styled` API or `className={css(...)}`; Emotion's `css` *prop* (`<div css={...} />`) needs a JSX transform that the build does not run, so it is not available.
+For a full styling system beyond static class names, a **runtime CSS-in-JS** library (such as `styled-components` or `@emotion`) works as an ordinary `org.mvnpm` dependency: it is bundled with the module and injects its styles at runtime. Use the `styled` API or `className={css(...)}`. Emotion's `css` *prop* (`<div css={...} />`) needs a JSX transform that the build does not run, so it is not available.
 
-CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — plain bundling runs the esbuild binary only, with no Node or plugin phase. Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for; if you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
+CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — plain bundling runs the esbuild binary only, with no Node or plugin phase. Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for. If you do need one of these tools, generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
 
 A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](../language/INTERNAL_operator.md) action, like the CSS of a classic custom component (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
 

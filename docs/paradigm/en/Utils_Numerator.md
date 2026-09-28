@@ -22,11 +22,11 @@ The next value is formed as `series[Numerator]` followed by `curStringValue[Nume
 
 ### Producing the next value
 
-Two actions issue the current value and advance the counter; they differ in how they hold the counter against concurrent saves.
+Two actions issue the current value and advance the counter. They differ in how they hold the counter against concurrent saves.
 
-`incrementValueSession[Numerator]` advances the counter inside the current session, so issuing the number and saving the object happen in one transaction. When two users save at the same time, both transactions update `curValue[Numerator]` of the same row, so the second one gets a `CONFLICT UPDATE`; the platform rolls it back and replays it automatically, with no user action. The user only sees a slightly slower save, and the numbering stays gapless.
+`incrementValueSession[Numerator]` advances the counter inside the current session, so issuing the number and saving the object happen in one transaction. When two users save at the same time, both transactions update `curValue[Numerator]` of the same row, so the second one gets a `CONFLICT UPDATE`. The platform rolls it back and replays it automatically, with no user action. The user only sees a slightly slower save, and the numbering stays gapless.
 
-`incrementValue[Numerator]` advances the counter in a separate short transaction of its own and exposes the issued value through `incrementedValue[]`. This keeps the lock on the counter row out of the object's main save transaction, which shrinks the window for a conflict; in exchange the number is consumed even when the object is not ultimately saved, so gaps in the numbering become possible.
+`incrementValue[Numerator]` advances the counter in a separate short transaction of its own and exposes the issued value through `incrementedValue[]`. This keeps the lock on the counter row out of the object's main save transaction, which shrinks the window for a conflict. In exchange the number is consumed even when the object is not ultimately saved, so gaps in the numbering become possible.
 
 Both actions show a message and issue nothing once `curValue[Numerator]` has reached `maxValue[Numerator]`.
 
@@ -47,4 +47,4 @@ When the order of saving must not depend on the counter — to reduce conflicts 
 
 ### Default numerators
 
-`loadDefaultNumerators` is an abstract list action that the seeding metacodes extend to create the initial numerators on a fresh database; it is wired into the platform's initial-data mechanism. The `numerators` form manages the catalogue of numerators, and `defaultNumerators` — added to the `Master data` navigator group — collects the default-numerator choice of every class set up through `@defineNumeratedDefault` or `@defineNumeratedID`.
+`loadDefaultNumerators` is an abstract list action that the seeding metacodes extend to create the initial numerators on a fresh database. It is wired into the platform's initial-data mechanism. The `numerators` form manages the catalogue of numerators, and `defaultNumerators` — added to the `Master data` navigator group — collects the default-numerator choice of every class set up through `@defineNumeratedDefault` or `@defineNumeratedID`.

@@ -11,7 +11,7 @@ The platform currently supports the following types of interactions / external s
 
 ### HTTP - web server HTTP request {#http}
 
-For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed. The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`) is chosen separately; the default is `POST`. By default the request is executed on the application server, but can be redirected to the user's client instead — useful when the target is reachable from the client but not from the server.
+For this type of interaction, only the request string (URL) is specified, which simultaneously determines both the server address and the request to be executed. The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`) is chosen separately, and the default is `POST`. By default the request is executed on the application server, but can be redirected to the user's client instead — useful when the target is reachable from the client but not from the server.
 
 The call timeout and SSL strictness are read from the `System.timeoutHttp[]` property (in milliseconds, defaulting to 30 minutes when unset) and the `System.insecureSSL[]` property (when truthy, disables TLS certificate verification).
 
@@ -22,7 +22,7 @@ Under client execution the desktop client performs the full call locally, but th
 
 #### Parameters {#url}
 
-Parameters can be passed both in the request string (to refer to the parameter, the special character `$` and the number of this parameter, starting with `1`, are used) and in its body (BODY). All parameters not used in the request string are passed to BODY, but only for HTTP methods that carry a body (`POST`, `PUT`, `PATCH`, `DELETE`); for `GET` any parameters left after URL substitution are silently dropped.
+Parameters can be passed both in the request string (to refer to the parameter, the special character `$` and the number of this parameter, starting with `1`, are used) and in its body (BODY). All parameters not used in the request string are passed to BODY, but only for HTTP methods that carry a body (`POST`, `PUT`, `PATCH`, `DELETE`). For `GET` any parameters left after URL substitution are silently dropped.
 
 When processing file class parameters (`FILE`, `PDFFILE`, etc.) to BODY, the [content type](https://en.wikipedia.org/wiki/Media_type) of the parameter, depending on the file extension, is determined in accordance with the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties). If the file extension is not found in this table, the content type is set to `application/<file extension>`.
 
@@ -34,7 +34,7 @@ Parameters of classes that differ from those of files are converted into strings
 
 Custom request [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be supplied with the call. Declare a separate local property for the outgoing headers rather than the system property `System.headers[TEXT]`: in an action called [from an external system](Access_from_an_external_system.md#request) it is already filled with the headers of the incoming request, and all of them, including service ones (such as `Content-Length`), will go into the outgoing request — usually resulting in a runtime error. If `System.headers[TEXT]` is used anyway, clear it before the call.
 
-The literal text of the connection string and of any body template is URL-encoded before the request is sent (suppressible); parameter values substituted via `$N` are URL-encoded independently.
+The literal text of the connection string and of any body template is URL-encoded before the request is sent (suppressible). Parameter values substituted via `$N` are URL-encoded independently.
 
 #### Results
 
@@ -42,18 +42,18 @@ When processing a request response, results with a content type from the followi
 
 Results with content types different from the ones above are considered strings and on writing are automatically converted into the classes of the properties they are being written to. Empty strings are converted to `NULL`.
 
-Response [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be captured into properties. The captured cookies combine the ones sent with the request and those received in `Set-Cookie` response headers; cookie attributes (`path`, `domain`, etc.) are dropped.
+Response [headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and [cookies](https://en.wikipedia.org/wiki/HTTP_cookie) can be captured into properties. The captured cookies combine the ones sent with the request and those received in `Set-Cookie` response headers. Cookie attributes (`path`, `domain`, etc.) are dropped.
 
-The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](Exception_handling_TRY.md) operator to inspect `System.statusHttp[]` instead. Under client execution in the regular browser, a network / CORS / DNS failure surfaces as `status = 0`; in that case the exception carries a generic localized error message rather than a status + body.
+The HTTP [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) of the response is written to the `System.statusHttp[]` property. A non-`2xx` status also throws a runtime exception with the status and response body, which can be intercepted with the [`TRY`](Exception_handling_TRY.md) operator to inspect `System.statusHttp[]` instead. Under client execution in the regular browser, a network / CORS / DNS failure surfaces as `status = 0`. In that case the exception carries a generic localized error message rather than a status + body.
 
 #### Multiple results / parameters in BODY
 
 If more than one parameter is passed to BODY, they are packed into a single BODY:
 
 -   If `BODYURL` is specified — the given string is sent as BODY, with its parameters encoded as if they were [passed in the request string](#url), and `Content-Type: application/x-www-form-urlencoded`.
--   Otherwise — parameters are sent as the parts of a BODY with `Content-Type: multipart/mixed`. The `BODYPARAMNAMES` option switches the content type to `multipart/form-data` and names the first parts as form fields; the `BODYPARAMHEADERS` option attaches extra headers to individual BODY parts.
+-   Otherwise — parameters are sent as the parts of a BODY with `Content-Type: multipart/mixed`. The `BODYPARAMNAMES` option switches the content type to `multipart/form-data` and names the first parts as form fields. The `BODYPARAMHEADERS` option attaches extra headers to individual BODY parts.
 
-A `Content-Type` set manually through `HEADERS` overrides the above default: a `multipart/*` value forces multipart packing of the remaining parameters under that `Content-Type`; a non-`multipart/*` value replaces the default `Content-Type` of the sent BODY.
+A `Content-Type` set manually through `HEADERS` overrides the above default: a `multipart/*` value forces multipart packing of the remaining parameters under that `Content-Type`, while a non-`multipart/*` value replaces the default `Content-Type` of the sent BODY.
 
 In turn, if the response content type is `multipart/*` or `application/x-www-form-urlencoded`, the response BODY is split into parts, and each part is considered a separate execution result. In this case, the order of these results is equal to the order of the corresponding parts in the response.
 
@@ -66,7 +66,7 @@ Note that the processing of parameters and request results is largely similar to
 
 For this type of interaction, a connection string and the SQL command(s) to be executed are specified. Parameters can be passed both in the connection string and in the SQL command. To access the parameter, the special character `$` and the parameter number are used (starting from `1`). If the SQL command expression ends with `.sql`, it is treated as a path to a classpath resource whose contents are used as the actual command.
 
-`EXTERNAL SQL 'LOCAL'` is not supported; to run SQL against the database used by the platform itself, use `INTERNAL DB`.
+`EXTERNAL SQL 'LOCAL'` is not supported. To run SQL against the database used by the platform itself, use `INTERNAL DB`.
 
 #### Parameters {#table}
 
@@ -94,20 +94,20 @@ You can also use operators for [reading](Read_file_READ.md) and [writing](Write_
 
 ### TCP / UDP - sending raw bytes over a socket {#tcp}
 
-For these types of interaction, a connection string `host:port` is specified, together with a single file-class parameter whose raw bytes are sent to the socket. For `TCP`, the platform performs a single socket read (up to a 10 MB buffer) and writes the result to the `System.responseTcp[]` property; the optional `System.timeoutTcp[]` property sets the socket timeout in milliseconds. `UDP` sends the packet without waiting for a response.
+For these types of interaction, a connection string `host:port` is specified, together with a single file-class parameter whose raw bytes are sent to the socket. For `TCP`, the platform performs a single socket read (up to a 10 MB buffer) and writes the result to the `System.responseTcp[]` property. The optional `System.timeoutTcp[]` property sets the socket timeout in milliseconds. `UDP` sends the packet without waiting for a response.
 
 By default the request is executed on the application server, but can also be performed from the user's client.
 
 
 :::info
-Under client execution, raw socket access is available locally in the desktop client and via a Flutter bridge in the Flutter-based web/mobile client; the regular browser client has no raw socket access and fails with `UnsupportedOperationException`.
+Under client execution, raw socket access is available locally in the desktop client and via a Flutter bridge in the Flutter-based web/mobile client. The regular browser client has no raw socket access and fails with `UnsupportedOperationException`.
 :::
 
 ### DBF - writing rows to a `.dbf` file {#dbf}
 
 For this type of interaction, the path to the `.dbf` file is specified as the connection string, and a single `TABLE`-format parameter (`TABLEFILE` or `FILE` with the extension `table`) supplies the rows to write. The call is declared with the `APPEND` keyword: if the file does not exist, a new file is created from the schema of the input table; if the file already exists, it is opened as-is and rows are written into its existing fields by name - the existing file's schema must already contain those fields, otherwise the call fails. The optional `CHARSET` option sets the file charset (`UTF-8` by default).
 
-Input column names are truncated to the DBF 10-character limit before being used for both schema creation and field lookup; two columns that collide after truncation make the call fail, and a column whose original name exceeds 10 characters additionally loses its type (a 253-character string field is used as a fallback) and its value (the literal string `"null"` is written). `NULL` values in input cells are similarly written as the literal string `"null"` — harmless for string fields, but causing the write to fail for numeric fields. The input `TABLE` should therefore already use DBF-compatible field names and non-`NULL` values.
+Input column names are truncated to the DBF 10-character limit before being used for both schema creation and field lookup. Two columns that collide after truncation make the call fail, and a column whose original name exceeds 10 characters additionally loses its type (a 253-character string field is used as a fallback) and its value (the literal string `"null"` is written). `NULL` values in input cells are similarly written as the literal string `"null"` — harmless for string fields, but causing the write to fail for numeric fields. The input `TABLE` should therefore already use DBF-compatible field names and non-`NULL` values.
 
 ## Preserving connections across calls
 

@@ -29,7 +29,7 @@ The `FORMULA` operator creates a property that executes an arbitrary formula in 
 
 `FORMULA` is a [context-independent](Property_operators.md#contextindependent) property operator: it cannot appear inside [expressions](Expression.md). Use it on the right-hand side of an `=` statement or anonymously inside brackets in a [`JOIN` operator](JOIN_operator.md) usage.
 
-See the [custom formula](../paradigm/Custom_formula_FORMULA.md) abstraction for what the operator produces — the default result class, the `NULL`-handling relaxations, and the table-valued mode; this article covers how those options are written.
+See the [custom formula](../paradigm/Custom_formula_FORMULA.md) abstraction for what the operator produces — the default result class, the `NULL`-handling relaxations, and the table-valued mode. This article covers how those options are written.
 
 ### Parameters
 
@@ -37,7 +37,7 @@ See the [custom formula](../paradigm/Custom_formula_FORMULA.md) abstraction for 
 
     Keyword that loosens the default `NULL`-handling rules of a non-table-valued formula (table-valued mode ignores both positions). Two forms in increasing strength:
     - before `className` — declares that the property may return `NULL` even when all parameter values are non-`NULL`. Without this form (and without the trailing one below), the formula must produce a non-`NULL` result for non-`NULL` arguments — failing this may lead to unpredictable results.
-    - at the end — the formula accepts `NULL` parameter values and is executed over them; without it, a `NULL` argument produces a `NULL` result without calling the formula. This form subsumes the leading one — once the formula sees `NULL` arguments and decides what to return, declaring that the result may be `NULL` adds nothing.
+    - at the end — the formula accepts `NULL` parameter values and is executed over them. Without it, a `NULL` argument produces a `NULL` result without calling the formula. This form subsumes the leading one — once the formula sees `NULL` arguments and decides what to return, declaring that the result may be `NULL` adds nothing.
 
 - `className`
 
@@ -45,7 +45,7 @@ See the [custom formula](../paradigm/Custom_formula_FORMULA.md) abstraction for 
 
 - `valueId`
 
-    Identifier or [string literal](Literals.md#strliteral) placed right after `className`. Names the value column of the table returned by the formula — required for table-valued formulas (see the parameter list below) and ignored for non-table ones. The literal form is typically used to name an existing column in an external table; the identifier form is typically used for the value produced by a set-returning function.
+    Identifier or [string literal](Literals.md#strliteral) placed right after `className`. Names the value column of the table returned by the formula — required for table-valued formulas (see the parameter list below) and ignored for non-table ones. The literal form is typically used to name an existing column in an external table, while the identifier form is typically used for the value produced by a set-returning function.
 
 - `syntaxType1, ..., syntaxTypeN`
 
@@ -62,13 +62,13 @@ See the [custom formula](../paradigm/Custom_formula_FORMULA.md) abstraction for 
 
 - `classId1 ... classIdK`
 
-    The classes of the formula's parameters. When the parameter list is omitted, parameter classes are inferred from the enclosing property declaration. The resulting property's arity is the larger of `K` and the highest positional index the formula text references; positional references beyond `K` extend the list with auto-generated parameters.
+    The classes of the formula's parameters. When the parameter list is omitted, parameter classes are inferred from the enclosing property declaration. The resulting property's arity is the larger of `K` and the highest positional index the formula text references. Positional references beyond `K` extend the list with auto-generated parameters.
 
 - `paramId1 ... paramIdK`
 
-    Names by which the formula text refers to the parameters as `$paramId` instead of by position; each is an identifier or a string literal. A parameter need not be named.
+    Names by which the formula text refers to the parameters as `$paramId` instead of by position. Each is an identifier or a string literal. A parameter need not be named.
 
-    Referenced parameters are passed as inputs into the SQL expression at evaluation time; unreferenced ones become key columns of the returned table (see `valueId` above for the value column) and must match the column names the SQL expression returns. A single unreferenced `INTEGER` parameter named `row` is a shortcut: the platform supplies row numbers for it via SQL's `ROW_NUMBER() OVER ()`, so the idiom works with any table-valued SQL expression.
+    Referenced parameters are passed as inputs into the SQL expression at evaluation time. Unreferenced ones become key columns of the returned table (see `valueId` above for the value column) and must match the column names the SQL expression returns. A single unreferenced `INTEGER` parameter named `row` is a shortcut: the platform supplies row numbers for it via SQL's `ROW_NUMBER() OVER ()`, so the idiom works with any table-valued SQL expression.
 
 ### Examples
 

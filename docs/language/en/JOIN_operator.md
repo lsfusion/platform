@@ -27,7 +27,7 @@ Where `"["` and `"]"` are ordinary brackets.
 
 When the main property is given in brackets — as a [context-independent](Property_operators.md#contextindependent) property operator or an [expression](Expression.md) — the property is built anonymously at the place of use, so an intermediate property need not be declared via the [`=` statement](=_statement.md).
 
-An operator or expression in brackets may reference external parameters — the parameters already declared in the context where the `JOIN` operator is used. They are passed to the anonymous property automatically; its remaining parameters follow the same rules as those of a property defined with `=` without explicit parameters.
+An operator or expression in brackets may reference external parameters — the parameters already declared in the context where the `JOIN` operator is used. They are passed to the anonymous property automatically. Its remaining parameters follow the same rules as those of a property defined with `=` without explicit parameters.
 
 ### Parameters
 
@@ -45,7 +45,7 @@ An operator or expression in brackets may reference external parameters — the 
 
 - `expr1, ..., exprN`
 
-    List of expressions supplying the arguments of the main property. The number of expressions must equal the main property's parameter count; the list is empty when the main property has no parameters. The external parameters referenced in brackets are not counted and are not listed among the arguments.
+    List of expressions supplying the arguments of the main property. The number of expressions must equal the main property's parameter count. The list is empty when the main property has no parameters. The external parameters referenced in brackets are not counted and are not listed among the arguments.
 
 ### Examples
 

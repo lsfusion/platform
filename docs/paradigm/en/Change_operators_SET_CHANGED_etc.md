@@ -16,7 +16,7 @@ In the table below, `f` stands for the property being checked (parameters omitte
 |`DROPCHANGED`|`CHANGED(f) AND NOT SET(f)`                                      |Value is either reset or changed from one non-`NULL` to another non-`NULL`|
 |`SETDROPPED` |`SET(f) OR DROPPED(f)`                                           |Value is either reset or changed from `NULL` to non-`NULL`|
 
-The first three operators (`SET`, `DROPPED`, `CHANGED`) are the basic change predicates; the remaining three are convenient combinations of those that cover cases cutting across the basic predicates.
+The first three operators (`SET`, `DROPPED`, `CHANGED`) are the basic change predicates, while the remaining three are convenient combinations of those that cover cases cutting across the basic predicates.
 
 :::warning
 In [event mode](Events.md#change), these operators return changes from the point of the previous occurrence of the event (or rather, from the point at which all its handlers were completed) instead of changes since the start of the session.

@@ -17,7 +17,7 @@ The `RETURN` operator creates an action that exits from the innermost enclosing 
 
 The result class of the surrounding action is determined in one of two ways:
 
-- For [abstract actions](../paradigm/Action_extension.md), the result class is declared in the [`ABSTRACT` operator](ABSTRACT_action_operator.md); the value class of `resultExpr` must conform to the declared class.
+- For [abstract actions](../paradigm/Action_extension.md), the result class is declared in the [`ABSTRACT` operator](ABSTRACT_action_operator.md). The value class of `resultExpr` must conform to the declared class.
 - For other actions, the result class is inferred from `resultExpr` of all `RETURN` operators in the body. If several `RETURN` operators are present, the resulting class is the common ancestor of the classes of their expression values.
 
 If the platform cannot determine the value class of `resultExpr`, such a `RETURN` is invalid. For example, the class cannot be inferred from an untyped `NULL` value.

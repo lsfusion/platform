@@ -5,7 +5,7 @@ title: 'Structured view'
 
 All structured views (*formats*) can be divided into two types:
 
--   *Hierarchical* (XML, JSON) - single text file; the information for [object groups](Form_structure.md#objects) is put as a list inside the information for [parent](Static_view.md#hierarchy) groups.
+-   *Hierarchical* (XML, JSON) - single text file. The information for [object groups](Form_structure.md#objects) is put as a list inside the information for [parent](Static_view.md#hierarchy) groups.
 -   *Flat* (DBF, CSV, XLS, XLSX, TABLE) - one table file for each object group, and each object group with more than one level of nesting should have a column in its table named `parent` which should contain the "upper" row number in the parent group table.
 
 

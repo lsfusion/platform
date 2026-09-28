@@ -21,7 +21,7 @@ Every icon is an object of the `Icon` class. Its catalogue fields:
 | `styles[Icon]`            | the available style classes for the icon (the Font Awesome free-style set, or `bi` for Bootstrap Icons) |
 | `type[Icon]`              | the icon family, derived from `styles[Icon]`: `'bi'` when the style is `bi`, otherwise `'fa'`  |
 
-`Icon.null` is the predefined "no icon" object (selected when no icon should be shown); its `name[Icon]` and `explicit[Icon]` are both set to `'null'` on startup.
+`Icon.null` is the predefined "no icon" object (selected when no icon should be shown). Its `name[Icon]` and `explicit[Icon]` are both set to `'null'` on startup.
 
 An icon is looked up by name and family through `icon[name, type]`, an aggregation over the `(name[Icon], type[Icon])` pair, which is indexed to make the lookup direct.
 
@@ -62,7 +62,7 @@ The best-icon search reads one or more query lines and writes back, for each, th
 | `bestIconClasses[STRING]` | output    | the `iconClass` of the best-matching icon for the line              |
 | `bestIconRanks[STRING]`   | output    | the `tsRank` score of that icon                                     |
 
-`getBestIcons[]` processes every flagged line. It takes the part before the comma as the query text and the part after it as the style, builds the `TSQUERY` for the query, and over the icons whose `search[Icon]` matches it picks the one with the highest `tsRank[Icon, TSQUERY, STRING]`; it then writes that icon's class and score into `bestIconClasses[STRING]` and `bestIconRanks[STRING]`.
+`getBestIcons[]` processes every flagged line. It takes the part before the comma as the query text and the part after it as the style, builds the `TSQUERY` for the query, and over the icons whose `search[Icon]` matches it picks the one with the highest `tsRank[Icon, TSQUERY, STRING]`. It then writes that icon's class and score into `bestIconClasses[STRING]` and `bestIconRanks[STRING]`.
 
 The `icons` form drives this from the UI: `searchAndStyle[]` joins the entered search text and style as `search() + ',' + style()`, and on any change to either it flags that combined line and calls `getBestIcons[]`.
 

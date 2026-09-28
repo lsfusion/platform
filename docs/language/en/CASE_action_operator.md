@@ -26,7 +26,7 @@ The `CASE` operator creates an action that executes one of the actions passed to
     [Type of mutual exclusion](../paradigm/Branching_CASE_IF_MULTI.md#exclusive). Determines whether several conditions can be met simultaneously for a certain set of parameters:
 
     - `EXCLUSIVE` - none of the conditions can be met simultaneously.
-    - `OVERRIDE` - several conditions can be met simultaneously; in this case the action corresponding to the first met condition is executed. Used by default.
+    - `OVERRIDE` - several conditions can be met simultaneously. In this case the action corresponding to the first met condition is executed. Used by default.
 
 - `condition1 ... conditionN`
 

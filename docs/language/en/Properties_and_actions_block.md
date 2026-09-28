@@ -137,7 +137,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `ACTION`
 
-    Keyword. When specified, it is considered that the action is specified in formPropertyId. When not specified, it is initially considered that a property is specified in formPropertyId; otherwise, if property is not found, it is considered that an action is specified in formPropertyId.
+    Keyword. When specified, it is considered that the action is specified in formPropertyId. When not specified, it is initially considered that a property is specified in formPropertyId. Otherwise, if property is not found, it is considered that an action is specified in formPropertyId.
 
 - `param1, ..., paramNk`
 
@@ -212,7 +212,7 @@ In the current platform implementation, if the name and caption are not specifie
 
 - `HEADER propertyExpression`
 
-    Specifying a property that determines the header for the column of the property (action) being added. The return value of this property will be used as the header. If the return value is `NULL`, the header is empty; the property (action) itself and its columns stay visible — they are hidden with the `SHOWIF` option.
+    Specifying a property that determines the header for the column of the property (action) being added. The return value of this property will be used as the header. If the return value is `NULL`, the header is empty. The property (action) itself and its columns stay visible — they are hidden with the `SHOWIF` option.
 
     - `propertyExpression`
 
@@ -302,9 +302,9 @@ In the current platform implementation, if the name and caption are not specifie
 
     - without `NEWSESSION` / `NESTEDSESSION` — the current form session is applied entirely, that is, together with all the other pending changes of the form, not only the change of this property;
     - with `NEWSESSION` — the change (the action) is executed and applied in a new session, so only the changes made in that session are committed, while the pending changes of the form session remain unapplied;
-    - with `NESTEDSESSION` — applying the nested session only copies its changes into the form session; they reach the database when the form session is applied.
+    - with `NESTEDSESSION` — applying the nested session only copies its changes into the form session. They reach the database when the form session is applied.
 
-    If the apply is canceled, for example, due to a [constraint](../paradigm/Constraints.md) violation, the transaction is rolled back, and the messages issued during the apply are shown to the user, as with the `APPLY` operator. Without a session scope the change then remains in the form session as an unsaved change (the property keeps the entered value); with `NEWSESSION` it is discarded together with the new session. The modifier does not affect the asynchronous execution of the change on the client and can be combined with `OPTIMISTICASYNC`.
+    If the apply is canceled, for example, due to a [constraint](../paradigm/Constraints.md) violation, the transaction is rolled back, and the messages issued during the apply are shown to the user, as with the `APPLY` operator. Without a session scope the change then remains in the form session as an unsaved change (the property keeps the entered value), while with `NEWSESSION` it is discarded together with the new session. The modifier does not affect the asynchronous execution of the change on the client and can be combined with `OPTIMISTICASYNC`.
 
 - `OPTIMISTICASYNC`
 
@@ -724,7 +724,7 @@ The options `formPropertyOptions` are the same as when adding a property (action
 
 ### Description
 
-The property and action extension block changes properties and actions already added to the form structure. The specified options are applied to the existing property (action) in the same way as if they were specified when it was added. The options specified right after the `EXTEND PROPERTIES` keywords are applied to all the properties (actions) listed in the block; if an option is specified both for the entire block and for a specific element, the option value for the element is used. The block is available starting with platform version 7.0.
+The property and action extension block changes properties and actions already added to the form structure. The specified options are applied to the existing property (action) in the same way as if they were specified when it was added. The options specified right after the `EXTEND PROPERTIES` keywords are applied to all the properties (actions) listed in the block. If an option is specified both for the entire block and for a specific element, the option value for the element is used. The block is available starting with platform version 7.0.
 
 ### Parameters
 

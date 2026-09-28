@@ -22,9 +22,9 @@ Bean наследуется от одного из двух классов:
 
 Каждый базовый класс задаёт свой thread-контекст: `MonitorServer` — *monitor*, `RmiServer` — *RMI*. От того, на каком потоке выполняется код, зависит, как получать `ExecutionStack`:
 
-1. **Свой пул задач**. Создаётся через `ExecutorFactory.createMonitorThreadService(threads, this)` или `createMonitorScheduledThreadService(threads, this)` для `MonitorServer`-bean-а; `createRMIThreadService(threads, this)` — для `RmiServer`. Каждый поток в таком пуле автоматически входит и выходит из нужного thread-контекста; внутри задач работает `getStack()`.
+1. **Свой пул задач**. Создаётся через `ExecutorFactory.createMonitorThreadService(threads, this)` или `createMonitorScheduledThreadService(threads, this)` для `MonitorServer`-bean-а, а `createRMIThreadService(threads, this)` — для `RmiServer`. Каждый поток в таком пуле автоматически входит и выходит из нужного thread-контекста. Внутри задач работает `getStack()`.
 
-2. **Внешний callback-поток** (рабочие потоки RabbitMQ-клиента, WebSocket-библиотеки, и т.п. — не созданные через `ExecutorFactory`). Контекст проставляется и снимается вокруг блока вручную; код обычно находится внутри anonymous class (`DefaultConsumer` и т.п.), поэтому в качестве `MonitorServer`-а явно передаётся `MyServer.this` (а не просто `this`, который сослался бы на anonymous instance):
+2. **Внешний callback-поток** (рабочие потоки RabbitMQ-клиента, WebSocket-библиотеки, и т.п. — не созданные через `ExecutorFactory`). Контекст проставляется и снимается вокруг блока вручную. Код обычно находится внутри anonymous class (`DefaultConsumer` и т.п.), поэтому в качестве `MonitorServer`-а явно передаётся `MyServer.this` (а не просто `this`, который сослался бы на anonymous instance):
 
     ```java
     try {
@@ -46,7 +46,7 @@ Bean наследуется от одного из двух классов:
 
 Полный шаблон RMI-сервиса — это `RmiServer`-bean, реализующий remote-интерфейс, плюс ручной экспорт через `RmiManager`.
 
-**Remote-интерфейс** наследуется от `lsfusion.interop.server.RmiServerInterface` (а не от голого `java.rmi.Remote`); каждый remote-метод объявляет `throws RemoteException`:
+**Remote-интерфейс** наследуется от `lsfusion.interop.server.RmiServerInterface` (а не от голого `java.rmi.Remote`). Каждый remote-метод объявляет `throws RemoteException`:
 
 ```java
 public interface MyRemoteInterface extends RmiServerInterface {
@@ -63,7 +63,7 @@ public interface MyRemoteInterface extends RmiServerInterface {
 
 RMI-контекст внутри remote-метода обычно устанавливается автоматически — достаточно вызвать `getStack()` и работать с сессией. Явный `ThreadLocalContext.assureRmi(this)` можно добавить как защитный вызов в нестандартных путях, но обязательной ручной установки аспекта не требуется.
 
-`createSession()` бросает `SQLException`, методы `LP` / `LA` / `applyException` — `SQLException` и `SQLHandledException`; в RMI-методе это обычно ловится одним блоком и заворачивается в `RemoteException`:
+`createSession()` бросает `SQLException`, методы `LP` / `LA` / `applyException` — `SQLException` и `SQLHandledException`. В RMI-методе это обычно ловится одним блоком и заворачивается в `RemoteException`:
 
 ```java
 @Override
@@ -85,16 +85,16 @@ RMI-клиент находит сервис в registry по тому же `<ex
 
 Bean инжектируется через Spring (минимально достаточно `logicsInstance` (`LogicsInstance`); через него доступны `getBusinessLogics()`, `getDbManager()`, `getRmiManager()`). Стандартные хуки распределяются так:
 
-- `afterPropertiesSet()` (когда bean реализует `InitializingBean`) — сразу после Spring DI; здесь только `Assert.notNull(...)` для проверки инжекции. Runtime платформы ещё не готов, открывать сессии нельзя.
+- `afterPropertiesSet()` (когда bean реализует `InitializingBean`) — сразу после Spring DI. Здесь только `Assert.notNull(...)` для проверки инжекции. Runtime платформы ещё не готов, открывать сессии нельзя.
 - `onInit(LifecycleEvent)` — платформа начала инициализацию. Здесь резолвят [модуль](Modules.md) (`getLogicsInstance().getBusinessLogics().getModule("MyModule")`) и сохраняют `LP` / `LA`-обёртки в полях через `LM.findProperty(...)` / `LM.findAction(...)`.
-- `onStarted(LifecycleEvent)` — платформа полностью поднята. Здесь стартуют фоновые потоки и listener-ы; для `RmiServer`-bean-ов делают `bindAndExport`.
+- `onStarted(LifecycleEvent)` — платформа полностью поднята. Здесь стартуют фоновые потоки и listener-ы. Для `RmiServer`-bean-ов делают `bindAndExport`.
 - `onStopping(LifecycleEvent)` — корректно гасят свои потоки, для `RmiServer` делают `unbindAndUnexport`.
 
 Если компонент должен подняться после основной платформы, в конструкторе передают `super(DAEMON_ORDER)`.
 
 ### Чтение, запись и выполнение
 
-Внутри методов bean-а работа со свойствами и действиями идёт через `DataSession` и `ExecutionStack` (а не `ExecutionContext`, как у `InternalAction`). Аргументы-объекты передаются как `DataObject` (или более общий `ObjectValue` — `DataObject` или `NullValue`); записываемые значения свойств — обычные Java-значения встроенных классов (`String`, `Integer`, `LocalDateTime` и т.п.). Полный каталог классов и методов — в [Java API для интеграций](Java_integration_API.md). `LP` / `LA`-обёртки обычно резолвят один раз в `onInit` и хранят в полях; здесь для краткости они получаются прямо в месте вызова:
+Внутри методов bean-а работа со свойствами и действиями идёт через `DataSession` и `ExecutionStack` (а не `ExecutionContext`, как у `InternalAction`). Аргументы-объекты передаются как `DataObject` (или более общий `ObjectValue` — `DataObject` или `NullValue`). Записываемые значения свойств — обычные Java-значения встроенных классов (`String`, `Integer`, `LocalDateTime` и т.п.). Полный каталог классов и методов — в [Java API для интеграций](Java_integration_API.md). `LP` / `LA`-обёртки обычно резолвят один раз в `onInit` и хранят в полях. Здесь для краткости они получаются прямо в месте вызова:
 
 ```java
 BusinessLogics BL = getLogicsInstance().getBusinessLogics();
@@ -112,7 +112,7 @@ try (DataSession session = createSession()) {
 }
 ```
 
-`createSession()` открывает новую сессию изменений; всё, что в неё записано, копится до явного применения — `session.applyException(BL, stack)` (бросает исключение при ошибке) или `session.applyMessage(BL, stack)` (возвращает текст ошибки или `null`). Если до применения вылетает исключение, `try`-with-resources откатит всё неприменённое.
+`createSession()` открывает новую сессию изменений. Всё, что в неё записано, копится до явного применения — `session.applyException(BL, stack)` (бросает исключение при ошибке) или `session.applyMessage(BL, stack)` (возвращает текст ошибки или `null`). Если до применения вылетает исключение, `try`-with-resources откатит всё неприменённое.
 
 ### Подключение в Spring
 

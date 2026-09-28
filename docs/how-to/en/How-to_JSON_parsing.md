@@ -3,7 +3,7 @@ slug: "/How-to_JSON_parsing"
 title: 'How-to: JSON parsing'
 ---
 
-The examples below use the wrapper properties around PostgreSQL's `jsonb_*` functions shipped by the platform in the `Utils` module: `field`, `fieldText`, `array`, `arrayText`, `map`, `mapText`, `arrayElement`. Their signatures and description are collected in [`Utils` → `JSON access properties`](../paradigm/System_Utils.md#json-access); this how-to relies on them and does not restate their interface.
+The examples below use the wrapper properties around PostgreSQL's `jsonb_*` functions shipped by the platform in the `Utils` module: `field`, `fieldText`, `array`, `arrayText`, `map`, `mapText`, `arrayElement`. Their signatures and description are collected in [`Utils` → `JSON access properties`](../paradigm/System_Utils.md#json-access). This how-to relies on them and does not restate their interface.
 
 ## Example 1
 
@@ -51,7 +51,7 @@ showInfo (JSON j) {
 
 `fieldText(j, 'version')` reads a scalar field at the top level.
 
-`fieldText(j, 'store', 'name')` descends one level deeper in a single call thanks to the two-string-argument overload. The three-argument overload covers three levels; for four and more, use composition through `field` (see below).
+`fieldText(j, 'store', 'name')` descends one level deeper in a single call thanks to the two-string-argument overload. The three-argument overload covers three levels, and for four and more, use composition through `field` (see below).
 
 Reading a field inside an array element is assembled by composition: `field(j, 'orders')` returns the array as `JSON`, `array(…, 1)` takes its first element (also `JSON`), and `fieldText(…, 'number')` reads that element's field as `STRING`. When another level inside the element is needed, the two-key overload of `fieldText` is used: `fieldText(array(field(j, 'orders'), 1), 'customer', 'name')` corresponds to the path `orders[0].customer.name` (lsFusion indexing is 1-based).
 
@@ -81,7 +81,7 @@ walkOrders (JSON j) {
 }
 ```
 
-`FOR JSON ord = array(field(j, 'orders'), INTEGER o)` is the iterator: the parameter `o` is declared in place as `INTEGER` and walks every array index; for each `o` the `array(…, o)` property returns the element as `JSON`, and `ord` is bound to that value for one iteration of the body. The index `o` itself is also available inside the body — useful for numbering, for example.
+`FOR JSON ord = array(field(j, 'orders'), INTEGER o)` is the iterator: the parameter `o` is declared in place as `INTEGER` and walks every array index. For each `o` the `array(…, o)` property returns the element as `JSON`, and `ord` is bound to that value for one iteration of the body. The index `o` itself is also available inside the body — useful for numbering, for example.
 
 The nested `FOR JSON line = array(field(ord, 'lines'), INTEGER l) DO` works on the same principle, except the array is now `lines` inside the current order. `ord` stays in scope of the inner loop, so its fields can be used in conditions or on the right-hand side.
 
@@ -92,7 +92,7 @@ totalLines (JSON j) = GROUP SUM 1
     IF array(field(array(field(j, 'orders'), INTEGER o), 'lines'), INTEGER l);
 ```
 
-The `GROUP SUM` condition assembles the full path `j → orders → array → lines → array`; `o` and `l` are declared in place and walk independently. One is counted for each `(o, l)` pair for which the corresponding line exists.
+The `GROUP SUM` condition assembles the full path `j → orders → array → lines → array`. `o` and `l` are declared in place and walk independently. One is counted for each `(o, l)` pair for which the corresponding line exists.
 
 The same way, `GROUP CONCAT` can assemble the report itself with a single declarative aggregation — no `LOCAL`, no `FOR`:
 
@@ -161,9 +161,9 @@ importBooksFlat 'Import books' () {
 
 `IMPORT JSON FROM f FIELDS …` expects a flat JSON array of objects: the object keys match the field names in the list (`name`, `year`, `price`), and their values are cast to the declared types. The `DO` body runs for every row of the array in turn — inside it, `name`, `year`, `price` are available as plain parameters with the values of the current row.
 
-Unlike the form-based variant, staging properties are not needed here; the [`imported[INTEGER]`](../language/IMPORT_operator.md) property is also absent, because there is no explicit iteration — the `DO` part plays that role.
+Unlike the form-based variant, staging properties are not needed here. The [`imported[INTEGER]`](../language/IMPORT_operator.md) property is also absent, because there is no explicit iteration — the `DO` part plays that role.
 
-`FIELDS … DO` is the right choice when the values are needed exactly once and validation does not require multiple passes. If a flow needs to validate references first, then create objects in bulk, and only then fill their properties — switch to the form-based variant or to intermediate `LOCAL` properties (see [Example 5](#example-5); for a root-level array like the one here — [Example 6](#example-6)).
+`FIELDS … DO` is the right choice when the values are needed exactly once and validation does not require multiple passes. If a flow needs to validate references first, then create objects in bulk, and only then fill their properties — switch to the form-based variant or to intermediate `LOCAL` properties (see [Example 5](#example-5), and for a root-level array like the one here — [Example 6](#example-6)).
 
 ## Example 4
 
@@ -277,7 +277,7 @@ The `importBooks` form mirrors the JSON shape: for the `books` array there is an
 
 [`IMPORT … JSON FROM`](../language/IMPORT_operator.md) reads the file and fills the local properties — `importBookName(i)`, `importBookYear(i)`, `importBookPrice(i)` — for every row `i`.
 
-`FOR importBookName(INTEGER i)` walks every row whose imported name is not `NULL` and creates a `Book` object for each. The system `imported[INTEGER]` property cannot be used for iteration here: form import writes only to the properties and filters of the form, and this form has no filter with `imported[INTEGER]` (after `IMPORT … TO` it is filled because the form the platform creates for that operator has such a filter). Here the "this row came from the file" role is played by a non-empty staging property; [Example 8](#example-8) shows how to get such a mark when no field of a record is mandatory.
+`FOR importBookName(INTEGER i)` walks every row whose imported name is not `NULL` and creates a `Book` object for each. The system `imported[INTEGER]` property cannot be used for iteration here: form import writes only to the properties and filters of the form, and this form has no filter with `imported[INTEGER]` (after `IMPORT … TO` it is filled because the form the platform creates for that operator has such a filter). Here the "this row came from the file" role is played by a non-empty staging property. [Example 8](#example-8) shows how to get such a mark when no field of a record is mandatory.
 
 Keep in mind that an empty string `""` in the JSON file is imported as an empty non-`NULL` string, not as `NULL` (see [Structured view](../paradigm/Structured_view.md)). Such a value satisfies non-`NULL` conditions — the `FOR` above, `IF`, aggregates like `GROUP LAST`. When empty strings should behave as missing values, normalize them right after the import:
 
@@ -285,7 +285,7 @@ Keep in mind that an empty string `""` in the JSON file is imported as an empty 
 importBookName(INTEGER i) <- NULL WHERE importBookName(i) = '';
 ```
 
-The object creation runs in `NEWSESSION` so the import does not accidentally apply pending edits sitting on the `books` form itself. `APPLY` commits the changes; if a constraint fails, it shows the error text to the user on its own.
+The object creation runs in `NEWSESSION` so the import does not accidentally apply pending edits sitting on the `books` form itself. `APPLY` commits the changes. If a constraint fails, it shows the error text to the user on its own.
 
 ## Example 6
 
@@ -402,7 +402,7 @@ showDocflows (FILE f) {
 
 Every nested array gets its own `OBJECTS` block over `INTEGER`, exactly like the single array in [example 5](#example-5). The link to the parent level is a `LOCAL` property from the child row to the parent row (`eventDocflow`, `participantEvent`) referenced in `FILTERS`: on import the platform fills it with the row of the enclosing array element. The same filter also makes the child group a child of the parent group when the [object group hierarchy](../paradigm/Static_view.md#hierarchy) is built — this is what directs the `events` array to be read from the key `events` inside each `docflows` element rather than from the form root.
 
-The innermost array holds strings, not objects; per the [predefined `value` conversion](../paradigm/Structured_view.md#value) each such element is read as an object `{ "value" : ... }`, so the staging property is mapped with `EXTID 'value'`.
+The innermost array holds strings, not objects. Per the [predefined `value` conversion](../paradigm/Structured_view.md#value) each such element is read as an object `{ "value" : ... }`, so the staging property is mapped with `EXTID 'value'`.
 
 When a nested array lies not directly in the element but under an intermediate object key (say, `"status": {"details": [...]}`), declare a [property group](../language/GROUP_statement.md) with that export/import name and add the child `OBJECTS` block to it with `IN`. The group nests under the object group of the iterated element — per the same hierarchy building — not under the form root.
 

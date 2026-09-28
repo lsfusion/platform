@@ -3,7 +3,7 @@ slug: "/Container_visibility_EXPAND_COLLAPSE"
 title: 'Container visibility (EXPAND, COLLAPSE)'
 ---
 
-Container *expansion* and *collapse* operators control whether the contents of a *collapsible* [container](Form_design.md#containers) are shown on a [form](Forms.md). A collapsible container can be collapsed to hide its contents, and expanded to show them again; this state is part of the user's [interactive](Interactive_view.md) view of the form.
+Container *expansion* and *collapse* operators control whether the contents of a *collapsible* [container](Form_design.md#containers) are shown on a [form](Forms.md). A collapsible container can be collapsed to hide its contents, and expanded to show them again. This state is part of the user's [interactive](Interactive_view.md) view of the form.
 
 As input, these operators take a single container of a form. The container must be collapsible. The resulting [action](Actions.md) expands or collapses that container for the user working with the form, and expects a form context.
 

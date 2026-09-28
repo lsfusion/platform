@@ -15,13 +15,13 @@ CHANGECLASS expr TO className [WHERE whereExpr]
 
 The `CHANGECLASS` operator creates an action that assigns the class `className` to the object given by `expr` for every set of arguments where `whereExpr` is not `NULL`.
 
-The operator may introduce a local parameter in `expr`; in that case the `WHERE` block is required. Such a parameter corresponds to objects being iterated and is not a parameter of the created action.
+The operator may introduce a local parameter in `expr`. In that case the `WHERE` block is required. Such a parameter corresponds to objects being iterated and is not a parameter of the created action.
 
 ### Parameters
 
 - `expr`
 
-    [Expression](Expression.md) or [typed parameter](IDs.md#paramid) for the object whose class is changed. As a typed parameter, you can both reference an already declared parameter and declare a new local parameter; as an expression, new local parameters cannot be added.
+    [Expression](Expression.md) or [typed parameter](IDs.md#paramid) for the object whose class is changed. As a typed parameter, you can both reference an already declared parameter and declare a new local parameter. As an expression, new local parameters cannot be added.
 
 - `className`
 

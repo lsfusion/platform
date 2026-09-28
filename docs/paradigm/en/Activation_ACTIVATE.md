@@ -30,12 +30,12 @@ The seek direction determines the collection of objects that will be selected as
 
 The direction can take one of four values:
 
--   `FIRST` - for additional objects the **first** matching collection according to the specified order is selected; for seek objects, if the required collection is not found, the **next** closest one is selected.
--   `LAST` - for additional objects the **last** matching collection is selected; for seek objects, if the required collection is not found, the **previous** closest one is selected.
+-   `FIRST` - for additional objects the **first** matching collection according to the specified order is selected. For seek objects, if the required collection is not found, the **next** closest one is selected.
+-   `LAST` - for additional objects the **last** matching collection is selected. For seek objects, if the required collection is not found, the **previous** closest one is selected.
 -   `PREV` - the collection closest to the previous current one (that is, the state before the seek operation) is kept.
 -   `NULL` - the objects of the group are reset to `NULL`.
 
-In the operator, the direction is specified with the `FIRST`, `LAST`, or `NULL` keywords; `PREV` cannot be written directly. If none of these keywords is specified, the direction is taken from the [default objects type](Interactive_view.md#defaultobject) set on the object group (including `PREV`). If the group does not set a type explicitly, it is [chosen heuristically](Interactive_view.md#defaultobject) based on the group's filters — `FIRST` for a narrow filter, and `PREV` otherwise.
+In the operator, the direction is specified with the `FIRST`, `LAST`, or `NULL` keywords. `PREV` cannot be written directly. If none of these keywords is specified, the direction is taken from the [default objects type](Interactive_view.md#defaultobject) set on the object group (including `PREV`). If the group does not set a type explicitly, it is [chosen heuristically](Interactive_view.md#defaultobject) based on the group's filters — `FIRST` for a narrow filter, and `PREV` otherwise.
 
 #### Setting `NULL` values
 

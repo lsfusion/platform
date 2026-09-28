@@ -51,7 +51,7 @@ Pivot table settings block allows you to set the initial settings for the form's
 
 The block only sets these settings — it does not change the view type of the object group. For the group's properties to be displayed as a pivot table right away, the *pivot table* view type must be selected by the `PIVOT` [object group option](Object_blocks.md#objects). If this view type is not the initial one, the specified settings, except `settingsType`, take effect when the user first switches the group to it.
 
-An `objectGroupId pivotOptions` entry specifies only the options listed in it; the rest keep the values specified in the `PIVOT` object group option or in an earlier settings block. If the same option is specified several times, the last one declared takes effect.
+An `objectGroupId pivotOptions` entry specifies only the options listed in it. The rest keep the values specified in the `PIVOT` object group option or in an earlier settings block. If the same option is specified several times, the last one declared takes effect.
 
 ### Parameters
 
@@ -61,7 +61,7 @@ An `objectGroupId pivotOptions` entry specifies only the options listed in it; t
 
 - `MEASURES(groupObject)`
 
-  Keyword `MEASURES` with a parenthesised group object id denotes the special pivot column `(column)` that holds its measures. By default this column is placed first; specifying `MEASURES(groupObject)` in the `COLUMNS` or `ROWS` list lets you put it at an arbitrary position among the columns or move it to the rows.
+  Keyword `MEASURES` with a parenthesised group object id denotes the special pivot column `(column)` that holds its measures. By default this column is placed first. Specifying `MEASURES(groupObject)` in the `COLUMNS` or `ROWS` list lets you put it at an arbitrary position among the columns or move it to the rows.
 
 - `measureFormPropertyName1, ..., measureFormPropertyNameL`
 

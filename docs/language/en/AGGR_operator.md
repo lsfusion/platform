@@ -13,11 +13,11 @@ AGGR [eventClause] aggrClass WHERE aggrExpr [NEW [newEventClause]] [DELETE [dele
 
 ### Description
 
-In addition to the property that is the result of this operator and contains the value of the aggregated object, for each parameter the `AGGR` operator also creates a [data property](../paradigm/Data_properties_DATA.md) with one parameter of type `aggrClass`. The value class and name of this property match the class and name of the corresponding parameter; when the aggregated object is created, the value of the parameter is automatically written to this property.
+In addition to the property that is the result of this operator and contains the value of the aggregated object, for each parameter the `AGGR` operator also creates a [data property](../paradigm/Data_properties_DATA.md) with one parameter of type `aggrClass`. The value class and name of this property match the class and name of the corresponding parameter. When the aggregated object is created, the value of the parameter is automatically written to this property.
 
-`eventClause` specifies the base check event; `NEW` and `DELETE` specify resolution events for creating and deleting aggregated objects respectively.
+`eventClause` specifies the base check event, while `NEW` and `DELETE` specify resolution events for creating and deleting aggregated objects respectively.
 
-The `AGGR` operator may appear only as a top-level property definition in the [`=` statement](=_statement.md); it cannot be used inside an [expression](Expression.md), inside other operators, or inside the [`JOIN` operator](JOIN_operator.md)'s `[= ]` form.
+The `AGGR` operator may appear only as a top-level property definition in the [`=` statement](=_statement.md). It cannot be used inside an [expression](Expression.md), inside other operators, or inside the [`JOIN` operator](JOIN_operator.md)'s `[= ]` form.
 
 ### Parameters
 
@@ -27,11 +27,11 @@ The `AGGR` operator may appear only as a top-level property definition in the [`
 
 - `aggrClass`
 
-    The value class of the aggregated object. Must be a user-defined [class](../paradigm/Classes.md); built-in classes are not allowed.
+    The value class of the aggregated object. Must be a user-defined [class](../paradigm/Classes.md). Built-in classes are not allowed.
 
 - `aggrExpr`
 
-    An expression whose non-`NULL` values drive the aggregation; its typed parameters determine the parameters of the result property and of the auto-created properties for each parameter.
+    An expression whose non-`NULL` values drive the aggregation. Its typed parameters determine the parameters of the result property and of the auto-created properties for each parameter.
 
 - `NEW`
 
@@ -39,7 +39,7 @@ The `AGGR` operator may appear only as a top-level property definition in the [`
 
 - `newEventClause`
 
-    Event description block. If `NEW` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `NEW` is specified but `newEventClause` is omitted, the default global `APPLY` event is used.
+    Event description block. If `NEW` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`. Its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `NEW` is specified but `newEventClause` is omitted, the default global `APPLY` event is used.
 
 - `DELETE`
 
@@ -47,7 +47,7 @@ The `AGGR` operator may appear only as a top-level property definition in the [`
 
 - `deleteEventClause`
 
-    Event description block. If `DELETE` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`; its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `DELETE` is specified but `deleteEventClause` is omitted, the default global `APPLY` event is used.
+    Event description block. If `DELETE` is absent, the resolution event inherits only the scope (`GLOBAL`/`LOCAL`) of `eventClause`. Its `FORMS`, `AFTER`/`GOAFTER`, and event name are not carried over. If `DELETE` is specified but `deleteEventClause` is omitted, the default global `APPLY` event is used.
 
 ### Examples
 

@@ -14,7 +14,7 @@ project exploration, and code writing).
 Apply each rule below at its stated strength.
 
 The `language`, `paradigm` and `how-to` branches are reference material,
-searched with `lsfusion_retrieve_docs`; they are not a mandatory reading
+searched with `lsfusion_retrieve_docs`. They are not a mandatory reading
 list. The workflow below states when a lookup is required.
 
 The `rules` branch is not searched: an article is named and delivered
@@ -84,7 +84,7 @@ the name in the first column.
    an SQL expression, `CUSTOM` and a custom view on a React
    component for rendering that the standard views do not
    provide. Java or JavaScript present in the project is not a
-   violation in itself; business logic moved out of `.lsf` is.
+   violation in itself. Business logic moved out of `.lsf` is.
 
 3. WHEN CODE OUTSIDE `.lsf` IS ALLOWED. Only at an established
    limitation of the platform or an explicit requirement of the
@@ -231,7 +231,7 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    mention.
 
 4. The assistant MUST evaluate this at the end of the task
-   (completion or abandonment); it MUST NOT interrupt work
+   (completion or abandonment). It MUST NOT interrupt work
    mid-task to report. Several findings in one task mean
    several calls, one per finding, not a choice of one.
 
@@ -240,7 +240,7 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    answer and MUST call the tool ONLY after an explicit yes;
    it MUST NOT silently drop a trigger that fired. Consent
    may be given in advance, by the user or by the project's
-   rules; then the assistant sends the report right away and
+   rules. Then the assistant sends the report right away and
    mentions it in one line. If the user asks not to send a
    particular report, the assistant does not send it.
 
@@ -295,7 +295,7 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    at later occurrences.
 
 7. The body of a `META` statement consists of module-level
-   statements; action operators (`NEW ...`, assignments)
+   statements. Action operators (`NEW ...`, assignments)
    cannot appear there directly, and the `@` statement
    using a metacode is itself a module-level statement
    and cannot be used inside an action body. For

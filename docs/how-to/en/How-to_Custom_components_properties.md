@@ -67,7 +67,7 @@ NAVIGATOR {
 ```
 
 Next, use JavaScript and CSS to create a component that will display messages in the browser.
-The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling; see [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
+The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling. See [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
 
 Inside the chat.js file, create the _chatMessages_ function. It will return an object consisting of two functions: _render_ and _update_.
 
@@ -148,7 +148,7 @@ update: function (element, controller, list) {
 }
 ```
 The property values arrive converted to JS values: the text ones as strings, _own_ as a boolean, _dateTime_ as a `Date` object, so the time is formatted by the browser.
-The group's current message is determined by the _isCurrent_ method of the controller and highlighted with the _chat-message-current_ class; after the update it is scrolled into view.
+The group's current message is determined by the _isCurrent_ method of the controller and highlighted with the _chat-message-current_ class. After the update it is scrolled into view.
 The result will be the following element structure for each message:
 ```html
 <div class="chat-message chat-message-own">
@@ -365,7 +365,7 @@ As a result, the component will look like this:
 Then we add event handlers that will send the message when CTRL+ENTER is pressed,
 and write the entered message to the `message[]` property when the component loses focus.
 The entered text is passed by the _change_ method of the controller: it goes into the change handling of the `message[]` property in the same way as a value entered by the standard editor — for a data property that is writing the value into it.
-The `send[]` action is executed by the _changeProperty_ method of the [form controller](How-to_Custom_view_controller.md), available as `controller.form`; the requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
+The `send[]` action is executed by the _changeProperty_ method of the [form controller](How-to_Custom_view_controller.md), available as `controller.form`. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
 The handlers are added in the _update_ function:
 ```js
 element.text.onkeydown = function(event) {
@@ -457,8 +457,8 @@ The editor function, like the display function, is registered as a wrapper and r
 
 `value` is the current property value converted to a JS value. Besides the rendering function, the object may contain:
 
-- `getValue(element)` — returns the value to commit; the string `'canceled'` cancels the edit. For an input editor, when this function is absent, the text of the input itself is taken.
-- `clear(element, cancel)` — cleanup when the edit finishes; `cancel` is true on cancellation.
+- `getValue(element)` — returns the value to commit. The string `'canceled'` cancels the edit. For an input editor, when this function is absent, the text of the input itself is taken.
+- `clear(element, cancel)` — cleanup when the edit finishes. `cancel` is true on cancellation.
 - `onBrowserEvent(event, element)` — handling browser events during the edit.
 
 The editor controller provides:

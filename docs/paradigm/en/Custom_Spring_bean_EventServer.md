@@ -22,9 +22,9 @@ The minimum Java overrides are `getEventName()`, `getLogicsInstance()`, and the 
 
 Each base class establishes its own thread context: `MonitorServer` — *monitor*, `RmiServer` — *RMI*. How to obtain an `ExecutionStack` depends on the kind of thread the code is running on:
 
-1. **Own task pool.** Built through `ExecutorFactory.createMonitorThreadService(threads, this)` or `createMonitorScheduledThreadService(threads, this)` for a `MonitorServer` bean; `createRMIThreadService(threads, this)` for a `RmiServer`. Threads in such a pool enter and leave the appropriate thread context automatically; `getStack()` works inside the tasks.
+1. **Own task pool.** Built through `ExecutorFactory.createMonitorThreadService(threads, this)` or `createMonitorScheduledThreadService(threads, this)` for a `MonitorServer` bean, and `createRMIThreadService(threads, this)` for a `RmiServer`. Threads in such a pool enter and leave the appropriate thread context automatically. `getStack()` works inside the tasks.
 
-2. **External callback thread** (worker threads of a RabbitMQ client, WebSocket library, etc. — threads not created through `ExecutorFactory`). The context is set up and torn down around the block manually; the code usually sits inside an anonymous class (`DefaultConsumer`, etc.), so the `MonitorServer` is referred to explicitly as `MyServer.this` (a bare `this` would point at the anonymous instance):
+2. **External callback thread** (worker threads of a RabbitMQ client, WebSocket library, etc. — threads not created through `ExecutorFactory`). The context is set up and torn down around the block manually. The code usually sits inside an anonymous class (`DefaultConsumer`, etc.), so the `MonitorServer` is referred to explicitly as `MyServer.this` (a bare `this` would point at the anonymous instance):
 
     ```java
     try {
@@ -46,7 +46,7 @@ Each base class establishes its own thread context: `MonitorServer` — *monitor
 
 A complete RMI-service template is a `RmiServer` bean that implements a remote interface, plus a manual export through `RmiManager`.
 
-**Remote interface** extends `lsfusion.interop.server.RmiServerInterface` (rather than the bare `java.rmi.Remote`); every remote method declares `throws RemoteException`:
+**Remote interface** extends `lsfusion.interop.server.RmiServerInterface` (rather than the bare `java.rmi.Remote`). Every remote method declares `throws RemoteException`:
 
 ```java
 public interface MyRemoteInterface extends RmiServerInterface {
@@ -63,7 +63,7 @@ If `RmiManager` is used often, a `getRmiManager()` helper method is usually adde
 
 The RMI context inside a remote method is normally set up for you — just call `getStack()` and work with the session. An explicit `ThreadLocalContext.assureRmi(this)` may be added as a defensive call in non-standard paths, but no manual aspect setup is required in the typical case.
 
-`createSession()` throws `SQLException`, and the `LP` / `LA` / `applyException` calls throw `SQLException` and `SQLHandledException`; in a remote method these are usually caught in one block and wrapped in `RemoteException`:
+`createSession()` throws `SQLException`, and the `LP` / `LA` / `applyException` calls throw `SQLException` and `SQLHandledException`. In a remote method these are usually caught in one block and wrapped in `RemoteException`:
 
 ```java
 @Override
@@ -83,18 +83,18 @@ The RMI client locates the service in the registry under the same `<exportName>/
 
 ### Lifecycle
 
-The bean is injected via Spring (the minimum is `logicsInstance` (`LogicsInstance`); through it the bean reaches `getBusinessLogics()`, `getDbManager()`, `getRmiManager()`). The standard hooks are used as follows:
+The bean is injected via Spring (the minimum is `logicsInstance` (`LogicsInstance`), through which the bean reaches `getBusinessLogics()`, `getDbManager()`, `getRmiManager()`). The standard hooks are used as follows:
 
-- `afterPropertiesSet()` (when the bean implements `InitializingBean`) — fires right after Spring DI; only the injection check goes here (`Assert.notNull(...)`). The platform runtime is not ready yet, sessions cannot be opened.
+- `afterPropertiesSet()` (when the bean implements `InitializingBean`) — fires right after Spring DI. Only the injection check goes here (`Assert.notNull(...)`). The platform runtime is not ready yet, sessions cannot be opened.
 - `onInit(LifecycleEvent)` — platform initialisation has started. This is where the [module](Modules.md) is resolved (`getLogicsInstance().getBusinessLogics().getModule("MyModule")`) and `LP` / `LA` wrappers are stored in fields via `LM.findProperty(...)` / `LM.findAction(...)`.
-- `onStarted(LifecycleEvent)` — the platform is fully up. This is where background threads and listeners are started; `RmiServer`-style beans call `bindAndExport` here.
+- `onStarted(LifecycleEvent)` — the platform is fully up. This is where background threads and listeners are started. `RmiServer`-style beans call `bindAndExport` here.
 - `onStopping(LifecycleEvent)` — graceful shutdown: stop owned threads; for `RmiServer` call `unbindAndUnexport`.
 
 If the component must come up after the main platform, pass `super(DAEMON_ORDER)` in the constructor.
 
 ### Reading, writing and executing
 
-Inside the bean's methods, properties and actions are accessed through a `DataSession` and an `ExecutionStack` (rather than an `ExecutionContext`, as in `InternalAction`). Object arguments are passed as `DataObject` (or, more generally, `ObjectValue` — either `DataObject` or `NullValue`); the written property values are plain Java values of built-in classes (`String`, `Integer`, `LocalDateTime`, etc.). A full catalog of classes and methods is in [Java API for integrations](Java_integration_API.md). `LP` / `LA` wrappers are normally resolved once in `onInit` and stored in fields; here, for brevity, they are obtained at the call site:
+Inside the bean's methods, properties and actions are accessed through a `DataSession` and an `ExecutionStack` (rather than an `ExecutionContext`, as in `InternalAction`). Object arguments are passed as `DataObject` (or, more generally, `ObjectValue` — either `DataObject` or `NullValue`). The written property values are plain Java values of built-in classes (`String`, `Integer`, `LocalDateTime`, etc.). A full catalog of classes and methods is in [Java API for integrations](Java_integration_API.md). `LP` / `LA` wrappers are normally resolved once in `onInit` and stored in fields. Here, for brevity, they are obtained at the call site:
 
 ```java
 BusinessLogics BL = getLogicsInstance().getBusinessLogics();
@@ -112,7 +112,7 @@ try (DataSession session = createSession()) {
 }
 ```
 
-`createSession()` opens a new change session; whatever is written into it accumulates until applied explicitly — `session.applyException(BL, stack)` (throws on apply failure) or `session.applyMessage(BL, stack)` (returns the error message, or `null` on success). If an exception is thrown before apply, try-with-resources rolls back everything that was not yet applied.
+`createSession()` opens a new change session. Whatever is written into it accumulates until applied explicitly — `session.applyException(BL, stack)` (throws on apply failure) or `session.applyMessage(BL, stack)` (returns the error message, or `null` on success). If an exception is thrown before apply, try-with-resources rolls back everything that was not yet applied.
 
 ### Wiring up in Spring
 

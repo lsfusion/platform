@@ -26,7 +26,7 @@ Advantages of synchronous events:
 
 Advantages of asynchronous events:
 
--   You can release the user immediately and run the handlers "in the background". This improves system ergonomics; however, it is possible only when updating the data is not critical for the user's further work (for global events, for example, within the next 5-10 minutes, until the server has time to complete the next handling cycle).
+-   You can release the user immediately and run the handlers "in the background". This improves system ergonomics. However, it is possible only when updating the data is not critical for the user's further work (for global events, for example, within the next 5-10 minutes, until the server has time to complete the next handling cycle).
 -   Handlers are grouped for a large number of changes, including those made by different users (in the case of global events), and, accordingly, are run fewer times, thereby improving the overall system performance.
 
 Advantages of local events:
@@ -67,7 +67,7 @@ By default, the following modes are used in event handling:
 -   for change operators - event (value at the time the previous event occurred). 
 -   for the cancel changes operator - event mode (canceling the application, not clearing the session).
 
-In the value of an assignment event - the part written into the property, as opposed to the condition - the previous value operator is not held at the start of the apply: it is read as of the moment the assignment runs, after the events applied before it. The [working parameter](Working_parameters.md) `useEventValuePrevHeuristic` (`true` by default) is what allows that; with it off those values are held like the ones in the condition, which costs extra work in every apply and buys no real consistency in time anyway. It is read while the logics are being built, so it takes effect only after a server restart.
+In the value of an assignment event - the part written into the property, as opposed to the condition - the previous value operator is not held at the start of the apply: it is read as of the moment the assignment runs, after the events applied before it. The [working parameter](Working_parameters.md) `useEventValuePrevHeuristic` (`true` by default) is what allows that. With it off those values are held like the ones in the condition, which costs extra work in every apply and buys no real consistency in time anyway. It is read while the logics are being built, so it takes effect only after a server restart.
 
 
 :::info

@@ -43,7 +43,7 @@ The URL format, depending on the method of [action definition](#actiontype), loo
 
 For `EVAL` / `EVAL ACTION`, the code can thus be passed in the query string (`script=`), as the value of the `script` key of an `application/x-www-form-urlencoded` body, or as the entire request body with any other content type (for example, `text/plain; charset=UTF-8`). The raw code cannot be the whole body of an `application/x-www-form-urlencoded` request: such a body is parsed into named parameters, not treated as a single BODY parameter. Keep in mind that HTTP clients often use this content type by default (for example, `curl --data`), so an explicit `Content-Type` header is required when passing the code as the whole body.
 
-For `EXEC`, the action name can be either the action's [compound name](Element_identification.md) or its `EXTID` (the compound name is tried first). In the path form, the platform looks up the action greedily: it first tries the full path as an action name (with any `/` replaced by `_` for the compound name lookup), and if no such action exists, drops the last path segment and retries, until a match is found or `404` is returned. The part of the path left after the matched action name is passed to the `System.actionPathInfo[]` property. For example, for `/exec/df/fdf/dffd` the platform tries actions `df_fdf_dffd`, then `df_fdf`, then `df`; if only `df` matches, `fdf/dffd` is written to `System.actionPathInfo[]`.
+For `EXEC`, the action name can be either the action's [compound name](Element_identification.md) or its `EXTID` (the compound name is tried first). In the path form, the platform looks up the action greedily: it first tries the full path as an action name (with any `/` replaced by `_` for the compound name lookup), and if no such action exists, drops the last path segment and retries, until a match is found or `404` is returned. The part of the path left after the matched action name is passed to the `System.actionPathInfo[]` property. For example, for `/exec/df/fdf/dffd` the platform tries actions `df_fdf_dffd`, then `df_fdf`, then `df`. If only `df` matches, `fdf/dffd` is written to `System.actionPathInfo[]`.
 
 ##### Servers {#servers}
 
@@ -54,19 +54,19 @@ The HTTP API is served by two kinds of servers:
 
 A request is addressed as `http://<server address>:<port><endpoint>` for the corresponding server.
 
-The built-in HTTP server serves its requests from a pool of `externalHttpServerThreadCount` threads ([working parameter](Working_parameters.md), `10` by default); the value is read at startup. That is a hard limit on how many of its requests run at once: the rest wait for a free thread, so a few long calls delay everything else on that port.
+The built-in HTTP server serves its requests from a pool of `externalHttpServerThreadCount` threads ([working parameter](Working_parameters.md), `10` by default). The value is read at startup. That is a hard limit on how many of its requests run at once: the rest wait for a free thread, so a few long calls delay everything else on that port.
 
 ##### Parameters {#url}
 
 Parameters can be passed both in the request string (by appending constructs like `&p=<parameter value>` to the end of the string), as well as in the request body (BODY). It is assumed that URL parameters are substituted (in the order of their appearance in the request) for the executed action before BODY parameters.
 
-If the called action has named interface parameters (for example, `run(INTEGER no, DATE date)`), a request parameter whose name matches an action parameter name is bound to it by name. The positional substitution above then fills any remaining slots only from unused `p=` parameters (URL or `application/x-www-form-urlencoded` body) and non-urlencoded BODY parameters (multipart parts or a single body); other named URL/urlencoded parameters that did not match an interface name are ignored.
+If the called action has named interface parameters (for example, `run(INTEGER no, DATE date)`), a request parameter whose name matches an action parameter name is bound to it by name. The positional substitution above then fills any remaining slots only from unused `p=` parameters (URL or `application/x-www-form-urlencoded` body) and non-urlencoded BODY parameters (multipart parts or a single body). Other named URL/urlencoded parameters that did not match an interface name are ignored.
 
 When processing BODY parameters, parameters with the content type from the following [table](https://github.com/lsfusion/platform/blob/master/api/src/main/resources/MIMETypes.properties) are considered files and are passed to the action parameters as objects of the file class (`FILE`, `PDFFILE`, etc.). During this process, the corresponding file extension is taken from the table mentioned above. If a particular content type is not found in the table, but it starts with `application`, the parameter is still considered a file, and the file extension is taken from the right part of the content type (for example, it will be `abc` for the `application/abc` content type). Parameters with the `application/null` content type are considered to be equal to `NULL`.
 
-When such a BODY parameter is bound to an action interface parameter whose class is not a file class, its content is parsed as a string and automatically converted to that parameter's class; empty strings become `NULL`. This conversion applies only to the action-parameter binding described above - in the [request properties](#request) below, the same parameter is always stored as a file value.
+When such a BODY parameter is bound to an action interface parameter whose class is not a file class, its content is parsed as a string and automatically converted to that parameter's class. Empty strings become `NULL`. This conversion applies only to the action-parameter binding described above - in the [request properties](#request) below, the same parameter is always stored as a file value.
 
-A URL or urlencoded-body parameter is converted to the class of the interface parameter it is bound to in the same way, so for a non-file class an empty value (`&p=`) also becomes `NULL`, while for a file class it becomes an empty file, not `NULL`; an interface parameter that received no request parameter gets `NULL`. If, however, the class of the interface parameter is not defined, no conversion takes place and the value is bound as a string unchanged: an empty value stays an empty string — a regular non-`NULL` value that, for example, the `NOT p` check does not treat as absent.
+A URL or urlencoded-body parameter is converted to the class of the interface parameter it is bound to in the same way, so for a non-file class an empty value (`&p=`) also becomes `NULL`, while for a file class it becomes an empty file, not `NULL`. An interface parameter that received no request parameter gets `NULL`. If, however, the class of the interface parameter is not defined, no conversion takes place and the value is bound as a string unchanged: an empty value stays an empty string — a regular non-`NULL` value that, for example, the `NOT p` check does not treat as absent.
 
 ##### Request properties {#request}
 
@@ -74,9 +74,9 @@ A URL or urlencoded-body parameter is converted to the class of the interface pa
 
 [Cookies](https://en.wikipedia.org/wiki/HTTP_cookie) of an executed request are similarly saved to the `System.cookies[TEXT]` property. The name of the cookie is written to the only parameter of this property, and the value of the cookie is written to the property's value.
 
-Individual request parameters can also be accessed by name. For URL parameters the name is taken from the query string (`&<name>=<value>`); for an `application/x-www-form-urlencoded` body, from the key of each key-value pair; for parts of a `multipart/form-data` body, from the `name` field of each part's `Content-Disposition` header. For any other body a single name is taken from the `name` field of the request's own `Content-Disposition` header (defaulting to `body` if the header is absent); parts of a non-`form-data` `multipart/*` body inherit this name - their own `Content-Disposition` is not read - unless a part is itself `application/x-www-form-urlencoded`, in which case its keys become parameter names as described above.
+Individual request parameters can also be accessed by name. For URL parameters the name is taken from the query string (`&<name>=<value>`); for an `application/x-www-form-urlencoded` body, from the key of each key-value pair; for parts of a `multipart/form-data` body, from the `name` field of each part's `Content-Disposition` header. For any other body a single name is taken from the `name` field of the request's own `Content-Disposition` header (defaulting to `body` if the header is absent). Parts of a non-`form-data` `multipart/*` body inherit this name - their own `Content-Disposition` is not read - unless a part is itself `application/x-www-form-urlencoded`, in which case its keys become parameter names as described above.
 
-The split between `System.params[TEXT, INTEGER]` and `System.fileParams[TEXT, INTEGER]` is decided by content type at ingest, applied recursively to parts of a `multipart/*` body. URL parameters and any `application/x-www-form-urlencoded` body or part are read as `TEXT` from `System.params[TEXT, INTEGER]`. Any other body or part (including plain text fields of `multipart/form-data`, which have no content type of their own) is read as `NAMEDFILE` (preserving the original file name if any) from `System.fileParams[TEXT, INTEGER]`. A part with neither a content type nor any body bytes is skipped entirely. The first parameter of both properties is the parameter name, the second is the 0-based index among parameters sharing that name (multiple `p=` parameters or same-named body parts become accessible under one name with indexes `0`, `1`, and so on); the short forms `System.params[TEXT]` and `System.fileParams[TEXT]` give the first occurrence.
+The split between `System.params[TEXT, INTEGER]` and `System.fileParams[TEXT, INTEGER]` is decided by content type at ingest, applied recursively to parts of a `multipart/*` body. URL parameters and any `application/x-www-form-urlencoded` body or part are read as `TEXT` from `System.params[TEXT, INTEGER]`. Any other body or part (including plain text fields of `multipart/form-data`, which have no content type of their own) is read as `NAMEDFILE` (preserving the original file name if any) from `System.fileParams[TEXT, INTEGER]`. A part with neither a content type nor any body bytes is skipped entirely. The first parameter of both properties is the parameter name, the second is the 0-based index among parameters sharing that name (multiple `p=` parameters or same-named body parts become accessible under one name with indexes `0`, `1`, and so on). The short forms `System.params[TEXT]` and `System.fileParams[TEXT]` give the first occurrence.
 
 The platform also fills the following properties with information about the current request:
 
@@ -96,7 +96,7 @@ Note also that in such a call [local event](Events.md#local) handlers are not ex
 
 Alternatively, an action that has a [result](Actions.md) returns it directly as the response body — the simplest way to get a single value back, and the usual form for [`EVAL` / `EVAL ACTION`](#actiontype):
 
--   `EVAL ACTION` — the supplied code is the action body; end it with `RETURN`:
+-   `EVAL ACTION` — the supplied code is the action body. End it with `RETURN`:
 
     ```lsf
     RETURN (GROUP SUM 1 IF Sku s IS Sku);
@@ -116,7 +116,7 @@ If the result of a request is a file (`FILE`, `PDFFILE`, etc.), the response [co
 
 The file extension in this case is determined automatically, similarly to the [`WRITE` operator](Write_file_WRITE.md).
 
-In all of the three cases above, if the result value is `NULL`, a `null` string (for example, `application/null`) is substituted for the file extension in the content type, and an empty string is returned as the response itself. A frequent cause of an unexpectedly empty body (with both `RETURN` and `EXPORT FROM`) is `NULL` propagation — a single `NULL` operand makes the whole value `NULL` (for example, concatenating text with `STRING` of an empty `GROUP SUM` yields `NULL`); guard such an expression with [`OVERRIDE`](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) to fall back to a default.
+In all of the three cases above, if the result value is `NULL`, a `null` string (for example, `application/null`) is substituted for the file extension in the content type, and an empty string is returned as the response itself. A frequent cause of an unexpectedly empty body (with both `RETURN` and `EXPORT FROM`) is `NULL` propagation — a single `NULL` operand makes the whole value `NULL` (for example, concatenating text with `STRING` of an empty `GROUP SUM` yields `NULL`). Guard such an expression with [`OVERRIDE`](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md) to fall back to a default.
 
 Request results different from files are converted into strings and are passed as a `text/plain` content type. `NULL` values are returned as empty strings.
 
@@ -190,7 +190,7 @@ On the web server the container that keys sessions by the `session` parameter li
 The current implementation of the platform assumes that if sessions are used, the elements of the system (for example, local properties) created in the current call are deleted — that is, they are not visible in subsequent calls.
 :::
 
-A call that does not use `session` is stateless, but it still takes resources: it needs a session of the platform's own, with a database connection and the context of its user and computer. Such sessions are kept in a pool rather than built for every call. The [working parameter](Working_parameters.md) `freeAPISessions` (`12` by default) is how many are kept: one coming back to a full pool is closed instead, and `0` closes every one of them, which is the behaviour the pool replaced. A pooled session is reused as it is when the call comes from the same caller - the same authentication token and the same connection - so its context is not built again; `reinitAPISession` (`false` by default) gives that up and rebuilds the context on every call, slower but leaving nothing of the previous call in it. Neither parameter concerns the sessions of the stateful API above.
+A call that does not use `session` is stateless, but it still takes resources: it needs a session of the platform's own, with a database connection and the context of its user and computer. Such sessions are kept in a pool rather than built for every call. The [working parameter](Working_parameters.md) `freeAPISessions` (`12` by default) is how many are kept: one coming back to a full pool is closed instead, and `0` closes every one of them, which is the behaviour the pool replaced. A pooled session is reused as it is when the call comes from the same caller - the same authentication token and the same connection - so its context is not built again. `reinitAPISession` (`false` by default) gives that up and rebuilds the context on every call, slower but leaving nothing of the previous call in it. Neither parameter concerns the sessions of the stateful API above.
 
 ##### Authentication {#authentication}
 
@@ -204,7 +204,7 @@ When executing an http request, it is often necessary to identify the user on wh
 Whether a request is accepted also depends on the [`enableAPI`](Working_parameters.md) setting, which allows disabling the API by default, restricting it to authenticated requests, or additionally allowing anonymous requests. An individual action can be annotated with `@@noauth` to bypass both the authentication check and `enableAPI`, or with `@@api` to allow it at `enableAPI=0` (still requiring an authenticated user). At `enableAPI=0`, an authenticated user who has access to the `System.interpreter` navigator form is also allowed to use the external API, because that user can already execute arbitrary lsFusion code through the browser UI.
 
 :::warning
-The `/eval` and `/eval/action` endpoints execute arbitrary lsFusion code. The `@@api` annotation marks a specific named action and does not apply to these endpoints, so it never opens them. At `enableAPI=0` they remain available only to a caller with access to the `System.interpreter` navigator form — the same gate as running code in the browser UI. Setting `enableAPI=1` grants that same capability to every authenticated user over HTTP, bypassing the form-access gate. In production keep `enableAPI=0` (the default) and expose only specific `@@api`-annotated actions; raise it to `1` only for trusted roles through the per-role settings mechanism described in [Working parameters](Working_parameters.md), never globally. The `@@api` annotation allows the action for every authenticated user and does not restrict which one; to limit a particular `@@api` action to specific users or rights, check the logged-in user inside the action itself via `currentUser[]` (and, for example, its role through `currentUserMainRoleName[]`).
+The `/eval` and `/eval/action` endpoints execute arbitrary lsFusion code. The `@@api` annotation marks a specific named action and does not apply to these endpoints, so it never opens them. At `enableAPI=0` they remain available only to a caller with access to the `System.interpreter` navigator form — the same gate as running code in the browser UI. Setting `enableAPI=1` grants that same capability to every authenticated user over HTTP, bypassing the form-access gate. In production keep `enableAPI=0` (the default) and expose only specific `@@api`-annotated actions. Raise it to `1` only for trusted roles through the per-role settings mechanism described in [Working parameters](Working_parameters.md), never globally. The `@@api` annotation allows the action for every authenticated user and does not restrict which one. To limit a particular `@@api` action to specific users or rights, check the logged-in user inside the action itself via `currentUser[]` (and, for example, its role through `currentUserMainRoleName[]`).
 :::
 
 ##### Interactive actions {#interactive}
@@ -215,7 +215,7 @@ When an action is considered interactive:
 
 -   `@@ui` - always interactive.
 -   `@@noui` - never detected as interactive, so the action runs synchronously (unless the client explicitly requests a notification ID via the `Need-Notification-Id` header, which is always honoured).
--   Neither annotation - interactive automatically when the request comes from a browser navigation (signalled by the `sec-fetch-mode: navigate` header) and the action body uses any interactive feature; otherwise synchronous.
+-   Neither annotation - interactive automatically when the request comes from a browser navigation (signalled by the `sec-fetch-mode: navigate` header) and the action body uses any interactive feature, and is otherwise synchronous.
 
 How the caller obtains the notification:
 
@@ -236,7 +236,7 @@ On failure, the response uses a specific HTTP status code:
 -   `401` - authentication is required or has failed. On the web server, an anonymous [interactive](#interactive) request is redirected to `/login` instead.
 -   `500` - any other unhandled exception raised during request processing, including when the API is disabled by the [`enableAPI`](Working_parameters.md) setting.
 
-For `404`, `500`, and other server-side exception statuses, the response body is `text/html` with the error message; for most exceptions it also includes Java and lsFusion stack traces, except for a `RemoteMessageException` (a user-facing platform message) which returns only the message. The [working parameter](Working_parameters.md) `hideAPIErrorStackTrace` (`false` by default) hides the details of internal errors, which is worth turning on for a server reachable from outside: the body of such an error is then empty — the message goes together with the stacks — while a `RemoteMessageException` (for example, a compilation error of a script sent to `/eval`, which names the unresolved identifier with its line and column) and an authentication error keep their text on both servers. On the web server the change reaches the caller only once the cached server settings are refreshed. A `401` body carries only the short error message. On the web server, the redirect to `/login` has no body - the exception is stored in the HTTP session and the original request is cached for retry after login.
+For `404`, `500`, and other server-side exception statuses, the response body is `text/html` with the error message. For most exceptions it also includes Java and lsFusion stack traces, except for a `RemoteMessageException` (a user-facing platform message) which returns only the message. The [working parameter](Working_parameters.md) `hideAPIErrorStackTrace` (`false` by default) hides the details of internal errors, which is worth turning on for a server reachable from outside: the body of such an error is then empty — the message goes together with the stacks — while a `RemoteMessageException` (for example, a compilation error of a script sent to `/eval`, which names the unresolved identifier with its line and column) and an authentication error keep their text on both servers. On the web server the change reaches the caller only once the cached server settings are refreshed. A `401` body carries only the short error message. On the web server, the redirect to `/login` has no body - the exception is stored in the HTTP session and the original request is cached for retry after login.
 
 ## Form API {#form}
 
@@ -276,13 +276,13 @@ The library exports the following functions:
 -   `numberOfPendingRequests` - show how many change requests are currently queued. Returns a long type value. Parameters:
     -  `state` - a JS state object
 
-As the names of object groups and properties, not names on the form are used, but [export/import](Structured_view.md#extid) names (which, however, match the names on forms if not explicitly defined). While working with a form via Form API, actions and properties created using operators for [object operations](Interactive_view.md#objectoperators) automatically get export/import names equal to the operator name with the object mapping removed: `NEW` and `DELETE` get `NEW` and `DELETE` (that is you can call `change(setState, {game : {NEW:true}})` for adding an object, for example), and `EDIT`, `NEWEDIT`, `VALUE`, and `INTERVAL` get `EDIT`, `NEWEDIT`, `VALUE`, and `INTERVAL` respectively; an operator with an explicitly specified class keeps the class, for example `NEW[Order]`. An export/import name set explicitly on the form is used instead. Also, when Form API is used, it automatically adds a property called `logMessage` to the form to which all dialog messages are written (including those generated when [constraints](Constraints.md) were violated).
+As the names of object groups and properties, not names on the form are used, but [export/import](Structured_view.md#extid) names (which, however, match the names on forms if not explicitly defined). While working with a form via Form API, actions and properties created using operators for [object operations](Interactive_view.md#objectoperators) automatically get export/import names equal to the operator name with the object mapping removed: `NEW` and `DELETE` get `NEW` and `DELETE` (that is you can call `change(setState, {game : {NEW:true}})` for adding an object, for example), and `EDIT`, `NEWEDIT`, `VALUE`, and `INTERVAL` get `EDIT`, `NEWEDIT`, `VALUE`, and `INTERVAL` respectively. An operator with an explicitly specified class keeps the class, for example `NEW[Order]`. An export/import name set explicitly on the form is used instead. Also, when Form API is used, it automatically adds a property called `logMessage` to the form to which all dialog messages are written (including those generated when [constraints](Constraints.md) were violated).
 
 ## File API {#files}
 
 The platform also exposes a read-only **File API** for browsing the running application's classpath — its lsFusion source files and the resources packaged alongside them — over HTTP. It offers three operations: `list` (find files by name), `read` (fetch a file's contents), and `search` (find lines matching a regular expression). Like the [Form API](#form), it is served only by the web server, not by the application server's built-in HTTP server.
 
-A request is a `POST` to `/files/<operation>`, where `<operation>` is `list`, `read`, or `search`. The operation's arguments are passed as a JSON object in the request body; an empty body means no arguments, so each operation's defaults apply. The response body is the result as a JSON object (`application/json`), returned as-is with no wrapping envelope. [Authentication](#authentication) and the [`enableAPI`](Working_parameters.md) check work exactly as for the Action API, except that the per-action `@@noauth` / `@@api` annotations have no effect here, since no action is called.
+A request is a `POST` to `/files/<operation>`, where `<operation>` is `list`, `read`, or `search`. The operation's arguments are passed as a JSON object in the request body. An empty body means no arguments, so each operation's defaults apply. The response body is the result as a JSON object (`application/json`), returned as-is with no wrapping envelope. [Authentication](#authentication) and the [`enableAPI`](Working_parameters.md) check work exactly as for the Action API, except that the per-action `@@noauth` / `@@api` annotations have no effect here, since no action is called.
 
 On failure the response carries an HTTP status and the error message, following the same scheme as the Action API: `401` when authentication is required or fails, `404` for an unknown operation, `405` for a non-`POST` method, `413` when the JSON argument body exceeds 256 KiB, and `500` for any other error — a missing or invalid `regex`, a `path` that does not resolve, or an unparseable glob.
 
@@ -292,7 +292,7 @@ Files are selected by gitignore-style glob patterns: `*` matches any characters 
 
 Arguments:
 
--   `pathPattern` - glob selecting the files to return. The default, `**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}`, lists the project's source and resource files and skips classpath noise such as `.class` files and dependency-jar contents; pass `**` to list everything.
+-   `pathPattern` - glob selecting the files to return. The default, `**/*.{lsf,lsfp,java,properties,xml,sql,md,json,yaml,yml}`, lists the project's source and resource files and skips classpath noise such as `.class` files and dependency-jar contents. Pass `**` to list everything.
 -   `limit` - maximum number of paths to return (default `500`, clamped to 1–5000).
 -   `offset` - number of leading matches to skip, for paging (default `0`).
 
@@ -308,7 +308,7 @@ Result:
 Arguments:
 
 -   `path` - classpath path of the file, as returned by `list` (required).
--   `maxBytes` - size of the byte window to read (default `262144` - 256 KiB; clamped to 1 byte–4 MiB).
+-   `maxBytes` - size of the byte window to read (default `262144` - 256 KiB, clamped to 1 byte–4 MiB).
 -   `offset` - byte offset to start reading from (default `0`).
 
 Result:
@@ -317,20 +317,20 @@ Result:
 -   `bytesRead` - number of bytes read into this window.
 -   `eof` - `true` if the window reached the end of the file; `truncated` is the inverse (`true` if more bytes follow).
 -   `mimeType` - the content type registered for the file's extension, or `application/octet-stream` when the extension is absent or not in the platform's MIME table.
--   `content` (text files) or `contentBase64` (binary files) - the bytes read, returned as UTF-8 text or Base64-encoded respectively; exactly one of the two is present. A file with a known binary extension (such as `pdf`, `zip`, `jar`, `png`, or an office format) is always `contentBase64`; a file with a known text extension (such as `lsf`, `java`, `md`, `json`, `xml`, `sql`) or a text MIME type, and any other file whose bytes are valid UTF-8 with no binary control characters, is `content`; anything else is `contentBase64`.
+-   `content` (text files) or `contentBase64` (binary files) - the bytes read, returned as UTF-8 text or Base64-encoded respectively. Exactly one of the two is present. A file with a known binary extension (such as `pdf`, `zip`, `jar`, `png`, or an office format) is always `contentBase64`; a file with a known text extension (such as `lsf`, `java`, `md`, `json`, `xml`, `sql`) or a text MIME type, and any other file whose bytes are valid UTF-8 with no binary control characters, is `content`; anything else is `contentBase64`.
 -   `utf8BoundaryTrimmed` - present and `true` when, for a text file that has more bytes past the window, the window was shortened to end on a whole UTF-8 character (so the next read should start at `offset + bytesRead`).
 
 ### Searching file contents
 
 Arguments:
 
--   `regex` - Java regular expression, matched against each line (required); a line is reported when the pattern matches anywhere within its first 16 KiB (a longer line is matched only up to that cap).
+-   `regex` - Java regular expression, matched against each line (required). A line is reported when the pattern matches anywhere within its first 16 KiB (a longer line is matched only up to that cap).
 -   `pathPattern` - glob selecting the files to search (default as for `list`).
 -   `limit` - maximum number of matching lines to return (default `200`, clamped to 1–2000).
 -   `contextChars` - maximum length of the excerpt kept for each matching line (default `120`, clamped to 0–500).
 -   `timeoutSeconds` - wall-clock time limit in seconds for the whole search (default `5`, clamped to 1–30).
 -   `maxScannedFiles` - maximum number of files opened (default `2000`, clamped to 1–20000).
--   `maxFileBytes` - maximum number of bytes read from each file (default `524288` - 512 KiB; clamped to 1 byte–4 MiB).
+-   `maxFileBytes` - maximum number of bytes read from each file (default `524288` - 512 KiB, clamped to 1 byte–4 MiB).
 
 Result:
 

@@ -33,7 +33,7 @@ The `SELECT ACTIVE` operator creates a parameterless property which value is `TR
 
 The `VIEWTYPE` operator creates a parameterless property whose value is the current view type of the object group — an object of the `ListViewType` system class (`grid`, `pivot`, `map`, `custom`, or `calendar`).
 
-The `SELECT PROPERTY` operator creates a property whose value is `TRUE` if the specified form property is currently selected by the user, otherwise `NULL`. It accepts as parameters the objects by which the property is shown across columns; a property shown as a single column has no parameters.
+The `SELECT PROPERTY` operator creates a property whose value is `TRUE` if the specified form property is currently selected by the user, otherwise `NULL`. It accepts as parameters the objects by which the property is shown across columns. A property shown as a single column has no parameters.
 
 ### Parameters
 

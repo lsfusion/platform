@@ -176,7 +176,7 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `LSF`
 
-    Keyword specifying that the element is drawn by the platform in a window drawn by a React component: the component places that drawing rather than drawing the element itself. The component chooses where the drawing goes, so an element it places nowhere is not shown. The keyword is valid only in such a window; anywhere else the platform draws every element anyway, and the navigator is rejected at startup.
+    Keyword specifying that the element is drawn by the platform in a window drawn by a React component: the component places that drawing rather than drawing the element itself. The component chooses where the drawing goes, so an element it places nowhere is not shown. The keyword is valid only in such a window. Anywhere else the platform draws every element anyway, and the navigator is rejected at startup.
 
 - `CHANGEKEY key [showSetting]`
 

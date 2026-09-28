@@ -50,7 +50,7 @@ Two parameters bound the work of the report generator itself, so that a runaway 
 
 `jasperReportsIgnorePageMargins` (`true` by default) drops the page margins of the template when the document is exported to a file, and puts one page of the document on one sheet of an Excel workbook.
 
-`useDefaultPrinterInPrintIfNotSpecified` (`false` by default) is used by the desktop client only, and only when the document is printed without naming a printer: the print button of the print view then sends the document straight to the default printer of the operating system instead of opening its dialog. The default printer is looked up on Windows only; elsewhere the button keeps opening the dialog.
+`useDefaultPrinterInPrintIfNotSpecified` (`false` by default) is used by the desktop client only, and only when the document is printed without naming a printer: the print button of the print view then sends the document straight to the default printer of the operating system instead of opening its dialog. The default printer is looked up on Windows only. Elsewhere the button keeps opening the dialog.
 
 ### Language
 

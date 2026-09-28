@@ -7,7 +7,7 @@ The `Hierarchy` module gives a class a hierarchy by parent: an object refers by 
 
 ### Attaching to a class
 
-The hierarchy is added by one of three metacodes; they differ in where the `parent[class]` property comes from. The class must have a `name[class]` property: `nameParent[class]` and `canonicalName[class]` are computed from it.
+The hierarchy is added by one of three metacodes. They differ in where the `parent[class]` property comes from. The class must have a `name[class]` property: `nameParent[class]` and `canonicalName[class]` are computed from it.
 
 | Metacode | The `parent[class]` property |
 |---|---|
@@ -19,7 +19,7 @@ In the one-argument form the class is obtained from `object` by capitalizing its
 
 ### Hierarchy properties
 
-All three metacodes add the same set of properties to the class (`class` is the object class, `object` is the first argument of the metacode; for two-parameter properties the first parameter is the descendant, the second is the presumed ancestor).
+All three metacodes add the same set of properties to the class (`class` is the object class, `object` is the first argument of the metacode, and for two-parameter properties the first parameter is the descendant, the second is the presumed ancestor).
 
 | Property | Value |
 |---|---|
@@ -38,7 +38,7 @@ All three metacodes add the same set of properties to the class (`class` is the 
 
 ### Additional metacodes
 
-The additional metacodes rely on the hierarchy properties already added: `@defineHierarchyPlain` uses `objectRoot[class, INTEGER]`, `@defineHierarchyFilter` uses `isParent[class, class]` and `name[class]`; they are applied after one of the three metacodes above.
+The additional metacodes rely on the hierarchy properties already added: `@defineHierarchyPlain` uses `objectRoot[class, INTEGER]`, `@defineHierarchyFilter` uses `isParent[class, class]` and `name[class]`. They are applied after one of the three metacodes above.
 
 | Metacode | What it adds |
 |---|---|

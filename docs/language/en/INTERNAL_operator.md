@@ -54,11 +54,11 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
     - `WAIT` — synchronous.
     - `NOWAIT` — asynchronous.
 
-    Only has an effect on `CLIENT` calls. Without `syncType` the call is asynchronous; in the inline statement form a non-empty `TO` additionally forces synchronous execution. For non-`CLIENT` standalone calls the keyword is accepted by the grammar but ignored.
+    Only has an effect on `CLIENT` calls. Without `syncType` the call is asynchronous. In the inline statement form a non-empty `TO` additionally forces synchronous execution. For non-`CLIENT` standalone calls the keyword is accepted by the grammar but ignored.
 
 - `className`
 
-    [String literal](Literals.md#strliteral). Without `CLIENT` — fully qualified name of a Java class reachable from the application-server classpath; the class must extend `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. If no compiled class with this name is found, the platform looks for a `<ClassName>.java` resource on the classpath — first at the path matching the fully qualified name, then anywhere by file name — and compiles it when the module is loaded. This way custom actions can be shipped as plain source files in the application's resources, without a Java build step in the project. The `package` declared in the source file must match the fully qualified name, and the source is compiled at the Java 8 language level. With `CLIENT` — name of a client-side resource (resolution rule identical to `execStrExpr` below).
+    [String literal](Literals.md#strliteral). Without `CLIENT` — fully qualified name of a Java class reachable from the application-server classpath. The class must extend `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. If no compiled class with this name is found, the platform looks for a `<ClassName>.java` resource on the classpath — first at the path matching the fully qualified name, then anywhere by file name — and compiles it when the module is loaded. This way custom actions can be shipped as plain source files in the application's resources, without a Java build step in the project. The `package` declared in the source file must match the fully qualified name, and the source is compiled at the Java 8 language level. With `CLIENT` — name of a client-side resource (resolution rule identical to `execStrExpr` below).
 
 - `classId1, ..., classIdN`
 
@@ -78,7 +78,7 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
 
 - `execStrExpr`
 
-    [Expression](Expression.md). `DB`: the SQL command. `CLIENT`: the resource name — a plain identifier (`[a-zA-Z0-9_$]+`) is resolved as a JavaScript function defined in the client-loaded code; any other value is treated as a client-side file reference and either looked up in the `web/` classpath or, if not found there, passed through the application server's file/URL conversion, which also accepts absolute URLs. Scripts, stylesheets and fonts (`.js`, `.css`, `.ttf`, `.otf`) are recognised by file extension and handled specially on the client; all other file types, including images, are delivered to the client as generic files. A value prefixed with `remove ` unloads the previously-loaded file of the corresponding kind instead of invoking it; this prefix only affects the file branch — with a JavaScript-function target it is silently ignored. File resources do not receive parameters.
+    [Expression](Expression.md). `DB`: the SQL command. `CLIENT`: the resource name — a plain identifier (`[a-zA-Z0-9_$]+`) is resolved as a JavaScript function defined in the client-loaded code. Any other value is treated as a client-side file reference and either looked up in the `web/` classpath or, if not found there, passed through the application server's file/URL conversion, which also accepts absolute URLs. Scripts, stylesheets and fonts (`.js`, `.css`, `.ttf`, `.otf`) are recognised by file extension and handled specially on the client. All other file types, including images, are delivered to the client as generic files. A value prefixed with `remove ` unloads the previously-loaded file of the corresponding kind instead of invoking it. This prefix only affects the file branch — with a JavaScript-function target it is silently ignored. File resources do not receive parameters.
 
 - `paramExpr1, ..., paramExprN`
 
@@ -86,7 +86,7 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
 
 - `propertyId1, ..., propertyIdM`
 
-    List of [property IDs](IDs.md#propertyid) (without parameters) into which results are written. For `DB`, results are written in the order of the corresponding queries; for `CLIENT`, at most one property is accepted and supplying it also forces synchronous execution. Without `TO` no result is captured.
+    List of [property IDs](IDs.md#propertyid) (without parameters) into which results are written. For `DB`, results are written in the order of the corresponding queries. For `CLIENT`, at most one property is accepted and supplying it also forces synchronous execution. Without `TO` no result is captured.
 
 ### Examples
 

@@ -7,7 +7,7 @@ title: 'Branching (CASE, IF, MULTI)'
 
 All conditions are defined as [properties](Properties.md) and/or parameters. Accordingly, a condition is *met* if the value of the property or parameter by which it is set is not equal to `NULL`.
 
-Conditions are checked in the order written; the first met condition selects the action to be called, and the remaining conditions are not checked. You can also specify an *alternative action* that is called only if none of the conditions is met.
+Conditions are checked in the order written. The first met condition selects the action to be called, and the remaining conditions are not checked. You can also specify an *alternative action* that is called only if none of the conditions is met.
 
 [Interruption](Interruption_BREAK.md), [next iteration](Next_iteration_CONTINUE.md) and [exit](Exit_RETURN.md) signals raised by the called action are passed on to the surrounding action — the branching operator itself does not consume them.
 
