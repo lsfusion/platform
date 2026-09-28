@@ -147,7 +147,7 @@ annotationSetting
 
 - `customView`
 
-    Specifying a custom view of the property value when the property is added to the form. It is similar to specifying the `customView` option in the [property block](Properties_and_actions_block.md) of the [`FORM` statement](FORM_statement.md), which can override it.
+    Specifying a custom view of the property value when the property is added to the form. It uses the `customView` syntax of the [property block](Properties_and_actions_block.md) of the [`FORM` statement](FORM_statement.md), including `CUSTOM`, `SELECT` and `NOSELECT`, and is described there; the rendering and editing settings specified in the property block override the corresponding settings of the declaration, and the omitted ones stay inherited.
 
 - `ON eventType { actionOperator }`
 

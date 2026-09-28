@@ -42,7 +42,7 @@ The `ASK` operator creates an action that requests confirmation or an answer to 
 
 - `elseOperator`
 
-    A context-dependent action operator that is executed if the input is [cancelled](../paradigm/Value_input.md#result). Only the parameters of the created action can be used as parameters.
+    A context-dependent action operator that is executed if the input is [cancelled](../paradigm/Value_input.md#result). Only the parameters of the created action can be used as parameters. When the `ASK` operator with a `DO` branch is itself the action after `THEN` of an [`IF ... THEN` operator](IF_..._THEN_action_operator.md) and is not enclosed in braces, an `ELSE` written after it is this branch of `ASK`, not the `ELSE` of that operator.
 
 ### Example
 

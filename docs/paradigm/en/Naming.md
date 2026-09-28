@@ -7,7 +7,7 @@ Each [system element](Element_identification.md) may have a *name* which can be 
 
 ### Namespaces {#namespace}
 
-It is often necessary to use the same name in different contexts. In order not to include this context in the name itself (producing long and bulky names), the platform has the concept of *namespaces*. Each element is created in a namespace, and if other elements are accessed during the creation process then elements created in the same namespace take precedence.  However, if you do need an element from another namespace, you can always specify the namespace of the element you are looking for explicitly. Also, you can specify additional namespaces that will take precedence when searching for items.
+It is often necessary to use the same name in different contexts. In order not to include this context in the name itself (producing long and bulky names), the platform has the concept of *namespaces*. Each element is created in a namespace, and if other elements are accessed during the creation process then elements created in the same namespace take precedence.  However, if you do need an element from another namespace, you can always specify the namespace of the element you are looking for explicitly. Also, you can specify additional namespaces that will take precedence when searching for items. The namespace of an element is set by the module in which the element is declared, not by the classes it works with: a property whose parameter belongs to a class declared in another module still lives in the namespace of the module declaring the property, so the namespace of a class does not tell where its properties are declared.
 
 
 :::info

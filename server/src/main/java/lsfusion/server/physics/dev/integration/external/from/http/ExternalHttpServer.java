@@ -319,9 +319,10 @@ public class ExternalHttpServer extends MonitorServer {
                         message = e.getMessage();
                     } else {
                         status = BaseUtils.nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                        message = getErrorMessage(e);
+                        // as in ExternalRequestHandler.getErrorMessage: a platform message (for example, a script error of /eval) is returned even when internal error details are hidden
+                        message = e instanceof RemoteMessageException || !logicsInstance.getSettings().isHideAPIErrorStackTrace() ? getErrorMessage(e) : "";
                     }
-                    sendErrorResponse(request, status, logicsInstance.getSettings().isHideAPIErrorStackTrace() ? "" : message);
+                    sendErrorResponse(request, status, message);
                 } catch (Exception ignored) {
                 }
             } finally {

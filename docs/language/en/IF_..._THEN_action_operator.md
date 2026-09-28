@@ -17,6 +17,8 @@ THEN action
 
 The `IF ... THEN` operator creates an action that implements branching with one condition. When this action is executed, the condition is checked: if it is met, the action specified after the keyword `THEN` is called; if it is not met, the action specified after the keyword `ELSE` is called (if this block is specified).
 
+An `ELSE` branch attaches to the nearest preceding operator that admits one and does not have one yet. If the action after `THEN` is written without [braces](Braces_operator.md) and is itself an operator whose syntax ends with an optional `ELSE` branch — [`ASK`](ASK_operator.md), [`INPUT`](INPUT_operator.md), [`DIALOG`](DIALOG_operator.md) and [`IMPORT`](IMPORT_operator.md) when written with `DO`, [`FOR`](FOR_operator.md), [`REQUEST`](REQUEST_operator.md), [`CASE`](CASE_action_operator.md) or another `IF ... THEN` — the `ELSE` that follows it becomes the branch of that operator, not of this one; no error or warning is reported, and when the condition is not met nothing is executed. To attach `ELSE` to the `IF ... THEN` operator, enclose the action after `THEN` in braces.
+
 ### Parameters
 
 - `condition`
@@ -45,5 +47,21 @@ moreThan3(obj)  {
 checkNullName (Store st) {
     IF NOT name(st) THEN
         MESSAGE 'Name is null';
+}
+
+// ELSE belongs to ASK (the cancellation branch), not to IF: when confirm() is NULL, nothing is executed
+sendOrAsk (Order o)  {
+    IF confirm() THEN
+        ASK 'Send the order?' DO send(o);
+    ELSE
+        send(o);
+}
+
+// the braces attach ELSE to IF
+sendOrAskFixed (Order o)  {
+    IF confirm() THEN {
+        ASK 'Send the order?' DO send(o);
+    } ELSE
+        send(o);
 }
 ```

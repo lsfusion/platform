@@ -21,6 +21,8 @@ The changes that trigger the check also include object deletion: on [deletion](C
 
 Like any event condition, the constrained property is computed incrementally over the changes being applied. If it contains heavy aggregations over large tables (especially nested non-[materialized](Materializations.md) ones), the query built by this incremental computation can grow impractically large — even with computation hints on the properties involved. For such expensive checks, use a simple event instead: make its condition a cheap detector of the relevant changes, and in its handler read the heavy values into [local properties](Data_properties_DATA.md#local), check them, and show the message and [cancel](Cancel_changes_CANCEL.md) the changes explicitly.
 
+The constrained property may also depend on [local properties](Data_properties_DATA.md#local): with the default global event, the check happens not when they are assigned but when the session holding the values applies its changes to the database.
+
 ### Show message {#message}
 
 For any non-`NULL` value [output](In_a_print_view_PRINT.md) the platform uses an automatically generated [form](Forms.md), consisting of:

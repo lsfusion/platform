@@ -665,6 +665,15 @@ title: 'Rules: domain logic'
    values into `LOCAL`s in the handler, then `MESSAGE` +
    `CANCEL` on violation.
 
+4. A `CONSTRAINT` MUST NOT validate the parameters an action
+   reads from `LOCAL` properties — the settings of an
+   integration library, for instance: with the default global
+   event it is checked only when the session applies its changes
+   to the database, after everything the action has done by
+   then. Such parameters SHOULD be checked explicitly in the
+   action before it acts
+   (`IF NOT ok THEN { MESSAGE ...; RETURN; }`).
+
 ## Change sessions (NEWSESSION, APPLY)
 
 1. Before introducing `NEWSESSION`, the assistant MUST decide
@@ -782,3 +791,10 @@ title: 'Rules: domain logic'
    writing a file — MUST NOT be done there: it belongs after
    the apply has succeeded, where `canceled()` says whether
    it did.
+
+   A call made before the `APPLY` that saves its result is
+   exposed the same way: a constraint fires at that apply, not
+   earlier, and cancels the saved result after the call has been
+   made. What the constraints will check SHOULD be checked
+   before the call, and a cancelled `APPLY` MUST NOT be answered
+   by simply repeating the action, which repeats the call.
