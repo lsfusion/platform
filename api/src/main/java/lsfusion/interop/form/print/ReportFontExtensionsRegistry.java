@@ -83,16 +83,39 @@ public class ReportFontExtensionsRegistry implements ExtensionsRegistry {
         }
     }
 
+    // system fonts are the same for every registry (the platform one and the ones of projects with their own jasperreports_extension.properties), so they are read once
+    private static List<SimpleFontFamily> physicalFontFamilies;
+
     public void addPhysicalFontFamilies(DefaultJasperReportsContext context) {
+        fontFamilies.addAll(getPhysicalFontFamilies(context));
+    }
+
+    private static synchronized List<SimpleFontFamily> getPhysicalFontFamilies(DefaultJasperReportsContext context) {
+        if (physicalFontFamilies == null)
+            physicalFontFamilies = readPhysicalFontFamilies(context);
+        return physicalFontFamilies;
+    }
+
+    private static List<SimpleFontFamily> readPhysicalFontFamilies(DefaultJasperReportsContext context) {
         HashMap<String, SimpleFontFamily> nameToFamily = new HashMap<>();
+        Set<String> fontPaths = new HashSet<>();
 
         FontFactoryImp fontFactory = FontFactory.getFontImp();
         Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
         if (allFonts != null) {
             for (Font font : allFonts) {
-                List<String> fontName = Arrays.asList(font.getName().toLowerCase().split(" "));
-                String fontFamily = font.getFamily();
+                // on Windows with a non-English system locale (language for non-Unicode programs) getAllFonts() also returns every face under its localized name,
+                // so the style is taken from the English name, and a face already added under another name is skipped
+                String englishName = font.getFontName(Locale.ENGLISH);
+                String fontPath = (String) fontFactory.getFontPath(englishName);
+                if (fontPath == null || !fontPaths.add(fontPath))
+                    continue;
 
+                SimpleFontFace face = createFontFace(context, font, fontPath);
+                if (face == null)
+                    continue;
+
+                String fontFamily = font.getFamily();
                 SimpleFontFamily ff = nameToFamily.get(fontFamily);
                 if (ff == null) {
                     ff = new SimpleFontFamily(context);
@@ -102,31 +125,59 @@ public class ReportFontExtensionsRegistry implements ExtensionsRegistry {
                     nameToFamily.put(fontFamily, ff);
                 }
 
-                String fontPath = (String) fontFactory.getFontPath(font.getName());
-                if (fontPath != null) {
-                    SimpleFontFace face = new SimpleFontFace(context);
-                    if (setFontFaceTtf(face, fontPath)) {
-                        face.setPdf(fontPath);
-                        boolean bold = fontName.contains("bold");
-                        boolean italic = fontName.contains("italic");
-                        if (bold && italic) {
-                            ff.setBoldItalicFace(face);
-                        } else if (bold) {
-                            ff.setBoldFace(face);
-                        } else if (italic) {
-                            ff.setItalicFace(face);
-                        } else {
-                            ff.setNormalFace(face);
-                        }
-                    }
+                List<String> fontName = Arrays.asList(englishName.toLowerCase(Locale.ENGLISH).split(" "));
+                boolean bold = fontName.contains("bold");
+                boolean italic = fontName.contains("italic");
+                if (bold && italic) {
+                    ff.setBoldItalicFace(face);
+                } else if (bold) {
+                    ff.setBoldFace(face);
+                } else if (italic) {
+                    ff.setItalicFace(face);
+                } else {
+                    ff.setNormalFace(face);
                 }
             }
         }
 
-        fontFamilies.addAll(nameToFamily.values());
+        return new ArrayList<>(nameToFamily.values());
     }
 
-    private boolean setFontFaceTtf(SimpleFontFace fontFace, String fontPath) {
+    private static SimpleFontFace createFontFace(DefaultJasperReportsContext context, Font font, String fontPath) {
+        if (fontPath.toLowerCase(Locale.ENGLISH).contains(".ttc,"))
+            return new CollectionFontFace(context, font, fontPath);
+
+        SimpleFontFace face = new SimpleFontFace(context);
+        if (!setFontFaceTtf(face, fontPath))
+            return null;
+        face.setPdf(fontPath);
+        return face;
+    }
+
+    // a face from a TrueType collection, OpenPDF path "<file>.ttc,<index>": SimpleFontFace loads only .ttf / .otf files and takes any other ttf
+    // for the name of a JVM font (a "not available to the JVM" warning and the Dialog font), so the AWT font is the installed one and the path is used for PDF only
+    private static class CollectionFontFace extends SimpleFontFace {
+        private final Font font;
+
+        public CollectionFontFace(DefaultJasperReportsContext context, Font font, String fontPath) {
+            super(context);
+            this.font = font;
+            setTtf(fontPath, false);
+            setPdf(fontPath);
+        }
+
+        @Override
+        public String getName() {
+            return font.getName();
+        }
+
+        @Override
+        public Font getFont() {
+            return font;
+        }
+    }
+
+    private static boolean setFontFaceTtf(SimpleFontFace fontFace, String fontPath) {
         try {
             fontFace.setTtf(fontPath);
         } catch (Exception e) { // к примеру JRFontNotFoundException, если шрифт не доступен ни Jasper'у, ни JVM
