@@ -50,6 +50,14 @@ public class NavigatorImageButton extends ImageButton {
         GFormLayout.setDebugInfo(this, element.canonicalName);
     }
 
+    private void updateAriaLabel() {
+        String caption = forceDiv ? getElement().getInnerText().trim() : "";
+        if(!caption.isEmpty())
+            getElement().setAttribute("aria-label", caption);
+        else
+            getElement().removeAttribute("aria-label");
+    }
+
     private TooltipManager.TooltipHelper getTooltipHelper() {
         return new TooltipManager.TooltipHelper() {
             @Override
@@ -122,6 +130,12 @@ public class NavigatorImageButton extends ImageButton {
 
     protected boolean forceDiv() {
         return forceDiv;
+    }
+
+    @Override
+    public void updateText() {
+        super.updateText();
+        updateAriaLabel();
     }
 
     @Override
