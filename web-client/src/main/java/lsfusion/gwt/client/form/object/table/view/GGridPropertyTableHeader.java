@@ -144,6 +144,9 @@ public class GGridPropertyTableHeader extends Header<String> {
                         return firstChild != null ? firstChild : th;
                     });
         }
+        if(property != null)
+            GGridPropertyTable.setColumnDebugInfo(th, property);
+
         renderedSortDir = sortDir;
         renderedCaption = caption;
         renderedCaptionElementClass = captionElementClass;
