@@ -3,6 +3,7 @@ package lsfusion.base.tree;
 import lsfusion.base.prim.Prim;
 import lsfusion.base.prim.UndirectedGraph;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.FileWriter;
@@ -169,6 +170,7 @@ public class SpanningTreeWithBlackjackTest {
     }
 
     @Test
+    @Ignore("a benchmark to run by hand: writes its timings to D:/spt.txt and checks nothing")
     public void testTimes() throws IOException {
         final int MAXNODES = 40;
         final int MAXCOST = 20;

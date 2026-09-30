@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.escapeForLocalization;
@@ -7,6 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class EscapeForLocalizationTest {
+
+    @BeforeClass
+    public static void initLocalizedString() throws ReflectiveOperationException {
+        LocalizedStringOutsideServer.init();
+    }
 
     @Test
     public void simpleTest() {

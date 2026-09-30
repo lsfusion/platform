@@ -1,6 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -8,6 +9,11 @@ import org.junit.rules.ExpectedException;
 public class CheckLocalizedStringFormatTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
+    @BeforeClass
+    public static void initLocalizedString() throws ReflectiveOperationException {
+        LocalizedStringOutsideServer.init();
+    }
 
     @Test
     public void checkSimpleString() throws LocalizedString.FormatError {

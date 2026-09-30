@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Locale;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -12,17 +13,28 @@ public class BaseUtilsTest {
 
     @Test
     public void testBigDecimalToString() {
-        assertEquals(spaced("0,123"), BaseUtils.bigDecimalToString(new BigDecimal(".123123")));
-        assertEquals(spaced("2 123 123,123"), BaseUtils.bigDecimalToString(new BigDecimal("2123123.1230000")));
-        assertEquals(spaced("2 123 123"), BaseUtils.bigDecimalToString(new BigDecimal("2123123.0000")));
-        assertEquals(spaced("0,01"), BaseUtils.bigDecimalToString(new BigDecimal("0.01")));
-        assertEquals(spaced("1,001"), BaseUtils.bigDecimalToString(new BigDecimal("1.001")));
-        assertEquals(spaced("1 000"), BaseUtils.bigDecimalToString(new BigDecimal("1e3")));
-        assertEquals(spaced("4 564,56"), BaseUtils.bigDecimalToString(new BigDecimal("456456e-2")));
-        assertEquals(spaced("0"), BaseUtils.bigDecimalToString(new BigDecimal("0.000")));
-        assertEquals(spaced("123 123"), BaseUtils.bigDecimalToString(new BigDecimal("123123.")));
+        // bigDecimalToString formats in the default locale, so the test sets it: ru, whose separators the strings
+        // below have, and en-US once, to see the locale followed
+        Locale format = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.forLanguageTag("ru-RU"));
+            assertEquals(spaced("0,123"), BaseUtils.bigDecimalToString(new BigDecimal(".123123")));
+            assertEquals(spaced("2 123 123,123"), BaseUtils.bigDecimalToString(new BigDecimal("2123123.1230000")));
+            assertEquals(spaced("2 123 123"), BaseUtils.bigDecimalToString(new BigDecimal("2123123.0000")));
+            assertEquals(spaced("0,01"), BaseUtils.bigDecimalToString(new BigDecimal("0.01")));
+            assertEquals(spaced("1,001"), BaseUtils.bigDecimalToString(new BigDecimal("1.001")));
+            assertEquals(spaced("1 000"), BaseUtils.bigDecimalToString(new BigDecimal("1e3")));
+            assertEquals(spaced("4 564,56"), BaseUtils.bigDecimalToString(new BigDecimal("456456e-2")));
+            assertEquals(spaced("0"), BaseUtils.bigDecimalToString(new BigDecimal("0.000")));
+            assertEquals(spaced("123 123"), BaseUtils.bigDecimalToString(new BigDecimal("123123.")));
 
-        assertEquals(spaced("123 123,1233"), BaseUtils.bigDecimalToString("#,##0.####", new BigDecimal("123123.1233")));
+            assertEquals(spaced("123 123,1233"), BaseUtils.bigDecimalToString("#,##0.####", new BigDecimal("123123.1233")));
+
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            assertEquals("2,123,123.123", BaseUtils.bigDecimalToString(new BigDecimal("2123123.1230000")));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, format);
+        }
     }
 
     @Test

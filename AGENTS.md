@@ -36,8 +36,9 @@ mvn -pl server -am clean install -DskipTests    # server + ai/api/build/base
 mvn -pl web-client gwt:compile -q               # GWT client only
 # Append -o for offline mode (deps must already be cached).
 
-# Run JUnit tests (live in server/src/test/ and api/src/test/, skipped platform-wide - see Tests).
+# Run JUnit tests (live in <module>/src/test/java, skipped unless asked for - see Tests).
 mvn -pl <module> test -Dmaven.test.skip=false    # or -am test to rebuild deps first
+mvn -pl web-client test -Dmaven.test.skip=false -Dgwt.skipCompilation   # web-client without its GWT compile
 ```
 
 `-DskipTests` is a build verification, not a test run — don't claim "tests passed" in a commit body unless a `test` target actually ran (and say which one).
@@ -96,7 +97,9 @@ A check must produce **evidence**: a saved screenshot, a DOM assertion (expected
 ## Tests
 
 `build/base` skips tests platform-wide (`maven.test.skip`), and `tests/` — an ordinary lsFusion logics that is
-never deployed — is the module that turns them back on. Where a new test goes:
+never deployed — is the module that turns them back on. The unit tests of the other modules stay off in a local
+build and run when asked for with `-Dmaven.test.skip=false`, as Jenkins asks for them: a failing one stops the
+deploy, so run those of a module you change. Where a new test goes:
 
 - **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server;
 - **syntax** — `tests/compile/ok/<theme>/X.lsf` has to compile, `tests/compile/fail/<theme>/X.lsf` has to fail with every non-blank line of its `X.expected` somewhere in the output. Run with `dryRun`, which compiles the logic and exits before touching the database: all of `ok` in one run, one run per `fail` module (`LsfCompileTest`, surefire);

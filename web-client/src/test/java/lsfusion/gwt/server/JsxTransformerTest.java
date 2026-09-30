@@ -5,6 +5,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -32,6 +34,14 @@ public class JsxTransformerTest {
         return JsxTransformer.transform(name, new RawFileData(source, StandardCharsets.UTF_8)).getString(StandardCharsets.UTF_8);
     }
 
+    // the memo alias and the compiler's cache helper are named per file (see memoAndCacheHelpersAreNamedPerFile), so a
+    // test finds them by what they are bound to rather than by name
+    private static String boundName(String code, String init) {
+        Matcher matcher = Pattern.compile("(?m)^const (\\w+) = " + Pattern.quote(init) + ";").matcher(code);
+        assertTrue("expected a top-level binding of " + init + ", got: " + code, matcher.find());
+        return matcher.group(1);
+    }
+
     @Test
     public void transformsJsxToClassicRuntime() {
         String code = transform("helloBoard.jsx",
@@ -50,10 +60,9 @@ public class JsxTransformerTest {
                 "    const rows = props.items.map(i => <li key={i.id}>{i.name}</li>);\n" +
                 "    return <ul className=\"card\">{rows}</ul>;\n" +
                 "}\n");
-        assertTrue(code.contains("_c(")); // React Compiler memo cache in the component body
-        assertTrue(code.contains("window.lsfusion.rcRuntime")); // runtime import rewritten to the window shim
-        assertTrue(code.contains("React.memo")); // compiler-certified component auto-wrapped
-        assertTrue(code.contains("_rcMemo(Card)"));
+        String cache = boundName(code, "window.lsfusion.rcRuntime.c"); // runtime import rewritten to the window shim
+        assertTrue(code.contains(cache + "(")); // React Compiler memo cache in the component body
+        assertTrue(code.contains("Card = " + boundName(code, "React.memo") + "(Card)")); // compiler-certified component auto-wrapped
         assertTrue(code.contains("React.createElement")); // JSX transformed in the same pass
         assertFalse(code.contains("import")); // classic script: no module syntax survives
     }
@@ -63,7 +72,8 @@ public class JsxTransformerTest {
         // the shape the compiler emits — aliased named import — is rewritten, from BOTH runtime module names
         for (String module : new String[]{"react-compiler-runtime", "react/compiler-runtime"}) {
             String code = transform("runtime.jsx", "import { c as _c } from '" + module + "';\nwindow.x = _c;\n");
-            assertTrue(code.contains("const _c = window.lsfusion.rcRuntime.c;"));
+            // the binding is renamed per file, and every reference has to follow it
+            assertTrue(code.contains("window.x = " + boundName(code, "window.lsfusion.rcRuntime.c") + ";"));
             assertFalse(code.contains("import"));
             assertFalse(code.startsWith("console.error("));
         }
@@ -80,6 +90,18 @@ public class JsxTransformerTest {
         }
     }
 
+    // #1805: every served .jsx is a classic script, and they all share one global lexical scope, so the memo alias and
+    // the cache helper, declared under the same names in two files, made the second one throw and never run. a-b.jsx
+    // and a_b.jsx read the same once '-' maps onto '_', so it is the digest of the exact name that has to tell them apart
+    @Test
+    public void memoAndCacheHelpersAreNamedPerFile() {
+        String source = "function Label(props) { return <b>{props.text}</b>; }\n";
+        String first = transform("a-b.jsx", source);
+        String second = transform("a_b.jsx", source);
+        for (String init : new String[]{"window.lsfusion.rcRuntime.c", "React.memo"})
+            assertNotEquals(boundName(first, init), boundName(second, init));
+    }
+
     @Test
     public void impureComponentBailsOutButStillTransforms() {
         String code = transform("impure.jsx",
@@ -88,7 +110,7 @@ public class JsxTransformerTest {
                 "    return <div>{window.renderCount}</div>;\n" +
                 "}\n");
         assertFalse(code.startsWith("console.error(")); // a bailout is not a failure: the script is served
-        assertFalse(code.contains("_c(")); // the compiler correctly skips the impure render
+        assertFalse(code.contains("rcRuntime")); // the compiler correctly skips the impure render: no memo cache
         assertFalse(code.contains("React.memo")); // auto-memo respects the bailout
         assertTrue(code.contains("React.createElement")); // JSX still transformed
     }
@@ -97,7 +119,7 @@ public class JsxTransformerTest {
     public void brokenJsxYieldsConsoleErrorStub() {
         String code = transform("broken.jsx", "function Broken() { return <div; }\n");
         assertTrue(code.startsWith("console.error("));
-        assertTrue(code.contains("lsFusion .jsx transform failed for broken.jsx"));
+        assertTrue(code.contains("lsFusion .jsx broken.jsx failed to compile"));
         // babel's SyntaxError detail (line:column position) must survive the GraalJS host boundary — a bare
         // "SyntaxError" with no position would leave an application developer with no way to locate the defect
         assertTrue("expected a line:column position in the failure message, got: " + code, code.contains("(1:31)"));
