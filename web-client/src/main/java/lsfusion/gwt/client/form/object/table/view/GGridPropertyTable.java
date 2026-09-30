@@ -897,6 +897,10 @@ protected Double getUserFlex(int i) {
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
             GPropertyDraw property = getProperty(cell);
+            // the cell can be re-rendered for another property in a tree; the hidden column row (no row value, used for sizing) is not labeled
+            if(cell.getRow() != null)
+                setColumnDebugInfo(cellElement, property);
+
             if(property == null) // in tree there can be no property in groups other than last
                 return;
 
@@ -935,6 +939,14 @@ protected Double getUserFlex(int i) {
             assert row.getRowIndex() + shift == i;
             row.rowIndex = i;
         }
+    }
+
+    // debug info, the same label as the property has in the panel
+    public static void setColumnDebugInfo(Element element, GPropertyDraw property) {
+        if(property != null)
+            element.setAttribute("lsfusion-container", property.sID);
+        else
+            element.removeAttribute("lsfusion-container");
     }
 
     public GridPropertyColumn getGridColumn(int column) {

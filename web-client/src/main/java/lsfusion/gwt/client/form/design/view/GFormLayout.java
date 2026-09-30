@@ -199,6 +199,10 @@ public class GFormLayout extends SizedFlexPanel {
             } else
                 BaseImage.initImageText(captionWidget, caption, image, ImageHtmlOrTextType.CONTAINER);
 
+            // debug info, the tab header (nav-link) is the caption widget itself
+            if(container.container != null && container.container.tabbed && container.sID != null)
+                captionWidget.getElement().setAttribute("lsfusion-tab", container.sID);
+
             containerCaptions.put(container, captionWidget);
         }
 
