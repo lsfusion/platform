@@ -91,10 +91,12 @@ title: 'Rules: custom views'
    property: a row of a group carries each property under its
    integration name, a property view works with its one value
    (`update(..., value)` / `controller.change(value)`), and an
-   action drawn on the form is run with
-   `controller.changeProperty('<group>.<action>', row)` (a
-   React component) or `controller.form.changeProperty('<action>')`
-   (a property view). The assistant MUST NOT use JSON as a
+   action drawn on the form is run through its member,
+   `controller.<group>.<action>.exec(row)` (a React
+   component), or with `controller.form.exec('<action>')` and
+   the action listed in the form's `CUSTOMS` (a property view,
+   whose form controller has no members). The assistant MUST
+   NOT use JSON as a
    transport in either direction — neither `JSON FROM` to
    collect several values into one column, nor a JSON
    assembled in the component and taken apart on the server
@@ -114,7 +116,8 @@ title: 'Rules: custom views'
    cells, matches a row with a row of another group — in a
    single-object group of a custom class a row's `row.key`
    numerically equals that object's identifier — and writes
-   the link back through `changeProperty`. So in such a
+   the link back through the property's member
+   (`.change(id, row)`). So in such a
    container the assistant MAY add an object-valued property
    to the form as is — for the component's logic, not for
    display. If the link is shown to the user, its caption MUST
@@ -125,7 +128,8 @@ title: 'Rules: custom views'
 
 2. In a container with the `custom` attribute the component
    draws the values and decides itself what is edited: an edit
-   goes through the controller (`changeProperty`). A static
+   goes through the controller (the property's member,
+   `.change(value[, row])`). A static
    `READONLY` mark does not reach the `props.data` projection
    — only the data-dependent `readOnly` from `READONLYIF`
    arrives there — but the server refuses a change to a marked
@@ -183,7 +187,8 @@ title: 'Rules: custom views'
    rules), and the platform delivers what changed through
    `props.data` like any other change. The assistant MUST NOT
    poll the server from a custom React component with a timer
-   of its own through `controller.changeProperty('<action>')`:
+   of its own through an action's member
+   (`controller.<action>.exec()`):
    an action drawn without `NOWAIT` goes as a synchronous
    request that blocks input to the whole web client on every
    tick, and the component's timer keeps polling while the
@@ -199,12 +204,16 @@ title: 'Rules: custom views'
 ## Server calls
 
 1. An action a view needs SHOULD be drawn on the form and run
-   through the form-edit channel — `changeProperty` with the
-   target row — which is not gated and passes, beyond the row,
-   only the value an action with a value request asks for
-   (`changeProperty(action, row, value)`). As soon as more is
-   needed — several values, an array — the call is the form
-   controller's `exec(...)` / `change(...)`
+   through the form-edit channel, which is not gated: in a
+   React component through the action's member,
+   `controller.<group>.<action>.exec(row)`, which passes
+   nothing beyond the row; in a classic object-group view
+   through `changeProperty` with the target row, which passes
+   beyond it only the value an action with a value request
+   asks for (`changeProperty(action, row, value)`). As soon as
+   more is needed — a value from a React component, several
+   values, an array — the call is the form controller's
+   `exec(...)` / `change(...)`
    (`props.controller` in a React component, `controller.form`
    in a classic view), and the target MUST be listed in the
    form's `CUSTOMS` clause.

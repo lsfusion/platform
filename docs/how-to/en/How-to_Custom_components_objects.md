@@ -224,13 +224,13 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-The value-or-row guess in `changeProperty`, the value formats, the name qualification rules, and the rule for an action are the same as in the [form controller](How-to_Custom_view_controller.md)'s method of the same name. A property that is not one of this group's columns is passed by `changeProperty` to the form controller, which resolves it form-wide. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
+`changeProperty` reads its arguments by their count, and a single argument by that argument alone: with none it runs the property's change event (for an action, the action) on the current object; with one, the argument is the row, and the change event runs on it, when it is a data row or an `objects` handle, or when the property is an action drawn in an object group; anything else is the value, set for the current object; with two, the first is the row and the second the value. The value formats are the same as in the [form controller](How-to_Custom_view_controller.md)'s `<group>.<property>.change`. A property that is not one of this group's columns is passed by `changeProperty` to the form, which resolves it form-wide: a name qualified as `<group>.<property>` is looked up in that group, an unqualified one in the group of the row passed, and otherwise among all the properties of the form, where it has to be drawn once. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
 
 ```js
 controller.changeProperties(['start', 'end'], [task, task], [newStart, newEnd]);
 ```
 
-`getPropertyValues` uses the same `mode` values and result format as the form controller's method of the same name, but the property is resolved among this group's columns, and the lookup runs for its current object:
+`getPropertyValues` uses the same `mode` values and result format as the form controller's `<group>.<property>.getValues`, but the property is resolved among this group's columns, and the lookup runs for its current object:
 
 ```js
 controller.getPropertyValues('name', query, result => { ... });

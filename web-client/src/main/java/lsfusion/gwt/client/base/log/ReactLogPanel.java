@@ -84,8 +84,16 @@ public class ReactLogPanel extends LogPanel {
             public void unmount(String name, Element host, JavaScriptObject row) {
                 placed.unmount(name, host);
             }
+
+            @Override
+            public boolean marksHosts() {
+                return false; // a message's host is left as the component rendered it
+            }
         });
-        root.updateData(data); // starts empty rather than absent, so the first render already reads data.messages
+        // nothing is logged yet, and that is a state the component draws, so the window starts from it - shaped as
+        // every later snapshot is, so the first render already reads data.messages - instead of waiting for the first
+        // message
+        root.updateData(data);
 
         park.getStyle().setDisplay(Style.Display.NONE);
         RootPanel.getBodyElement().appendChild(park);

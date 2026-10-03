@@ -105,8 +105,8 @@ public class TemplateContainerView extends ParkedContainerView {
 
     // what a place may name, which is the server's own rule when it reads a literal template (FormView.names): a
     // child's design identifier, or one of its parts - a caption or a comment drawn inline.
-    // Over the DECLARED children and not the built ones: a child whose SHOWIF was false when the form was built has no
-    // view yet and would otherwise have its place called a typo - the same list the React path asks (findDeclared)
+    // Over the design's children and not the built ones: a child whose SHOWIF was false when the form was built has no
+    // view yet and would otherwise have its place called a typo - the same list the React path asks (findChild)
     // asked of the whole FORM and not of this container alone. A child this container no longer holds - an extending
     // module may move one out - leaves its place unfilled, and the server leaves such a place alone for exactly that
     // reason, so the client must not call it a mistake either: the two ends would then disagree about a form the

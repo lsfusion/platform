@@ -67,7 +67,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
         // strip); the React component draws it, so GWT renders the bare value with no label of its own
         boolean lsfView = property.isLsfView();
         boolean hasCaption = property.caption != null && !lsfView;
-        if(!hasCaption && property.comment == null && (property.appImage == null || lsfView)) // if there is no (empty) static caption and no dynamic caption
+        String staticComment = getStaticComment();
+        // if there is no (empty) static caption and no dynamic caption
+        if(!hasCaption && staticComment == null && (property.appImage == null || lsfView))
             return valuePanel.view;
 
         // id and for we need to support editing when clicking on the label
@@ -127,11 +129,11 @@ public class PropertyPanelRenderer extends PanelRenderer {
         // is wrapped in a panel that keeps its own value/comment layout, not laid out inline as value/comment siblings
         // directly in the host (which isInCustom() defaults to for a CUSTOM container child)
         boolean inline = !isAlignCaption && property.isInline() && !lsfView;
-        boolean verticalDiffers = hasCaption && property.comment != null && !inline && property.captionVertical != property.panelCommentVertical;
+        boolean verticalDiffers = hasCaption && staticComment != null && !inline && property.captionVertical != property.panelCommentVertical;
         boolean panelVertical = hasCaption ? property.captionVertical : property.panelCommentVertical;
 
         SizedWidget sizedComment = null;
-        if(property.comment != null) {
+        if(staticComment != null) {
             comment = GFormLayout.createLabelCaptionWidget();
             GwtClientUtils.initCaptionHtmlOrText(comment.getElement(), property.panelCommentVertical ? CaptionHtmlOrTextType.COMMENT_VERT : CaptionHtmlOrTextType.COMMENT_HORZ);
             GwtClientUtils.addClassName(comment, "panel-comment");
@@ -230,6 +232,14 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
 
         BaseImage.updateClasses(label, classes);
+    }
+
+    // an LSF property's comment is React's to draw, like its caption: a panel property's in its descriptor, and an LSF
+    // grid property's once, in its column entry - its editor is drawn in every row of a column React draws - so the
+    // editor has none, neither its widget nor its text
+    @Override
+    protected String getStaticComment() {
+        return property.isLsfView() ? null : property.comment;
     }
 
     protected void setCommentText(String text) {

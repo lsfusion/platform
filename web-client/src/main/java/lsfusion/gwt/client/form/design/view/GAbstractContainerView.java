@@ -30,10 +30,16 @@ public abstract class GAbstractContainerView {
         vertical = container.isVertical();
     }
 
-    public void add(GComponent child, final ComponentWidget view, ResizableComplexPanel attachContainer) {
-        assert child != null && view != null && container.children.contains(child);
+    // where a child's view goes among the views this one holds: in its container's order, which the layout follows
+    protected int getInsertIndex(GComponent child) {
+        assert container.children.contains(child);
+        return GwtSharedUtils.relativePosition(child, container.children, children);
+    }
 
-        int index = GwtSharedUtils.relativePosition(child, container.children, children);
+    public void add(GComponent child, final ComponentWidget view, ResizableComplexPanel attachContainer) {
+        assert child != null && view != null;
+
+        int index = getInsertIndex(child);
 
 //        child.installMargins(view);
 
@@ -196,11 +202,6 @@ public abstract class GAbstractContainerView {
         for(int i = 0; i < index; i++)
             containerIndex += getChildView(i).getWidgetCount();
         return containerIndex;
-    }
-
-    public Widget getCaptionView(GComponent child) {
-        int index = children.indexOf(child);
-        return index != -1 ? childrenCaptions.get(index).widget.widget : null;
     }
 
     public interface UpdateLayoutListener {

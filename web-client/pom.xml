@@ -47,6 +47,22 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- the GWT tests (GWTTestCase) compile the client from source and run it in HtmlUnit: the test sources go on
+                 the classpath as sources, the unit cache and the war into target, and the GWT compiler's own asserts stay
+                 off - one of them fails on merging permutations under the -ea surefire gives everything else -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <argLine>-Xmx3g -da:com.google.gwt... -Dgwt.persistentunitcachedir=${project.build.directory}/gwt-unitCache</argLine>
+                    <systemPropertyVariables>
+                        <gwt.args>-runStyle HtmlUnit:Chrome -war ${project.build.directory}/gwt-test-war -logLevel WARN</gwt.args>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
             <!-- desktop embedding -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

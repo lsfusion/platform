@@ -138,6 +138,12 @@ public class PlacedViews {
         GwtClientUtils.logLsfViewError("'" + name + "' is placed by more than one <Lsf>; the first one keeps it");
     }
 
+    // whether a host holds this name - with the view in it, or waiting for it: what the owner tells the server is
+    // placed
+    public boolean isHeld(String name) {
+        return hosts.get(name) != null;
+    }
+
     // whatever exists now goes into the host that has been waiting for it
     public void retryPending() {
         hosts.foreachEntry(this::tryPlace);

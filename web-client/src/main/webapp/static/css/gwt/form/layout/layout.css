@@ -270,13 +270,23 @@
 .dropdown-partner {
     z-index: 2 !important;
 }
-/* CUSTOM REACT: the moved delegated view is stretched to fill the host with the platform fill-parent-flex(-cont)
-   classes (applied in ReactContainerView.attachView) — the same fill a native SizedFlexPanel child gets, uniform
-   across kinds (a delegated property is now just a value, its caption having moved to React). Those classes deliberately
-   omit the min-size reset (min-size is content-specific, normally handled by FlexPanel.addFill's impl, which is
-   unavailable on a React-created host), so it is added here: a virtualized grid then scrolls instead of overflowing the
-   host. */
+/* CUSTOM REACT: a host a React view places one of the platform's views in carries the lsf-view mark - rendered by the
+   registry as the host's own class, so a render of the host's class keeps it - and is filled from it the way the
+   platform's fill-parent-flex(-cont) pair fills a child: the host is a flex column (here), the view stretches in it
+   (fill-parent-flex, given to the view alone). Nothing is written into the host: a class written into a node React
+   renders is lost the moment the component's class for it changes. The min-size reset those classes omit (min-size is
+   content-specific, normally FlexPanel.addFill's, which a React-created host lacks) is added here too: a virtualized
+   grid then scrolls instead of overflowing the host. */
+.lsf-view {
+    display: flex !important; /* as fill-parent-flex-cont: form-control for example sets display:block */
+    flex-direction: column;
+}
 .lsf-view, .lsf-view > * {
     min-width: 0;
     min-height: 0;
+}
+/* ... and a host a React view hides while its child's entry says `hidden` (useLsf) stays, taking no room: the mark
+   forces its display, so `hidden` has to force it back - asked of the host's data-lsf-sid, its own prop too */
+[data-lsf-sid][hidden] {
+    display: none !important;
 }

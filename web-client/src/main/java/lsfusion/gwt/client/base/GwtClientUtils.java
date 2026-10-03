@@ -988,6 +988,16 @@ public class GwtClientUtils {
 
     // Make a <body>-portaled popup follow its anchor. capture=true because scroll doesn't bubble: a nested overflow
     // container's scroll is only seen capturing. onScroll re-glues (translate); onResize re-runs full placement.
+    // runs after the next paint: two animation frames, so whatever React commits in reaction to what was just done -
+    // its refs, its effects - is over by then
+    public static native void afterNextPaint(Runnable action) /*-{
+        $wnd.requestAnimationFrame(function () {
+            $wnd.requestAnimationFrame(function () {
+                action.@java.lang.Runnable::run()();
+            });
+        });
+    }-*/;
+
     // Scrolls inside the popup itself are ignored. rAF-coalesced. Returns the fns so they can be detached.
     public static native JavaScriptObject addScrollFollowListener(Element popup, Runnable onScroll, Runnable onResize) /*-{
         var scrollPending = false, resizePending = false;
@@ -1964,31 +1974,30 @@ public class GwtClientUtils {
     // a placement that cannot work says so in the host itself, not only in the console: an <Lsf> that names nothing
     // must not read as an empty spot.
     // Written into a node of the platform's OWN, and taken away by removing that node - not by emptying the host. A
-    // host is not supposed to have children of its own, but the ref of useLsf can be put on any element, and emptying
+    // host is not supposed to have children of its own, but useLsf can make a host of any element, and emptying
     // one took away what the application had drawn there, silently and for good: React does not draw a subtree again
-    // that nothing told it changed
+    // that nothing told it changed.
+    // And marked on that node alone, never on the host: a host is a node React renders, and the render that changes the
+    // class the component gives it rewrites the whole class attribute, taking any class written there with it. So
+    // `lsf-view-error` is the class of the message itself - the class a component that failed to draw gives the message
+    // it draws in its own place, too
     public static void showLsfViewError(Element host, String message) {
         clearLsfViewError(host);
 
         Element shown = Document.get().createSpanElement();
-        addClassName(shown, LSF_VIEW_ERROR_MESSAGE);
+        addClassName(shown, LSF_VIEW_ERROR);
         shown.setInnerText("lsFusion: " + message);
         host.appendChild(shown);
         keepLsfViewErrorMessage(host, shown);
-
-        addClassName(host, LSF_VIEW_ERROR);
     }
 
     public static void clearLsfViewError(Element host) {
         Element shown = takeLsfViewErrorMessage(host);
         if (shown != null)
             shown.removeFromParent();
-
-        removeClassName(host, LSF_VIEW_ERROR);
     }
 
     private static final String LSF_VIEW_ERROR = "lsf-view-error";
-    private static final String LSF_VIEW_ERROR_MESSAGE = "lsf-view-error-message";
 
     // the node itself and not one found by its class: a class is something an application can carry too, and looking
     // one up would take away a child of its own that happens to be marked the same way
@@ -2139,11 +2148,67 @@ public class GwtClientUtils {
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;
+    // an object with NO prototype, for a map whose keys are DATA: `obj["__proto__"] = v` on an ordinary object calls
+    // the legacy prototype setter instead of adding an entry, and `obj["constructor"]` answers with Object's own
+    public static native JavaScriptObject newBareObject()/*-{
+        return Object.create(null);
+    }-*/;
+    public static native void push(JavaScriptObject array, Object value)/*-{
+        array.push(value);
+    }-*/;
+    // has a value at all - unlike a GWT-generated Java `!= null`, which the falsy-primitive trap misfires on, dropping
+    // a delivered false / 0 / "" - so only a real null/undefined is absent
+    public static native boolean isPresent(Object value)/*-{ return value !== undefined && value !== null; }-*/;
+
+    // ===== reading a value an AUTHOR passed in: own fields only, and each field read once =====
+    // does the field exist as an OWN one - asked without reading it. hasOwnProperty does not run an accessor, so a
+    // getter is not invoked twice, and the answer cannot be confused with a falsy value the way a Java `!= null` on
+    // the value would be (GWT collapses a JS 0 / false / "" to null).
+    public static native boolean hasOwnField(JavaScriptObject object, String field)/*-{
+        return Object.prototype.hasOwnProperty.call(object, field);
+    }-*/;
+    // the own field, or null - a field off the PROTOTYPE is not one the object carries, and the unknown-field check
+    // below cannot see one, so reading through the chain would let a prototype supply what it never declared
+    public static native JavaScriptObject getOwnField(JavaScriptObject object, String field)/*-{
+        return Object.prototype.hasOwnProperty.call(object, field) ? object[field] : null;
+    }-*/;
+    // ... and the same answering with the UNDEFINED SENTINEL for an absent field, where a caller has to tell "absent"
+    // from "given as null". The sentinel, not a raw `undefined`: that is what the rest of this codebase means by
+    // "no value given", and a raw one converts as a value, which is a different instruction entirely
+    public static native JavaScriptObject getOwnFieldOrUndefined(JavaScriptObject object, String field)/*-{
+        return Object.prototype.hasOwnProperty.call(object, field) ? object[field]
+                : @lsfusion.gwt.client.base.GwtClientUtils::UNDEFINED;
+    }-*/;
+    // an own field that is really a string: String() would turn `false` into the name "false", and a name-shaped
+    // thing that is not a name is not a name
+    public static native String getOwnString(JavaScriptObject object, String field)/*-{
+        var value = Object.prototype.hasOwnProperty.call(object, field) ? object[field] : null;
+        return typeof value === 'string' ? value : null;
+    }-*/;
+    // the first OWN field that is not one of `known` (comma-separated) - own NAMES, enumerable or not, so a field
+    // defined quietly is still a field; and names compared whole, not as substrings of the joined list, or one
+    // literally called "a,b" would pass for two known ones at once
+    public static native String getUnknownField(JavaScriptObject object, String known)/*-{
+        var allowed = Object.create(null), list = known.split(',');
+        for (var k = 0; k < list.length; k++) allowed[list[k]] = true;
+        var names = Object.getOwnPropertyNames(object);
+        for (var i = 0; i < names.length; i++)
+            if (!allowed[names[i]])
+                return names[i];
+        return null;
+    }-*/;
+    public static native boolean isJSObject(JavaScriptObject value)/*-{ return value !== null && typeof value === 'object' && !Array.isArray(value); }-*/;
+    public static native boolean isJSBoolean(JavaScriptObject value)/*-{ return typeof value === 'boolean'; }-*/;
+    // the value ALREADY read and checked, not a second read of the field: an own accessor could answer differently
+    public static native boolean toBoolean(JavaScriptObject value)/*-{ return !!value; }-*/;
     public static native JsArray emptyArray()/*-{
         return [];
     }-*/;
-    public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
-        return object[field] = value;
+    // the one setter: a JS object lands as itself, and so do a String, a Boolean and a Double - GWT hands those three
+    // to JS as primitives, so a Boolean is a real true/false rather than a truthy wrapper. An int/Integer is NOT
+    // unboxed by JSNI; it goes in as a Double or a String
+    public static native void setField(JavaScriptObject object, String field, Object value)/*-{
+        object[field] = value;
     }-*/;
 
     public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{

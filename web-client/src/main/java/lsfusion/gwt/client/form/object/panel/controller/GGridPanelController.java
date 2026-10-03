@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
+import lsfusion.gwt.client.form.design.view.GReactFormData;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -16,8 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// a panel controller whose keys are ROWS: it draws a group's LSF properties once per row of that group, and the
-// group's CUSTOM REACT view places each renderer into the element it rendered for that row.
+// a panel controller whose keys are ROWS: it draws a group's LSF GRID properties once per row of that group - the
+// form's GPanelController draws the PANEL ones -, and the group's CUSTOM REACT view places each renderer into the
+// element it rendered for that row.
 //
 // Not to be confused with the GRID's `record` container, which is an ordinary panel container whose content follows the
 // group's CURRENT object (the map and calendar popups). Nothing here is cloned from a design container.
@@ -25,9 +27,12 @@ import java.util.Map;
 // It is a panel controller because such a renderer IS a panel renderer - same widget, same readers, same edit path - so
 // the reader forwarding comes from the shared base unchanged; what differs is only how a key is read and where the
 // widget goes, which is what the base leaves to each kind of panel.
-public class GRowPanelController extends GAbstractPanelController {
+public final class GGridPanelController extends GAbstractPanelController {
 
     private final GGroupObject group;
+    // the rows its renderers follow: the node React draws them on - an lsf list property is only where React draws its
+    // group's rows (FormView.checkLsfListView)
+    private final GReactFormData.Rows rows;
 
     // the element React gave for each (row, property), and where that property's renderer for that row is put. The
     // renderer itself is NOT kept here - the property's own controller is the record of it - and the two arrive in
@@ -35,10 +40,11 @@ public class GRowPanelController extends GAbstractPanelController {
     // anything. The mirror of the form panel's columnPanels: keyed by the axis this controller draws on.
     private final NativeHashMap<GGroupObjectValue, Map<String, Element>> rowHosts = new NativeHashMap<>();
 
-    public GRowPanelController(GFormController formController, GGroupObject group) {
+    public GGridPanelController(GFormController formController, GGroupObject group, GReactFormData.Rows rows) {
         super(formController);
 
         this.group = group;
+        this.rows = rows;
     }
 
     // a property can be dropped outright - its own SHOWIF going false does that - with no key diff preceding it, so its
@@ -59,7 +65,11 @@ public class GRowPanelController extends GAbstractPanelController {
 
     @Override
     public GGroupObjectValue getRendererKey(GPropertyDraw property, GGroupObjectValue fullCurrentKey) {
-        return property.groupObject.filterRowKeys(fullCurrentKey);
+        // the group's own ROW key - which for a group of a TREE is the whole path down to it. The renderers are
+        // registered under getRendererKeys(), i.e. under exactly those keys, so narrowing to the group's own objects
+        // here made every lookup miss - and a missed renderer records no optimistic value and no loading state, so a
+        // lost edit reads as a slow server rather than as a bug
+        return property.groupObject.getRowKey(fullCurrentKey);
     }
 
     @Override
@@ -107,7 +117,8 @@ public class GRowPanelController extends GAbstractPanelController {
 
     @Override
     public ArrayList<GGroupObjectValue> getRendererKeys(ArrayList<GGroupObjectValue> columnKeys) {
-        return getRows(); // the server's column keys describe an axis this property does not use: it is drawn per ROW
+        // the server's column keys describe an axis this property does not use: it is drawn per ROW
+        return getRendererKeys();
     }
 
     @Override
@@ -124,7 +135,7 @@ public class GRowPanelController extends GAbstractPanelController {
     public GGroupObjectValue getFocusKey(ArrayList<GGroupObjectValue> keys) {
         // focus belongs to the CURRENT row, never to whichever row happened to be placed first - and the projection
         // already knows which that is, including right after the view changed it optimistically
-        return formController.getReactCurrentObject(group);
+        return formController.getGroupController(group).getSelectedKey();
     }
 
     // ---- hosts, registered by the react view as it renders rows ----
@@ -143,7 +154,7 @@ public class GRowPanelController extends GAbstractPanelController {
 
         // the group's rows decide, and not whether a renderer happens to still exist: React renders before the
         // renderers are reconciled, so a row already gone can still have the one that is about to be destroyed
-        if (!getRows().contains(rowKey)) {
+        if (!getRendererKeys().contains(rowKey)) {
             GwtClientUtils.showLsfViewError(host, "the row given to '" + property.sID + "' is not in the group any more");
             GwtClientUtils.logLsfViewError("the row given to '" + property.sID + "' is not one of the group's rows any"
                     + " more, so nothing will ever be placed there");
@@ -226,21 +237,19 @@ public class GRowPanelController extends GAbstractPanelController {
 
     // ---- data ----
 
-    // the rows this group is showing, straight from the projection that already tracks them - including an optimistic
-    // add or delete, which a copy taken from the server's changes would not see until the server confirmed it. The
-    // current object is read the same way, and for the same reason.
-    // a copy, because the projection mutates its own list in place when a row is added or deleted optimistically, and
-    // the controllers keep the one they are given to compare the next set against. One copy is shared by all of them:
-    // nothing mutates it afterwards.
-    private ArrayList<GGroupObjectValue> getRows() {
-        ArrayList<GGroupObjectValue> rows = formController.getReactRows(group);
-        return rows != null ? new ArrayList<>(rows) : new ArrayList<>();
+    // the rows this group is showing, straight from the node React draws them on, which already tracks them - including
+    // an optimistic add or delete, which a copy taken from the server's changes would not see until the server
+    // confirmed it. The current object is read the same way, and for the same reason. The node's own list, not a copy:
+    // it puts a new list in place whenever the rows change and never changes one (GReactFormData.Rows), so the
+    // controllers may keep the one they are given to compare the next set against.
+    private ArrayList<GGroupObjectValue> getRendererKeys() {
+        return rows.getRows();
     }
 
     // the renderers follow the group's rows, not what React has shown: a renderer that existed only while its row was
     // on screen would be rebuilt whenever React re-rendered, losing focus and any edit halfway through a keystroke
     public void updateRowRenderers() {
-        ArrayList<GGroupObjectValue> rows = getRows();
+        ArrayList<GGroupObjectValue> rows = getRendererKeys();
         propertyControllers.foreachValue(propertyController -> {
             // only when the ROWS changed: an update that carried values reaches the renderers through the ordinary
             // per-property path, and reconciling every renderer of every row for it would be most of the work of a

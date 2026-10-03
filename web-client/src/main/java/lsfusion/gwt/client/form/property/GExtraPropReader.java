@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.*;
 
@@ -19,11 +20,9 @@ public class GExtraPropReader extends GExtraPropertyReader {
         this.readerType = readerType;
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         if(readerType == CELL_FONT) {
             controller.updateCellFontValues(this, values);
-        } else if (readerType == COMMENT) {
-            controller.updatePropertyComments(this, values);
         } else if (readerType == COMMENTELEMENTCLASS) {
             controller.updateCellCommentElementClasses(this, values);
         } else if (readerType == PLACEHOLDER) {
@@ -53,9 +52,16 @@ public class GExtraPropReader extends GExtraPropertyReader {
         }
     }
 
+    // a kind with a field of its own is an attribute React draws from
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        if (getAttributeField() != null)
+            controller.updateAttribute(this, values, partial);
+        else
+            super.update(controller, values, partial);
+    }
+
     @Override
     public String getAttributeField() {
-        if (readerType == COMMENT) return "comment";
         if (readerType == PLACEHOLDER) return "placeholder";
         if (readerType == PATTERN) return "pattern";
         if (readerType == REGEXP) return "regexp";
@@ -69,7 +75,7 @@ public class GExtraPropReader extends GExtraPropertyReader {
 
     @Override
     public GAttributeConverter getAttributeConverter() {
-        if (readerType == COMMENT || readerType == TOOLTIP) return GAttributeConverter.TEXT; // both are a trimmed string
+        if (readerType == TOOLTIP) return GAttributeConverter.TEXT; // a trimmed string
         if (readerType == PROPERTY_CUSTOM_OPTIONS) return GAttributeConverter.JSON;
         return GAttributeConverter.STRING; // PLACEHOLDER/PATTERN/REGEXP/REGEXPMESSAGE/VALUETOOLTIP/DEFAULTVALUE
     }
@@ -77,13 +83,14 @@ public class GExtraPropReader extends GExtraPropertyReader {
     // which axis the SERVER reads this reader over, mirroring FormInstance.getChangedDrawProps: the readers below are
     // filled over propRowColumnGrids (the column groups only, so a single EMPTY key when there are none), the rest over
     // propRowGrids (which includes toDraw for a list draw, i.e. one value per row). That axis is what splits a list
-    // property's projection: a column-axis reader is emitted once in node.<prop> (GReactFormData.buildColumnEntry) and a
-    // row-axis one per cell (buildCellEntry), and the delta path dirties the node or the rows to match.
+    // property's projection: a column-axis reader is emitted once in node.<prop>
+    // (GReactFormData.ReactColumnPropertyEntry's column readers) and a row-axis one per cell (its cell readers), and
+    // what it brings rebuilds the column entry or the cell to match.
     // The answer is stated for every reader type, including ones the projection does not carry today (element classes,
     // changeKey/changeMouse): it describes the server's axis, not whether this branch happens to read it.
     @Override
     public boolean isColumnAttribute(GPropertyDraw draw) {
-        return readerType == COMMENT || readerType == COMMENTELEMENTCLASS || readerType == TOOLTIP
+        return readerType == COMMENTELEMENTCLASS || readerType == TOOLTIP
                 || readerType == CHANGEKEY || readerType == CHANGEMOUSE
                 || readerType == CAPTIONELEMENTCLASS || readerType == FOOTERELEMENTCLASS
                 || readerType == DEFAULTVALUE;
@@ -96,7 +103,6 @@ public class GExtraPropReader extends GExtraPropertyReader {
     @Override
     public String getStaticAttribute(GComponent owner) {
         GPropertyDraw draw = (GPropertyDraw) owner;
-        if (readerType == COMMENT) return draw.comment;
         if (readerType == PLACEHOLDER) return draw.placeholder;
         if (readerType == PATTERN) return draw.pattern;
         if (readerType == REGEXP) return draw.regexp;
@@ -109,8 +115,6 @@ public class GExtraPropReader extends GExtraPropertyReader {
     private static String getPrefix(int readerType) {
         if (readerType == CELL_FONT) {
             return "CELL_FONT";
-        } else if (readerType == COMMENT) {
-            return "COMMENT";
         } else if (readerType == COMMENTELEMENTCLASS) {
             return "COMMENTELEMENTCLASS";
         } else if (readerType == PLACEHOLDER) {

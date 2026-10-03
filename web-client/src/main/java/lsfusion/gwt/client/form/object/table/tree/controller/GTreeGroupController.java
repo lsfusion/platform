@@ -18,7 +18,6 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
-import lsfusion.gwt.client.form.object.table.controller.GFormGroupController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -35,7 +34,7 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
-public class GTreeGroupController extends GAbstractTableController implements GFormGroupController {
+public class GTreeGroupController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     private final GTreeGroup treeGroup;
@@ -271,7 +270,7 @@ public class GTreeGroupController extends GAbstractTableController implements GF
     }
 
     @Override
-    public void updatePropertyComments(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override

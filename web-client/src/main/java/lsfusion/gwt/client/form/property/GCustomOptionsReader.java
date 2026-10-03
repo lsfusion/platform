@@ -11,7 +11,7 @@ public class GCustomOptionsReader extends GGroupObjectPropertyReader {
     public GCustomOptionsReader(int readerID) {
         super(readerID, "CUSTOM_OPTIONS");
     }
-    public void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    public void updateLsf(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateCustomOptionsValues(values);
     }
 

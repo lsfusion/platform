@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
 public class GShowIfReader extends GExtraPropertyReader {
 
@@ -12,12 +12,7 @@ public class GShowIfReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "SHOWIF");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateShowIfValues(this, values);
     }
-
-    // showIf is not an attribute OF an entry, it decides whether the entry EXISTS - which is why it has no attribute
-    // field and no converter, and why the projection routes it before the attribute path rather than through it
-    @Override
-    public boolean isPresenceReader() { return true; }
 }

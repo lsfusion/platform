@@ -40,7 +40,7 @@ public abstract class PanelRenderer {
     protected void finalizeInit() {
         setCaption(property.caption);
         setCaptionElementClass(property.captionElementClass);
-        setComment(property.comment);
+        setComment(getStaticComment());
         setCommentElementClass(property.commentElementClass);
 
         Widget tooltipWidget = getTooltipWidget();
@@ -180,6 +180,10 @@ public abstract class PanelRenderer {
 
     protected abstract void setLabelText(String text);
     protected abstract void setLabelClasses(String classes);
+    // the design's comment, drawn beside the value (PropertyPanelRenderer has none where React draws it)
+    protected String getStaticComment() {
+        return property.comment;
+    }
     protected abstract void setCommentText(String text);
     protected abstract void setCommentClasses(String classes);
 

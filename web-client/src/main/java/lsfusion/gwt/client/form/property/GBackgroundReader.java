@@ -3,9 +3,9 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
-public class GBackgroundReader extends GExtraPropertyReader {
+public class GBackgroundReader extends GExtraAttributeReader {
 
     public GBackgroundReader(){}
 
@@ -13,7 +13,7 @@ public class GBackgroundReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "BACKGROUND");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
         controller.updateCellBackgroundValues(this, keys);
     }
 

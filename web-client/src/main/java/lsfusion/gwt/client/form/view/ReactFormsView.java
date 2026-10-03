@@ -56,7 +56,7 @@ public class ReactFormsView implements FormsView {
 
             Element view = dockable.getContentWidget().getElement();
             host.appendChild(view);
-            GwtClientUtils.setupFlexParent(view);
+            GwtClientUtils.addClassName(view, "fill-parent-flex"); // the host is a flex column by its mark (layout.css)
             dockable.getContentWidget().onResize(); // a DOM move fires nothing in GWT, and this form was never measured here
             return true;
         }
@@ -96,7 +96,15 @@ public class ReactFormsView implements FormsView {
             public void unmount(String name, Element host, JavaScriptObject row) {
                 placed.unmount(name, host);
             }
+
+            @Override
+            public boolean marksHosts() {
+                return true; // a form's host holds the form's view, which the layout fills it with by its marks
+            }
         });
+        // no form is open yet, and that is a state the component draws - a start page, say - so the window starts
+        // from it, shaped as every later snapshot is, instead of waiting for the first form to be drawn at all
+        root.updateData(buildData());
 
         GwtClientUtils.addClassName(panel, "forms-container");
         park.getStyle().setDisplay(Style.Display.NONE);

@@ -34,7 +34,15 @@ public class ReactNavigatorView extends ParkedNavigatorView {
             public void unmount(String name, Element host, JavaScriptObject row) {
                 buttons.unmountButton(name, host);
             }
+
+            @Override
+            public boolean marksHosts() {
+                return false; // the node a button goes into is left as the component rendered it
+            }
         });
+        // nothing is pushed here: what the window draws is a bucket the navigator works out, and it has worked out none
+        // yet, so an empty one would say "nothing to draw" about a window that may well have elements. Its first update
+        // refreshes every window - one with nothing in it too, with an empty bucket - and that is what draws it
 
         panel.addAttachHandler(event -> {
             if (event.isAttached())

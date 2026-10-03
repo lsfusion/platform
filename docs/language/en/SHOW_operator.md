@@ -153,7 +153,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
     When the client predicts this opening and finds the form already open, it activates that form immediately and sends the action to the server. If the action reaches a matching `SHOW`, the server skips creating the form, so its [initialization events](FORM_statement.md) and close events do not run. Other statements and action event handlers execute as usual.
 
-    This early activation happens for an action started from the navigator - by a click or by a key binding - for the action a property runs on its ordinary change or binding, unless the change supplies a value, and, in the web client, for a form event. It does not happen for a value a custom view supplies (a `CUSTOM` renderer's change, the React controller's `changeProperty`), for a paste, or for an action a custom view runs by name: there the form is created on the server and closed by the client when it arrives, as described below.
+    This early activation happens for an action started from the navigator - by a click or by a key binding - for the action a property runs on its ordinary change or binding, unless the change supplies a value, and, in the web client, for a form event. It does not happen for a value a custom view supplies (a `CUSTOM` renderer's change, the `change` of a React controller's member), for a paste, or for an action a custom view runs by name: there the form is created on the server and closed by the client when it arrives, as described below.
 
     Reuse is decided when the action is invoked. If the form closes afterwards, this opening does not recreate it. The activation is retained even if the action is rejected or does not reach this `SHOW`.
 

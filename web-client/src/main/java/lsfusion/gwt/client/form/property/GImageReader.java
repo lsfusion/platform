@@ -3,12 +3,9 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
-public class GImageReader extends GExtraPropertyReader {
-
-    @Override
-    public boolean isDescriptorAttribute() { return true; } // the caption/image an lsf child hands to React
+public class GImageReader extends GExtraLabelReader {
 
     public GImageReader(){}
 
@@ -16,7 +13,7 @@ public class GImageReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "IMAGE");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateImageValues(this, values);
     }
 

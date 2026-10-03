@@ -41,7 +41,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, GPropertyDrawOrPivotColumn, Serializable {
-    private static final GImageReader STATIC_COMPONENT_IMAGE_READER = new GImageReader(-1, -1);
     public int ID;
     public String nativeSID;
     public String sID;
@@ -92,9 +91,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean isList;
 
-    // LSF on a grid property: the platform draws it once per ROW and a CUSTOM REACT view places each of those,
-    // so its values feed real renderers instead of the view's data. isLsfView() already answers "is an lsf child
-    // of a react container", which the property is, because LSF requires it to be MOVEd there.
     public boolean isLsfViewPerRow() {
         return isLsfView() && isList;
     }
@@ -396,7 +392,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GForegroundReader foregroundReader;
     public GImageReader imageReader;
 
-    public GExtraPropReader commentReader;
+    public GCommentReader commentReader;
     public GExtraPropReader commentElementClassReader;
     public GExtraPropReader placeholderReader;
     public GExtraPropReader patternReader;
@@ -427,7 +423,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     }
     @Override
     public GPropertyReader getImageReader() {
-        return imageReader != null ? imageReader : STATIC_COMPONENT_IMAGE_READER;
+        return imageReader; // every property has one (ClientPropertyDraw): a static image is read through it too
     }
     @Override
     public String getStaticCaption() {
@@ -894,9 +890,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         return columnKeys;
     }
 
+    // its own values, the property being the reader of them
     @Override
-    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
-        controller.getPropertyController(this).updateProperty(this, getColumnKeys(this, controller.getCurrentGridObjects()), updateKeys, values);
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        controller.getPropertyController(this).updateValue(this, values, partial);
     }
 
     public boolean hasAutoSize() {

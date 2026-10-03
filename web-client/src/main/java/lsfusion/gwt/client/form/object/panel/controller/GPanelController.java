@@ -18,7 +18,7 @@ import static lsfusion.gwt.client.view.MainFrame.v5;
 
 // the form's own panel: a key is a COLUMN of the property, and its renderers live in a panel of that property's own,
 // in key order. A hidden property keeps its renderers - they may still carry key or mouse bindings - but places none.
-public class GPanelController extends GAbstractPanelController {
+public final class GPanelController extends GAbstractPanelController {
 
     // the panel each property's renderers go into, and what the form lays out for it. Only properties that HAVE such a
     // panel are here: a property with exactly one renderer is laid out as that renderer, with nothing around it

@@ -21,7 +21,6 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
-import lsfusion.gwt.client.form.object.table.controller.GFormGroupController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -38,7 +37,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class GGridController extends GAbstractTableController implements GFormGroupController {
+public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     public GGroupObject groupObject;
@@ -526,7 +525,7 @@ public class GGridController extends GAbstractTableController implements GFormGr
     }
 
     @Override
-    public void updatePropertyComments(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override

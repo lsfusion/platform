@@ -1,9 +1,5 @@
 package lsfusion.gwt.client.form.property;
 
-import lsfusion.gwt.client.form.object.GGroupObject;
-
-import lsfusion.gwt.client.GForm;
-
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -14,9 +10,6 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 // group-scoped (one value at EMPTY -> direct on the group) -> see getAttributeScope.
 public abstract class GGroupObjectPropertyReader implements GPropertyReader {
     public int groupObjectID;
-
-    @Override
-    public GGroupObject getAttributeGroup(GForm form) { return form.getGroupObject(groupObjectID); } // a group-object reader carries its ID
 
     public GGroupObjectPropertyReader() {
     }
@@ -34,10 +27,14 @@ public abstract class GGroupObjectPropertyReader implements GPropertyReader {
     }
 
 
-    protected abstract void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
+    // where the platform draws the group's rows: its grid's or tree's own update for this reader
+    public abstract void updateLsf(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
 
     @Override
-    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
-        update(controller.getGroupObjectController(controller.getGroupObject(groupObjectID)), values, updateKeys);
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        controller.getGroupController(controller.getGroupObject(groupObjectID)).updateAttribute(this, values, partial);
     }
+    // ... an attribute of its rows or of the group, as every one of them is: it names the field it is projected into
+    @Override
+    public abstract String getAttributeField();
 }

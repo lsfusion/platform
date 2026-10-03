@@ -365,14 +365,14 @@ As a result, the component will look like this:
 Then we add event handlers that will send the message when CTRL+ENTER is pressed,
 and write the entered message to the `message[]` property when the component loses focus.
 The entered text is passed by the _change_ method of the controller: it goes into the change handling of the `message[]` property in the same way as a value entered by the standard editor — for a data property that is writing the value into it.
-The `send[]` action is executed by the _changeProperty_ method of the [form controller](How-to_Custom_view_controller.md), available as `controller.form`. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
+The `send[]` action is executed by the _exec_ method of the [form controller](How-to_Custom_view_controller.md), available as `controller.form`: a call to the server, which the form allows by listing the action in its `CUSTOMS` clause. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
 The handlers are added in the _update_ function:
 ```js
 element.text.onkeydown = function(event) {
     if (event.keyCode == 10 || event.keyCode == 13)
         if (event.ctrlKey) {
             controller.change(element.text.innerText);
-            controller.form.changeProperty('send');
+            controller.form.exec('send');
         } else
             event.stopPropagation(); // stop further processing after pressing ENTER
 }
@@ -382,7 +382,7 @@ element.text.onblur = function (event) {
 }
 ```
 
-Add the input field and the quoted message to the form, as well as the _Send_ button.
+Add the input field and the quoted message to the form, as well as the _Send_ button. **CUSTOMS** lets the component call `send[]` through `controller.form.exec`.
 The keyword **CUSTOM** specifies that the value of the `message[]` property is to be displayed using the _chatMessageInput_ function created earlier.
 If an action is specified after the property with the keyword **ON CHANGE**, it is executed instead of the standard change handling, and the value passed by the _change_ method is substituted for the user input in its [value request](../paradigm/Value_request_REQUEST.md):
 
@@ -391,6 +391,7 @@ EXTEND FORM chat
     PROPERTIES replyAuthor() READONLY SHOWIF replyTo(), replyText() READONLY SHOWIF replyTo(), removeReply() SHOWIF replyTo(),
                message() CUSTOM 'chatMessageInput', 
                send()
+    CUSTOMS send
 ;
 ```
 
@@ -437,7 +438,7 @@ The methods of the controller passed to the _update_ function, internal helpers 
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-The `ok` handler of `getValues` receives the result in the same format as the form controller's `getPropertyValues`. The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
+The `ok` handler of `getValues` receives the result in the same format as the form controller's `<group>.<property>.getValues`. The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
 
 ### Custom editor {#custom-editor}
 

@@ -215,13 +215,30 @@ public class CustomCellRenderer extends CellRenderer {
                 return object.objects;
             },
             getObjectsField: function () {
-                return "objects";
+                return @lsfusion.gwt.client.form.object.GGroupObjectValue::ROW_OBJECTS;
             },
+            // a PLATFORM row is identified by one rule, not by a JSON dump of its handle, which made one row two
+            // different rows depending on who asked. The rule is the canonical key string, named by the objects it is
+            // OF: this list is the author's own and is scoped to no group, so two rows of DIFFERENT groups holding the
+            // same value would otherwise diff as one row. A clone keeps the handle (it is enumerable), so it is that
+            // row and says so. One that has LOST the handle is not that row to the platform either - it resolves to
+            // nothing - so it falls to `key`, which is the best it can still say about itself, not a claim to be the
+            // row it was copied from. Only then the author's own list items,
+            // which keep the dump - they have no platform identity to be canonical about. The middle step is the loose
+            // one: an author item carrying a field called `key` is taken at its word, so two of them sharing that
+            // value diff as one item.
             getObjectsString: function (object) {
+                var k = @lsfusion.gwt.client.form.object.GGroupObjectValue::resolveObject(*)(object);
+                if (k !== null) return k.@lsfusion.gwt.client.form.object.GGroupObjectValue::toIdentityString()();
+                if (object !== null && typeof object === 'object' && object.key !== undefined) return String(object.key);
                 return @GwtClientUtils::jsonStringify(*)(this.getObjects(object));
             },
+            // a platform handle mints a proper row - key and handle stamped together, instead of the handle replaced
+            // and the cloned key left pointing at another row. An author's own handle is kept as it is: it is theirs
             createObject: function (object, objects) {
-                return $wnd.replaceField(object, "objects", objects);
+                var k = @lsfusion.gwt.client.form.object.GGroupObjectValue::resolveObject(*)(objects);
+                if (k !== null) return @lsfusion.gwt.client.form.object.GGroupObjectValue::createRow(*)(object, objects);
+                return $wnd.replaceField(object, @lsfusion.gwt.client.form.object.GGroupObjectValue::ROW_OBJECTS, objects);
             },
             isRenderInputKeyEvent: function (event, multiLine) {
                 return @lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer::isInputKeyEvent(*)(event, updateContext, multiLine);

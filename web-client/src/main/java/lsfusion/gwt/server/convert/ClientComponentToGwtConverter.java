@@ -143,7 +143,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         container.nativeSID = "c" + clientContainer.ID;
         container.caption = clientContainer.caption;
         container.name = clientContainer.name;
-        container.declared = clientContainer.declared;
         container.image = createImage(clientContainer.image, false);
         container.captionClass = clientContainer.captionClass;
         container.valueClass = clientContainer.valueClass;
@@ -261,6 +260,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         grid.lineHeight = clientGrid.lineHeight;
 
         grid.record = convertOrCast(clientGrid.record);
+        if (grid.record != null)
+            grid.record.recordContainer = grid;
 
         return grid;
     }
@@ -398,7 +399,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
         propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
         propertyDraw.hasDynamicCaption = clientPropertyDraw.hasDynamicCaption;
-        propertyDraw.commentReader = convertExtraPropReader(clientPropertyDraw.commentReader);
+        propertyDraw.commentReader = convertCommentReader(clientPropertyDraw.commentReader);
         propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
         propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);
         propertyDraw.patternReader = convertExtraPropReader(clientPropertyDraw.patternReader);
@@ -539,6 +540,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     public GCustomOptionsReader convertCustomOptionsReader(ClientGroupObject.CustomOptionsReader reader) {
         return reader == null ? null : new GCustomOptionsReader(reader.getID());
+    }
+
+    public GCommentReader convertCommentReader(ClientPropertyDraw.ExtraPropReader reader) {
+        return reader == null ? null : new GCommentReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GExtraPropReader convertExtraPropReader(ClientPropertyDraw.ExtraPropReader reader) {

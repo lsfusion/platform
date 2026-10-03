@@ -3,19 +3,17 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
-public class GCaptionReader extends GExtraPropertyReader {
+public class GCaptionReader extends GExtraLabelReader {
 
-    @Override
-    public boolean isDescriptorAttribute() { return true; } // the caption/image an lsf child hands to React
     public GCaptionReader(){}
 
     public GCaptionReader(int readerID, int groupObjectID) {
         super(readerID, groupObjectID, "CAPTION");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updatePropertyCaptions(this, values);
     }
 

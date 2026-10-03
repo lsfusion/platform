@@ -27,13 +27,14 @@ import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
+import lsfusion.gwt.client.form.property.GGroupObjectPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GAbstractTableController extends GPropertyController implements GTableController {
+public abstract class GAbstractTableController extends GLsfPropertyController implements GTableController, GGroupController {
     protected final GToolbarView toolbarView;
     public GFilterController filter;
 
@@ -204,4 +205,13 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
     public abstract void updateCurrentKey(GGroupObjectValue currentKey);
+
+    // ===== the platform's side of the form's controller of a group whose rows it draws (GGroupController, of the grid
+    // and the tree): a current object the view chose itself, and a reader of the group by that reader's own update of
+    // this controller
+    public void changeCurrentKey(GGroupObjectValue currentKey) {
+    }
+    public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        reader.updateLsf(this, values, partial);
+    }
 }

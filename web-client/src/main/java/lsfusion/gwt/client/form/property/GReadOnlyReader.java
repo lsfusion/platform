@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
-public class GReadOnlyReader extends GExtraPropertyReader {
+public class GReadOnlyReader extends GExtraAttributeReader {
 
     public GReadOnlyReader(){}
 
@@ -12,7 +12,7 @@ public class GReadOnlyReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "READONLY");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateReadOnlyValues(this, values);
     }
 

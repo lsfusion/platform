@@ -24,6 +24,8 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
@@ -35,7 +37,9 @@ public class GFormLayout extends SizedFlexPanel {
 
     private final NativeSIDMap<GContainer, GAbstractContainerView> containerViews = new NativeSIDMap<>();
     private final NativeSIDMap<GContainer, Widget> containerCaptions = new NativeSIDMap<>();
-    private final java.util.List<ReactContainerView> reactContainers = new java.util.ArrayList<>(); // CUSTOM REACT containers, collected once at build time
+    // the containers whose SHOWIF hides them now: a container is hidden through what it holds, except a CUSTOM REACT
+    // one, whose content GWT does not see - it is told its own SHOWIF instead (FormView.isReactShowIfContainer)
+    private final java.util.Set<GContainer> showIfHidden = new java.util.HashSet<>();
     private final Map<GComponent, ComponentViewWidget> baseComponentViews = new HashMap<>();
 
     private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
@@ -135,10 +139,10 @@ public class GFormLayout extends SizedFlexPanel {
 
     public static Widget createContainerCaptionWidget(GFormController form, GContainer parentContainer, boolean isPopup, boolean hasBorder) {
         // when the parent view draws its children's captions itself, the child gets no caption widget of its own: a
-        // tabbed parent draws it in the tab strip, a react parent hands it to the component via props.components (only a
-        // lsf child reaches here under a react parent — see addContainers). This is also why an lsf child
-        // never gets a CollapsiblePanel: that is built for a LayoutContainerView's flex children, and neither the tab
-        // strip nor the parked react subtree is one.
+        // tabbed parent draws it in the tab strip, a react parent's component draws it from the child's descriptor in
+        // `data` (only an lsf child reaches here under a react parent — see addContainers). This is also why an lsf
+        // child never gets a CollapsiblePanel: that is built for a LayoutContainerView's flex children, and neither the
+        // tab strip nor the parked react subtree is one.
         if (parentContainer != null && parentContainer.tabbed) {
             return createTabCaptionWidget();
         } else if (parentContainer != null && parentContainer.isReact()) {
@@ -170,8 +174,6 @@ public class GFormLayout extends SizedFlexPanel {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
-        if (containerView instanceof ReactContainerView)
-            reactContainers.add((ReactContainerView) containerView);
 
         Widget captionWidget;
         boolean alreadyInitialized = false;
@@ -181,9 +183,9 @@ public class GFormLayout extends SizedFlexPanel {
             captionWidget = formCaptionWidgetAsync.first;
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
-            // createContainerCaptionWidget returns null for an lsf child (its parent is react): its caption is
-            // drawn by the component from props.components, exactly as a tabbed parent draws a child's caption in the strip
-            captionWidget = createContainerCaptionWidget(form, container.container,
+            // none for an lsf container a React view places, however deep: its caption is drawn by that component from
+            // its entry in data, exactly as a tabbed parent draws a child's caption in the strip
+            captionWidget = container.isLsfView() && container.getReactPlace() != null ? null : createContainerCaptionWidget(form, container.container,
                     container.popup, container.caption != null || container.collapsible);
 
         if (captionWidget != null) {
@@ -213,8 +215,10 @@ public class GFormLayout extends SizedFlexPanel {
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
 
         for (GComponent child : container.children) {
-            if (child.isReactProjected()) // React draws this child (from data): do not build GWT views for its subtree
+            if (child.isReactDrawn()) { // React draws this child (from data): no GWT view of it - only of the lsf
+                addPlacedContainers(child);  // containers inside it, which this react container places
                 continue;
+            }
             if(child instanceof GGrid)
                 child = ((GGrid)child).record;
             if (child instanceof GContainer) {
@@ -222,6 +226,37 @@ public class GFormLayout extends SizedFlexPanel {
             }
         }
     }
+    // inside a component React draws itself - a container's children, a grid's record (it is where its grid is): an lsf
+    // container gets its view - its parent has none, so add hands the view to the react container that places it - and
+    // is built on as any other, as is an lsf grid's record; anything else is walked for more of them. An lsf base
+    // component's view comes from its controller, and reaches that react container the same way
+    private void addPlacedContainers(GComponent drawn) {
+        for (GComponent child : drawn.getChildren())
+            addPlacedContainer(child);
+    }
+    private void addPlacedContainer(GComponent component) {
+        if (!component.isLsfView())
+            addPlacedContainers(component);
+        else {
+            if (component instanceof GGrid)
+                component = ((GGrid) component).record;
+            if (component instanceof GContainer)
+                addContainers((GContainer) component);
+        }
+    }
+
+    // the container view that holds a component's view: its container's - or, for a component inside a container React
+    // draws itself, which has no view, the view of the react container that places it
+    private GAbstractContainerView getHoldingView(GComponent component) {
+        GAbstractContainerView view = containerViews.get(component.container);
+        if (view == null) {
+            GContainer place = component.getReactPlace();
+            if (place != null)
+                view = containerViews.get(place);
+        }
+        return view;
+    }
+
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
         addBaseComponent(component, new ComponentWidget(view), focusReceiver);
     }
@@ -232,6 +267,13 @@ public class GFormLayout extends SizedFlexPanel {
     }
 
     public void setShowIfVisible(GComponent component, boolean visible) {
+        // hidden through what it holds, or - a react container - by this, on the next update
+        if (component instanceof GContainer) {
+            if (visible)
+                showIfHidden.remove(component);
+            else
+                showIfHidden.add((GContainer) component);
+        }
         ComponentViewWidget widget = baseComponentViews.get(component);
         if(widget != null) {
             widget.setShowIfVisible(visible);
@@ -241,7 +283,10 @@ public class GFormLayout extends SizedFlexPanel {
     public void setElementClass(GComponent component, String elementClass) {
         component.elementClass = elementClass;
 
-        Widget widget = containerViews.get(component.container).getChildWidget(component);
+        if (component.container == null) // the main container is placed by no container view
+            return;
+        GAbstractContainerView holding = getHoldingView(component);
+        Widget widget = holding != null ? holding.getChildWidget(component) : null;
         if(widget != null) // if the component is a base component it can be hidden, but the class can be changed anyway (however elementClass will be changed and it will be used when adding view)
             updateComponentClass(elementClass, widget, BaseImage.emptyPostfix);
         else
@@ -250,9 +295,11 @@ public class GFormLayout extends SizedFlexPanel {
 
     public void setCaptionClass(GContainer component, String elementClass) {
         component.captionClass = elementClass;
-        // an lsf container draws its caption in React (from its entry in data); its reader is react-owned
-        // (rerouted into that entry), so this runs only for GWT containers, which have a real caption widget
-        updateComponentClass(elementClass, containerViews.get(component.container).getCaptionView(component), "caption");
+        // on the caption widget the container was given - none for an lsf container a React view places, whose caption
+        // React draws from its entry; the main container's caption is the form's
+        Widget caption = component.container != null ? getContainerCaption(component) : null;
+        if (caption != null)
+            updateComponentClass(elementClass, caption, "caption");
     }
 
     public void setValueClass(GContainer component, String valueClass) {
@@ -290,17 +337,40 @@ public class GFormLayout extends SizedFlexPanel {
             view.widget.setDebugInfo(key.sID);
 
         GAbstractContainerView containerView;
-        if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
+        // container can be null when component should be layouted manually, containerView can be null when it is
+        // removed
+        if(key.container != null && (containerView = getHoldingView(key)) != null) {
+            reportUnplaceable(key, containerView);
             containerView.add(key, view, attachContainer);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
         }
     }
 
+    // the single funnel every built view goes through, and the one place that sees BOTH that a view was built and
+    // where it landed. A react container draws its children from `data` and parks everything else until an <Lsf>
+    // places it; a child with no `lsf = TRUE` that nevertheless has a view of its own - a group's toolbar or filter
+    // box moved in, say - is drawn by nobody: React has at most what labels it, and the park is not a place. Marking
+    // it `lsf = TRUE` is what the author means, and then the view names it in an <Lsf>. A component the design does not
+    // name - a user filter's - is placed with the named container that holds it
+    private void reportUnplaceable(GComponent key, GAbstractContainerView containerView) {
+        if (!(containerView instanceof ReactContainerView) || key.isLsfView() || !unplaceable.add(key))
+            return;
+        String container = ((ReactContainerView) containerView).getContainer().sID;
+        GwtClientUtils.logLsfViewError(key.sID != null
+                ? "'" + key.sID + "' has a view of its own inside the react container '" + container + "', which draws"
+                  + " its children from `data` and has nothing there to draw it with, so it is shown by nobody; mark it"
+                  + " `lsf = TRUE` and place it with <Lsf name=\"" + key.sID + "\"/>"
+                : "a component with no name - a user filter's, say - has a view of its own inside the react container '"
+                  + container + "' and is shown by nobody; mark the named container that holds it `lsf = TRUE` and"
+                  + " place that with <Lsf name/>");
+    }
+    private final Set<GComponent> unplaceable = new HashSet<>(); // said once per component
+
     public void remove(GComponent key) {
         assert !(key instanceof GContainer);
         GAbstractContainerView containerView;
-        if (key.container != null && (containerView = containerViews.get(key.container)) != null) { // see add method
+        if (key.container != null && (containerView = getHoldingView(key)) != null) { // see add method
             containerView.remove(key);
 
             maybeRemoveDefaultFocusReceiver(key);
@@ -339,16 +409,6 @@ public class GFormLayout extends SizedFlexPanel {
 
     public GAbstractContainerView getContainerView(GContainer container) {
         return containerViews.get(container);
-    }
-
-    public boolean hasReactContainers() {
-        return !reactContainers.isEmpty();
-    }
-
-    public void updateReactContainers(GReactFormData reactData) {
-        for (ReactContainerView reactContainer : reactContainers)
-            reactContainer.updateData(reactData.build(reactContainer.getContainer()));
-        reactData.clearDirty();
     }
 
     public Widget getContainerCaption(GContainer container) {
@@ -396,7 +456,8 @@ public class GFormLayout extends SizedFlexPanel {
         // a container that draws its own content - a React component, or an HTML template - has GWT child views only for
         // the children it places, so hasVisible says nothing about what it renders; it must not be collapsed to
         // display:none by its parent (which used to leave a template-only container invisible, and its window collapsed)
-        return hasVisible || container.isCustomDrawn();
+        // - unless its SHOWIF hides it, which a CUSTOM REACT container is told as any component is
+        return hasVisible || (container.isCustomDrawn() && !showIfHidden.contains(container));
     }
 
     // the window is measured ONCE when it is shown and fixed to that size (initPreferredSize below); -1 stays dynamic

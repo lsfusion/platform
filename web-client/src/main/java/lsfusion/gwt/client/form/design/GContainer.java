@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.property.GComponentLabelReader;
 import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GAttributeConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -26,7 +27,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSep
 public class GContainer extends GComponent implements HasNativeSID {
     public String caption;
     public String name;
-    public boolean declared; // written by the author in DESIGN (`NEW <name>`); a generated box is not, though it may be named
     public BaseImage image;
 
     public String captionClass;
@@ -52,6 +52,17 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
 
     public boolean main;
+    // the grid this container is the record of: a record has no container, and is in its grid
+    public GGrid recordContainer;
+
+    @Override
+    public GComponent getHiddenContainer() {
+        return recordContainer != null ? recordContainer : container;
+    }
+    @Override
+    public List<GComponent> getChildren() {
+        return children;
+    }
 
     public boolean horizontal;
     public boolean tabbed;
@@ -284,15 +295,12 @@ public class GContainer extends GComponent implements HasNativeSID {
         return react; // custom holds the React component name
     }
 
-    private class GCaptionReader implements GComponentReader {
-        @Override
-        public boolean isDescriptorAttribute() { return true; } // a container's own caption / image - what React draws for an lsf box
-
+    private class GCaptionReader implements GComponentLabelReader {
         public GCaptionReader() {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerCaption(GContainer.this, PValue.getCaptionStringValue(values.firstValue()));
         }
@@ -320,15 +328,12 @@ public class GContainer extends GComponent implements HasNativeSID {
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
-    private class GImageReader implements GComponentReader {
-        @Override
-        public boolean isDescriptorAttribute() { return true; } // a container's own caption / image - what React draws for an lsf box
-
+    private class GImageReader implements GComponentLabelReader {
         public GImageReader() {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerImage(GContainer.this, PValue.getImageValue(values.firstValue()));
         }
@@ -363,7 +368,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setCaptionClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
@@ -409,7 +414,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setValueClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
@@ -435,7 +440,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerCustom(GContainer.this, PValue.getCustomStringValue(values.firstValue()));
         }

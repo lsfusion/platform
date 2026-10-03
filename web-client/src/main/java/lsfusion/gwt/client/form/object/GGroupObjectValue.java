@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
@@ -190,24 +191,48 @@ public class GGroupObjectValue implements Serializable {
     // one public `key`: a JS PRIMITIVE wherever identity works out of the box (===, Map keys, property-name
     // coercion, React key=), otherwise the canonical injective string. NULL is 'n', not JS null (React key= /
     // byKey coercion footguns).
-    public static final String KEY = "key"; // the public row-key field name (DISPLAY / React-key / diff-equality token; resolution uses the `objects` handle, not this)
+    public static final String KEY = "key"; // the public row-key field name (DISPLAY / React-key / diff-equality token;
+                                            // resolvable too, but only where the group to look it up in is known)
+    // ===== the ONE place that decides what a key IS in JS, so the canonical string below is built from the same
+    // decision - which makes `String(row.key) === toKeyString()` true by construction rather than by argument.
+    // A feature that writes a key SOMEWHERE ELSE (a field pointing at another row) writes it through here too, or
+    // `row.<field> === other.key` would not hold.
     public static void setKey(JavaScriptObject row, GGroupObjectValue key) {
-        Object single = key.size() == 1 ? key.getValue(0) : null;
-        if (single instanceof GCustomObjectValue)
-            setKeyNum(row, KEY, ((GCustomObjectValue) single).id); // ids are sequence-generated, nowhere near the 2^53 JS precision bound
-        else if (single instanceof Number) // a numeric (non-object) key value is a native JS number too
-            setKeyNum(row, KEY, ((Number) single).doubleValue());
-        else
-            setKeyStr(row, KEY, key.toKeyString());
+        writeKey(row, KEY, key);
     }
-    private static native void setKeyNum(JavaScriptObject obj, String field, double v) /*-{ obj[field] = v; }-*/;
-    private static native void setKeyStr(JavaScriptObject obj, String field, String v) /*-{ obj[field] = v; }-*/;
+    static void writeKey(JavaScriptObject target, String field, GGroupObjectValue key) {
+        if (isNumberKey(key))
+            writeKeyNum(target, field, numberKey(key));
+        else
+            writeKeyStr(target, field, key.toKeyString());
+    }
+    // a key of ONE object or ONE number is that number in JS; anything else is its canonical string. Asked and
+    // answered as two calls rather than as one nullable Double: a key of 0 is a perfectly good key, and a boxed
+    // number that has to be tested against null is the shape this codebase has been bitten by before
+    private static boolean isNumberKey(GGroupObjectValue key) {
+        Object single = key.size() == 1 ? key.getValue(0) : null;
+        return single instanceof GCustomObjectValue || single instanceof Number;
+    }
+    // an id is sequence-generated, nowhere near the 2^53 bound a double stops being exact at
+    private static double numberKey(GGroupObjectValue key) {
+        Object single = key.getValue(0);
+        return single instanceof GCustomObjectValue ? ((GCustomObjectValue) single).id : ((Number) single).doubleValue();
+    }
+    private static native void writeKeyNum(JavaScriptObject t, String field, double v) /*-{ t[field] = v; }-*/;
+    private static native void writeKeyStr(JavaScriptObject t, String field, String v) /*-{ t[field] = v; }-*/;
 
     // ===== the canonical string (one-way) =====
     // ENCODE computes: toKeyString() == String(row.key) — single: digits / the string itself / 'n'; multi: parts
-    // joined with '|', each self-delimiting left-to-right (digits, 'n', or "len:value"), so distinct keys can't
-    // produce one string. There is NO decode (the string omits the object-instance identity): it is a DISPLAY /
-    // React-key / diff-equality token only, never a resolution input — resolution uses the row handle or a raw GGV.
+    // joined with '|', each self-delimiting left-to-right (digits, 'n', or "len:value"). There is NO decode (the
+    // string omits the object-instance identity), so nothing turns it back into a key: it resolves only by being
+    // LOOKED UP among the rows of a known group - a row handle or a raw GGV is what resolves on its own.
+    // The parts of a MULTI-value key cannot be misread for one another; a SINGLE value is written raw, so it is only
+    // unambiguous against keys OF THE SAME SIZE - which is every row of one group, and hence every use that matters
+    // (`byKey`, `keys`, the React key, row equality). Comparing across sizes is a tree's `parent` / `path`, and there
+    // a single STRING-valued object key containing '|' could equal a composite of the same digits: an `OBJECTS s =
+    // STRING` group above another group of a tree, with a '|' in the data. Raw stays raw because `row.key` being the
+    // bare id is what every view reads; the alternative is length-prefixing every key to guard a case that needs a
+    // string-keyed object, a tree, and a pipe in the value all at once.
     private transient String keyString; // hot: computed per row per list rebuild + diff equality
     public String toKeyString() {
         if (keyString != null)
@@ -216,11 +241,9 @@ public class GGroupObjectValue implements Serializable {
     }
     private String buildKeyString() {
         if (size == 1) {
+            if (isNumberKey(this)) // the SAME decision the JS value is written by, so this is String() of it
+                return jsNumberString(numberKey(this));
             Object value = getValue(0);
-            if (value instanceof GCustomObjectValue)
-                return String.valueOf(((GCustomObjectValue) value).id); // == String(row.key) (a long id prints the same digits as the JS number)
-            if (value instanceof Number)
-                return jsNumberString(((Number) value).doubleValue()); // == String(key) of the JS number
             return value == null ? "n" : String.valueOf(value);
         }
         StringBuilder b = new StringBuilder();
@@ -238,6 +261,18 @@ public class GGroupObjectValue implements Serializable {
         }
         return b.toString();
     }
+    // the identity of a key held OUTSIDE a group: the canonical string says what the key's values ARE, which tells two
+    // rows apart within ONE group - every use that has a group (`byKey`, `keys`, the React key). A list an author
+    // builds is scoped to nothing and can hold rows of several groups, and two of those can carry the same value; so
+    // this names the objects the values are OF as well. Built ON the canonical string, so the two cannot part.
+    public String toIdentityString() {
+        // how many ids follow, or an id could be read as part of the string
+        StringBuilder b = new StringBuilder().append(size).append(':');
+        for (int i = 0; i < size; i++)
+            b.append(getKey(i)).append(':');
+        return b.append(toKeyString()).toString();
+    }
+
     // the EXACT JS String(number) — the canonical string must match what a caller-passed native number coerces
     // to, incl. -0/exponent edge cases Java formatting would diverge on
     private static native String jsNumberString(double value) /*-{ return String(value); }-*/;
@@ -258,6 +293,29 @@ public class GGroupObjectValue implements Serializable {
     private static JavaScriptObject getRowObjects(JavaScriptObject row) {
         return readField(row, ROW_OBJECTS);
     }
+    // a fabricated row: the template cloned, then keyed by whatever `objects` resolves to - the ONE place a custom
+    // surface mints a row, so its public `key` and its `objects` handle cannot end up saying different things
+    // (replacing the handle alone leaves the key it was cloned with, pointing at another row entirely)
+    public static JavaScriptObject createRow(JavaScriptObject template, JavaScriptObject objects) {
+        // a raw handle or a row of this form; anything else stays unkeyed
+        GGroupObjectValue key = resolveObject(objects);
+        JavaScriptObject created = GwtClientUtils.copyObject(template);
+        if (key != null)
+            registerRow(created, key);
+        else
+            clearRowIdentity(created); // the clone copied the template's key AND handle; a row that resolves to nothing
+                                       // must not answer with the template's identity to a diff or to a lookup
+        return created;
+    }
+
+    // both halves of a row's identity at once: the handle resolution reads, and the public key a diff and an index
+    // compare by. Dropping one and keeping the other is what lets a fabricated row say it is its template
+    private static void clearRowIdentity(JavaScriptObject row) {
+        clearRowObjects(row);
+        clearRowKey(row);
+    }
+    private static native void clearRowKey(JavaScriptObject row) /*-{ delete row[@lsfusion.gwt.client.form.object.GGroupObjectValue::KEY]; }-*/;
+
     public static void clearRowObjects(JavaScriptObject row) { // drop the handle a clone inherited from its template (enumerable → copied by Object.assign)
         deleteField(row, ROW_OBJECTS);
     }

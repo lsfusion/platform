@@ -216,8 +216,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             result.add(encodeUnknownJSValue(jsArrayGet(array, i)));
         return result;
     }
-    private static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
-    private static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
+    public static native boolean isJSArray(JavaScriptObject v) /*-{ return Array.isArray(v); }-*/;
+    public static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
+    public static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
     private static native boolean isBoolean(JavaScriptObject v) /*-{ return typeof v === 'boolean'; }-*/;
     private static native boolean isNumber(JavaScriptObject v) /*-{ return typeof v === 'number'; }-*/;
     private static native boolean isString(JavaScriptObject v) /*-{ return typeof v === 'string'; }-*/;
@@ -264,6 +265,25 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         return fromString(PValue.getCustomStringValue(value));
     }
+    // the KIND the value above was converted BY - read off the SAME switch, so the name and the value cannot drift.
+    // Not `typeof` of the result in every case: "date" is the platform's date-and-time family, and "json" says the
+    // value was PARSED, so what it lands as is whatever the JSON held. Every remaining case converts to a string (a
+    // text, an image src, a file url), which is what "string" says here.
+    public static String getJSTypeName(GType type) {
+        if (type == null)
+            return null;
+        type = type.getDataType();
+        if (type instanceof GLogicalType)
+            return "boolean";
+        if (type instanceof GIntegralType)
+            return "number";
+        if (type instanceof GJSONType)
+            return "json";
+        if (type instanceof GADateType)
+            return "date";
+        return "string";
+    }
+
     public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType, boolean imageToHTML) {
         return convertToJSValue(property.getRenderType(rendererType), property, imageToHTML, value);
     }
@@ -387,8 +407,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 objectsKey = getSelectedKey(); // null / omitted object -> the current object
             else {
                 objectsKey = getObjects(objects[i]); // a data row or a raw objects handle
-                if(objectsKey == null) { // an EXPLICIT object that is neither a row nor a handle: reject loudly (mirror the
-                    // form controller's controllerChangeProperties) instead of feeding null into getFullKey -> NPE
+                // an EXPLICIT object that is neither a row nor a handle: reject loudly (mirror a
+                if(objectsKey == null) {
+                    // controller batch's refusal, GReactFormData.ContainerState.changeProperties) instead of feeding
+                    // null into getFullKey -> NPE
                     GwtClientUtils.consoleError("changeProperty('" + columns[i] + "'): the object argument is not a data row or an objects handle; pass one of those");
                     continue;
                 }
@@ -632,15 +654,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getObjects(object); // a row of this form or a raw GGV handle; null for anything else (no bare-key/clone resolution)
     }
     protected JavaScriptObject createWithObjects(JavaScriptObject object, JavaScriptObject objects) {
-        // a raw GGV handle or a row of this form (getObjects accepts both); anything else (e.g. a bare key) stays unkeyed
-        GGroupObjectValue key = getObjects(objects);
-        JavaScriptObject created = GwtClientUtils.copyObject(object); // clone the template (registerRow mutates the row below)
-        if (key != null)
-            GGroupObjectValue.registerRow(created, key); // fabricated rows get the full contract: public key + row-carried `objects` handle
-        else
-            GGroupObjectValue.clearRowObjects(created); // the clone copied the template's enumerable `objects`; drop it so an unresolvable identity stays unkeyed (resolution reads `objects`, not key)
-
-        return created;
+        return GGroupObjectValue.createRow(object, objects); // shared with the cell renderer's controller
     }
 
     protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
@@ -839,8 +853,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeProperty: function (property, object, newValue, type, index) {
                 if (!thisObj.@GSimpleStateTableView::isGridProperty(Ljava/lang/String;)(property))
                     // not a column of THIS grid (e.g. a PANEL action edit/delete): the form controller's job (#1655) -
-                    // forward to it; it resolves the property form-wide (any group, incl. form-level) and guesses/execs
-                    return formController.changeProperty(property, object, newValue);
+                    // forward to its property-change implementation; it resolves the property form-wide (any group,
+                    // incl. form-level) and makes the same (object, value) guess. Taken from the Java field and not
+                    // from the controller OBJECT: the form controller has no stringly-typed changeProperty member -
+                    // there a property is addressed as controller.<group>.<property>.change(...), and that surface
+                    // says only what its members say. This is the CLASSIC one, which names the whole form
+                    return (thisObj.@lsfusion.gwt.client.form.object.table.grid.view.GStateTableView::form.@lsfusion.gwt.client.form.controller.GFormController::classicChangeProperty)(property, "changeProperty('" + property + "')", object, newValue);
                 if(object !== undefined) {
                     if(newValue === undefined) { //object passed, newValue not passed
                         //guess if object is object or newValue

@@ -101,7 +101,7 @@ never deployed — is the module that turns them back on. The unit tests of the 
 build and run when asked for with `-Dmaven.test.skip=false`, as Jenkins asks for them: a failing one stops the
 deploy, so run those of a module you change. Where a new test goes:
 
-- **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server;
+- **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server. The web client's GWT tests (`GWTTestCase`) are unit tests too: web-client's surefire configuration runs them compiled to JavaScript in HtmlUnit. The custom-view registry's own JS has a node test, run by hand: `node server/src/test/js/lsfusion-custom-registry-test.js`;
 - **syntax** — `tests/compile/ok/<theme>/X.lsf` has to compile, `tests/compile/fail/<theme>/X.lsf` has to fail with every non-blank line of its `X.expected` somewhere in the output. Run with `dryRun`, which compiles the logic and exits before touching the database: all of `ok` in one run, one run per `fail` module (`LsfCompileTest`, surefire);
 - **server behaviour** — an action named `test*`, without parameters, at the top level of a module under `tests/src/main/lsfusion/<theme>/` (`LsfServerIT`, failsafe). Nothing is registered: modules come off the classpath, and every top-level name beginning with `test` is taken for a test and called, so a helper in a test module goes by another name. Each is called through the external HTTP `/exec`, so it runs in a session of its own and its changes are dropped afterwards — a test that needs them kept has to `APPLY`, and what it applies stays in the database for the tests after it. Assertions live in `TestUtils.lsf` and end in `fail(message)`, which is what the report shows.
 

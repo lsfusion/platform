@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -184,5 +185,21 @@ public class GGroupObject implements Serializable, HasNativeSID {
 
     public GGroupObjectValue filterRowKeys(GGroupObjectValue fullCurrentKey) {
         return fullCurrentKey.filter(Collections.singletonList(this));
+    }
+
+    // the component that DRAWS this group's rows - the grid, or, in a tree, the tree component that draws them all.
+    // Everything that asks where a group lives asks about this component and not about the group's box: a MOVE takes
+    // the grid out of its box, and then the box is somewhere the rows are not (mirrors FormView.getDrawComponent)
+    public GComponent getDrawComponent() {
+        // a group in a tree has no grid of its own: the tree draws it
+        return parent != null ? parent : grid;
+    }
+
+    // the key a ROW of this group is keyed by, taken out of a fuller one. A grid keys its rows by the group's own
+    // objects; a TREE keys them by the path down to the group, every group above included - which is what its rows,
+    // its expand table and the projection all use. Anything that has a full key and wants a row must ask here, or it
+    // ends up with a key no row is found by, and the miss is silent.
+    public GGroupObjectValue getRowKey(GGroupObjectValue fullCurrentKey) {
+        return parent != null ? parent.filterRowKeys(this, fullCurrentKey) : filterRowKeys(fullCurrentKey);
     }
 }

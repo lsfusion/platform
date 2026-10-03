@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
 
 public class GValueElementClassReader extends GExtraPropertyReader {
 
@@ -13,7 +13,7 @@ public class GValueElementClassReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "VALUEELEMENTCLASS");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
+    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
         controller.updateCellValueElementClasses(this, keys);
     }
 
