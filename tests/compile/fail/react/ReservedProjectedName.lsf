@@ -1,0 +1,18 @@
+MODULE ReservedProjectedName;
+
+REQUIRE System;
+
+// a property of the empty group named like a verb every controller of the form carries - here the editing a view
+// declares: its member would shadow the verb
+reservedNote = DATA STRING[50] ();
+
+FORM reservedName
+    PROPERTIES() reservedNote EXTID 'startEditing'
+;
+
+DESIGN reservedName {
+    NEW board {
+        custom = 'ReservedBoard';
+        MOVE PROPERTY(reservedNote());
+    }
+}

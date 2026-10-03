@@ -1,0 +1,22 @@
+MODULE ColumnsInReact;
+
+REQUIRE System;
+
+// a property grouped in COLUMNS that a CUSTOM REACT container would carry: it is one cell per row AND column, and a
+// React view names one row
+CLASS ColumnsItem;
+CLASS ColumnsKind;
+columnsQty = DATA INTEGER (ColumnsItem, ColumnsKind);
+
+FORM columnsInReact
+    OBJECTS k = ColumnsKind
+    OBJECTS i = ColumnsItem
+    PROPERTIES(i, k) columnsQty COLUMNS (k)
+;
+
+DESIGN columnsInReact {
+    NEW board {
+        custom = 'ColumnsBoard';
+        MOVE BOX(i);
+    }
+}

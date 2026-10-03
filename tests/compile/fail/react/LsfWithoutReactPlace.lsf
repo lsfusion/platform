@@ -1,0 +1,16 @@
+MODULE LsfWithoutReactPlace;
+
+REQUIRE System;
+
+// `lsf` on a component no CUSTOM REACT container places: there is none above it
+unplacedNote = DATA STRING[50] ();
+
+FORM unplacedLsf
+    PROPERTIES() unplacedNote
+;
+
+DESIGN unplacedLsf {
+    NEW plain {
+        MOVE PROPERTY(unplacedNote()) { lsf = TRUE; }
+    }
+}

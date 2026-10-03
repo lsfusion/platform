@@ -1,0 +1,13 @@
+MODULE LsfGridPropertyRowsNotReact;
+
+REQUIRE System;
+
+// `LSF` on a grid property whose rows the platform draws: per-row renderers are placed by the view that draws the
+// rows, and here there is none
+CLASS PlainRowsItem;
+plainRowsQty = DATA INTEGER (PlainRowsItem);
+
+FORM plainRows
+    OBJECTS i = PlainRowsItem
+    PROPERTIES(i) plainRowsQty LSF
+;

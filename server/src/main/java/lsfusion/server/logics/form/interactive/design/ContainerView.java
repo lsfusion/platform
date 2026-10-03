@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import java.util.function.Predicate;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -40,10 +41,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     private NFProperty<LocalizedString> caption = NFFact.property();
     private NFProperty<String> name = NFFact.property(); // actually used only for icons
 
-    // the author wrote this container themselves - DESIGN's `NEW <name>` (ScriptingFormView.createNewComponent). The
-    // generated boxes of a form and of every group are not declared, even though some of them are named (for icons),
-    // and a CUSTOM REACT view is given only the containers that were declared (GReactFormData.fillContainers).
-    public boolean declared;
     private NFProperty<AppServerImage.Reader> image = NFFact.property();
 
     private NFProperty<String> valueClass = NFFact.property();
@@ -350,10 +347,16 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
             child.fillPropertyComponents(mComponents);
     }
 
-    public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean parentShowIf) {
+    // the components whose visibility the client is sent, but for what React keeps nothing of
+    // (FormView.reactKeepsNothing, FormEntity.getBaseComponents). A container is not one - the platform hides it
+    // through what it holds - unless a react view has to be told about it (reactShown: FormView.isReactShowIfContainer)
+    public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean parentShowIf, Predicate<ContainerView> reactShown) {
         for (ComponentView child : getChildrenIt()) {
             if (child instanceof ContainerView) {
-                ((ContainerView) child).fillBaseComponents(mComponents, parentShowIf || child.getShowIf() != null);
+                boolean showIf = parentShowIf || child.getShowIf() != null;
+                if (showIf && reactShown.test((ContainerView) child))
+                    mComponents.exclAdd(child);
+                ((ContainerView) child).fillBaseComponents(mComponents, showIf, reactShown);
             } else if (child.getShowIf() != null || (parentShowIf && !(child instanceof PropertyDrawView))) {
                 mComponents.exclAdd(child);
             }
@@ -401,7 +404,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(getCaption()) : null); // optimization
         pool.writeString(outStream, getName()); // optimization
-        outStream.writeBoolean(declared);
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
         pool.writeString(outStream, getCaptionClass());
@@ -498,8 +500,10 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     public boolean isCollapsible() {
-        if(isReactHidable()) // an lsf container's visibility is owned by React, not a GWT collapse toggle, so it is
-            return false;    // never collapsible — this keeps a component in at most one of the user-hidden roles
+        // nothing with a React place has a GWT collapse toggle: an lsf container's visibility is owned by React, and a
+        // container React draws has no header at all - this keeps a component in at most one of the user-hidden roles
+        if(getReactPlace() != null)
+            return false;
 
         Boolean collapsibleValue = collapsible.get();
         if(collapsibleValue != null)
@@ -561,7 +565,15 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         horizontal.set(value, version);
     }
 
+    // `tabbed` - except on a container React draws: React lays that out itself, so there the platform's layout
+    // attributes are ignored, this one as `fill` is. With it the server keeps no tab state there - no page of it
+    // hidden as an inactive tab, no ACTIVE TAB - and sends no tab strip
     public boolean isTabbed() {
+        return isDeclaredTabbed() && !isReactDrawn();
+    }
+    // ... and as the design declares it, wherever the container is: what the design itself is checked by
+    // (FormView.checkCustomTabbed)
+    public boolean isDeclaredTabbed() {
         return nvl(tabbed.get(), false);
     }
     public void setTabbed(boolean value, Version version) {
@@ -762,7 +774,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         debugPoint = src.debugPoint;
 
         main = src.main;
-        declared = src.declared; // a copied design keeps its author's containers - see the field
 
         recordContainer = mapping.get(src.recordContainer);
         addParent = mapping.get(src.addParent);
@@ -775,8 +786,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     public void extend(ContainerView<AddParent> src, ObjectMapping mapping) {
         super.extend(src, mapping);
 
-        declared |= src.declared; // monotone: extending a generated box with a declared one makes it the author's,
-                                  // and extending a declared box never un-declares it
         mapping.sets(caption, src.caption);
         mapping.sets(name, src.name);
         mapping.sets(image, src.image);

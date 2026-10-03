@@ -1,0 +1,21 @@
+MODULE LsfInsideLsfContainer;
+
+REQUIRE System;
+
+// `lsf` under an lsf container on the way to the CUSTOM REACT container: the platform draws that container whole, so
+// nothing places what is inside it
+framedNote = DATA STRING[50] ();
+
+FORM framedLsf
+    PROPERTIES() framedNote
+;
+
+DESIGN framedLsf {
+    NEW board {
+        custom = 'FramedBoard';
+        NEW frame {
+            lsf = TRUE;
+            MOVE PROPERTY(framedNote()) { lsf = TRUE; }
+        }
+    }
+}

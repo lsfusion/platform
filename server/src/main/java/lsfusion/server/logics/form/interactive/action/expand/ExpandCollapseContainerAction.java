@@ -25,8 +25,11 @@ public class ExpandCollapseContainerAction extends SystemExplicitAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if (component instanceof ContainerView) {
             ContainerView container = (ContainerView) component;
-            if (container.isReactHidable()) // an lsf-view container's visibility is owned by the React component that places it, not by a scripted collapse
-                throw new RuntimeException("cannot COLLAPSE / EXPAND an lsf-view container inside a CUSTOM REACT component: its visibility is controlled by that component");
+            // the visibility of a container a React component draws or places is that component's, not a scripted
+            // collapse's: it has no collapse header (ContainerView.isCollapsible)
+            if (container.getReactPlace() != null)
+                throw new RuntimeException("cannot COLLAPSE / EXPAND container '" + container.getSID() + "', which a CUSTOM"
+                        + " REACT component draws or places: its visibility is controlled by that component");
             if (container.isCollapsible()) {
                 FormInstance formInstance = context.getFormInstance(false, true);
                 if (collapse) {

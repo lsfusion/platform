@@ -1,0 +1,22 @@
+MODULE TabbedCustomInReact;
+
+REQUIRE System;
+
+// `custom` beside `tabbed` on one container is refused wherever the container is - inside what a React component draws
+// too, where both are ignored
+tabbedNote = DATA STRING[50] ();
+
+FORM tabbedCustom
+    PROPERTIES() tabbedNote
+;
+
+DESIGN tabbedCustom {
+    NEW board {
+        custom = 'TabbedBoard';
+        NEW pages {
+            tabbed = TRUE;
+            custom = '<div></div>';
+            MOVE PROPERTY(tabbedNote());
+        }
+    }
+}

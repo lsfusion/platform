@@ -1,0 +1,20 @@
+MODULE UnnamedObjectGroupInReact;
+
+REQUIRE System;
+
+// a group of several objects with no name of its own that a CUSTOM REACT container draws: its SID joins the objects'
+// names with dots, and a React view names a group as one word
+CLASS PairLeft;
+CLASS PairRight;
+pairName = DATA STRING[20] (PairLeft, PairRight);
+
+FORM unnamedPair
+    OBJECTS (l = PairLeft, r = PairRight)
+    PROPERTIES(l, r) pairName
+;
+
+DESIGN unnamedPair {
+    OBJECTS {
+        custom = 'PairBoard';
+    }
+}

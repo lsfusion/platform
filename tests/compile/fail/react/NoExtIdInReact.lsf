@@ -1,0 +1,19 @@
+MODULE NoExtIdInReact;
+
+REQUIRE System;
+
+// a property a CUSTOM REACT container draws with no name: a view reaches a property only by its name
+CLASS NamelessItem;
+namelessQty = DATA INTEGER (NamelessItem);
+
+FORM namelessInReact
+    OBJECTS i = NamelessItem
+    PROPERTIES(i) namelessQty NOEXTID
+;
+
+DESIGN namelessInReact {
+    NEW board {
+        custom = 'NamelessBoard';
+        MOVE BOX(i);
+    }
+}

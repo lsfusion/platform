@@ -41,7 +41,10 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     protected NFProperty<Boolean> defaultComponent = NFFact.property();
     protected NFProperty<Boolean> activated = NFFact.property();
 
-    // meaningful only for a direct child of a CUSTOM REACT container: the child keeps its real (server-built) view and React mounts it into a placeholder instead of owning it; ignored everywhere else
+    // meaningful only inside a CUSTOM REACT container, under the containers it draws itself: the component keeps its
+    // real (server-built) view and React mounts it into a placeholder instead of drawing it; refused anywhere else but
+    // on a REMOVEd component, which nothing draws - and a LIST property is asked where its group's rows are drawn,
+    // wherever its own component is (FormView.checkLsfView)
     protected NFProperty<Boolean> lsf = NFFact.property();
 
     protected NFProperty<Double> flex = NFFact.property();
@@ -375,23 +378,67 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     }
 
     // the user / client drives this component's visibility and syncs it to the server, so its data is not read while
-    // hidden. Three variants: an unselected tab (exclusive, one of N), a collapsed captioned container, and an lsf-view
-    // child a CUSTOM REACT component is not showing — the last two are the isolated "this one is hidden" kind
+    // hidden. Three variants: an unselected tab (exclusive, one of N), a collapsed captioned container, and an lsf
+    // component a CUSTOM REACT component is not showing — the last two are the isolated "this one is hidden" kind. A
+    // component with a React place has only the last: React draws its parent - no tab strip (isTabbed) - and it has no
+    // collapse header (isCollapsible), so what a React view draws is never hidden, and what it places it shows or not
     public boolean isUserHidable() {
         ComponentView parent = getHiddenContainer();
         assert parent != null;
+        if (isReactHidable())
+            return true;
         if (parent instanceof ContainerView && ((ContainerView) parent).isTabbed())
             return true;
 
-        if (this instanceof ContainerView && ((ContainerView) this).isCollapsible())
-            return true;
-
-        return isReactHidable();
+        return this instanceof ContainerView && ((ContainerView) this).isCollapsible();
     }
 
+    // where this component's LABEL is drawn, whose visibility the label follows: a user-hidable component's label is
+    // drawn by its parent - a tab strip draws a page's title, a collapse header a container's caption, a React view the
+    // caption of an lsf child it places - so it stays on screen while the component itself is hidden; any other
+    // component's label is drawn with it
+    public ComponentView getLabelPlace() {
+        return !isMain() && isUserHidable() ? getHiddenContainer() : this;
+    }
+
+    // WHERE THIS COMPONENT IS: the react container that draws or places it, null when the platform draws it where it
+    // stands. Walked from the component's CONTAINER - a grid's record, which has none, is in its grid
+    // (getHiddenContainer): a react container answers, an lsf component ends the walk - the platform draws everything
+    // under it. The component's own `lsf` says only which entry it has there, its content or
+    // its descriptor, never where the entry goes. A react container inside what another one draws is refused
+    // (FormView.checkCustomReactSwallowed), so the first one reached is the only one there is (mirrors
+    // GComponent.getReactPlace)
+    public ContainerView getReactPlace() {
+        for (ComponentView parent = getHiddenContainer(); parent != null; parent = parent.getHiddenContainer()) {
+            // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
+            if (parent instanceof ContainerView && ((ContainerView) parent).isReact())
+                return parent.isInForm() ? (ContainerView) parent : null;
+            if (parent.isLsfView())
+                return null;
+        }
+        return null;
+    }
+    // whether the component is in the form's design at all: a REMOVEd one is not, and neither is what it held. A grid's
+    // record has no container, and is where its grid is (getHiddenContainer) (mirrors GComponent.isInForm)
+    public boolean isInForm() {
+        ComponentView component = this;
+        while (component.getHiddenContainer() != null)
+            component = component.getHiddenContainer();
+        return component.isMain();
+    }
+
+    // React draws this component from data: it has a React place and is not lsf - the other half of what has one, an
+    // lsf component there, React places (isReactHidable) (mirrors GComponent.isReactDrawn)
+    public boolean isReactDrawn() {
+        return !isLsfView() && getReactPlace() != null;
+    }
+
+    // an lsf component a React view places - at any depth under the containers that view draws itself - whose view
+    // shows it or not (ReactContainerView reports which, as a set). An LSF LIST property is one too, which no view
+    // reports - its renderers are placed per row -, and it is not asked: a list property is as hidden as what draws its
+    // rows (FormEntity.getDrawComponent)
     public boolean isReactHidable() {
-        ComponentView parent = getHiddenContainer();
-        return isLsfView() && parent instanceof ContainerView && ((ContainerView) parent).isReact();
+        return isLsfView() && getReactPlace() != null;
     }
 
     protected boolean hasPropertyComponent() {

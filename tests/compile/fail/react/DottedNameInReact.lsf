@@ -1,0 +1,17 @@
+MODULE DottedNameInReact;
+
+REQUIRE System;
+
+// an integration name with a dot that a CUSTOM REACT container would carry: a name is read as '<group>.<property>'
+dottedNote = DATA STRING[50] ();
+
+FORM dottedName
+    PROPERTIES() dottedNote EXTID 'a.b'
+;
+
+DESIGN dottedName {
+    NEW board {
+        custom = 'DottedBoard';
+        MOVE PROPERTY(dottedNote());
+    }
+}

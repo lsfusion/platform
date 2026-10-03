@@ -62,6 +62,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -1288,12 +1289,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         FormView formView = view;
         ComponentView drawComponent;
         GroupObjectEntity toDraw;
-        if(property.isList(this) && (toDraw = property.getToDraw(this)) != null) {
-            if (toDraw.isInTree())
-                drawComponent = formView.get(toDraw.treeGroup);
-            else
-                drawComponent = formView.get(toDraw).grid;
-        } else
+        if(property.isList(this) && (toDraw = property.getToDraw(this)) != null)
+            drawComponent = formView.getDrawComponent(toDraw);
+        else
             drawComponent = formView.get(property);
         return drawComponent;
     }
@@ -1626,7 +1624,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     public ImSet<ComponentView> getPropertyComponents() {
         MExclSet<ComponentView> mComponents = SetFact.mExclSet();
         view.mainContainer.fillPropertyComponents(mComponents);
-        return mComponents.immutable();
+        return mComponents.immutable().filterFn(component -> !view.reactKeepsNothing(component));
     }
 
     @IdentityLazy
@@ -1640,8 +1638,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     @IdentityLazy
     public ImSet<ComponentView> getBaseComponents() {
         MExclSet<ComponentView> mContainers = SetFact.mExclSet();
-        view.mainContainer.fillBaseComponents(mContainers, false);
-        return mContainers.immutable();
+        // raw mainContainer would erase the predicate
+        ((ContainerView<?>) view.mainContainer).fillBaseComponents(mContainers, false, view::isReactShowIfContainer);
+        return mContainers.immutable().filterFn(component -> !view.reactKeepsNothing(component));
     }
 
     public LocalizedString getCaption() {

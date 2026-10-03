@@ -515,7 +515,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (component instanceof ContainerView) {
             ContainerView<?> container = (ContainerView) component;
             
-            if (container.isCollapsed()) {
+            // `collapsed` on what has no collapse header - an lsf child, one React draws - hides nothing
+            if (container.isCollapsed() && container.isCollapsible()) {
                 collapseContainer(container);
             }
             
@@ -524,7 +525,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
         
-        if (component.isActivated()) {
+        // no tab strip shows what has a React place, so a design's `activated` means nothing there
+        if (component.isActivated() && component.getReactPlace() == null) {
             activateTab(component);
         }
     } 
@@ -1893,6 +1895,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
     // programmatic activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
+        // what a CUSTOM REACT component draws or places is shown by that component, not by a tab strip - none is drawn
+        // there, a `tabbed` container React draws being no tabbed one (ContainerView.isTabbed) - so this would write
+        // ACTIVE TAB true for something no strip will ever show (and fail setTabActive's `assert view.isTabbed()`
+        // under -ea). Refused the way a scripted COLLAPSE / EXPAND on the same component is
+        // (ExpandCollapseContainerAction)
+        if (view.getReactPlace() != null)
+            throw new RuntimeException("ACTIVATE TAB is set for '" + view.getSID() + "', which a CUSTOM REACT component"
+                    + " draws or places - its visibility is controlled by that component");
         if (!(view instanceof ContainerView && ((ContainerView) view).getChildrenList().isEmpty())) {
             setTabActive(view.getContainer(), view);
             userActivateTabs = userActivateTabs.addList(view);
@@ -1945,13 +1955,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(isStaticHidden(component))
             return true;
 
-        // if this is a tab / collapsible / react-placed lsf-view container, use its parent: its CAPTION is drawn by the parent
-        // (a tab strip, a collapse header, or a React component that can keep showing the caption while unmounting the
-        // body), so the caption must keep updating even while the component's own body is hidden. The body / data is gated
-        // separately (isHidden(group), and a child property's own dynamic-hidable container which resolves to this one).
-        ComponentView dynamicHidableContainer = component.getDynamicHidableContainer();
-        if(dynamicHidableContainer == component && component.isUserHidable())
-            dynamicHidableContainer = component.getHiddenContainer().getDynamicHidableContainer();
+        // its caption follows where it is drawn (ComponentView.getLabelPlace): a tab / collapsible / react-placed
+        // lsf-view container's is drawn by its parent, so it must keep updating even while the component's own body is
+        // hidden. The body / data is gated separately (isHidden(group), and a child property's own dynamic-hidable
+        // container which resolves to this one)
+        ComponentView dynamicHidableContainer = component.getLabelPlace().getDynamicHidableContainer();
 
         return dynamicHidableContainer != null && isDynamicHidden(dynamicHidableContainer);
     }
@@ -2009,7 +2017,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         assert userHidableContainer.isUserHidable();
 
         ComponentView container = userHidableContainer.getHiddenContainer();
-        if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) { // exclusive: one child active
+        // exclusive: one child active - never what a React view places, whose parent React draws: no tabbed one
+        // (ContainerView.isTabbed)
+        if(container instanceof ContainerView && ((ContainerView) container).isTabbed()) {
             ComponentView active = activeTabs.get((ContainerView)container);
             ImList<ComponentView> siblings = ((ContainerView) container).getChildrenList();
             if (active == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
@@ -2620,7 +2630,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             boolean oldIsHidden = addShownHidden(isBaseComponentHidden, component, newIsHidden);
 
             if(newIsHidden != oldIsHidden) {
-                BaseComponentViewInstance componentInstance = instanceFactory.getInstance(component);
+                // a container a react view is told about
+                ComponentViewInstance<?> componentInstance = component instanceof ContainerView
+                        ? instanceFactory.getInstance((ContainerView) component) : instanceFactory.getInstance(component);
                 ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = MapFact.singleton(MapFact.EMPTY(), newIsHidden ? new DataObject(true) : NullValue.instance);
                 result.properties.exclAdd(componentInstance.showIfReader, values);
             }
@@ -2679,13 +2691,20 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean update = toDraw == null || !isList || toDraw.toUpdate();
                 boolean updateCaption = update || (isList && toDraw.listViewType.isPivot() && toDraw.toRefresh()); // we want to update captions when switching to pivot to avoid some unnecessary effects (blinking when default property captions are shown, especially when there are group-to-columns) since pivot really relies on caption
                 boolean hidden = isUserHidden(drawProperty);
+                // ... and its label follows where it is drawn (getLabelPlace): a tab strip keeps showing the title of
+                // a page it does not show - the caption with its change key and mouse, the caption's class, the image,
+                // the tooltip -, a React view the caption, image and comment of an lsf child it does not place. Not an
+                // action's, whose caption is its button's face, nor a list property's, whose caption heads its column
+                // in the grid
+                boolean labelHidden = isList || !drawProperty.isProperty(context) ? hidden
+                        : isUserHidden(getDrawComponent(drawProperty).getLabelPlace());
 
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
                 ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
 
                 fillChangedReader(drawProperty, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, labelHidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, labelHidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.footerElementClassReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
@@ -2694,18 +2713,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.fontReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, labelHidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, labelHidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.commentElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.placeholderReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.patternReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.regexpReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.regexpMessageReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.tooltipReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.tooltipReader, toDraw, result, propRowColumnGrids, labelHidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.valueTooltipReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.propertyCustomOptionsReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.changeKeyReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
-                fillChangedReader(drawProperty.changeMouseReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.changeKeyReader, toDraw, result, propRowColumnGrids, labelHidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.changeMouseReader, toDraw, result, propRowColumnGrids, labelHidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(drawProperty.defaultValueReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);

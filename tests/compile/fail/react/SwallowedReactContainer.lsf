@@ -1,0 +1,21 @@
+MODULE SwallowedReactContainer;
+
+REQUIRE System;
+
+// a CUSTOM REACT container inside what another one draws, not marked lsf: the outer component draws that subtree from
+// data, so nothing would ever build the inner one
+swallowedNote = DATA STRING[50] ();
+
+FORM swallowedReact
+    PROPERTIES() swallowedNote
+;
+
+DESIGN swallowedReact {
+    NEW outerBoard {
+        custom = 'OuterBoard';
+        NEW innerBoard {
+            custom = 'InnerBoard';
+            MOVE PROPERTY(swallowedNote());
+        }
+    }
+}

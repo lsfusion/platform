@@ -1,0 +1,21 @@
+MODULE ProjectedNameTwice;
+
+REQUIRE System;
+
+// two properties a CUSTOM REACT container carries under one name, on one node: one entry and one member cannot stand
+// for both
+CLASS TwiceItem;
+twiceName = DATA STRING[20] (TwiceItem);
+twiceNote = DATA STRING[20] (TwiceItem);
+
+FORM projectedTwice
+    OBJECTS i = TwiceItem
+    PROPERTIES(i) twiceName EXTID 'title', twiceNote EXTID 'title'
+;
+
+DESIGN projectedTwice {
+    NEW board {
+        custom = 'TwiceBoard';
+        MOVE BOX(i);
+    }
+}
