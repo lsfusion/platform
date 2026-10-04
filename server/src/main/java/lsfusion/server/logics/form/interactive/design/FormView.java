@@ -415,9 +415,17 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (group == null)
             return CONTROLLER_NAMES;
         String[] reserved = NODE_OWN_NAMES;
-        if (rowsScope(group) == scope)
+        if (rowsScope(group) == scope) {
             reserved = ArrayUtils.addAll(reserved, GRID_PART_NAMES);
+            if (group.isInTree()) // ... and the TREE's, which is the component drawing those rows
+                reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
+        }
         return reserved;
+    }
+    // ... and what a ROW of it carries - asked only where the rows are drawn, the one scope a column is claimed in:
+    // the grid's names, and in a tree the tree's too, which states where the row hangs
+    private String[] getReservedRowNames(GroupObjectEntity group) {
+        return group.isInTree() ? ArrayUtils.addAll(ROW_NAMES, TREE_ROW_NAMES) : ROW_NAMES;
     }
     private static void addGroupScope(List<ContainerView> scopes, ContainerView scope) {
         if (scope != null && !scopes.contains(scope))
@@ -869,7 +877,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             claimProjectionName(inScope(nodeNames, scope), group, integrationSID, source, getReservedNodeNames(group, scope));
             // an LSF list property has no per-row cell, only its column
             if (property.entity.isList(entity) && !property.isLsfView())
-                claimProjectionName(inScope(rowNames, scope), group, integrationSID, source, ROW_NAMES);
+                claimProjectionName(inScope(rowNames, scope), group, integrationSID, source,
+                        getReservedRowNames(group));
         }
     }
 
@@ -910,6 +919,20 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     };
     private static final String[] ROW_NAMES = {
             "key", "isCurrent", "objects", "background", "foreground", "selected", PROTO, // the grid's part: a ROW
+    };
+    // ... and what only the node of a group OF A TREE carries, where the tree's rows are: the TREE's part, claimed
+    // there as the grid's names are
+    private static final String[] TREE_PART_NAMES = { // the tree's part: the NODE - its verbs
+            "expand", "collapse", "toggle", // a node of the group
+            "expandAll", "collapseAll", // ... all of them, and below
+    };
+    // ... and what only a row of a group OF A TREE carries: its place in the tree. It is written by the TREE's part,
+    // so it is claimed exactly where that part is - the same scope the grid's names are claimed in. A group outside a
+    // tree states none of it, and a property of one may take these names
+    private static final String[] TREE_ROW_NAMES = { // the tree's part: a ROW, a line per fact it states
+            "parent",
+            "hasChildren",
+            "expanded",
     };
 
     // a group of SEVERAL objects that the author did not name has no SID of its own: it is synthesized from the object

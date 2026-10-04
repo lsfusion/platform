@@ -79,6 +79,18 @@ public class GReactFormData {
         void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values);
         // the suggestion list of a property's cell, from the server's lookup `actionSID`
         void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount);
+        // a node of a tree whose rows a view draws, opened: one of those rows. Each of these gives the index of its
+        // request, which the keys of its answer come with (TreeRowsGroupNode.updateKeys)
+        long expandNode(GGroupObject group, GGroupObjectValue key);
+        // ... or closed
+        long collapseNode(GGroupObject group, GGroupObjectValue key);
+        // ... and every node of such a group and of the groups below it: opened
+        long expandAll(GGroupObject group);
+        // ... or closed
+        long collapseAll(GGroupObject group);
+        // what the projection showed before the server answers, published - once the request is sent, since it is
+        // reconciled by its index
+        void refreshOptimistic();
     }
 
     // a react container's state, made with its view, and its controller with it
@@ -306,11 +318,18 @@ public class GReactFormData {
         JavaScriptObject edit() {
             if (draft == null) {
                 draft = copyKeepingPrototype(data);
-                pending.put(scope, this);
+                enlist();
             }
             return draft;
         }
+        // ... or only its commit, which may write or not: in the batch, nothing copied yet (TreeRowsGroupNode.touch)
+        void enlist() {
+            pending.put(scope, this);
+        }
+        // the draft becomes the data - what its rows state about each other placed in it first, from the completed batch
+        // (RowsGroupNode.place)
         void commit() {
+            rowsGroupNodes.foreachValue(RowsGroupNode::place);
             if (draft != null) {
                 data = draft;
                 draft = null;
@@ -337,7 +356,8 @@ public class GReactFormData {
         // (createGroupController)
         RowsGroupNode createRowsGroupNode(GGroupObject group) {
             assert nodes.get(group) == null;
-            RowsGroupNode node = new RowsGroupNode(this, group);
+            RowsGroupNode node = group.isInTree() // its kind, chosen here and once: a grid's rows, or a tree's
+                    ? new TreeRowsGroupNode(this, group) : new GridRowsGroupNode(this, group);
             nodes.put(group, node);
             rowsGroupNodes.put(group, node);
             return node;
@@ -586,7 +606,7 @@ public class GReactFormData {
     // group attributes - React's alone. Whether the component drawing the rows is shown is that component's descriptor,
     // as anything else's is. It is the group's controller too, as a grid's controller is where the platform draws the
     // rows
-    private final class RowsGroupNode extends GroupNode implements GGroupController, Rows {
+    private abstract class RowsGroupNode extends GroupNode implements GGroupController, Rows {
         // as the server sends them, with a view's own add/remove on top - none before the first delivery: its own list
         // from the start, which it replaces and never changes
         ArrayList<GGroupObjectValue> rows = new ArrayList<>();
@@ -613,6 +633,8 @@ public class GReactFormData {
             replaceRows();
             super.initialize();
         }
+        // what its rows state about each other, written once the batch is complete (ContainerState.commit)
+        abstract void place();
         // the lsf list property whose per-row renderers go into the rows drawn here, by its integration name
         GPropertyDraw getRowLsfProperty(String integrationSID) {
             for (GPropertyDraw property : form.propertyDraws)
@@ -809,6 +831,248 @@ public class GReactFormData {
             }
         }
     }
+
+    // ... of a GRID: its rows and nothing else
+    private final class GridRowsGroupNode extends RowsGroupNode {
+        GridRowsGroupNode(ContainerState state, GGroupObject group) {
+            super(state, group);
+        }
+        // a grid's rows state nothing about each other
+        void place() {
+        }
+    }
+    // ... of a group of a TREE: its rows say where they hang in it, from the hierarchy sent beside them. A node's
+    // children are rows of its own group, when that one recurses, or of the group below; the tree draws all its groups,
+    // so the node of each of them is here, and knows the nodes above and below it
+    private final class TreeRowsGroupNode extends RowsGroupNode {
+        TreeRowsGroupNode up; // null: the tree's top group
+        TreeRowsGroupNode down; // null: its bottom group
+        // the row each row hangs under, as the server last sent it
+        NativeHashMap<GGroupObjectValue, GGroupObjectValue> parents = new NativeHashMap<>();
+        // ... so the rows the rows hang under, as they stand: the nodes whose children are loaded (isOpen)
+        NativeHashMap<GGroupObjectValue, Boolean> parentRows = new NativeHashMap<>();
+        // ... and the rows it says have children
+        NativeHashMap<GGroupObjectValue, Boolean> expandable = new NativeHashMap<>();
+        // the nodes a view asked to open or close, each with its request, until that request is answered - as the
+        // platform's tree keeps them on its own (GTreeContainerTableNode.pendingExpanding)
+        final NativeHashMap<GGroupObjectValue, ExpandRequest> pendingExpanding = new NativeHashMap<>();
+        boolean touched;
+
+        TreeRowsGroupNode(ContainerState state, GGroupObject group) {
+            super(state, group);
+        }
+        // ... and the nodes above and below it, all of them made by now: in the form's order, which need not be the
+        // tree's
+        void initialize() {
+            super.initialize();
+            GGroupObject upGroup = group.getUpTreeGroup();
+            if (upGroup != null) {
+                up = (TreeRowsGroupNode) state.rowsGroupNodes.get(upGroup); // a group of the same tree
+                up.down = this;
+            }
+        }
+        // a tree's rows are its nodes: the verbs that open them are here, with them
+        JavaScriptObject makeMember() {
+            JavaScriptObject member = super.makeMember();
+            addNodeVerbs(this, member, group.getSID());
+            return member;
+        }
+        // its rows, and the hierarchy sent beside them, as the platform's own tree reads it there too. They answer a
+        // request to open or close a node they hang under, of this group or of the one above: the server sends them
+        // anew with every answer to one, and what was asked up to it gives way to what they say - as in the platform's
+        // tree (GTreeTableTree.synchronize)
+        public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
+            super.updateKeys(group, keys, fc, requestIndex);
+            ArrayList<GGroupObjectValue> parents = fc.parentObjects.get(group); // parallel to them
+            if (parents != null)
+                setParents(parents);
+            NativeHashMap<GGroupObjectValue, Integer> expandables = fc.expandables.get(group); // a count per key
+            if (expandables != null)
+                setExpandables(expandables);
+            dropPendingExpanding(requestIndex);
+            if (up != null)
+                up.dropPendingExpanding(requestIndex);
+        }
+        // ... and the rows are placed anew only where they changed: a page sent again places nothing
+        void setRows(ArrayList<GGroupObjectValue> rows) {
+            if (this.rows.equals(rows))
+                return;
+            super.setRows(rows);
+            hierarchyChanged();
+        }
+        // the hierarchy arrives beside the rows, as a list PARALLEL to them - paired here with the rows as they stand
+        void setParents(ArrayList<GGroupObjectValue> parents) {
+            NativeHashMap<GGroupObjectValue, GGroupObjectValue> keyed = new NativeHashMap<>();
+            if (rows.size() == parents.size()) {
+                for (int i = 0; i < rows.size(); i++)
+                    keyed.put(rows.get(i), group.getParentRowKey(rows.get(i), parents.get(i)));
+            } else {
+                // parallel by construction; if they ever are not, no row states a parent
+                GwtClientUtils.logLsfViewError("data." + group.getSID() + ": " + parents.size() + " parents came for "
+                        + rows.size() + " rows; the hierarchy is dropped");
+            }
+            if (keyed.equals(this.parents)) // a hierarchy sent again unchanged touches nothing
+                return;
+            this.parents = keyed;
+            hierarchyChanged();
+        }
+        // the rows, or where they hang, changed: so may have the nodes whose children are loaded - of this group, or of
+        // the one above - read off the rows the group HAS: a parent is named only while its row is there
+        void hierarchyChanged() {
+            NativeHashMap<GGroupObjectValue, Boolean> parentRows = new NativeHashMap<>();
+            for (GGroupObjectValue key : rows) {
+                GGroupObjectValue parent = parents.get(key);
+                if (parent != null && !parent.isEmpty())
+                    parentRows.put(parent, Boolean.TRUE);
+            }
+            this.parentRows = parentRows;
+            touch();
+            if (up != null)
+                up.touch();
+        }
+        // the children a node has, loaded or not, as a count per key - and the projection states only WHETHER it has
+        // any, so the count is narrowed to that here: a count that moves without crossing zero changes nothing a row
+        // states
+        void setExpandables(NativeHashMap<GGroupObjectValue, Integer> counts) {
+            NativeHashMap<GGroupObjectValue, Boolean> expandable = new NativeHashMap<>();
+            counts.foreachEntry((key, count) -> {
+                if (count != null && count > 0)
+                    expandable.put(key, Boolean.TRUE);
+            });
+            if (expandable.equals(this.expandable))
+                return;
+            this.expandable = expandable;
+            touch();
+        }
+        // ... and the container with it: its commit places the rows (place)
+        void touch() {
+            touched = true;
+            state.enlist();
+        }
+        // each row of the group states its facts in the tree, once the batch is complete - the rows of a node's children
+        // may come after it - each compared with what the row says now and written only where it differs: a row whose
+        // facts stayed keeps its object, whatever else moved in the tree, and a row made anew says nothing yet, so it is
+        // given them all
+        void place() {
+            if (!touched)
+                return;
+            touched = false;
+            for (GGroupObjectValue key : rows) {
+                JavaScriptObject row = currentRow(key);
+                // read for a row the group HAS: a parent recorded for a row since taken away - a view's own remove
+                // comes with no hierarchy - is never asked
+                GGroupObjectValue parent = parents.get(key);
+                if (parent == null || parent.isEmpty()) { // a root, or a row whose hierarchy was dropped
+                    if (!isNullField(row, "parent"))
+                        setField(editRow(key), "parent", (JavaScriptObject) null);
+                } else if (!GGroupObjectValue.isKeyAt(row, "parent", parent)) // written the way a KEY is: === holds
+                    GGroupObjectValue.writeKey(editRow(key), "parent", parent);
+                boolean hasChildren = hasChildren(key);
+                if (!isField(row, "hasChildren", hasChildren))
+                    setField(editRow(key), "hasChildren", hasChildren);
+                boolean expanded = isOpen(key);
+                if (!isField(row, "expanded", expanded))
+                    setField(editRow(key), "expanded", expanded);
+            }
+        }
+        // whether the server counts children under a row, loaded or not
+        boolean hasChildren(GGroupObjectValue key) {
+            return expandable.get(key) != null;
+        }
+        // A node is OPEN when its children are loaded: a row of its group or of the group below names it as its parent,
+        // and the keys of a tree's groups cannot collide. Until the server answers what a view asked of it, it is what
+        // was asked; only a node with children opens
+        boolean isOpen(GGroupObjectValue key) {
+            ExpandRequest request = pendingExpanding.get(key);
+            if (request != null)
+                return request.open && hasChildren(key);
+            return parentRows.get(key) != null || (down != null && down.parentRows.get(key) != null);
+        }
+        // the row as it stands now: in the draft, or as published
+        JavaScriptObject currentRow(GGroupObjectValue key) {
+            return field(field(current(), "byKey"), key.toKeyString());
+        }
+        // ===== a call through its member: expand(row), collapse(row), toggle(row) - a node of the tree, one of the
+        // rows drawn here, named as change(row) names a row of its group (resolveGroupRow): a row of a group BELOW
+        // carries the path past this one and names the node it hangs under here. Straight to the server: a tree whose
+        // rows React draws has no platform table to go through. Expanded-ness is the SERVER's state (it decides which
+        // rows a group returns at all), so these return nothing: the children arrive as rows. The node's `expanded`
+        // says what was asked at once, as a changed value does, and what the rows say once the server answers
+        void expand(String surface, JavaScriptObject objectOrKey) {
+            expandNode(resolveGroupRow(controllerPrefix(surface), objectOrKey));
+        }
+        void collapse(String surface, JavaScriptObject objectOrKey) {
+            collapseNode(resolveGroupRow(controllerPrefix(surface), objectOrKey));
+        }
+        // ... the opposite of what the node says now (`expanded`) - what was asked of it included, so two toggles
+        // before the answer open it and close it again
+        void toggle(String surface, JavaScriptObject objectOrKey) {
+            GGroupObjectValue key = resolveGroupRow(controllerPrefix(surface), objectOrKey);
+            if (isOpen(key))
+                collapseNode(key);
+            else
+                expandNode(key);
+        }
+        void expandNode(GGroupObjectValue key) {
+            ask(key, new ExpandRequest(true, verbs.expandNode(group, key)));
+        }
+        void collapseNode(GGroupObjectValue key) {
+            ask(key, new ExpandRequest(false, verbs.collapseNode(group, key)));
+        }
+        // ... expandAll(), collapseAll(): every node of the group, and of the groups below it - for the tree's top
+        // group, the whole tree
+        void expandAll() {
+            askAll(new ExpandRequest(true, verbs.expandAll(group)));
+        }
+        void collapseAll() {
+            askAll(new ExpandRequest(false, verbs.collapseAll(group)));
+        }
+        // A node a view asked to open or close is shown as asked at once - published as soon as its request is sent
+        void ask(GGroupObjectValue key, ExpandRequest request) {
+            setPendingExpanding(key, request);
+            verbs.refreshOptimistic();
+        }
+        // ... and so is every node there is of the group and of the groups below it; the latest request asked of a node
+        // is the one it shows
+        void askAll(ExpandRequest request) {
+            for (TreeRowsGroupNode node = this; node != null; node = node.down)
+                for (GGroupObjectValue key : node.rows)
+                    node.setPendingExpanding(key, request);
+            verbs.refreshOptimistic();
+        }
+        // ... kept only where a node may have children: nothing opens elsewhere, and no keys would answer it
+        void setPendingExpanding(GGroupObjectValue key, ExpandRequest request) {
+            if (!group.mayHaveChildren())
+                return;
+            pendingExpanding.put(key, request);
+            touch();
+        }
+        // the server answered the requests up to this one: what they asked gives way to what the rows say
+        void dropPendingExpanding(int requestIndex) {
+            ArrayList<GGroupObjectValue> answered = new ArrayList<>();
+            pendingExpanding.foreachEntry((key, request) -> {
+                if (request.requestIndex <= requestIndex)
+                    answered.add(key);
+            });
+            for (GGroupObjectValue key : answered)
+                pendingExpanding.remove(key);
+            if (!answered.isEmpty())
+                touch();
+        }
+    }
+    // what a view asked of a node of a tree, and the request that asks it of the server
+    private static final class ExpandRequest {
+        final boolean open;
+        final long requestIndex;
+
+        ExpandRequest(boolean open, long requestIndex) {
+            this.open = open;
+            this.requestIndex = requestIndex;
+        }
+    }
+    // whether a row already says so - a field it does not have yet says nothing
+    private static native boolean isNullField(JavaScriptObject row, String field) /*-{ return row[field] === null; }-*/;
+    private static native boolean isField(JavaScriptObject row, String field, boolean value) /*-{ return row[field] === value; }-*/;
 
     // what React writes for a property - its entry, on its node under its name: all of a property React draws, or the
     // labels of a property the platform draws - and whether the form shows it, which the entry says: there from the
@@ -1266,6 +1530,26 @@ public class GReactFormData {
             change: function (row) {
                 return node.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsGroupNode::change(*)(sid + ".change()", row);
             }
+        };
+    }-*/;
+
+    // ... and on a group of a TREE, its node verbs: a node IS a row, so the verbs that open one are the group's - and
+    // those that open all of them
+    private static native void addNodeVerbs(TreeRowsGroupNode node, JavaScriptObject member, String sid) /*-{
+        member.expand = function (row) {
+            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::expand(*)(sid + ".expand()", row);
+        };
+        member.collapse = function (row) {
+            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::collapse(*)(sid + ".collapse()", row);
+        };
+        member.toggle = function (row) {
+            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::toggle(*)(sid + ".toggle()", row);
+        };
+        member.expandAll = function () {
+            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::expandAll()();
+        };
+        member.collapseAll = function () {
+            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::collapseAll()();
         };
     }-*/;
 

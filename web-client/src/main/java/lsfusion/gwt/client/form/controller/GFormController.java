@@ -440,6 +440,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     //   controller.<group>.<property>.change(...) / .getValues(...)   a property drawn on an object group
     //   controller.<property>.change(...) / .getValues(...)           a form-level (no-group) property
     //   controller.<group>.change(row)                                the group's current object
+    //   controller.<group>.expand(row) / .collapse(row) / .toggle(row)   one node of a tree
+    //   controller.<group>.expandAll() / .collapseAll()                  ... every node of its group and below it
     //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
     //   controller.properties.change([{property, object, value}])     the one batch — it belongs to no single member
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
@@ -530,6 +532,31 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     @Override
     public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
         changeGroupObject(group, key, null, null);
+    }
+    // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
+    // (TreeRowsGroupNode): the platform's own request, which takes the state asked for. The member shows it at once,
+    // until the keys of the answer arrive with its index
+    @Override
+    public long expandNode(GGroupObject group, GGroupObjectValue key) {
+        return expandGroupObject(group, key, true);
+    }
+    @Override
+    public long collapseNode(GGroupObject group, GGroupObjectValue key) {
+        return expandGroupObject(group, key, false);
+    }
+    // ... and its expandAll / collapseAll: the server starts at the group it is given - its nodes under the open nodes
+    // of the group above, all of them for the top group - and goes down
+    @Override
+    public long expandAll(GGroupObject group) {
+        return expandGroupObjectRecursive(group, false, true); // false: the whole group, not the current object
+    }
+    @Override
+    public long collapseAll(GGroupObject group) {
+        return expandGroupObjectRecursive(group, false, false);
+    }
+    @Override
+    public void refreshOptimistic() {
+        refreshReactOptimistic();
     }
 
     // a property of a group, by a CLASSIC name: the group's one property of that name - a name the group draws twice

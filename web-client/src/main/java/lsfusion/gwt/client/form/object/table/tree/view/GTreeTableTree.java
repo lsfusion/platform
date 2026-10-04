@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
@@ -90,7 +89,7 @@ public class GTreeTableTree {
             GGroupObjectValue key = keys.get(i);
             GGroupObjectValue parent = parents.get(i);
 
-            GGroupObjectValue parentPath = getParentPath(group, key, parent);
+            GGroupObjectValue parentPath = group.getParentRowKey(key, parent);
             OptimizedIndexOfArrayList<GGroupObjectValue> list = childTree.get(parentPath);
             if(list == null) {
                 list = new OptimizedIndexOfArrayList<>();
@@ -105,20 +104,6 @@ public class GTreeTableTree {
         else
             getGroupNodes(upGroup).foreachValue(groupNode ->
                     synchronize(groupNode, group, childTree, expandable, requestIndex));
-    }
-
-    public GGroupObjectValue getParentPath(GGroupObject group, GGroupObjectValue key, GGroupObjectValue parent) {
-        if(key.size() == group.objects.size()) {
-//            assert new GGroupObjectValueBuilder()
-//                    .putAll(key)
-//                    .removeAll(group.objects).toGroupObjectValue().isEmpty();// to remove
-            return parent;
-        }
-
-        return GGroupObjectValue.checkTwins(new GGroupObjectValueBuilder()
-                        .putAll(key)
-                        .removeAll(group.objects)
-                        .putAll(parent).toGroupObjectValue());
     }
 
     // we're assuming that recursive "this" groups goes first (before down groups)

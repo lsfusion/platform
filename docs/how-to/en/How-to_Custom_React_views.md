@@ -69,7 +69,7 @@ A property grouped in columns (`COLUMNS`) cannot be projected: its values are ad
 
 A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which lives there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](How-to_Custom_view_controller.md#row-identity-contract) says what each of the three means.
 
-`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names. On a group node the reservation follows what that node carries: `properties`, `change` and `__member` are reserved on every one of them, while `list`, `byKey`, `keys` and `options` are reserved only in the container that draws the group's rows. A container carrying just a panel property of the group has none of them, so a property called `list` is refused there by nothing. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Lsf>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
+`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names. On a group node the reservation follows what that node carries: `properties`, `change` and `__member` are reserved on every one of them, while `list`, `byKey`, `keys` and `options` are reserved only in the container that draws the group's rows. A container carrying just a panel property of the group has none of them, so a property called `list` is refused there by nothing. A group of a tree reserves more where its rows are drawn, each name given in [Trees](#trees). `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Lsf>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
 
 A property's `value` is converted to a JS value depending on the property's class:
 
@@ -891,3 +891,87 @@ const { Caption } = window.lsfusion;
 ```
 
 A caption is either plain text or markup the platform built, and `Caption` draws whichever it was given, by the same rule the platform draws a caption of its own by: the value is markup when a tag appears anywhere in it. Printed as text, such a caption would show its own markup, so a view that prints `{e.caption}` itself is right only while the caption is plain text. A missing caption draws nothing.
+
+### Trees {#trees}
+
+A group of a tree is projected like any other group: what a container has of it is what its own components put there,
+and where the TREE's rows are drawn that is `list`, `byKey`, `keys` and the rows themselves. Each of those rows says
+where it sits in the hierarchy:
+
+```js
+{
+    key, isCurrent, objects, ...cells,
+    parent,       // the key of the row it hangs under
+    hasChildren,  // whether it has children, loaded or not
+    expanded,     // whether it is open
+}
+```
+
+Each field a row of a tree adds is reserved where the tree's rows are drawn, as `key` is: a property drawn on such a
+row may not take its name.
+
+`parent` is the key of the row this one hangs under, `null` at the top of the tree; it points into whichever group that
+parent belongs to (a tree's rows are keyed by the whole path down to them, so the keys of its groups do not collide —
+short of an object of a STRING class whose value contains `|`). It is written the way a `key` is, so
+`row.parent === parentRow.key` holds rather than merely looking alike. Rows arrive under a loaded parent, so the parent
+a row names is usually there — until something takes it away: a filter on an upper group drops the parent row while its
+children stay (the server keeps sending them), and from then on `parent` can name a row this client does not have. So a
+view that indexes rows by key must decide what to do with a row whose parent it cannot find, rather than assume the
+lookup succeeded. A view finds a row's ancestors the same way, following `parent` through the `byKey` of the group
+the parent belongs to, and stopping at a parent it does not have; the depth a row is indented by needs no such walk, as
+it comes from drawing the tree from its roots down, as below.
+
+`hasChildren` is what the server says the node has, loaded or not — not a design attribute, but the tree's live
+state.
+
+`expanded` says the node is open: its children are loaded — or a view asked to open or close it and the rows of the
+answer have not arrived yet, and then it says what was asked, as a changed value is shown before the answer and as the
+platform's own tree turns its expander glyph at the click. A node is closed at once, while its children stay in `list`
+until the answer takes them away, so a view that draws a node's children only under an `expanded` node, as below, hides
+them at once. Only a node with children opens: one whose `hasChildren` is false stays closed, as it does in the
+platform's tree. It is live state as well.
+
+Rows arrive as the tree is opened — past the roots, a group of a tree returns only the rows under nodes that are
+currently expanded, which is why, before anything is opened, its lower groups project an empty list.
+
+`controller.<g>.expand(row)` / `.collapse(row)` / `.toggle(row)` open and close one node: a node is a row of a group, so
+they are the group's. Each takes a row (the row, its `objects` handle, or its key) and returns nothing: the row's
+`expanded` changes at once, and its children arrive as rows. `toggle` asks for the opposite of what the row's `expanded`
+says now, so two toggles before the answer open the node and close it again. `controller.<g>.expandAll()` opens every
+node of the group and of the groups below it: on the tree's top group, the whole tree; on a group below, its nodes under
+the nodes open above it. `controller.<g>.collapseAll()` closes the nodes of the group, and what hangs under them goes
+with them; a node further down that was open stays open on the server, so it shows open again once the node above it is
+opened. Their rows' `expanded` changes at once too. A group outside a tree has no such members at all: the five are
+installed on a group of a tree and nowhere else, and they are reserved on that group's node, as `list` is.
+
+```lsf
+FORM catalogue
+    TREE t c = Category PARENT parent(c), i = Item
+    PROPERTIES(c) name
+    PROPERTIES(i) name
+    FILTERS category(i) == c
+;
+```
+
+```jsx
+// a row of the tree, the member of the group it belongs to, and what hangs under it
+function Node({row, member, rows}) {
+    return (
+        <li>
+            {row.hasChildren && <button onClick={() => member.toggle(row)}>{row.expanded ? '−' : '+'}</button>}
+            {row.name.value}
+            {row.expanded && <ul>{rows.filter(r => r.row.parent === row.key).map(r => <Node key={r.row.key} {...r} rows={rows}/>)}</ul>}
+        </li>
+    );
+}
+
+export function Tree({data, controller}) {
+    const rows = [...data.c.list.map(row => ({row, member: controller.c})),
+                  ...data.i.list.map(row => ({row, member: controller.i}))];
+    return <ul>{rows.filter(r => r.row.parent === null).map(r => <Node key={r.row.key} {...r} rows={rows}/>)}</ul>;
+}
+```
+
+These verbs are members of the group's node, so a container has them exactly where it has that group's rows: the tree
+React draws. A tree the platform draws is opened by the platform's own expander, and no react container has node verbs
+for it.

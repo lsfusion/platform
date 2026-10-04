@@ -1,0 +1,18 @@
+MODULE TreeRowReservedName;
+
+REQUIRE System;
+
+// a property drawn on the rows of a tree a React view draws, named like a field a tree row states: it would shadow
+// the row's `parent`
+CLASS TreeRowFolder;
+treeRowParent = DATA TreeRowFolder (TreeRowFolder);
+treeRowName = DATA STRING[50] (TreeRowFolder);
+
+FORM treeRowReservedName
+    TREE folders f = TreeRowFolder PARENT treeRowParent(f)
+    PROPERTIES(f) treeRowName EXTID 'parent'
+;
+
+DESIGN treeRowReservedName {
+    BOX(TREE folders) { custom = 'FolderTree'; }
+}

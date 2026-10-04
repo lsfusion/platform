@@ -45,6 +45,8 @@ Optional arguments are bracketed.
 | `<group>.<property>.exec([row])` | run the property's change event, or the action — on the current object, or on a given row | — |
 | `<group>.<property>.getValues([object,] value[, mode], ok[, fail][, count])` | a capped server suggestion list | — (via `ok`) |
 | `<property>.change(value)` / `.exec()` / `.getValues(...)` | the same, for a property of the empty group — with no row | — |
+| `<group>.expand(row)` / `.collapse(row)` / `.toggle(row)` | open or close one node of a [tree](How-to_Custom_React_views.md#trees) — a node is a row of a group; only where the tree's rows are drawn | — |
+| `<group>.expandAll()` / `.collapseAll()` | open every node of the group and of the groups below it — the whole tree on its top group — or close the group's nodes; where the tree's rows are drawn | — |
 | `properties.change([{property, object, value}])` | several property changes in ONE request | — |
 | `exec(action, ...params)` | run a named action | `Promise` |
 | `eval(script, ...params)` | run an lsf script with a typed `run` | `Promise` |
@@ -71,7 +73,7 @@ Running an action through its member — `controller.o.edit.exec(row)` — is th
 
 A name that is not a JavaScript identifier is addressed with brackets: a property with `EXTID 'unit price'` is `controller.o['unit price'].change(v)`. A group SID is always an identifier — a group of several objects, whose SID would be their names joined with dots, is refused when the form is built until it is named (`OBJECTS pair = (d = X, t = Y)`).
 
-A name that would shadow a member of the surface itself is refused when the form is **built**, the same way [the projection's own reserved names](How-to_Custom_React_views.md) are: a group SID or a property of the empty group coinciding with a controller method (`exec`, `eval`, `evalAction`, `change`, `startEditing`, `stopEditing`, `isEditing`, `properties`), or with each other — a controller is one namespace for its own projection, so a group and a property of the empty group the same container projects cannot both be `total`, while two different containers may — and a group property named like one of the group's own members (`change`). The fix is to rename it, or give it an `EXTID`.
+A name that would shadow a member of the surface itself is refused when the form is **built**, the same way [the projection's own reserved names](How-to_Custom_React_views.md) are: a group SID or a property of the empty group coinciding with a controller method (`exec`, `eval`, `evalAction`, `change`, `startEditing`, `stopEditing`, `isEditing`, `properties`), or with each other — a controller is one namespace for its own projection, so a group and a property of the empty group the same container projects cannot both be `total`, while two different containers may — and a group property named like one of the group's own members (`change`, and on a group of a tree, where its rows are drawn, `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` as well). The fix is to rename it, or give it an `EXTID`.
 
 The same two groups also differ along two more axes — whether they are gated, and how an object is addressed in them:
 

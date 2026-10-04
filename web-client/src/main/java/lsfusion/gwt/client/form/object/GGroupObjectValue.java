@@ -200,11 +200,16 @@ public class GGroupObjectValue implements Serializable {
     public static void setKey(JavaScriptObject row, GGroupObjectValue key) {
         writeKey(row, KEY, key);
     }
-    static void writeKey(JavaScriptObject target, String field, GGroupObjectValue key) {
+    // ... and so is a field that POINTS at a row (a tree row's `parent`), or `row.parent === other.key` would not hold
+    public static void writeKey(JavaScriptObject target, String field, GGroupObjectValue key) {
         if (isNumberKey(key))
             writeKeyNum(target, field, numberKey(key));
         else
             writeKeyStr(target, field, key.toKeyString());
+    }
+    // whether a field holds that key as it is written - so a row that says it already is not rewritten
+    public static boolean isKeyAt(JavaScriptObject target, String field, GGroupObjectValue key) {
+        return isNumberKey(key) ? isKeyNumAt(target, field, numberKey(key)) : isKeyStrAt(target, field, key.toKeyString());
     }
     // a key of ONE object or ONE number is that number in JS; anything else is its canonical string. Asked and
     // answered as two calls rather than as one nullable Double: a key of 0 is a perfectly good key, and a boxed
@@ -220,6 +225,8 @@ public class GGroupObjectValue implements Serializable {
     }
     private static native void writeKeyNum(JavaScriptObject t, String field, double v) /*-{ t[field] = v; }-*/;
     private static native void writeKeyStr(JavaScriptObject t, String field, String v) /*-{ t[field] = v; }-*/;
+    private static native boolean isKeyNumAt(JavaScriptObject t, String field, double v) /*-{ return t[field] === v; }-*/;
+    private static native boolean isKeyStrAt(JavaScriptObject t, String field, String v) /*-{ return t[field] === v; }-*/;
 
     // ===== the canonical string (one-way) =====
     // ENCODE computes: toKeyString() == String(row.key) — single: digits / the string itself / 'n'; multi: parts
@@ -228,7 +235,7 @@ public class GGroupObjectValue implements Serializable {
     // LOOKED UP among the rows of a known group - a row handle or a raw GGV is what resolves on its own.
     // The parts of a MULTI-value key cannot be misread for one another; a SINGLE value is written raw, so it is only
     // unambiguous against keys OF THE SAME SIZE - which is every row of one group, and hence every use that matters
-    // (`byKey`, `keys`, the React key, row equality). Comparing across sizes is a tree's `parent` / `path`, and there
+    // (`byKey`, `keys`, the React key, row equality). Comparing across sizes is a tree's `parent`, and there
     // a single STRING-valued object key containing '|' could equal a composite of the same digits: an `OBJECTS s =
     // STRING` group above another group of a tree, with a '|' in the data. Raw stays raw because `row.key` being the
     // bare id is what every view reads; the alternative is length-prefixing every key to guard a case that needs a

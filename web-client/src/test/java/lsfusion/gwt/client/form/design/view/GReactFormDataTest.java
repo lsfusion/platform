@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GCaptionReader;
 import lsfusion.gwt.client.form.property.GBackgroundReader;
 import lsfusion.gwt.client.form.property.GCommentReader;
@@ -47,6 +48,7 @@ import lsfusion.gwt.client.form.property.GValueElementClassReader;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -128,6 +130,11 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; }
                 public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { changed = keys[keys.length - 1]; }
                 public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
+                public long expandNode(GGroupObject group, GGroupObjectValue key) { return 0; }
+                public long collapseNode(GGroupObject group, GGroupObjectValue key) { return 0; }
+                public long expandAll(GGroupObject group) { return 0; }
+                public long collapseAll(GGroupObject group) { return 0; }
+                public void refreshOptimistic() { }
             });
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
@@ -213,6 +220,106 @@ public class GReactFormDataTest extends GWTTestCase {
         // controller
         void setValue(GPropertyDraw property, GGroupObjectValue key, int value) {
             controller(property).setLoadingValueAt(property, key, PValue.getPValue(value));
+        }
+    }
+
+    // a tree of two groups drawn in one react container: categories, and the items under them, keyed by the whole path
+    // the form, as far as a member of a tree's projection asks it: what it is asked, logged in order, each request
+    // numbered as the form numbers them - and what it showed before the answer, published as the form publishes it
+    private static final class TreeVerbs implements GReactFormData.Verbs {
+        final ArrayList<String> asked = new ArrayList<>();
+        GReactFormData projection;
+        long requestIndex;
+
+        public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { asked.add("current " + group.getSID() + " " + key.toKeyString()); }
+        public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { }
+        public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
+        public long expandNode(GGroupObject group, GGroupObjectValue key) { return ask("expand " + group.getSID() + " " + key.toKeyString()); }
+        public long collapseNode(GGroupObject group, GGroupObjectValue key) { return ask("collapse " + group.getSID() + " " + key.toKeyString()); }
+        public long expandAll(GGroupObject group) { return ask("expand all " + group.getSID()); }
+        public long collapseAll(GGroupObject group) { return ask("collapse all " + group.getSID()); }
+        public void refreshOptimistic() { projection.flush(); }
+        long ask(String request) {
+            asked.add(request);
+            return ++requestIndex;
+        }
+    }
+    private static final class TreeFixture {
+        final GForm form = new GForm();
+        final GContainer a = container(1);
+        final GTreeGroup tree = new GTreeGroup();
+        final GGroupObject cat = new GGroupObject(), item = new GGroupObject();
+        final GGroupObjectValue c1 = new GGroupObjectValue(60, 1), c2 = new GGroupObjectValue(60, 2);
+        final GGroupObjectValue i15 = itemKey(1, 5), i16 = itemKey(1, 6), i27 = itemKey(2, 7);
+        final GReactFormData projection;
+        final GReactFormData.ContainerState sa; // the container the tree is drawn in: its controller
+        final Controllers controllers;
+        // the platform's controller of a group and of a property, as far as the form hands it on
+        final RecordingTableController lsf = new RecordingTableController();
+        // ... and of the components, recording into lsf's log
+        final RecordingLayoutController layout = new RecordingLayoutController(lsf);
+        final TreeVerbs verbs = new TreeVerbs();
+        JavaScriptObject data;
+        int publications;
+
+        TreeFixture() {
+            this(f -> { });
+        }
+        // ... and what a test changes of the form before the projection is made of it
+        TreeFixture(java.util.function.Consumer<TreeFixture> addition) {
+            form.mainContainer = container(0);
+            form.mainContainer.react = false;
+            form.mainContainer.main = true;
+            a.container = form.mainContainer;
+            form.mainContainer.children.add(a);
+            tree.ID = 62; tree.sID = "tree";
+            tree.container = a;
+            a.children.add(tree);
+            form.treeGroups.add(tree);
+            group(cat, 60, "cat");
+            group(item, 61, "item");
+            item.upTreeGroups.add(cat);
+            addition.accept(this);
+            projection = new GReactFormData(form, GComponent::getReactPlace, verbs);
+            verbs.projection = projection;
+            sa = projection.addContainer(a, d -> { data = d; publications++; });
+            controllers = new Controllers(projection, form, lsf, layout);
+        }
+        void group(GGroupObject group, int id, String sid) {
+            group.ID = id; group.nativeSID = "g" + id; group.sID = sid;
+            group.parent = tree;
+            tree.groups.add(group);
+            group.objects.add(new GObject(group, sid, id, sid, GIntegerType.instance));
+            form.groupObjects.add(group);
+        }
+        static GGroupObjectValue itemKey(int category, int item) {
+            return new GGroupObjectValue(2, new int[]{60, 61}, new Serializable[]{category, item});
+        }
+        // both groups with their parents, as the server sends a tree it re-read: a category is a root, and an item's
+        // parent is empty - the path above it is in its own key
+        GFormChanges page() {
+            GFormChanges changes = new GFormChanges();
+            changes.gridObjects.put(cat, rows(c1, c2));
+            changes.parentObjects.put(cat, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+            changes.gridObjects.put(item, rows(i15, i16, i27));
+            changes.parentObjects.put(item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+            return changes;
+        }
+        JavaScriptObject row(GGroupObject group, GGroupObjectValue key) {
+            return field(field(field(data, group.getSID()), "byKey"), key.toKeyString());
+        }
+        // a delta, as the form hands it over: a group's rows - and its hierarchy with them - and its current object to
+        // the group's controller, a drop and a reader to the controller of the owner
+        void apply(GFormChanges changes) {
+            answer(changes, 0);
+        }
+        // ... the answer to a request: its keys come with its index, as the form hands them on
+        void answer(GFormChanges changes, int requestIndex) {
+            changes.gridObjects.foreachEntry((group, rows) -> controllers.groups.get(group).updateKeys(group, rows, changes, requestIndex));
+            changes.objects.foreachEntry((group, key) -> controllers.groups.get(group).updateCurrentKey(key));
+            changes.dropProperties.forEach(controllers::drop);
+            changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
+            projection.flush();
         }
     }
 
@@ -409,6 +516,10 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
         return owner == null ? null : GReactFormData.getMemberProperty(field(owner, name));
     }
+    private static native double number(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
+    private static native boolean has(JavaScriptObject object, String name) /*-{ return name in object; }-*/;
+    private static native boolean sameField(JavaScriptObject a, String aName, JavaScriptObject b, String bName) /*-{ return a[aName] === b[bName]; }-*/;
+    private static native boolean isFalse(JavaScriptObject object, String name) /*-{ return object[name] === false; }-*/;
 
     public void testCellUpdateIsIsolatedAndKeepsOldSnapshots() {
         Fixture f = new Fixture();
@@ -1280,4 +1391,292 @@ public class GReactFormDataTest extends GWTTestCase {
         // the fixture's own, the twin's first value, the nested flush's: the outer flush did not give b out again
         assertEquals(3, f.publications[1]);
     }
+
+    public void testATreeRowSaysWhereItHangs() {
+        TreeFixture f = new TreeFixture();
+        f.apply(f.page());
+        assertTrue(has(f.row(f.cat, f.c1), "parent")); // a root states that it is one
+        assertNull(field(f.row(f.cat, f.c1), "parent"));
+        assertEquals(1.0, number(f.row(f.item, f.i15), "parent"), 0.0); // the way a key is written: the number
+        assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
+        assertTrue(sameField(f.row(f.item, f.i27), "parent", f.row(f.cat, f.c2), "key")); // ===, not merely alike
+        JavaScriptObject c1 = f.row(f.cat, f.c1), i15 = f.row(f.item, f.i15);
+        int publications = f.publications;
+        f.apply(f.page()); // the same rows and hierarchy again: nothing is rewritten, nothing published
+        assertSame(c1, f.row(f.cat, f.c1));
+        assertSame(i15, f.row(f.item, f.i15));
+        assertEquals(publications, f.publications);
+        GFormChanges broken = new GFormChanges(); // parents that are not parallel to the rows: no parent is stated
+        broken.gridObjects.put(f.item, rows(f.i15, f.i16, f.i27));
+        broken.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY));
+        f.apply(broken);
+        assertNull(field(f.row(f.item, f.i15), "parent"));
+        assertNull(field(f.row(f.item, f.i27), "parent"));
+    }
+    public void testATreeRowThatMovesIsRewrittenAndNothingElse() {
+        TreeFixture f = new TreeFixture();
+        GGroupObjectValue c3 = new GGroupObjectValue(60, 3), c4 = new GGroupObjectValue(60, 4), c5 = new GGroupObjectValue(60, 5);
+        GFormChanges page = new GFormChanges(); // categories hang in categories: 3 and 4 under 1, 5 under 2
+        page.gridObjects.put(f.cat, rows(f.c1, f.c2, c3, c4, c5));
+        page.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, f.c1, f.c1, f.c2));
+        f.apply(page);
+        JavaScriptObject c1 = f.row(f.cat, f.c1), c2 = f.row(f.cat, f.c2), moved = f.row(f.cat, c3);
+        GFormChanges move = new GFormChanges(); // ... and then 3 under 2
+        move.gridObjects.put(f.cat, rows(f.c1, f.c2, c3, c4, c5));
+        move.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, f.c2, f.c1, f.c2));
+        f.apply(move);
+        assertEquals(2.0, number(f.row(f.cat, c3), "parent"), 0.0);
+        assertEquals(1.0, number(moved, "parent"), 0.0); // the object handed out before still says what it said
+        assertSame(c1, f.row(f.cat, f.c1));
+        assertSame(c2, f.row(f.cat, f.c2));
+    }
+    public void testATreeRowKeepsNamingAParentThatWasTakenAway() {
+        TreeFixture f = new TreeFixture();
+        GGroupObjectValue c3 = new GGroupObjectValue(60, 3);
+        GFormChanges page = new GFormChanges(); // 1 > 2 > 3
+        page.gridObjects.put(f.cat, rows(f.c1, f.c2, c3));
+        page.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, f.c1, f.c2));
+        f.apply(page);
+        GFormChanges filtered = new GFormChanges(); // a filter takes 2 away, and 3 stays: the server keeps sending it
+        filtered.gridObjects.put(f.cat, rows(f.c1, c3));
+        filtered.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, f.c2));
+        f.apply(filtered);
+        assertEquals(2.0, number(f.row(f.cat, c3), "parent"), 0.0); // it still names the parent this client lost
+        JavaScriptObject orphan = f.row(f.cat, c3);
+        GFormChanges removed = new GFormChanges(); // rows alone, with no hierarchy - a view's own remove
+        removed.gridObjects.put(f.cat, rows(f.c1));
+        f.apply(removed);
+        f.apply(filtered); // ... and 3 back: a row made anew, which says nothing yet, is given its parent
+        assertNotSame(orphan, f.row(f.cat, c3));
+        assertEquals(2.0, number(f.row(f.cat, c3), "parent"), 0.0);
+    }
+    public void testATreeRowSaysWhetherItHasChildrenNotHowMany() {
+        TreeFixture f = new TreeFixture();
+        GFormChanges page = f.page();
+        page.expandables.put(f.cat, counts(f.c1, 2, f.c2, 0));
+        f.apply(page);
+        assertTrue(flag(f.row(f.cat, f.c1), "hasChildren"));
+        assertTrue(isFalse(f.row(f.cat, f.c2), "hasChildren")); // stated, not merely missing
+        JavaScriptObject c1 = f.row(f.cat, f.c1), c2 = f.row(f.cat, f.c2);
+        GFormChanges more = new GFormChanges(); // a count that moves without crossing zero changes nothing a row states
+        more.gridObjects.put(f.cat, rows(f.c1, f.c2)); // the counts come with the rows, as the server sends them
+        more.expandables.put(f.cat, counts(f.c1, 3, f.c2, 0));
+        int publications = f.publications;
+        f.apply(more);
+        assertSame(c1, f.row(f.cat, f.c1));
+        assertEquals(publications, f.publications); // nothing rewritten, nothing published
+        GFormChanges first = new GFormChanges(); // ... and one that does flips exactly that row
+        first.gridObjects.put(f.cat, rows(f.c1, f.c2));
+        first.expandables.put(f.cat, counts(f.c1, 3, f.c2, 1));
+        f.apply(first);
+        assertTrue(flag(f.row(f.cat, f.c2), "hasChildren"));
+        assertNotSame(c2, f.row(f.cat, f.c2));
+        assertTrue(isFalse(c2, "hasChildren")); // the object handed out before still says what it said
+        assertSame(c1, f.row(f.cat, f.c1));
+        GFormChanges last = new GFormChanges(); // ... back to zero; and children counted, none of them loaded
+        last.gridObjects.put(f.cat, rows(f.c1, f.c2));
+        last.expandables.put(f.cat, counts(f.c1, 0, f.c2, 1));
+        last.gridObjects.put(f.item, rows(f.i15, f.i16)); // nothing under 2
+        last.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        f.apply(last);
+        assertTrue(isFalse(f.row(f.cat, f.c1), "hasChildren"));
+        assertTrue(flag(f.row(f.cat, f.c2), "hasChildren"));
+    }
+    private static NativeHashMap<GGroupObjectValue, Integer> counts(GGroupObjectValue key1, int count1, GGroupObjectValue key2, int count2) {
+        NativeHashMap<GGroupObjectValue, Integer> counts = new NativeHashMap<>();
+        counts.put(key1, count1);
+        counts.put(key2, count2);
+        return counts;
+    }
+    public void testATreeNodeIsOpenWhileItsChildrenAreLoaded() {
+        TreeFixture f = new TreeFixture();
+        f.apply(f.page());
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(isFalse(f.row(f.item, f.i15), "expanded")); // the bottom group: nothing under it
+        JavaScriptObject c1 = f.row(f.cat, f.c1), c2 = f.row(f.cat, f.c2);
+        GFormChanges collapse = new GFormChanges(); // 2 is closed: the server takes its children away
+        collapse.gridObjects.put(f.item, rows(f.i15, f.i16));
+        collapse.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        f.apply(collapse);
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(flag(c2, "expanded")); // the object handed out before still says what it said
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
+        assertSame(c1, f.row(f.cat, f.c1)); // the node that stayed open kept its object
+        GFormChanges again = new GFormChanges(); // 2 is opened again
+        again.gridObjects.put(f.item, rows(f.i15, f.i16, f.i27));
+        again.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        f.apply(again);
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        GFormChanges gone = new GFormChanges(); // rows alone, no hierarchy - a view's own remove: 2's only child leaves
+        gone.gridObjects.put(f.item, rows(f.i15, f.i16));
+        f.apply(gone);
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        TreeFixture nested = new TreeFixture(); // a recursive group holds its own children too
+        GFormChanges page = new GFormChanges();
+        page.gridObjects.put(nested.cat, rows(nested.c1, nested.c2));
+        page.parentObjects.put(nested.cat, rows(GGroupObjectValue.EMPTY, nested.c1));
+        nested.apply(page);
+        assertTrue(flag(nested.row(nested.cat, nested.c1), "expanded"));
+        assertTrue(isFalse(nested.row(nested.cat, nested.c2), "expanded"));
+    }
+    public void testANodeOfATreeIsOpenedAndClosedThroughItsGroup() {
+        TreeFixture f = new TreeFixture();
+        f.apply(f.page());
+        JavaScriptObject cat = field(f.sa.controller, "cat");
+        callNode(cat, "expand", f.row(f.cat, f.c1)); // the row
+        callNode(cat, "collapse", field(f.row(f.cat, f.c2), "objects")); // its objects handle
+        callNode(cat, "expand", field(f.row(f.cat, f.c2), "key")); // its key
+        callNode(cat, "expand", f.row(f.item, f.i27)); // a row BELOW names the node it hangs under here
+        assertEquals(Arrays.asList("expand cat 1", "collapse cat 2", "expand cat 2", "expand cat 2"), f.verbs.asked);
+        try { // a row ABOVE names no node of the group below
+            callNode(field(f.sa.controller, "item"), "expand", f.row(f.cat, f.c1));
+            fail();
+        } catch (RuntimeException e) {
+            assertTrue(e.getMessage().contains("not a row of 'item'"));
+        }
+        Fixture grid = new Fixture(); // a group outside a tree has no such members at all
+        assertFalse(has(field(grid.sa.controller, "items"), "expand"));
+        assertFalse(has(field(grid.sa.controller, "items"), "expandAll"));
+    }
+    private static native void callNode(JavaScriptObject member, String verb, JavaScriptObject row) /*-{ member[verb](row); }-*/;
+
+    // a page where both categories have children and only 1's are loaded: 2 is closed
+    private static GFormChanges closedPage(TreeFixture f) {
+        GFormChanges page = new GFormChanges();
+        page.gridObjects.put(f.cat, rows(f.c1, f.c2));
+        page.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        page.expandables.put(f.cat, counts(f.c1, 2, f.c2, 1));
+        page.gridObjects.put(f.item, rows(f.i15, f.i16));
+        page.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        return page;
+    }
+    // ... and 2's child loaded too: 2 is open
+    private static GFormChanges openPage(TreeFixture f) {
+        GFormChanges page = new GFormChanges();
+        page.gridObjects.put(f.item, rows(f.i15, f.i16, f.i27));
+        page.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        return page;
+    }
+    public void testANodeIsShownAsAskedUntilTheServerAnswers() {
+        TreeFixture f = new TreeFixture();
+        f.apply(closedPage(f));
+        JavaScriptObject cat = field(f.sa.controller, "cat"), c1 = f.row(f.cat, f.c1);
+        int publications = f.publications;
+        callNode(cat, "expand", f.row(f.cat, f.c2));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once, published, before its children
+        assertEquals(publications + 1, f.publications);
+        assertSame(c1, f.row(f.cat, f.c1)); // the other node kept its object
+        f.answer(new GFormChanges(), 0); // an answer to a request before it changes nothing
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        GFormChanges gone = new GFormChanges(); // ... nor does one that takes the node away and brings it back: a row
+        gone.gridObjects.put(f.cat, rows(f.c1)); // made anew is given what was asked of it
+        f.answer(gone, 0);
+        GFormChanges back = new GFormChanges();
+        back.gridObjects.put(f.cat, rows(f.c1, f.c2));
+        back.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        f.answer(back, 0);
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        f.answer(openPage(f), 1); // its answer: the children, and 2 open as the rows say
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
+        callNode(cat, "collapse", f.row(f.cat, f.c2));
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // closed at once, while its child is still loaded
+        assertNotNull(f.row(f.item, f.i27));
+        f.answer(new GFormChanges(), 2); // an answer with no keys - a failed one - leaves it as asked, as the platform's
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // tree does
+        f.answer(openPage(f), 2); // ... and keys that still hold its child: the server did not close it
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+    }
+    public void testTwoTogglesBeforeTheAnswerOpenAndCloseANode() {
+        TreeFixture f = new TreeFixture();
+        f.apply(closedPage(f));
+        JavaScriptObject cat = field(f.sa.controller, "cat"), c2 = f.row(f.cat, f.c2);
+        callNode(cat, "toggle", c2); // closed: opened
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        callNode(cat, "toggle", c2); // the same row handed in again: closed again - what was asked is read, not the row
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        assertEquals(Arrays.asList("expand cat 2", "collapse cat 2"), f.verbs.asked);
+        f.answer(openPage(f), 1); // the first answer: the second request is not answered yet, and it wins
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        f.answer(closedPage(f), 2);
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        callNode(cat, "toggle", f.row(f.cat, f.c1)); // its children loaded: open, so closed
+        assertEquals("collapse cat 1", f.verbs.asked.get(2));
+    }
+    public void testANodeWithNoChildrenStaysClosed() {
+        TreeFixture f = new TreeFixture();
+        GFormChanges page = closedPage(f);
+        page.expandables.put(f.cat, counts(f.c1, 2, f.c2, 0));
+        f.apply(page);
+        JavaScriptObject c2 = f.row(f.cat, f.c2);
+        int publications = f.publications;
+        callNode(field(f.sa.controller, "cat"), "expand", c2);
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // asked, but there is nothing to open
+        assertSame(c2, f.row(f.cat, f.c2)); // so nothing is rewritten, nothing published
+        assertEquals(publications, f.publications);
+        assertEquals(Arrays.asList("expand cat 2"), f.verbs.asked); // the server is asked all the same
+    }
+    public void testAllTheNodesOfAGroupAreOpenedAndClosedThroughIt() {
+        TreeFixture f = new TreeFixture(t -> t.item.isRecursive = true); // an item has children too: the group recurses
+        GFormChanges page = closedPage(f);
+        page.expandables.put(f.item, counts(f.i15, 1, f.i16, 0));
+        f.apply(page);
+        JavaScriptObject cat = field(f.sa.controller, "cat"), item = field(f.sa.controller, "item");
+        callAll(cat, "expandAll"); // the top group: the whole tree
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once
+        assertTrue(flag(f.row(f.item, f.i15), "expanded")); // ... the group below as well
+        assertTrue(isFalse(f.row(f.item, f.i16), "expanded")); // ... where a node has children
+        callNode(cat, "collapse", f.row(f.cat, f.c1)); // a node asked after it: the later request wins
+        assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        callAll(item, "collapseAll"); // a group below: its nodes, not those above it
+        assertTrue(isFalse(f.row(f.item, f.i15), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertEquals(Arrays.asList("expand all cat", "collapse cat 1", "collapse all item"), f.verbs.asked);
+        f.answer(openPage(f), 3); // all answered: the rows say
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(isFalse(f.row(f.item, f.i15), "expanded"));
+        callNode(cat, "collapse", f.row(f.cat, f.c2)); // a node asked before it: the later request, all of them, wins
+        callAll(cat, "expandAll");
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        GFormChanges older = new GFormChanges(); // the answer to the earlier one leaves it - and brings a row the later
+        GGroupObjectValue i18 = TreeFixture.itemKey(2, 8); // one was not asked of: it says what its rows say
+        older.gridObjects.put(f.item, rows(f.i15, f.i16, f.i27, i18));
+        older.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        older.expandables.put(f.item, counts(f.i15, 1, i18, 1));
+        f.answer(older, 4);
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(isFalse(f.row(f.item, i18), "expanded"));
+        f.answer(openPage(f), 5);
+        callAll(cat, "collapseAll");
+        assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // at once
+        GFormChanges collapsed = new GFormChanges(); // ... and its answer takes the items away
+        collapsed.gridObjects.put(f.item, rows());
+        collapsed.parentObjects.put(f.item, rows());
+        f.answer(collapsed, 6);
+        assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
+        callNode(cat, "expand", f.row(f.cat, f.c1)); // what was open below stays open on the server: it comes back so
+        GFormChanges reopened = new GFormChanges();
+        reopened.gridObjects.put(f.item, rows(f.i15, f.i16));
+        reopened.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, new GGroupObjectValue(61, 5)));
+        f.answer(reopened, 7);
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(flag(f.row(f.item, f.i15), "expanded"));
+    }
+    public void testATreeDeclaredBottomUpStillHangsTogether() {
+        TreeFixture f = new TreeFixture(t -> java.util.Collections.reverse(t.form.groupObjects)); // the form's order
+        f.apply(closedPage(f));
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded")); // the items still open the categories they hang under
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        callAll(field(f.sa.controller, "cat"), "expandAll"); // ... and asking all of them reaches below
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        f.answer(openPage(f), 1); // the items' keys answer it
+        assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+    }
+    private static native void callAll(JavaScriptObject member, String verb) /*-{ member[verb](); }-*/;
 }

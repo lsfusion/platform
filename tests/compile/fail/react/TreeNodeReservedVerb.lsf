@@ -1,0 +1,18 @@
+MODULE TreeNodeReservedVerb;
+
+REQUIRE System;
+
+// a property of a group of a tree, where a React view draws the tree's rows, named like one of the node verbs that
+// group's member carries: it would shadow `toggle`
+CLASS TreeVerbFolder;
+treeVerbParent = DATA TreeVerbFolder (TreeVerbFolder);
+treeVerbName = DATA STRING[50] (TreeVerbFolder);
+
+FORM treeNodeReservedVerb
+    TREE folders f = TreeVerbFolder PARENT treeVerbParent(f)
+    PROPERTIES(f) treeVerbName EXTID 'toggle'
+;
+
+DESIGN treeNodeReservedVerb {
+    BOX(TREE folders) { custom = 'FolderTree'; }
+}

@@ -1,0 +1,18 @@
+MODULE TreeNodeReservedAllVerb;
+
+REQUIRE System;
+
+// a property of a group of a tree, where a React view draws the tree's rows, named like one of the verbs that open
+// all of that group's nodes: it would shadow `expandAll`
+CLASS TreeAllFolder;
+treeAllParent = DATA TreeAllFolder (TreeAllFolder);
+treeAllName = DATA STRING[50] (TreeAllFolder);
+
+FORM treeNodeReservedAllVerb
+    TREE folders f = TreeAllFolder PARENT treeAllParent(f)
+    PROPERTIES(f) treeAllName EXTID 'expandAll'
+;
+
+DESIGN treeNodeReservedAllVerb {
+    BOX(TREE folders) { custom = 'FolderTree'; }
+}

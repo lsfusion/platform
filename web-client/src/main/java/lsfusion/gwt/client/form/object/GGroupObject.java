@@ -202,4 +202,21 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GGroupObjectValue getRowKey(GGroupObjectValue fullCurrentKey) {
         return parent != null ? parent.filterRowKeys(this, fullCurrentKey) : filterRowKeys(fullCurrentKey);
     }
+
+    // whether this group is part of a TREE - the structural fact everything about the hierarchy rests on, asked by
+    // its name rather than re-derived from the field. Named as the server names it (GroupObjectEntity.isInTree)
+    public boolean isInTree() {
+        return parent != null;
+    }
+
+    // the ROW KEY of the node a row of this group hangs under: a key that carries nothing but this group's own objects
+    // (the top group's) has the parent property's value as its parent's key; any other carries the path through the
+    // groups above, so this group's objects come off it and the parent goes back on. ONE rule for everyone who builds
+    // the hierarchy, or two of them hang the same row under two different parents.
+    public GGroupObjectValue getParentRowKey(GGroupObjectValue key, GGroupObjectValue parent) {
+        if (key.size() == objects.size())
+            return parent;
+        return GGroupObjectValue.checkTwins(new GGroupObjectValueBuilder()
+                .putAll(key).removeAll(objects).putAll(parent).toGroupObjectValue());
+    }
 }
