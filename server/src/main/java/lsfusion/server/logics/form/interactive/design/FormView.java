@@ -348,56 +348,64 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return component.isLsfView() ? null : component.getReactPlace(); // an lsf component's content is the platform's
     }
 
-    // ... and WHERE ITS DESCRIPTOR ENTRY GOES, null when it has none: every component React draws or places that is not
-    // a property it carries by name - a container, a grid, a tree, a toolbar, any `lsf` component, an lsf panel
-    // property included - in the container that draws or places it. Not a LIST property, lsf or not: its entry is its
-    // column, on the node where the rows are, claimed with the other property names. And not a react container that
-    // nothing places: its caption is drawn by the platform around it, not by its own component. Nor an lsf ACTION: its
-    // caption and image are its buttons' face, which the platform draws. An entry is keyed by the component's SID, so
-    // one the design does not name - a user filter's - has none (mirrors GReactFormData.descriptorScope)
-    private ContainerView descriptorScope(ComponentView component) {
-        if (component instanceof PropertyDrawView && (((PropertyDrawView) component).entity.isList(entity) || !component.isLsfView()
-                || !((PropertyDrawView) component).entity.isStaticProperty()))
-            return null;
+    // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component's name is claimed in, and
+    // where its entry is. A property is named by its integration name on its group's node, where React draws its
+    // content - a list property's column, lsf or not, where the rows are - or, for an lsf panel one, where React places
+    // it, its entry labelling what the platform draws (an ACTION's has no entry: its caption and image are its button's
+    // face). Any other component is named by its design identifier at the top level, where React draws or places it -
+    // one the design does not name, a user filter's, nowhere; nor a react container nothing places, whose caption the
+    // platform draws around it (mirrors GReactFormData.nameScope)
+    private ContainerView nameScope(ComponentView component) {
+        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) // its column
+            return rowsScope(((PropertyDrawView) component).entity.getToDraw(entity));
         return component.getSID() != null ? component.getReactPlace() : null;
     }
-    // ... and where its NAME is claimed: where its descriptor is - and an lsf panel property's where React places it,
-    // an ACTION's included, which has no descriptor: a view places it by that name (<Lsf>) and reads data[name] as the
-    // descriptor of what it places (useLsf), so nothing else may be keyed by it there
-    private ContainerView nameScope(ComponentView component) {
-        if (component instanceof PropertyDrawView && component.isLsfView() && !((PropertyDrawView) component).entity.isList(entity))
-            return component.getSID() != null ? component.getReactPlace() : null;
-        return descriptorScope(component);
+
+    // the name a view has for a property: its integration name, after its group's - o.note -, alone for the empty
+    // group's (mirrors GReactFormData.getName)
+    private String getName(PropertyDrawView property) {
+        GroupObjectEntity group = property.entity.getToDraw(entity);
+        String integrationSID = property.entity.getIntegrationSID();
+        return group == null ? integrationSID : group.getSID() + "." + integrationSID;
     }
 
     // a container whose SHOWIF a react view has to be told: its descriptor's `hidden`, or - for a react container - the
     // platform hiding its box, as it hides any other component's (FormEntity.getBaseComponents)
     public boolean isReactShowIfContainer(ContainerView container) {
-        return container.isReact() || descriptorScope(container) != null;
+        return container.isReact() || nameScope(container) != null;
     }
 
-    // the scopes a group's node appears in - every container that draws a PART of it (mirrors the nodes
-    // GReactFormData's createGroupController and createPropertyController make, and must gain a producer kind at the
-    // same time they do)
+    // the scopes a group's node appears in - every container that draws its rows or names a property of it (mirrors
+    // the nodes GReactFormData's createGroupController and createPropertyController make, and must gain a producer kind
+    // at the same time they do)
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
         List<ContainerView> scopes = new ArrayList<>();
         for (ComponentView producer : getPartProducers(group))
-            addGroupScope(scopes, contentScope(producer));
+            addGroupScope(scopes, producer instanceof PropertyDrawView ? nameScope(producer) : contentScope(producer));
         return scopes;
     }
 
     // THE list of components that produce a part of a group - the one place a KIND is enumerated on this side, and the
     // twin of GReactFormData's createGroupController and createPropertyController, which make the nodes: a branch that
     // gives a component a part adds it to BOTH in one commit, or the two sides answer differently. Two kinds today: the
-    // component that draws the rows, and each panel property. What is deliberately absent is the chrome (toolbar,
+    // component that draws the rows, and each panel property with an entry - one React draws, and one it places (lsf).
+    // What is deliberately absent is the chrome (toolbar,
     // filters, calculations) - it draws nothing yet.
     private List<ComponentView> getPartProducers(GroupObjectEntity group) {
         List<ComponentView> producers = new ArrayList<>();
         producers.add(getDrawComponent(group));
         for (PropertyDrawView property : getPropertiesIt())
-            if (!property.entity.isList(entity) && group.equals(property.entity.getToDraw(entity)))
+            if (!property.entity.isList(entity) && group.equals(property.entity.getToDraw(entity))
+                    && hasEntry(property))
                 producers.add(property);
         return producers;
+    }
+    // whether a property the view names has an entry there: not an lsf ACTION - its caption and image are its
+    // button's face, the platform's -, nor one React draws by no name, the group's own COUNT. A part of a group is a
+    // property with an entry: an lsf action is named on its group's node, but brings no node (mirrors
+    // GReactFormData.hasEntry)
+    private boolean hasEntry(PropertyDrawView property) {
+        return property.isLsfView() ? property.entity.isStaticProperty() : property.entity.getIntegrationSID() != null;
     }
 
     // ... and what those producers WRITE on the node in this scope, which is what a projected name can collide with:
@@ -764,11 +772,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // PROPERTY(qty), and not by the property alone - one name, one spelling, and no question of which child answers
     // when a container and a property could both be read as one
     private static boolean names(String name, String sid) {
-        return namesOrPart(name, sid);
-    }
-
-    private static boolean namesOrPart(String name, String base) {
-        return name.equals(base) || name.startsWith(base + ".");
+        return name.equals(sid) || name.startsWith(sid + ".");
     }
 
     // A container drawn by an HTML template gives each child it shows a <Lsf:sID> place. A place naming nothing the form
@@ -827,6 +831,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         }
 
         for (ComponentView component : getComponents()) {
+            if (component instanceof PropertyDrawView) // named by its integration name on its group's node: below
+                continue;
             ContainerView nameScope = nameScope(component);
             if (nameScope != null) // named by its kind, since that is what the author sees in the error; data-only,
                 claimProjectionName(inScope(nodeNames, nameScope), null, component.getSID(), // so the shorter list
@@ -834,32 +840,28 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         }
         for (PropertyDrawView property : getPropertiesIt()) {
             GroupObjectEntity group = property.entity.getToDraw(entity); // null: the form level
-            // a name is claimed WHERE ITS ENTRY LANDS, which is one container: each property asks its own contentScope,
-            // which for a list property answers with the grid's part. An lsf panel property has no value entry and no
-            // member - its descriptor is a top-level entry, claimed with the components above - so its name lands
-            // nowhere, and neither does the name of a property nothing projects
-            ContainerView scope = contentScope(property);
-            // ... and a property the projection carries AT ALL, by that entry or by a descriptor, is asked its shape as
-            // THE PROPERTY: not because another part of its group happens to be projected, and whether it has a name or
-            // not
-            if (scope != null || descriptorScope(property) != null)
+            // a name is claimed WHERE THE VIEW NAMES THE PROPERTY, which is one container: each property asks its own
+            // nameScope, which for a list property answers with the grid's part, and for an lsf panel property with
+            // where React places it. The name of a property nothing projects lands nowhere
+            ContainerView scope = nameScope(property);
+            // ... and a property the projection carries AT ALL is asked its shape as THE PROPERTY: not because another
+            // part of its group happens to be projected, and whether it has a name or not
+            if (scope != null)
                 checkProjectedColumns(property, group);
             String integrationSID = property.entity.getIntegrationSID();
-            // an lsf ACTION has no entry at all: its caption and image are its buttons' face
-            boolean lsfAction = property.isLsfView() && !property.entity.isStaticProperty();
-            // ... and a property a react container carries by a name has to have one: a view reaches it by that name
-            // alone. The platform's own COUNT of a list group, the pivot's, is the one it carries by none; an author's
-            // NOEXTID there leaves a property nothing could reach, so it is refused. Not an lsf one: the platform draws
-            // it, and an LSF column's renderers are placed by its design name
+            // ... and a property a react container draws or places has to have a name: a view reaches it by that name
+            // alone - its value, its entry, its member, the <Lsf> that places it. The platform's own COUNT of a list
+            // group, the pivot's, is the one it carries by none; an author's NOEXTID there leaves a property nothing
+            // could reach, so it is refused
             boolean groupCount = group != null && group.count == property.entity;
-            if (scope != null && !property.isLsfView() && integrationSID == null && !groupCount)
+            if (scope != null && integrationSID == null && !groupCount)
                 throw new IllegalStateException(formErrorPrefix() + "cannot project property '"
-                        + property.entity.getSID() + "': the react container '" + scope.getSID() + "' draws it, and a"
-                        + " view reaches a property only by its name, which NOEXTID takes away. Give it an EXTID, or"
-                        + " mark it lsf for the platform to draw it");
-            if (scope == null || integrationSID == null || lsfAction) // nothing carries it by a name
+                        + property.entity.getSID() + "': the react container '" + scope.getSID() + "' "
+                        + (property.isLsfView() ? "places" : "draws") + " it, and a view reaches a property only by its"
+                        + " name, which NOEXTID takes away. Give it an EXTID");
+            if (scope == null || integrationSID == null) // nothing names it
                 continue;
-            String source = group == null ? "form property '" + integrationSID + "'" : "property '" + group.getSID() + "." + integrationSID + "'";
+            String source = (group == null ? "form property '" : "property '") + getName(property) + "'";
             checkProjectedName(integrationSID, source);
             // ... and it collides with the names that SCOPE carries, not with the ones another container does: a
             // container holding one panel property of the group has no `list` for a property called `list` to take,
@@ -923,13 +925,18 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     + group.getSID().replace('.', ',') + ")");
     }
 
-    // a projected name is a path a view WRITES - data.<group>.<name>, controller.<group>.<name> - and the one surface
-    // that still reads a qualified name, the classic changeProperty, reads `<groupSID>.<integrationSID>` split at the
-    // LAST dot (a state verb's `property` is a name the view's own group carries). A group SID never carries one
-    // (checkProjectedGroupSID refuses an unnamed group of several objects), so the split is unambiguous only while the
-    // PROPERTY half carries none either - and an EXTID is an arbitrary string, so a dot in one would be read as a group
-    // prefix and the name would ask for a group that does not exist. Asked where the name lands, and only there
+    // a projected name is a path a view WRITES - data.<group>.<name>, controller.<group>.<name>, <Lsf name="o.note"/> -
+    // and what reads one qualified - an <Lsf> given a row, the classic changeProperty - splits `<groupSID>.
+    // <integrationSID>` at the LAST dot (a state verb's `property` is a name the view's own group carries). A group SID
+    // never carries one (checkProjectedGroupSID refuses an unnamed group of several objects), so the split is
+    // unambiguous only while the PROPERTY half carries none either - and an EXTID is an arbitrary string, so a dot in
+    // one would be read as a group prefix and the name would ask for a group that does not exist. Nor may an EXTID be
+    // empty: an <Lsf> with no name places nothing, so a property of the empty group would be one no view can place.
+    // Asked where the name lands, and only there
     private void checkProjectedName(String integrationSID, String source) {
+        if (integrationSID.isEmpty())
+            throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + ": its integration name is"
+                    + " empty, and a view reaches a property only by its name. Give it a non-empty EXTID");
         if (integrationSID.indexOf('.') >= 0)
             throw new IllegalStateException(formErrorPrefix() + "cannot project " + source
                     + ": its integration name carries a dot, and a name is read as '<object group>.<property>' -"
@@ -937,8 +944,10 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // a property GROUPED IN COLUMNS is one cell per row AND column, and everything a react view has of a property means
-    // one ROW: its name, in `data` and on the controller, and its descriptor, read at one key while the platform's own
-    // renderer gives its caption up to it. Where the projection CARRIES the property, that is not a runtime surprise to
+    // one ROW: its name, in `data` and on the controller, its descriptor, read at one key while the platform's own
+    // renderer gives its caption up to it, and an LSF one's per-row renderer, keyed by the row - under a row-and-column
+    // key a value would be written under one key and read under the other, every edit lost without a word. Where the
+    // projection CARRIES the property, that is not a runtime surprise to
     // report but a form that cannot mean what it says, so it is refused here. Only there: a columns property nothing
     // projects is nobody's business, and the classic surface that still names it (its own stringly-typed
     // changeProperty, #1655) refuses it when the call is made. What this DOES settle is what the projection itself
@@ -1011,13 +1020,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (!isReactContainerGroup(toDraw)) // a LIST property has a group to draw it (PropertyDrawEntity.isList)
             throw new IllegalStateException("LSF is set for property '" + view.getSID()
                     + "', whose object group is not rendered by a CUSTOM REACT container — nothing would place the per-row renderers");
-
-        // per-row rendering rests on the renderer key being the ROW key. With column groups the full key joins
-        // row and column, so a value would be written under the joined key and read under the row key, and
-        // every edit would be lost without a word
-        if (!property.getColumnGroupObjects().isEmpty())
-            throw new IllegalStateException("LSF is set for property '" + view.getSID()
-                    + "', which is grouped in columns — it draws one editor per ROW and cannot address a row-and-column cell");
+        // ... and one grouped in COLUMNS is refused with every property the projection carries (checkProjectedColumns)
     }
 
     public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);

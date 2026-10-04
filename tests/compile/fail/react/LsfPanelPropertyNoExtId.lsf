@@ -1,0 +1,18 @@
+MODULE LsfPanelPropertyNoExtId;
+
+REQUIRE System;
+
+// an lsf panel property a CUSTOM REACT container places is named by its integration name - its entry, and the <Lsf>
+// that places it -: NOEXTID takes the name away
+lsfNamelessNote = DATA STRING[50] ();
+
+FORM lsfNameless
+    PROPERTIES() lsfNamelessNote NOEXTID
+;
+
+DESIGN lsfNameless {
+    NEW board {
+        custom = 'LsfNamelessBoard';
+        MOVE PROPERTY(lsfNamelessNote()) { lsf = TRUE; }
+    }
+}

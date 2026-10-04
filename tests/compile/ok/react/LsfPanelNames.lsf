@@ -1,0 +1,25 @@
+MODULE LsfPanelNames;
+
+REQUIRE System;
+
+// an lsf panel property's name is claimed on its group's node where React places it, per container: two containers
+// may each place one under the same name
+CLASS LsfNamesItem;
+lsfNamesNote = DATA STRING[50] (LsfNamesItem);
+lsfNamesRemark = DATA STRING[50] (LsfNamesItem);
+
+FORM lsfNames
+    OBJECTS i = LsfNamesItem PANEL
+    PROPERTIES(i) lsfNamesNote EXTID 'note', lsfNamesRemark EXTID 'note'
+;
+
+DESIGN lsfNames {
+    NEW left {
+        custom = 'LsfNamesLeft';
+        MOVE PROPERTY(lsfNamesNote(i)) { lsf = TRUE; }
+    }
+    NEW right {
+        custom = 'LsfNamesRight';
+        MOVE PROPERTY(lsfNamesRemark(i)) { lsf = TRUE; }
+    }
+}

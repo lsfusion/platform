@@ -1,0 +1,22 @@
+MODULE LsfPanelPropertyNameTwice;
+
+REQUIRE System;
+
+// an lsf panel property's entry is on its group's node under its integration name, beside the entries of the panel
+// properties React draws there: two under one name cannot both be carried
+CLASS LsfTwiceItem;
+lsfTwiceNote = DATA STRING[50] (LsfTwiceItem);
+lsfTwiceRemark = DATA STRING[50] (LsfTwiceItem);
+
+FORM lsfTwice
+    OBJECTS i = LsfTwiceItem PANEL
+    PROPERTIES(i) lsfTwiceNote EXTID 'note', lsfTwiceRemark EXTID 'note'
+;
+
+DESIGN lsfTwice {
+    NEW board {
+        custom = 'LsfTwiceBoard';
+        MOVE PROPERTY(lsfTwiceNote(i)) { lsf = TRUE; }
+        MOVE PROPERTY(lsfTwiceRemark(i));
+    }
+}

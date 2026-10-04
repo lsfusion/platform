@@ -1,0 +1,21 @@
+MODULE LsfPanelPropertyUnnamedGroup;
+
+REQUIRE System;
+
+// an lsf panel property's entry is on its group's node, so a view names its group: a group of several objects with
+// no name of its own joins the objects' names with dots, and a React view names a group as one word
+CLASS LsfPairLeft;
+CLASS LsfPairRight;
+lsfPairNote = DATA STRING[50] (LsfPairLeft, LsfPairRight);
+
+FORM lsfUnnamedPair
+    OBJECTS (l = LsfPairLeft, r = LsfPairRight) PANEL
+    PROPERTIES(l, r) lsfPairNote
+;
+
+DESIGN lsfUnnamedPair {
+    NEW board {
+        custom = 'LsfPairBoard';
+        MOVE PROPERTY(lsfPairNote(l, r)) { lsf = TRUE; }
+    }
+}

@@ -142,11 +142,12 @@
         // useLsf(name[, { row, className }]) -> the props of a host, to spread onto an element the component ALREADY
         // renders, so no placeholder node exists at all: the ref that mounts the lsf child into it, the host's marks
         // and, while the child's entry says so, `hidden`.
-        // `name` is whatever the root it is mounted under names the thing being placed: the DESIGN identifier of a
-        // child for a form container, the canonical name of an element for a navigator window.
-        // pass `row` for an LSF grid property: then the name says WHICH property and the row says which of its
-        // per-row renderers, so the same name legitimately has one host per row. Pass the row object out of the
-        // projected data (or its `objects`) - a key string cannot be resolved back to a row.
+        // `name` is whatever the root it is mounted under names the thing being placed: for a form container, a
+        // component's DESIGN identifier, or a property's name as the view has it - o.note, the path of its entry -; the
+        // canonical name of an element for a navigator window.
+        // pass `row` for an LSF grid property: the name is the property's, as a panel one's is - o.qty - and the row says
+        // which of its per-row renderers, so the same name legitimately has one host per row. Pass the row object out of
+        // the projected data (or its `objects`) - a key string cannot be resolved back to a row.
         // The marks - the lsf-view class the layout styles a host by, and data-lsf-sid a stylesheet addresses it by -
         // are props of the host's OWN, merged with the className the component gives it, and not something written into
         // the DOM behind React's back: a className is React's, and the render that changes it rewrites the whole class
@@ -154,9 +155,11 @@
         // element after the spread, where it would replace the merged one. Only a root whose owner marks its hosts has
         // them - a form container, the forms window; the navigator's and the log's hosts are left as the component
         // rendered them
-        // While the entry the name keys in the root's data says `hidden` - an lsf child's descriptor: its SHOWIF, or a
+        // While the entry the name keys in the root's data says `hidden` - an lsf child's entry: its SHOWIF, or a
         // container's above it - the host is `hidden` too, and stays: a child no host places is not read, SHOWIF and
-        // all, so it would never come back. Not a row's host: what hides a per-row renderer is its column
+        // all, so it would never come back. The root's view says which entry a name keys: a component's descriptor under
+        // that name; a form container's lsf panel property's under its integration name, on its group's node. Not a
+        // row's host: what hides a per-row renderer is its column
         var unsubscribed = function () { return function () {}; }; // a root with no store: nothing is ever hidden
         ns.useLsf = function (name, options) {
             var context = React.useContext(Ctx);
@@ -179,7 +182,7 @@
             // subscribed whatever the host holds: the count of hooks a component calls may not change between renders
             var hidden = React.useSyncExternalStore(store ? store.subscribe : unsubscribed, function () {
                 var data = store && !nameless && row == null ? store.getSnapshot() : null;
-                var entry = data ? data[named] : null;
+                var entry = data ? view.entryOf(data, named) : null;
                 return !!(entry && entry.hidden === true);
             });
             var ref = React.useCallback(function (host) {
@@ -206,7 +209,10 @@
                             });
                         });
                 }
-            }, [view, named, row ? row.key : null]); // by row KEY: the row object is rebuilt whenever its values change
+            }, [view, named, row ? row.objects || row : null]); // by the row's own handle: the row object is rebuilt
+            // whenever its values change, but keeps its `objects`, which is the row's identity - its key alone is not:
+            // rows of two groups may have one key, and a host handed another row with the same key has to be placed
+            // again, if only to say the row is not its group's
             // a host that names nothing places nothing, so it is not marked as holding anything either
             var marked = !!(view && view.marks && !nameless);
             var host = { ref: ref, className: marked ? (className ? 'lsf-view ' + className : 'lsf-view') : className };
@@ -222,9 +228,10 @@
             host.style = props.style;
             return React.createElement('div', host);
         };
-        // A lsf child's caption / image is NOT drawn by the platform - it is handed to React in its own entry, keyed as
-        // the child is: data[componentSID] for a container or a panel property, data.<group>[integrationSID] for a
-        // table one; an ACTION has none, its caption and image being its buttons' face. The component names each child
+        // A lsf child's caption / image is NOT drawn by the platform - it is handed to React in its own entry, under the
+        // name the child is placed by: a container's or any other component's is data[componentSID], a property's -
+        // panel or table - is data.<group>[integrationSID] (data[integrationSID] for the empty group), where its value
+        // would be if React drew it; an ACTION has none, its caption and image being its buttons' face. The component names each child
         // it wants and draws that caption itself; a container is not iterated for you, so a child no Lsf mentions is
         // not shown.
 

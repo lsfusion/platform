@@ -32,6 +32,12 @@ public class PlacedViews {
             this.shown = shown;
             this.logged = logged;
         }
+
+        // said in the host and in the console
+        public void show(Element host) {
+            GwtClientUtils.showLsfViewError(host, shown);
+            GwtClientUtils.logLsfViewError(logged);
+        }
     }
 
     // what only the owner knows: whether a name names anything, how to move the view, and where it waits
@@ -62,8 +68,7 @@ public class PlacedViews {
     public boolean mount(String name, Element host) {
         Problem problem = views.problem(name);
         if (problem != null) {
-            GwtClientUtils.showLsfViewError(host, problem.shown);
-            GwtClientUtils.logLsfViewError(problem.logged);
+            problem.show(host);
             return false;
         }
 

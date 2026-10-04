@@ -173,6 +173,16 @@ public class GReactFormDataTest extends GWTTestCase {
             form.propertyDraws.add(property); scope.children.add(property);
             return property;
         }
+        // an lsf panel property React places: the design names it PROPERTY(<name>), its integration name is <name>
+        GPropertyDraw lsfPanel(int id, String name, GGroupObject group, GContainer scope) {
+            GPropertyDraw property = property(id, name, group, false, scope);
+            property.lsf = true;
+            property.sID = "PROPERTY(" + name + ")";
+            ((GComponent) property).sID = property.sID;
+            property.caption = name.toUpperCase();
+            property.captionReader = new GCaptionReader(id, -1);
+            return property;
+        }
         JavaScriptObject data() { return snapshots[0]; }
         JavaScriptObject node() { return field(data(), "items"); }
         JavaScriptObject row(String key) { return field(field(node(), "byKey"), key); }
@@ -600,9 +610,8 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // the form level is the EMPTY group, and its node is the container's top level: it carries the empty group's
-    // entries and lists no `properties` (the controller's batch at that level), and carries the descriptors too, an lsf
-    // property's among them - keyed by its component SID, so neither a member nor a name the node answers to (FormView
-    // claims none)
+    // entries - an lsf property's among them, by its integration name, with no member - and lists no `properties` (the
+    // controller's batch at that level), and carries the components' descriptors too
     public void testTheTopLevelIsTheEmptyGroupsNode() {
         Fixture f = new Fixture();
         assertNotNull(field(f.data(), "single"));
@@ -610,13 +619,119 @@ public class GReactFormDataTest extends GWTTestCase {
         assertSame(f.single, memberProperty(f.sa, null, "single"));
         assertSame(f.single, f.sa.getGroupProperty(null, "single"));
         assertNull(f.sb.getGroupProperty(null, "single"));
-        assertNull(f.sb.getGroupProperty(null, "native"));
-        assertNull(memberProperty(f.sb, null, "native"));
+        assertSame(f.nativeProperty, f.sb.getGroupProperty(null, "native")); // an lsf one is carried by name too...
+        assertNull(memberProperty(f.sb, null, "native")); // ... with no member: its value is the platform's
         f.apply(drop(f.single));
         assertTrue(flag(field(f.data(), "single"), "hidden"));
         assertSame(f.single, f.sa.getGroupProperty(null, "single"));
         assertSame(f.single, memberProperty(f.sa, null, "single"));
         assertFalse(f.controller(f.single).isPropertyShown(f.single));
+    }
+
+    // an lsf panel property's entry - what labels it - is keyed by its integration name on its group's node, where a panel
+    // property React draws would be, and carried by name with them, with no member: the platform draws its value. The
+    // view names it by that name everywhere - an <Lsf> places it by its path, o.note - and the container finds its entry
+    // by the property - what hides the host (useLsf)
+    public void testAnLsfPanelPropertyIsKeyedByItsName() {
+        final GPropertyDraw[] placed = new GPropertyDraw[2];
+        Fixture f = new Fixture(fixture -> {
+            placed[0] = fixture.lsfPanel(40, "note", fixture.group, fixture.b);
+            placed[1] = fixture.lsfPanel(41, "memo", null, fixture.b);
+        });
+        f.projection.flush();
+        JavaScriptObject data = f.snapshots[1], node = field(data, "items");
+        JavaScriptObject note = field(node, "note"), memo = field(data, "memo");
+        assertEquals("NOTE", text(note, "caption"));
+        assertFalse(hasValue(note)); // its value is the platform's
+        assertEquals("MEMO", text(memo, "caption")); // the empty group's, on the top level
+        assertFalse(own(data, "PROPERTY(note)"));
+        assertFalse(own(data, "PROPERTY(memo)"));
+        assertEquals("panel,note", join(field(node, "properties")));
+        assertSame(placed[0], f.sb.getGroupProperty(f.group, "note"));
+        assertSame(placed[1], f.sb.getGroupProperty(null, "memo"));
+        assertNull(memberProperty(f.sb, "items", "note"));
+        assertNull(memberProperty(f.sb, null, "memo"));
+        assertSame(note, f.sb.entryOf(data, placed[0]));
+        assertSame(memo, f.sb.entryOf(data, placed[1]));
+        assertEquals("items.note", GReactFormData.getName(placed[0])); // the path of its entry, not PROPERTY(note)
+        assertEquals("memo", GReactFormData.getName(placed[1]));
+    }
+
+    // a per-row <Lsf> names an LSF list property as a panel one is named - its group, then its integration name, the
+    // path of its column entry -, found among the groups whose rows this container draws: no other container finds it,
+    // and a name with no group, or a property whose cells React draws, names no renderer
+    public void testAPerRowLsfIsNamedWithItsGroup() {
+        final GPropertyDraw[] placed = new GPropertyDraw[1];
+        Fixture f = new Fixture(fixture -> {
+            placed[0] = fixture.property(44, "memo", fixture.group, true, fixture.a);
+            placed[0].lsf = true;
+        });
+        assertSame(placed[0], f.sa.getRowLsfProperty("items.memo"));
+        assertNull(f.sa.getRowLsfProperty("memo"));       // no group
+        assertNull(f.sa.getRowLsfProperty("items.price")); // React draws its cells: no renderer
+        assertNull(f.sb.getRowLsfProperty("items.memo"));  // b does not draw the rows
+    }
+
+    // ... so two groups whose rows this container draws may share both the name and a row's key: the name says which
+    // group, and a row is checked against it by its own objects - another group's row with the same key is none of it
+    public void testAPerRowLsfIsNamedByItsGroupNotByItsRow() {
+        final GPropertyDraw[] memos = new GPropertyDraw[2];
+        final GGroupObject[] others = new GGroupObject[1];
+        Fixture f = new Fixture(fixture -> {
+            GGroupObject other = others[0] = new GGroupObject();
+            other.ID = 50; other.nativeSID = "g50"; other.sID = "others";
+            other.grid = new GGrid(); other.grid.ID = 51; other.grid.sID = "otherGrid"; other.grid.container = fixture.a;
+            fixture.a.children.add(other.grid);
+            other.objects.add(new GObject(other, "other", 50, "other", GIntegerType.instance));
+            other.rowSelectReader = new GRowSelectReader(50);
+            fixture.form.groupObjects.add(other);
+            memos[0] = fixture.property(45, "memo", fixture.group, true, fixture.a);
+            memos[1] = fixture.property(46, "memo", other, true, fixture.a);
+            for (GPropertyDraw memo : memos)
+                memo.lsf = true;
+        });
+        GFormChanges changes = new GFormChanges();
+        changes.gridObjects.put(others[0], rows(new GGroupObjectValue(50, 1)));
+        f.apply(changes);
+        assertSame(memos[0], f.sa.getRowLsfProperty("items.memo"));
+        assertSame(memos[1], f.sa.getRowLsfProperty("others.memo"));
+        GGroupObjectValue itemsRow = GGroupObjectValue.resolveObject(f.row("1"));
+        JavaScriptObject othersRows = field(field(f.data(), "others"), "byKey");
+        GGroupObjectValue othersRow = GGroupObjectValue.resolveObject(field(othersRows, "1")); // the same key string
+        assertNotNull(f.group.getRowKey(itemsRow));
+        assertNull(f.group.getRowKey(othersRow)); // what getPlacement checks a row by
+        assertNull(GGroupObjectValue.resolveObject(keyOf("1"))); // a key string is no row
+    }
+
+    // ... and where nothing else of its group is drawn, it brings the group's node: its entry is carried there - while
+    // an lsf panel ACTION, which has no entry, brings nothing. What labels it, and whether the form shows it, are read
+    // through the container's answer for the property, from the snapshot handed in
+    public void testAnLsfPanelPropertyBringsItsGroupsNode() {
+        final GPropertyDraw[] placed = new GPropertyDraw[1];
+        Fixture f = new Fixture(fixture -> placed[0] = fixture.lsfPanel(42, "note", fixture.group, fixture.c));
+        GPropertyDraw note = placed[0];
+        f.projection.flush();
+        assertEquals("note", join(field(field(f.snapshots[2], "items"), "properties")));
+        assertTrue(own(f.sc.controller, "items"));
+        assertNull(memberProperty(f.sc, "items", "note"));
+        NativeHashMap<GGroupObjectValue, PValue> caption = new NativeHashMap<>();
+        caption.put(GGroupObjectValue.EMPTY, PValue.getPValue("Remark"));
+        assertFalse(reachesLsf(f.lsf, f.controllers, note.captionReader, caption)); // React's
+        f.projection.flush();
+        assertEquals("Remark", text(f.sc.entryOf(f.snapshots[2], note), "caption"));
+        GFormChanges show = new GFormChanges();
+        put(show, note, f.one, 5);
+        f.apply(show);
+        assertFalse(flag(f.sc.entryOf(f.snapshots[2], note), "hidden"));
+        f.apply(drop(note));
+        assertTrue(flag(f.sc.entryOf(f.snapshots[2], note), "hidden"));
+
+        final GPropertyDraw[] action = new GPropertyDraw[1];
+        Fixture g = new Fixture(fixture -> (action[0] = fixture.lsfPanel(43, "go", fixture.group, fixture.c)).valueType = GActionType.instance);
+        g.projection.flush();
+        assertFalse(own(g.snapshots[2], "items"));
+        assertFalse(own(g.sc.controller, "items"));
+        assertNull(g.sc.entryOf(g.snapshots[2], action[0]));
     }
 
     // the controller is the state's, and its members mirror the entries, made once with them: a group's member wherever
@@ -1013,8 +1128,8 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // a reader goes to ONE place: what React has of its owner - the property, the group, the component it is of - told
-    // what kind of reader it is, or the platform, where React takes nothing of it. An unnamed lsf column is all the
-    // platform's, what labels it too, React carrying it by no name; an lsf ACTION has no entry,
+    // what kind of reader it is, or the platform, where React takes nothing of it. An lsf column's values and drop go
+    // through its entry to the platform (an unnamed one is refused when the form is built); an lsf ACTION has no entry,
     // its caption being its button's face, the platform's; an lsf container React places has its caption drawn by
     // React - its caption's class goes on to the platform, named or not, which has no caption widget to put it on - and
     // its SHOWIF is React's alone: a view hides its host (useLsf)
@@ -1022,7 +1137,6 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         GPropertyDraw column = f.property(32, "column", f.group, true, f.a);
         column.lsf = true;
-        column.integrationSID = null;
         GPropertyDraw button = f.property(33, "button", null, false, f.b);
         button.lsf = true;
         button.valueType = GActionType.instance;
@@ -1042,9 +1156,8 @@ public class GReactFormDataTest extends GWTTestCase {
         Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue("Go"));
-        assertTrue(reachesLsf(lsf, controllers, column, values));
-        assertTrue(dropReachesLsf(lsf, controllers, column));
-        assertSame(lsf, controllers.properties.get(column)); // an lsf column by no name: all of it the platform's
+        assertTrue(reachesLsf(lsf, controllers, column, values)); // an lsf column's values go through its entry...
+        assertTrue(dropReachesLsf(lsf, controllers, column));     // ... and so does its drop, to the platform
         // the platform's alone: its button's face
         assertTrue(reachesLsf(lsf, controllers, button.captionReader, values));
         assertFalse(reachesLsf(lsf, controllers, placed.captionReader, values));

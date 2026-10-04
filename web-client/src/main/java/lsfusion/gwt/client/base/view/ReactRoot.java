@@ -50,6 +50,13 @@ public class ReactRoot {
         // form container and the forms window mark theirs, which hold a view the layout fills them with; the navigator
         // and the log windows leave theirs as the component rendered them
         boolean marksHosts();
+
+        // the entry a placed name keys in the owner's `data` - what hides its host while it says `hidden` (useLsf): the
+        // field of that name, unless the owner keys what it places otherwise - a form container keys an lsf panel
+        // property's entry by its integration name on its group's node
+        default JavaScriptObject entryOf(JavaScriptObject data, String name) {
+            return GwtClientUtils.getOwnField(data, name);
+        }
     }
 
     // `element` is the node the root is mounted in, set at mount: what the component draws is inside it, and nothing a
@@ -64,6 +71,9 @@ public class ReactRoot {
             },
             check: function(name, host, row) {
                 root.@lsfusion.gwt.client.base.view.ReactRoot::checkPlaced(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(name, host, row || null);
+            },
+            entryOf: function(data, name) {
+                return placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::entryOf(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(data, name);
             },
             marks: marks } };
     }-*/;

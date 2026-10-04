@@ -1,0 +1,20 @@
+MODULE LsfPanelPropertyReservedName;
+
+REQUIRE System;
+
+// an lsf panel property React places has its entry - what labels it - on its group's node under its integration name,
+// as a panel property React draws has, so it may not take a name the node owns: here the group's own verb
+CLASS LsfPanelItem;
+lsfPanelNote = DATA STRING[50] (LsfPanelItem);
+
+FORM lsfPanelReserved
+    OBJECTS i = LsfPanelItem PANEL
+    PROPERTIES(i) lsfPanelNote EXTID 'change'
+;
+
+DESIGN lsfPanelReserved {
+    NEW board {
+        custom = 'LsfPanelBoard';
+        MOVE PROPERTY(lsfPanelNote(i)) { lsf = TRUE; }
+    }
+}

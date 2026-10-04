@@ -51,7 +51,14 @@ function makeReact() {
         forwardRef: (fn) => fn,
         useRef: (v) => slot(() => ({ current: v })),
         useMemo: (fn) => fn(),
-        useCallback: (fn) => fn,
+        // memoized by deps, as React does: what a ref callback's deps say decides whether a host is placed again
+        useCallback: (fn, deps) => {
+            const s = slot(() => ({ deps: null, fn: null }));
+            const changed = !s.fn || !deps || !s.deps || deps.length !== s.deps.length
+                || deps.some((d, i) => !Object.is(d, s.deps[i]));
+            if (changed) { s.fn = fn; s.deps = deps; }
+            return s.fn;
+        },
         useEffect: (fn, deps) => {
             const s = slot(() => ({ deps: null, ran: false }));
             const changed = !s.ran || !deps || !s.deps || deps.length !== s.deps.length
@@ -64,6 +71,8 @@ function makeReact() {
         Fragment: 'Fragment',
     };
 }
+// what every root's view answers for a name it keys as itself (ReactRoot.Placement.entryOf's default)
+const entryOf = (data, name) => data[name];
 function render(instance, fn) {
     makeReact.__render = instance; instance.cursor = 0;
     try { return fn(); } finally { makeReact.__render = null; }
@@ -177,25 +186,25 @@ console.log('Lsf');
     const w = load();
     // the context every hook reads; the double returns it from useContext
     const crossed = [];
-    makeReact.__ctxValue = { view: {
+    makeReact.__ctxValue = { view: { entryOf,
         mount: (name, host, row) => crossed.push(['mount', name, row]),
         unmount: (name, host, row) => crossed.push(['unmount', name, row]),
     } };
 
-    const ref = w.lsfusion.useLsf('PROPERTY(note)').ref;
+    const ref = w.lsfusion.useLsf('o.note').ref;
     check('useLsf hands back the props of a host, a ref callback among them', typeof ref === 'function');
     ref({ tag: 'host' });
     check('a host crosses to the platform', crossed.length === 1 && crossed[0][0] === 'mount'
-        && crossed[0][1] === 'PROPERTY(note)', JSON.stringify(crossed));
+        && crossed[0][1] === 'o.note', JSON.stringify(crossed));
     ref(null);
     check('and the cleanup is its exact inverse', crossed.length === 2 && crossed[1][0] === 'unmount'
-        && crossed[1][1] === 'PROPERTY(note)', JSON.stringify(crossed));
+        && crossed[1][1] === 'o.note', JSON.stringify(crossed));
 
     // a place is its name: without one there is nothing to ask the platform for, and the name would arrive as the
     // string "undefined" and be blamed on whatever the window holds
     for (const missing of [undefined, null, '']) {
         const w2 = load();
-        makeReact.__ctxValue = { view: { mount: () => check('nothing crosses for a nameless <Lsf>', false),
+        makeReact.__ctxValue = { view: { entryOf, mount: () => check('nothing crosses for a nameless <Lsf>', false),
                                          unmount: () => {} } };
         const noRef = w2.lsfusion.useLsf(missing).ref;
         noRef({ tag: 'host' });
@@ -204,24 +213,36 @@ console.log('Lsf');
     }
 
     // the row path: a per-row renderer has one host per ROW, and unmounting has to name the same row the mount did,
-    // even after the row object has been rebuilt - which is why the hook keys on the row's key and remembers the row
+    // even after the row object has been rebuilt - which is why the hook keys on the row's handle and remembers the row
     const w4 = load();
     const seen = [];
-    makeReact.__ctxValue = { view: { mount: (n, h, r) => seen.push(['mount', n, r && r.key]),
+    makeReact.__ctxValue = { view: { entryOf, mount: (n, h, r) => seen.push(['mount', n, r && r.key]),
                                      unmount: (n, h, r) => seen.push(['unmount', n, r && r.key]) } };
     const rowA = { key: 'r1', qty: 1 };
-    const rowRef = w4.lsfusion.useLsf('PROPERTY(qty)', { row: rowA }).ref;
+    const rowRef = w4.lsfusion.useLsf('o.qty', { row: rowA }).ref;
     rowRef({ tag: 'rowHost' });
     check('a row host crosses with its row', seen.length === 1 && seen[0][2] === 'r1', JSON.stringify(seen));
     rowRef(null);
     check('and is given back naming the SAME row', seen.length === 2 && seen[1][0] === 'unmount' && seen[1][2] === 'r1',
         JSON.stringify(seen));
 
+    // a per-row name is an integration name, which two groups may share, and their rows may share a key: the host is
+    // placed again when the row is another group's, and not when the same row is rebuilt - its `objects` handle stays
+    const w4b = load();
+    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {} } };
+    const hostOf = { cursor: 0, slots: [] };
+    const handleA = { group: 'a' }, handleB = { group: 'b' };
+    const refA = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA } }).ref);
+    const refA2 = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA, qty: 2 } }).ref);
+    const refB = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleB } }).ref);
+    check('the same row rebuilt keeps its host placed', refA === refA2);
+    check("another group's row with the same key is placed again", refA2 !== refB);
+
     // a second host for the same name while the first still holds it: the hook itself does not judge that - it hands
     // both to the platform, which is where the "first one keeps it" rule lives
     const w5 = load();
     const both = [];
-    makeReact.__ctxValue = { view: { mount: (n, h) => both.push(h.tag), unmount: () => {} } };
+    makeReact.__ctxValue = { view: { entryOf, mount: (n, h) => both.push(h.tag), unmount: () => {} } };
     w5.lsfusion.useLsf('a').ref({ tag: 'h1' });
     w5.lsfusion.useLsf('a').ref({ tag: 'h2' });
     check('two hosts for one name both reach the platform', both.join(',') === 'h1,h2', both.join(','));
@@ -230,7 +251,7 @@ console.log('Lsf');
     // projection calls "8" would find nothing under a type-strict key
     const w6 = load();
     const asked = [];
-    makeReact.__ctxValue = { view: { mount: (n) => asked.push([n, typeof n]), unmount: () => {} } };
+    makeReact.__ctxValue = { view: { entryOf, mount: (n) => asked.push([n, typeof n]), unmount: () => {} } };
     w6.lsfusion.useLsf(8).ref({ tag: 'h' });
     check('a number name reaches the platform as its string', asked.length === 1 && asked[0][0] === '8'
         && asked[0][1] === 'string', JSON.stringify(asked));
@@ -248,7 +269,7 @@ console.log('Lsf');
 
     // the host never renders React children of its own - the platform owns what goes inside it
     const w3 = load();
-    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {}, marks: true } };
+    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: true } };
     const element = w3.lsfusion.Lsf({ name: 'a', className: 'c', style: { height: 1 }, children: 'IGNORED' });
     check('Lsf renders a div', element.type === 'div');
     check('...with the class it was given, after its own mark', element.props.className === 'lsf-view c',
@@ -261,7 +282,7 @@ console.log('Lsf');
     // the marks are the host's own props, so a class that changes between renders cannot take them away: React
     // rewrites the whole class attribute from the className prop, and the marks are in it every time
     const w8 = load();
-    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {}, marks: true } };
+    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: true } };
     const first = w8.lsfusion.Lsf({ name: 'BOX(o)', className: 'panel' });
     const second = w8.lsfusion.Lsf({ name: 'BOX(o)', className: 'panel panel-wide' });
     check('a changed class keeps the mark', first.props.className === 'lsf-view panel'
@@ -283,7 +304,7 @@ console.log('Lsf');
     // the navigator and the log windows leave their hosts as the component rendered them: the class is the
     // component's alone (a form container and the forms window mark theirs)
     const w9 = load();
-    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {}, marks: false } };
+    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: false } };
     const plain = w9.lsfusion.Lsf({ name: 'Sale.sales', className: 'menu-main' });
     check('a host of a root that marks nothing keeps its own class', plain.props.className === 'menu-main',
         plain.props.className);
@@ -294,7 +315,7 @@ console.log('Lsf');
     // only `hidden` says so, the ref being the same, so the child is not taken out and goes on being read
     const w10 = load();
     const snapshot = { 'BOX(o)': { caption: 'Orders', hidden: true }, 'BOX(i)': { caption: 'Items' } };
-    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {}, marks: true },
+    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: true },
                              store: { subscribe: () => () => {}, getSnapshot: () => snapshot } };
     check('a host whose entry says hidden is hidden', w10.lsfusion.useLsf('BOX(o)').hidden === true);
     check('a host whose entry does not say so is not', w10.lsfusion.useLsf('BOX(i)').hidden === undefined);
@@ -302,7 +323,15 @@ console.log('Lsf');
     const hiddenDiv = w10.lsfusion.Lsf({ name: 'BOX(o)', className: 'c', style: { width: 2 } });
     check('<Lsf> hides its div the same way, with its class and style', hiddenDiv.props.hidden === true
         && hiddenDiv.props.style.width === 2 && hiddenDiv.props.className.indexOf('c') >= 0, JSON.stringify(hiddenDiv.props));
-    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {} } }; // a root with no store
+    // the root's view says which entry a name keys: a form container keys an lsf panel property's by its integration
+    // name on its group's node, and places the property by that same path, o.note
+    const keyed = { 'BOX(o)': { caption: 'Orders' }, o: { note: { caption: 'Note', hidden: true } } };
+    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {}, marks: true,
+                                     entryOf: (data, name) => name === 'o.note' ? data.o.note : data[name] },
+                             store: { subscribe: () => () => {}, getSnapshot: () => keyed } };
+    check("a host is hidden by the entry the root's view says its name keys", w10.lsfusion.useLsf('o.note').hidden === true);
+    check('...and a name the view keys as itself is read as itself', w10.lsfusion.useLsf('BOX(o)').hidden === undefined);
+    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {} } }; // a root with no store
     check('a root with no store hides nothing', w10.lsfusion.useLsf('BOX(o)').hidden === undefined);
 }
 

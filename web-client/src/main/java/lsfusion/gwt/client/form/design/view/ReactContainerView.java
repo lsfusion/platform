@@ -23,7 +23,7 @@ public class ReactContainerView extends ParkedContainerView {
     // this container's state in the form's projection: what its `props.data` is built from, and its `props.controller`
     private final GReactFormData.ContainerState state;
 
-    // the components this view places, by sID: those it is the React place of (GComponent.getReactPlace, the rule the
+    // the components this view places, by the name an <Lsf> gives them (getName): those it is the React place of (GComponent.getReactPlace, the rule the
     // layout and the projection ask too) - its children and what is inside the containers it draws itself. What an
     // <Lsf> name means is looked up here
     private final Map<String, GComponent> placeable = new HashMap<>();
@@ -31,7 +31,7 @@ public class ReactContainerView extends ParkedContainerView {
     // (reconcilePlaced)
     private final List<GComponent> lsfViews = new ArrayList<>();
 
-    // sID -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
+    // name -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
     // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfLsfView(sid) >= 0
     private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
         @Override
@@ -82,17 +82,25 @@ public class ReactContainerView extends ParkedContainerView {
         root = new ReactRoot(container.getCustom(), state.controller, new ReactRoot.Placement() {
             @Override
             public void mount(String name, Element host, JavaScriptObject row) {
-                getPlacement(name).mount(host, row);
+                getPlacement(name, row).mount(host);
             }
 
             @Override
             public void unmount(String name, Element host, JavaScriptObject row) {
-                getPlacement(name).unmount(host, row);
+                getPlacement(name, row).unmount(host);
             }
 
             @Override
             public boolean marksHosts() {
                 return true; // a host here holds a view of the form, which the layout styles by its marks
+            }
+
+            // the entry a name keys: a property's where its name says - data.o.note -, any other component's descriptor
+            // under its design name, the field of that name
+            @Override
+            public JavaScriptObject entryOf(JavaScriptObject data, String name) {
+                GComponent component = placeable.get(name);
+                return component instanceof GPropertyDraw ? state.entryOf(data, (GPropertyDraw) component) : ReactRoot.Placement.super.entryOf(data, name);
             }
         });
         GwtClientUtils.addClassName(panel, "panel-react");
@@ -106,22 +114,21 @@ public class ReactContainerView extends ParkedContainerView {
         });
     }
 
-    // what is under the container whose React place it is: the design is fixed, so this is taken once. Not an LSF grid
-    // property: it is no view of its own here, its renderers are placed per row by the view that draws its group's rows
-    // (getPlacement)
+    // what is under the container whose React place it is: the design is fixed, so this is taken once. Not a grid
+    // property: it is no view of its own here - an LSF one's renderers are placed per row by the view that draws its
+    // group's rows (getPlacement), any other's cells are drawn there - and it is parked in its group's box, which says
+    // nothing about where its rows are, so its name would claim a place a panel property of the same name has
     private void addPlaceable(GComponent component) {
         for (GComponent child : component.getChildren()) {
-            if (child.getReactPlace() == container && !isPlacedPerRow(child)) {
-                if (child.sID != null) // what an <Lsf> name can mean
-                    placeable.put(child.sID, child);
+            if (child.getReactPlace() == container && !(child instanceof GPropertyDraw && ((GPropertyDraw) child).isList)) {
+                String name = GReactFormData.getName(child);
+                if (name != null) // what an <Lsf> name can mean
+                    placeable.put(name, child);
                 if (child.isLsfView())
                     lsfViews.add(child);
             }
             addPlaceable(child);
         }
-    }
-    private static boolean isPlacedPerRow(GComponent component) {
-        return component instanceof GPropertyDraw && ((GPropertyDraw) component).isLsfViewPerRow();
     }
 
     // React puts each view where an <Lsf> names it, so the order the views are held in means nothing: a new one goes
@@ -146,96 +153,116 @@ public class ReactContainerView extends ParkedContainerView {
     protected void removeImpl(int index) {
         // a SHOWIF took this child's view away. The host stays remembered - it will be filled again when the view comes
         // back - but the placement must not: otherwise nothing would put the rebuilt view into it
-        placed.viewRemoved(children.get(index).sID, true);
+        placed.viewRemoved(GReactFormData.getName(children.get(index)), true);
 
         super.removeImpl(index);
     }
 
-    // HOW an <Lsf name> places what it names, by what the name is: an LSF grid property of a group this view draws has
-    // a renderer per ROW, any other component one view. Mount and unmount are called back by the host's ref, the
-    // cleanup the exact inverse (F1). React runs every ref detach of a commit before any attach, so a mount can never
-    // race an unmount of the same child: a second live host for one sid is always a duplicate, never a legitimate move
-    private LsfPlacement getPlacement(String sid) {
-        GPropertyDraw property = state.getRowLsfViewProperty(sid);
-        return property != null ? new LsfRowPlacement(sid, property) : new LsfViewPlacement(sid);
+    // HOW an <Lsf name> places what it names, decided here, once per mount and unmount, into one kind: what the name
+    // names here - a component by its design identifier, a property by the name the view has for it, o.qty -, one view
+    // of it, or, for an LSF grid property of a group this view draws, its renderer for the row given, which has to be a
+    // row of that group (a tree's row of a group below passes, narrowed to the path down to it, as a group's
+    // change(row) takes it); and a placement that can never work, its mistake shown in the host - an LSF grid property
+    // with no row, a row that is no row or not the group's, a row for what has one view. Mount and unmount are called
+    // back by the host's ref, the cleanup the exact inverse (F1): both are given the same name and row, so both get
+    // the same kind. React runs every ref detach of a commit before any attach, so a mount can never race an unmount
+    // of the same child: a second live host for one name is always a duplicate, never a legitimate move
+    private LsfPlacement getPlacement(String name, JavaScriptObject row) {
+        GPropertyDraw property = state.getRowLsfProperty(name);
+        if (row == null) {
+            if (property == null)
+                return new LsfViewPlacement(name);
+            // without the row the host would wait for a single view that is never built - silently, for good
+            return new FailedLsfPlacement(new PlacedViews.Problem(
+                    "'" + name + "' is drawn per row, so its <Lsf> needs a row",
+                    "'" + name + "' is an LSF property drawn per row: its <Lsf> is given the row it belongs to - <Lsf"
+                            + " name=\"" + name + "\" row={row}/> -, since each row has a renderer of its own"));
+        }
+        GGroupObjectValue key = GGroupObjectValue.resolveObject(row);
+        if (key == null)
+            return new FailedLsfPlacement(new PlacedViews.Problem(
+                    "the `row` given to '" + name + "' is not a row",
+                    "the `row` passed to '" + name + "' does not identify a row: pass the row object from the projected"
+                            + " data, not its key"));
+        if (property == null)
+            return new FailedLsfPlacement(new PlacedViews.Problem(
+                    "'" + name + "' is not an LSF grid property of this view",
+                    "'" + name + "' is given a row, but it names no grid property marked LSF of a group container '"
+                            + container.sID + "' draws - group, then integration name, as its column entry is keyed -,"
+                            + " so nothing is drawn per row for it here"));
+        GGroupObjectValue rowKey = property.groupObject.getRowKey(key);
+        if (rowKey == null)
+            return new FailedLsfPlacement(new PlacedViews.Problem(
+                    "the `row` given to '" + name + "' is not a row of '" + property.groupObject.getSID() + "'",
+                    "the `row` passed to '" + name + "' is a row of another group: '" + name + "' is drawn per row of '"
+                            + property.groupObject.getSID() + "'"));
+        return new LsfRowPlacement(name, property, rowKey);
     }
     private abstract static class LsfPlacement {
-        final String sid;
-
-        LsfPlacement(String sid) {
-            this.sid = sid;
-        }
-
-        abstract void mount(Element host, JavaScriptObject row);
-        abstract void unmount(Element host, JavaScriptObject row);
+        abstract void mount(Element host);
+        abstract void unmount(Element host);
     }
-    // ... one view, mounted in the host claimed for it (`placed`); a row would say which of several renderers is meant,
-    // and there is one view, so a row given is a mistake shown in the host
+    // ... one view, mounted in the host claimed for it (`placed`)
     private final class LsfViewPlacement extends LsfPlacement {
-        LsfViewPlacement(String sid) {
-            super(sid);
+        final String name;
+
+        LsfViewPlacement(String name) {
+            this.name = name;
         }
 
         @Override
-        void mount(Element host, JavaScriptObject row) {
-            if (row != null) {
-                GwtClientUtils.showLsfViewError(host, "'" + sid + "' is not an LSF grid property of this view");
-                GwtClientUtils.logLsfViewError("'" + sid + "' is not a grid property marked LSF of a group container '"
-                        + container.sID + "' draws, so nothing is drawn per row for it here");
-                return;
-            }
-            placed.mount(sid, host);
+        void mount(Element host) {
+            placed.mount(name, host);
             scheduleReconcile();
         }
 
         @Override
-        void unmount(Element host, JavaScriptObject row) {
-            if (row != null) { // never mounted: the host holds the mistake mount showed in it
-                GwtClientUtils.clearLsfViewError(host);
-                return;
-            }
-            placed.unmount(sid, host);
+        void unmount(Element host) {
+            placed.unmount(name, host);
             scheduleReconcile();
         }
     }
     // ... a renderer per row: the row says which goes in the host, and the grid panel controller of the rows holds
     // them. A row React unmounts - scrolled out, say - sends its renderer back to waiting, it is NOT dropped
     private final class LsfRowPlacement extends LsfPlacement {
+        final String name;
         final GPropertyDraw property;
+        final GGroupObjectValue rowKey;
 
-        LsfRowPlacement(String sid, GPropertyDraw property) {
-            super(sid);
+        LsfRowPlacement(String name, GPropertyDraw property, GGroupObjectValue rowKey) {
+            this.name = name;
             this.property = property;
+            this.rowKey = rowKey;
         }
 
         @Override
-        void mount(Element host, JavaScriptObject row) {
-            // without the row the host would wait for a single view that is never built - silently, for good
-            if (row == null) {
-                GwtClientUtils.showLsfViewError(host, "'" + sid + "' is drawn per row, so its <Lsf> needs a row");
-                GwtClientUtils.logLsfViewError("'" + sid + "' is an LSF property drawn per row: its <Lsf> is given the"
-                        + " row it belongs to, as <Lsf name row/>, since each row has a renderer of its own");
-                return;
-            }
-            GGroupObjectValue rowKey = GGroupObjectValue.resolveObject(row);
-            if (rowKey == null) {
-                GwtClientUtils.showLsfViewError(host, "the `row` given to '" + sid + "' is not a row");
-                GwtClientUtils.logLsfViewError("the `row` passed to '" + sid + "' does not identify a row: pass the row"
-                        + " object from the projected data, not its key");
-                return;
-            }
-            // the property, not the sid JSX used: the ledger of who holds which row is the property's own
+        void mount(Element host) {
+            // the property, not the name JSX used: the ledger of who holds which row is the property's own
             if (formController.getGridPanelController(property).place(rowKey, property, host) != null)
-                PlacedViews.reportDuplicate(sid, host); // another <Lsf> already placed this property for this row
+                PlacedViews.reportDuplicate(name, host); // another <Lsf> already placed this property for this row
         }
 
         @Override
-        void unmount(Element host, JavaScriptObject row) {
-            GGroupObjectValue rowKey = row != null ? GGroupObjectValue.resolveObject(row) : null;
-            if (rowKey != null)
-                formController.getGridPanelController(property).unplace(rowKey, property, host);
-            else // a host that got no renderer holds the mistake mount showed in it
-                GwtClientUtils.clearLsfViewError(host);
+        void unmount(Element host) {
+            formController.getGridPanelController(property).unplace(rowKey, property, host);
+        }
+    }
+    // ... and one that can never work: its mistake is shown in the host, which holds it until the host goes
+    private static final class FailedLsfPlacement extends LsfPlacement {
+        final PlacedViews.Problem problem;
+
+        FailedLsfPlacement(PlacedViews.Problem problem) {
+            this.problem = problem;
+        }
+
+        @Override
+        void mount(Element host) {
+            problem.show(host);
+        }
+
+        @Override
+        void unmount(Element host) {
+            GwtClientUtils.clearLsfViewError(host);
         }
     }
 
@@ -260,7 +287,8 @@ public class ReactContainerView extends ParkedContainerView {
     }
     private void reconcilePlaced() {
         for (GComponent child : lsfViews) {
-            boolean hidden = child.sID == null || !placed.isHeld(child.sID); // no <Lsf> names one with no name
+            String name = GReactFormData.getName(child);
+            boolean hidden = name == null || !placed.isHeld(name); // no <Lsf> names one with no name
             if (hidden ? reportedHidden.add(child) : reportedHidden.remove(child))
                 formController.setUserHidden(child, hidden);
         }

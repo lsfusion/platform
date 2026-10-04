@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.design.view;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import lsfusion.gwt.client.GForm;
@@ -99,28 +100,34 @@ public class GReactFormData {
     }
     // ... of a property, ALL of it - its values and what labels it alike: an entry, keyed by its integration name on
     // the node of its group, where React draws it - none where it carries it by no name, the platform's own COUNT of a
-    // list group, the pivot's: React keeps nothing of it, and nothing is sent for it; an entry over the platform's
-    // where the platform draws it and React labels it - the descriptor of a panel property React places, the column of
-    // the rows React draws -, which keeps what labels the property and hands the rest on; else the platform's
+    // list group, the pivot's: React keeps nothing of it, and nothing is sent for it; an entry over the platform's,
+    // keyed the same way, where the platform draws it and React labels it - a panel property React places, the column
+    // of the rows React draws -, which keeps what labels the property and hands the rest on; else the platform's
     public GPropertyController createPropertyController(GPropertyDraw property, GLsfPropertyController lsf) {
-        GContainer scope = descriptorScope(property);
-        if (scope != null) // an lsf panel or empty-group property React places: the platform draws it, React labels it
-            return new LsfPanelPropertyEntry(containers.get(scope), property, lsf);
-        if ((scope = contentScope(property)) == null)
+        GContainer scope = nameScope(property);
+        if (scope == null)
             return lsf;
+        if (!hasEntry(property)) // ... and where it has no entry, it brings no node either
+            return noEntry(property, lsf);
         ContainerState state = containers.get(scope);
-        if (property.isList) { // its content is its column, carried on the node its group's rows are drawn on
+        if (property.isList) { // its content is its column, on the node its group's rows are drawn on
             RowsGroupNode rows = state.rowsGroupNodes.get(property.groupObject);
-            // an lsf column: React labels it, over the renderers the platform draws in the rows - an lsf ACTION's
-            // caption and image are its buttons' face, and so is all of it the platform's
-            if (property.isLsfView())
-                return property.integrationSID != null && !property.isAction() ? new LsfColumnPropertyEntry(rows, property, lsf) : lsf;
-            return property.integrationSID == null ? null : new ReactColumnPropertyEntry(rows, property);
+            return property.isLsfView() ? new LsfColumnPropertyEntry(rows, property, lsf) : new ReactColumnPropertyEntry(rows, property);
         }
-        // a panel property, named or not, is a part of its group: on the group's node here, the empty group's on the
-        // top level
-        PropertiesNode node = property.groupObject == null ? state.top : state.getOrCreateGroupNode(property.groupObject);
-        return property.integrationSID == null ? null : new ReactPanelPropertyEntry(node, property);
+        // a panel property is a part of its group: on the group's node here, the empty group's on the top level
+        Node node = property.groupObject == null ? state.top : state.getOrCreateGroupNode(property.groupObject);
+        return property.isLsfView() ? new LsfPanelPropertyEntry(node, property, lsf) : new ReactPanelPropertyEntry(node, property);
+    }
+    // whether a property a view names has an entry there: not an lsf ACTION - its caption and image are its buttons'
+    // face, the platform's -, nor one React draws by no name, the group's own COUNT. Any other has a name, the form being
+    // refused without one (FormView.checkReactProjectionNames). A group's node is where an entry of it is (mirrors
+    // FormView.hasEntry)
+    private static boolean hasEntry(GPropertyDraw property) {
+        return property.isLsfView() ? !property.isAction() : property.integrationSID != null;
+    }
+    // ... and what it has instead: an lsf action is all the platform's, and React keeps nothing of the COUNT
+    private static GPropertyController noEntry(GPropertyDraw property, GLsfPropertyController lsf) {
+        return property.isLsfView() ? lsf : null;
     }
     // ... of a component: none of what React keeps nothing of (reactKeepsNothing). A property's is the platform's where
     // the platform draws the property - a property is no owner as a component, all of it being its property
@@ -132,7 +139,7 @@ public class GReactFormData {
     public GComponentController createComponentController(GComponent component, GComponentController lsf) {
         if (reactKeepsNothing(component))
             return null;
-        GContainer scope = component instanceof GPropertyDraw || component.sID == null ? null : placed(component);
+        GContainer scope = component instanceof GPropertyDraw ? null : nameScope(component);
         if (scope == null)
             return lsf;
         ContainerState state = containers.get(scope);
@@ -310,6 +317,14 @@ public class GReactFormData {
             }
         }
 
+        // a property's entry in a snapshot of this container's data, where its name says it is - null where it has
+        // none here: what hides the host of an lsf panel property while it says `hidden` (useLsf)
+        public JavaScriptObject entryOf(JavaScriptObject snapshot, GPropertyDraw property) {
+            Node node = nodeOf(property.groupObject);
+            JavaScriptObject nodeData = node != null ? node.in(snapshot) : null;
+            return nodeData != null ? getOwnField(nodeData, property.integrationSID) : null;
+        }
+
         // the node where a part of the group is drawn here, made the first time it is asked for: a panel node, unless
         // the group's rows are drawn here, whose node is there already (createRowsGroupNode: the groups come first)
         GroupNode getOrCreateGroupNode(GGroupObject group) {
@@ -327,7 +342,7 @@ public class GReactFormData {
             rowsGroupNodes.put(group, node);
             return node;
         }
-        PropertiesNode nodeOf(GGroupObject group) {
+        Node nodeOf(GGroupObject group) {
             return group == null ? top : nodes.get(group);
         }
         // what each node sets out once - a rows node its rows, none of them yet, and every node the names it carries
@@ -345,19 +360,22 @@ public class GReactFormData {
         // the property of this group (null: the empty group) this container carries under the name - which is exactly
         // how FormView claims the name: per container and group, the group's node here answering for it
         public GPropertyDraw getGroupProperty(GGroupObject group, String integrationSID) {
-            PropertiesNode node = nodeOf(group);
+            Node node = nodeOf(group);
             return node != null ? node.getProperty(integrationSID) : null;
         }
-        // the lsf list property whose per-row renderers this container places, by its design identifier -
-        // PROPERTY(qty(d)): one of a group whose rows it draws, which the node they are drawn on answers for. Asked of
-        // those nodes, not of the container's children: such a property is not a child of it
-        // (FormView.checkLsfListView)
-        public GPropertyDraw getRowLsfViewProperty(String sid) {
+        // the lsf list property whose per-row renderers an <Lsf> places, named as a panel property is - its group, then
+        // its integration name, o.qty, the path of its column entry -, of a group whose rows this container draws:
+        // asked of the nodes the rows are drawn on, not of the container's children, such a property being no child of
+        // it (FormView.checkLsfListView). The row an <Lsf> gives says which renderer, and has to be a row of that group
+        public GPropertyDraw getRowLsfProperty(String name) {
+            int dot = name.lastIndexOf('.');
+            if (dot < 0) // a grid property always has a group
+                return null;
+            String groupSID = name.substring(0, dot);
             for (GGroupObject group : form.groupObjects) {
                 RowsGroupNode node = rowsGroupNodes.get(group);
-                GPropertyDraw property = node != null ? node.getRowLsfViewProperty(sid) : null;
-                if (property != null)
-                    return property;
+                if (node != null && group.getSID().equals(groupSID))
+                    return node.getRowLsfProperty(name.substring(dot + 1));
             }
             return null;
         }
@@ -463,28 +481,24 @@ public class GReactFormData {
         }
     }
 
-    // a node of the projection in one container: what it writes into `data` (edit), and its member of the controller,
-    // as its entry is in `data` (fillController). One JS object holds all it writes, and so does one node
+    // a node of the projection in one container - a group's, the empty group's being the container's top level, any
+    // other's data.<group>: what it writes into `data` (edit), the entries of the group's properties it carries by
+    // name, and its member of the controller, as its entry is in `data` (fillController), holding the members that
+    // mirror those entries, one per value it carries. One JS object holds all it writes, and so does one node
     private abstract class Node {
         final ContainerState state;
+        final ArrayList<PropertyEntry> properties = new ArrayList<>(); // what it carries by name, in the form's order
 
         Node(ContainerState state) {
             this.state = state;
         }
         abstract JavaScriptObject edit();
         abstract void fillController();
-    }
-    // ... a group's - the empty group's being the container's top level, any other's data.<group>: the entries of the
-    // group's properties it carries by name, and the members that mirror them, one on its member per value it carries
-    private abstract class PropertiesNode extends Node {
-        final ArrayList<PropertyEntry> properties = new ArrayList<>(); // what it carries by name, in the form's order
-
-        PropertiesNode(ContainerState state) {
-            super(state);
-        }
-        void putPropertyMembers(JavaScriptObject member, String prefix) {
+        // its object in a snapshot of the container's data, null where the snapshot has none
+        abstract JavaScriptObject in(JavaScriptObject snapshot);
+        void putPropertyMembers(JavaScriptObject member) {
             for (PropertyEntry propertyEntry : properties)
-                propertyEntry.putMember(member, prefix);
+                propertyEntry.putMember(member);
         }
         // the property it carries under the name: shown or not, and an lsf one too - a sorting may name an lsf column.
         // Nothing outside the node answers for a name used in it
@@ -497,20 +511,23 @@ public class GReactFormData {
     }
     // the empty group's node: the container's top level itself - its entries are data's own, its members the
     // controller's own
-    private final class TopNode extends PropertiesNode {
+    private final class TopNode extends Node {
         TopNode(ContainerState state) {
             super(state);
         }
         JavaScriptObject edit() {
             return state.edit();
         }
+        JavaScriptObject in(JavaScriptObject snapshot) {
+            return snapshot;
+        }
         void fillController() {
-            putPropertyMembers(state.controller, "");
+            putPropertyMembers(state.controller);
         }
     }
     // any other group's node: data.<group> - its OWN field: a plain object answers for Object.prototype's names before
     // any node is written under one - and its member controller.<group>
-    private abstract class GroupNode extends PropertiesNode {
+    private abstract class GroupNode extends Node {
         final GGroupObject group;
 
         GroupNode(ContainerState state, GGroupObject group) {
@@ -518,10 +535,13 @@ public class GReactFormData {
             this.group = group;
         }
         JavaScriptObject current() {
-            return getOwnField(state.current(), group.getSID());
+            return in(state.current());
         }
         JavaScriptObject published() {
-            return getOwnField(state.data, group.getSID());
+            return in(state.data);
+        }
+        JavaScriptObject in(JavaScriptObject snapshot) {
+            return getOwnField(snapshot, group.getSID());
         }
         JavaScriptObject edit() {
             JavaScriptObject node = current();
@@ -542,7 +562,7 @@ public class GReactFormData {
         void fillController() {
             JavaScriptObject member = makeMember();
             setField(state.controller, group.getSID(), member);
-            putPropertyMembers(member, group.getSID() + ".");
+            putPropertyMembers(member);
         }
         // the group's own state, named the way data.<group> names it
         abstract JavaScriptObject makeMember();
@@ -593,10 +613,10 @@ public class GReactFormData {
             replaceRows();
             super.initialize();
         }
-        // the lsf list property whose per-row renderers go into the rows drawn here, by its design identifier
-        GPropertyDraw getRowLsfViewProperty(String sid) {
+        // the lsf list property whose per-row renderers go into the rows drawn here, by its integration name
+        GPropertyDraw getRowLsfProperty(String integrationSID) {
             for (GPropertyDraw property : form.propertyDraws)
-                if (property.groupObject == group && property.isLsfViewPerRow() && sid.equals(property.sID))
+                if (property.groupObject == group && property.isLsfViewPerRow() && integrationSID.equals(property.integrationSID))
                     return property;
             return null;
         }
@@ -799,9 +819,12 @@ public class GReactFormData {
         // drop come through its entry on their way to the platform - kept here, as no value says it
         boolean shown;
 
-        PropertyEntry(Node node, String name, GPropertyDraw property) {
-            super(node, name);
+        // carried by name - its integration name - on its node, in the form's order: a call, a condition or a sorting
+        // names it by that name
+        PropertyEntry(Node node, GPropertyDraw property) {
+            super(node, property.integrationSID);
             this.property = property;
+            node.properties.add(this);
         }
         boolean isShown() {
             return shown;
@@ -821,7 +844,7 @@ public class GReactFormData {
         }
         // its member, on its node's member as its entry is on its node: none for an lsf property, whose values the
         // platform draws and edits
-        void putMember(JavaScriptObject owner, String prefix) {
+        void putMember(JavaScriptObject owner) {
         }
         GComponent owner() {
             return property;
@@ -830,9 +853,8 @@ public class GReactFormData {
     // a property React draws - a panel entry, a column and its cells: carried by name on its group's node, its values
     // and the attributes it is drawn with kept here, React's alone - the platform has no view of it
     private abstract class ReactPropertyEntry extends PropertyEntry {
-        ReactPropertyEntry(PropertiesNode node, GPropertyDraw property) {
-            super(node, property.integrationSID, property);
-            node.properties.add(this); // carried by name, in the form's order
+        ReactPropertyEntry(Node node, GPropertyDraw property) {
+            super(node, property);
         }
         // its values, as the server sends them: it arrives with the first whole delivery and is rebuilt then whole;
         // after that, by the keys that changed
@@ -901,8 +923,8 @@ public class GReactFormData {
 
         // ===== its member, on its node's member as its entry is on its node. The member IS the address - it holds this
         // state - so a call through it names nothing but the row
-        void putMember(JavaScriptObject owner, String prefix) {
-            setField(owner, property.integrationSID, makePropertyMember(this, prefix + property.integrationSID));
+        void putMember(JavaScriptObject owner) {
+            setField(owner, property.integrationSID, makePropertyMember(this, getName(property)));
         }
         // change(value[, row]): the value is given - null clears it - since running the property's change event without
         // one is exec(), and an action has no value to set
@@ -950,7 +972,7 @@ public class GReactFormData {
     private final class ReactPanelPropertyEntry extends ReactPropertyEntry {
         final GPropertyReader[] readers; // what it is drawn with
 
-        ReactPanelPropertyEntry(PropertiesNode node, GPropertyDraw property) {
+        ReactPanelPropertyEntry(Node node, GPropertyDraw property) {
             super(node, property);
             readers = present(property.getPresentationReaders());
             updateEntry(); // hidden until it is delivered
@@ -1060,8 +1082,8 @@ public class GReactFormData {
         final GLsfPropertyController lsf; // the platform's controller of the property: the view it is drawn in
         final GPropertyReader[] labelReaders; // its caption, image and comment, a column's footer
 
-        LsfPropertyEntry(Node node, String name, GPropertyDraw property, GLsfPropertyController lsf, GPropertyReader... labelReaders) {
-            super(node, name, property);
+        LsfPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf, GPropertyReader... labelReaders) {
+            super(node, property);
             this.lsf = lsf;
             this.labelReaders = present(labelReaders);
             updateEntry(); // there from the start, hidden until the platform shows the property
@@ -1100,11 +1122,13 @@ public class GReactFormData {
             lsf.updateOther(reader, values, partial);
         }
     }
-    // ... a panel or empty-group one's: its DESCRIPTOR, addressed as a placed component's is, at its container's top
-    // level by its SID, carried by no name - its labels: caption, image and comment, the platform drawing none
+    // ... a panel or empty-group one's: its labels - caption, image and comment, the platform drawing none -, keyed by
+    // its integration name on its group's node, where a panel property React draws is, and carried by name with them; no
+    // member, its value being the platform's. An <Lsf> places it by the same name (getName), and hides its host by this
+    // entry (ContainerState.entryOf)
     private final class LsfPanelPropertyEntry extends LsfPropertyEntry {
-        LsfPanelPropertyEntry(ContainerState state, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(state.top, property.sID, property, lsf, property.captionReader, property.getImageReader(), property.commentReader);
+        LsfPanelPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(node, property, lsf, property.captionReader, property.getImageReader(), property.commentReader);
         }
     }
     // ... a list one's column, whose cells the platform draws in the rows React draws: React draws the column from this
@@ -1112,8 +1136,7 @@ public class GReactFormData {
     // node the rows are on
     private final class LsfColumnPropertyEntry extends LsfPropertyEntry {
         LsfColumnPropertyEntry(RowsGroupNode rowsGroupNode, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(rowsGroupNode, property.integrationSID, property, lsf, property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
-            rowsGroupNode.properties.add(this); // carried by name: a condition or a sorting may name it
+            super(rowsGroupNode, property, lsf, property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
         }
         // what labels it, and what the property is: an LSF column is filtered and sorted like any other, and the
         // platform draws its VALUE, which says nothing about what the value is
@@ -1121,6 +1144,18 @@ public class GReactFormData {
             super.emit(entry);
             emitPropertyFacts(entry, property);
         }
+    }
+
+    // the name a view has for a component - in `data`, on the controller and in an <Lsf> alike, null for one with none:
+    // a property's is its integration name, after its group's, as its entry is data.o.note - alone for the empty
+    // group's, data.note; any other component's is its design identifier, BOX(o)
+    public static String getName(GComponent component) {
+        if (!(component instanceof GPropertyDraw))
+            return component.sID;
+        GPropertyDraw property = (GPropertyDraw) component;
+        if (property.integrationSID == null)
+            return null;
+        return property.groupObject == null ? property.integrationSID : property.groupObject.getSID() + "." + property.integrationSID;
     }
 
     // where a group's ROWS go: the react container that draws them, null when the platform does - asked of what DRAWS
@@ -1135,16 +1170,15 @@ public class GReactFormData {
             return rowsScope(((GPropertyDraw) component).groupObject);
         return component.isLsfView() ? null : placed(component);
     }
-    // ... and where its DESCRIPTOR goes, null when it has none: every component React draws or places that is not a
-    // property it carries by name - a container, a grid, a tree, a toolbar, any lsf component, an lsf panel property
-    // included - in the container that draws or places it; never a list property, whose entry is its column, nor an lsf
-    // ACTION, whose caption and image are its buttons' face, which the platform draws, nor a react container nothing
-    // places, whose caption the platform draws around it. An entry is keyed by the component's SID, so one the design
-    // does not name - a user filter's - has none (mirrors FormView.descriptorScope)
-    private GContainer descriptorScope(GComponent component) {
-        if (component instanceof GPropertyDraw && (((GPropertyDraw) component).isList || !component.isLsfView()
-                || ((GPropertyDraw) component).isAction()))
-            return null;
+    // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component is named in (getName), and
+    // where its entry is. A property is named on its group's node, where React draws its content - a list property's
+    // column, lsf or not, where the rows are - or, for an lsf panel one, where React places it, its entry labelling what
+    // the platform draws (an ACTION's has no entry: its caption and image are its button's face). Any other component
+    // is named at the top level, where React draws or places it - one the design does not name, a user filter's,
+    // nowhere (mirrors FormView.nameScope)
+    public GContainer nameScope(GComponent component) {
+        if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList) // its column, where the rows are
+            return rowsScope(((GPropertyDraw) component).groupObject);
         return component.sID != null ? placed(component) : null;
     }
     // the react container a component is in, as long as it has a view: one REMOVEd from the design is still the

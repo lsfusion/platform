@@ -1,0 +1,20 @@
+MODULE LsfPanelPropertyDottedName;
+
+REQUIRE System;
+
+// an lsf panel property is named by its integration name on its group's node, as any property is: a name is read as
+// '<group>.<property>', so it may carry no dot
+CLASS LsfDottedItem;
+lsfDottedNote = DATA STRING[50] (LsfDottedItem);
+
+FORM lsfDottedName
+    OBJECTS i = LsfDottedItem PANEL
+    PROPERTIES(i) lsfDottedNote EXTID 'a.b'
+;
+
+DESIGN lsfDottedName {
+    NEW board {
+        custom = 'LsfDottedBoard';
+        MOVE PROPERTY(lsfDottedNote(i)) { lsf = TRUE; }
+    }
+}

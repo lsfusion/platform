@@ -1,0 +1,25 @@
+MODULE LsfListPanelScopes;
+
+REQUIRE System;
+
+// a grid property and an lsf panel property of one group may share an integration name when React carries them in
+// different containers: the grid's where its rows are drawn, the panel one's where it is placed
+CLASS LsfScopesItem;
+lsfScopesList = DATA STRING[50] (LsfScopesItem);
+lsfScopesPanel = DATA STRING[50] (LsfScopesItem);
+
+FORM lsfListPanelScopes
+    OBJECTS i = LsfScopesItem
+    PROPERTIES(i) lsfScopesList EXTID 'note', lsfScopesPanel PANEL EXTID 'note'
+;
+
+DESIGN lsfListPanelScopes {
+    NEW rowsBoard {
+        custom = 'LsfScopesRows';
+        MOVE GRID(i);
+    }
+    NEW panelBoard {
+        custom = 'LsfScopesPanel';
+        MOVE PROPERTY(lsfScopesPanel(i)) { lsf = TRUE; }
+    }
+}

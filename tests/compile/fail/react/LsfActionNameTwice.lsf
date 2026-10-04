@@ -1,0 +1,21 @@
+MODULE LsfActionNameTwice;
+
+REQUIRE System;
+
+// an lsf action has no entry, but an <Lsf> places it by its name on its group's node, so nothing else may take it there
+CLASS LsfActionItem;
+lsfActionNote = DATA STRING[50] (LsfActionItem);
+lsfActionGo (LsfActionItem i) { MESSAGE 'go'; }
+
+FORM lsfActionTwice
+    OBJECTS i = LsfActionItem PANEL
+    PROPERTIES(i) lsfActionNote EXTID 'go', lsfActionGo EXTID 'go'
+;
+
+DESIGN lsfActionTwice {
+    NEW board {
+        custom = 'LsfActionBoard';
+        MOVE PROPERTY(lsfActionNote(i)) { lsf = TRUE; }
+        MOVE PROPERTY(lsfActionGo(i)) { lsf = TRUE; }
+    }
+}

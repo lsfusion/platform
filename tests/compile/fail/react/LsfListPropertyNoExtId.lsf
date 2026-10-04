@@ -1,0 +1,20 @@
+MODULE LsfListPropertyNoExtId;
+
+REQUIRE System;
+
+// an LSF grid property's per-row renderers are placed by its integration name, the row saying the group: NOEXTID takes
+// the name away
+CLASS LsfNamelessRow;
+lsfNamelessQty = DATA INTEGER (LsfNamelessRow);
+
+FORM lsfNamelessRows
+    OBJECTS r = LsfNamelessRow
+    PROPERTIES(r) lsfNamelessQty LSF NOEXTID
+;
+
+DESIGN lsfNamelessRows {
+    NEW board {
+        custom = 'LsfNamelessRowsBoard';
+        MOVE BOX(r);
+    }
+}
