@@ -6,6 +6,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
@@ -58,10 +59,7 @@ import java.util.List;
 public class GReactFormDataTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
-    @Override protected void gwtSetUp() { installMapDelete(); }
-    private static native void installMapDelete() /*-{
-        $wnd.jsMapDelete = function(map, key) { return map["delete"](key); };
-    }-*/;
+    @Override protected void gwtSetUp() { JsniTestSupport.installMapDelete(); }
 
     private static class Fixture {
         final GForm form = new GForm();
@@ -1679,4 +1677,80 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
     }
     private static native void callAll(JavaScriptObject member, String verb) /*-{ member[verb](); }-*/;
+
+    public void testAClosedNodeIsHeldClosedByAllAgainstAnEarlierAnswer() {
+        TreeFixture f = new TreeFixture();
+        f.apply(closedPage(f)); // 1 open, 2 closed - both with children
+        callAll(field(f.sa.controller, "cat"), "collapseAll");
+        assertTrue(isFalse(f.row(f.cat, f.c1), "expanded")); // closed at once
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        f.answer(openPage(f), 0); // an answer to an earlier request opens 2: what was asked of all of them holds it
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        GFormChanges collapsed = new GFormChanges(); // ... until its own answer, which takes the items away
+        collapsed.gridObjects.put(f.item, rows());
+        collapsed.parentObjects.put(f.item, rows());
+        f.answer(collapsed, 1);
+        assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+    }
+
+    // a tree of three groups: the categories, the subcategories in them, the items in those - every row keyed by the
+    // whole path down to it, its objects in the order of their ids, as the platform builds a key
+    private static GGroupObjectValue subKey(int category, int sub) {
+        return new GGroupObjectValue(2, new int[]{60, 63}, new Serializable[]{category, sub});
+    }
+    private static GGroupObjectValue deepKey(int category, int sub, int item) {
+        return new GGroupObjectValue(3, new int[]{60, 61, 63}, new Serializable[]{category, item, sub});
+    }
+    private static TreeFixture deepTree(GGroupObject sub) {
+        return new TreeFixture(t -> {
+            t.group(sub, 63, "sub"); // between the categories and the items, in the tree and in the form
+            t.tree.groups.remove(sub);
+            t.tree.groups.add(1, sub);
+            t.form.groupObjects.remove(sub);
+            t.form.groupObjects.add(1, sub);
+            sub.upTreeGroups.add(t.cat);
+            t.item.upTreeGroups.add(sub);
+        });
+    }
+    public void testAThreeLevelTreeHangsAndOpensLevelByLevel() {
+        GGroupObject sub = new GGroupObject();
+        TreeFixture f = deepTree(sub);
+        GGroupObjectValue s11 = subKey(1, 1), s12 = subKey(1, 2), s21 = subKey(2, 1);
+        GGroupObjectValue i115 = deepKey(1, 1, 5), i126 = deepKey(1, 2, 6);
+        GFormChanges page = new GFormChanges(); // category 1 open, with subcategories 1 and 2; 1.1 open, with item 5
+        page.gridObjects.put(f.cat, rows(f.c1, f.c2));
+        page.parentObjects.put(f.cat, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        page.expandables.put(f.cat, counts(f.c1, 2, f.c2, 1));
+        page.gridObjects.put(sub, rows(s11, s12));
+        page.parentObjects.put(sub, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        page.expandables.put(sub, counts(s11, 1, s12, 1));
+        page.gridObjects.put(f.item, rows(i115));
+        page.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY));
+        f.apply(page);
+        assertTrue(sameField(f.row(sub, s11), "parent", f.row(f.cat, f.c1), "key")); // each row hangs one level up
+        assertTrue(sameField(f.row(f.item, i115), "parent", f.row(sub, s11), "key"));
+        assertTrue(flag(f.row(f.cat, f.c1), "expanded")); // ... and each level is opened by the one below it
+        assertTrue(flag(f.row(sub, s11), "expanded"));
+        assertTrue(isFalse(f.row(sub, s12), "expanded"));
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        callAll(field(f.sa.controller, "sub"), "expandAll"); // the middle group: its nodes and below, not those above
+        assertTrue(flag(f.row(sub, s12), "expanded"));
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        callNode(field(f.sa.controller, "cat"), "expand", f.row(f.cat, f.c2)); // a node above, asked after it
+        assertEquals(Arrays.asList("expand all sub", "expand cat 2"), f.verbs.asked);
+        GFormChanges items = new GFormChanges(); // the first answer: the items' keys - they answer the middle group
+        items.gridObjects.put(f.item, rows(i115, i126));
+        items.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        f.answer(items, 1);
+        assertTrue(flag(f.row(sub, s12), "expanded")); // what its rows say now
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // ... and the top node is still as asked: not answered yet
+        GFormChanges subs = new GFormChanges(); // the second: the subcategories' keys - they answer the top group
+        subs.gridObjects.put(sub, rows(s11, s12, s21));
+        subs.parentObjects.put(sub, rows(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY));
+        f.answer(subs, 2);
+        assertTrue(sameField(f.row(sub, s21), "parent", f.row(f.cat, f.c2), "key"));
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(isFalse(f.row(sub, s21), "expanded")); // its own children are not loaded
+    }
 }
