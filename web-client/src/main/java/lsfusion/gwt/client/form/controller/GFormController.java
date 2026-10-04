@@ -537,8 +537,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private GPropertyDraw resolveClassicGroupProperty(String errorPrefix, GGroupObject group, String integrationSID) {
         GPropertyDraw property = form.getPropertyDraw(group, integrationSID);
         if (property != null && form.countPropertyDraws(group, integrationSID) != 1)
-            throw new RuntimeException(errorPrefix + "'" + integrationSID + "' is drawn more than once on group '"
-                    + group.getSID() + "', so this name does not say which of them is meant; give them explicit EXTIDs");
+            throw new RuntimeException(errorPrefix + "'" + integrationSID + "' is drawn more than once on "
+                    + (group != null ? "group '" + group.getSID() + "'" : "the form level")
+                    + ", so this name does not say which of them is meant; give them explicit EXTIDs");
         return property;
     }
 
@@ -552,42 +553,33 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     // the CLASSIC stringly-typed surface's reading of a name - the grid view's changeProperty, which names the whole
-    // form (#1655). `name` is either "groupSID.integrationSID" (an explicit group prefix) or a bare integration SID. An
-    // explicit prefix has priority: it scopes the lookup directly (the passed object's own group is not consulted);
-    // with no prefix an explicit object's group scopes it; with neither, a bare SID must be form-unique. Every author
-    // mistake throws: an unknown group, an ambiguous bare SID, a missing property. `objectKey` is the already-resolved
-    // row key, or null/EMPTY for the current object. A react view's controller reads no name this way: its members hold
-    // their states, and its batch is handed the members themselves (GReactFormData.ContainerState.changeProperties).
-    private GPropertyDraw resolveClassicProperty(String surface, String name, GGroupObjectValue objectKey) {
+    // form (#1655). A name is what a view has for a property everywhere (GReactFormData.getName): "groupSID.
+    // integrationSID" for a property of an object group, a bare integration SID for one of the empty group - so the
+    // name alone says the group, and neither the row passed nor the rest of the form is asked. Every author mistake
+    // throws: an unknown group, a name drawn twice on its group, a missing property - a bare name an object group
+    // draws is told to take its group. A react view's controller reads no name this way: its members hold their
+    // states, and its batch is handed the members themselves (GReactFormData.ContainerState.changeProperties).
+    private GPropertyDraw resolveClassicProperty(String surface, String name) {
         String errorPrefix = controllerPrefix(surface);
         // a qualified name splits at its LAST dot. A property's integration SID never carries one, so everything
         // before the last dot is the group and everything after is the property - and splitting anywhere else would
         // ask for a group that does not exist: a group of several objects is named by its SID, all of them joined with
         // dots (`OBJECTS d = X, t = Y` is `d.t`)
         int dot = name.lastIndexOf('.');
-        String prefixGroupSID = dot > 0 ? name.substring(0, dot) : null;
+        GGroupObject group = dot > 0 ? form.getGroupObject(name.substring(0, dot)) : null;
+        if (dot > 0 && group == null) // it is qualified and names no group of this form: say which half failed
+            throw new RuntimeException(errorPrefix + "unknown object group '" + name.substring(0, dot) + "'");
         String integrationSID = dot > 0 ? name.substring(dot + 1) : name;
 
-        GGroupObject group = null;
-        if (prefixGroupSID != null) { // an explicit group prefix in the name wins over the passed object's group
-            group = form.getGroupObject(prefixGroupSID);
-            if (group == null) // it is qualified and names no group of this form: say which half failed
-                throw new RuntimeException(errorPrefix + "unknown object group '" + prefixGroupSID + "'");
-        } else if (objectKey != null && !objectKey.isEmpty()) { // no prefix: the explicit row's own group scopes the lookup
-            group = form.getObject(objectKey.getKey(0)).groupObject; // a resolved row/handle is a same-form object
-        }
-
-        if (group != null) { // the group's one property of that name
-            GPropertyDraw property = resolveClassicGroupProperty(errorPrefix, group, integrationSID);
-            if (property == null)
+        GPropertyDraw property = resolveClassicGroupProperty(errorPrefix, group, integrationSID);
+        if (property == null) {
+            if (group != null)
                 throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");
-            checkAddressableProperty(errorPrefix, property);
-            return property;
+            GGroupObject drawnOn = form.getSingleDrawnGroup(name); // a bare name a group draws: say how to name it
+            String groupSID = drawnOn != null ? drawnOn.getSID() : "<group>";
+            throw new RuntimeException(errorPrefix + "'" + name + "' names no property of the form level; a property of an"
+                    + " object group is named with its group, '" + groupSID + "." + name + "'");
         }
-
-        GPropertyDraw property = form.getSinglePropertyDraw(integrationSID); // throws if ambiguous
-        if (property == null)
-            throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' not found");
         checkAddressableProperty(errorPrefix, property);
         return property;
     }
@@ -609,23 +601,20 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             throw new RuntimeException(controllerPrefix(surface) + "that row is not a row of '" + group.getSID() + "'");
         return objectKey;
     }
-    // ... and for a classic name, which says it only through its prefix or the one group that draws it
+    // ... and the row a classic name is given: one of the group its prefix names - a bare name names a property of the
+    // form level, which has no rows, so a row given with it is a mistake
     private GGroupObjectValue resolveClassicObject(String surface, String property, JavaScriptObject objectOrKey) {
         if (GwtClientUtils.isUndefinedOrNull(objectOrKey)) // no row given: nothing for the name to settle
             return null;
-        return resolveGroupObject(surface, getNameGroup(property), objectOrKey,
-                ", or name the property as '<group>." + property + "' so its key can be looked up ('" + property
-                        + "' alone does not say which group's row is meant)");
+        int dot = property.lastIndexOf('.'); // the same one split resolveClassicProperty reads the name with
+        if (dot <= 0)
+            throw noRowsOfFormLevel(surface, property);
+        return resolveGroupObject(surface, form.getGroupObject(property.substring(0, dot)), objectOrKey, "");
     }
-
-    // the group a classic NAME settles on its own, with no object to ask: the one its prefix names, or - for a bare
-    // name - the single group it is drawn on. It answers null only when the name cannot say - drawn on several groups,
-    // or form-level, or not drawn at all - and there the object itself has to name the group, so a bare key is refused
-    private GGroupObject getNameGroup(String name) {
-        int dot = name.lastIndexOf('.'); // the same one split resolveClassicProperty reads the name with
-        if (dot > 0) // qualified: the prefix answers, or nothing does
-            return form.getGroupObject(name.substring(0, dot));
-        return form.getSingleDrawnGroup(name); // drawn on more than one: only the object can say which is meant
+    private RuntimeException noRowsOfFormLevel(String surface, String property) {
+        return new RuntimeException(controllerPrefix(surface) + "'" + property + "' names a property of the form level,"
+                + " which has no rows: a property of an object group is named with its group, '<group>." + property
+                + "'");
     }
 
     private static GGroupObjectValue getControllerColumnKey(GGroupObjectValue objectKey) {
@@ -651,16 +640,19 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return draw.isAction();
     }
     public boolean isClassicChangeObject(String surface, String name, JavaScriptObject object) {
-        return isChangeObject(resolveClassicProperty(surface, name, GGroupObjectValue.resolveObject(object)), object);
+        GPropertyDraw property = resolveClassicProperty(surface, name);
+        // a row for a property of the form level, which has none: refused here, before the guess reads it as the value
+        if (property.groupObject == null && GGroupObjectValue.resolveObject(object) != null)
+            throw noRowsOfFormLevel(surface, name);
+        return isChangeObject(property, object);
     }
     // the CLASSIC grid view's stringly-typed changeProperty, which forwards a property that is none of its own
     // columns (#1655). It has its OWN entry rather than a flag on the one above, because it is another surface with
     // another rule: it names the whole FORM, member or no member, as it always has - that API is older than this one
     // and is not a shortcut for its members. So it is the one call left that finds what it changes by a name.
     public void classicChangeProperty(String surface, String name, JavaScriptObject objectOrKey, JavaScriptObject value) {
+        GPropertyDraw property = resolveClassicProperty(surface, name); // throws on an unknown or ambiguous name
         GGroupObjectValue objectKey = resolveClassicObject(surface, name, objectOrKey);
-        // throws on ambiguity / conflict / not-found
-        GPropertyDraw property = resolveClassicProperty(surface, name, objectKey);
         changeProperties(new GPropertyDraw[]{property}, new GGroupObjectValue[]{getControllerColumnKey(objectKey)},
                 new PValue[]{GSimpleStateTableView.convertFromJSUndefValue(property, value)});
     }

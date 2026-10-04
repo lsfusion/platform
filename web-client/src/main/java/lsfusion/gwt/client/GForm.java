@@ -123,19 +123,6 @@ public class GForm implements Serializable {
                 return property;
         return null;
     }
-    // form-wide, ambiguity-aware: throws when the integration SID is drawn on more than one object group
-    // (the custom-controller caller must then qualify it as "group.integrationSID" or pass the object)
-    public GPropertyDraw getSinglePropertyDraw(String integrationSID) {
-        GPropertyDraw found = null;
-        for (GPropertyDraw property : propertyDraws)
-            if (integrationSID.equals(property.integrationSID)) {
-                if (found != null)
-                    throw new RuntimeException("property '" + integrationSID + "' is ambiguous (drawn on multiple object groups); qualify it as 'group." + integrationSID + "' or pass the object");
-                found = property;
-            }
-        return found;
-    }
-
     // how many properties of one object group answer to one integration name. An integration name is not unique, and
     // the difference between "one" and "several" is what tells a name that can be addressed from one nothing singles
     // out.
@@ -147,9 +134,8 @@ public class GForm implements Serializable {
         return count;
     }
 
-    // the single object group a BARE integration name is drawn on, or null when it is drawn on several (only the
-    // object can say which is meant then), on none, or at the form level. Beside the two lookups above because it is
-    // the same question they answer, asked without knowing the group yet.
+    // the single object group a BARE integration name is drawn on, or null when it is drawn on several, on none, or at
+    // the form level: what a classic call naming a property without its group is told to name it with
     public GGroupObject getSingleDrawnGroup(String integrationSID) {
         GGroupObject found = null;
         for (GPropertyDraw property : propertyDraws)
