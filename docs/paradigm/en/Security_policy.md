@@ -87,6 +87,8 @@ Fig. 7. Option for configuring access to an individual property
 
 The `View` and `Change` statuses are coupled, and the coupling is configured by two [working parameters](Working_parameters.md). An action a role is explicitly forbidden to change is by default not shown to it either. `disableActionForbidViewOnForbidChange` (`false` by default) removes that coupling, and an action forbidden to run stays visible. The second parameter, `disableDefaultChangeOnReadOnlyChange` (`false` by default), concerns change handlers that do not actually change anything, a value selector for example: by default such a handler counts as navigation rather than a change, and the `Change` status is not applied to it, while a value of `true` makes it be checked on a par with ordinary changes. Neither parameter affects the built-in `Readonly` role — for it both the coupling of the statuses and the skipping of the check always apply.
 
+Besides the access levels, the `Parameters` block of the `Security policy` window holds settings of the property itself, shared by all roles. The `Not null` check box adds a [definiteness constraint](Simple_constraints.md) for the property: if all parameters of the property belong to their classes, its value must not be `NULL`. The constraint is created at application server startup, so the check box takes effect only after the server is restarted. For a property whose `stats[Property]` is not below the [`maxStatsProperty[]` cap](System_Reflection.md), for example a balance at a date and time, the constraint is not created, and a warning is written to the `start` log.
+
 #### Users Tab
 
 This tab displays all the users to whom the highlited role is assigned as a primary or secondary role.

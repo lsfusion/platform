@@ -82,6 +82,8 @@ Properties additionally carry storage and statistics attributes.
 
 `maxStatsProperty[]` caps the statistics for a user-loggable property: enabling user logging on a property whose `stats[Property]` exceeds the cap is rejected. `webServerUrl[]` holds the web-server address. Both are shown on the `options` form.
 
+The same cap (2,000,000,000 when `maxStatsProperty[]` is not set) is checked at application server startup, when the platform enables user logging and creates the constraints flagged by `isSetNotNull[Property]`. User logging is not enabled for a property that is not a [data](Data_properties_DATA.md) property if its `notNullQuantity[Property]` (or, when that is not set, its `stats[Property]`) is not below the cap. The `NOT NULL` constraint is not created if the property's `stats[Property]` is not below the cap. The cap is exceeded, for example, by properties whose value is defined for any date or any moment of time (such as a balance at a date and time), and this constraint cannot be checked for such properties. In both cases the flag stays set, and a warning is written to the `start` log.
+
 `getPropertyDependencies[Property]` and `getPropertyDependents[Property]` fill the local properties `propertyDependencies[INTEGER]` / `propertyDependents[INTEGER]` with the properties a given property reads from and the properties that read from it.
 
 ### Property draws and column preferences

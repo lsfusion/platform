@@ -64,7 +64,7 @@ How much information should be stored in these logs is indicated in the `Admin f
 
 If you need to track changes to the individual values of any Properties (columns) on specific Forms, a mechanism for user logging has been developed to allow you to do it. For example, let's say you need to record changes to an employee's last name in the Employees directory. To do this:
 
-1.  go to any entry in the `Surname` column and right-click to bring up the `Configure property policy` menu:
+1.  go to any entry in the `Surname` column and right-click to bring up the `Setup property policy` menu:
 
     ![](../images/Journals_and_logs_log_property_changes.png)
 
