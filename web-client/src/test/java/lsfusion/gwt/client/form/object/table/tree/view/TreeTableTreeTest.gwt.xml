@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- the client, for GTreeTableTreeTest alone: a GWT test under surefire compiles its module once, for the first test
-     class that asks for it, so a second test class needs a module of its own -->
-<module>
-    <inherits name="lsfusion.gwt.main"/>
-</module>

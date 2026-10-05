@@ -49,11 +49,20 @@
             </plugin>
             <!-- the GWT tests (GWTTestCase) compile the client from source and run it in HtmlUnit: the test sources go on
                  the classpath as sources, the unit cache and the war into target, and the GWT compiler's own asserts stay
-                 off - one of them fails on merging permutations under the -ea surefire gives everything else -->
+                 off - one of them fails on merging permutations under the -ea surefire gives everything else. The
+                 client's GWT test classes run through their suite, GClientTestSuite, and not one by one: GWT compiles a
+                 module once, with the test classes it knows of at that moment -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>lsfusion/gwt/client/GClientTestSuite.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>lsfusion/gwt/client/**/*Test.java</exclude>
+                    </excludes>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>
                     </additionalClasspathElements>

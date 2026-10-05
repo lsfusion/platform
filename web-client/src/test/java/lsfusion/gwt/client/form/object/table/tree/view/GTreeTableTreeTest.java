@@ -18,7 +18,7 @@ import java.util.Arrays;
 // tree shows of a node asked to open or close until the server answers - GTreeTable.expandNode sets it on the model, and
 // GTreeTableTree.synchronize leaves it to a stale answer and drops it on the request's own
 public class GTreeTableTreeTest extends GWTTestCase {
-    @Override public String getModuleName() { return "lsfusion.gwt.client.form.object.table.tree.view.TreeTableTreeTest"; }
+    @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
     private final GTreeGroup treeGroup = new GTreeGroup();
     private final GGroupObject cat = new GGroupObject(), item = new GGroupObject();
