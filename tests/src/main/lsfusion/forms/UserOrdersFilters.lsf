@@ -1,0 +1,50 @@
+MODULE UserOrdersFilters;
+
+REQUIRE TestUtils;
+
+// ORDER and FILTER set a group's user orders and filters on the server, so ORDERS and FILTERS later in the same action
+// read what they set (#1856). They used to ask the client to set the lists and send them back: a read in between got
+// the old lists, and a form with no client - as here - never got them at all
+
+CLASS UofItem 'Item';
+uofQty 'Qty' = DATA INTEGER (UofItem);
+
+FORM uofItems 'Items'
+    OBJECTS i = UofItem
+    PROPERTIES(i) READONLY qty = uofQty
+;
+
+uofOrders = DATA LOCAL JSON ();
+uofFilters = DATA LOCAL JSON ();
+uofFiltersAgain = DATA LOCAL JSON ();
+
+// a JSON value compares as the text it was written in, which for the same JSON differs in key order and spaces: STRING
+// gives the text the database normalizes it to
+testOrderReadBack 'ORDERS right after ORDER reads the orders it set' () {
+    SHOW uofItems NOWAIT {
+        ORDER uofItems.i FROM (JSON FROM property = 'qty', desc = TRUE);
+        ORDERS uofItems.i TO uofOrders;
+    };
+    assertEquals(STRING(uofOrders()), STRING(JSON(r'[{"property": "qty", "desc": true}]')), 'ORDERS read ' + STRING(uofOrders()));
+}
+
+testFilterReadBack 'FILTERS right after FILTER reads the filters it set' () {
+    SHOW uofItems NOWAIT {
+        FILTER uofItems.i FROM (JSON FROM property = 'qty', compare = '>', value = 2);
+        FILTERS uofItems.i TO uofFilters;
+    };
+    // FILTERS writes the value as a string
+    assertEquals(STRING(uofFilters()), STRING(JSON(r'[{"property": "qty", "compare": ">", "negation": false, "value": "2"}]')),
+                 'FILTERS read ' + STRING(uofFilters()));
+}
+
+testFilterTakesBackFilters 'FILTER takes back what FILTERS wrote' () {
+    SHOW uofItems NOWAIT {
+        FILTER uofItems.i FROM (JSON FROM property = 'qty', compare = '>', value = 2);
+        FILTERS uofItems.i TO uofFilters;
+        // the value FILTERS wrote as a string is parsed as a string - a number does not parse from a JSON string
+        FILTER uofItems.i FROM uofFilters();
+        FILTERS uofItems.i TO uofFiltersAgain;
+    };
+    assertEquals(STRING(uofFiltersAgain()), STRING(uofFilters()), 'FILTERS read ' + STRING(uofFiltersAgain()) + ' after FILTER of ' + STRING(uofFilters()));
+}
