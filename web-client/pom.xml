@@ -60,8 +60,9 @@
                         <include>**/*Test.java</include>
                         <include>lsfusion/gwt/client/GClientTestSuite.java</include>
                     </includes>
-                    <excludes>
-                        <exclude>lsfusion/gwt/client/**/*Test.java</exclude>
+                    <excludes> <!-- the suite's classes, and only them: any other test runs as it is -->
+                        <exclude>lsfusion/gwt/client/form/design/view/GReactFormDataTest.java</exclude>
+                        <exclude>lsfusion/gwt/client/form/object/table/tree/view/GTreeTableTreeTest.java</exclude>
                     </excludes>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>
