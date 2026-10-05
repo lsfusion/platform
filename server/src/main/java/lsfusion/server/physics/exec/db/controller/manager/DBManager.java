@@ -363,13 +363,23 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return statsProperty;
     }
 
+    private Long readMaxStatsProperty(SQLSession sql) {
+        try {
+            return (Long) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, changesController, DataSession.emptyEnv(OperationOwner.unknown));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     private void setNotNullProperties(SQLSession sql) throws SQLException, SQLHandledException {
-        
+        Long maxStatsProperty = readMaxStatsProperty(sql);
+
         LP isProperty = LM.is(reflectionLM.property);
         ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("statsProperty", reflectionLM.statsProperty.getExpr(key));
         query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
@@ -377,7 +387,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             if(prop != null) {
                 prop.property.userNotNull = true;
-                LM.setNotNull(prop.property, null, ListFact.EMPTY(), null, Event.APPLY);
+                Long statsProperty = (Long) values.get("statsProperty");
+                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty)
+                    LM.setNotNull(prop.property, null, ListFact.EMPTY(), null, Event.APPLY);
+                else
+                    startLogWarn("NOT NULL is not set for " + prop.property.getCanonicalName() + " : its parameters stats (" + statsProperty + ") exceed the maximum stats of a property (" + maxStatsProperty + ")");
             }
         }
     }
@@ -931,11 +945,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
         Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
 
-        Long maxStatsProperty = null;
-        try {
-            maxStatsProperty = (Long) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, changesController, DataSession.emptyEnv(OperationOwner.unknown));
-        } catch (Exception ignored) {
-        }
+        Long maxStatsProperty = readMaxStatsProperty(sql);
 
         LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
@@ -965,7 +975,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
                     lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
-                }
+                } else
+                    startLogWarn("User logging is not set for " + canonicalName + " : its stats (" + statsProperty + ") exceed the maximum stats of a property (" + maxStatsProperty + ")");
             }
         }
     }
