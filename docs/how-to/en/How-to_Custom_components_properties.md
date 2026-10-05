@@ -263,7 +263,7 @@ The message displayed by the created component will look like this:
 
 In this example, we will handle two user actions for any of the messages: clicking on the quoted message and clicking on the Reply button.
 In the first case, the transition to the original message will be done, and in the second case - storing the message
-in [local property](../paradigm/Data_properties_DATA.md#---local) and setting the focus in the input field of the new message.
+in [local property](../paradigm/Data_properties_DATA.md#local) and setting the focus in the input field of the new message.
 
 Let's declare [actions](../paradigm/Actions.md) for them and add them to the form:
 ```lsf

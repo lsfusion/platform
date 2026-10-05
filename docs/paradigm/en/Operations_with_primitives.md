@@ -3,7 +3,7 @@ slug: "/Operations_with_primitives"
 title: 'Operations with primitives'
 ---
 
-Оperations with primitives include operators for working with properties which values belong to the [built-in](Built-in_classes.md) classes. The platform supports the following operators:
+Operations with primitives include operators for working with properties which values belong to the [built-in](Built-in_classes.md) classes. The platform supports the following operators:
 
 -   [Arithmetic operators (`+`, `-`, `*`, `/`)](Arithmetic_operators_plus_minus_etc.md)
 -   [Logical operators (`AND`, `OR`, `NOT`, `XOR`)](Logical_operators_AND_OR_NOT_XOR.md)

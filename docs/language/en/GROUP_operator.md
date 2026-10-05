@@ -79,7 +79,7 @@ For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` opera
 
 - `aggrFunc`
 
-    [String literal](IDs.md#strliteral) containing the name of a user-defined or DBMS built-in aggregate function. Used only for `CUSTOM` aggregates.
+    [String literal](Literals.md#strliteral) containing the name of a user-defined or DBMS built-in aggregate function. Used only for `CUSTOM` aggregates.
 
 - `expr1, ..., exprN`
 

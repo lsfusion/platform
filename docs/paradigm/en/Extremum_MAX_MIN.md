@@ -7,7 +7,7 @@ The *extremum operator* creates a [property](Properties.md) which calculates the
 
 The operands must belong to compatible classes — built-in classes of the same family, or user classes related by inheritance.
 
-### Determining the result class
+### Result class
 
 The result class is the common ancestor — [built-in](Built-in_classes.md#commonparentclass) or [user-defined](User_classes.md#commonparentclass) — of the operand classes.
 

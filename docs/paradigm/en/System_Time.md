@@ -90,7 +90,7 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 
 ### Calendar classes and forms
 
-`Month` and `DOW` are built-in static [classes](User_classes.md#static) describing months (12 objects) and days of the week (7 objects). They carry these properties:
+`Month` and `DOW` are classes whose [static objects](Static_objects.md) describe months (12 objects) and days of the week (7 objects). They carry these properties:
 
 | Property        | What it returns                                                                                              |
 |-----------------|-------------------------------------------------------------------------------------------------------------|
@@ -102,7 +102,7 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 
 Lookup by number runs the other way: `month[INTEGER]`, `DOW[INTEGER]`. The forms `months` and `DOWs` show these classes as directories.
 
-`DateTimePickerRanges` and `DateTimeIntervalPickerRanges` are static [classes](User_classes.md#static) with ready-made shortcut sets (`rangeToday`, `rangeYesterday`, `rangeLast7Days`, and so on) for picking a single date or a date interval in the UI.
+`DateTimePickerRanges` and `DateTimeIntervalPickerRanges` are classes whose [static objects](Static_objects.md) are ready-made shortcuts (`rangeToday`, `rangeYesterday`, `rangeLast7Days`, and so on) for picking a single date or a date interval in the UI.
 
 ### Recipes
 

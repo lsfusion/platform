@@ -26,7 +26,7 @@ title: 'Email'
 | `fromAddress[Account]`                         | адрес отправителя, проставляемый в исходящую почту                         |
 | `isDefaultInbox[Account]`                     | признак, помечающий учётную запись как используемую по умолчанию для отправки |
 
-`EncryptedConnectionTypeStatus` — статический [класс](User_classes.md#static) из двух объектов — `SSL` и `TLS` — для режима шифрования SMTP. Форма `encryptedConnectionTypeStatuses` показывает их списком.
+`EncryptedConnectionTypeStatus` — класс из двух [статических объектов](Static_objects.md) — `SSL` и `TLS` — для режима шифрования SMTP. Форма `encryptedConnectionTypeStatuses` показывает их списком.
 
 `inboxAccount[STRING]` выбирает учётную запись для отправки письма с заданного адреса отправителя: возвращает запись, чей `fromAddress[Account]` совпадает с этим адресом (`accountFromAddress`), а при отсутствии совпадения берёт запись с признаком `isDefaultInbox[Account]` (`defaultInboxAccount`).
 
@@ -45,7 +45,7 @@ title: 'Email'
 | `ignoreExceptions[Account]`                   | признак продолжения работы после письма, которое не удалось обработать    |
 | `readAllFolders[Account]`                     | признак чтения всех папок сервера, а не только входящих                   |
 
-`ReceiveAccountType` — статический [класс](User_classes.md#static) из четырёх объектов для протокола приёма: `POP3`, `POP3S`, `IMAP`, `IMAPS`. Форма `receiveAccountTypes` показывает их списком.
+`ReceiveAccountType` — класс из четырёх [статических объектов](Static_objects.md) для протокола приёма: `POP3`, `POP3S`, `IMAP`, `IMAPS`. Форма `receiveAccountTypes` показывает их списком.
 
 ### Папки
 
