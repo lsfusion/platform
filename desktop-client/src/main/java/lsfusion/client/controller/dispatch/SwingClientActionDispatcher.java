@@ -632,10 +632,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public void execute(FilterGroupClientAction action) {
-    }
-
-    @Override
     public Object execute(CopyReportResourcesClientAction action) {
         return ((DockableMainFrame) MainFrame.instance).copyReportResources(action.logicsName, action.zipFile, action.md5);
     }

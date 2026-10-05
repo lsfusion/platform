@@ -3,6 +3,8 @@ package lsfusion.client.form;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.filter.ClientRegularFilter;
+import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -50,6 +52,9 @@ public class ClientFormChanges {
     // ascending; the filters as the filter panel holds them
     public final Map<ClientGroupObject, LinkedHashMap<Column, Boolean>> userOrders;
     public final Map<ClientGroupObject, List<ClientPropertyFilter>> userFilters;
+
+    // the filter selected in the filter groups it was set for, null for none
+    public final Map<ClientRegularFilterGroup, ClientRegularFilter> regularFilters;
 
     public final boolean needConfirm;
 
@@ -170,6 +175,13 @@ public class ClientFormChanges {
                 groupFilters.add(new ClientPropertyFilter(new ClientFilter(property), groupObject, columnKey, value, negation, compare, inStream.readBoolean()));
             }
             userFilters.put(groupObject, groupFilters);
+        }
+
+        regularFilters = new HashMap<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientRegularFilterGroup filterGroup = clientForm.getRegularFilterGroup(inStream.readInt());
+            regularFilters.put(filterGroup, clientForm.getRegularFilter(inStream.readInt()));
         }
 
         needConfirm = inStream.readBoolean();

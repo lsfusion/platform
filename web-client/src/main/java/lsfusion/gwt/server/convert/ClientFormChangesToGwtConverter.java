@@ -5,6 +5,8 @@ import lsfusion.base.file.*;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.filter.ClientRegularFilter;
+import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -244,6 +246,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             }
             dto.userFiltersGroupIds[i] = entry.getKey().ID;
             dto.userFilters[i] = filterDTOs;
+            i++;
+        }
+
+        dto.regularFilterGroupIds = new int[changes.regularFilters.size()];
+        dto.regularFilterIds = new int[changes.regularFilters.size()];
+        i = 0;
+        for (Map.Entry<ClientRegularFilterGroup, ClientRegularFilter> entry : changes.regularFilters.entrySet()) {
+            dto.regularFilterGroupIds[i] = entry.getKey().ID;
+            dto.regularFilterIds[i] = entry.getValue() != null ? entry.getValue().ID : -1;
             i++;
         }
 

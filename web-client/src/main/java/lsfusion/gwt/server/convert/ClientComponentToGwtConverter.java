@@ -178,7 +178,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GRegularFilterGroup convertRegularFilterGroup(ClientRegularFilterGroup clientFilterGroup) {
         GRegularFilterGroup filterGroup = initGwtComponent(clientFilterGroup, new GRegularFilterGroup());
 
-        filterGroup.defaultFilterIndex = clientFilterGroup.defaultFilterIndex;
         filterGroup.groupObject = convertOrCast(clientFilterGroup.groupObject);
         filterGroup.noNull = clientFilterGroup.noNull;
 

@@ -750,10 +750,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GResetWindowsLayoutAction action) {
     }
 
-    @Override
-    public void execute(GFilterGroupAction action) {
-    }
-
     protected abstract JavaScriptObject getController();
 
     private class JSExecutor {

@@ -1,16 +1,18 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.action.FilterGroupClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static lsfusion.base.BaseUtils.nvl;
 
@@ -30,9 +32,16 @@ public class FilterGroupAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Integer index = nvl((Integer) context.getKeyObject(fromInterface), 0);
-        RegularFilterGroupInstance filterGroupInstance = context.getFormInstance(true, true).instanceFactory.getExInstance(filterGroup);
+        FormInstance formInstance = context.getFormInstance(true, true);
+        RegularFilterGroupInstance filterGroupInstance = formInstance.instanceFactory.getExInstance(filterGroup);
         if(filterGroupInstance != null) {
-            context.requestUserInteraction(new FilterGroupClientAction(filterGroupInstance.getID(), index));
+            List<RegularFilterInstance> filters = filterGroupInstance.filters;
+            // filters are numbered from 1, 0 is none - the way FILTERGROUPS reads them, in a NONULL group too, whose
+            // check box a user can clear; a number naming no filter of the group changes nothing
+            if (index > 0 && index <= filters.size())
+                formInstance.setRegularFilter(filterGroupInstance, filters.get(index - 1));
+            else if (index == 0)
+                formInstance.setRegularFilter(filterGroupInstance, null);
         }
     }
 }

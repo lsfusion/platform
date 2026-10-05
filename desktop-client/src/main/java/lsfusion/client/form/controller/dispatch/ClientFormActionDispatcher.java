@@ -91,9 +91,4 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     public void execute(AsyncGetRemoteChangesClientAction action) {
         getFormController().getRemoteChanges(true, action.forceLocalEvents);
     }
-
-    @Override
-    public void execute(FilterGroupClientAction action) {
-        getFormController().setRegularFilterIndex(action.filterGroup, action.index);
-    }
 }

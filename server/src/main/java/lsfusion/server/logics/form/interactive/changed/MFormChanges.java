@@ -15,6 +15,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -50,6 +51,8 @@ public class MFormChanges {
     public MExclMap<GroupObjectInstance, ImOrderMap<PropertyColumn, Boolean>> userOrders = MapFact.mExclMap();
     public MExclMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters = MapFact.mExclMap();
 
+    public MExclMap<RegularFilterGroupInstance, Integer> regularFilters = MapFact.mExclMap();
+
     public boolean needConfirm = false;
 
     public FormChanges immutable() {
@@ -68,6 +71,7 @@ public class MFormChanges {
                 expandContainers.immutableList(),
                 userOrders.immutable(),
                 userFilters.immutable(),
+                regularFilters.immutable(),
                 needConfirm
         );
     }

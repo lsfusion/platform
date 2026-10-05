@@ -14,7 +14,6 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.view.ClientImages;
-import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.controller.MainController;
@@ -36,6 +35,7 @@ import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.view.MultipleFilterBox;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -194,6 +194,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, Long> pendingChangeCurrentObjectsRequests = Maps.newHashMap();
     private final Map<ClientGroupObject, Long> pendingChangeOrdersRequests = Maps.newHashMap();
     private final Map<ClientGroupObject, Long> pendingChangeFiltersRequests = Maps.newHashMap();
+    private final Map<ClientRegularFilterGroup, Long> pendingChangeRegularFilterRequests = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
 
     private boolean hasColumnGroupObjects;
@@ -325,15 +326,15 @@ public class ClientFormController implements AsyncListener {
 
         initializeControllers(clientData);
 
+        // before the first changes, which may report a filter selected in a filter group
+        initializeRegularFilters();
+
         byte[] firstChanges = clientData.firstChanges;
         if(firstChanges != null) {
             applyFormChanges(-1, firstChanges, true);
         } else {
             getRemoteChanges(false);
         }
-
-        //has to be after firstChanges because can eventually invoke remote call with own changes and form changes applies immediately before first changes
-        initializeRegularFilters();
 
         initializeFormSchedulers();
     }
@@ -460,34 +461,16 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
-        final ComboBoxWidget comboBox = new ComboBoxWidget();
-        if(!filterGroup.noNull)
-            comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
+        final MultipleFilterBox comboBox = new MultipleFilterBox(filterGroup) {
+            @Override
+            public void selected(ClientRegularFilter filter) throws IOException {
+                setRegularFilter(filterGroup, filter);
+            }
+        };
         for (final ClientRegularFilter filter : filterGroup.filters) {
-            comboBox.addItem(new ClientRegularFilterWrapper(filter));
             addBinding(filterGroup.groupObject, comboBox, filter, filter.keyInputEvent);
             addBinding(filterGroup.groupObject, comboBox, filter, filter.mouseInputEvent);
         }
-
-        if (filterGroup.defaultFilterIndex >= 0) {
-            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilterIndex);
-            comboBox.setSelectedItem(new ClientRegularFilterWrapper(defaultFilter));
-        }
-        comboBox.addItemListener(new ItemAdapter() {
-            @Override
-            public void itemSelected(final ItemEvent e) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            setRegularFilter(filterGroup, ((ClientRegularFilterWrapper) e.getItem()).filter);
-                        } catch (IOException ioe) {
-                            throw new RuntimeException(getString("form.error.changing.regular.filter"), ioe);
-                        }
-                    }
-                });
-            }
-        });
 
         comboBox.setPreferredSize(new Dimension(comboBox.getPreferredSize().width, SwingDefaults.getComponentHeight()));
 
@@ -511,7 +494,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
-        final SingleFilterBox checkBox = new SingleFilterBox(filterGroup, singleFilter) {
+        final SingleFilterBox checkBox = new SingleFilterBox(singleFilter) {
             @Override
             public void selected() throws IOException {
                 setRegularFilter(filterGroup, singleFilter);
@@ -542,20 +525,6 @@ public class ClientFormController implements AsyncListener {
                     return true;
                 }
             });
-        }
-    }
-
-    public void setRegularFilterIndex(Integer filterGroup, Integer index) {
-        for (Map.Entry<ClientComponent, Widget> entry : formLayout.getBaseComponentViews().entrySet()) {
-            ClientComponent component = entry.getKey();
-            if (component instanceof ClientRegularFilterGroup && (filterGroup == null || filterGroup == component.getID())) {
-                Widget widget = ((FlexPanel) entry.getValue()).getWidget(0);
-                if (widget instanceof SingleFilterBox) { //single filter
-                    ((SingleFilterBox) widget).forceSelect(index > 0);
-                } else if (widget instanceof ComboBoxWidget) { //multiple filter
-                    ((ComboBoxWidget) widget).setSelectedIndex(index);
-                }
-            }
         }
     }
 
@@ -725,6 +694,8 @@ public class ClientFormController implements AsyncListener {
 
         modifyFormChangesWithChangeFiltersAsyncs(requestIndex, formChanges);
 
+        modifyFormChangesWithChangeRegularFilterAsyncs(requestIndex, formChanges);
+
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, formChanges);
 
         for (GridController controller : controllers.values()) {
@@ -736,6 +707,8 @@ public class ClientFormController implements AsyncListener {
         }
         
         expandCollapseContainers(formChanges);
+
+        updateRegularFilters(formChanges);
         
         formLayout.autoShowHideContainers();
         
@@ -754,6 +727,21 @@ public class ClientFormController implements AsyncListener {
         }
     }
     
+    // the filter the server reports selected in a filter group, which it has applied already, is shown: nothing is sent
+    private void updateRegularFilters(ClientFormChanges formChanges) {
+        for (Map.Entry<ClientRegularFilterGroup, ClientRegularFilter> entry : formChanges.regularFilters.entrySet()) {
+            Widget filterView = formLayout.getBaseComponentViews().get(entry.getKey());
+            if (filterView != null) {
+                Widget widget = ((FlexPanel) filterView).getWidget(0);
+                if (widget instanceof SingleFilterBox) {
+                    ((SingleFilterBox) widget).showSelected(entry.getValue() != null);
+                } else {
+                    ((MultipleFilterBox) widget).showSelected(entry.getValue());
+                }
+            }
+        }
+    }
+
     private void expandCollapseContainers(ClientFormChanges formChanges) {
         for (ClientContainer container : formChanges.collapseContainers) {
             setContainerExtCollapsed(container, true);
@@ -867,6 +855,22 @@ public class ClientFormController implements AsyncListener {
                 iterator.remove();
             else
                 currentFilters.put(entry.getKey(), filters);
+        }
+    }
+
+    // the filter the server reports selected in a filter group while a request selecting one there is not answered is
+    // older than what the filter group shows
+    private void modifyFormChangesWithChangeRegularFilterAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
+        assert currentDispatchingRequestIndex >= 0 || pendingChangeRegularFilterRequests.isEmpty();
+
+        for (Iterator<Map.Entry<ClientRegularFilterGroup, Long>> iterator = pendingChangeRegularFilterRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientRegularFilterGroup, Long> entry = iterator.next();
+
+            if (entry.getValue() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+            } else {
+                formChanges.regularFilters.remove(entry.getKey());
+            }
         }
     }
 
@@ -1611,6 +1615,11 @@ public class ClientFormController implements AsyncListener {
         threadSettingRegularFilter.set(true);
         try {
             rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
+                @Override
+                protected void onAsyncRequest(long requestIndex) {
+                    pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
+                }
+
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                     return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());

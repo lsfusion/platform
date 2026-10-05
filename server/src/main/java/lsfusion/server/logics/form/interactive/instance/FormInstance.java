@@ -354,7 +354,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
             int defaultInd = filterGroup.entity.getDefaultFilterIndex();
             if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
-                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd), stack);
+                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd));
             }
         }
 
@@ -991,12 +991,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<>();
     public Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<>();
 
-    public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId, ExecutionStack stack) throws SQLException, SQLHandledException {
-        setRegularFilter(filterGroup, filterGroup.getFilter(filterId), stack);
-    }
+    // the filter groups whose filter was set during the request, which the form reports to the client (FormChanges)
+    private ImSet<RegularFilterGroupInstance> updatedRegularFilterGroups = SetFact.EMPTY();
 
-    private void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter, ExecutionStack stack) throws SQLException, SQLHandledException {
+    // the filter selected in a filter group, null for none - as a client, FILTERGROUP or the form's default selects it;
+    // the filter selected already changes nothing
+    public void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
         RegularFilterInstance prevFilter = regularFilterValues.get(filterGroup);
+        if (filter == prevFilter)
+            return;
+
         if (prevFilter != null)
             prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
 
@@ -1007,7 +1011,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             filter.filter.getApplyObject().addRegularFilter(filter.filter);
         }
 
-        fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
+        updatedRegularFilterGroups = updatedRegularFilterGroups.merge(filterGroup);
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //
@@ -2423,6 +2427,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if ((group.updated & GroupObjectInstance.UPDATED_USERFILTER) != 0)
                 result.userFilters.exclAdd(group, group.getUserFilters());
         }
+        for (RegularFilterGroupInstance filterGroup : updatedRegularFilterGroups) {
+            RegularFilterInstance filter = regularFilterValues.get(filterGroup);
+            result.regularFilters.exclAdd(filterGroup, filter != null ? filter.getID() : -1);
+        }
 
         result.needConfirm = needConfirm();
 
@@ -2431,6 +2439,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         userActivateProps = ListFact.EMPTY();
         userCollapseContainers = ListFact.EMPTY();
         userExpandContainers = ListFact.EMPTY();
+        updatedRegularFilterGroups = SetFact.EMPTY();
         for (GroupObjectInstance group : getGroups()) {
             for (ObjectInstance object : group.objects)
                 object.updated = 0;

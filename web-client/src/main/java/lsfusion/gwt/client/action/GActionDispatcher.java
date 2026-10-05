@@ -101,6 +101,4 @@ public interface GActionDispatcher {
     GScreenShotResult execute(GScreenShotAction action);
 
     Object execute(GHttpClientAction action) throws RequestException;
-    
-    void execute(GFilterGroupAction action);
 }

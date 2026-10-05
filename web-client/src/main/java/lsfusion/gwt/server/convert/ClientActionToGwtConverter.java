@@ -513,9 +513,4 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public void convertAction(ResetServerSettingsCacheClientAction action, MainDispatchServlet servlet) {
         servlet.getLogicsProvider().resetServerSettingsCache(servlet.getRequest());
     }
-
-    @Converter(from = FilterGroupClientAction.class)
-    public GFilterGroupAction convertAction(FilterGroupClientAction action) {
-        return new GFilterGroupAction(action.filterGroup, action.index);
-    }
 }

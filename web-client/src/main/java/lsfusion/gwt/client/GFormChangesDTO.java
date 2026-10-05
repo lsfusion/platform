@@ -46,6 +46,9 @@ public class GFormChangesDTO implements Serializable {
     public int[] userFiltersGroupIds;
     public GPropertyFilterDTO[][] userFilters;
 
+    public int[] regularFilterGroupIds;
+    public int[] regularFilterIds;
+
     public boolean needConfirm;
     public int size;
 }

@@ -1,0 +1,66 @@
+MODULE UserFilterGroups;
+
+REQUIRE TestUtils;
+
+// FILTERGROUP selects a group's filter on the server, so FILTERGROUPS later in the same action reads it (#1857). It
+// used to ask the client to select the filter and send it back: a read in between got the old filter, and a form with
+// no client - as here - never got it at all. The user event FILTERGROUPS is for what the user selects: neither
+// FILTERGROUP nor the default filter of a group, selected when the form opens, fires it
+
+CLASS UfgItem 'Item';
+ufgQty 'Qty' = DATA INTEGER (UfgItem);
+
+ufgEvents = DATA LOCAL INTEGER ();
+
+FORM ufgItems 'Items'
+    OBJECTS i = UfgItem
+    PROPERTIES(i) READONLY qty = ufgQty
+    FILTERGROUP ufgQtyGroup
+        FILTER 'Qty > 2' ufgQty(i) > 2
+        FILTER 'Qty <= 2' ufgQty(i) <= 2 DEFAULT
+    FILTERGROUP ufgNoNullGroup NONULL
+        FILTER 'Qty > 5' ufgQty(i) > 5
+        FILTER 'Qty <= 5' ufgQty(i) <= 5
+    EVENTS
+        ON FILTERGROUPS ufgQtyGroup { ufgEvents() <- ufgEvents() (+) 1; },
+        ON FILTERGROUPS ufgNoNullGroup { ufgEvents() <- ufgEvents() (+) 1; }
+;
+
+ufgRead = DATA LOCAL INTEGER ();
+ufgReadNoNull = DATA LOCAL INTEGER ();
+
+testFilterGroupDefault 'The default filter is the one FILTERGROUPS reads when the form opens, the first one of a NONULL group' () {
+    SHOW ufgItems NOWAIT {
+        FILTERGROUPS ufgItems.ufgQtyGroup TO ufgRead;
+        FILTERGROUPS ufgItems.ufgNoNullGroup TO ufgReadNoNull;
+    };
+    assertEquals(ufgRead(), 2, 'FILTERGROUPS read ' + ufgRead() + ' for the default');
+    assertEquals(ufgReadNoNull(), 1, 'FILTERGROUPS read ' + ufgReadNoNull() + ' for a NONULL group');
+}
+
+testFilterGroupReadBack 'FILTERGROUPS right after FILTERGROUP reads the filter it selected' () {
+    SHOW ufgItems NOWAIT {
+        FILTERGROUP ufgItems.ufgQtyGroup FROM 1;
+        FILTERGROUPS ufgItems.ufgQtyGroup TO ufgRead;
+    };
+    assertEquals(ufgRead(), 1, 'FILTERGROUPS read ' + ufgRead());
+}
+
+testFilterGroupNone 'FILTERGROUP of 0 selects none, in a NONULL group too, and a number naming no filter changes nothing' () {
+    SHOW ufgItems NOWAIT {
+        FILTERGROUP ufgItems.ufgNoNullGroup FROM 0;
+        FILTERGROUPS ufgItems.ufgNoNullGroup TO ufgReadNoNull;
+        FILTERGROUP ufgItems.ufgQtyGroup FROM 3;
+        FILTERGROUPS ufgItems.ufgQtyGroup TO ufgRead;
+    };
+    assertEquals(ufgReadNoNull(), 0, 'FILTERGROUPS read ' + ufgReadNoNull() + ' after FILTERGROUP of 0');
+    assertEquals(ufgRead(), 2, 'FILTERGROUPS read ' + ufgRead() + ' after FILTERGROUP of 3, which names no filter');
+}
+
+testFilterGroupNoUserEvent 'Neither FILTERGROUP nor the default filter fires FILTERGROUPS' () {
+    SHOW ufgItems NOWAIT {
+        FILTERGROUP ufgItems.ufgQtyGroup FROM 1;
+        FILTERGROUP ufgItems.ufgNoNullGroup FROM 2;
+    };
+    assertNull(ufgEvents(), 'FILTERGROUPS fired ' + ufgEvents() + ' times');
+}

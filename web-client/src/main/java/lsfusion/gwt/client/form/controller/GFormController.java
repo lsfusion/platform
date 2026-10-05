@@ -164,6 +164,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeOrdersRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeFiltersRequests = new NativeSIDMap<>();
+    private final NativeHashMap<GRegularFilterGroup, Long> pendingChangeRegularFilterRequests = new NativeHashMap<>();
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GFilterConditionView, Long> pendingLoadingFilterRequests = new NativeSIDMap<>();
@@ -339,10 +340,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         GwtClientUtils.addClassName(filterCheck, "filter-group-check");
         addFilterView(filterGroup, filterCheck);
 
-        if (filterGroup.defaultFilterIndex >= 0) {
-            filterCheck.setValue(true, false);
-        }
-
         setBindingGroupObject(filterCheck, filterGroup.groupObject);
         for (GInputBindingEvent bindingEvent : filter.bindingEvents) {
             addRegularFilterBinding(bindingEvent, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
@@ -375,28 +372,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         GwtClientUtils.addClassName(filterBox, "form-select");
 
         addFilterView(filterGroup, filterBox);
-        if (filterGroup.defaultFilterIndex >= 0) {
-            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + (filterGroup.noNull ? 0 : 1));
-        }
     }
 
+    // the list shows the filter at once, as when the user selects it there: the answer reports nothing if the server has
+    // it already
     private void setRegularFilter(GRegularFilterGroup filterGroup, ListBox filterBox, int filterIndex) {
-        filterBox.setSelectedIndex(filterIndex + 1);
+        filterBox.setSelectedIndex(filterIndex + (filterGroup.noNull ? 0 : 1));
         setRemoteRegularFilter(filterGroup, filterIndex);
-    }
-
-    public void setRegularFilterIndex(Integer filterGroup, Integer index) {
-        for(Map.Entry<GComponent, ComponentViewWidget> entry : formLayout.getBaseComponentViews().entrySet()) {
-            GComponent component = entry.getKey();
-            if (component instanceof GRegularFilterGroup && (filterGroup == null || filterGroup == component.ID)) {
-                Widget widget = entry.getValue().getSingleWidget().widget;
-                if (widget instanceof CheckBox) { //single filter
-                    ((CheckBox) widget).setValue(index > 0 ? true : null, true);
-                } else if (widget instanceof ListBox) { //multiple filter
-                    setRegularFilter((GRegularFilterGroup) component, ((ListBox) widget), index - 1);
-                }
-            }
-        }
     }
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
@@ -1040,6 +1022,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         modifyFormChangesWithChangeFiltersAsyncs(requestIndex, fc);
 
+        modifyFormChangesWithChangeRegularFilterAsyncs(requestIndex, fc);
+
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, fc);
 
         modifyFormChangesWithLoadingPropertyAsyncs(requestIndex, fc);
@@ -1058,6 +1042,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         applyFilterChanges(fc);
 
         expandCollapseContainers(fc);
+
+        updateRegularFilters(fc);
 
         activateElements(fc);
 
@@ -1160,6 +1146,21 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return needConfirm;
     }
 
+    // the filter the server reports selected in a filter group, which it has applied already, is shown: nothing is sent
+    private void updateRegularFilters(GFormChanges fc) {
+        for (Map.Entry<GRegularFilterGroup, GRegularFilter> entry : fc.regularFilters.entrySet()) {
+            GRegularFilterGroup filterGroup = entry.getKey();
+            ComponentViewWidget filterView = formLayout.getBaseComponentViews().get(filterGroup);
+            if (filterView != null) { // a filter group with no filters has no view
+                Widget widget = filterView.getSingleWidget().widget;
+                if (widget instanceof CheckBox)
+                    ((CheckBox) widget).setValue(entry.getValue() != null, false);
+                else
+                    ((ListBox) widget).setSelectedIndex(filterGroup.filters.indexOf(entry.getValue()) + (filterGroup.noNull ? 0 : 1));
+            }
+        }
+    }
+
     private void expandCollapseContainers(GFormChanges formChanges) {
         for (GContainer container : formChanges.collapseContainers) {
             setContainerExtCollapsed(container, true);
@@ -1235,6 +1236,17 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 pendingChangeFiltersRequests.remove(group);
             else
                 fc.userFilters.remove(group);
+        });
+    }
+
+    // the filter the server reports selected in a filter group while a request selecting one there is not answered is
+    // older than what the filter group shows
+    private void modifyFormChangesWithChangeRegularFilterAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingChangeRegularFilterRequests.foreachEntry((filterGroup, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex)
+                pendingChangeRegularFilterRequests.remove(filterGroup);
+            else
+                fc.regularFilters.remove(filterGroup);
         });
     }
 
@@ -2085,7 +2097,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
+        long requestIndex = syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
+        pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
     }
 
     public long changeFilters(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {

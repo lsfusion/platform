@@ -2,6 +2,8 @@ package lsfusion.gwt.client;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
+import lsfusion.gwt.client.form.filter.GRegularFilter;
+import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GFilterValueDTO;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -18,7 +20,7 @@ import java.util.LinkedHashMap;
 
 // What the client takes of the user orders and filters the server reports for a group: the orders in their priority
 // order, by the property and its column key, true - ascending - no orders too, as an empty list -; the filters as they
-// are
+// are. And the filter it reports selected in a filter group, none too
 public class GFormChangesTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -60,6 +62,7 @@ public class GFormChangesTest extends GWTTestCase {
         dto.collapseContainerIds = new int[0]; dto.expandContainerIds = new int[0];
         dto.userOrdersGroupIds = new int[0]; dto.userOrdersPropertyIds = new int[0][]; dto.userOrdersColumnKeys = new GGroupObjectValue[0][]; dto.userOrdersAscending = new boolean[0][];
         dto.userFiltersGroupIds = new int[0]; dto.userFilters = new GPropertyFilterDTO[0][];
+        dto.regularFilterGroupIds = new int[0]; dto.regularFilterIds = new int[0];
         return dto;
     }
 
@@ -102,6 +105,26 @@ public class GFormChangesTest extends GWTTestCase {
         dto.userFilters = new GPropertyFilterDTO[][] {{filter}};
 
         assertEquals(Collections.singletonList(filter), GFormChanges.remap(form, dto).userFilters.get(group));
+    }
+
+    public void testTheSelectedFilterOfAFilterGroupNoneToo() {
+        setUpForm();
+        GRegularFilterGroup filterGroup = new GRegularFilterGroup();
+        filterGroup.ID = 40;
+        GRegularFilter first = new GRegularFilter(), second = new GRegularFilter();
+        first.ID = 41; second.ID = 42;
+        filterGroup.filters.addAll(Arrays.asList(first, second));
+        GRegularFilterGroup otherGroup = new GRegularFilterGroup();
+        otherGroup.ID = 43;
+        form.regularFilterGroups.addAll(Arrays.asList(filterGroup, otherGroup));
+        GFormChangesDTO dto = noChanges();
+        dto.regularFilterGroupIds = new int[] {40, 43};
+        dto.regularFilterIds = new int[] {42, -1};
+
+        GFormChanges changes = GFormChanges.remap(form, dto);
+        assertSame(second, changes.regularFilters.get(filterGroup));
+        assertTrue(changes.regularFilters.containsKey(otherGroup));
+        assertNull(changes.regularFilters.get(otherGroup));
     }
 
     public void testAGroupNotReportedHasNoEntry() {

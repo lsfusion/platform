@@ -51,6 +51,15 @@ public class GForm implements Serializable {
     public GFormUserPreferences userPreferences;
     public HashSet<GGroupObject> inputGroupObjects;
 
+    public GRegularFilterGroup getRegularFilterGroup(int id) {
+        for (GRegularFilterGroup filterGroup : regularFilterGroups) {
+            if (filterGroup.ID == id) {
+                return filterGroup;
+            }
+        }
+        return null;
+    }
+
     public GGroupObject getGroupObject(int id) {
         GGroupObject cache = idGroupObjects.get(id);
         if(cache != null)

@@ -37,6 +37,7 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -86,6 +87,9 @@ public class FormChanges {
     private final ImMap<GroupObjectInstance, ImOrderMap<PropertyColumn, Boolean>> userOrders;
     private final ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters;
 
+    // the filter selected in the filter groups it was set for, -1 for none
+    private final ImMap<RegularFilterGroupInstance, Integer> regularFilters;
+
     // current (panel) objects
     private final ImMap<GroupObjectInstance, Boolean> updateStateObjects;
 
@@ -102,7 +106,8 @@ public class FormChanges {
                        ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, 
                        ImList<PropertyDrawInstance> activateProps, ImList<ContainerView> collapseContainers, 
                        ImList<ContainerView> expandContainers, ImMap<GroupObjectInstance, ImOrderMap<PropertyColumn, Boolean>> userOrders,
-                       ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters, boolean needConfirm) {
+                       ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters,
+                       ImMap<RegularFilterGroupInstance, Integer> regularFilters, boolean needConfirm) {
         this.objects = objects;
         this.gridObjects = gridObjects;
         this.parentObjects = parentObjects;
@@ -116,6 +121,7 @@ public class FormChanges {
         this.expandContainers = expandContainers;
         this.userOrders = userOrders;
         this.userFilters = userFilters;
+        this.regularFilters = regularFilters;
         this.needConfirm = needConfirm;
     }
 
@@ -271,6 +277,12 @@ public class FormChanges {
                 serializeObject(outStream, filter.value.getValue()); // as a client sends it, a file as well
                 outStream.writeBoolean(filter.junction);
             }
+        }
+
+        outStream.writeInt(regularFilters.size());
+        for (int i=0,size=regularFilters.size();i<size;i++) {
+            outStream.writeInt(regularFilters.getKey(i).getID());
+            outStream.writeInt(regularFilters.getValue(i));
         }
 
         outStream.writeBoolean(needConfirm);
@@ -695,5 +707,9 @@ public class FormChanges {
         logger.trace("   User filters ---------------");
         for (int i = 0, size = userFilters.size(); i < size; i++)
             logger.trace("     " + userFilters.getKey(i) + " -> " + userFilters.getValue(i));
+
+        logger.trace("   Regular filters ---------------");
+        for (int i = 0, size = regularFilters.size(); i < size; i++)
+            logger.trace("     " + regularFilters.getKey(i) + " -> " + regularFilters.getValue(i));
     }
 }
