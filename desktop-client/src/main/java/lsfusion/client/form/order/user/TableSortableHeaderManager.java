@@ -1,9 +1,7 @@
 package lsfusion.client.form.order.user;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.order.user.Order;
@@ -14,7 +12,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -106,52 +104,44 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         return orderDirections.get(getColumnKey(column));
     }
 
+    // a click asks for the orders shown changed by it, which are shown when the form has them (updateOrders)
     public final void changeOrder(T columnKey, Order modiType) {
-        if(changeOrderDirection(columnKey, modiType))
-            orderChanged(columnKey, modiType);
+        LinkedHashMap<T, Boolean> orders = new LinkedHashMap<>(orderDirections);
+        if (changeOrderDirection(orders, columnKey, modiType))
+            ordersChanged(columnKey, orders);
     }
 
-    private boolean changeOrderDirection(T columnKey, Order modiType) {
+    private boolean changeOrderDirection(Map<T, Boolean> orders, T columnKey, Order modiType) {
         if (columnKey == null || noSort(columnKey)) {
             return false;
         }
 
         switch (modiType) {
             case REPLACE:
-                boolean direction = orderDirections.getOrDefault(columnKey, false);
-                orderDirections.clear();
-                orderDirections.put(columnKey, !direction);
+                boolean direction = orders.getOrDefault(columnKey, false);
+                orders.clear();
+                orders.put(columnKey, !direction);
                 break;
             case ADD:
-                orderDirections.put(columnKey, true);
+                orders.put(columnKey, true);
                 break;
             case DIR:
-                orderDirections.put(columnKey, !orderDirections.get(columnKey));
+                orders.put(columnKey, !orders.get(columnKey));
                 break;
             case REMOVE:
-                orderDirections.remove(columnKey);
+                orders.remove(columnKey);
                 break;
         }
 
         return true;
     }
 
-    public final boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
-        if(!BaseUtils.hashEquals(orderDirections, set)) {
+    // the orders the form has, in their priority order - on a column the user may not sort by (noSort) as well: shown,
+    // nothing is sent; true - ascending. The same columns in another order are other orders
+    public final boolean updateOrders(LinkedHashMap<T, Boolean> orders) {
+        if(!new ArrayList<>(orderDirections.entrySet()).equals(new ArrayList<>(orders.entrySet()))) {
             orderDirections.clear();
-            for (Iterator<Map.Entry<T, Boolean>> iterator = set.entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<T, Boolean> entry = iterator.next();
-                if(!changeOrderDirection(entry.getKey(), Order.ADD))
-                    iterator.remove();
-                else if (!entry.getValue()) {
-                    boolean changed = changeOrderDirection(entry.getKey(), Order.DIR);
-                    assert changed;
-                }
-            }
-
-            if(!alreadySet)
-                ordersSet(groupObject, set);
-
+            orderDirections.putAll(orders);
             return true;
         }
         return false;
@@ -161,9 +151,9 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         return columnKey instanceof Pair && ((Pair) columnKey).first instanceof ClientPropertyDraw && ((ClientPropertyDraw) ((Pair) columnKey).first).noSort;
     }
 
-    protected abstract void orderChanged(T columnKey, Order modiType);
-
-    protected abstract void ordersSet(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> orders);
+    // the orders a click on a column asks for - of all the columns of the header, a tree's of several groups; true -
+    // ascending
+    protected abstract void ordersChanged(T columnKey, LinkedHashMap<T, Boolean> orders);
 
     protected abstract T getColumnKey(int column);
 

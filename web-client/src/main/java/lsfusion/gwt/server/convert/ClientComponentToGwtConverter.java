@@ -710,10 +710,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
             form.regularFilterGroups.add(filterGroup);
         }
 
-        for (ClientPropertyDraw property : clientForm.defaultOrders.keyList()) {
-            form.defaultOrders.put((GPropertyDraw) convertOrCast(property), clientForm.defaultOrders.get(property));
-        }
-
         form.pivotColumns.addAll(convertPivotPropertiesList(clientForm.pivotColumns));
         form.pivotRows.addAll(convertPivotPropertiesList(clientForm.pivotRows));
         for(ClientPropertyDraw property : clientForm.pivotMeasures) {

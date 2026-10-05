@@ -1,5 +1,6 @@
 package lsfusion.gwt.client;
 
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 
@@ -36,6 +37,14 @@ public class GFormChangesDTO implements Serializable {
     
     public int[] collapseContainerIds;
     public int[] expandContainerIds;
+
+    public int[] userOrdersGroupIds;
+    public int[][] userOrdersPropertyIds;
+    public GGroupObjectValue[][] userOrdersColumnKeys;
+    public boolean[][] userOrdersAscending;
+
+    public int[] userFiltersGroupIds;
+    public GPropertyFilterDTO[][] userFilters;
 
     public boolean needConfirm;
     public int size;

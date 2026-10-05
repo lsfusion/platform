@@ -35,9 +35,7 @@ import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
-import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
-import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -56,6 +54,7 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.form.view.Column;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
@@ -70,11 +69,9 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
-import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
-import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -86,7 +83,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -185,12 +181,19 @@ public class ClientFormController implements AsyncListener {
     private final boolean isDialog;
     private final boolean isWindow;
 
-    private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<>();
+    // the user orders of each group as the form has them - as a client set them last, or as the server reported them -:
+    // the group's controller gets other orders only; true - ascending
+    private final Map<ClientGroupObject, LinkedHashMap<Column, Boolean>> currentOrders = new HashMap<>();
+    // the user filters of each group as the server has them, as far as the client knows: as it sent them last, or as
+    // the server reported them; serialized as a client sends them
+    private final Map<ClientGroupObject, byte[][]> currentFilters = new HashMap<>();
 
     private final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<>();
 
     private final OrderedMap<Long, ModifyObject> pendingModifyObjectRequests = new OrderedMap<>();
     private final Map<ClientGroupObject, Long> pendingChangeCurrentObjectsRequests = Maps.newHashMap();
+    private final Map<ClientGroupObject, Long> pendingChangeOrdersRequests = Maps.newHashMap();
+    private final Map<ClientGroupObject, Long> pendingChangeFiltersRequests = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
 
     private boolean hasColumnGroupObjects;
@@ -322,8 +325,6 @@ public class ClientFormController implements AsyncListener {
 
         initializeControllers(clientData);
 
-        initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
-
         byte[] firstChanges = clientData.firstChanges;
         if(firstChanges != null) {
             applyFormChanges(-1, firstChanges, true);
@@ -333,8 +334,6 @@ public class ClientFormController implements AsyncListener {
 
         //has to be after firstChanges because can eventually invoke remote call with own changes and form changes applies immediately before first changes
         initializeRegularFilters();
-
-        initializeUserOrders();
 
         initializeFormSchedulers();
     }
@@ -683,45 +682,6 @@ public class ClientFormController implements AsyncListener {
         return simpleDispatcher;
     }
 
-    private Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> groupDefaultOrders() {
-        Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> orders = new HashMap<>();
-        for(Map.Entry<ClientPropertyDraw, Boolean> defaultOrder : form.defaultOrders.entrySet()) {
-            ClientGroupObject groupObject = defaultOrder.getKey().getGroupObject();
-            OrderedMap<ClientPropertyDraw, Boolean> order = orders.get(groupObject);
-            if(order == null) {
-                order = new OrderedMap<>();
-                orders.put(groupObject,order);
-            }
-            order.put(defaultOrder.getKey(), defaultOrder.getValue());
-        }
-        return orders;
-    }
-
-    public void initializeDefaultOrders() {
-        Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> defaultOrders = groupDefaultOrders();
-        for (Map.Entry<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> entry : defaultOrders.entrySet()) {
-            ClientGroupObject groupObject = entry.getKey();
-            TableController groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
-            if (groupObjectLogicsSupplier != null)
-                groupObjectLogicsSupplier.changeOrders(groupObject, entry.getValue(), true);
-        }
-    }
-
-    public void initializeUserOrders() {
-        boolean changed = false;
-        for (GridController controller : controllers.values()) {
-            LinkedHashMap<ClientPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
-            if (objectUserOrders != null)
-                changed = controller.changeOrders(objectUserOrders, false)  || changed;
-        }
-        if (changed)
-            getRemoteChanges(true);
-    }
-
-    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject groupObject) {
-        return form.getDefaultOrders(groupObject);
-    }
-
     private void processServerResponse(ServerResponse serverResponse, EditPropertyDispatcher editDispatcher) throws IOException {
         //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
         if (serverResponse != null) {
@@ -760,6 +720,10 @@ public class ClientFormController implements AsyncListener {
         modifyFormChangesWithModifyObjectAsyncs(requestIndex, formChanges);
 
         modifyFormChangesWithChangeCurrentObjectAsyncs(requestIndex, formChanges);
+
+        modifyFormChangesWithChangeOrdersAsyncs(requestIndex, formChanges);
+
+        modifyFormChangesWithChangeFiltersAsyncs(requestIndex, formChanges);
 
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, formChanges);
 
@@ -851,6 +815,58 @@ public class ClientFormController implements AsyncListener {
             } else {
                 formChanges.objects.remove(entry.getKey());
             }
+        }
+    }
+
+    private void modifyFormChangesWithChangeOrdersAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
+        assert currentDispatchingRequestIndex >= 0 || pendingChangeOrdersRequests.isEmpty();
+
+        for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = pendingChangeOrdersRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientGroupObject, Long> entry = iterator.next();
+
+            if (entry.getValue() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+            } else {
+                formChanges.userOrders.remove(entry.getKey());
+            }
+        }
+
+        // orders equal to the ones the form has are shown already
+        for (Iterator<Map.Entry<ClientGroupObject, LinkedHashMap<Column, Boolean>>> iterator = formChanges.userOrders.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientGroupObject, LinkedHashMap<Column, Boolean>> entry = iterator.next();
+            if (equalOrders(entry.getValue(), currentOrders.get(entry.getKey())))
+                iterator.remove();
+            else
+                currentOrders.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    // the same orders in another priority are other orders
+    private static boolean equalOrders(LinkedHashMap<Column, Boolean> orders, LinkedHashMap<Column, Boolean> current) {
+        return current != null && new ArrayList<>(orders.entrySet()).equals(new ArrayList<>(current.entrySet()));
+    }
+
+    private void modifyFormChangesWithChangeFiltersAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) throws IOException {
+        assert currentDispatchingRequestIndex >= 0 || pendingChangeFiltersRequests.isEmpty();
+
+        for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = pendingChangeFiltersRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientGroupObject, Long> entry = iterator.next();
+
+            if (entry.getValue() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+            } else {
+                formChanges.userFilters.remove(entry.getKey());
+            }
+        }
+
+        // filters equal to the ones the client has are shown already: a condition the user is editing stays as it is
+        for (Iterator<Map.Entry<ClientGroupObject, List<ClientPropertyFilter>>> iterator = formChanges.userFilters.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientGroupObject, List<ClientPropertyFilter>> entry = iterator.next();
+            byte[][] filters = serializeClientFilters(entry.getValue());
+            if (Arrays.deepEquals(filters, currentFilters.get(entry.getKey())))
+                iterator.remove();
+            else
+                currentFilters.put(entry.getKey(), filters);
         }
     }
 
@@ -1489,49 +1505,44 @@ public class ClientFormController implements AsyncListener {
         return new ClientAsyncResult(values, needMoreSymbols, moreResults);
     }
 
-    public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {
+    // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
+    // for them, as the form keeps them: they are shown through the hook the reports use, unlike the filters, which the
+    // filter panel shows itself
+    public void changeOrders(final ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changePropertyOrder - " + property.getLogName()) {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changePropertyOrder(requestIndex, lastReceivedRequestIndex, property.getID(), modiType.serialize(), columnKey.serialize());
-            }
-        });
-    }
-    
-    public void changePropertyOrders(int goID, LinkedHashMap<Integer, Boolean> orders) {
-        ClientGroupObject groupObject = form.getGroupObject(goID);
-        if (groupObject != null) {
-            LinkedHashMap<ClientPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
-            for (Integer propertyID : orders.keySet()) {
-                ClientPropertyDraw propertyDraw = form.getProperty(propertyID);
-                if (propertyDraw != null) {
-                    pOrders.put(propertyDraw, orders.get(propertyID));
-                }
-            }
-
-            controllers.get(groupObject).changeOrders(pOrders, false);
+        if (!equalOrders(orders, currentOrders.get(group))) {
+            currentOrders.put(group, orders);
+            getGroupObjectLogicsSupplier(group).updateOrders(group, orders);
         }
-    }
 
-    public void setPropertyOrders(final ClientGroupObject groupObject, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) {
-        commitOrCancelCurrentEditing();
+        List<Integer> propertyList = new ArrayList<>();
+        List<byte[]> columnKeyList = new ArrayList<>();
+        List<Boolean> orderList = new ArrayList<>();
+        for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
+            propertyList.add(order.getKey().property.getID());
+            columnKeyList.add(order.getKey().columnKey.serialize());
+            orderList.add(order.getValue());
+        }
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("changeOrders - " + group.getLogName()) {
+            @Override
+            protected void onAsyncRequest(long requestIndex) {
+                pendingChangeOrdersRequests.put(group, requestIndex);
+            }
 
-        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyOrders - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID(), propertyList, columnKeyList, orderList);
+                return remoteForm.setPropertyOrders(requestIndex, lastReceivedRequestIndex, group.getID(), propertyList, columnKeyList, orderList);
             }
         });
     }
 
-    public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
-        currentFilters.put(groupObject, new ArrayList<>(conditions));
+    public void changeFilters(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
+        currentFilters.put(groupObject, serializeClientFilters(conditions));
         applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
-    public void changeFilter(ClientTreeGroup treeGroup, List<ClientPropertyFilter> conditions) throws IOException {
+    public void changeFilters(ClientTreeGroup treeGroup, List<ClientPropertyFilter> conditions) throws IOException {
         Map<ClientGroupObject, List<ClientPropertyFilter>> filters = BaseUtils.groupList(new BaseUtils.Group<ClientGroupObject, ClientPropertyFilter>() {
             public ClientGroupObject group(ClientPropertyFilter key) {
                 return key.groupObject;
@@ -1544,7 +1555,7 @@ public class ClientFormController implements AsyncListener {
                 groupFilters = new ArrayList<>();
             }
 
-            currentFilters.put(group, groupFilters);
+            currentFilters.put(group, serializeClientFilters(groupFilters));
         }
 
         applyCurrentFilters(treeGroup.groups);
@@ -1557,54 +1568,35 @@ public class ClientFormController implements AsyncListener {
         return outStream.toByteArray();
     }
 
+    // the filters as a client sends them: an action is no filter
+    private static byte[][] serializeClientFilters(List<ClientPropertyFilter> filters) throws IOException {
+        final List<byte[]> serializedFilters = new ArrayList<>();
+        for (ClientPropertyFilter filter : filters) {
+            if (!filter.property.isAction())
+                serializedFilters.add(serializeClientFilter(filter));
+        }
+        return serializedFilters.toArray(new byte[serializedFilters.size()][]);
+    }
+
     private void applyCurrentFilters(Collection<ClientGroupObject> groups) throws IOException {
         Map<Integer, byte[][]> filters = new LinkedHashMap<>(); 
         for (ClientGroupObject group : groups) {
-            final List<byte[]> groupFilters = new ArrayList<>();
-            List<ClientPropertyFilter> gFilters = currentFilters.get(group);
-            for (ClientPropertyFilter filter : gFilters) {
-                if (!filter.property.isAction())
-                    groupFilters.add(serializeClientFilter(filter));
-            }
-            filters.put(group.ID, groupFilters.toArray(new byte[groupFilters.size()][]));
+            filters.put(group.ID, currentFilters.get(group));
         }
 
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
+            @Override
+            protected void onAsyncRequest(long requestIndex) {
+                for (ClientGroupObject group : groups)
+                    pendingChangeFiltersRequests.put(group, requestIndex);
+            }
+
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters);
             }
         });
     }
-
-    public void changePropertyFilters(int goID, List<FilterClientAction.FilterItem> filters) {
-        ClientGroupObject groupObject = form.getGroupObject(goID);
-        if (groupObject != null) {
-            GridController gridController = controllers.get(groupObject);
-            List<ClientPropertyFilter> props = new ArrayList<>();
-            for (FilterClientAction.FilterItem filter : filters) {
-                ClientPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
-                if (propertyDraw != null) {
-                    Compare compare = null;
-                    Object value = null;
-                    try {
-                        compare = Compare.deserialize(filter.compare);
-
-                        value = BaseUtils.deserializeObject(filter.value);
-                        if (value instanceof String) {
-                            try {
-                                value = propertyDraw.baseType.parseString((String) value);
-                            } catch (ParseException ignored) {
-                            }
-                        }
-                    } catch (IOException ignored) {}
-                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), ClientGroupObjectValue.EMPTY, value, filter.negation, compare, filter.junction));
-                }
-            }
-            
-            gridController.changeFilters(props);
-        }
-    }    
 
     // setRegularFilter is synchronous, that's why busy dialog filter can be set visible, which will lead to another itemStateChanged and setRegularFilter call (with nested sync exception)
     // so we just suppress that call

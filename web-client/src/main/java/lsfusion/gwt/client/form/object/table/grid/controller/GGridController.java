@@ -651,26 +651,9 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert this.groupObject.equals(groupObject);
-        if(isList()) {
-            return changeOrders(orders, alreadySet);
-        }
-        return false; // doesn't matter
-    }
-    public boolean changeOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert isList();
-        return table.changePropertyOrders(orders, alreadySet);
-    }
-
-    public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
-        boolean hasUserPreferences = isList() && table.hasUserPreferences();
-        if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
-        return null;
-    }
-
-    public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders() {
-        return formController.getDefaultOrders(groupObject);
+    public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        if (isList())
+            table.updateOrders(orders);
     }
 
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns() {
@@ -732,11 +715,7 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
-        return formController.changeFilter(groupObject, conditions);
-    }
-
-    public void changeFilters(List<GPropertyFilter> filters) {
-        filter.changeFilters(filters);
+        return formController.changeFilters(groupObject, conditions);
     }
 
     private void changeMode(Runnable updateView, GListViewType viewType, boolean setManualUpdateMode) {

@@ -91,7 +91,7 @@ public class GridController extends AbstractTableController {
                 public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                     RmiQueue.runAction(() -> {
                         try {
-                            GridController.this.formController.changeFilter(groupObject, conditions);
+                            GridController.this.formController.changeFilters(groupObject, conditions);
                             if (focusFirstComponent) {
                                 SwingUtilities.invokeLater(() -> focusFirstComponent());
                             }
@@ -319,11 +319,21 @@ public class GridController extends AbstractTableController {
             }
         }
 
+        // the user orders and filters the server reports, which it has applied already, are shown, nothing is sent
+        LinkedHashMap<Column, Boolean> orders = fc.userOrders.get(groupObject);
+        if (orders != null)
+            updateOrders(groupObject, orders);
+
         Boolean updateState = null;
         if(isList())
             updateState = fc.updateStateObjects.get(groupObject);
 
         update(updateState);
+
+        // after the update, which gives the filter panel its fixed conditions the first time
+        List<ClientPropertyFilter> filters = fc.userFilters.get(groupObject);
+        if (filters != null)
+            filter.updateFilters(groupObject, filters);
     }
 
     public void addDrawProperty(ClientPropertyDraw property) {
@@ -511,27 +521,9 @@ public class GridController extends AbstractTableController {
     }
 
     @Override
-    public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert this.groupObject.equals(groupObject);
-        if(isList()) {
-            return changeOrders(orders, alreadySet);
-        }
-        return false; // doesn't matter
-    }
-
-    public boolean changeOrders(LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
-        assert isList();
-        return table.changePropertyOrders(orders, alreadySet);
-    }
-
-    public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders() {
-        boolean hasUserPreferences = isList() && table.hasUserPreferences();
-        if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
-        return null;
-    }
-
-    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders() {
-        return formController.getDefaultOrders(groupObject);
+    public void updateOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        if (isList())
+            table.updateOrders(orders);
     }
     
     public GroupObjectUserPreferences getUserGridPreferences() {
@@ -559,10 +551,6 @@ public class GridController extends AbstractTableController {
             return table.containsProperty(property);
         else
             return panel.containsProperty(property);
-    }
-    
-    public void changeFilters(List<ClientPropertyFilter> filters) {
-        filter.changeFilters(filters);
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {

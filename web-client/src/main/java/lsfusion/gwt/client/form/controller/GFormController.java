@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GActionDispatcherLookAhead;
-import lsfusion.gwt.client.action.GFilterAction;
 import lsfusion.gwt.client.action.GMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -49,7 +48,6 @@ import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.*;
-import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
@@ -72,7 +70,6 @@ import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -86,6 +83,7 @@ import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.*;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
+import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -138,7 +136,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return currentGridObjects;
     }
 
-    private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> currentFilters = new NativeSIDMap<>();
+    // the user orders of each group as the form has them - as a client set them last, or as the server reported them -:
+    // the group's controller gets other orders only, and a pivot starts sorted by them; true - ascending
+    private final NativeSIDMap<GGroupObject, LinkedHashMap<Column, Boolean>> currentOrders = new NativeSIDMap<>();
+    // the user filters of each group as the server has them, as far as the client knows: as it sent them last, or as
+    // the server reported them
+    private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilterDTO>> currentFilters = new NativeSIDMap<>();
 
     private final LinkedHashMap<GGroupObject, GGridController> gridControllers = new LinkedHashMap<>();
     private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
@@ -159,6 +162,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     private final ArrayList<ModifyObject> pendingModifyObjectRequests = new ArrayList<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, Long> pendingChangeOrdersRequests = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, Long> pendingChangeFiltersRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GFilterConditionView, Long> pendingLoadingFilterRequests = new NativeSIDMap<>();
@@ -219,15 +224,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         initializeRegularFilters();
 
-        initializeDefaultOrders();
-
         if (form.initialFormChanges != null) {
             applyRemoteChanges(form.initialFormChanges);
             form.initialFormChanges = null;
         } else
             getRemoteChanges();
-
-        initializeUserOrders();
 
         initializeFormSchedulers();
     }
@@ -876,41 +877,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return null;
     }
 
-    private Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> groupDefaultOrders() {
-        Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> orders = new HashMap<>();
-        for(Map.Entry<GPropertyDraw, Boolean> defaultOrder : form.defaultOrders.entrySet()) {
-            GGroupObject groupObject = defaultOrder.getKey().groupObject;
-            LinkedHashMap<GPropertyDraw, Boolean> order = orders.computeIfAbsent(groupObject, k -> new LinkedHashMap<>());
-            order.put(defaultOrder.getKey(), defaultOrder.getValue());
-        }
-        return orders;
-    }
-
-    public void initializeDefaultOrders() {
-        Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> defaultOrders = groupDefaultOrders();
-        for(Map.Entry<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> entry : defaultOrders.entrySet()) {
-            GGroupObject groupObject = entry.getKey();
-            GAbstractTableController controller = getTableController(groupObject);
-            if (controller != null) // null for react-owned groups (no base controller)
-                controller.changeOrders(groupObject, entry.getValue(), true);
-        }
-    }
-
-    public void initializeUserOrders() {
-        boolean changed = false;
-        for (GGridController controller : gridControllers.values()) {
-            LinkedHashMap<GPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
-            if (objectUserOrders != null)
-                changed = controller.changeOrders(objectUserOrders, false)  || changed;
-        }
-        if (changed)
-            getRemoteChanges();
-    }
-
-    public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject groupObject) {
-        return form.getDefaultOrders(groupObject);
-    }
-
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns(GGroupObject groupObject) {
         return form.getPivotColumns(groupObject);
     }
@@ -1065,6 +1031,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         modifyFormChangesWithChangeCurrentObjectAsyncs(requestIndex, fc);
 
+        modifyFormChangesWithChangeOrdersAsyncs(requestIndex, fc);
+
+        modifyFormChangesWithChangeFiltersAsyncs(requestIndex, fc);
+
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, fc);
 
         modifyFormChangesWithLoadingPropertyAsyncs(requestIndex, fc);
@@ -1075,7 +1045,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         applyPropertyChanges(fc);
 
+        applyOrderChanges(fc);
+
         update(fc, requestIndex);
+
+        // after the update, which gives a filter panel its fixed conditions the first time
+        applyFilterChanges(fc);
 
         expandCollapseContainers(fc);
 
@@ -1096,6 +1071,33 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         });
 
         fc.objects.foreachEntry((key, value) -> getGroupController(key).updateCurrentKey(value));
+    }
+
+    private void applyOrderChanges(GFormChanges fc) {
+        fc.userOrders.foreachEntry((group, orders) -> showOrders(group, orders));
+    }
+
+    // the orders the form has for a group, given to the group's controller only when they are other orders
+    private void showOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        if (!equalOrders(orders, currentOrders.get(group))) {
+            currentOrders.put(group, orders);
+            getGroupController(group).updateOrders(group, orders);
+        }
+    }
+
+    // the same orders in another priority are other orders
+    private static boolean equalOrders(LinkedHashMap<Column, Boolean> orders, LinkedHashMap<Column, Boolean> current) {
+        return current != null && new ArrayList<>(orders.entrySet()).equals(new ArrayList<>(current.entrySet()));
+    }
+
+    // filters equal to the ones the client has are shown already: a condition the user is editing stays as it is
+    private void applyFilterChanges(GFormChanges fc) {
+        fc.userFilters.foreachEntry((group, filters) -> {
+            if (!filters.equals(currentFilters.get(group))) {
+                currentFilters.put(group, filters);
+                getGroupController(group).updateFilters(group, filters);
+            }
+        });
     }
 
     private void applyPropertyChanges(GFormChanges fc) {
@@ -1210,6 +1212,24 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 pendingChangeCurrentObjectsRequests.remove(group);
             else
                 fc.objects.remove(group);
+        });
+    }
+
+    private void modifyFormChangesWithChangeOrdersAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingChangeOrdersRequests.foreachEntry((group, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex)
+                pendingChangeOrdersRequests.remove(group);
+            else
+                fc.userOrders.remove(group);
+        });
+    }
+
+    private void modifyFormChangesWithChangeFiltersAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingChangeFiltersRequests.foreachEntry((group, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex)
+                pendingChangeFiltersRequests.remove(group);
+            else
+                fc.userFilters.remove(group);
         });
     }
 
@@ -1981,57 +2001,27 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }, onExec);
     }
 
-    public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
-        syncResponseDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType));
-    }
+    // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
+    // for them, as the form keeps them: they are shown through the hook the reports use, unlike the filters, which the
+    // filter panel shows itself
+    public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        showOrders(group, orders);
 
-    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Boolean> orders) {
-        GGroupObject groupObject = form.getGroupObject(goID);
-        if (groupObject != null) {
-            LinkedHashMap<GPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
-            for (Integer propertyID : orders.keySet()) {
-                GPropertyDraw propertyDraw = form.getProperty(propertyID);
-                if (propertyDraw != null) {
-                    Boolean value = orders.get(propertyID);
-                    pOrders.put(propertyDraw, value);
-                }
-            }
-
-            GGridController controller = gridControllers.get(groupObject);
-            if (controller != null) // null for react-owned groups
-                controller.changeOrders(pOrders, false);
+        List<Integer> propertyList = new ArrayList<>();
+        List<GGroupObjectValue> columnKeyList = new ArrayList<>();
+        List<Boolean> orderList = new ArrayList<>();
+        for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
+            propertyList.add(order.getKey().property.ID);
+            columnKeyList.add(order.getKey().columnKey);
+            orderList.add(order.getValue());
         }
+        long requestIndex = asyncResponseDispatch(new SetPropertyOrders(group.ID, propertyList, columnKeyList, orderList));
+        pendingChangeOrdersRequests.put(group, requestIndex);
     }
 
-    public void changePropertyFilters(int goID, List<GFilterAction.FilterItem> filters) {
-        GGroupObject groupObject = form.getGroupObject(goID);
-        if (groupObject != null) {
-            GGridController gGridController = gridControllers.get(groupObject);
-            if (gGridController == null) // react-owned groups have no base controller (no grid filter UI)
-                return;
-            List<GPropertyFilter> uFilters = new ArrayList<>();
-            for (GFilterAction.FilterItem filter : filters) {
-                GPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
-                if (propertyDraw != null) {
-                    PValue value = null;
-                    if (filter.value instanceof String) {
-                        try {
-                            value = propertyDraw.getFilterBaseType().parseString((String) filter.value, propertyDraw.getPattern());
-                        } catch (ParseException ignored) {
-                        }
-                    } else {
-                        value = PValue.convertFileValue(filter.value);
-                    }
-                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), GGroupObjectValue.EMPTY, value, filter.negation, GCompare.get(filter.compare), filter.junction));
-                }
-            }
-
-            gGridController.changeFilters(uFilters);
-        }
-    }
-
-    public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
-        syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
+    public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
+        LinkedHashMap<Column, Boolean> orders = currentOrders.get(group);
+        return orders != null ? orders : new LinkedHashMap<>();
     }
 
     public long expandGroupObjectRecursive(GGroupObject group, boolean current, boolean open) {
@@ -2093,12 +2083,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
     }
 
-    public long changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
-        currentFilters.put(groupObject, conditions);
+    public long changeFilters(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
+        currentFilters.put(groupObject, getFilterDTOs(conditions));
         return applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
-    public long changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
+    public long changeFilters(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
         Map<GGroupObject, ArrayList<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
             public GGroupObject group(GPropertyFilter key) {
                 return key.groupObject;
@@ -2110,25 +2100,33 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             if (groupFilters == null) {
                 groupFilters = new ArrayList<>();
             }
-            currentFilters.put(group, groupFilters);
+            currentFilters.put(group, getFilterDTOs(groupFilters));
         }
 
         return applyCurrentFilters(treeGroup.groups);
     }
 
+    // the filters as a client sends them: an action is no filter
+    private static ArrayList<GPropertyFilterDTO> getFilterDTOs(List<GPropertyFilter> filters) {
+        ArrayList<GPropertyFilterDTO> filterDTOs = new ArrayList<>();
+        for (GPropertyFilter filter : filters) {
+            if (!filter.property.isAction()) {
+                filterDTOs.add(filter.getFilterDTO());
+            }
+        }
+        return filterDTOs;
+    }
+
     private long applyCurrentFilters(List<GGroupObject> groups) {
         Map<Integer, List<GPropertyFilterDTO>> filters = new LinkedHashMap<>();
         for (GGroupObject group : groups) {
-            List<GPropertyFilterDTO> groupFilters = new ArrayList<>();
-            List<GPropertyFilter> gFilters = currentFilters.get(group);
-            for (GPropertyFilter filter : gFilters) {
-                if (!filter.property.isAction()) {
-                    groupFilters.add(filter.getFilterDTO());
-                }
-            }
-            filters.put(group.ID, groupFilters);
+            filters.put(group.ID, currentFilters.get(group));
         }
-        return asyncResponseDispatch(new SetUserFilters(filters));
+        long requestIndex = asyncResponseDispatch(new SetUserFilters(filters));
+        for (GGroupObject group : groups) {
+            pendingChangeFiltersRequests.put(group, requestIndex);
+        }
+        return requestIndex;
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {

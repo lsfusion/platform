@@ -13,13 +13,13 @@ import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.view.FilterConditionView;
 import lsfusion.client.form.filter.user.view.FilterControlsView;
 import lsfusion.client.form.filter.user.view.FiltersHandler;
+import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import java.awt.*;
@@ -151,11 +151,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         return logicsSupplier.getFiltersContainer();
     }
 
-    public static ClientPropertyFilter createNewCondition(TableController logicsSupplier, ClientFilter filter, ClientGroupObjectValue columnKey) {
-        return createNewCondition(logicsSupplier, filter, columnKey, null, null, null, null);   
-    }
-
-    public static ClientPropertyFilter createNewCondition(TableController logicsSupplier, ClientFilter filter, ClientGroupObjectValue columnKey, Object value, Boolean negation, Compare compare, Boolean junction) {
+    private static ClientPropertyFilter createNewCondition(TableController logicsSupplier, ClientFilter filter, ClientGroupObjectValue columnKey) {
         Pair<ClientPropertyDraw, ClientGroupObjectValue> column = logicsSupplier.getFilterColumn(filter != null ? filter.property: null, columnKey);
 
         if (column.first == null) {
@@ -168,7 +164,8 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             filter.property = column.first;
         }
 
-        return new ClientPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, value, negation, compare, junction);
+        // a condition is of the group of its property, as the server takes it, a tree's selected group or not
+        return new ClientPropertyFilter(filter, column.first.groupObject, column.second, null);
     }
 
     public boolean addCondition() {
@@ -261,19 +258,32 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         return null;
     }
     
-    public void changeFilters(List<ClientPropertyFilter> filters) {
+    // the filters the server reports for a group, which it has applied already, take the place of the group's
+    // conditions; nothing is sent. A fixed condition allows NULL only where the server has it with no value
+    public void updateFilters(ClientGroupObject group, List<ClientPropertyFilter> filters) {
         if (hasFiltersContainer()) {
-            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
-            removeAllConditionsWithoutApply(filters.isEmpty());
+            Set<ClientPropertyFilter> fixedFilters = new LinkedHashSet<>();
+            for (ClientPropertyFilter condition : new ArrayList<>(conditionViews.keySet())) {
+                if (condition.groupObject.equals(group)) {
+                    if (condition.isFixed()) {
+                        FilterConditionView conditionView = conditionViews.get(condition);
+                        conditionView.clearValueView();
+                        conditionView.setAllowNull(false);
+                        fixedFilters.add(condition);
+                    } else {
+                        removeConditionView(condition);
+                    }
+                }
+            }
 
-            Set<ClientPropertyFilter> fixedFilters = new LinkedHashSet<>(conditionViews.keySet());
-            
             for (ClientPropertyFilter filter : filters) {
                 boolean filterExists = false;
                 for (ClientPropertyFilter fixedFilter : fixedFilters) {
                     if (filter.columnEquals(fixedFilter)) {
                         fixedFilter.override(filter);
-                        conditionViews.get(fixedFilter).applyCondition(filter);
+                        FilterConditionView conditionView = conditionViews.get(fixedFilter);
+                        conditionView.applyCondition(filter);
+                        conditionView.setAllowNull(filter.nullValue());
                         filterExists = true;
                         fixedFilters.remove(fixedFilter);
                         break;
@@ -285,9 +295,18 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 }
             }
 
-            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
-            // in this case we don't want focus to appear on some unexpected grid
-            applyFilters(false);
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            if (filters.isEmpty()) {
+                hideControlsIfEmpty();
+            }
+            updateConditionsLastState();
+
+            // the Apply button is left as it is: the conditions of the tree's other groups may wait for it
+            for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
+                if (entry.getKey().groupObject.equals(group)) {
+                    entry.getValue().setApplied(isApplied(entry.getKey(), entry.getValue()));
+                }
+            }
         }
     }
 
@@ -321,10 +340,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
 
     public void removeAllConditionsWithoutApply() {
-        removeAllConditionsWithoutApply(true);
-    }
-
-    public void removeAllConditionsWithoutApply(boolean hideControls) {
         for (ClientPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
                 conditionViews.get(filter).clearValueView();
@@ -333,9 +348,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 conditionViews.remove(filter);
             }
         }
-        if (hideControls) {
-            hideControlsIfEmpty();
-        }
+        hideControlsIfEmpty();
     }
 
     public void updateConditionsLastState() {
@@ -346,11 +359,16 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         }
     }
 
+    // a condition with no value is applied only where it allows NULL
+    private static boolean isApplied(ClientPropertyFilter condition, FilterConditionView conditionView) {
+        return !condition.nullValue() || conditionView.allowNull;
+    }
+
     public void applyFilters(boolean focusFirstComponent) {
         ArrayList<ClientPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
             FilterConditionView conditionView = entry.getValue();
-            if (!entry.getKey().nullValue() || conditionView.allowNull) {
+            if (isApplied(entry.getKey(), conditionView)) {
                 result.add(entry.getKey());
                 conditionView.setApplied(true);
             } else {

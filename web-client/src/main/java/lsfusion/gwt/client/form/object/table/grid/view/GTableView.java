@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
@@ -34,8 +33,7 @@ public interface GTableView extends TableComponent {
     // columns
     void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values); // add or update
     void removeProperty(GPropertyDraw property);
-    boolean changePropertyOrders(LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet); // assert alreadySet is true if there is no ordering in view
-    void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> value);
+    void updateOrders(LinkedHashMap<Column, Boolean> orders); // the orders the form has, shown
 
     // EXTRA SETTERS
     // keys
@@ -105,7 +103,6 @@ public interface GTableView extends TableComponent {
 
     boolean hasUserPreferences();
     boolean containsProperty(GPropertyDraw property); // for user preferences
-    LinkedHashMap<GPropertyDraw, Boolean> getUserOrders(List<GPropertyDraw> propertyDrawList);
     GGroupObjectUserPreferences getCurrentUserGridPreferences();
     GGroupObjectUserPreferences getGeneralGridPreferences();
 

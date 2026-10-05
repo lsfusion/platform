@@ -115,6 +115,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             public void valueChanged(Column column) {
                 condition.property = column.property;
                 condition.columnKey = column.columnKey;
+                // the group of its property, as the server takes it
+                condition.groupObject = column.property.groupObject;
 
                 String columnCaption = columnsProvider.getColumns().get(column);
                 propertyLabel.setText(columnCaption);
@@ -343,6 +345,11 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         compareView.setNegation(negation);
     }
 
+    public void setAllowNull(boolean allowNull) {
+        this.allowNull = allowNull;
+        compareView.setAllowNull(allowNull);
+    }
+
     public void setValue(GDataFilterValue value) {
         valueView.setValue(value.value);
     }
@@ -372,7 +379,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             return false;
         }
 
-        valueView.cell.updateValue(null);
+        valueView.setValue(null); // the condition's value as well, not only what the cell shows
         setApplied(allowNull);
 
         return true;

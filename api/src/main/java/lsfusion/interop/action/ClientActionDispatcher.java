@@ -69,10 +69,6 @@ public interface ClientActionDispatcher {
 
     void execute(ResetWindowsLayoutClientAction action);
     
-    void execute(OrderClientAction action);
-    
-    void execute(FilterClientAction action);
-
     void execute(FilterGroupClientAction action);
 
     void execute(ClientWebAction action);

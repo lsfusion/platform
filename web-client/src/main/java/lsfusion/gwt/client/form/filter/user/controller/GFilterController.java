@@ -13,18 +13,17 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.event.*;
-import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.filter.user.view.GFilterControlsView;
 import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -131,11 +130,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return logicsSupplier.getFiltersContainer();
     }
 
-    public static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey) {
-        return createNewCondition(logicsSupplier, filter, columnKey, null, null, null, null);
-    }
-
-    public static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey, PValue value, Boolean negation, GCompare compare, Boolean junction) {
+    private static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey) {
         Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(logicsSupplier, filter != null ? filter.property: null, columnKey);
         
         if (column.first == null)
@@ -147,7 +142,8 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             filter.property = column.first;
         }
 
-        return new GPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, value, negation, compare, junction);
+        // a condition is of the group of its property, as the server takes it, a tree's selected group or not
+        return new GPropertyFilter(filter, column.first.groupObject, column.second, null, null);
     }
 
     private static Pair<GPropertyDraw, GGroupObjectValue> getActualColumn(GTableController logicsSupplier, GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -160,7 +156,9 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 actualColumnKey = logicsSupplier.getSelectedColumnKey();
             }
         }
-        return new Pair<>(actualProperty, actualColumnKey);
+        // no column - a grid with no columns yet - is the column of the current objects of the column groups, as the
+        // server takes it and reports it back
+        return new Pair<>(actualProperty, actualColumnKey != null ? actualColumnKey : GGroupObjectValue.EMPTY);
     }
 
     public void addCondition() {
@@ -257,19 +255,32 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return null;
     }
 
-    public void changeFilters(List<GPropertyFilter> filters) {
+    // the filters the server reports for a group, which it has applied already, take the place of the group's
+    // conditions; nothing is sent. A fixed condition allows NULL only where the server has it with no value
+    public void updateFilters(GGroupObject group, List<GPropertyFilter> filters) {
         if (hasFiltersContainer()) {
-            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
-            removeAllConditionsWithoutApply(filters.isEmpty());
-
-            Set<GPropertyFilter> fixedFilters = new LinkedHashSet<>(conditionViews.keySet());
+            Set<GPropertyFilter> fixedFilters = new LinkedHashSet<>();
+            for (GPropertyFilter condition : new ArrayList<>(conditionViews.keySet())) {
+                if (condition.groupObject.equals(group)) {
+                    if (condition.isFixed()) {
+                        GFilterConditionView conditionView = conditionViews.get(condition);
+                        conditionView.clearValueView();
+                        conditionView.setAllowNull(false);
+                        fixedFilters.add(condition);
+                    } else {
+                        removeConditionViewInner(condition);
+                    }
+                }
+            }
 
             for (GPropertyFilter filter : filters) {
                 boolean filterExists = false;
                 for (GPropertyFilter fixedFilter : fixedFilters) {
                     if (filter.columnEquals(fixedFilter)) {
                         fixedFilter.override(filter);
-                        conditionViews.get(fixedFilter).applyCondition(filter);
+                        GFilterConditionView conditionView = conditionViews.get(fixedFilter);
+                        conditionView.applyCondition(filter);
+                        conditionView.setAllowNull(filter.nullValue());
                         filterExists = true;
                         fixedFilters.remove(fixedFilter);
                         break;
@@ -281,9 +292,18 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 }
             }
 
-            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
-            // in this case we don't want focus to appear on some unexpected grid
-            applyFilters(false, null);
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            if (filters.isEmpty()) {
+                hideControlsIfEmpty();
+            }
+            updateConditionsLastState();
+
+            // the Apply button is left as it is: the conditions of the tree's other groups may wait for it
+            for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
+                if (entry.getKey().groupObject.equals(group)) {
+                    entry.getValue().setApplied(isApplied(entry.getKey(), entry.getValue()));
+                }
+            }
         }
     }
 
@@ -305,10 +325,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply() {
-        return removeAllConditionsWithoutApply(true);
-    }
-    
-    public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply(boolean hideControls) {
         ArrayList<GFilterConditionView> changed = new ArrayList<>();
         for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
@@ -319,9 +335,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 removeConditionViewInner(filter);
             }
         }
-        if (hideControls) {
-            hideControlsIfEmpty();
-        }
+        hideControlsIfEmpty();
         return changed;
     }
 
@@ -368,11 +382,16 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
 
+    // a condition with no value is applied only where it allows NULL
+    private static boolean isApplied(GPropertyFilter condition, GFilterConditionView conditionView) {
+        return !condition.nullValue() || conditionView.allowNull;
+    }
+
     public void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
             GFilterConditionView conditionView = entry.getValue();
-            if (!entry.getKey().nullValue() || conditionView.allowNull) {
+            if (isApplied(entry.getKey(), conditionView)) {
                 result.add(entry.getKey());
                 conditionView.setApplied(true);
             } else {

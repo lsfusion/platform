@@ -19,7 +19,6 @@ import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -373,12 +372,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public boolean changePropertyOrders(LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet) {
-        return false;
-    }
-
-    @Override
-    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> value) {
+    public void updateOrders(LinkedHashMap<Column, Boolean> orders) {
     }
 
     @Override
@@ -587,11 +581,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public boolean containsProperty(GPropertyDraw property) {
         return properties.indexOf(property) >= 0;
-    }
-
-    @Override
-    public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders(List<GPropertyDraw> propertyDrawList) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

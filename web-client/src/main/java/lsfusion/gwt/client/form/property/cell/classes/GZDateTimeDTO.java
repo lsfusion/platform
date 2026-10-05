@@ -31,4 +31,14 @@ public class GZDateTimeDTO implements Serializable {
         assert false;
         return toJsDate().toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof GZDateTimeDTO && instant == ((GZDateTimeDTO) o).instant;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(instant);
+    }
 }

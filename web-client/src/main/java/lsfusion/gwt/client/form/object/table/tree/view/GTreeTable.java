@@ -31,7 +31,6 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -91,22 +90,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
             @Override
-            protected void orderChanged(GPropertyDraw columnKey, GOrder modiType) {
-                form.changePropertyOrder(columnKey, GGroupObjectValue.EMPTY, modiType);
-            }
-
-            @Override
-            protected void ordersSet(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders) {
-                List<Integer> propertyList = new ArrayList<>();
-                List<GGroupObjectValue> columnKeyList = new ArrayList<>();
-                List<Boolean> orderList = new ArrayList<>();
-                for(Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet()) {
-                    propertyList.add(entry.getKey().ID);
-                    columnKeyList.add(GGroupObjectValue.EMPTY);
-                    orderList.add(entry.getValue());
-                }
-
-                form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
+            protected void ordersChanged(GPropertyDraw columnKey, LinkedHashMap<GPropertyDraw, Boolean> orders) {
+                // a tree's header keeps the orders of all its groups: only the clicked column's group's are sent
+                GGroupObject group = columnKey.groupObject;
+                LinkedHashMap<lsfusion.gwt.client.form.view.Column, Boolean> groupOrders = new LinkedHashMap<>();
+                for (Map.Entry<GPropertyDraw, Boolean> order : orders.entrySet())
+                    if (order.getKey().groupObject.equals(group))
+                        groupOrders.put(new lsfusion.gwt.client.form.view.Column(order.getKey(), GGroupObjectValue.EMPTY), order.getValue());
+                form.changeOrders(group, groupOrders);
             }
 
             @Override
@@ -1181,8 +1172,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         loadingMap.put(getRowKey(cell), PValue.getPValue(true));
     }
 
-    public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
-        return sortableHeaderManager.changeOrders(groupObject, orders, alreadySet);
+    // the orders the form has for a group take the place of the group's: one header keeps the orders of all the groups
+    // of the tree, its columns being the last group's
+    public void updateOrders(GGroupObject group, LinkedHashMap<GPropertyDraw, Boolean> orders) {
+        Map<GPropertyDraw, Boolean> orderDirections = sortableHeaderManager.getOrderDirections();
+        LinkedHashMap<GPropertyDraw, Boolean> treeOrders = new LinkedHashMap<>();
+        for (Map.Entry<GPropertyDraw, Boolean> entry : orderDirections.entrySet())
+            if (!group.equals(entry.getKey().groupObject))
+                treeOrders.put(entry.getKey(), entry.getValue());
+        treeOrders.putAll(orders);
+        if (sortableHeaderManager.updateOrders(treeOrders))
+            headersChanged();
     }
 
     public boolean keyboardNodeChangeState(boolean open) {

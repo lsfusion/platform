@@ -134,16 +134,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GOrderAction action) {
-        form.changePropertyOrder(action.goID, action.ordersMap);
-    }
-
-    @Override
-    public void execute(GFilterAction action) {
-        form.changePropertyFilters(action.goID, action.filters);
-    }
-
-    @Override
     public void execute(GFilterGroupAction action) {
         form.setRegularFilterIndex(action.filterGroup, action.index);
     }

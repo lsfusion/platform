@@ -31,6 +31,7 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -314,8 +315,12 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet) {
-        return tree.changeOrders(groupObject, value, alreadySet);
+    public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        // a tree has no columns of a property
+        LinkedHashMap<GPropertyDraw, Boolean> propertyOrders = new LinkedHashMap<>();
+        for (Map.Entry<Column, Boolean> entry : orders.entrySet())
+            propertyOrders.put(entry.getKey().property, entry.getValue());
+        tree.updateOrders(group, propertyOrders);
     }
 
     // used in filters and user preferences
@@ -387,7 +392,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
-        return formController.changeFilter(treeGroup, conditions);
+        return formController.changeFilters(treeGroup, conditions);
     }
 
     public void fireExpandNodeRecursive(boolean current) {

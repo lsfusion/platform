@@ -147,6 +147,8 @@ public abstract class AbstractTableController implements TableController {
                 actualColumnKey = getSelectedColumn();
             }
         }
-        return Pair.create(actualProperty, actualColumnKey);
+        // no column - a grid with no columns yet - is the column of the current objects of the column groups, as the
+        // server takes it and reports it back
+        return Pair.create(actualProperty, actualColumnKey != null ? actualColumnKey : ClientGroupObjectValue.EMPTY);
     }
 }

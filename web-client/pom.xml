@@ -63,6 +63,8 @@
                     <excludes> <!-- the suite's classes, and only them: any other test runs as it is -->
                         <exclude>lsfusion/gwt/client/form/design/view/GReactFormDataTest.java</exclude>
                         <exclude>lsfusion/gwt/client/form/object/table/tree/view/GTreeTableTreeTest.java</exclude>
+                        <exclude>lsfusion/gwt/client/form/order/user/GGridSortableHeaderManagerTest.java</exclude>
+                        <exclude>lsfusion/gwt/client/GFormChangesTest.java</exclude>
                     </excludes>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>

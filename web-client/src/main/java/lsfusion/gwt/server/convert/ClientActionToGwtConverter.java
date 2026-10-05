@@ -514,20 +514,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         servlet.getLogicsProvider().resetServerSettingsCache(servlet.getRequest());
     }
 
-    @Converter(from = OrderClientAction.class)
-    public GOrderAction convertAction(OrderClientAction action) {
-        return new GOrderAction(action.goID, action.ordersMap);
-    }
-
-    @Converter(from = FilterClientAction.class)
-    public GFilterAction convertAction(FilterClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
-        List<GFilterAction.FilterItem> filters = new ArrayList<>();
-        for (FilterClientAction.FilterItem filter : action.filters) {
-            filters.add(new GFilterAction.FilterItem(filter.propertyId, filter.compare, filter.negation, (Serializable) deserializeServerValue(filter.value, formSessionObject, servlet), filter.junction));
-        }
-        return new GFilterAction(action.goID, filters);
-    }
-
     @Converter(from = FilterGroupClientAction.class)
     public GFilterGroupAction convertAction(FilterGroupClientAction action) {
         return new GFilterGroupAction(action.filterGroup, action.index);

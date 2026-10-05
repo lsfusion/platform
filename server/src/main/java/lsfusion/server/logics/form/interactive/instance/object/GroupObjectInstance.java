@@ -14,7 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.object.table.grid.ListViewType;
-import lsfusion.interop.form.order.user.Order;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -70,6 +70,7 @@ import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance
 import lsfusion.server.logics.form.interactive.instance.filter.CompareFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -255,7 +256,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public ImSet<FilterInstance> getDynamicFilters(DynamicFilters dynamicFilters) {
         return SetFact.fromJavaSet(regularFilters).
-                merge(combineUserFilters(dynamicFilters.filterUserFilters(ListFact.fromJavaList(userFilters)))).
+                merge(combineUserFilters(dynamicFilters.filterUserFilters(userFilters.mapListValues(userFilter -> userFilter.filter)))).
                 merge(dynamicFilters.filterViewFilters(SetFact.fromJavaSet(viewFilters)));
     }
 
@@ -367,23 +368,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImSet<FilterInstance> fixedFilters = SetFact.EMPTY();
     public FilterInstance classFilter;
 
-    private final List<FilterInstance> userFilters = new ArrayList<>();
-    
-    public List<FilterInstance> getUserFilters() {
+    private ImList<UserFilterInstance> userFilters = ListFact.EMPTY();
+
+    public ImList<UserFilterInstance> getUserFilters() {
         return userFilters;
     }
-    
-    public void clearUserFilters() {
-        if(!userFilters.isEmpty()) {
-            userFilters.clear();
+
+    // the filters the group has change nothing
+    public void setUserFilters(ImList<UserFilterInstance> userFilters) {
+        if(!BaseUtils.hashEquals(this.userFilters, userFilters)) {
+            this.userFilters = userFilters;
 
             dynamicFiltersUpdated();
+            updated |= UPDATED_USERFILTER;
         }
-    }
-    public void addUserFilter(FilterInstance addFilter) {
-        userFilters.add(addFilter);
-
-        dynamicFiltersUpdated();
     }
 
     private final Set<FilterInstance> regularFilters = new HashSet<>();
@@ -419,54 +417,37 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return setOrders;
     }
     private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
-    // is necessary to identify property draw in ReadOrderAction 
-    private ImMap<OrderInstance, PropertyDrawInstance> userOrdersPropertyMapping = MapFact.EMPTY();
+    // the column each user order is by, as it was set
+    private ImMap<OrderInstance, GroupColumn> userOrderColumns = MapFact.EMPTY();
 
-    public ImOrderMap<OrderInstance,Boolean> getUserOrders() {
-        return userOrders;
-    }
-    
-    public ImMap<OrderInstance, PropertyDrawInstance> getUserOrdersPropertyMapping() {
-        return userOrdersPropertyMapping;
+    // the user orders by their columns, in priority order; true - descending
+    public ImOrderMap<GroupColumn, Boolean> getUserOrders() {
+        return userOrders.mapOrderKeys(userOrderColumns::get);
     }
 
-    public void changeOrder(OrderInstance property, PropertyDrawInstance propertyDraw, Order modiType) {
-        ImOrderMap<OrderInstance, Boolean> newOrders;
-        if (modiType == Order.REPLACE) {
-            newOrders = MapFact.singletonOrder(property, userOrders.containsKey(property) && !userOrders.get(property));
-            userOrdersPropertyMapping = MapFact.EMPTY();
-        } else if (modiType == Order.REMOVE) {
-            newOrders = userOrders.removeOrderIncl(property);
-        } else if (modiType == Order.DIR) {
-            if(userOrders.containsKey(property))
-                newOrders = userOrders.replaceValue(property, !userOrders.get(property));
-            else
-                newOrders = userOrders.addOrderExcl(property, true);
-        } else {
-            assert modiType == Order.ADD;
-            newOrders = userOrders.addOrderExcl(property, false);
-        }
+    // all the user orders at once; true - descending. The orders the group has change nothing; of two columns of one
+    // order - two draws of one property - the first one is kept, and the same orders by other columns change only the
+    // columns reported, not the rows
+    public void setUserOrders(ImOrderMap<GroupColumn, Boolean> orders) {
+        if(BaseUtils.hashEquals(getUserOrders(), orders))
+            return;
 
-        if (modiType == Order.REMOVE) {
-            userOrdersPropertyMapping = userOrdersPropertyMapping.remove(property);
-        } else {
-            userOrdersPropertyMapping = userOrdersPropertyMapping.addIfNotContains(property, propertyDraw);
+        OrderedMap<OrderInstance, Boolean> mOrders = new OrderedMap<>();
+        Map<OrderInstance, GroupColumn> columns = new HashMap<>();
+        for (int i = 0, size = orders.size(); i < size; i++) {
+            GroupColumn column = orders.getKey(i);
+            OrderInstance order = column.property.getOrderProperty().getRemappedPropertyObject(column.columnKeys, false);
+            if (columns.putIfAbsent(order, column) == null)
+                mOrders.put(order, orders.getValue(i));
         }
-
-        if(!BaseUtils.hashEquals(newOrders, userOrders)) {// оптимизация для пользовательских настроек
+        ImOrderMap<OrderInstance, Boolean> newOrders = MapFact.fromJavaOrderMap(mOrders);
+        if(!BaseUtils.hashEquals(newOrders, userOrders)) {
             userOrders = newOrders;
             setOrders = null;
             updated |= UPDATED_ORDER;
         }
-    }
-
-    public void clearOrders() {
-        if(!userOrders.isEmpty()) { // оптимизация для пользовательских настроек
-            userOrders = MapFact.EMPTYORDER();
-            userOrdersPropertyMapping = MapFact.EMPTY();
-            setOrders = null;
-            updated |= UPDATED_ORDER;
-        }
+        userOrderColumns = MapFact.fromJavaMap(columns);
+        updated |= UPDATED_USERORDER;
     }
 
     // с активным интерфейсом, assertion что содержит все ObjectInstance
@@ -494,6 +475,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public final static int UPDATED_SELECTPROP = (1 << 12);
 
     public final static int UPDATED_VIEWTYPEVALUE = (1 << 13);
+
+    // the user orders / filters were set, so the form reports them to the client (FormChanges). Unlike UPDATED_ORDER /
+    // UPDATED_FILTER they are not there from the start: a group nothing has set them for has nothing to report
+    public final static int UPDATED_USERORDER = (1 << 15);
+    public final static int UPDATED_USERFILTER = (1 << 16);
 
     public int updated = UPDATED_ORDER | UPDATED_FILTER;
 

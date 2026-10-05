@@ -100,6 +100,11 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         negationCB.setValue(negation);
     }
 
+    public void setAllowNull(boolean allowNull) {
+        this.allowNull = allowNull;
+        allowNullCB.setValue(allowNull);
+    }
+
     public abstract void negationChanged(boolean value);
     public abstract void allowNullChanged(boolean value);
 }

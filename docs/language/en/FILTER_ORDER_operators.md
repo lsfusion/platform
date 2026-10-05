@@ -23,8 +23,10 @@ FILTERS PROPERTY formPropertyId  [TO propId]
 
 The operators work with the [interactive view](../paradigm/Interactive_view.md) of an open form and fall into two groups:
 
-- the singular operators (`ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY`) **apply** the value from the `FROM` block to the form element — as if the user had set that order or filter themselves;
+- the singular operators (`ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY`) **apply** the value from the `FROM` block to the form element — the same orders and filters the user can set on it;
 - the plural operators (`ORDERS`, `FILTERS`, `FILTERGROUPS`, `FILTERS PROPERTY`) **read** the current value of the form element into the property from the `TO` block.
+
+`ORDER`, `FILTER` and `FILTER PROPERTY` apply the value at once: a plural operator later in the same action reads the new value, and the form shows it together with its other changes. They do not trigger the [form events](../paradigm/Form_events.md) `ORDERS`, `FILTERS` and `FILTERS PROPERTY`, which occur when the user changes the orders or filters; the `ORDER` and `FILTER` events of a group object occur on any change of them, this one included.
 
 The form element is given by its name: `groupObjectId` — a group object (its orders or filters), `filterGroupId` — a filter group, `formPropertyId` — a form property (its filter).
 
@@ -34,6 +36,8 @@ The value is in a serialized form that depends on the element:
 - for a group object's filters (`FILTER` / `FILTERS`) — `JSON`: a list of filter conditions (the property name, comparison, negation, value, and `OR` junction);
 - for a filter group (`FILTERGROUP` / `FILTERGROUPS`) — `INTEGER`: the number of the active filter in the group;
 - for a property's filter (`FILTER PROPERTY` / `FILTERS PROPERTY`) — `STRING`: the property's filter value.
+
+`ORDER` and `FILTER` skip an item that names a property of another group object or a property with the `COLUMNS` option, since an item names no column. A filter condition with no comparison gets the default comparison of the property.
 
 If the `FROM` or `TO` block is omitted, the corresponding property of the [`UserEvents`](../paradigm/System_UserEvents.md) system module is used by default (`orders`, `filters`, `filterGroups`, `filtersProperty`), through which these operators are usually invoked.
 
@@ -75,7 +79,7 @@ savedFilters = DATA JSON ();
 currentOrders = DATA JSON ();
 
 // save the current filters of group object o and re-apply them later;
-// savedFilters gets JSON like [{"property": "number", "compare": ">", "value": 1000, "negation": false, "or": false}]
+// savedFilters gets JSON like [{"property": "number", "compare": ">", "negation": false, "value": "1000"}]
 saveFilters ()  { FILTERS orders.o TO savedFilters; }
 restoreFilters ()  { FILTER orders.o FROM savedFilters; }
 

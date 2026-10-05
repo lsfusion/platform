@@ -50,19 +50,7 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
                     converter.serializeGroupObjectValue(outStream, filter.columnKey);
                 outStream.writeBoolean(filter.negation);
                 outStream.writeByte(filter.compareByte);
-                outStream.writeByte(filter.filterValue.typeID);
-
-                switch (filter.filterValue.typeID) {
-                    case 0:
-                        Object convertedValue = converter.convertOrCast(filter.filterValue.content);
-                        BaseUtils.serializeObject(outStream, convertedValue);
-                        break;
-                    case 1:
-                    case 2:
-                        outStream.writeInt((Integer) filter.filterValue.content);
-                        break;
-                }
-
+                BaseUtils.serializeObject(outStream, converter.convertOrCast(filter.filterValue.content));
                 outStream.writeBoolean(filter.junction);
                 filters.add(byteStream.toByteArray());
             }

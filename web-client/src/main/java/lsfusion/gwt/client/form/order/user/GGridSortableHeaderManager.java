@@ -1,12 +1,10 @@
 package lsfusion.gwt.client.form.order.user;
 
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,51 +44,43 @@ public abstract class GGridSortableHeaderManager<T> {
         return orderDirections.get(getColumnKey(column));
     }
 
+    // a click asks for the orders shown changed by it, which are shown when the form has them (updateOrders)
     public final void changeOrder(T columnKey, GOrder modiType) {
-        if(changeOrderDirection(columnKey, modiType))
-            orderChanged(columnKey, modiType);
+        LinkedHashMap<T, Boolean> orders = new LinkedHashMap<>(orderDirections);
+        if (changeOrderDirection(orders, columnKey, modiType))
+            ordersChanged(columnKey, orders);
     }
 
-    private boolean changeOrderDirection(T columnKey, GOrder modiType) {
+    private boolean changeOrderDirection(LinkedHashMap<T, Boolean> orders, T columnKey, GOrder modiType) {
         if (columnKey == null || noSort(columnKey)) { // columnKey can be null for grid expand column
             return false;
         }
 
         switch (modiType) {
             case REPLACE:
-                boolean direction = orderDirections.getOrDefault(columnKey, false);
-                orderDirections.clear();
-                orderDirections.put(columnKey, !direction);
+                boolean direction = orders.getOrDefault(columnKey, false);
+                orders.clear();
+                orders.put(columnKey, !direction);
                 break;
             case ADD:
-                orderDirections.put(columnKey, true);
+                orders.put(columnKey, true);
                 break;
             case DIR:
-                orderDirections.put(columnKey, !orderDirections.get(columnKey));
+                orders.put(columnKey, !orders.get(columnKey));
                 break;
             case REMOVE:
-                orderDirections.remove(columnKey);
+                orders.remove(columnKey);
                 break;
         }
         return true;
     }
 
-    public final boolean changeOrders(GGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
-        if(!GwtSharedUtils.hashEquals(orderDirections, set)) {
+    // the orders the form has, in their priority order - on a column the user may not sort by (noSort) as well: shown,
+    // nothing is sent; true - ascending. The same columns in another order are other orders
+    public final boolean updateOrders(LinkedHashMap<T, Boolean> orders) {
+        if(!new ArrayList<>(orderDirections.entrySet()).equals(new ArrayList<>(orders.entrySet()))) {
             orderDirections.clear();
-            for (Iterator<Map.Entry<T, Boolean>> iterator = set.entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<T, Boolean> entry = iterator.next();
-                if (!changeOrderDirection(entry.getKey(), GOrder.ADD))
-                    iterator.remove();
-                else if (!entry.getValue()) {
-                        boolean changed = changeOrderDirection(entry.getKey(), GOrder.DIR);
-                        assert changed;
-                    }
-            }
-
-            if (!alreadySet)
-                ordersSet(groupObject, set);
-
+            orderDirections.putAll(orders);
             return true;
         }
         return false;
@@ -110,9 +100,9 @@ public abstract class GGridSortableHeaderManager<T> {
         return orderDirections;
     }
 
-    protected abstract void orderChanged(T columnKey, GOrder modiType);
-
-    protected abstract void ordersSet(GGroupObject groupObject, LinkedHashMap<T, Boolean> orders);
+    // the orders a click on a column asks for - of all the columns of the header, a tree's of several groups; true -
+    // ascending
+    protected abstract void ordersChanged(T columnKey, LinkedHashMap<T, Boolean> orders);
 
     protected abstract T getColumnKey(int column);
 }

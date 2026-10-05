@@ -5,6 +5,7 @@ import lsfusion.base.file.*;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -12,9 +13,12 @@ import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.client.form.view.Column;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.base.AppFileImage;
 import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.form.filter.user.GFilterValueDTO;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GCustomObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -46,6 +50,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -192,6 +197,54 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         i = 0;
         for (ClientContainer container : changes.expandContainers) {
             dto.expandContainerIds[i++] = container.ID;
+        }
+
+        dto.userOrdersGroupIds = new int[changes.userOrders.size()];
+        dto.userOrdersPropertyIds = new int[changes.userOrders.size()][];
+        dto.userOrdersColumnKeys = new GGroupObjectValue[changes.userOrders.size()][];
+        dto.userOrdersAscending = new boolean[changes.userOrders.size()][];
+        i = 0;
+        for (Map.Entry<ClientGroupObject, LinkedHashMap<Column, Boolean>> entry : changes.userOrders.entrySet()) {
+            LinkedHashMap<Column, Boolean> orders = entry.getValue();
+
+            int j = 0;
+            int[] propertyIds = new int[orders.size()];
+            GGroupObjectValue[] columnKeys = new GGroupObjectValue[orders.size()];
+            boolean[] ascending = new boolean[orders.size()];
+            for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
+                propertyIds[j] = order.getKey().property.ID;
+                columnKeys[j] = convertOrCast(order.getKey().columnKey);
+                ascending[j] = order.getValue();
+                j++;
+            }
+            dto.userOrdersGroupIds[i] = entry.getKey().ID;
+            dto.userOrdersPropertyIds[i] = propertyIds;
+            dto.userOrdersColumnKeys[i] = columnKeys;
+            dto.userOrdersAscending[i] = ascending;
+            i++;
+        }
+
+        dto.userFiltersGroupIds = new int[changes.userFilters.size()];
+        dto.userFilters = new GPropertyFilterDTO[changes.userFilters.size()][];
+        i = 0;
+        for (Map.Entry<ClientGroupObject, List<ClientPropertyFilter>> entry : changes.userFilters.entrySet()) {
+            List<ClientPropertyFilter> filters = entry.getValue();
+
+            int j = 0;
+            GPropertyFilterDTO[] filterDTOs = new GPropertyFilterDTO[filters.size()];
+            for (ClientPropertyFilter filter : filters) {
+                GPropertyFilterDTO filterDTO = new GPropertyFilterDTO();
+                filterDTO.propertyID = filter.property.ID;
+                filterDTO.filterValue = new GFilterValueDTO(convertFileValue(filter.value.value, sessionObject, servlet));
+                filterDTO.columnKey = convertOrCast(filter.columnKey);
+                filterDTO.negation = filter.negation;
+                filterDTO.compareByte = filter.compare.serialize();
+                filterDTO.junction = filter.junction;
+                filterDTOs[j++] = filterDTO;
+            }
+            dto.userFiltersGroupIds[i] = entry.getKey().ID;
+            dto.userFilters[i] = filterDTOs;
+            i++;
         }
 
         dto.needConfirm = changes.needConfirm;

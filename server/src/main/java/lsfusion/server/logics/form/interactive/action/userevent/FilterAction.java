@@ -1,26 +1,28 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.action.FilterClientAction;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.nvl;
 
 public class FilterAction extends UserEventAction {
     public static final String COMPARE_KEY = "compare";
@@ -39,45 +41,33 @@ public class FilterAction extends UserEventAction {
 
         GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         if(groupObjectInstance != null) {
-
-            List<FilterClientAction.FilterItem> filters = new ArrayList<>();
+            MList<UserFilterInstance> mFilters = ListFact.mList();
             if (objectList != null) {
                 for (JSONObject jsonObject : objectList) {
-                    FilterClientAction.FilterItem filterItem;
-                    String propertyString = jsonObject.optString(PROPERTY_KEY);
-                    if (!isRedundantString(propertyString)) {
-                        PropertyDrawInstance<?> propertyDraw = formInstance.getPropertyDraw(propertyString);
-                        if (propertyDraw != null) {
-                            // make sure group object is the same
-                            GroupObjectInstance propertyGO = propertyDraw.toDraw;
-                            if (propertyGO == groupObjectInstance) {
-                                filterItem = new FilterClientAction.FilterItem(propertyDraw.getID());
-
-                                String compareString = jsonObject.optString(COMPARE_KEY);
-                                if (!isRedundantString(compareString)) {
-                                    Compare compare = Compare.get(compareString);
-                                    if (compare != null) {
-                                        filterItem.compare = compare.serialize();
-                                    }
-                                }
-                                filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
-                                // value may be String (when stored via ReadFiltersAction), may be any other Object
-                                try {
-                                    Object value = propertyDraw.entity.getStaticType().parseJSON(jsonObject.opt(VALUE_KEY));
-                                    filterItem.value = FormChanges.serializeConvertFileValue(value, context);
-                                } catch (IOException | ParseException e) {
-                                    throw Throwables.propagate(e);
-                                }
-                                filterItem.junction = !jsonObject.optBoolean(OR_KEY);
-
-                                filters.add(filterItem);
-                            }
+                    PropertyDrawInstance<?> propertyDraw = getPropertyDraw(formInstance, groupObjectInstance, jsonObject);
+                    if (propertyDraw != null) {
+                        // no comparison is the one the filter panel starts a condition on the property with
+                        Compare compare = nvl(Compare.get(jsonObject.optString(COMPARE_KEY)),
+                                nvl(propertyDraw.entity.view.getDefaultCompare(formInstance.context), Compare.EQUALS));
+                        if (compare == Compare.INARRAY) // a condition of a filter compares with a value
+                            throw new RuntimeException("FILTER: " + compare + " is no comparison of a filter condition");
+                        // value may be String (when stored via ReadFiltersAction), parsed then as a string - a number
+                        // does not parse from a JSON string -, may be any other Object
+                        Object jsonValue = jsonObject.opt(VALUE_KEY);
+                        Type type = propertyDraw.entity.getStaticType();
+                        Object value;
+                        try {
+                            value = jsonValue instanceof String ? type.parseString((String) jsonValue) : type.parseJSON(jsonValue);
+                        } catch (ParseException e) {
+                            throw Throwables.propagate(e);
                         }
+                        mFilters.add(new UserFilterInstance(new GroupColumn(propertyDraw, MapFact.EMPTY()), jsonObject.optBoolean(NEGATION_KEY), compare,
+                                formInstance.session.getObjectValue(propertyDraw.getFilterProperty().getFilterValueClass(compare), value),
+                                !jsonObject.optBoolean(OR_KEY)));
                     }
                 }
             }
-            FilterClientAction filterClientAction = new FilterClientAction(groupObjectInstance.entity.getID(), filters);
-            context.delayUserInteraction(filterClientAction);
+            groupObjectInstance.setUserFilters(mFilters.immutableList());
         }
     }
 }

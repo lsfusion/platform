@@ -13,20 +13,15 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionOrPropertyObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
@@ -38,28 +33,14 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         this.property = property;
         this.resolveAdd = resolveAdd;
         this.toDraw = null;
-        this.propertyDraw = null;
     }
     
     public final GroupObjectInstance toDraw; // only for user filters
-    public final PropertyDrawInstance<P> propertyDraw;
 
-    public PropertyFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw) {
+    public PropertyFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw) {
         this.property = property;
         this.resolveAdd = resolveAdd;
         this.toDraw = toDraw;
-        this.propertyDraw = propertyDraw;
-    }
-
-    public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        super(inStream,form);
-        propertyDraw = form.getPropertyDraw(inStream.readInt());
-        PropertyObjectInstance<P> propertyObject = (PropertyObjectInstance<P>) propertyDraw.getFilterProperty();
-        if(inStream.readBoolean())
-            propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializeKeysValues(inStream, form), false);
-        property = propertyObject;
-        toDraw = propertyDraw.toDraw;
-        resolveAdd = false;
     }
 
     public GroupObjectInstance getApplyObject() {

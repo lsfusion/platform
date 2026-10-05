@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface GTableController {
@@ -28,6 +27,4 @@ public interface GTableController {
     GFilterControls getFilterControls();
 
     GFormController getForm();
-
-    boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet);
 }

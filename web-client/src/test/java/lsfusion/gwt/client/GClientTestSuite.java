@@ -4,6 +4,7 @@ import com.google.gwt.junit.tools.GWTTestSuite;
 import junit.framework.Test;
 import lsfusion.gwt.client.form.design.view.GReactFormDataTest;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTreeTest;
+import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManagerTest;
 
 // the client's GWT tests, run as one suite: GWT compiles a module once per JVM, with the test classes it knows of at
 // that moment, so test classes of one module run one by one would leave all but the first out of it. Surefire runs
@@ -14,6 +15,8 @@ public class GClientTestSuite {
         GWTTestSuite suite = new GWTTestSuite("the client's GWT tests");
         suite.addTestSuite(GReactFormDataTest.class);
         suite.addTestSuite(GTreeTableTreeTest.class);
+        suite.addTestSuite(GGridSortableHeaderManagerTest.class);
+        suite.addTestSuite(GFormChangesTest.class);
         return suite;
     }
 }

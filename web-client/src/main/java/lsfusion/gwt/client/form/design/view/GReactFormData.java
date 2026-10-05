@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import lsfusion.gwt.client.GForm;
@@ -16,6 +17,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
@@ -33,6 +35,7 @@ import lsfusion.gwt.client.form.property.GGroupObjectPropertyReader;
 import lsfusion.gwt.client.form.property.GGroupAttributeScope;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
+import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 
 // The projection of a form's react containers. Each container owns its state (ContainerState): its nodes and its
@@ -659,6 +662,11 @@ public class GReactFormData {
         }
         public void changeCurrentKey(GGroupObjectValue currentKey) {
             setCurrentObject(currentKey);
+        }
+        // the rows React draws carry no sortings or filters yet: there is nothing to show them in
+        public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        }
+        public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
         }
         public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
             ArrayList<GGroupObjectValue> rows = new ArrayList<>(this.rows);

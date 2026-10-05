@@ -352,6 +352,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) { }
         public void updateCurrentKey(GGroupObjectValue currentKey) { }
         public void changeCurrentKey(GGroupObjectValue currentKey) { }
+        public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { }
 
         public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) { }
         public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) { }
@@ -398,7 +399,6 @@ public class GReactFormDataTest extends GWTTestCase {
         public List<Pair<Column, String>> getFilterColumns() { return null; }
         public GContainer getFiltersContainer() { return null; }
         public GFilterControls getFilterControls() { return null; }
-        public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet) { return false; }
     }
     // ... and the platform's controller of the components, the layout: what reaches it is recorded in the same log
     private static final class RecordingLayoutController implements GComponentController {

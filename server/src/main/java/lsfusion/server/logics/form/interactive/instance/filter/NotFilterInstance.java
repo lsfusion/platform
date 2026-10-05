@@ -9,14 +9,11 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 
 public class NotFilterInstance extends FilterInstance {
@@ -25,11 +22,6 @@ public class NotFilterInstance extends FilterInstance {
 
     public NotFilterInstance(FilterInstance filter) {
         this.filter = filter;
-    }
-
-    protected NotFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        super(inStream, form);
-        filter = deserialize(inStream, form);
     }
 
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {

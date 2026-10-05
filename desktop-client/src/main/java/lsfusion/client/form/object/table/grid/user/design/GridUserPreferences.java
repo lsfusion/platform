@@ -69,13 +69,7 @@ public class GridUserPreferences {
         return ensureColumnPreferences(property).userOrder;
     }
     
-    public Integer getUserSort(ClientPropertyDraw property) {
-        return ensureColumnPreferences(property).userSort;
-    }
     
-    public Boolean getUserAscendingSort(ClientPropertyDraw property) {
-        return ensureColumnPreferences(property).userAscendingSort;
-    }
     
     public Integer getPageSize() {
         return pageSize;
@@ -136,17 +130,6 @@ public class GridUserPreferences {
         }
     }
 
-    public Comparator<ClientPropertyDraw> getUserSortComparator() {
-        return  new Comparator<ClientPropertyDraw>() {
-            public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
-                if(getUserAscendingSort(c1) == null) {
-                    return getUserAscendingSort(c2) == null ? 0 : -1;
-                } else {
-                    return getUserAscendingSort(c2) == null ? 1 : (getUserSort(c1) - getUserSort(c2));
-                }
-            }
-        };
-    }
     
     public Comparator<ClientPropertyDraw> getUserOrderComparator() {
         return new Comparator<ClientPropertyDraw>() {

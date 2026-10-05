@@ -1,6 +1,5 @@
 package lsfusion.client.form;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
@@ -44,7 +43,6 @@ public class ClientForm extends ClientIdentityObject {
     public List<ClientGroupObject> groupObjects = new ArrayList<>();
     public List<ClientPropertyDraw> propertyDraws = new ArrayList<>();
 
-    public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 
     public List<List<ClientPropertyDrawOrPivotColumn>> pivotColumns = new ArrayList<>();
@@ -160,16 +158,6 @@ public class ClientForm extends ClientIdentityObject {
                 String.format("<html><body><b>%s</b></body></html>", caption);
     }
 
-    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {
-        OrderedMap<ClientPropertyDraw, Boolean> result = new OrderedMap<>();
-        for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
-            if (BaseUtils.nullEquals(entry.getKey().groupObject, group)) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return result;
-    }
-
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         ClientContainer mainContainer = pool.deserializeObject(inStream);
         mainContainer.main = true;
@@ -178,13 +166,6 @@ public class ClientForm extends ClientIdentityObject {
         groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
-
-        defaultOrders = new OrderedMap<>();
-        int orderCount = inStream.readInt();
-        for (int i = 0; i < orderCount; i++) {
-            ClientPropertyDraw order = pool.deserializeObject(inStream);
-            defaultOrders.put(order, inStream.readBoolean());
-        }
 
         pivotColumns = deserializePivot(pool, inStream);
         pivotRows = deserializePivot(pool, inStream);
@@ -220,7 +201,6 @@ public class ClientForm extends ClientIdentityObject {
             clientPropertyDraw.container.removeFromChildren(clientPropertyDraw);
         }
         propertyDraws.remove(clientPropertyDraw);
-        defaultOrders.remove(clientPropertyDraw);
 
         //drop caches
         idProps = null;

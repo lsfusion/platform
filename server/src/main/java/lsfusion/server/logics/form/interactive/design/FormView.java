@@ -4,7 +4,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
@@ -14,7 +13,6 @@ import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
-import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.ObjectMapping;
@@ -108,11 +106,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return regularFilters.getNFListIt(version);
     }
 
-    protected NFOrderMap<PropertyDrawView,Boolean> defaultOrders = NFFact.orderMap();
-    public ImOrderMap<PropertyDrawView, Boolean> getDefaultOrders() {
-        return defaultOrders.getListMap();
-    }
-
     public ContainerView mainContainer;
 
     public TreeGroupView get(TreeGroupEntity treeGroup) { return treeGroup.view; }
@@ -176,14 +169,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 get(groupObjectEntity).grid.addFilter(genID(), propertyDrawView, version);
             }
         }
-    }
-
-    public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
-        defaultOrders.add(get(property), descending, version);
-    }
-
-    public void addDefaultOrderFirst(PropertyDrawEntity property, boolean descending, Version version) {
-        defaultOrders.addFirst(get(property), descending, version);
     }
 
     public void addPivotColumn(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
@@ -604,14 +589,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         pool.serializeCollection(outStream, getPropertiesList());
         pool.serializeCollection(outStream, getRegularFiltersList());
 
-        ImOrderMap<PropertyDrawView, Boolean> defaultOrders = getDefaultOrders();
-        int size = defaultOrders.size();
-        outStream.writeInt(size);
-        for (int i=0;i<size;i++) {
-            pool.serializeObject(outStream, defaultOrders.getKey(i));
-            outStream.writeBoolean(defaultOrders.getValue(i));
-        }
-
         ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotColumns = getPivotColumns();
         ImOrderSet<ImList<PropertyDrawViewOrPivotColumn>> pivotRows = getPivotRows();
         for(GroupObjectView groupObject : getGroupObjectsIt()) {
@@ -675,8 +652,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
         for(PropertyDrawView property : getPropertiesIt())
             property.finalizeAroundInit();
-
-        defaultOrders.finalizeChanges();
 
         mainContainer.finalizeAroundInit();
 
@@ -1073,8 +1048,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         mapping.add(groupObjects, src.groupObjects);
         mapping.add(properties, src.properties);
         mapping.add(regularFilters, src.regularFilters);
-
-        mapping.add(defaultOrders, src.defaultOrders);
 
         mapping.addl(pivotColumns, src.pivotColumns);
 

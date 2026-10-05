@@ -751,14 +751,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GOrderAction action) {
-    }
-
-    @Override
-    public void execute(GFilterAction action) {
-    }
-
-    @Override
     public void execute(GFilterGroupAction action) {
     }
 

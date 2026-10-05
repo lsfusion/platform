@@ -37,10 +37,10 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
+import lsfusion.gwt.client.form.view.Column;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -112,7 +112,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GGridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GGridUserPreferences(groupObject);
-        resetCurrentPreferences(true);
+        resetCurrentPreferences();
 
         if (currentGridPreferences.font != null) {
             font = currentGridPreferences.font;
@@ -128,23 +128,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
             @Override
-            protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType) {
-                form.changePropertyOrder(columnKey.keySet().iterator().next(), columnKey.values().iterator().next(), modiType);
-            }
-
-            @Override
-            protected void ordersSet(GGroupObject groupObject, LinkedHashMap<Map<GPropertyDraw, GGroupObjectValue>, Boolean> orders) {
-                List<Integer> propertyList = new ArrayList<>();
-                List<GGroupObjectValue> columnKeyList = new ArrayList<>();
-                List<Boolean> orderList = new ArrayList<>();
-                for(Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> entry : orders.entrySet()) {
-                    propertyList.add(entry.getKey().keySet().iterator().next().ID);
-                    columnKeyList.add(entry.getKey().values().iterator().next());
-                    orderList.add(entry.getValue());
+            protected void ordersChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, LinkedHashMap<Map<GPropertyDraw, GGroupObjectValue>, Boolean> orders) {
+                LinkedHashMap<Column, Boolean> columnOrders = new LinkedHashMap<>();
+                for (Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> order : orders.entrySet()) {
+                    Map.Entry<GPropertyDraw, GGroupObjectValue> column = order.getKey().entrySet().iterator().next();
+                    columnOrders.put(new Column(column.getKey(), column.getValue()), order.getValue());
                 }
-                form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
-                
-                headersChanged();
+                form.changeOrders(groupObject, columnOrders);
             }
 
             @Override
@@ -1036,28 +1026,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public boolean changePropertyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
-        LinkedHashMap<HashMap<GPropertyDraw, GGroupObjectValue>, Boolean> setOrders = new LinkedHashMap<>();
-        for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet())
-            setOrders.put(getMinColumnKey(entry.getKey()), entry.getValue());
-        return sortableHeaderManager.changeOrders(groupObject, setOrders, alreadySet);
-    }
-
-    @Override
-    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> orders) {
-        for (Map.Entry<GPropertyDraw, GOrder> entry : orders.entrySet()) {
-            sortableHeaderManager.changeOrder(getMinColumnKey(entry.getKey()), entry.getValue());
+    public void updateOrders(LinkedHashMap<Column, Boolean> orders) {
+        LinkedHashMap<Map<GPropertyDraw, GGroupObjectValue>, Boolean> setOrders = new LinkedHashMap<>();
+        for (Map.Entry<Column, Boolean> entry : orders.entrySet()) {
+            HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
+            key.put(entry.getKey().property, entry.getKey().columnKey);
+            setOrders.put(key, entry.getValue());
         }
-        if (!orders.isEmpty()) {
+        if (sortableHeaderManager.updateOrders(setOrders))
             headersChanged();
-        }
-    }
-
-    private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {
-        GridColumn column = getGridColumn(property, null);
-        HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-        key.put(property, column == null ? GGroupObjectValue.EMPTY : column.columnKey);
-        return key;
     }
 
     @Override
@@ -1357,15 +1334,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return generalGridPreferences.convertPreferences();
     }
 
-    public void resetCurrentPreferences(boolean initial) {
+    // the orders of the preferences are the server's to apply, when the form opens
+    public void resetCurrentPreferences() {
         currentGridPreferences = new GGridUserPreferences(userGridPreferences.hasUserPreferences() ? userGridPreferences : generalGridPreferences);
-        
-        if (!initial) {
-            LinkedHashMap<GPropertyDraw, Boolean> orders = groupObjectController.getUserOrders();
-            if(orders == null)
-                orders = groupObjectController.getDefaultOrders();
-            changePropertyOrders(orders, false);
-        }
     }
 
     private void doResetPreferences(final boolean forAllUsers, final boolean completeReset, final AsyncCallback<ServerResponseResult> callback) {
@@ -1380,7 +1351,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, getHiddenProps(prefs), new AsyncCallback<ServerResponseResult>() {
             @Override
             public void onFailure(Throwable caught) {
-                resetCurrentPreferences(false);
+                resetCurrentPreferences();
                 callback.onFailure(caught);
             }
 
@@ -1394,7 +1365,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 } else {
                     userGridPreferences.resetPreferences();
                 }
-                resetCurrentPreferences(false);
+                resetCurrentPreferences();
                 callback.onSuccess(result);
             }
         });
@@ -1426,7 +1397,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 public void onSuccess(ServerResponseResult result) {
                     if (forAllUsers) {
                         generalGridPreferences = new GGridUserPreferences(currentGridPreferences);
-                        resetCurrentPreferences(false);
+                        resetCurrentPreferences();
                     } else {
                         userGridPreferences = new GGridUserPreferences(currentGridPreferences);
                     }
@@ -1435,7 +1406,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                 @Override
                 public void onFailure(Throwable caught) {
-                    resetCurrentPreferences(false);
+                    resetCurrentPreferences();
                     callback.onFailure(caught);
                 }
             });
@@ -1500,14 +1471,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return currentGridPreferences.getUserOrder(property);
     }
 
-    public Integer getUserSort(GPropertyDraw property) {
-        return currentGridPreferences.getUserSort(property);
-    }
-
-    public Boolean getUserAscendingSort(GPropertyDraw property) {
-        return currentGridPreferences.getUserAscendingSort(property);
-    }
-
     public void setUserPageSize(Integer pageSize) {
         currentGridPreferences.pageSize = pageSize;
     }
@@ -1550,10 +1513,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public void setInGrid(GPropertyDraw property, Boolean inGrid) {
         currentGridPreferences.setInGrid(property, inGrid);
-    }
-
-    public Comparator<GPropertyDraw> getUserSortComparator() {
-        return getCurrentPreferences().getUserSortComparator();
     }
 
     private class GridColumn extends GridPropertyColumn {
@@ -1696,18 +1655,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
     }
     
-    public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders(List<GPropertyDraw> propertyDrawList) {
-        LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<>();
-        Collections.sort(propertyDrawList, getUserSortComparator());
-        for (GPropertyDraw property : propertyDrawList) {
-            Boolean userOrderSort;
-            if (getUserSort(property) != null && (userOrderSort = getUserAscendingSort(property)) != null) {
-                userOrders.put(property, userOrderSort);
-            }
-        }
-        return userOrders;
-    }
-
     @Override
     public int getPageSize() {
         return -1;

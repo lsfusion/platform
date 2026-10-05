@@ -334,9 +334,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
 
         JsArrayMixed sortCols = JsArrayString.createArray().cast();
-        LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = gridController.getDefaultOrders();
-        for(Map.Entry<GPropertyDraw, Boolean> order : defaultOrders.entrySet()) {
-            String caption = columnCaptionMap.get(order.getKey());
+        // sorted as the group is: by the user orders the form has for it, reported by the server by now (the data is
+        // read), each by its own column, but for a column the pivot does not have (a hidden one, say); a sort direction
+        // is ascending, as an order is
+        Map<Column, String> orderCaptionMap = new HashMap<>();
+        columnMap.foreachEntry((key, value) -> orderCaptionMap.putIfAbsent(value, key));
+        for(Map.Entry<Column, Boolean> order : form.getOrders(gridController.groupObject).entrySet()) {
+            String caption = orderCaptionMap.get(order.getKey());
+            if(caption == null)
+                continue;
             if(contains(measures, caption)) {
                 sortCols.push(createSortCol(toJsArrayString(caption), order.getValue()));
             } else {

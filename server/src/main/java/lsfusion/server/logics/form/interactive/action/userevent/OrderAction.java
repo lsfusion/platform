@@ -1,10 +1,12 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
-import lsfusion.interop.action.OrderClientAction;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -12,10 +14,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.List;
-
-import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class OrderAction extends UserEventAction {
     public static final String DESC_KEY = "desc";
@@ -30,26 +29,15 @@ public class OrderAction extends UserEventAction {
         GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         if(groupObjectInstance != null) {
             List<JSONObject> objectList = readJSON(context);
-            LinkedHashMap<Integer, Boolean> orders = new LinkedHashMap<>();
+            MOrderMap<GroupColumn, Boolean> mOrders = MapFact.mOrderMap(MapFact.override());
             if (objectList != null) {
                 for (JSONObject jsonObject : objectList) {
-                    String propertyString = jsonObject.optString(PROPERTY_KEY);
-                    if (!isRedundantString(propertyString)) {
-                        PropertyDrawInstance<?> propertyDraw = formInstance.getPropertyDraw(propertyString);
-                        if (propertyDraw != null) {
-                            // make sure group object is the same
-                            GroupObjectInstance propertyGO = propertyDraw.toDraw;
-                            if (propertyGO == groupObjectInstance) {
-                                boolean desc = jsonObject.optBoolean(DESC_KEY, false);
-                                orders.put(propertyDraw.getID(), !desc); // as true is for "asc" on client
-                            }
-                        }
-                    }
+                    PropertyDrawInstance<?> propertyDraw = getPropertyDraw(formInstance, groupObjectInstance, jsonObject);
+                    if (propertyDraw != null)
+                        mOrders.add(new GroupColumn(propertyDraw, MapFact.EMPTY()), jsonObject.optBoolean(DESC_KEY, false));
                 }
             }
-
-            OrderClientAction orderClientAction = new OrderClientAction(groupObjectInstance.entity.getID(), orders);
-            context.delayUserInteraction(orderClientAction);
+            groupObjectInstance.setUserOrders(mOrders.immutableOrder());
         }
     }
 }

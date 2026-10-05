@@ -11,7 +11,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
@@ -19,8 +18,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -32,12 +29,6 @@ public abstract class OpFilterInstance extends FilterInstance {
     public OpFilterInstance(FilterInstance op1, FilterInstance op2) {
         this.op1 = op1;
         this.op2 = op2;
-    }
-
-    protected OpFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        super(inStream, form);
-        op1 = deserialize(inStream, form);
-        op2 = deserialize(inStream, form);
     }
 
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {

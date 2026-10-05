@@ -79,14 +79,6 @@ public class GGridUserPreferences {
         return ensureColumnPreferences(property).userOrder;
     }
 
-    public Integer getUserSort(GPropertyDraw property) {
-        return ensureColumnPreferences(property).userSort;
-    }
-
-    public Boolean getUserAscendingSort(GPropertyDraw property) {
-        return ensureColumnPreferences(property).userAscendingSort;
-    }
-
     private GColumnUserPreferences ensureColumnPreferences(GPropertyDraw property) {
         GColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
@@ -144,18 +136,6 @@ public class GGridUserPreferences {
         for (GPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
             columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null, null));
         }
-    }
-
-    public Comparator<GPropertyDraw> getUserSortComparator() {
-        return  new Comparator<GPropertyDraw>() {
-            public int compare(GPropertyDraw c1, GPropertyDraw c2) {
-                if (getUserAscendingSort(c1) != null && getUserAscendingSort(c2) != null) {
-                    return getUserSort(c1) - getUserSort(c2);
-                } else {
-                    return 0;
-                }
-            }
-        };
     }
 
     public Comparator<GPropertyDraw> getUserOrderComparator() {

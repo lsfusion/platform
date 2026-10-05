@@ -15,7 +15,6 @@ import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
@@ -30,15 +29,15 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd) {
-        this(property, resolveAdd, null, null);
+        this(property, resolveAdd, null);
     }
 
-    public NotNullFilterInstance(PropertyObjectInstance<P> property, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw) {
-        this(property, false, toDraw, propertyDraw);
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, GroupObjectInstance toDraw) {
+        this(property, false, toDraw);
     }
 
-    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw) {
-        super(property, resolveAdd, toDraw, propertyDraw);
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw) {
+        super(property, resolveAdd, toDraw);
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {

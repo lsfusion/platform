@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
@@ -12,10 +13,13 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 import static lsfusion.gwt.client.form.object.GGroupObjectValue.checkTwins;
 
@@ -34,6 +38,11 @@ public class GFormChanges {
     
     public final ArrayList<GContainer> collapseContainers = new ArrayList<>();
     public final ArrayList<GContainer> expandContainers = new ArrayList<>();
+
+    // the user orders / filters of the groups they were set for: the orders by their columns in priority order, true -
+    // ascending; the filters as a client sends them (GPropertyFilter.getFilterDTO)
+    public final NativeSIDMap<GGroupObject, LinkedHashMap<Column, Boolean>> userOrders = new NativeSIDMap<>();
+    public final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilterDTO>> userFilters = new NativeSIDMap<>();
 
     public final HashSet<GPropertyReader> updateProperties = new HashSet<>();
 
@@ -84,6 +93,17 @@ public class GFormChanges {
 
         for (int expandContainerId : dto.expandContainerIds) {
             remapped.expandContainers.add(form.findContainerByID(expandContainerId));
+        }
+
+        for (int i = 0; i < dto.userOrdersGroupIds.length; i++) {
+            LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
+            for (int j = 0; j < dto.userOrdersPropertyIds[i].length; j++)
+                orders.put(new Column(form.getProperty(dto.userOrdersPropertyIds[i][j]), checkTwins(dto.userOrdersColumnKeys[i][j])), dto.userOrdersAscending[i][j]);
+            remapped.userOrders.put(form.getGroupObject(dto.userOrdersGroupIds[i]), orders);
+        }
+
+        for (int i = 0; i < dto.userFiltersGroupIds.length; i++) {
+            remapped.userFilters.put(form.getGroupObject(dto.userFiltersGroupIds[i]), new ArrayList<>(Arrays.asList(dto.userFilters[i])));
         }
 
         remapped.needConfirm = dto.needConfirm;

@@ -13,8 +13,10 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GInputEvent;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -98,6 +100,17 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
     }
 
     public abstract List<GFilter> getFilters();
+
+    @Override
+    public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
+        if (filter != null) {
+            List<GPropertyFilter> conditions = new ArrayList<>();
+            for (GPropertyFilterDTO filterDTO : filters)
+                conditions.add(new GPropertyFilter(new GFilter(formController.getProperty(filterDTO.propertyID)), group, filterDTO.columnKey,
+                        PValue.convertFileValue(filterDTO.filterValue.content), filterDTO.negation, GCompare.get(filterDTO.compareByte), filterDTO.junction));
+            filter.updateFilters(group, conditions);
+        }
+    }
 
     public void initFilters() {
         GToolbarButtonGroup filterButtonGroup = new GToolbarButtonGroup();

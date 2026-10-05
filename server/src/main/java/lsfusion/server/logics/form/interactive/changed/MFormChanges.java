@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -14,6 +15,8 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -44,6 +47,9 @@ public class MFormChanges {
     public MList<ContainerView> collapseContainers = ListFact.mList();
     public MList<ContainerView> expandContainers = ListFact.mList();
 
+    public MExclMap<GroupObjectInstance, ImOrderMap<GroupColumn, Boolean>> userOrders = MapFact.mExclMap();
+    public MExclMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters = MapFact.mExclMap();
+
     public boolean needConfirm = false;
 
     public FormChanges immutable() {
@@ -60,6 +66,8 @@ public class MFormChanges {
                 activateProps.immutableList(),
                 collapseContainers.immutableList(),
                 expandContainers.immutableList(),
+                userOrders.immutable(),
+                userFilters.immutable(),
                 needConfirm
         );
     }

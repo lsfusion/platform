@@ -109,6 +109,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Column value) {
                 condition.property = value.property;
                 condition.columnKey = value.columnKey;
+                // the group of its property, as the server takes it
+                condition.groupObject = value.property.groupObject;
 
                 propertyLabel.setText(columnsProvider.getColumns().get(value));
                 
@@ -352,6 +354,11 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     
     public void setNegation(boolean negation) {
         compareView.setNegation(negation);
+    }
+
+    public void setAllowNull(boolean allowNull) {
+        this.allowNull = allowNull;
+        compareView.setAllowNull(allowNull);
     }
     
     public void setValue(ClientDataFilterValue value) {

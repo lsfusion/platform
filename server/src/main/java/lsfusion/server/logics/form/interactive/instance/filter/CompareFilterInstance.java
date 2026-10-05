@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.instance.filter;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -15,14 +14,11 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
@@ -30,8 +26,6 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 
 public class CompareFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
@@ -39,36 +33,12 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     public boolean negate;
     public Compare compare;
     public CompareInstance value;
-    public boolean wrappedContainsValue;
 
-    public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        super(inStream,form);
-        negate = inStream.readBoolean();
-        compare = Compare.deserialize(inStream);
-        value = deserializeCompare(inStream, form, property.getFilterValueClass(compare));
-        junction = inStream.readBoolean();
-    }
-
-    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw, boolean negate, Compare compare, CompareInstance value, boolean wrappedContainsValue) {
-        super(property, resolveAdd, toDraw, propertyDraw);
+    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, boolean negate, Compare compare, CompareInstance value) {
+        super(property, resolveAdd, toDraw);
         this.negate = negate;
         this.compare = compare;
         this.value = value;
-        this.wrappedContainsValue = wrappedContainsValue;
-    }
-
-    private static CompareInstance deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException, SQLHandledException {
-        byte type = inStream.readByte();
-        switch(type) {
-            case 0:
-                return form.session.getObjectValue(valueClass, BaseUtils.deserializeObject(inStream));
-            case 1:
-                return form.getObjectInstance(inStream.readInt());
-            case 2:
-                return ((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).getFilterProperty();
-        }
-
-        throw new IOException();
     }
 
     @Override

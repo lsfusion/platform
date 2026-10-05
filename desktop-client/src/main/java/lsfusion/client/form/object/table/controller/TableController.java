@@ -39,5 +39,6 @@ public interface TableController {
     
     ClientContainer getFiltersContainer();
 
-    boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet);
+    // the user orders of a group as the form has them, shown; true - ascending
+    void updateOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders);
 }

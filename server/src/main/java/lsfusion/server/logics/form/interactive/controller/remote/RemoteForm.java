@@ -25,7 +25,6 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
-import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.EventSource;
@@ -63,14 +62,13 @@ import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.PropertyFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.interactive.property.Async;
 import lsfusion.server.logics.form.open.stat.PrintAction;
@@ -552,27 +550,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte modiType, final byte[] columnKeys) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-            if(propertyDraw != null) {
-                ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(columnKeys);
-
-                Order order = Order.deserialize(modiType);
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("changePropertyOrder: [ID: %1$d]", propertyID));
-                    logger.debug(String.format("new order: %s", order.toString()));
-                }
-
-                PropertyObjectInstance<?> propertyObject = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
-                propertyDraw.toDraw.changeOrder(propertyObject, propertyDraw, order);
-
-                form.fireOnUserActivity(stack, propertyDraw.toDraw, UserEventObject.Type.ORDER);
-            }
-        });
-    }
-
     public ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID,
                                             List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
@@ -583,21 +560,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
             }
 
-            groupObject.clearOrders();
-            
+            MOrderExclMap<GroupColumn, Boolean> mOrders = MapFact.mOrderExclMap();
             for(int i = 0; i < propertyList.size(); i++) {
-                Integer propertyID = propertyList.get(i);
-                byte[] columnKeys = columnKeyList.get(i);
-                Boolean order = orderList.get(i);
-                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-                if(propertyDraw != null) { //can be set by userPreferences but hidden by security policy
-                    ImMap<ObjectInstance, ObjectValue> keys = deserializeKeysValues(columnKeys);
-                    PropertyObjectInstance property = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
-                    propertyDraw.toDraw.changeOrder(property, propertyDraw, Order.ADD);
-                    if(!order)
-                        propertyDraw.toDraw.changeOrder(property, propertyDraw, Order.DIR);
-                }
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyList.get(i));
+                if(propertyDraw != null) // a property the security policy hides is not on the form
+                    mOrders.exclAdd(new GroupColumn(propertyDraw, deserializeDataKeysValues(columnKeyList.get(i))), !orderList.get(i));
             }
+            groupObject.setUserOrders(mOrders.immutableOrder());
 
             form.fireOnUserActivity(stack, groupObject, UserEventObject.Type.ORDER);
         });
@@ -707,19 +676,18 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             for (Integer gid : filters.keySet()) {
                 GroupObjectInstance goi = form.getGroupObjectInstance(gid);
 
-                goi.clearUserFilters();
-                
-                for (byte[] state : filters.get(gid)) {
-                    FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
+                MList<UserFilterInstance> mUserFilters = ListFact.mList();
+                for (byte[] state : filters.get(gid))
+                    mUserFilters.add(UserFilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form));
+                ImList<UserFilterInstance> userFilters = mUserFilters.immutableList();
 
-                    goi.addUserFilter(filter);
+                goi.setUserFilters(userFilters);
 
-                    if(filter instanceof PropertyFilterInstance) {
-                        form.fireFilterPropertyChanged(((PropertyFilterInstance<?>) filter).propertyDraw.getSID(), stack);
-                    }
+                for (UserFilterInstance userFilter : userFilters) {
+                    form.fireFilterPropertyChanged(userFilter.column.property.getSID(), stack);
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
+                        logger.debug(String.format("set user filter: [CLASS: %1$s]", userFilter.filter.getClass()));
                         logger.debug(String.format("apply object: %s", goi));
                     }
                 }
@@ -745,7 +713,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Set<FilterInstance> filtersInstances = new HashSet<>();
             GroupObjectInstance applyObject = null;
             for (byte[] state : filters) {
-                FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
+                FilterInstance filter = UserFilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form).filter;
                 applyObject = filter.getApplyObject();
                 filtersInstances.add(filter);
             }

@@ -9,6 +9,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
@@ -36,6 +37,8 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -79,6 +82,10 @@ public class FormChanges {
     private final ImList<ContainerView> collapseContainers;
     private final ImList<ContainerView> expandContainers;
 
+    // the user orders / filters of the groups they were set for (GroupObjectInstance.UPDATED_USERORDER / USERFILTER)
+    private final ImMap<GroupObjectInstance, ImOrderMap<GroupColumn, Boolean>> userOrders;
+    private final ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters;
+
     // current (panel) objects
     private final ImMap<GroupObjectInstance, Boolean> updateStateObjects;
 
@@ -94,7 +101,8 @@ public class FormChanges {
                        ImSet<PropertyDrawInstance> dropProperties,
                        ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, 
                        ImList<PropertyDrawInstance> activateProps, ImList<ContainerView> collapseContainers, 
-                       ImList<ContainerView> expandContainers, boolean needConfirm) {
+                       ImList<ContainerView> expandContainers, ImMap<GroupObjectInstance, ImOrderMap<GroupColumn, Boolean>> userOrders,
+                       ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters, boolean needConfirm) {
         this.objects = objects;
         this.gridObjects = gridObjects;
         this.parentObjects = parentObjects;
@@ -106,6 +114,8 @@ public class FormChanges {
         this.activateProps = activateProps;
         this.collapseContainers = collapseContainers;
         this.expandContainers = expandContainers;
+        this.userOrders = userOrders;
+        this.userFilters = userFilters;
         this.needConfirm = needConfirm;
     }
 
@@ -231,6 +241,36 @@ public class FormChanges {
         outStream.writeInt(expandContainers.size());
         for (ContainerView container : expandContainers) {
             outStream.writeInt(container.getID());
+        }
+
+        outStream.writeInt(userOrders.size());
+        for (int i=0,size=userOrders.size();i<size;i++) {
+            outStream.writeInt(userOrders.getKey(i).getID());
+
+            ImOrderMap<GroupColumn, Boolean> groupOrders = userOrders.getValue(i);
+            outStream.writeInt(groupOrders.size());
+            for (int j=0,sizeJ=groupOrders.size();j<sizeJ;j++) {
+                GroupColumn column = groupOrders.getKey(j);
+                outStream.writeInt(column.property.getID());
+                serializeGroupObjectValue(outStream, column.columnKeys);
+                outStream.writeBoolean(!groupOrders.getValue(j)); // ascending, as a client sends it (setPropertyOrders)
+            }
+        }
+
+        outStream.writeInt(userFilters.size());
+        for (int i=0,size=userFilters.size();i<size;i++) {
+            outStream.writeInt(userFilters.getKey(i).getID());
+
+            ImList<UserFilterInstance> groupFilters = userFilters.getValue(i);
+            outStream.writeInt(groupFilters.size());
+            for (UserFilterInstance filter : groupFilters) {
+                outStream.writeInt(filter.column.property.getID());
+                serializeGroupObjectValue(outStream, filter.column.columnKeys);
+                outStream.writeBoolean(filter.negation);
+                filter.compare.serialize(outStream);
+                serializeObject(outStream, filter.value.getValue()); // as a client sends it, a file as well
+                outStream.writeBoolean(filter.junction);
+            }
         }
 
         outStream.writeBoolean(needConfirm);
@@ -647,5 +687,13 @@ public class FormChanges {
         logger.trace("   Expand containers ---------------");
         for (ContainerView container : expandContainers)
             logger.trace("     " + container);
+
+        logger.trace("   User orders ---------------");
+        for (int i = 0, size = userOrders.size(); i < size; i++)
+            logger.trace("     " + userOrders.getKey(i) + " -> " + userOrders.getValue(i));
+
+        logger.trace("   User filters ---------------");
+        for (int i = 0, size = userFilters.size(); i < size; i++)
+            logger.trace("     " + userFilters.getKey(i) + " -> " + userFilters.getValue(i));
     }
 }

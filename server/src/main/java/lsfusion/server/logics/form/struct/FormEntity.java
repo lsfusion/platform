@@ -1678,16 +1678,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.add(property, descending, version);
-
-        if(view != null)
-            view.addDefaultOrder(property, descending, version);
     }
 
     public void addDefaultOrderFirst(PropertyDrawEntity property, boolean descending, Version version) {
         defaultOrders.addFirst(property, descending, version);
-
-        if(view != null)
-            view.addDefaultOrderFirst(property, descending, version);
     }
 
     public void addFixedOrder(OrderEntity order, Boolean descending, boolean first, Version version) {

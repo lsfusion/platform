@@ -35,7 +35,6 @@ public class GForm implements Serializable {
     public ArrayList<GGroupObject> groupObjects = new ArrayList<>();
     public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<>();
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();
-    public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<>();
 
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotColumns = new ArrayList<>();
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotRows = new ArrayList<>();
@@ -164,16 +163,6 @@ public class GForm implements Serializable {
 
         GComponent result = mainContainer.findComponentByID(id);
         idComponents.put(id, result);
-        return result;
-    }
-
-    public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject group) {
-        LinkedHashMap<GPropertyDraw, Boolean> result = new LinkedHashMap<>();
-        for (Map.Entry<GPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
-            if (GwtSharedUtils.nullEquals(entry.getKey().groupObject, group)) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
         return result;
     }
 

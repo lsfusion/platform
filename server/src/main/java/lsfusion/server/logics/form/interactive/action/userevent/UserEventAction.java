@@ -7,6 +7,9 @@ import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
@@ -17,6 +20,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static lsfusion.base.BaseUtils.isRedundantString;
 
 public abstract class UserEventAction extends SystemExplicitAction {
     public static final String PROPERTY_KEY = "property";
@@ -46,6 +51,17 @@ public abstract class UserEventAction extends SystemExplicitAction {
                 }
             }
             return list;
+        }
+        return null;
+    }
+
+    // the property an item names, if it is one of the group's: one in columns is not, as an item names no column
+    protected static PropertyDrawInstance<?> getPropertyDraw(FormInstance form, GroupObjectInstance group, JSONObject item) {
+        String propertyString = item.optString(PROPERTY_KEY);
+        if (!isRedundantString(propertyString)) {
+            PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyString);
+            if (propertyDraw != null && propertyDraw.toDraw == group && propertyDraw.getColumnGroupObjects().isEmpty())
+                return propertyDraw;
         }
         return null;
     }

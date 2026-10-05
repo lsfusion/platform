@@ -23,8 +23,10 @@ FILTERS PROPERTY formPropertyId  [TO propId]
 
 Операторы работают с [интерактивным представлением](../paradigm/Interactive_view.md) открытой формы и делятся на две группы:
 
-- операторы в единственном числе (`ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY`) **применяют** значение из блока `FROM` к элементу формы — как если бы пользователь сам задал этот порядок или фильтр;
+- операторы в единственном числе (`ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY`) **применяют** значение из блока `FROM` к элементу формы — те же порядки и фильтры, что может задать пользователь;
 - операторы во множественном числе (`ORDERS`, `FILTERS`, `FILTERGROUPS`, `FILTERS PROPERTY`) **читают** текущее значение элемента формы в свойство из блока `TO`.
+
+`ORDER`, `FILTER` и `FILTER PROPERTY` применяют значение сразу: оператор во множественном числе дальше в том же действии читает уже новое значение, а форма показывает его вместе с остальными своими изменениями. [События формы](../paradigm/Form_events.md) `ORDERS`, `FILTERS` и `FILTERS PROPERTY` они не вызывают: эти события возникают, когда порядки или фильтры меняет пользователь; события `ORDER` и `FILTER` группы объектов возникают при любом их изменении, в том числе и при этом.
 
 Элемент формы задаётся его именем: `groupObjectId` — группа объектов (её порядки или фильтры), `filterGroupId` — группа фильтров, `formPropertyId` — свойство на форме (его фильтр).
 
@@ -34,6 +36,8 @@ FILTERS PROPERTY formPropertyId  [TO propId]
 - для фильтров группы объектов (`FILTER` / `FILTERS`) — `JSON`: список условий фильтрации (имя свойства, сравнение, отрицание, значение, объединение через `OR`);
 - для группы фильтров (`FILTERGROUP` / `FILTERGROUPS`) — `INTEGER`: номер активного фильтра в группе;
 - для фильтра свойства (`FILTER PROPERTY` / `FILTERS PROPERTY`) — `STRING`: значение фильтра свойства.
+
+`ORDER` и `FILTER` пропускают элемент списка, который называет свойство другой группы объектов или свойство с опцией `COLUMNS`: колонку элемент списка не называет. Условие фильтрации без сравнения получает сравнение свойства по умолчанию.
 
 Если блок `FROM` или `TO` не указан, по умолчанию используется соответствующее свойство системного модуля [`UserEvents`](../paradigm/System_UserEvents.md) (`orders`, `filters`, `filterGroups`, `filtersProperty`), через который эти операторы обычно и вызываются.
 
@@ -75,7 +79,7 @@ savedFilters = DATA JSON ();
 currentOrders = DATA JSON ();
 
 // сохранить текущие фильтры группы объектов o и позже применить их обратно;
-// savedFilters получит JSON вида [{"property": "number", "compare": ">", "value": 1000, "negation": false, "or": false}]
+// savedFilters получит JSON вида [{"property": "number", "compare": ">", "negation": false, "value": "1000"}]
 saveFilters ()  { FILTERS orders.o TO savedFilters; }
 restoreFilters ()  { FILTER orders.o FROM savedFilters; }
 

@@ -159,7 +159,6 @@ import static lsfusion.base.BaseUtils.*;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.GROUP_CHANGE;
 import static lsfusion.interop.action.ServerResponse.INPUT;
-import static lsfusion.interop.form.order.user.Order.*;
 import static lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance.*;
 
 // класс в котором лежит какие изменения произошли
@@ -359,22 +358,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
-        Set<GroupObjectInstance> wasOrder = new HashSet<>();
-        ImOrderMap<PropertyDrawEntity, Boolean> defaultOrders = entity.getDefaultOrdersList();
-        for (int i=0,size=defaultOrders.size();i<size;i++) {
-            PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
-            GroupObjectInstance toDraw = property.toDraw;
-            Boolean descending = defaultOrders.getValue(i);
-
-            if(toDraw != null) {
-                OrderInstance order = property.getOrderProperty();
-                toDraw.changeOrder(order, property, wasOrder.contains(toDraw) ? ADD : REPLACE);
-                if (descending) {
-                    toDraw.changeOrder(order, property, DIR);
-                }
-                wasOrder.add(toDraw);
-            }
-        }
+        for (GroupObjectInstance group : getGroups())
+            group.setUserOrders(getDefaultOrders(group));
 
         this.userPrefsHiddenProperties = entity.getUserPrefsHiddenProperties().mapSetValues(instanceFactory::getInstance);
 
@@ -437,6 +422,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         mapObjects = MapFact.override(mSeekCachedObjects.immutable(), DataObject.filterDataObjects(mapObjects));
         for (int i = 0, size = mapObjects.size(); i < size; i++)
             seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i), stack);
+
+        // the orders of the grid preferences the user has saved - the user's own, else everyone's -, before ON INIT,
+        // which may set orders in its turn
+        if (interactive) {
+            FormUserPreferences userPreferences = loadUserPreferences();
+            if (userPreferences != null) // a form with no name keeps no preferences
+                for (GroupObjectInstance group : getGroups()) {
+                    GroupObjectUserPreferences groupPreferences = userPreferences.getUsedPreferences(group.getSID());
+                    if (groupPreferences != null)
+                        group.setUserOrders(getPreferencesOrders(group, groupPreferences));
+                }
+        }
 
         fireOnInit(stack);
 
@@ -533,6 +530,36 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public ImOrderSet<GroupObjectInstance> getOrderGroups() {
         return groups;
+    }
+
+    // the orders the form opens a group with (ORDERS); true - descending
+    private ImOrderMap<GroupColumn, Boolean> getDefaultOrders(GroupObjectInstance group) {
+        MOrderExclMap<GroupColumn, Boolean> mOrders = MapFact.mOrderExclMap();
+        ImOrderMap<PropertyDrawEntity, Boolean> defaultOrders = entity.getDefaultOrdersList();
+        for (int i = 0, size = defaultOrders.size(); i < size; i++) {
+            PropertyDrawInstance<?> property = instanceFactory.getInstance(defaultOrders.getKey(i));
+            if (property.toDraw == group)
+                mOrders.exclAdd(new GroupColumn(property, MapFact.EMPTY()), defaultOrders.getValue(i));
+        }
+        return mOrders.immutableOrder();
+    }
+
+    // the orders of the grid preferences a user has for a group: the columns sorted there, in their sort order - but a
+    // property in columns, as a preference names no column; true - descending
+    private ImOrderMap<GroupColumn, Boolean> getPreferencesOrders(GroupObjectInstance group, GroupObjectUserPreferences preferences) {
+        List<Map.Entry<String, ColumnUserPreferences>> sorted = new ArrayList<>();
+        for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet())
+            if (entry.getValue().userSort != null && entry.getValue().userAscendingSort != null)
+                sorted.add(entry);
+        sorted.sort(Comparator.comparing(entry -> entry.getValue().userSort));
+
+        MOrderExclMap<GroupColumn, Boolean> mOrders = MapFact.mOrderExclMap();
+        for (Map.Entry<String, ColumnUserPreferences> entry : sorted) {
+            PropertyDrawInstance<?> property = getPropertyDraw(entry.getKey());
+            if (property != null && property.toDraw == group && property.getColumnGroupObjects().isEmpty())
+                mOrders.exclAdd(new GroupColumn(property, MapFact.EMPTY()), !entry.getValue().userAscendingSort);
+        }
+        return mOrders.immutableOrder();
     }
 
     public FormUserPreferences loadUserPreferences() {
@@ -2389,6 +2416,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         
         result.collapseContainers.addAll(userCollapseContainers);
         result.expandContainers.addAll(userExpandContainers);
+
+        for (GroupObjectInstance group : getGroups()) {
+            if ((group.updated & GroupObjectInstance.UPDATED_USERORDER) != 0)
+                result.userOrders.exclAdd(group, group.getUserOrders());
+            if ((group.updated & GroupObjectInstance.UPDATED_USERFILTER) != 0)
+                result.userFilters.exclAdd(group, group.getUserFilters());
+        }
 
         result.needConfirm = needConfirm();
 

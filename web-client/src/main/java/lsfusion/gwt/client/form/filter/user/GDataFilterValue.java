@@ -19,7 +19,7 @@ public class GDataFilterValue {
     }
 
     public GFilterValueDTO getDTO() {
-        return new GFilterValueDTO(0, PValue.convertFileValueBack(value));
+        return new GFilterValueDTO(PValue.convertFileValueBack(value));
     }
 
     public void setValue(PValue value) {

@@ -63,7 +63,7 @@ public class TreeGroupController extends AbstractTableController {
                         @Override
                         public void run() {
                             try {
-                                TreeGroupController.this.formController.changeFilter(treeGroup, conditions);
+                                TreeGroupController.this.formController.changeFilters(treeGroup, conditions);
                                 if (focusFirstComponent) {
                                     SwingUtilities.invokeLater(() -> focusFirstComponent());
                                 }
@@ -141,9 +141,23 @@ public class TreeGroupController extends AbstractTableController {
             if (fc.objects.containsKey(group)) {
                 view.setCurrentPath(fc.objects.get(group));
             }
+
+            // the user orders the server reports, which it has applied already, are shown, nothing is sent
+            LinkedHashMap<Column, Boolean> orders = fc.userOrders.get(group);
+            if (orders != null)
+                updateOrders(group, orders);
         }
 
         update();
+
+        // the user filters the server reports, as the orders; after the update, which gives the filter panel its fixed
+        // conditions the first time
+        for (ClientGroupObject group : treeGroup.groups) {
+            List<ClientPropertyFilter> filters = fc.userFilters.get(group);
+            if (filters != null && filter != null) {
+                filter.updateFilters(group, filters);
+            }
+        }
     }
 
     private void update() {
@@ -334,8 +348,12 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
-    public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> value, boolean alreadySet) {
-        return tree.changeOrders(groupObject, value, alreadySet);
+    public void updateOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        // a tree has no columns of a property
+        LinkedHashMap<ClientPropertyDraw, Boolean> propertyOrders = new LinkedHashMap<>();
+        for (Map.Entry<Column, Boolean> entry : orders.entrySet())
+            propertyOrders.put(entry.getKey().property, entry.getValue());
+        tree.updateOrders(group, propertyOrders);
     }
 
     public ClientGroupObject getCurrentGroupObject() {

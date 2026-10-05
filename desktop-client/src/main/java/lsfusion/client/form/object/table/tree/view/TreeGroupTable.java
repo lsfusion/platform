@@ -41,7 +41,6 @@ import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.event.MouseStrokes;
-import lsfusion.interop.form.order.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableNode;
@@ -146,21 +145,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
-            protected void orderChanged(final ClientPropertyDraw columnKey, final Order modiType) {
+            protected void ordersChanged(final ClientPropertyDraw columnKey, final LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        TreeGroupTable.this.orderChanged(columnKey, modiType);
-                    }
-                });
-            }
-
-            @Override
-            protected void ordersSet(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        TreeGroupTable.this.ordersSet(groupObject, orders);
+                        TreeGroupTable.this.ordersChanged(columnKey, orders);
                     }
                 });
             }
@@ -277,9 +266,14 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         enableEvents(AWTEvent.MOUSE_EVENT_MASK); // just in case, because we override processMouseEvent (however there are addMouseListeners)
     }
 
-    private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
-        form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY);
-        tableHeader.resizeAndRepaint();
+    // a tree's header keeps the orders of all its groups: only the clicked column's group's are sent
+    private void ordersChanged(ClientPropertyDraw columnKey, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
+        ClientGroupObject group = columnKey.groupObject;
+        LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
+        for (Map.Entry<ClientPropertyDraw, Boolean> order : orders.entrySet())
+            if (order.getKey().groupObject.equals(group))
+                groupOrders.put(new Column(order.getKey(), ClientGroupObjectValue.EMPTY), order.getValue());
+        form.changeOrders(group, groupOrders);
     }
 
     @Override
@@ -309,21 +303,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         }
 
         return tablePreferredSize;
-    }
-
-    private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
-        List<Integer> propertyList = new ArrayList<>();
-        List<byte[]> columnKeyList = new ArrayList<>();
-        List<Boolean> orderList = new ArrayList<>();
-        for(Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
-            propertyList.add(entry.getKey().ID);
-            columnKeyList.add(ClientGroupObjectValue.EMPTY.serialize());
-            orderList.add(entry.getValue());
-        }
-
-        form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
-
-        tableHeader.resizeAndRepaint();
     }
 
     private void initializeActionMap() {
@@ -1093,8 +1072,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         super.processKeyEvent(e);
     }
 
-    public boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders, boolean alreadySet) {
-        return sortableHeaderManager.changeOrders(groupObject, orders, alreadySet);
+    // the orders the form has for a group take the place of the group's: one header keeps the orders of all the groups
+    // of the tree, its columns being the last group's
+    public void updateOrders(ClientGroupObject group, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
+        LinkedHashMap<ClientPropertyDraw, Boolean> treeOrders = new LinkedHashMap<>();
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : sortableHeaderManager.getOrderDirections().entrySet())
+            if (!group.equals(entry.getKey().groupObject))
+                treeOrders.put(entry.getKey(), entry.getValue());
+        treeOrders.putAll(orders);
+        if (sortableHeaderManager.updateOrders(treeOrders))
+            tableHeader.repaint();
     }
 
     public int getHeaderHeight() {

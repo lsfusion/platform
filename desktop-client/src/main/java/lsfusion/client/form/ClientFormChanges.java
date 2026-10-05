@@ -3,12 +3,16 @@ package lsfusion.client.form;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.grid.ClientGridProperty;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
+import lsfusion.client.form.view.Column;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +45,11 @@ public class ClientFormChanges {
     
     public final List<ClientContainer> collapseContainers;
     public final List<ClientContainer> expandContainers;
+
+    // the user orders / filters of the groups they were set for: the orders by their columns in priority order, true -
+    // ascending; the filters as the filter panel holds them
+    public final Map<ClientGroupObject, LinkedHashMap<Column, Boolean>> userOrders;
+    public final Map<ClientGroupObject, List<ClientPropertyFilter>> userFilters;
 
     public final boolean needConfirm;
 
@@ -131,6 +140,36 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             expandContainers.add(clientForm.findContainerByID(inStream.readInt()));
+        }
+
+        userOrders = new HashMap<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientGroupObject groupObject = clientForm.getGroupObject(inStream.readInt());
+            LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
+            int ordersCount = inStream.readInt();
+            for (int j = 0; j < ordersCount; j++) {
+                ClientPropertyDraw property = clientForm.getProperty(inStream.readInt());
+                groupOrders.put(new Column(property, new ClientGroupObjectValue(inStream, clientForm)), inStream.readBoolean());
+            }
+            userOrders.put(groupObject, groupOrders);
+        }
+
+        userFilters = new HashMap<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientGroupObject groupObject = clientForm.getGroupObject(inStream.readInt());
+            List<ClientPropertyFilter> groupFilters = new ArrayList<>();
+            int filtersCount = inStream.readInt();
+            for (int j = 0; j < filtersCount; j++) {
+                ClientPropertyDraw property = clientForm.getProperty(inStream.readInt());
+                ClientGroupObjectValue columnKey = new ClientGroupObjectValue(inStream, clientForm);
+                boolean negation = inStream.readBoolean();
+                Compare compare = Compare.deserialize(inStream);
+                Object value = BaseUtils.deserializeObject(inStream);
+                groupFilters.add(new ClientPropertyFilter(new ClientFilter(property), groupObject, columnKey, value, negation, compare, inStream.readBoolean()));
+            }
+            userFilters.put(groupObject, groupFilters);
         }
 
         needConfirm = inStream.readBoolean();

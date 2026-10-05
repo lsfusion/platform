@@ -111,6 +111,11 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
         negationCB.setSelected(negation);
     }
 
+    public void setAllowNull(boolean allowNull) {
+        this.allowNull = allowNull;
+        allowNullCB.setSelected(allowNull);
+    }
+
     public abstract void negationChanged(boolean value);
     public abstract void allowNullChanged(boolean value);
     public abstract void menuCanceled();
