@@ -40,7 +40,7 @@ While the application is running, there is a number of events for each form that
 
 -   `COLLAPSE` - the user collapsed the container.
 -   `EXPAND` - the user expanded the container.
--   `TAB` - the tab became active.
+-   `TAB` - the user selected the tab.
 
 There are also several so-called *derivative* events that are nothing more than syntactic sugar, but at the same time allow you more effectively to solve typical problems that arise when working with forms:
 

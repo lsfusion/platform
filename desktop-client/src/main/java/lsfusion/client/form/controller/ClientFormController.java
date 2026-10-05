@@ -195,6 +195,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, Long> pendingChangeOrdersRequests = Maps.newHashMap();
     private final Map<ClientGroupObject, Long> pendingChangeFiltersRequests = Maps.newHashMap();
     private final Map<ClientRegularFilterGroup, Long> pendingChangeRegularFilterRequests = Maps.newHashMap();
+    private final Map<ClientContainer, Long> pendingChangeTabRequests = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
 
     private boolean hasColumnGroupObjects;
@@ -299,7 +300,15 @@ public class ClientFormController implements AsyncListener {
     
     public void activateTab(ClientComponent component) {
        if(component.isTab())
-            ((TabbedClientContainerView)getLayout().getContainerView(component.container)).activateTab(component);
+            ((TabbedClientContainerView)getLayout().getContainerView(component.container)).activateServerTab(component);
+    }
+
+    // the tabs the server has made active are the ones it has, before the layout selects a tab where none is selected
+    private void setActiveTabs(List<ClientComponent> tabs) {
+        for (ClientComponent tab : tabs) {
+            if (tab.isTab())
+                ((TabbedClientContainerView)getLayout().getContainerView(tab.container)).setActiveTab(tab);
+        }
     }
 
     private Map<Integer, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
@@ -696,6 +705,8 @@ public class ClientFormController implements AsyncListener {
 
         modifyFormChangesWithChangeRegularFilterAsyncs(requestIndex, formChanges);
 
+        modifyFormChangesWithChangeTabAsyncs(requestIndex, formChanges);
+
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, formChanges);
 
         for (GridController controller : controllers.values()) {
@@ -709,6 +720,8 @@ public class ClientFormController implements AsyncListener {
         expandCollapseContainers(formChanges);
 
         updateRegularFilters(formChanges);
+
+        setActiveTabs(formChanges.activateTabs);
         
         formLayout.autoShowHideContainers();
         
@@ -870,6 +883,22 @@ public class ClientFormController implements AsyncListener {
                 iterator.remove();
             } else {
                 formChanges.regularFilters.remove(entry.getKey());
+            }
+        }
+    }
+
+    // the tab the server reports made active in a tabbed container while a request selecting one there is not answered
+    // is older than the tab shown
+    private void modifyFormChangesWithChangeTabAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
+        assert currentDispatchingRequestIndex >= 0 || pendingChangeTabRequests.isEmpty();
+
+        for (Iterator<Map.Entry<ClientContainer, Long>> iterator = pendingChangeTabRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientContainer, Long> entry = iterator.next();
+
+            if (entry.getValue() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+            } else {
+                formChanges.activateTabs.removeIf(tab -> entry.getKey().equals(tab.container));
             }
         }
     }
@@ -1255,6 +1284,11 @@ public class ClientFormController implements AsyncListener {
 
     public void setTabActive(final ClientContainer container, final ClientComponent component) {
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setTabActive") {
+            @Override
+            protected void onAsyncRequest(long requestIndex) {
+                pendingChangeTabRequests.put(container, requestIndex);
+            }
+
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setTabActive(requestIndex, lastReceivedRequestIndex, container.getID(), component.getID());

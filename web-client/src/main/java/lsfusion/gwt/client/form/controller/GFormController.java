@@ -165,6 +165,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private final NativeSIDMap<GGroupObject, Long> pendingChangeOrdersRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeFiltersRequests = new NativeSIDMap<>();
     private final NativeHashMap<GRegularFilterGroup, Long> pendingChangeRegularFilterRequests = new NativeHashMap<>();
+    private final NativeSIDMap<GContainer, Long> pendingChangeTabRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GFilterConditionView, Long> pendingLoadingFilterRequests = new NativeSIDMap<>();
@@ -1024,6 +1025,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         modifyFormChangesWithChangeRegularFilterAsyncs(requestIndex, fc);
 
+        modifyFormChangesWithChangeTabAsyncs(requestIndex, fc);
+
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, fc);
 
         modifyFormChangesWithLoadingPropertyAsyncs(requestIndex, fc);
@@ -1048,6 +1051,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         activateElements(fc);
 
         applyNeedConfirm(fc);
+
+        setActiveTabs(fc);
 
         formLayout.update(requestIndex);
 
@@ -1126,10 +1131,21 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         panelController.update();
     }
 
+    // the tabs the server has made active are the ones it has, before the layout selects a tab where none is selected
+    private void setActiveTabs(GFormChanges fc) {
+        for (GComponent component : fc.activateTabs) {
+            TabbedContainerView tabbedView = getTabbedView(component);
+            if (tabbedView != null)
+                tabbedView.setActiveTab(component);
+        }
+    }
+
     private void activateElements(GFormChanges fc) {
         Scheduler.get().scheduleDeferred(() -> {
             for(GComponent component : fc.activateTabs)
                 activateTab(component);
+            if (!fc.activateTabs.isEmpty())
+                formLayout.updatePanels(); // as a user's selection of a tab does (setTabActive)
 
             for(GPropertyDraw propertyDraw : fc.activateProps)
                 focusProperty(propertyDraw);
@@ -1247,6 +1263,17 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 pendingChangeRegularFilterRequests.remove(filterGroup);
             else
                 fc.regularFilters.remove(filterGroup);
+        });
+    }
+
+    // the tab the server reports made active in a tabbed container while a request selecting one there is not answered
+    // is older than the tab shown
+    private void modifyFormChangesWithChangeTabAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingChangeTabRequests.foreachEntry((tabbedPane, requestIndex) -> {
+            if (requestIndex <= currentDispatchingRequestIndex)
+                pendingChangeTabRequests.remove(tabbedPane);
+            else
+                fc.activateTabs.removeIf(tab -> tabbedPane.equals(tab.container));
         });
     }
 
@@ -2052,7 +2079,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {
-        asyncResponseDispatch(new SetTabActive(tabbedPane.ID, visibleComponent.ID));
+        long requestIndex = asyncResponseDispatch(new SetTabActive(tabbedPane.ID, visibleComponent.ID));
+        pendingChangeTabRequests.put(tabbedPane, requestIndex);
 
         formLayout.updatePanels(); // maybe it's not needed, but we want to make it symmetrical to the container collapsed call
     }
@@ -2203,10 +2231,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public void activateTab(GComponent component) {
+        TabbedContainerView tabbedView = getTabbedView(component);
+        if(tabbedView != null)
+            tabbedView.activateServerTab(component);
+    }
+
+    // a container React draws has no view: nothing to switch
+    private TabbedContainerView getTabbedView(GComponent component) {
         GAbstractContainerView parentView = component.container != null ? formLayout.getContainerView(component.container) : null;
-        // a container React draws has no view: nothing to switch
-        if(component.isTab() && parentView instanceof TabbedContainerView)
-            ((TabbedContainerView) parentView).activateTab(component);
+        return component.isTab() && parentView instanceof TabbedContainerView ? (TabbedContainerView) parentView : null;
     }
 
     public abstract static class CustomCallback<T> implements RequestCountingAsyncCallback<T> {
