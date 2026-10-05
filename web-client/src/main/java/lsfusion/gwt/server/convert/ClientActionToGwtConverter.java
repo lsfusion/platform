@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.com.WriteToComPortClientAction;
 import lsfusion.base.file.*;
+import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.base.net.PingClientAction;
 import lsfusion.base.net.TcpClientAction;
 import lsfusion.base.net.UdpClientAction;
@@ -324,6 +325,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GWriteAction convertAction(WriteClientAction action) {
         String filePath = WriteUtils.appendExtension(action.path, action.file);
         return new GWriteAction(FileUtils.saveActionFile(action.file.getRawFile(), BaseUtils.getFileExtension(filePath), BaseUtils.getFileName(filePath)), filePath, Base64.encode(action.file.getRawFile().getBytes()), action.append, action.isDialog);
+    }
+
+    // the file is read from the server chunk by chunk right into the download file, so neither the whole file nor its base64 is kept in memory
+    // (and there are no bytes for the agent and flutter, they get the url)
+    @Converter(from = WriteServerFileClientAction.class)
+    public GWriteAction convertAction(WriteServerFileClientAction action, RemoteRequestInterface remote) {
+        return new GWriteAction(FileUtils.saveActionFile(out -> action.read(remote, out), action.extension, action.path), action.getFileName(), null, false, action.isDialog);
     }
 
     @Converter(from = GetAvailablePrintersClientAction.class)

@@ -100,7 +100,8 @@ public class FileUtils {
         if(override || !file.exists()) {
             try(FileOutputStream outStream = org.apache.commons.io.FileUtils.openOutputStream(file)) {
                 consumer.accept(outStream);
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
+                deleteFile(file); // a half-written file is of no use (and a streamed one can be gigabytes)
                 throw Throwables.propagate(e);
             }
         }
@@ -504,6 +505,14 @@ public class FileUtils {
 
     public static String saveActionFile(RawFileData fileData, String extension, String displayName) { // with single usage (action scoped), so will be deleted just right after downloaded
         return saveDataFile(false, false, null, new FileData(fileData, extension), displayName);
+    }
+
+    // the same, but the file is written by the writer (streamed, since it can be bigger than the memory)
+    public static String saveActionFile(EConsumer<OutputStream, IOException> writer, String extension, String displayName) {
+        String fileID = BaseUtils.randomString(15);
+        if(displayName != null)
+            fileID = fileID + "/" + displayName;
+        return saveDownloadFile(true, false, DownloadStoreType.TEMP, "", BaseUtils.addExtension(fileID, extension), null, null, writer, null);
     }
 
     private static String saveStaticDataFile(FileData fileData, String displayName, boolean noAuth, Map<String, Pair<String, Runnable>> cacheMap) {

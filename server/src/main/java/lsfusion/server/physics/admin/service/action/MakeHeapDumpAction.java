@@ -2,10 +2,7 @@ package lsfusion.server.physics.admin.service.action;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.NamedFileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.WriteClientAction;
+import lsfusion.server.base.controller.remote.RemoteFiles;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
@@ -31,7 +28,8 @@ public class MakeHeapDumpAction extends InternalAction {
             Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), getProcessID()));
             while(!heapFile.exists())
                 Thread.sleep(1000);
-            context.delayUserInteraction(new WriteClientAction(new NamedFileData(new FileData(new RawFileData(heapFile), BaseUtils.getFileExtension(heapFile)), name), name, false, true));
+            // a heap dump is usually bigger than the max java array (2GB), so the client reads it in chunks
+            context.delayUserInteraction(RemoteFiles.getWriteAction(heapFile, false, name, BaseUtils.getFileExtension(heapFile), true));
         } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
         }

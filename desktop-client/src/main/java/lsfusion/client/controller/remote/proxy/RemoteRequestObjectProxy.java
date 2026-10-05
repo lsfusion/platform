@@ -12,6 +12,14 @@ public abstract class RemoteRequestObjectProxy<T extends RemoteRequestInterface>
     }
 
     @Override
+    public byte[] readFileChunk(String fileId, long offset, int length) throws RemoteException {
+        logRemoteMethodStartCall("readFileChunk");
+        byte[] result = target.readFileChunk(fileId, offset, length);
+        logRemoteMethodEndVoidCall("readFileChunk");
+        return result;
+    }
+
+    @Override
     public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object actionResult) throws RemoteException {
         logRemoteMethodStartCall("continueServerInvocation");
         ServerResponse result = target.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResult);

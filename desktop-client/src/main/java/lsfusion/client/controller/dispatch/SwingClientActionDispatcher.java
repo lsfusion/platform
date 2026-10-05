@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.WriteServerFileClientAction;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.exception.ClientExceptionManager;
@@ -511,6 +512,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(CopyToClipboardClientAction action) {
         if(action.value != null)
             SwingUtils.copyToClipboard(action.value);
+    }
+
+    @Override
+    public void execute(WriteServerFileClientAction action) throws IOException {
+        RemoteRequestInterface requestInterface = getRemoteRequestInterface();
+        if (requestInterface == null)
+            throw new IllegalStateException("No remote object to read " + action + " from");
+        action.write(requestInterface);
     }
 
     @Override

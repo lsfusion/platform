@@ -45,6 +45,23 @@ public class ZipUtils {
         }
     }
 
+    // zips the files into a temporary file, streaming them, since they can be bigger than the memory (backup files);
+    // the caller deletes the result
+    public static File makeZipFile(File[] files) throws IOException {
+        File zipFile = File.createTempFile("zip", ".zip");
+        try (ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)))) {
+            for (File file : files)
+                if (file.isFile()) {
+                    zos.putNextEntry(new ZipEntry(file.getName()));
+                    Files.copy(file.toPath(), zos);
+                }
+        } catch (IOException | RuntimeException e) {
+            BaseUtils.safeDelete(zipFile);
+            throw e;
+        }
+        return zipFile;
+    }
+
     public static Map<String, FileData> unpackFile(RawFileData file, String extension, boolean throwUnsupported) {
         Map<String, FileData> result;
         if (extension.equalsIgnoreCase("zip")) {

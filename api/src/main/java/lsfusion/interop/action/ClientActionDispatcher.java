@@ -1,6 +1,7 @@
 package lsfusion.interop.action;
 
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.WriteServerFileClientAction;
 import lsfusion.interop.form.event.EventBus;
 
 import java.io.IOException;
@@ -49,6 +50,8 @@ public interface ClientActionDispatcher {
     String execute(LoadLinkClientAction action);
 
     void execute(CopyToClipboardClientAction action);
+
+    void execute(WriteServerFileClientAction action) throws IOException;
 
     Map<String, RawFileData> execute(UserLogsClientAction action);
 

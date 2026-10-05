@@ -26,4 +26,9 @@ public interface RemoteRequestInterface extends PendingRemoteInterface {
     ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params) throws RemoteException;
 
     ServerResponse change(long requestIndex, long lastReceivedRequestIndex, String property, Object[] params, Object value) throws RemoteException;
+
+    // a part of the file the server left for the client to read (see WriteServerFileClientAction) - it is read part by part,
+    // because the whole file can be bigger than the max java array (2GB) and the memory of the servers / client.
+    // A chunk shorter than length is the last one
+    byte[] readFileChunk(String fileId, long offset, int length) throws RemoteException;
 }

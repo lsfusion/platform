@@ -288,6 +288,14 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, currentInvocation -> currentInvocation.resumeWithThrowable(clientThrowable));
     }
 
+    public byte[] readFileChunk(String fileId, long offset, int length) throws RemoteException {
+        try {
+            return RemoteFiles.read(fileId, offset, length);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public boolean isInServerInvocation(long requestIndex) throws RemoteException {
         boolean isInServerInvocation = getInvocation(requestIndex) != null;
         Object recentResult = recentResults.get(requestIndex).get();

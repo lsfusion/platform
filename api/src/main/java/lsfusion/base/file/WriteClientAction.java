@@ -12,8 +12,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -53,7 +51,7 @@ public class WriteClientAction extends ExecuteClientAction {
         }
     }
 
-    private String showSaveFileDialog(File file) {
+    static String showSaveFileDialog(File file) {
         String chosenFile = null;
 
         JFileChooser fileChooser = new JFileChooser();
@@ -81,7 +79,7 @@ public class WriteClientAction extends ExecuteClientAction {
         return chosenFile;
     }
 
-    private int showConfirmDialog(Component parentComponent, Object message, String title) {
+    private static int showConfirmDialog(Component parentComponent, Object message, String title) {
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
                 UIManager.getString("OptionPane.noButtonText")};
 
@@ -103,10 +101,7 @@ public class WriteClientAction extends ExecuteClientAction {
         }
     }
 
-    private void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
-        Set keys = comp.getFocusTraversalKeys(id);
-        Set newKeys = new HashSet(keys);
-        newKeys.add(key);
-        comp.setFocusTraversalKeys(id, newKeys);
+    private static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
+        comp.setFocusTraversalKeys(id, BaseUtils.addSet(comp.getFocusTraversalKeys(id), key));
     }
 }

@@ -35,7 +35,7 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
         GAction[] resultActions = new GAction[serverResponse.actions.length];
         for (int i = 0; i < serverResponse.actions.length; i++) {
             try {
-                resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, realHostName, formID, servlet);
+                resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, realHostName, formID, servlet, remoteInterface);
             } catch (Exception e) {
                 resultActions[i] = new GThrowExceptionAction(MainDispatchServlet.fromWebServerToWebClient(e));
             }
