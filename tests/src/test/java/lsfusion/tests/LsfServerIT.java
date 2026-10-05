@@ -36,8 +36,10 @@ import static lsfusion.tests.TestServer.excerpt;
 
 /** The behaviour tests. One server and one database for the whole run. Every action named test* is called through
  *  the external http /exec, which runs it in a session of its own and, since a test action does not apply, throws
- *  its changes away afterwards. A test is named by where its module sits: forms/EvalForms.testEvalGroupObjectRef,
- *  which is what -Dlsf.tests= filters on and what quarantine.txt lists. */
+ *  its changes away afterwards. /exec has no client to show a form to, and the server is started with
+ *  openFormsWithoutClient, so that SHOW ... NOWAIT still opens one: the form runs its ON INIT and is closed right away.
+ *  A test is named by where its module sits: forms/EvalForms.testEvalGroupObjectRef, which is what -Dlsf.tests=
+ *  filters on and what quarantine.txt lists. */
 @RunWith(Parameterized.class)
 public class LsfServerIT {
 
@@ -118,7 +120,8 @@ public class LsfServerIT {
         server = TestServer.start(TestServer.classPath("target/classes"), log,
                 "db.name=" + DATABASE, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
                 "http.port=" + httpPort, "rmi.port=" + ports[1], "webSocket.port=" + ports[2], "debugger.port=" + ports[3],
-                "settings.enableAPI=2"); // anonymous, so a test action needs no user
+                "settings.enableAPI=2", // anonymous, so a test action needs no user
+                "settings.openFormsWithoutClient=true"); // so that a test can SHOW a form, see above
         System.out.println("lsFusion test server: database " + DATABASE + ", http port " + httpPort + ", log " + log);
 
         long deadline = System.currentTimeMillis() + Duration.ofMinutes(10).toMillis();

@@ -1002,6 +1002,19 @@ public class Settings implements Cloneable {
         this.enableAPI = enableAPI;
     }
 
+    // lets an action called through the program interface - which has no client to show a form to - open one with
+    // SHOW ... NOWAIT: the form runs its ON INIT and is closed right away (see RemoteSessionContext). For the platform's
+    // own tests, which call their actions through /exec
+    private boolean openFormsWithoutClient = false;
+
+    public boolean isOpenFormsWithoutClient() {
+        return openFormsWithoutClient;
+    }
+
+    public void setOpenFormsWithoutClient(boolean openFormsWithoutClient) {
+        this.openFormsWithoutClient = openFormsWithoutClient;
+    }
+
     public int getReserveIDStep() {
         return reserveIDStep;
     }

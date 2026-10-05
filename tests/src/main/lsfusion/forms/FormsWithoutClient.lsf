@@ -1,0 +1,33 @@
+MODULE FormsWithoutClient;
+
+REQUIRE TestUtils;
+
+// a test is called through /exec, which has no client to show a form to. The runner starts the server with
+// openFormsWithoutClient, so that SHOW ... NOWAIT opens the form all the same: the form runs its ON INIT and is closed
+// right away. A SHOW that waits for the form to be closed fails, and before the form is opened
+
+CLASS FwcItem 'Item';
+
+fwcInitItem = DATA LOCAL FwcItem ();
+
+FORM fwcItems 'Items'
+    OBJECTS i = FwcItem
+    EVENTS ON INIT { fwcInitItem() <- i; }
+;
+
+testShowRunsOnInit 'SHOW ... NOWAIT runs ON INIT, on the objects it passes' () {
+    NEW item = FwcItem {
+        SHOW fwcItems OBJECTS i = item NOWAIT;
+        assertTrue(fwcInitItem() = item, 'ON INIT did not run on the object SHOW passed');
+    }
+}
+
+testShowWaitFails 'A SHOW that waits for the form fails before the form is opened' () {
+    TRY {
+        SHOW fwcItems WAIT;
+    } CATCH {
+        assertTrue(messageCaughtException() LIKE '%NOWAIT%', 'SHOW ... WAIT failed with ' + messageCaughtException());
+    }
+    assertNotNull(messageCaughtException(), 'SHOW ... WAIT did not fail');
+    assertNull(fwcInitItem(), 'ON INIT ran for a SHOW that failed');
+}
