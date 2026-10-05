@@ -38,7 +38,7 @@ import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -83,7 +83,7 @@ public class FormChanges {
     private final ImList<ContainerView> expandContainers;
 
     // the user orders / filters of the groups they were set for (GroupObjectInstance.UPDATED_USERORDER / USERFILTER)
-    private final ImMap<GroupObjectInstance, ImOrderMap<GroupColumn, Boolean>> userOrders;
+    private final ImMap<GroupObjectInstance, ImOrderMap<PropertyColumn, Boolean>> userOrders;
     private final ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters;
 
     // current (panel) objects
@@ -101,7 +101,7 @@ public class FormChanges {
                        ImSet<PropertyDrawInstance> dropProperties,
                        ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, 
                        ImList<PropertyDrawInstance> activateProps, ImList<ContainerView> collapseContainers, 
-                       ImList<ContainerView> expandContainers, ImMap<GroupObjectInstance, ImOrderMap<GroupColumn, Boolean>> userOrders,
+                       ImList<ContainerView> expandContainers, ImMap<GroupObjectInstance, ImOrderMap<PropertyColumn, Boolean>> userOrders,
                        ImMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters, boolean needConfirm) {
         this.objects = objects;
         this.gridObjects = gridObjects;
@@ -247,10 +247,10 @@ public class FormChanges {
         for (int i=0,size=userOrders.size();i<size;i++) {
             outStream.writeInt(userOrders.getKey(i).getID());
 
-            ImOrderMap<GroupColumn, Boolean> groupOrders = userOrders.getValue(i);
+            ImOrderMap<PropertyColumn, Boolean> groupOrders = userOrders.getValue(i);
             outStream.writeInt(groupOrders.size());
             for (int j=0,sizeJ=groupOrders.size();j<sizeJ;j++) {
-                GroupColumn column = groupOrders.getKey(j);
+                PropertyColumn column = groupOrders.getKey(j);
                 outStream.writeInt(column.property.getID());
                 serializeGroupObjectValue(outStream, column.columnKeys);
                 outStream.writeBoolean(!groupOrders.getValue(j)); // ascending, as a client sends it (setPropertyOrders)

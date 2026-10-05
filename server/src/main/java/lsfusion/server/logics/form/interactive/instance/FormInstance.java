@@ -293,14 +293,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                                 groupPivotProps = entity.getPivotGroupProps();
                                 groupMeasureProps = entity.getPivotMeasureProps();
                             }
-                            Function<PropertyDrawEntity, GroupColumn> propToColumn = prop -> new GroupColumn(instanceFactory.getInstance(prop), MapFact.EMPTY());
+                            Function<PropertyDrawEntity, PropertyColumn> propToColumn = prop -> new PropertyColumn(instanceFactory.getInstance(prop), MapFact.EMPTY());
 
-                            ImSet<GroupColumn> pivotColumns = SetFact.EMPTY();
+                            ImSet<PropertyColumn> pivotColumns = SetFact.EMPTY();
                             ImSet<PropertyDrawEntity> pivotProps = groupPivotProps.get(groupEntity);
                             if (pivotProps != null)
                                 pivotColumns = pivotProps.mapSetValues(propToColumn);
 
-                            ImSet<GroupColumn> measureColumns = SetFact.EMPTY();
+                            ImSet<PropertyColumn> measureColumns = SetFact.EMPTY();
                             ImSet<PropertyDrawEntity> measureProps = groupMeasureProps.get(groupEntity);
                             if (measureProps != null)
                                 measureColumns = measureProps.mapSetValues(propToColumn);
@@ -533,31 +533,31 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     // the orders the form opens a group with (ORDERS); true - descending
-    private ImOrderMap<GroupColumn, Boolean> getDefaultOrders(GroupObjectInstance group) {
-        MOrderExclMap<GroupColumn, Boolean> mOrders = MapFact.mOrderExclMap();
+    private ImOrderMap<PropertyColumn, Boolean> getDefaultOrders(GroupObjectInstance group) {
+        MOrderExclMap<PropertyColumn, Boolean> mOrders = MapFact.mOrderExclMap();
         ImOrderMap<PropertyDrawEntity, Boolean> defaultOrders = entity.getDefaultOrdersList();
         for (int i = 0, size = defaultOrders.size(); i < size; i++) {
             PropertyDrawInstance<?> property = instanceFactory.getInstance(defaultOrders.getKey(i));
             if (property.toDraw == group)
-                mOrders.exclAdd(new GroupColumn(property, MapFact.EMPTY()), defaultOrders.getValue(i));
+                mOrders.exclAdd(new PropertyColumn(property, MapFact.EMPTY()), defaultOrders.getValue(i));
         }
         return mOrders.immutableOrder();
     }
 
     // the orders of the grid preferences a user has for a group: the columns sorted there, in their sort order - but a
     // property in columns, as a preference names no column; true - descending
-    private ImOrderMap<GroupColumn, Boolean> getPreferencesOrders(GroupObjectInstance group, GroupObjectUserPreferences preferences) {
+    private ImOrderMap<PropertyColumn, Boolean> getPreferencesOrders(GroupObjectInstance group, GroupObjectUserPreferences preferences) {
         List<Map.Entry<String, ColumnUserPreferences>> sorted = new ArrayList<>();
         for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet())
             if (entry.getValue().userSort != null && entry.getValue().userAscendingSort != null)
                 sorted.add(entry);
         sorted.sort(Comparator.comparing(entry -> entry.getValue().userSort));
 
-        MOrderExclMap<GroupColumn, Boolean> mOrders = MapFact.mOrderExclMap();
+        MOrderExclMap<PropertyColumn, Boolean> mOrders = MapFact.mOrderExclMap();
         for (Map.Entry<String, ColumnUserPreferences> entry : sorted) {
             PropertyDrawInstance<?> property = getPropertyDraw(entry.getKey());
             if (property != null && property.toDraw == group && property.getColumnGroupObjects().isEmpty())
-                mOrders.exclAdd(new GroupColumn(property, MapFact.EMPTY()), !entry.getValue().userAscendingSort);
+                mOrders.exclAdd(new PropertyColumn(property, MapFact.EMPTY()), !entry.getValue().userAscendingSort);
         }
         return mOrders.immutableOrder();
     }

@@ -6,7 +6,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -29,12 +29,12 @@ public class OrderAction extends UserEventAction {
         GroupObjectInstance groupObjectInstance = formInstance.instanceFactory.getExInstance(groupObject);
         if(groupObjectInstance != null) {
             List<JSONObject> objectList = readJSON(context);
-            MOrderMap<GroupColumn, Boolean> mOrders = MapFact.mOrderMap(MapFact.override());
+            MOrderMap<PropertyColumn, Boolean> mOrders = MapFact.mOrderMap(MapFact.override());
             if (objectList != null) {
                 for (JSONObject jsonObject : objectList) {
                     PropertyDrawInstance<?> propertyDraw = getPropertyDraw(formInstance, groupObjectInstance, jsonObject);
                     if (propertyDraw != null)
-                        mOrders.add(new GroupColumn(propertyDraw, MapFact.EMPTY()), jsonObject.optBoolean(DESC_KEY, false));
+                        mOrders.add(new PropertyColumn(propertyDraw, MapFact.EMPTY()), jsonObject.optBoolean(DESC_KEY, false));
                 }
             }
             groupObjectInstance.setUserOrders(mOrders.immutableOrder());

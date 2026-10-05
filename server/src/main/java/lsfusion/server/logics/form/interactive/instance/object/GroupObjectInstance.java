@@ -418,24 +418,24 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
     // the column each user order is by, as it was set
-    private ImMap<OrderInstance, GroupColumn> userOrderColumns = MapFact.EMPTY();
+    private ImMap<OrderInstance, PropertyColumn> userOrderColumns = MapFact.EMPTY();
 
     // the user orders by their columns, in priority order; true - descending
-    public ImOrderMap<GroupColumn, Boolean> getUserOrders() {
+    public ImOrderMap<PropertyColumn, Boolean> getUserOrders() {
         return userOrders.mapOrderKeys(userOrderColumns::get);
     }
 
     // all the user orders at once; true - descending. The orders the group has change nothing; of two columns of one
     // order - two draws of one property - the first one is kept, and the same orders by other columns change only the
     // columns reported, not the rows
-    public void setUserOrders(ImOrderMap<GroupColumn, Boolean> orders) {
+    public void setUserOrders(ImOrderMap<PropertyColumn, Boolean> orders) {
         if(BaseUtils.hashEquals(getUserOrders(), orders))
             return;
 
         OrderedMap<OrderInstance, Boolean> mOrders = new OrderedMap<>();
-        Map<OrderInstance, GroupColumn> columns = new HashMap<>();
+        Map<OrderInstance, PropertyColumn> columns = new HashMap<>();
         for (int i = 0, size = orders.size(); i < size; i++) {
-            GroupColumn column = orders.getKey(i);
+            PropertyColumn column = orders.getKey(i);
             OrderInstance order = column.property.getOrderProperty().getRemappedPropertyObject(column.columnKeys, false);
             if (columns.putIfAbsent(order, column) == null)
                 mOrders.put(order, orders.getValue(i));
@@ -837,10 +837,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         Where where = getWhere(mapKeys, modifier, reallyChanged);
 
         // first we need exprs to group
-        ImMap<GroupColumn, Expr> groupExprs = getGroupExprs(mapKeys, modifier, reallyChanged);
+        ImMap<PropertyColumn, Expr> groupExprs = getGroupExprs(mapKeys, modifier, reallyChanged);
 
         // group by this exprs - max(key)
-        ImRevMap<GroupColumn, KeyExpr> groupKeys = KeyExpr.getMapKeys(groupMode.groupProps);
+        ImRevMap<PropertyColumn, KeyExpr> groupKeys = KeyExpr.getMapKeys(groupMode.groupProps);
         ImMap<ObjectInstance, Expr> mapExprKeys = mapKeys.mapValues(keyExpr -> GroupExpr.create(groupExprs, keyExpr, where, GroupType.MAX, groupKeys));
 
         // group by max(key)
@@ -850,7 +850,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 executeClasses(session, env, baseClass, new LimitOffset(readSize)));
     }
 
-    public ImMap<GroupColumn, Expr> getGroupExprs(ImMap<ObjectInstance, KeyExpr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    public ImMap<PropertyColumn, Expr> getGroupExprs(ImMap<ObjectInstance, KeyExpr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         return groupMode.groupProps.<Expr, SQLException, SQLHandledException>mapValuesEx(value -> {
             ImMap<ObjectInstance, Expr> mapObjects = MapFact.addExcl(mapKeys, value.columnKeys.mapValues((Function<DataObject, ValueExpr>) DataObject::getExpr));
             Expr expr = value.property.getGroupProperty().getExpr(mapObjects, modifier, reallyChanged);

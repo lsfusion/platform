@@ -16,7 +16,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -47,7 +47,7 @@ public class MFormChanges {
     public MList<ContainerView> collapseContainers = ListFact.mList();
     public MList<ContainerView> expandContainers = ListFact.mList();
 
-    public MExclMap<GroupObjectInstance, ImOrderMap<GroupColumn, Boolean>> userOrders = MapFact.mExclMap();
+    public MExclMap<GroupObjectInstance, ImOrderMap<PropertyColumn, Boolean>> userOrders = MapFact.mExclMap();
     public MExclMap<GroupObjectInstance, ImList<UserFilterInstance>> userFilters = MapFact.mExclMap();
 
     public boolean needConfirm = false;

@@ -6,7 +6,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.json.JSONObject;
@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<GroupColumn, Boolean>> {
+public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<PropertyColumn, Boolean>> {
     public ReadOrdersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
@@ -29,9 +29,9 @@ public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<GroupColum
     }
 
     @Override
-    public List<JSONObject> createJSON(ImOrderMap<GroupColumn, Boolean> orders) {
+    public List<JSONObject> createJSON(ImOrderMap<PropertyColumn, Boolean> orders) {
         List<JSONObject> objects = new ArrayList<>();
-        for (GroupColumn column : orders.keyOrderSet()) {
+        for (PropertyColumn column : orders.keyOrderSet()) {
             Boolean order = orders.get(column);
             if (order != null) {
                 Map<String, Object> orderMap = new HashMap<>();

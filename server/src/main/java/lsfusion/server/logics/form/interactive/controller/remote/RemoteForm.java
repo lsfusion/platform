@@ -64,7 +64,7 @@ import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportMan
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
@@ -440,11 +440,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(setGroup) { // should correspond FormInstance constructor
                 GroupMode setGroupMode = null;
                 if(propertyIDs != null) {
-                    MExclSet<GroupColumn> mGroupProps = SetFact.mExclSet(propertyIDs.length);
-                    MExclSet<GroupColumn> mAggrProps = SetFact.mExclSet(propertyIDs.length);
+                    MExclSet<PropertyColumn> mGroupProps = SetFact.mExclSet(propertyIDs.length);
+                    MExclSet<PropertyColumn> mAggrProps = SetFact.mExclSet(propertyIDs.length);
                     for (int i = 0; i < propertyIDs.length; i++) {
                         PropertyDrawInstance property = form.getPropertyDraw(propertyIDs[i]);
-                        GroupColumn column = new GroupColumn(property, deserializeDataKeysValues(columnKeys[i]));
+                        PropertyColumn column = new PropertyColumn(property, deserializeDataKeysValues(columnKeys[i]));
                         if (i >= aggrProps)
                             mAggrProps.exclAdd(column);
                         else
@@ -560,11 +560,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
             }
 
-            MOrderExclMap<GroupColumn, Boolean> mOrders = MapFact.mOrderExclMap();
+            MOrderExclMap<PropertyColumn, Boolean> mOrders = MapFact.mOrderExclMap();
             for(int i = 0; i < propertyList.size(); i++) {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyList.get(i));
                 if(propertyDraw != null) // a property the security policy hides is not on the form
-                    mOrders.exclAdd(new GroupColumn(propertyDraw, deserializeDataKeysValues(columnKeyList.get(i))), !orderList.get(i));
+                    mOrders.exclAdd(new PropertyColumn(propertyDraw, deserializeDataKeysValues(columnKeyList.get(i))), !orderList.get(i));
             }
             groupObject.setUserOrders(mOrders.immutableOrder());
 

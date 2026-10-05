@@ -27,32 +27,32 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 public class GroupMode {
-    public final ImSet<GroupColumn> groupProps;
+    public final ImSet<PropertyColumn> groupProps;
     public final ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> aggrProps;
 
-    public GroupMode(ImSet<GroupColumn> groupProps, ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> aggrProps) {
+    public GroupMode(ImSet<PropertyColumn> groupProps, ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> aggrProps) {
         this.groupProps = groupProps;
         this.aggrProps = aggrProps;
     }
 
-    public static GroupMode create(ImSet<GroupColumn> groupProps, ImSet<GroupColumn> aggrProps, PropertyGroupType aggrType, InstanceFactory instanceFactory) {
+    public static GroupMode create(ImSet<PropertyColumn> groupProps, ImSet<PropertyColumn> aggrProps, PropertyGroupType aggrType, InstanceFactory instanceFactory) {
         assert !groupProps.intersect(aggrProps);
 
         // look for formulas in aggrProps, and replace them with properties that they use
         // breadth-first search
-        MOrderSet<GroupColumn> mAggrGroupProps = SetFact.mOrderSet(aggrProps.toOrderSet());
+        MOrderSet<PropertyColumn> mAggrGroupProps = SetFact.mOrderSet(aggrProps.toOrderSet());
         for(int i=0;i<mAggrGroupProps.size();i++) {
-            GroupColumn groupColumn = mAggrGroupProps.get(i);
+            PropertyColumn groupColumn = mAggrGroupProps.get(i);
             PropertyDrawEntity<?, ?> entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
 
             if(entity.getFormula() != null)
                 for(PropertyDrawEntity formulaOperand : entity.getFormulaOperands()) {
-                    GroupColumn formulaColumn = new GroupColumn(instanceFactory.getInstance(formulaOperand), groupColumn.columnKeys);
+                    PropertyColumn formulaColumn = new PropertyColumn(instanceFactory.getInstance(formulaOperand), groupColumn.columnKeys);
                     if(!groupProps.contains(formulaColumn))
                         mAggrGroupProps.add(formulaColumn);
                 }
         }
-        ImOrderSet<GroupColumn> aggrGroupProps = mAggrGroupProps.immutableOrder();
+        ImOrderSet<PropertyColumn> aggrGroupProps = mAggrGroupProps.immutableOrder();
 
         return new GroupMode(groupProps, group(aggrGroupProps.getSet(), groupColumn -> {
             PropertyDrawEntity entity = ((PropertyDrawInstance<?>) groupColumn.property).entity;
@@ -75,7 +75,7 @@ public class GroupMode {
         return aggrProps.addExcl(group(groupProps, groupColumn -> PropertyGroupType.GROUP));
     }
 
-    public static ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> group(ImSet<GroupColumn> props, Function<GroupColumn, PropertyGroupType> types) {
+    public static ImMap<PropertyDrawInstance, ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType>> group(ImSet<PropertyColumn> props, Function<PropertyColumn, PropertyGroupType> types) {
         return props.group(key -> key.property).mapValues(key -> key.mapKeyValues(keyc -> keyc.columnKeys, types));
     }
 
@@ -83,7 +83,7 @@ public class GroupMode {
         return getGroupByProps().containsKey(property);
     }
     
-    // object is ObjectInstance or GroupColumn
+    // object is ObjectInstance or PropertyColumn
     public <K extends PropertyInterface> Expr transformExpr(final SQLFunction<PropertyObjectInstance<?>, Expr> getExpr, AggrReaderInstance aggrReader, Where groupModeWhere, ImMap<Object, Expr> groupModeExprs) throws SQLException, SQLHandledException {
 
         PropertyDrawInstance<K> property = aggrReader.getAggrProperty();

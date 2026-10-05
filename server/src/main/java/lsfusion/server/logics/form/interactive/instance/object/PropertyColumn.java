@@ -8,18 +8,18 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 
-public class GroupColumn extends TwinImmutableObject {
+public class PropertyColumn extends TwinImmutableObject {
 
     public final PropertyDrawInstance property;
     public final ImMap<ObjectInstance, DataObject> columnKeys;
 
-    public GroupColumn(PropertyDrawInstance property, ImMap<ObjectInstance, DataObject> columnKeys) {
+    public PropertyColumn(PropertyDrawInstance property, ImMap<ObjectInstance, DataObject> columnKeys) {
         this.property = property;
         this.columnKeys = columnKeys;
     }
 
     protected boolean calcTwins(TwinImmutableObject o) {
-        return property.equals(((GroupColumn)o).property) && columnKeys.equals(((GroupColumn)o).columnKeys);
+        return property.equals(((PropertyColumn)o).property) && columnKeys.equals(((PropertyColumn)o).columnKeys);
     }
 
     public int immutableHashCode() {

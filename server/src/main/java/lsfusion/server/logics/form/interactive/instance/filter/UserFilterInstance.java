@@ -12,7 +12,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 // filter that condition is applied as
 public class UserFilterInstance extends TwinImmutableObject {
 
-    public final GroupColumn column;
+    public final PropertyColumn column;
     public final boolean negation;
     public final Compare compare;
     public final ObjectValue value;
@@ -38,7 +38,7 @@ public class UserFilterInstance extends TwinImmutableObject {
 
     public final FilterInstance filter;
 
-    public UserFilterInstance(GroupColumn column, boolean negation, Compare compare, ObjectValue value, boolean junction) {
+    public UserFilterInstance(PropertyColumn column, boolean negation, Compare compare, ObjectValue value, boolean junction) {
         this.column = column;
         this.negation = negation;
         this.compare = compare;
@@ -60,7 +60,7 @@ public class UserFilterInstance extends TwinImmutableObject {
         Compare compare = Compare.deserialize(inStream);
         ObjectValue value = form.session.getObjectValue(property.getFilterProperty().getFilterValueClass(compare), BaseUtils.deserializeObject(inStream));
         boolean junction = inStream.readBoolean();
-        return new UserFilterInstance(new GroupColumn(property, columnKeys), negation, compare, value, junction);
+        return new UserFilterInstance(new PropertyColumn(property, columnKeys), negation, compare, value, junction);
     }
 
     private <P extends PropertyInterface> FilterInstance createFilter(PropertyDrawInstance<P> propertyDraw) {

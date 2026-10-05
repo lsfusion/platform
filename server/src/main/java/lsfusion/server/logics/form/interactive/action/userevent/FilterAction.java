@@ -12,7 +12,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.UserFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
+import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -61,7 +61,7 @@ public class FilterAction extends UserEventAction {
                         } catch (ParseException e) {
                             throw Throwables.propagate(e);
                         }
-                        mFilters.add(new UserFilterInstance(new GroupColumn(propertyDraw, MapFact.EMPTY()), jsonObject.optBoolean(NEGATION_KEY), compare,
+                        mFilters.add(new UserFilterInstance(new PropertyColumn(propertyDraw, MapFact.EMPTY()), jsonObject.optBoolean(NEGATION_KEY), compare,
                                 formInstance.session.getObjectValue(propertyDraw.getFilterProperty().getFilterValueClass(compare), value),
                                 !jsonObject.optBoolean(OR_KEY)));
                     }
