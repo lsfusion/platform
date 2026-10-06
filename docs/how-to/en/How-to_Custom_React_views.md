@@ -1096,13 +1096,15 @@ Handing `data.<group>.orders` back through the array form would therefore take t
 `NOEXTID` property and the one on a twin — while changing ONE sorting never touches what it does not name.
 
 Each property says whether a view should offer sorting by it: `data.<group>.<property>.noSort` is `true` for a
-property whose design says so —
+property whose design says so:
 
-    DESIGN orders {
-        PROPERTY(number(o)) { noSort = TRUE; }
-    }
+```lsf
+DESIGN orders {
+    PROPERTY(number(o)) { noSort = TRUE; }
+}
+```
 
-— and it is stated on the property itself, so a panel property answers it as a column does. A view that draws its own
+It is stated on the property itself, so a panel property answers it as a column does. A view that draws its own
 headers reads it to leave that header alone.
 
 `noSort` refuses a sorting the USER states, not one the form does. What the form states may name such a property — a
