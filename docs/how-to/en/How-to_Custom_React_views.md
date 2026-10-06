@@ -32,7 +32,7 @@ Another way is to leave the React container without a base size and make the win
 
 The base size also bounds the height of the container itself, wherever the form opens. Without it the container is as tall as what the component drew, and the containers above it grow with it, so a component that draws more than fits on the form stretches the whole form, and the form scrolls as a whole — in a tab, its main container. A base height (`height` or `size`) separates the container's size from the content's: the container gets that height, expands from it into the form's free space by its extension coefficient (`fill`), and content that does not fit scrolls inside it (`overflowVert` is `auto` by default). It stretches the form only when it does not fit there itself — like the base size of any component.
 
-### The component
+### The component {#the-component}
 
 `OrderBoard` is a named export from a `.jsx` module under `src/main/web`. How the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
 
@@ -49,7 +49,7 @@ The component is first drawn with the first projection of its container, once th
 
 `props.data` is the form projection — its own for each `CUSTOM REACT` container, holding only what that container draws or places, so a second React container on the form gets a separate one, and a [controller](How-to_Custom_view_controller.md) of its own with it.
 
-A view reads and changes only its own container's parts. What containers share is the form itself — its current objects and its session — so a filter or a current object changed in one container shows in another, as it does in the standard client.
+A view reads and changes only its own container's parts. What containers share is the form itself — its current objects and its session — so a filter or a current object changed in one container shows in another, as it does in the standard client. A page built of such containers is in [A page of several containers](#several-containers).
 
 Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there. `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group is projected — its data, and the controller members that change it — in the React container where that part's component is: the rows and the current object where the group's grid (or its tree) is, each panel property where that PROPERTY is — an `lsf` one too, where the view places it, with the entry that labels it (an `lsf` action has no entry, and brings no part of its group). A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and an `lsf` container ends the walk, since the platform draws everything under it. The component's own `lsf` decides only which entry it has there — its content, or the [entry that labels it](#lsf-child) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them is `lsf`, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { lsf = TRUE; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#lsf-child) and no rows). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
 
@@ -301,6 +301,57 @@ const Column = ({ cellKey, rowKeys }) => (
 ```
 
 Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
+
+### A page of several containers {#several-containers}
+
+A page of several regions — a list of categories, the items of the chosen category, the details of the current item — is not one component over the whole form: each region is a `custom` container of its own, over its own part of the form, and ordinary `DESIGN` containers lay them out. A change then re-renders only the regions whose projections changed, a region in an inactive tab or a collapsed container is not read until it is shown — unless a visible region depends on it — and another module can still add to the page from `DESIGN`. What the regions share is the form's state, not a component's:
+
+```lsf
+CLASS Category;
+name = DATA ISTRING[100] (Category);
+
+CLASS Item;
+name = DATA ISTRING[100] (Item);
+category = DATA Category (Item);
+archived = DATA BOOLEAN (Item);
+
+CLASS Detail;
+item = DATA Item (Detail);
+name = DATA ISTRING[100] (Detail);
+quantity = DATA INTEGER (Detail);
+
+showArchived = DATA LOCAL BOOLEAN ();
+
+FORM catalog 'Catalog'
+    OBJECTS c = Category
+    PROPERTIES(c) READONLY name
+
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name, archived, nameItem = name PANEL
+    PROPERTIES() showArchived
+    FILTERS category(i) = c, NOT archived(i) OR showArchived()
+    ORDERS name(i)
+
+    OBJECTS d = Detail
+    PROPERTIES(d) READONLY name, quantity
+    FILTERS item(d) = i
+;
+
+DESIGN catalog {
+    NEW page {
+        horizontal = TRUE;
+        NEW categories { fill = 1; custom = 'CategoryList'; MOVE BOX(c); }
+        NEW items { fill = 2; custom = 'ItemList'; MOVE BOX(i); MOVE PROPERTY(showArchived()); }
+        NEW details { fill = 1; custom = 'DetailPanel'; MOVE PROPERTY(nameItem); MOVE BOX(d); }
+    }
+}
+```
+
+`CategoryList`, `ItemList` and `DetailPanel` are components like [`OrderBoard`](#the-component), and each container's `props.data` holds only the parts it draws: `CategoryList` sees `data.c`, `ItemList` sees `data.i` — its rows — and `data.showArchived`, `DetailPanel` sees `data.d` and, as `data.i`, only the panel property `nameItem` moved there. A part of a group is projected where its component stands — the rows where the group's grid is, a panel property where the property itself is — so the current item's name reaches the detail panel as a panel property of `i`, added under an alias and `MOVE`d into the container that draws it, without the group's rows. A click in a list sets the current object (`controller.c.change(row)`), and the filters of the groups below follow it — the platform's own dependency between groups, so the containers need no shared JavaScript state. Only the container that draws a group's rows can change its current object. A form-level property two containers show is added twice, under two aliases, one in each container.
+
+The switch that decides which rows are shown is a form property, changed through the controller (`controller.showArchived.change(true)`) and applied by the form's filter — not a component state that filters `data.i.list`: the server then reads only the rows that pass the filter, and the count or the total the region shows is a property over the same filter ([the count under the form's filter](#the-component)). The same holds for a search text or a chosen section. Only the state that does not decide what is read — an expanded card, an open sheet — stays in the component.
+
+The regions are laid out by the standard containers: a horizontal parent, an extension coefficient (`fill`) on each column, and a base height on a column whose content scrolls inside it ([the base size](#selecting-the-component)).
 
 ### Crossing back to lsFusion
 

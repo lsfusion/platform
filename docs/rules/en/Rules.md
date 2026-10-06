@@ -71,7 +71,9 @@ the name in the first column.
    implementation of these mechanisms in Java, JavaScript or
    another language: a separate server part, a separate
    interface with its own data operations, a computation or
-   a check duplicated outside the platform.
+   a check duplicated outside the platform, rows filtered,
+   sorted or summed in a client component instead of the
+   form's filters and properties.
 
 2. WHAT IS NOT APPLICATION CODE. The rule concerns the
    application's own code. It does not concern the platform's
