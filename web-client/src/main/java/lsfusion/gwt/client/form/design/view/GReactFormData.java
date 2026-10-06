@@ -82,16 +82,14 @@ public class GReactFormData {
         void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values);
         // the suggestion list of a property's cell, from the server's lookup `actionSID`
         void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount);
-        // a node of a tree whose rows a view draws, opened: one of those rows. The index of its request goes to
-        // `asked`, for what the projection shows of the node until the keys of the answer come with that index
-        // (TreeRowsGroupNode.updateKeys) - and the form publishes it then, as it does all it shows before an answer
-        void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked);
+        // a node of a tree whose rows a view draws, opened: one of those rows
+        void expandNode(GGroupObject group, GGroupObjectValue key);
         // ... or closed
-        void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked);
+        void collapseNode(GGroupObject group, GGroupObjectValue key);
         // ... and every node of such a group and of the groups below it: opened
-        void expandAll(GGroupObject group, Consumer<Long> asked);
+        void expandAll(GGroupObject group);
         // ... or closed
-        void collapseAll(GGroupObject group, Consumer<Long> asked);
+        void collapseAll(GGroupObject group);
     }
 
     // a react container's state, made with its view, and its controller with it
@@ -846,6 +844,11 @@ public class GReactFormData {
         // a grid's rows state nothing about each other
         void place() {
         }
+        // ... and none of them is a node to open
+        public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
+        }
+        public void changeExpandedAll(boolean open, long requestIndex) {
+        }
     }
     // ... of a group of a TREE: its rows say where they hang in it, from the hierarchy sent beside them. A node's
     // children are rows of its own group, when that one recurses, or of the group below; the tree draws all its groups,
@@ -1005,38 +1008,38 @@ public class GReactFormData {
         // rows a group returns at all), so these return nothing: the children arrive as rows. The node's `expanded`
         // says what was asked at once, as a changed value does, and what the rows say once the server answers
         void expand(String surface, JavaScriptObject objectOrKey) {
-            expandNode(resolveGroupRow(controllerPrefix(surface), objectOrKey));
+            verbs.expandNode(group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
         void collapse(String surface, JavaScriptObject objectOrKey) {
-            collapseNode(resolveGroupRow(controllerPrefix(surface), objectOrKey));
+            verbs.collapseNode(group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
         // ... the opposite of what the node says now (`expanded`) - what was asked of it included, so two toggles
         // before the answer open it and close it again
         void toggle(String surface, JavaScriptObject objectOrKey) {
             GGroupObjectValue key = resolveGroupRow(controllerPrefix(surface), objectOrKey);
             if (isOpen(key))
-                collapseNode(key);
+                verbs.collapseNode(group, key);
             else
-                expandNode(key);
-        }
-        void expandNode(GGroupObjectValue key) {
-            verbs.expandNode(group, key, requestIndex -> setPendingExpanding(key, new ExpandRequest(true, requestIndex)));
-        }
-        void collapseNode(GGroupObjectValue key) {
-            verbs.collapseNode(group, key, requestIndex -> setPendingExpanding(key, new ExpandRequest(false, requestIndex)));
+                verbs.expandNode(group, key);
         }
         // ... expandAll(), collapseAll(): every node of the group, and of the groups below it - for the tree's top
         // group, the whole tree
         void expandAll() {
-            verbs.expandAll(group, requestIndex -> setPendingExpandingAll(new ExpandRequest(true, requestIndex)));
+            verbs.expandAll(group);
         }
         void collapseAll() {
-            verbs.collapseAll(group, requestIndex -> setPendingExpandingAll(new ExpandRequest(false, requestIndex)));
+            verbs.collapseAll(group);
         }
-        // A node a view asked to open or close is shown as asked at once, as the form publishes it once the request is
-        // sent - and so is every node there is of the group and of the groups below it; the latest request asked of a
-        // node is the one it shows
-        void setPendingExpandingAll(ExpandRequest request) {
+        // ===== the group's controller (GFormController.groupControllers), of a tree: a node asked to open or close,
+        // once the request is sent - into the drafts only, as the form publishes then - shown as asked until the keys
+        // of the answer come with the request's index (updateKeys)
+        public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
+            setPendingExpanding(key, new ExpandRequest(open, requestIndex));
+        }
+        // ... and so is every node there is of the group and of the groups below it; the latest request asked of a node
+        // is the one it shows
+        public void changeExpandedAll(boolean open, long requestIndex) {
+            ExpandRequest request = new ExpandRequest(open, requestIndex);
             for (TreeRowsGroupNode node = this; node != null; node = node.down)
                 for (GGroupObjectValue key : node.rows)
                     node.setPendingExpanding(key, request);

@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.Consumer;
 
 /** Runs in compiled JavaScript: reference identity and JS object keys are part of the contract. */
 public class GReactFormDataTest extends GWTTestCase {
@@ -129,10 +128,10 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; }
                 public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { changed = keys[keys.length - 1]; }
                 public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
-                public void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked) { }
-                public void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked) { }
-                public void expandAll(GGroupObject group, Consumer<Long> asked) { }
-                public void collapseAll(GGroupObject group, Consumer<Long> asked) { }
+                public void expandNode(GGroupObject group, GGroupObjectValue key) { }
+                public void collapseNode(GGroupObject group, GGroupObjectValue key) { }
+                public void expandAll(GGroupObject group) { }
+                public void collapseAll(GGroupObject group) { }
             });
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
@@ -227,20 +226,32 @@ public class GReactFormDataTest extends GWTTestCase {
     private static final class TreeVerbs implements GReactFormData.Verbs {
         final ArrayList<String> asked = new ArrayList<>();
         GReactFormData projection;
+        Controllers controllers; // the form's controllers of the groups, which the form tells of a request
         long requestIndex;
 
         public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { asked.add("current " + group.getSID() + " " + key.toKeyString()); }
         public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { }
         public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
-        public void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> onAsked) { ask("expand " + group.getSID() + " " + key.toKeyString(), onAsked); }
-        public void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> onAsked) { ask("collapse " + group.getSID() + " " + key.toKeyString(), onAsked); }
-        public void expandAll(GGroupObject group, Consumer<Long> onAsked) { ask("expand all " + group.getSID(), onAsked); }
-        public void collapseAll(GGroupObject group, Consumer<Long> onAsked) { ask("collapse all " + group.getSID(), onAsked); }
-        // as the form does: the request numbered and sent, its index handed back, the projection published
-        void ask(String request, Consumer<Long> onAsked) {
-            asked.add(request);
-            onAsked.accept(++requestIndex);
+        // as the form does: the request numbered and sent, the group's controller told of it, the projection published
+        public void expandNode(GGroupObject group, GGroupObjectValue key) {
+            controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
             projection.flush();
+        }
+        public void collapseNode(GGroupObject group, GGroupObjectValue key) {
+            controllers.groups.get(group).changeExpanded(key, false, ask("collapse " + group.getSID() + " " + key.toKeyString()));
+            projection.flush();
+        }
+        public void expandAll(GGroupObject group) {
+            controllers.groups.get(group).changeExpandedAll(true, ask("expand all " + group.getSID()));
+            projection.flush();
+        }
+        public void collapseAll(GGroupObject group) {
+            controllers.groups.get(group).changeExpandedAll(false, ask("collapse all " + group.getSID()));
+            projection.flush();
+        }
+        long ask(String request) {
+            asked.add(request);
+            return ++requestIndex;
         }
     }
     private static final class TreeFixture {
@@ -283,6 +294,7 @@ public class GReactFormDataTest extends GWTTestCase {
             verbs.projection = projection;
             sa = projection.addContainer(a, d -> { data = d; publications++; });
             controllers = new Controllers(projection, form, lsf, layout);
+            verbs.controllers = controllers;
         }
         void group(GGroupObject group, int id, String sid) {
             group.ID = id; group.nativeSID = "g" + id; group.sID = sid;

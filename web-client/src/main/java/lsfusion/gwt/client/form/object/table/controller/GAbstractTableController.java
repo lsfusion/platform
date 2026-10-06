@@ -220,9 +220,13 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
     public abstract void updateCurrentKey(GGroupObjectValue currentKey);
 
     // ===== the platform's side of the form's controller of a group whose rows it draws (GGroupController, of the grid
-    // and the tree): a current object the view chose itself, and a reader of the group by that reader's own update of
-    // this controller
+    // and the tree): a current object the view chose itself and a node the tree opened itself, and a reader of the
+    // group by that reader's own update of this controller
     public void changeCurrentKey(GGroupObjectValue currentKey) {
+    }
+    public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
+    }
+    public void changeExpandedAll(boolean open, long requestIndex) {
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updateLsf(this, values, partial);
