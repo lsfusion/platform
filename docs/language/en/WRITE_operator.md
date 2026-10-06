@@ -28,20 +28,24 @@ For `ftp` and `ftps`, the supported query parameters are `passivemode`, `binaryt
 
 If the part of the URL after the last period already looks like a file extension (either a standard MIME extension, or a short — fewer than 4 characters — suffix with more letters than digits), it is used as is. Otherwise the period `.` is treated as part of the file name, and the extension is determined automatically based on the class of the file being written:
 
-| Extension                                  | Class       |
-|--------------------------------------------|-------------|
-| read from the passed object                | `FILE`      |
-| json                                       | `JSONFILE`  |
-| xml                                        | `XMLFILE`   |
-| csv                                        | `CSVFILE`   |
-| xls or xlsx, depending on the file content | `EXCELFILE` |
-| dbf                                        | `DBFFILE`   |
-| table                                      | `TABLEFILE` |
-| html                                       | `HTMLFILE`  |
-| doc or docx, depending on the file content | `WORDFILE`  |
-| jpg                                        | `IMAGEFILE` |
-| pdf                                        | `PDFFILE`   |
-| mp4                                        | `VIDEOFILE` |
+| Extension                                      | Class       |
+|------------------------------------------------|-------------|
+| read from the passed object                    | `FILE`      |
+| none — no extension is appended                | `RAWFILE`   |
+| json                                           | `JSONFILE`  |
+| xml                                            | `XMLFILE`   |
+| csv                                            | `CSVFILE`   |
+| txt                                            | `TEXTFILE`  |
+| xls or xlsx, depending on the file content     | `EXCELFILE` |
+| dbf                                            | `DBFFILE`   |
+| table                                          | `TABLEFILE` |
+| html                                           | `HTMLFILE`  |
+| doc or docx, depending on the file content     | `WORDFILE`  |
+| jpg, png or bmp, depending on the file content | `IMAGEFILE` |
+| pdf                                            | `PDFFILE`   |
+| mp4                                            | `VIDEOFILE` |
+
+When the URL ends with an extension this rule does not recognize — `patch` or `yaml`, for example — the extension of the file is appended even if it is the same one: `report.patch` for a `FILE` with the extension `patch` is written as `report.patch.patch`. A `RAWFILE` has no extension, so a URL that names the file is used as is: `WRITE RAWFILE(f) TO url` writes the content of `f` under exactly `url` ([type conversion operator](Type_conversion_operator.md)). If the URL ends with `/`, it names a directory: the file is written into it under its name — the name of a `NAMEDFILE`, `file` for the other classes — with the extension determined as above.
 
 The `Downloads` folder in the user folder is considered to be the current folder on the client side.
 
@@ -53,7 +57,7 @@ The `Downloads` folder in the user folder is considered to be the current folder
 
 - `DIALOG`
 
-    Keyword. If specified, before writing the file a dialog will be shown in which the user can change the specified URL. This can be used only when writing to the disk (the URL type is file). By default, the dialog is not shown. 
+    Keyword. If specified, before writing the file a dialog will be shown in which the user can change the specified URL. This can be used only when writing to the disk (the URL type is file). On the desktop client the extension of the name chosen in the dialog is replaced by the extension of the file being written, so a `RAWFILE` is saved there without an extension. By default, the dialog is not shown. 
 
 - `urlExpr`
 
@@ -85,6 +89,7 @@ The `Downloads` folder in the user folder is considered to be the current folder
 loadAndWrite ()  {
     INPUT f = FILE DO {
         WRITE f TO 'file:///home/user/loadedfile.csv' APPEND;
+        WRITE RAWFILE(f) TO '/home/user/loadedfile.patch'; // written under exactly this name, whatever the extension of f
         WRITE CLIENT f TO '/home/user/loadedfile.txt';
         WRITE CLIENT DIALOG f TO 'loadedfile';
     }

@@ -26,12 +26,12 @@ Below are the steps, conditions and operations of the search algorithm, dependin
 |Element type|Search step|Step conditions|Selection conditions|Selection operations|
 |---|---|---|---|---|
 |[Modules](Modules.md)|||<ul><li>Name equals[...](#name)</li></ul>||
-|[Forms](Forms.md), [Classes](User_classes.md), [Navigator Elements](Navigator.md), [Property and action groups](Groups_of_properties_and_actions.md) , [Tables](Tables.md), [Navigator Design](Navigator_design.md)|||<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li></ul>|
-|[Metacodes](Metaprogramming.md)|||<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li><li>Number of parameters matches[...](#metacode)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li></ul>|
+|[Forms](Forms.md), [Classes](User_classes.md), [Navigator Elements](Navigator.md), [Property and action groups](Groups_of_properties_and_actions.md) , [Tables](Tables.md), [Navigator Design](Navigator_design.md)|||<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Declared above (for elements of the module in which the search is performed)[...](#declared)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li></ul>|
+|[Metacodes](Metaprogramming.md)|||<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Declared above (for elements of the module in which the search is performed)[...](#declared)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li><li>Number of parameters matches[...](#metacode)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li></ul>|
 |[Properties](Properties.md), [Actions](Actions.md)|Local|<ul><li>Search for property inside action[...](#locals)</li><li>Namespace not specified explicitly[...](#nonamespace)</li></ul>|<ul><li>Name matches[...](#name)</li><li>Located upper in the stack[...](#stack)</li><li>Parameters classes match[...](#direct)</li></ul>|<ul><li>Selection of more specific classes of parameters[...](#concrete)</li></ul>|
 ||Local common|<ul><li>Search for property inside action[...](#locals)</li><li>Namespace not specified explicitly[...](#nonamespace)</li></ul>|<ul><li>Name matches[...](#name)</li><li>Located upper in the stack[...](#stack)</li><li>Parameters classes intersect[...](#indirect)</li></ul>||
-||Global||<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li><li>Parameters classes match[...](#direct)</li><li>Abstract property (if an abstract property is being searched for)[...](#abstract)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li><li>Selection of non-matching classes of parameters (if an abstract property is being searched for)[...](#notequals)</li><li>Selection of more specific classes of parameters[...](#concrete)</li></ul>|
-||Global common|<ul><li>Not searching for an abstract property[...](#notabstract)</li></ul>|<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li><li>Parameters classes intersect[...](#indirect)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li></ul>|
+||Global||<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Declared above (for elements of the module in which the search is performed)[...](#declared)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li><li>Parameters classes match[...](#direct)</li><li>Abstract property (if an abstract property is being searched for)[...](#abstract)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li><li>Selection of non-matching classes of parameters (if an abstract property is being searched for)[...](#notequals)</li><li>Selection of more specific classes of parameters[...](#concrete)</li></ul>|
+||Global common|<ul><li>Not searching for an abstract property[...](#notabstract)</li></ul>|<ul><li>Name matches[...](#name)</li><li>Located in dependent module[...](#module)</li><li>Declared above (for elements of the module in which the search is performed)[...](#declared)</li><li>Located in specified namespace (if explicitly specified)[...](#namespace)</li><li>Parameters classes intersect[...](#indirect)</li></ul>|<ul><li>Selection of a priority namespace (if the namespace is not explicitly specified)[...](#priority)</li></ul>|
 
 Description of steps, conditions and operations of the search algorithm:
 
@@ -42,6 +42,10 @@ The name of the candidate matches the search name (must always be specified expl
 ### Located in dependent module {#module}
 
 Candidate module [depends on](Modules.md#depends) the module in which the search is performed.
+
+### Declared above (for elements of the module in which the search is performed) {#declared}
+
+A module is read from top to bottom, so an element of the module in which the search is performed is a candidate only if its declaration is located above the point of use. Classes and tables are read before the rest of the module: any statement other than a class declaration, a class extension or a table declaration can refer to a class or table declared anywhere in the module.
 
 ### Located in specified namespace (if explicitly specified) {#namespace}
 
@@ -175,6 +179,8 @@ END
 MODULE ResolveB;
 
 REQUIRE ResolveA;
+
+g(C c) = f(c); // ResolveB.f[B] is declared below and is not a candidate yet - will find the declaration in ResolveA - ResolveA.f[C]
 
 f = DATA INTEGER (B);
 

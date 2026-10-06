@@ -8,10 +8,13 @@ A launch event occurs when one of the platform's components starts. For each lau
 | Component          | Handler                                 | When the event occurs                                                                       |
 | ------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------- |
 | Application server | `SystemEvents.onStarted[]`              | Once per application server start, before the server begins accepting client connections.   |
+| Application server | `SystemEvents.onFinallyStarted[]`       | Once per application server start, at the end of the start: after `onStarted[]` and after the stage at which a full start synchronizes the [`Reflection`](System_Reflection.md) metadata with the database. |
 | Desktop client     | `SystemEvents.onDesktopClientStarted[]` | Once per desktop client launch, after the client has connected to the application server.   |
 | Web client         | `SystemEvents.onWebClientStarted[]`     | Once per web client launch, after the client has connected to the application server.       |
 
 The handlers are abstract actions of the sequential form declared in the system module [`SystemEvents`](System_SystemEvents.md). Application initialization logic is attached to them through [action extension](Action_extension.md). After a handler runs, the platform applies its changes to the database itself.
+
+The [`Reflection`](System_Reflection.md) objects of forms, navigator elements, properties and actions are synchronized with the source code between `onStarted[]` and `onFinallyStarted[]`: in `onStarted[]` a lookup by canonical name finds only the objects that already existed at an earlier start, so initialization that needs them — seeding the permissions of the [security policy](Security_policy.md), for example — belongs in `onFinallyStarted[]`. Under a [light start](Launch_parameters.md) the synchronization is skipped, and elements added since the last full start are not found at all.
 
 ### Language
 
