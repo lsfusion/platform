@@ -143,10 +143,12 @@ title: 'Rules: custom views'
    `FILTERGROUP` and ordered by `ORDERS` over it. The
    component MUST NOT filter, search, sort, count or sum the
    projected rows, nor compute a value from two rows of them:
-   a count or a total is a property
+   a count or a total over the rows that pass the form's
+   filter is a property
    (`GROUP SUM 1 IF [ FILTER orders.o](Order o)`, the how-to),
    a heading is a property, the section of a row in a flat
-   list is a property of the row. Placing the rows the server
+   list is a property of the row. Only the number of rows
+   already read is `list.length`. Placing the rows the server
    selected into visual blocks by such a server-computed value
    is rendering (the `bucketOf` of the how-to) and is allowed.
    Only presentation state — an expanded card, an open sheet,
