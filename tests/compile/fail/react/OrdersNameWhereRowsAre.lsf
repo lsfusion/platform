@@ -1,0 +1,20 @@
+MODULE OrdersNameWhereRowsAre;
+
+REQUIRE System;
+
+// where a CUSTOM REACT container draws a group's rows, the group's node carries `orders` - the group's sortings -
+// beside `list`, `keys` and `options`, so a property drawn there may not take that name
+CLASS OrdersItem;
+ordersItemName = DATA STRING[50] (OrdersItem);
+
+FORM ordersNameWhereRowsAre
+    OBJECTS i = OrdersItem
+    PROPERTIES(i) ordersItemName EXTID 'orders'
+;
+
+DESIGN ordersNameWhereRowsAre {
+    NEW board {
+        custom = 'OrdersBoard';
+        MOVE BOX(i);
+    }
+}

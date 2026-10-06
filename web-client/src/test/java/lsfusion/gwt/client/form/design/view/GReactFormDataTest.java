@@ -84,6 +84,9 @@ public class GReactFormDataTest extends GWTTestCase {
         GPropertyDraw outerPanel, outerName; // ... and a list property, which GWT draws with the rows
         GPropertyDraw note; // a panel property of the group in a, beside its rows - only in Fixture.withNote()
         GPropertyDraw twin; // a panel property of the group in b named like the column `price` - only in withTwin()
+        LinkedHashMap<Column, Boolean> sorted; // the sortings a group's orders.change() handed the form
+        GGroupObject sortedGroup; // ... for which group
+        int sortedCalls; // ... and how many times
         GGroupObjectValue chosen, changed; // what a member handed the form: the row its group's change(row) chose, and
                                            // the cell a property member changed
 
@@ -132,6 +135,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void collapseNode(GGroupObject group, GGroupObjectValue key) { }
                 public void expandAll(GGroupObject group) { }
                 public void collapseAll(GGroupObject group) { }
+                public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { sortedGroup = group; sortedCalls++; sorted = orders; }
             });
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
@@ -210,7 +214,7 @@ public class GReactFormDataTest extends GWTTestCase {
         // the row a view names through the group's member - the row, its handle, its key - as the member reads it
         GGroupObjectValue choose(JavaScriptObject row) {
             chosen = null;
-            changeRow(field(sa.controller, "items"), row);
+            callChange(field(sa.controller, "items"), row);
             return chosen;
         }
         // the client's own value for a cell, where the form sets it (GFormController.setLoadingValueAt): the property's
@@ -249,6 +253,7 @@ public class GReactFormDataTest extends GWTTestCase {
             controllers.groups.get(group).changeExpandedAll(false, ask("collapse all " + group.getSID()));
             projection.flush();
         }
+        public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { }
         long ask(String request) {
             asked.add(request);
             return ++requestIndex;
@@ -509,7 +514,8 @@ public class GReactFormDataTest extends GWTTestCase {
         return owner == null ? null : field(owner, name);
     }
     // ... a call through one, as a view makes it - and whether it is refused
-    private static native void changeRow(JavaScriptObject member, JavaScriptObject row) /*-{ member.change(row); }-*/;
+    private static native void callChange(JavaScriptObject member, JavaScriptObject argument) /*-{ member.change(argument); }-*/;
+    private static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
     private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
     private static native void changeBatch(JavaScriptObject controller, JavaScriptObject member, int value) /*-{ controller.properties.change({property: member, value: value}); }-*/;
     private static boolean refuses(JavaScriptObject member, int value) {
@@ -1765,5 +1771,182 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(sameField(f.row(sub, s21), "parent", f.row(f.cat, f.c2), "key"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         assertTrue(isFalse(f.row(sub, s21), "expanded")); // its own children are not loaded
+    }
+
+    // where the rows are drawn the node carries the group's sortings - always, empty while sorted by nothing - and a
+    // container holding only a panel property of the group has none
+    public void testSortingsAreOnTheNodeWhereTheRowsAre() {
+        Fixture f = new Fixture();
+        assertEquals(0, length(field(f.node(), "orders"))); // always there, empty while sorted by nothing
+        assertNull(field(field(f.snapshots[1], "items"), "orders")); // b holds a panel property of the group, no rows
+    }
+
+    // the sortings the form hands the node - its own ORDERS in the first changes, then what the server reports - are
+    // projected in priority order and in the ORDER operator's shape, replacing the ones before; the node keeps a map of
+    // its own, the rows stay as they are, and a value that changes leaves the sortings as they were
+    public void testSortingsAreTheOnesTheFormHasNow() {
+        Fixture f = new Fixture();
+        LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>(); // as the form has them: true - ascending
+        orders.put(column(f.quantity), false);
+        orders.put(column(f.price), true);
+        JavaScriptObject list = field(f.node(), "list");
+        f.controller(f.group).updateOrders(f.group, orders);
+        f.projection.flush();
+        JavaScriptObject sorted = field(f.node(), "orders");
+        assertEquals(2, length(sorted));
+        assertEquals("quantity", text(at(sorted, 0), "property"));
+        assertTrue(flag(at(sorted, 0), "desc"));
+        assertEquals("price", text(at(sorted, 1), "property"));
+        assertFalse(flag(at(sorted, 1), "desc"));
+        assertSame(list, field(f.node(), "list")); // the rows for the new order come from the server, separately
+        orders.clear(); // the caller's map, changed after: the node keeps a map of its own
+        f.setValue(f.price, f.one, 11); // a value changes, the sortings do not: the same array
+        f.projection.flush();
+        assertSame(sorted, field(f.node(), "orders"));
+        LinkedHashMap<Column, Boolean> next = new LinkedHashMap<>();
+        next.put(column(f.price), false);
+        f.controller(f.group).updateOrders(f.group, next); // ... and the next list replaces them
+        f.projection.flush();
+        assertEquals(1, length(field(f.node(), "orders")));
+        assertTrue(flag(at(field(f.node(), "orders"), 0), "desc"));
+    }
+
+    // the twin of `price` in b: inside one container a name means one property, so a sorting on the twin is not this
+    // node's `price` - it is left out (and reported) rather than misnamed
+    public void testASortingIsNamedOnlyAsTheNodeNamesIt() {
+        Fixture f = Fixture.withTwin();
+        LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
+        orders.put(column(f.twin), true);
+        orders.put(column(f.quantity), false);
+        f.controller(f.group).updateOrders(f.group, orders);
+        f.projection.flush();
+        JavaScriptObject sorted = field(f.node(), "orders");
+        assertEquals(1, length(sorted));
+        assertEquals("quantity", text(at(sorted, 0), "property"));
+    }
+    // a sorting names a property, never a column of it: a property React draws is never in columns
+    private static Column column(GPropertyDraw property) {
+        return new Column(property, GGroupObjectValue.EMPTY);
+    }
+
+    // whether a user may sort by a property, beside its type: asked of the property, so a panel property answers it as
+    // a column does, while a property of the empty group, which no sorting can name, has none
+    public void testAPropertySaysWhetherItCanBeSortedBy() {
+        Fixture f = new Fixture(r -> r.quantity.noSort = true); // a design that says not to sort by it
+        assertFalse(flag(field(f.node(), "price"), "noSort"));
+        assertEquals("boolean", typeOf(field(f.node(), "price"), "noSort"));
+        assertTrue(flag(field(f.node(), "quantity"), "noSort"));
+        assertEquals("boolean", typeOf(field(field(f.snapshots[1], "items"), "panel"), "noSort"));
+        assertEquals("undefined", typeOf(field(f.data(), "single"), "noSort"));
+    }
+    private static native String typeOf(JavaScriptObject object, String name) /*-{ return typeof object[name]; }-*/;
+
+    // the member is where the rows are drawn: a draws them, b holds only a panel property of the group
+    public void testSortingsAreAMemberWhereTheRowsAre() {
+        Fixture f = new Fixture();
+        assertEquals("function", typeOf(field(field(f.sa.controller, "items"), "orders"), "change")); // a draws rows
+        assertEquals("undefined", typeOf(field(f.sb.controller, "items"), "orders")); // b holds a panel property only
+    }
+
+    // a call through the member is read on the node and handed to the form as the list it makes: a property by the
+    // name this view carries, `desc` turned into the client's ascending, the priority as given
+    public void testSortingsAreChangedThroughTheMember() {
+        Fixture f = new Fixture();
+        JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
+        callChange(orders, parse("{\"property\": \"price\", \"desc\": true}")); // one, merged into none
+        assertEquals(columns(f.price), new ArrayList<>(f.sorted.keySet()));
+        assertEquals(Boolean.FALSE, f.sorted.get(column(f.price)));
+        callChange(orders, parse("[{\"property\": \"quantity\"}, {\"property\": \"price\", \"desc\": false}]"));
+        assertEquals(columns(f.price), new ArrayList<>(f.sorted.keySet())); // an order with no `desc` is none
+        assertEquals(Boolean.TRUE, f.sorted.get(column(f.price)));
+        callChange(orders, parse("[{\"property\": \"quantity\", \"desc\": true}, {\"property\": \"price\", \"desc\": false}]"));
+        assertEquals(columns(f.quantity, f.price), new ArrayList<>(f.sorted.keySet())); // the array's order
+        assertEquals(Boolean.FALSE, f.sorted.get(column(f.quantity)));
+        assertEquals(Boolean.TRUE, f.sorted.get(column(f.price)));
+        callChange(orders, parse("[]")); // the whole list: none
+        assertEquals(0, f.sorted.size());
+        // one order is merged into the sortings the node holds: a property already sorted keeps its place, another is
+        // appended, and the rest stay as they are
+        LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
+        held.put(column(f.quantity), true);
+        f.controller(f.group).updateOrders(f.group, held);
+        callChange(orders, parse("{\"property\": \"price\", \"desc\": true}"));
+        assertEquals(columns(f.quantity, f.price), new ArrayList<>(f.sorted.keySet())); // appended
+        assertEquals(Boolean.FALSE, f.sorted.get(column(f.price)));
+        held.put(column(f.price), true);
+        f.controller(f.group).updateOrders(f.group, held);
+        callChange(orders, parse("{\"property\": \"quantity\", \"desc\": true}"));
+        assertEquals(columns(f.quantity, f.price), new ArrayList<>(f.sorted.keySet())); // in its place
+        assertEquals(Boolean.FALSE, f.sorted.get(column(f.quantity)));
+        assertEquals(Boolean.TRUE, f.sorted.get(column(f.price)));
+        callChange(orders, parse("{\"property\": \"quantity\"}")); // no direction: taken off
+        assertEquals(columns(f.price), new ArrayList<>(f.sorted.keySet()));
+        assertSame(f.group, f.sortedGroup);
+    }
+
+    // what the member refuses, the form is not handed at all: a direction on a noSort property, a list naming one
+    // property twice - whichever of the two has a direction - and a `desc` that is no boolean, after a good entry of
+    // the same array too
+    public void testRefusedSortingsAreNotHandedOn() {
+        Fixture f = new Fixture(r -> r.quantity.noSort = true);
+        JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
+        assertTrue(refusesChange(orders, parse("{\"property\": \"quantity\", \"desc\": false}")));
+        assertTrue(refusesChange(orders, parse("[{\"property\": \"price\"}, {\"property\": \"price\", \"desc\": true}]")));
+        assertTrue(refusesChange(orders, parse("[{\"property\": \"price\", \"desc\": true}, {\"property\": \"price\"}]")));
+        assertTrue(refusesChange(orders, parse("{\"property\": \"price\", \"desc\": \"true\"}")));
+        assertEquals(0, f.sortedCalls);
+        Fixture g = new Fixture(); // both properties may be sorted by: only the second entry's `desc` is wrong
+        assertTrue(refusesChange(field(field(g.sa.controller, "items"), "orders"),
+                parse("[{\"property\": \"price\", \"desc\": true}, {\"property\": \"quantity\", \"desc\": 1}]")));
+        assertEquals(0, g.sortedCalls);
+        // ... while taking a noSort sorting off is allowed: a form's default ORDERS may name one
+        LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
+        held.put(column(f.quantity), true);
+        f.controller(f.group).updateOrders(f.group, held);
+        callChange(orders, parse("{\"property\": \"quantity\"}"));
+        assertEquals(1, f.sortedCalls);
+        assertEquals(0, f.sorted.size());
+    }
+
+    // one order never touches the sortings it does not name, those the projection leaves out included (the twin's);
+    // the array states the whole list
+    public void testOneSortingKeepsWhatItDoesNotName() {
+        Fixture f = Fixture.withTwin();
+        LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
+        held.put(column(f.twin), true);
+        held.put(column(f.price), true);
+        f.controller(f.group).updateOrders(f.group, held);
+        JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
+        callChange(orders, parse("{\"property\": \"price\", \"desc\": true}"));
+        assertEquals(columns(f.twin, f.price), new ArrayList<>(f.sorted.keySet()));
+        callChange(orders, parse("[{\"property\": \"price\", \"desc\": true}]"));
+        assertEquals(columns(f.price), new ArrayList<>(f.sorted.keySet()));
+    }
+
+    // `desc` is read once: a getter answering differently the second time does not decide the direction
+    public void testSortingReadsItsDirectionOnce() {
+        Fixture f = new Fixture();
+        JavaScriptObject order = flippingOrder("price"); // desc: true, then false
+        callChange(field(field(f.sa.controller, "items"), "orders"), order);
+        assertEquals(Boolean.FALSE, f.sorted.get(column(f.price))); // descending: the first answer
+        assertEquals(1, descReads(order));
+    }
+    private static native JavaScriptObject flippingOrder(String property) /*-{
+        var order = {property: property};
+        var desc = function () { desc.reads = (desc.reads || 0) + 1; return desc.reads === 1; };
+        Object.defineProperty(order, 'desc', {enumerable: true, get: desc});
+        return order;
+    }-*/;
+    private static native int descReads(JavaScriptObject order) /*-{
+        return Object.getOwnPropertyDescriptor(order, 'desc').get.reads || 0;
+    }-*/;
+    private static List<Column> columns(GPropertyDraw... properties) {
+        List<Column> columns = new ArrayList<>();
+        for (GPropertyDraw property : properties)
+            columns.add(column(property));
+        return columns;
+    }
+    private static boolean refusesChange(JavaScriptObject member, JavaScriptObject argument) {
+        try { callChange(member, argument); return false; } catch (RuntimeException e) { return true; }
     }
 }

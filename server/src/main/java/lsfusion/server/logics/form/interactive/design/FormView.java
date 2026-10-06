@@ -884,6 +884,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // the group's own verb - so a feature that writes on the node has one array to update, not two.
     private static final String[] GRID_PART_NAMES = {
             "list", "byKey", "keys", "options",                 // the grid's part
+            "orders",                                           // ... and what its rows are ordered BY
     };
     // Every group's node reserves them, whatever it carries in this scope: `change` is the verb of a group whose rows
     // are drawn here, and a name valid with the rows in one container stays valid when they move to another; `__member`

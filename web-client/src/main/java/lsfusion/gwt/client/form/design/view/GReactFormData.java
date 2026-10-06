@@ -4,7 +4,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import lsfusion.gwt.client.GForm;
@@ -90,6 +92,9 @@ public class GReactFormData {
         void expandAll(GGroupObject group);
         // ... or closed
         void collapseAll(GGroupObject group);
+        // the sortings of a group whose rows a view draws, as its member read them (RowsGroupNode.changeOrders): the
+        // whole list, in priority order, true - ascending; the form shows them at once and sends them whole
+        void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders);
     }
 
     // a react container's state, made with its view, and its controller with it
@@ -548,6 +553,7 @@ public class GReactFormData {
     // any node is written under one - and its member controller.<group>
     private abstract class GroupNode extends Node {
         final GGroupObject group;
+        final NativeHashMap<String, Boolean> unnameable = new NativeHashMap<>(); // reported already (reportUnnameable)
 
         GroupNode(ContainerState state, GGroupObject group) {
             super(state);
@@ -590,6 +596,17 @@ public class GReactFormData {
             fillDataProperties();
             fillController();
         }
+        // a property one of the group's lists leaves out, as the projection does not name it there - for the reason
+        // given: reported once per list and property
+        void reportUnnameable(GPropertyDraw property, String field, String what, String why) {
+            String name = property != null ? property.sID : "?";
+            String key = field + ":" + name;
+            if (unnameable.get(key) == null) {
+                unnameable.put(key, Boolean.TRUE);
+                GwtClientUtils.logLsfViewError("data." + group.getSID() + "." + field + ": the group is " + what + " by '" + name
+                        + "', which the projection does not name here (" + why + "), so that one is not listed");
+            }
+        }
     }
     // ... where only the group's panel properties are drawn: its member holds theirs
     private final class PanelGroupNode extends GroupNode {
@@ -614,7 +631,9 @@ public class GReactFormData {
         final NativeHashMap<GGroupObjectValue, Integer> positions = new NativeHashMap<>();
         // what each row carries of the group's own readers: its colors, its selection
         final GPropertyReader[] rowReaders;
-        final NativeHashMap<String, Boolean> unnameable = new NativeHashMap<>(); // reported already (reportUnnameable)
+        // the group's sortings, the order these rows are drawn in, as the form has them (updateOrders): in priority
+        // order, true - ascending. Its own map, replaced and never changed in place
+        LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
 
         RowsGroupNode(ContainerState state, GGroupObject group) {
             super(state, group);
@@ -625,11 +644,15 @@ public class GReactFormData {
             this.rowReaders = rowReaders.toArray(new GPropertyReader[0]);
         }
         JavaScriptObject makeMember() {
-            return makeRowsMember(this, group.getSID());
+            JavaScriptObject member = makeRowsMember(this, group.getSID());
+            // the sortings are the order its rows are drawn in, so they are a member where those are
+            setField(member, "orders", makeOrdersMember(this, group.getSID()));
+            return member;
         }
-        // ... its rows first, none of them yet
+        // ... its rows first, none of them yet, and the sortings they are drawn in
         void initialize() {
             replaceRows();
+            replaceOrders();
             super.initialize();
         }
         // what its rows state about each other, written once the batch is complete (ContainerState.commit)
@@ -659,9 +682,13 @@ public class GReactFormData {
         public void changeCurrentKey(GGroupObjectValue currentKey) {
             setCurrentObject(currentKey);
         }
-        // the rows React draws carry no sortings or filters yet: there is nothing to show them in
+        // the group's sortings as the form has them: its own ORDERS in the first changes, then every list the server
+        // reports - an ORDER action's too -, handed over only when it is another one
         public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+            this.orders = new LinkedHashMap<>(orders); // a map of its own: the caller's may change after
+            replaceOrders();
         }
+        // the rows React draws carry no filters yet: there is nothing to show them in
         public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
         }
         public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
@@ -776,6 +803,30 @@ public class GReactFormData {
             for (GPropertyReader reader : rowReaders)
                 replaceAttribute(row, reader, values.get(reader, key));
         }
+        // `orders`, the group's sortings in the SAME shape the .lsf ORDER operator reads and writes: the property by
+        // integration SID, and `desc`, the server's and the operator's spelling (the client keeps ascending). A sorting
+        // is named only as THIS node names it: inside one container a name means one property, but the group may draw
+        // a twin of it in another container under the same SID, and naming that one here would read as a sorting on
+        // this node's own entry
+        void replaceOrders() {
+            JavaScriptObject array = emptyArray();
+            for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
+                GPropertyDraw property = order.getKey().property; // a property React draws is never in columns
+                if (property.integrationSID == null) {
+                    reportUnnameable(property, "orders", "sorted", "no integration SID");
+                    continue;
+                }
+                if (getProperty(property.integrationSID) != property) {
+                    reportUnnameable(property, "orders", "sorted", "this node carries it by no such name");
+                    continue;
+                }
+                JavaScriptObject entry = newObject();
+                setField(entry, "property", property.integrationSID);
+                setField(entry, "desc", !order.getValue());
+                push(array, entry);
+            }
+            setField(edit(), "orders", array);
+        }
 
         // ===== a call through its member: change(row), the current object chosen among the rows drawn here
         void change(String surface, JavaScriptObject objectOrKey) {
@@ -823,16 +874,56 @@ public class GReactFormData {
             // it is built (FormView)
             return property;
         }
-        // a property the projection does not name (no integration SID), which one of the node's own lists leaves out:
-        // reported once per list and property
-        void reportUnnameable(GPropertyDraw property, String field, String what) {
-            String name = property != null ? property.sID : "?";
-            String key = field + ":" + name;
-            if (unnameable.get(key) == null) {
-                unnameable.put(key, Boolean.TRUE);
-                GwtClientUtils.logLsfViewError("data." + group.getSID() + "." + field + ": the group is " + what + " by '" + name
-                        + "', which the projection does not name (no integration SID), so that one is not listed");
+
+        // ===== a call through its `orders` member: the group's sortings, as the view states them, read here - where
+        // the rows are, and the sortings with them - and handed to the form as the list they make (Verbs.changeOrders).
+        // An order is {property, desc}, the SAME shape `orders` projects and the .lsf ORDER operator reads; one with no
+        // `desc` is not a sorting, so it removes the one on that property. An array states them all, its order being
+        // the priority
+        void changeOrders(String surface, JavaScriptObject orders) {
+            String errorPrefix = controllerPrefix(surface);
+
+            LinkedHashMap<Column, Boolean> result = new LinkedHashMap<>();
+            // every property the list NAMES, direction or not, once: a group is sorted by one once, and the server keys
+            // them by it - so a list naming one twice describes no sorting a group can have, whichever of the two
+            // carries a direction
+            HashSet<GPropertyDraw> named = new HashSet<>();
+            int size = GSimpleStateTableView.jsArrayLength(orders);
+            for (int i = 0; i < size; i++) {
+                JavaScriptObject order = GSimpleStateTableView.jsArrayGet(orders, i);
+                String prefix = errorPrefix + "order " + i + ": ";
+                GPropertyDraw property = readStateProperty(prefix, order, "an order", ORDER_FIELDS);
+                if (!named.add(property))
+                    throw new RuntimeException(prefix + "'" + property.integrationSID + "' is already in this list");
+                applyOrder(prefix, order, property, result);
             }
+            verbs.changeOrders(group, result);
+        }
+        // ... one order, merged into the group's sortings as this node holds them - every one of them, those it does
+        // not name included
+        void changeOrder(String surface, JavaScriptObject order) {
+            String errorPrefix = controllerPrefix(surface);
+            LinkedHashMap<Column, Boolean> result = new LinkedHashMap<>(orders);
+            applyOrder(errorPrefix, order, readStateProperty(errorPrefix, order, "an order", ORDER_FIELDS), result);
+            verbs.changeOrders(group, result);
+        }
+        // what one order the author wrote does to sortings: with no direction it is not a sorting, and takes the one on
+        // its property off - which a noSort property has to be able to say, as a default ORDERS on one is listed; with
+        // a direction it sorts by the property - refused for a noSort one - in place when the property is sorted
+        // already (a map keeps a key where it is), appended when not. `desc` is read once, as every field of what an
+        // author wrote is
+        void applyOrder(String errorPrefix, JavaScriptObject order, GPropertyDraw property, LinkedHashMap<Column, Boolean> result) {
+            Column column = new Column(property, GGroupObjectValue.EMPTY); // a property React draws is never in columns
+            JavaScriptObject desc = getOwnField(order, "desc");
+            if (isNoValue(desc)) {
+                result.remove(column);
+                return;
+            }
+            if (!isJSBoolean(desc))
+                throw new RuntimeException(errorPrefix + "'desc' must be true or false");
+            if (property.noSort)
+                throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' cannot be sorted by");
+            result.put(column, !toBoolean(desc));
         }
     }
 
@@ -1557,6 +1648,17 @@ public class GReactFormData {
         };
     }-*/;
 
+    // the group's sortings: an array states them all, its order being the priority, and one order states one
+    private static native JavaScriptObject makeOrdersMember(RowsGroupNode node, String sid) /*-{
+        return {
+            change: function (orders) {
+                return Array.isArray(orders)
+                    ? node.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsGroupNode::changeOrders(*)(sid + ".orders.change()", orders)
+                    : node.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsGroupNode::changeOrder(*)(sid + ".orders.change()", orders);
+            }
+        };
+    }-*/;
+
     private static native JavaScriptObject makePropertyMember(ReactPropertyEntry propertyEntry, String qualified) /*-{
         var member = {
             //   .change(value)          set it on the current object       .change(value, row)   ... on that row
@@ -1600,6 +1702,9 @@ public class GReactFormData {
 
     private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {
         setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
+        // whether a user may sort by it - asked of the PROPERTY, so a panel property answers it too
+        if (property.groupObject != null)
+            setField(entry, "noSort", property.noSort);
     }
 
     // what the author typed, as a message names it: every controller entry point is given the member path it was
@@ -1614,7 +1719,7 @@ public class GReactFormData {
     }-*/;
 
     // ===== WHAT A STATE MEMBER READS - a condition (the user filters) and a sorting: the object the author wrote,
-    // named by its `property`, and its flags, read by one rule for both. Where the name is read is each one's own -
+    // named by its `property`, read by one rule for both (readAuthorObject). Where the name is read is each one's own -
     // a sorting's on the node of the rows (RowsGroupNode.readStateProperty) - and a member reads its call as a
     // property member reads its own, and hands the form (Verbs) only what the call names
     private static final String ORDER_FIELDS = "property,desc";
@@ -1639,8 +1744,8 @@ public class GReactFormData {
 
     private static final String FILTER_CONDITION_FIELDS = "property,compare,value,negation,or";
 
-    // a flag is a boolean or absent - a truthy string like "false" would otherwise mean true. A condition's and a
-    // sorting's alike: `negation`, `or`, `desc`
+    // a flag is a boolean or absent - a truthy string like "false" would otherwise mean true: a condition's `negation`
+    // and `or`. A sorting's `desc` is not a flag: an order with none takes its sorting off (RowsGroupNode.applyOrder)
     private boolean readFlag(String errorPrefix, JavaScriptObject entry, String field) {
         if (!hasOwnField(entry, field)) // absent is false; anything PRESENT has to be the boolean it claims to be,
             return false;                 // `null` and `undefined` included - they are given, and they are not flags

@@ -51,7 +51,7 @@ The component is first drawn with the first projection of its container, once th
 
 A view reads and changes only its own container's parts. What containers share is the form itself — its current objects and its session — so a filter or a current object changed in one container shows in another, as it does in the standard client.
 
-Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there. `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group is projected — its data, and the controller members that change it — in the React container where that part's component is: the rows and the current object where the group's grid (or its tree) is, each panel property where that PROPERTY is — an `lsf` one too, where the view places it, with the entry that labels it (an `lsf` action has no entry, and brings no part of its group). A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and an `lsf` container ends the walk, since the platform draws everything under it. The component's own `lsf` decides only which entry it has there — its content, or the [entry that labels it](#lsf-child) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them is `lsf`, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, properties }` for that group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { lsf = TRUE; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#lsf-child) and no rows). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
+Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there. `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group is projected — its data, and the controller members that change it — in the React container where that part's component is: the rows and the current object where the group's grid (or its tree) is, each panel property where that PROPERTY is — an `lsf` one too, where the view places it, with the entry that labels it (an `lsf` action has no entry, and brings no part of its group). A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and an `lsf` container ends the walk, since the platform draws everything under it. The component's own `lsf` decides only which entry it has there — its content, or the [entry that labels it](#lsf-child) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them is `lsf`, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty when the group has no rows — a panel-only group, or one before its rows first arrive — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { lsf = TRUE; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#lsf-child) and no rows). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
 
 | Field | Meaning |
 | --- | --- |
@@ -69,7 +69,7 @@ A property grouped in columns (`COLUMNS`) cannot be projected: its values are ad
 
 A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which lives there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](How-to_Custom_view_controller.md#row-identity-contract) says what each of the three means.
 
-`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names. On a group node the reservation follows what that node carries: `properties`, `change` and `__member` are reserved on every one of them, while `list`, `byKey`, `keys` and `options` are reserved only in the container that draws the group's rows. A container carrying just a panel property of the group has none of them, so a property called `list` is refused there by nothing. A group of a tree reserves more where its rows are drawn, each name given in [Trees](#trees). `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Lsf>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
+`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names. On a group node the reservation follows what that node carries: `properties`, `change` and `__member` are reserved on every one of them, while `list`, `byKey`, `keys`, `options` and `orders` are reserved only in the container that draws the group's rows. A container carrying just a panel property of the group has none of them, so a property called `list` is refused there by nothing. A group of a tree reserves more where its rows are drawn, each name given in [Trees](#trees). `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Lsf>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
 
 A property's `value` is converted to a JS value depending on the property's class:
 
@@ -975,3 +975,90 @@ export function Tree({data, controller}) {
 These verbs are members of the group's node, so a container has them exactly where it has that group's rows: the tree
 React draws. A tree the platform draws is opened by the platform's own expander, and no react container has node verbs
 for it.
+
+### Sortings {#orders}
+
+A view that draws a group's rows carries `orders` — the group's sortings, in priority order — beside `list` and
+`keys`: a sorting is the order the rows are drawn in, so it is projected where they are, and a container holding
+only a panel property of the group has neither. Where it is there it is always there, and empty when the group is
+sorted by nothing. Each entry is an object:
+
+| Field | Meaning |
+| --- | --- |
+| `property` | The sorted property's integration SID |
+| `desc` | Whether it sorts descending |
+
+The same shape the [`ORDER ... FROM`](../language/FILTER_ORDER_operators.md) operator applies and
+`ORDERS ... TO` reads, with one difference: `orders` names a property the way the rest of the node does — by its
+integration SID — while those operators name it by its SID on the form (`sum(o)`).
+
+`controller.<group>.orders.change(...)` is a member in the same place, and only there. It changes **one** sorting,
+leaving the group's other sortings and their priority alone: a property already sorted keeps its place when its
+direction changes, and a new one is appended. An order with no `desc` is not a sorting, so it stops sorting by that
+property. An array — `controller.<group>.orders.change(orders)` — states the list as a whole, so what it leaves out
+stops sorting the group.
+
+A change through the controller is sent at once, as the group's whole list — the same request a click on a standard
+header sends —, and `orders` shows it straight away, before the rows sorted by it come back; an answer to a request made
+before it does not take it back.
+
+```jsx
+export function OrderBoard(props) {
+    const group = props.data.o;
+    const sort = property => {                     // one sorting: the others keep their place and priority
+        const current = group.orders.find(o => o.property === property);
+        props.controller.o.orders.change({ property, desc: current ? !current.desc : false });
+    };
+    const arrow = property => {                    // what the group is sorted by is read back out of the projection
+        const order = group.orders.find(o => o.property === property);
+        return order ? (order.desc ? ' ↓' : ' ↑') : '';
+    };
+    return (
+        <table>
+            <thead><tr>
+                <th onClick={() => sort('number')}>Number {arrow('number')}</th>
+                <th onClick={() => sort('sum')}>Sum {arrow('sum')}</th>
+            </tr></thead>
+            <tbody>{group.list.map(row => <tr key={row.key}><td>{row.number.value}</td><td>{row.sum.value}</td></tr>)}</tbody>
+        </table>
+    );
+}
+```
+
+`orders` describes the sorting the user can change, whoever stated it. A **fixed** sorting is not part of it and cannot
+be: `ORDERS ... FIXED`, and an `ORDERS` entry that is an expression rather than a property drawn on the form, are
+applied on the server and never sent to the client at all. Neither is the implicit ordering by the group's own objects
+that makes a read stable. So the rows can be ordered by more than `orders` says, and a view cannot show an indicator for
+the part it is not told about.
+
+`orders` is what the form has: its own `ORDERS` when it opens, then every list the server reports — an
+[`ORDER`](../language/FILTER_ORDER_operators.md) action's too. It is rebuilt only when that list changes: it keeps
+its identity across renders in which the sortings stay the same — a change to a property value, to the rows or to the
+current object leaves it as it was — so a view can compare it across renders and memoize on it.
+
+Two more kinds of sorting are not listed, and a console message says so when one appears: a sorting on a property with
+no integration SID (`NOEXTID`), which the projection has no name for, and a sorting on a property this node does not
+carry under its name — a panel property of the group drawn elsewhere under the same integration SID as a column here,
+which in this container would read as a sorting on the column.
+
+Handing `data.<group>.orders` back through the array form would therefore take those two sortings off — the one on a
+`NOEXTID` property and the one on a twin — while changing ONE sorting never touches what it does not name.
+
+Each property says whether a view should offer sorting by it: `data.<group>.<property>.noSort` is `true` for a
+property whose design says so —
+
+    DESIGN orders {
+        PROPERTY(number(o)) { noSort = TRUE; }
+    }
+
+— and it is stated on the property itself, so a panel property answers it as a column does. A view that draws its own
+headers reads it to leave that header alone.
+
+`noSort` refuses a sorting the USER states, not one the form does. What the form states may name such a property — a
+default `ORDERS` entry on it, and an [`ORDER`](../language/FILTER_ORDER_operators.md) action naming it — the server
+sorts the rows by it, and `orders` says so, as the standard grid's header shows it too: what is not offered is only the
+click that would sort by it.
+
+Asking to sort BY a property declared `noSort` is refused, and so is a list naming one property twice. Taking a `noSort`
+sorting off is stating an order with no `desc`, which is allowed: what is refused is sorting by such a property, not
+stopping.

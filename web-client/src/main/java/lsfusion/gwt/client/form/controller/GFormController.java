@@ -426,6 +426,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     //   controller.<group>.change(row)                                the group's current object
     //   controller.<group>.expand(row) / .collapse(row) / .toggle(row)   one node of a tree
     //   controller.<group>.expandAll() / .collapseAll()                  ... every node of its group and below it
+    //   controller.<group>.orders.change(...)                         its sortings
     //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
     //   controller.properties.change([{property, object, value}])     the one batch — it belongs to no single member
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
@@ -2047,7 +2048,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
     // for them, as the form keeps them: they are shown through the hook the reports use, unlike the filters, which the
-    // filter panel shows itself
+    // filter panel shows itself. The orders member of a view that draws the group's rows states them here too
+    // (GReactFormData.Verbs)
+    @Override
     public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         showOrders(group, orders);
 
@@ -2061,6 +2064,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
         long requestIndex = asyncResponseDispatch(new SetPropertyOrders(group.ID, propertyList, columnKeyList, orderList));
         pendingChangeOrdersRequests.put(group, requestIndex);
+        // what the hook wrote where React draws the rows, published once the request is queued, as changeGroupObject
+        // publishes its current object
+        refreshReactOptimistic();
     }
 
     public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
