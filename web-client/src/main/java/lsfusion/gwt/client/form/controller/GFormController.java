@@ -3141,6 +3141,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     public void edit(CellEditor cellEditor, EventHandler handler, PValue oldValue, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, long editRequestIndex) {
+        while(this.editContext != null) {
+            EditContext prevEditContext = this.editContext;
+            checkCommitEditing();
+            if(this.editContext == prevEditContext)
+                cancelEditing(CancelReason.FORCED);
+        }
         assert this.editContext == null;
         editBeforeCommit = beforeCommit;
         editAfterCommit = afterCommit;
