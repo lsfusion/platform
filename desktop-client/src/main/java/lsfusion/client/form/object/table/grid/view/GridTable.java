@@ -1479,9 +1479,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                 }
             });
 
+            String updatePageSizeActionID = groupObject.getActionID() + "UpdatePageSize";
             pane.addComponentListener(new ComponentAdapter() {
                 public void componentResized(ComponentEvent ce) {
-                    updatePageSizeIfNeeded(true);
+                    SwingUtils.invokeLaterSingleAction(updatePageSizeActionID, ae -> updatePageSizeIfNeeded(true), 50);
                 }
             });
         }
