@@ -1,0 +1,72 @@
+MODULE UiSpike;
+
+REQUIRE TestUtils, Utils;
+
+// the forms the browser scenarios of the UI-test measurement spike open, and the data they need ; no action here is
+// named test* - LsfServerIT would take it for a server test
+
+CLASS UiCategory 'Category';
+uiCategoryName 'Category' = DATA STRING[50] (UiCategory);
+
+CLASS UiItem 'Item';
+uiName 'Name' = DATA STRING[50] (UiItem);
+uiQuantity 'Quantity' = DATA INTEGER (UiItem);
+uiCategory = DATA UiCategory (UiItem);
+uiItem (STRING[50] name) = GROUP AGGR UiItem i BY uiName(i);
+
+FORM uiItems 'UI items'
+    OBJECTS i = UiItem
+    PROPERTIES(i) uiName, uiQuantity
+    ORDERS uiName(i)
+;
+
+FORM uiTree 'UI tree'
+    TREE categories c = UiCategory, i = UiItem
+    PROPERTIES(c) READONLY uiCategoryName
+    PROPERTIES(i) READONLY uiName, uiQuantity
+    FILTERS uiCategory(i) = c
+    ORDERS uiCategoryName(c), uiName(i)
+;
+
+uiAnswer 'Answer' = DATA STRING[100] ();
+uiAsk 'Ask' () {
+    INPUT s = STRING[100] DO {
+        uiAnswer() <- s;
+        APPLY;
+    }
+}
+
+FORM uiDialog 'UI dialog'
+    PROPERTIES() uiAsk, uiAnswer READONLY
+;
+
+NAVIGATOR {
+    NEW FOLDER uiSpike 'UI spike' WINDOW toolbar {
+        NEW uiItems;
+        NEW uiTree;
+        NEW uiDialog;
+    }
+}
+
+// three categories of five items each, once
+uiSeed () {
+    IF NOT (GROUP SUM 1 IF UiItem i IS UiItem) THEN {
+        FOR iterate(INTEGER n, 1, 3) NEW c = UiCategory DO {
+            uiCategoryName(c) <- CONCAT '', 'Category ', n;
+            FOR iterate(INTEGER m, 1, 5) NEW i = UiItem DO {
+                uiName(i) <- CONCAT '', 'Item ', n, '-', m;
+                uiQuantity(i) <- n * 10 + m;
+                uiCategory(i) <- c;
+            }
+        }
+        APPLY;
+    }
+}
+
+uiCheckQuantity (STRING[50] name, INTEGER expected) {
+    assertEquals(uiQuantity(uiItem(name)), expected, CONCAT ' ', 'quantity of', name, 'is', uiQuantity(uiItem(name)), 'not', expected);
+}
+
+uiCheckAnswer (STRING[100] expected) {
+    assertEquals(uiAnswer(), expected, CONCAT ' ', 'the answer is', uiAnswer(), 'not', expected);
+}

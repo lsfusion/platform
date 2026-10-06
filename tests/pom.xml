@@ -62,6 +62,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>
+                <configuration>
+                    <excludes>
+                        <!-- the browser tests need the ui profile -->
+                        <exclude>**/Ui*IT.java</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -73,4 +79,101 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- the browser tests: the web client's war in a jetty of its own, against a test server, driven by playwright -->
+            <id>ui</id>
+            <properties>
+                <playwright.version>1.63.0</playwright.version>
+                <!-- the jetty the web client is developed with (web-client/pom.xml) -->
+                <jetty.version>9.4.58.v20250814</jetty.version>
+                <!-- the run's defaults, -D overrides them : see UiSpikeIT -->
+                <ui.browser>local</ui.browser>
+                <ui.repeat>10</ui.repeat>
+                <ui.networkIdle>true</ui.networkIdle>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.microsoft.playwright</groupId>
+                    <artifactId>playwright</artifactId>
+                    <version>${playwright.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- the browser tests stay out of the build that has no playwright -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ui-test-sources</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/ui/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jetty-runner</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.eclipse.jetty</groupId>
+                                            <artifactId>jetty-runner</artifactId>
+                                            <version>${jetty.version}</version>
+                                            <destFileName>jetty-runner.jar</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/ui</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- the compile corpus has a run of its own -->
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/Ui*IT.java</include>
+                            </includes>
+                            <excludes combine.self="override"/>
+                            <systemPropertyVariables>
+                                <!-- the war of the checkout under test, built by web-client beside it -->
+                                <ui.war>${project.basedir}/../web-client/target/lsfusion-client-${project.version}.war</ui.war>
+                                <ui.playwrightVersion>${playwright.version}</ui.playwrightVersion>
+                                <ui.browser>${ui.browser}</ui.browser>
+                                <ui.repeat>${ui.repeat}</ui.repeat>
+                                <ui.networkIdle>${ui.networkIdle}</ui.networkIdle>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
