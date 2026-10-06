@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -31,6 +32,7 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
         // pointer-events:none, but in that case mouse events won't work without a wrapper
         // commit changes after change in the control is done (CHANGE event) that
         if(!( // it's important to delay only that events that will lead to the CHANGE event (otherwise there will be no CHANGE event to wait)
+            Event.getCurrentEvent() == handler.event &&
             InputBasedCellRenderer.getInputEventTarget(parent, handler.event) != null &&
             (GMouseStroke.isChangeEvent(handler.event)
             || GKeyStroke.isLogicalInputChangeEvent(handler.event)))) {
