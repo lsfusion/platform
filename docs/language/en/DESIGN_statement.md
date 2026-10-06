@@ -124,9 +124,9 @@ To access design components, you can use their names or address property compone
 |`activated`|Marks the component (a tab page) as the one initially selected in its tabbed container when the form opens|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lsf`|Keeps the standard view of a component inside a React `custom` container, which the React component then places with `<Lsf name/>` instead of drawing it (web client only). Valid only inside such a container, at any depth under the containers the React component draws itself, and not inside an `lsf` container on the way — on a list property, where the React component draws its group's rows, wherever the property itself is; anywhere else the form is rejected when it is built (a component `REMOVE`d from the design is not checked, unless it is a list property)|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`fill`|Similar to the `flex` property, the only difference being that if a zero value is set, the `align` property is set to `START`, otherwise `align` is set to `STRETCH`|`NUMERIC` type literal|`0`|`1.5`|
-|`size`|The base component size in pixels (a value of -1 means that the size is undefined)|A pair of [integer literals](Literals.md#intliteral) (width, height)|`(-1, -1)`|`(100, 20)`|
-|`height`|The base component height in pixels.|Integer literal|`-1`|`50`|
-|`width`|The base component width in pixels.|Integer literal|`-1`|`20`|
+|`size`|The base component size in pixels. `-1` means that the base size is not set and the component is sized by its content ([automatic size](../paradigm/Form_design.md#components)): a table or tree then takes the height of the rows it has loaded plus the header instead of its default base size|A pair of [integer literals](Literals.md#intliteral) (width, height)|`(-1, -1)`; a table or tree — its [default size](../paradigm/Form_design.md#defaultSizes) from `lineHeight` rows and `lineWidth` columns; the main container of a form opened as a window — measured at opening (see [window size](../paradigm/Form_design.md#windowSize))|`(100, 20)`|
+|`height`|The base component height in pixels (`-1` — the height of the content, see `size`)|Integer literal|`-1`; a table or tree — its [default height](../paradigm/Form_design.md#defaultSizes) of `lineHeight` rows; the main container of a form opened as a window — measured at opening (see [window size](../paradigm/Form_design.md#windowSize))|`50`|
+|`width`|The base component width in pixels (`-1` — the width of the content, see `size`)|Integer literal|`-1`; a table or tree — its [default width](../paradigm/Form_design.md#defaultSizes) of `lineWidth` columns; the main container of a form opened as a window — measured at opening (see [window size](../paradigm/Form_design.md#windowSize))|`20`|
 |`flex`|Extension coefficient. Value of a property similar to the [CSS flex-grow](http://www.w3schools.com/cssref/css3_pr_flex-grow.asp) property. Defines how much the component should grow in size relative to other components.|[`NUMERIC` type literal](Literals.md#numericliteral)|`0`|`0.25`|
 |`shrink`|Allows the component to shrink below its base size along the container's main direction (similar to CSS `flex-shrink`)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`alignShrink`|Allows the component to shrink below its base size along the cross (alignment) direction|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
@@ -185,16 +185,15 @@ To access design components, you can use their names or address property compone
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`autoSize`|Automatic component size option. Applies to text components only: the height of the value cell, and in a panel also its width, unless set explicitly in pixels (`valueWidth`, `valueHeight`), follow the content instead of the value class - multi-line text (`TEXT`, `RICHTEXT`, `HTMLTEXT`) gets its height from the content instead of the default four lines; the width of a table column is still determined by the value class with this option|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeOnSingleClick`|Specifying whether the change event is triggered by a single click (`TRUE`) or requires a double click (`FALSE`) on the property component|Extended Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`noSort`|No sorting|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`defaultCompare`|Default filter. Allowed values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `=*` (contains), `=@` (fuzzy search).|String literal|depends on the property|`>`|
-|`valueSize`|Width and height of the property value cell in pixels|A pair of Integer literals (width, height)|`(-1, -1)`|`(100, 20)`|
-|`valueHeight`|Height of the property value cell in pixels|Integer literal|depends on the property|`100`|
-|`valueWidth`|Width of the property value cell in pixels|Integer literal|depends on the property|`100`|
+|`valueSize`|Width and height of the property value cell in pixels. `-1` means that in that direction the cell is sized by its content instead of the value class ([automatic size](../paradigm/Form_design.md#components); web client only, the desktop client always sizes the cell by the value class): multi-line text (`TEXT`, `RICHTEXT`, `HTMLTEXT`) gets its height from the content instead of the default four lines. The width of a table column is still determined by the value class|A pair of Integer literals (width, height)|see `valueWidth` and `valueHeight`|`(100, 20)`|
+|`valueHeight`|Height of the property value cell in pixels (`-1` — the height of the content, see `valueSize`)|Integer literal|`-1`; with `charHeight` — that many lines; unless the value has a custom view (`CUSTOM`): multi-line text (`TEXT`, `RICHTEXT`, `HTMLTEXT`, `JSON`, `JSONTEXT`, `XML`) — [four lines](../paradigm/Form_design.md#defaultSizes), an image, PDF or video in a table — from the value class|`100`|
+|`valueWidth`|Width of the property value cell in pixels (`-1` — the width of the content, see `valueSize`)|Integer literal|from the [value class](../paradigm/Form_design.md#defaultSizes), or `charWidth` when given; for an action, a `BOOLEAN` / `TBOOLEAN` or file value and a value with a custom view (`CUSTOM`) without `charWidth` — `-1`|`100`|
 |`captionHeight`|Height of the property caption in pixels|Integer literal|`-1`|`100`|
 |`captionCharHeight`|Height of the property caption in chars|Integer literal|`-1`|`5`|
 |`captionWidth`|Width of the property caption in pixels|Integer literal|`-1`|`100`|
@@ -272,7 +271,6 @@ To access design components, you can use their names or address property compone
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`autoSize`|Makes the table size itself to its content instead of filling the available space|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`boxed`|Drawing a frame (box) around a component|Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`tabVertical`|Specifying that focus will be moved from top to bottom (not from left to right)|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`quickSearch`|Specifying that the table will support quick element search|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
@@ -280,8 +278,8 @@ To access design components, you can use their names or address property compone
 |`captionHeight`|Header height in pixels|Integer literal|`NULL`|`60`|
 |`captionCharHeight`|Header height in chars|Integer literal|`NULL`|`5`|
 |`resizeOverflow`|Allows the table to grow beyond its allotted space when rows overflow (acts as a maximum height)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`lineWidth`|Base width of a table row's content line, in pixels|Integer literal|`NULL`|`60`|
-|`lineHeight`|Base height of a table row, in pixels|Integer literal|`NULL`|`60`|
+|`lineWidth`|Number of columns the [default base width](../paradigm/Form_design.md#defaultSizes) of the table is computed from|Integer literal|all the columns when there are at most three, otherwise from three to six by the number of columns|`4`|
+|`lineHeight`|Number of rows the [default base height](../paradigm/Form_design.md#defaultSizes) of the table is computed from|Integer literal|`5`|`10`|
 |`enableManualUpdate`|Enables the manual update mode by default|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`hierarchicalWidth`|Width of first tree column|Integer literal|`NULL`|`100`|
 |`hierarchicalCaption`|Caption of first tree column|String literal|'Tree'|`Tree caption`|

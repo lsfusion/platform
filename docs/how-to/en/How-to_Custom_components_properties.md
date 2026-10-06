@@ -410,7 +410,7 @@ DESIGN chat {
             alignment = STRETCH;
             MOVE PROPERTY(message()) {
                 fill = 1;
-                autoSize = TRUE;
+                valueHeight = -1;
                 width = 0;
                 caption = '';
             }
@@ -419,7 +419,7 @@ DESIGN chat {
     }  
 }
 ```
-By setting the _autoSize_ and _width_ attributes, the input component will stretch as the message size grows.
+By setting the _valueHeight_ (`-1`, the height of the content) and _width_ attributes, the input component will stretch as the message size grows.
 
 The final form will look like this:
 
