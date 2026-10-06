@@ -84,13 +84,17 @@
         <profile>
             <!-- the browser tests: the web client's war in a jetty of its own, against a test server, driven by playwright -->
             <id>ui</id>
+            <activation>
+                <!-- so that platformTests runs the spike on its branch, as its command line has no -Pui -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <playwright.version>1.63.0</playwright.version>
                 <!-- the jetty the web client is developed with (web-client/pom.xml) -->
                 <jetty.version>9.4.58.v20250814</jetty.version>
                 <!-- the run's defaults, -D overrides them : see UiSpikeIT -->
-                <ui.browser>local</ui.browser>
-                <ui.repeat>10</ui.repeat>
+                <ui.browser>docker</ui.browser>
+                <ui.repeat>30</ui.repeat>
                 <ui.networkIdle>true</ui.networkIdle>
             </properties>
             <dependencies>
