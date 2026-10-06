@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Runs in compiled JavaScript: reference identity and JS object keys are part of the contract. */
 public class GReactFormDataTest extends GWTTestCase {
@@ -128,11 +129,10 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; }
                 public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { changed = keys[keys.length - 1]; }
                 public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
-                public long expandNode(GGroupObject group, GGroupObjectValue key) { return 0; }
-                public long collapseNode(GGroupObject group, GGroupObjectValue key) { return 0; }
-                public long expandAll(GGroupObject group) { return 0; }
-                public long collapseAll(GGroupObject group) { return 0; }
-                public void refreshOptimistic() { }
+                public void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked) { }
+                public void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked) { }
+                public void expandAll(GGroupObject group, Consumer<Long> asked) { }
+                public void collapseAll(GGroupObject group, Consumer<Long> asked) { }
             });
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
@@ -232,14 +232,15 @@ public class GReactFormDataTest extends GWTTestCase {
         public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { asked.add("current " + group.getSID() + " " + key.toKeyString()); }
         public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { }
         public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
-        public long expandNode(GGroupObject group, GGroupObjectValue key) { return ask("expand " + group.getSID() + " " + key.toKeyString()); }
-        public long collapseNode(GGroupObject group, GGroupObjectValue key) { return ask("collapse " + group.getSID() + " " + key.toKeyString()); }
-        public long expandAll(GGroupObject group) { return ask("expand all " + group.getSID()); }
-        public long collapseAll(GGroupObject group) { return ask("collapse all " + group.getSID()); }
-        public void refreshOptimistic() { projection.flush(); }
-        long ask(String request) {
+        public void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> onAsked) { ask("expand " + group.getSID() + " " + key.toKeyString(), onAsked); }
+        public void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> onAsked) { ask("collapse " + group.getSID() + " " + key.toKeyString(), onAsked); }
+        public void expandAll(GGroupObject group, Consumer<Long> onAsked) { ask("expand all " + group.getSID(), onAsked); }
+        public void collapseAll(GGroupObject group, Consumer<Long> onAsked) { ask("collapse all " + group.getSID(), onAsked); }
+        // as the form does: the request numbered and sent, its index handed back, the projection published
+        void ask(String request, Consumer<Long> onAsked) {
             asked.add(request);
-            return ++requestIndex;
+            onAsked.accept(++requestIndex);
+            projection.flush();
         }
     }
     private static final class TreeFixture {

@@ -82,18 +82,16 @@ public class GReactFormData {
         void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values);
         // the suggestion list of a property's cell, from the server's lookup `actionSID`
         void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount);
-        // a node of a tree whose rows a view draws, opened: one of those rows. Each of these gives the index of its
-        // request, which the keys of its answer come with (TreeRowsGroupNode.updateKeys)
-        long expandNode(GGroupObject group, GGroupObjectValue key);
+        // a node of a tree whose rows a view draws, opened: one of those rows. The index of its request goes to
+        // `asked`, for what the projection shows of the node until the keys of the answer come with that index
+        // (TreeRowsGroupNode.updateKeys) - and the form publishes it then, as it does all it shows before an answer
+        void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked);
         // ... or closed
-        long collapseNode(GGroupObject group, GGroupObjectValue key);
+        void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked);
         // ... and every node of such a group and of the groups below it: opened
-        long expandAll(GGroupObject group);
+        void expandAll(GGroupObject group, Consumer<Long> asked);
         // ... or closed
-        long collapseAll(GGroupObject group);
-        // what the projection showed before the server answers, published - once the request is sent, since it is
-        // reconciled by its index
-        void refreshOptimistic();
+        void collapseAll(GGroupObject group, Consumer<Long> asked);
     }
 
     // a react container's state, made with its view, and its controller with it
@@ -1022,31 +1020,26 @@ public class GReactFormData {
                 expandNode(key);
         }
         void expandNode(GGroupObjectValue key) {
-            ask(key, new ExpandRequest(true, verbs.expandNode(group, key)));
+            verbs.expandNode(group, key, requestIndex -> setPendingExpanding(key, new ExpandRequest(true, requestIndex)));
         }
         void collapseNode(GGroupObjectValue key) {
-            ask(key, new ExpandRequest(false, verbs.collapseNode(group, key)));
+            verbs.collapseNode(group, key, requestIndex -> setPendingExpanding(key, new ExpandRequest(false, requestIndex)));
         }
         // ... expandAll(), collapseAll(): every node of the group, and of the groups below it - for the tree's top
         // group, the whole tree
         void expandAll() {
-            askAll(new ExpandRequest(true, verbs.expandAll(group)));
+            verbs.expandAll(group, requestIndex -> setPendingExpandingAll(new ExpandRequest(true, requestIndex)));
         }
         void collapseAll() {
-            askAll(new ExpandRequest(false, verbs.collapseAll(group)));
+            verbs.collapseAll(group, requestIndex -> setPendingExpandingAll(new ExpandRequest(false, requestIndex)));
         }
-        // A node a view asked to open or close is shown as asked at once - published as soon as its request is sent
-        void ask(GGroupObjectValue key, ExpandRequest request) {
-            setPendingExpanding(key, request);
-            verbs.refreshOptimistic();
-        }
-        // ... and so is every node there is of the group and of the groups below it; the latest request asked of a node
-        // is the one it shows
-        void askAll(ExpandRequest request) {
+        // A node a view asked to open or close is shown as asked at once, as the form publishes it once the request is
+        // sent - and so is every node there is of the group and of the groups below it; the latest request asked of a
+        // node is the one it shows
+        void setPendingExpandingAll(ExpandRequest request) {
             for (TreeRowsGroupNode node = this; node != null; node = node.down)
                 for (GGroupObjectValue key : node.rows)
                     node.setPendingExpanding(key, request);
-            verbs.refreshOptimistic();
         }
         // ... kept only where a node may have children: nothing opens elsewhere, and no keys would answer it
         void setPendingExpanding(GGroupObjectValue key, ExpandRequest request) {

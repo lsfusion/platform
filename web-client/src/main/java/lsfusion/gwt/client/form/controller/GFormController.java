@@ -536,27 +536,27 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
     // (TreeRowsGroupNode): the platform's own request, which takes the state asked for. The member shows it at once,
-    // until the keys of the answer arrive with its index
+    // until the keys of the answer arrive with its index - and the form publishes it, as it does what it writes itself
     @Override
-    public long expandNode(GGroupObject group, GGroupObjectValue key) {
-        return expandGroupObject(group, key, true);
+    public void expandNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked) {
+        asked.accept(expandGroupObject(group, key, true));
+        refreshReactOptimistic();
     }
     @Override
-    public long collapseNode(GGroupObject group, GGroupObjectValue key) {
-        return expandGroupObject(group, key, false);
+    public void collapseNode(GGroupObject group, GGroupObjectValue key, Consumer<Long> asked) {
+        asked.accept(expandGroupObject(group, key, false));
+        refreshReactOptimistic();
     }
     // ... and its expandAll / collapseAll: the server starts at the group it is given - its nodes under the open nodes
     // of the group above, all of them for the top group - and goes down
     @Override
-    public long expandAll(GGroupObject group) {
-        return expandGroupObjectRecursive(group, false, true); // false: the whole group, not the current object
+    public void expandAll(GGroupObject group, Consumer<Long> asked) {
+        asked.accept(expandGroupObjectRecursive(group, false, true)); // false: the whole group, not the current object
+        refreshReactOptimistic();
     }
     @Override
-    public long collapseAll(GGroupObject group) {
-        return expandGroupObjectRecursive(group, false, false);
-    }
-    @Override
-    public void refreshOptimistic() {
+    public void collapseAll(GGroupObject group, Consumer<Long> asked) {
+        asked.accept(expandGroupObjectRecursive(group, false, false));
         refreshReactOptimistic();
     }
 
