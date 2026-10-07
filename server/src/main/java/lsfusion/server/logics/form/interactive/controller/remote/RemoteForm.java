@@ -566,9 +566,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 if(propertyDraw != null) // a property the security policy hides is not on the form
                     mOrders.exclAdd(new PropertyColumn(propertyDraw, deserializeDataKeysValues(columnKeyList.get(i))), !orderList.get(i));
             }
-            groupObject.setUserOrders(mOrders.immutableOrder());
-
-            form.fireOnUserActivity(stack, groupObject, UserEventObject.Type.ORDER);
+            // a user event is for what the user changes: a request that changes nothing fires none
+            if (groupObject.setUserOrders(mOrders.immutableOrder()))
+                form.fireOnUserActivity(stack, groupObject, UserEventObject.Type.ORDER);
         });
     }
 
@@ -681,18 +681,20 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     mUserFilters.add(UserFilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form));
                 ImList<UserFilterInstance> userFilters = mUserFilters.immutableList();
 
-                goi.setUserFilters(userFilters);
+                // a user event is for what the user changes: a group whose filters stay as they are - a tree sends all
+                // its groups - fires none
+                if (goi.setUserFilters(userFilters)) {
+                    for (UserFilterInstance userFilter : userFilters) {
+                        form.fireFilterPropertyChanged(userFilter.column.property.getSID(), stack);
 
-                for (UserFilterInstance userFilter : userFilters) {
-                    form.fireFilterPropertyChanged(userFilter.column.property.getSID(), stack);
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("set user filter: [CLASS: %1$s]", userFilter.filter.getClass()));
-                        logger.debug(String.format("apply object: %s", goi));
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(String.format("set user filter: [CLASS: %1$s]", userFilter.filter.getClass()));
+                            logger.debug(String.format("apply object: %s", goi));
+                        }
                     }
-                }
 
-                form.fireOnUserActivity(stack, goi, UserEventObject.Type.FILTER);
+                    form.fireOnUserActivity(stack, goi, UserEventObject.Type.FILTER);
+                }
             }
         });
     }
@@ -700,8 +702,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-            form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID));
-            form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
+            // a user event is for what the user changes: the filter selected already fires none
+            if (form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID)))
+                form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
                 logger.debug(String.format("filter ID: %s", filterID));

@@ -374,14 +374,16 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return userFilters;
     }
 
-    // the filters the group has change nothing
-    public void setUserFilters(ImList<UserFilterInstance> userFilters) {
+    // the filters the group has change nothing. Returns whether they changed
+    public boolean setUserFilters(ImList<UserFilterInstance> userFilters) {
         if(!BaseUtils.hashEquals(this.userFilters, userFilters)) {
             this.userFilters = userFilters;
 
             dynamicFiltersUpdated();
             updated |= UPDATED_USERFILTER;
+            return true;
         }
+        return false;
     }
 
     private final Set<FilterInstance> regularFilters = new HashSet<>();
@@ -427,10 +429,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     // all the user orders at once; true - descending. The orders the group has change nothing; of two columns of one
     // order - two draws of one property - the first one is kept, and the same orders by other columns change only the
-    // columns reported, not the rows
-    public void setUserOrders(ImOrderMap<PropertyColumn, Boolean> orders) {
-        if(BaseUtils.hashEquals(getUserOrders(), orders))
-            return;
+    // columns reported, not the rows. Returns whether they changed
+    public boolean setUserOrders(ImOrderMap<PropertyColumn, Boolean> orders) {
+        ImOrderMap<PropertyColumn, Boolean> prevOrders = getUserOrders();
+        if(BaseUtils.hashEquals(prevOrders, orders))
+            return false;
 
         OrderedMap<OrderInstance, Boolean> mOrders = new OrderedMap<>();
         Map<OrderInstance, PropertyColumn> columns = new HashMap<>();
@@ -447,7 +450,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             updated |= UPDATED_ORDER;
         }
         userOrderColumns = MapFact.fromJavaMap(columns);
+        // reported even when unchanged: the client is told what the request was reduced to
         updated |= UPDATED_USERORDER;
+        // a second column of an ordered property is dropped, so the request may leave the orders as they were
+        return !BaseUtils.hashEquals(getUserOrders(), prevOrders);
     }
 
     // с активным интерфейсом, assertion что содержит все ObjectInstance
