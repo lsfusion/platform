@@ -301,11 +301,12 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return get(group).grid;
     }
 
-    // ... and WHERE ITS ROWS GO: the react container that draws them, null when the platform does. Every rule
-    // about a group's node starts by asking this, so the pair is asked as one question and composed by no caller
-    // (mirrors GReactFormData.rowsScope, which is where the client asks it)
+    // ... and WHERE ITS ROWS GO: the react container that draws them, null when the platform does - none for a group
+    // in PANEL view, which is sent no rows. Every rule about a group's node starts by asking this, so the pair is
+    // asked as one question and composed by no caller (mirrors GReactFormData.rowsScope, which is where the client
+    // asks it)
     private ContainerView rowsScope(GroupObjectEntity group) {
-        return componentScope(getDrawComponent(group));
+        return group.isPanel() ? null : componentScope(getDrawComponent(group));
     }
 
     // WHAT REACT KEEPS NOTHING OF as a component: the client has no controller of it, so nothing is sent for it as
@@ -367,7 +368,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             addGroupScope(scopes, producer instanceof PropertyDrawView ? nameScope(producer) // where it is named
                     : producer instanceof ContainerView // FILTERS(g): where what it holds is
                             ? ((ContainerView) producer).getChildrenReactPlace()
-                    : componentScope(producer)); // what draws the rows: where it is drawn
+                    : rowsScope(group)); // what draws the rows: where they are drawn
         return scopes;
     }
 

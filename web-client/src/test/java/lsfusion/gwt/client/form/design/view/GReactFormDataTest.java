@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GCaptionReader;
+import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GBackgroundReader;
 import lsfusion.gwt.client.form.property.GCommentReader;
 import lsfusion.gwt.client.form.property.GComponentLabelReader;
@@ -128,7 +129,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 scope.container = form.mainContainer;
                 form.mainContainer.children.add(scope);
             }
-            group.ID = 10; group.nativeSID = "g10"; group.sID = "items";
+            group.ID = 10; group.nativeSID = "g10"; group.sID = "items"; group.viewType = GClassViewType.LIST;
             group.grid = new GGrid(); group.grid.ID = 11; group.grid.sID = "grid"; group.grid.container = a;
             a.children.add(group.grid);
             group.objects.add(new GObject(group, "item", 10, "item", GIntegerType.instance));
@@ -225,7 +226,7 @@ public class GReactFormDataTest extends GWTTestCase {
         // a group GWT draws the rows of, its grid in the main container, with one panel property in b
         void addOuter() {
             outer = new GGroupObject();
-            outer.ID = 50; outer.nativeSID = "g50"; outer.sID = "outer";
+            outer.ID = 50; outer.nativeSID = "g50"; outer.sID = "outer"; outer.viewType = GClassViewType.LIST;
             outer.grid = new GGrid(); outer.grid.ID = 51; outer.grid.sID = "outerGrid";
             outer.grid.container = form.mainContainer;
             form.mainContainer.children.add(outer.grid);
@@ -406,7 +407,7 @@ public class GReactFormDataTest extends GWTTestCase {
             verbs.controllers = controllers;
         }
         void group(GGroupObject group, int id, String sid) {
-            group.ID = id; group.nativeSID = "g" + id; group.sID = sid;
+            group.ID = id; group.nativeSID = "g" + id; group.sID = sid; group.viewType = GClassViewType.LIST;
             group.parent = tree;
             tree.groups.add(group);
             group.objects.add(new GObject(group, sid, id, sid, GIntegerType.instance));
@@ -680,6 +681,23 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native boolean sameField(JavaScriptObject a, String aName, JavaScriptObject b, String bName) /*-{ return a[aName] === b[bName]; }-*/;
     private static native boolean isFalse(JavaScriptObject object, String name) /*-{ return object[name] === false; }-*/;
 
+    // a group in PANEL view is sent no rows - only its current object, which nothing chooses among rows -, so no view
+    // has a node of its rows, wherever its grid is: the platform's controller has the group (it builds no table for a
+    // panel), and a panel property of it is on a plain node, with no rows and no change(row)
+    public void testAGroupInPanelViewHasNoRows() {
+        Fixture f = new Fixture(fixture -> fixture.group.viewType = GClassViewType.PANEL);
+        assertSame(f.lsf, f.controller(f.group));
+        assertSame(f.lsf, f.ordersController());
+        assertNull(field(f.data(), "items")); // a, where its grid is, carries none of its panel properties: no node
+        JavaScriptObject items = field(f.snapshots[1], "items"); // b carries one of them
+        assertNotNull(field(items, "panel"));
+        assertFalse(own(items, "list"));
+        assertFalse(own(items, "keys"));
+        assertFalse(own(items, "orders"));
+        assertNull(field(field(f.sb.controller, "items"), "change"));
+        assertNotNull(field(field(f.sb.controller, "items"), "panel"));
+    }
+
     public void testCellUpdateIsIsolatedAndKeepsOldSnapshots() {
         Fixture f = new Fixture();
         JavaScriptObject oldData = f.data(), oldRow = f.row("1"), otherRow = f.row("2");
@@ -945,7 +963,7 @@ public class GReactFormDataTest extends GWTTestCase {
         final GGroupObject[] others = new GGroupObject[1];
         Fixture f = new Fixture(fixture -> {
             GGroupObject other = others[0] = new GGroupObject();
-            other.ID = 50; other.nativeSID = "g50"; other.sID = "others";
+            other.ID = 50; other.nativeSID = "g50"; other.sID = "others"; other.viewType = GClassViewType.LIST;
             other.grid = new GGrid(); other.grid.ID = 51; other.grid.sID = "otherGrid"; other.grid.container = fixture.a;
             fixture.a.children.add(other.grid);
             other.objects.add(new GObject(other, "other", 50, "other", GIntegerType.instance));

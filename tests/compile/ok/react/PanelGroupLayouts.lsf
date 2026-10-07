@@ -1,0 +1,19 @@
+MODULE PanelGroupLayouts;
+
+REQUIRE System;
+
+// a group in PANEL view draws its rows nowhere - the server sends it none, only its current object -, so where a React
+// view draws its box no name is reserved for rows: a panel property of it may be called `list` or `keys`, as on the
+// node of a group whose rows are drawn elsewhere
+CLASS PanelGroupItem;
+panelGroupName = DATA STRING[20] (PanelGroupItem);
+panelGroupNote = DATA STRING[20] (PanelGroupItem);
+
+FORM panelGroupLayouts
+    OBJECTS i = PanelGroupItem PANEL
+    PROPERTIES(i) panelGroupName EXTID 'list', panelGroupNote EXTID 'keys'
+;
+
+DESIGN panelGroupLayouts {
+    BOX(i) { custom = 'PanelGroupBoard'; }
+}

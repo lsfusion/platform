@@ -1730,9 +1730,11 @@ public class GReactFormData {
     }
 
     // where a group's ROWS go: the react container that draws them, null when the platform does - asked of what DRAWS
-    // them, never of the group's box (mirrors FormView.rowsScope)
+    // them, never of the group's box. A group in PANEL view has none anywhere: the server sends it no rows, only its
+    // current object, which nothing chooses among rows, so no view gets a node of rows for it, wherever its grid sits
+    // (mirrors FormView.rowsScope)
     public GContainer rowsScope(GGroupObject group) {
-        return componentScope(group.getDrawComponent());
+        return group.viewType.isPanel() ? null : componentScope(group.getDrawComponent());
     }
     // where a COMPONENT is drawn: the react container that draws it, null when the platform does - an lsf one too,
     // whose content is the platform's wherever React places it. A list property has no place of its own: it is drawn
