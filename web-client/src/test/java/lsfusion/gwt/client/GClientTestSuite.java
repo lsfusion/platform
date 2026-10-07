@@ -2,6 +2,7 @@ package lsfusion.gwt.client;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 import junit.framework.Test;
+import lsfusion.gwt.client.base.view.ReactRootTest;
 import lsfusion.gwt.client.form.design.view.GReactFormDataTest;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTreeTest;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManagerTest;
@@ -17,6 +18,7 @@ public class GClientTestSuite {
         suite.addTestSuite(GTreeTableTreeTest.class);
         suite.addTestSuite(GGridSortableHeaderManagerTest.class);
         suite.addTestSuite(GFormChangesTest.class);
+        suite.addTestSuite(ReactRootTest.class);
         return suite;
     }
 }
