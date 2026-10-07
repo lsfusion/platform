@@ -95,7 +95,6 @@
                 <!-- the run's defaults, -D overrides them : see UiSpikeIT -->
                 <ui.browser>docker</ui.browser>
                 <ui.repeat>30</ui.repeat>
-                <ui.networkIdle>true</ui.networkIdle>
             </properties>
             <dependencies>
                 <dependency>
@@ -172,7 +171,6 @@
                                 <ui.playwrightVersion>${playwright.version}</ui.playwrightVersion>
                                 <ui.browser>${ui.browser}</ui.browser>
                                 <ui.repeat>${ui.repeat}</ui.repeat>
-                                <ui.networkIdle>${ui.networkIdle}</ui.networkIdle>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

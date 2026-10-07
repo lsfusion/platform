@@ -44,9 +44,9 @@ import static lsfusion.tests.TestServer.read;
 /** The measurement spike for browser tests: a test server, the web client's war in a jetty of its own, and a browser
  *  driven by playwright. Every step of every iteration is timed, a failing step is recorded with a screenshot and a
  *  trace and the iteration goes on to the next one, so that one run gives both the times and the failure rate.
- *  -Dui.repeat (10), -Dui.networkIdle (true: wait for it after a page load), -Dui.browser (local, or docker: playwright's
- *  image), -Dui.channel (chrome: the installed one; empty for playwright's own chromium), -Dui.headless (true),
- *  -Dui.trace (true), -Dui.slowMo (0). The report goes to target/ui/report.txt. */
+ *  -Dui.repeat (10), -Dui.browser (local, or docker: playwright's image), -Dui.channel (chrome: the installed one; empty
+ *  for playwright's own chromium), -Dui.headless (true), -Dui.trace (true), -Dui.slowMo (0). The report goes to
+ *  target/ui/report.txt. */
 public class UiSpikeIT {
 
     private static final Path UI = BASE.resolve("target/ui");
@@ -228,11 +228,6 @@ public class UiSpikeIT {
     private void load(Page page) {
         page.navigate("http://localhost:" + webPort + "/main");
         page.locator("[lsfusion-container='UiSpike.uiSpike']").waitFor();
-        if (Boolean.getBoolean("ui.networkIdle")) {
-            long started = System.nanoTime();
-            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
-            record("  (network idle)", started);
-        }
     }
 
     private void openItems(Page page) {
@@ -262,9 +257,13 @@ public class UiSpikeIT {
 
     private void dialog(Page page, String answer) throws Exception {
         Locator form = open(page, "UiSpike.uiDialog");
-        form.locator("[lsfusion-container='PROPERTY(uiAsk())']").click();
-        page.keyboard().type(answer); // a guess: the input dialog has the focus
-        page.keyboard().press("Enter");
+        Locator ask = form.locator("[lsfusion-container='PROPERTY(uiAsk())']");
+        ask.click();
+        // the input opens in place of the button with the response; playwright waits for the glass of a request before
+        // a click but not before keys, which the block drops, so they go into the input, which comes after the response
+        Locator input = ask.locator("input");
+        input.fill(answer);
+        input.press("Enter");
         checkUntil("UiSpike.uiCheckAnswer[STRING[100]]", answer);
         close(form);
     }
@@ -278,9 +277,10 @@ public class UiSpikeIT {
     }
 
     // a form by its navigator element, unfolding the folder when the element is not on the screen : a folder's panel
-    // slides out of the viewport keeping its elements, which playwright still takes for visible. Right after the page
-    // is loaded the navigator may still be settling and show another folder over the click, so the click is repeated -
-    // and every repeat is counted, as a run without it would have failed there
+    // slides out of the viewport keeping its elements, which playwright still takes for visible. While a request blocks
+    // the input (the start runs one right after the navigator is drawn), the client lays a glass over the page under
+    // automation, and a click waits for it to go (GBusyDialogDisplayer). Should a click be lost all the same, it is
+    // repeated - and every repeat is counted, as a run without it would have failed there
     private static Locator open(Page page, String element) {
         Locator item = page.locator("[lsfusion-container='" + element + "']");
         for (int attempt = 1; !inViewport(item, 1); attempt++) {
