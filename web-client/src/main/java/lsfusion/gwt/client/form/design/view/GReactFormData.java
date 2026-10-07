@@ -202,13 +202,13 @@ public class GReactFormData {
     private static GPropertyController noEntry(GPropertyDraw property, GLsfPropertyController lsf) {
         return property.isLsfView() ? lsf : null;
     }
-    // ... of a component: none of what React keeps nothing of (reactKeepsNothing). A property's is the platform's where
-    // the platform draws the property - a property is no owner as a component, all of it being its property
-    // controller's (above), and the one thing sent for it as a component, its class, is the platform's to apply, to the
-    // view it draws the property in. Of any other: of one React draws, all that is sent for it; of an lsf one React
-    // places, its descriptor - its labels and its SHOWIF - where the design names the component, over the
-    // platform's; of one it places by no name, nothing: all of it is the platform's. `lsf` is the platform's controller
-    // of the component: the layout
+    // ... of a component: none of what React keeps nothing of (reactKeepsNothing). A property's is the platform's,
+    // whatever draws the property - a property is no owner as a component, all of it being its property controller's
+    // (above), and the one thing sent for it as a component, its class (a design showIf on a property is the
+    // property's SHOWIF), is the platform's to apply to the view it draws the property in: none where React draws it.
+    // Of any other: of one React draws, all that is sent for it; of an lsf one React places, its descriptor - its labels
+    // and its SHOWIF - where the design names the component, over the platform's; of one it places by no name,
+    // nothing: all of it is the platform's. `lsf` is the platform's controller of the component: the layout
     public GComponentController createComponentController(GComponent component, GComponentController lsf) {
         if (reactKeepsNothing(component))
             return null;
@@ -219,11 +219,9 @@ public class GReactFormData {
         return component.isLsfView() ? new LsfComponentEntry(state, component, lsf) : new ReactComponentEntry(state, component);
     }
     // ... and WHAT REACT KEEPS NOTHING OF as a component, so nothing is sent for it as one (mirrors
-    // FormView.reactKeepsNothing): a property whose content React draws - all of it is its property controller's -, and
-    // a component React draws that the design does not name - no descriptor, no entry to go to
+    // FormView.reactKeepsNothing): a component React draws that the design does not name - no descriptor, no entry to
+    // go to
     private boolean reactKeepsNothing(GComponent component) {
-        if (component instanceof GPropertyDraw)
-            return componentScope(component) != null;
         return component.sID == null && !component.isLsfView() && placed(component) != null;
     }
     // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GGridPanelController): a group's lsf list properties are drawn per

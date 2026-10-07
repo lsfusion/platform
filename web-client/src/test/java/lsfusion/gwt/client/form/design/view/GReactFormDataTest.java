@@ -1058,11 +1058,26 @@ public class GReactFormDataTest extends GWTTestCase {
         f.controller(f.nativeProperty).focusProperty(f.nativeProperty);
         assertTrue(f.lsf.focused.contains(f.nativeProperty));  // it is edited: its controller is the platform's own
         assertSame(f.lsf, f.controller(f.plain)); // ... and one React has nothing of is the platform's alone
-        // as a component, a property is the platform's where the platform draws it - an lsf one too, React labelling it
-        // - and has no controller where React draws its content: nothing is sent for it (createComponentController)
+        // as a component, a property is the platform's whatever draws it - an lsf one, React labelling it, and one React
+        // draws the content of, too (createComponentController)
         assertSame(f.layout, f.controllers.components.get(f.plain));
         assertSame(f.layout, f.controllers.components.get(f.nativeProperty));
-        assertNull(f.controllers.components.get(f.price));
+        assertSame(f.layout, f.controllers.components.get(f.price));
+        assertSame(f.layout, f.controllers.components.get(f.panel));
+    }
+
+    // what is sent for a property React draws AS A COMPONENT - its class, where the design gives it a dynamic one; a
+    // design showIf on a property is the property's own SHOWIF, never the component's - is the platform's, which has
+    // no view of it to apply it to (GFormLayout skips a component it built none for): React's entry is not touched
+    public void testAPropertyReactDrawsIsThePlatformsAsAComponent() {
+        Fixture f = new Fixture();
+        JavaScriptObject before = f.data();
+        NativeHashMap<GGroupObjectValue, PValue> highlighted = new NativeHashMap<>();
+        highlighted.put(GGroupObjectValue.EMPTY, PValue.getPValue("highlighted"));
+        assertTrue(reachesLsf(f.lsf, f.controllers, f.price.elementClassReader, highlighted));
+        assertTrue(reachesLsf(f.lsf, f.controllers, f.panel.elementClassReader, highlighted));
+        f.projection.flush();
+        assertSame(before, f.data());
     }
 
     // a member holds the state it stands for and reads what a call through it names from that state - the row, the

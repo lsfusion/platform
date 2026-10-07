@@ -309,15 +309,12 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // WHAT REACT KEEPS NOTHING OF as a component: the client has no controller of it, so nothing is sent for it as
-    // one - neither its readers (FormEntity.getPropertyComponents) nor its visibility (FormEntity.getBaseComponents). A
-    // property whose content a react container draws - its entry, or its column in the rows React draws -, all of it
-    // being its property's: the platform builds no view of it as a component, so the reader of its component class -
-    // besides the grid class the property carries - has nothing to be applied to; the class as the design writes it
-    // still comes with the design. And a component React draws that the design does not name - a user filter's -,
-    // which has no entry to go to (mirrors GReactFormData.reactKeepsNothing)
+    // one - neither its readers (FormEntity.getPropertyComponents) nor its visibility (FormEntity.getBaseComponents): a
+    // component React draws that the design does not name - a user filter's -, which has no entry to go to. Not a
+    // property, whatever draws it: as a component it is the platform's, and the one reader it has as one is its class
+    // (a design showIf on a property is the property's SHOWIF), which the platform applies to the view it draws the
+    // property in and skips where React draws it (mirrors GReactFormData.reactKeepsNothing)
     public boolean reactKeepsNothing(ComponentView component) {
-        if (component instanceof PropertyDrawView)
-            return componentScope(component) != null;
         return component.getSID() == null && component.isReactDrawn();
     }
 
