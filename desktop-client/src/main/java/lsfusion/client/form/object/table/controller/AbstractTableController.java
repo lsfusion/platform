@@ -1,6 +1,5 @@
 package lsfusion.client.form.object.table.controller;
 
-import lsfusion.base.Pair;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.controller.FilterController;
@@ -11,6 +10,7 @@ import lsfusion.client.form.object.panel.controller.PanelController;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.view.ToolbarView;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -137,7 +137,7 @@ public abstract class AbstractTableController implements TableController {
     }
 
     @Override
-    public Pair<ClientPropertyDraw, ClientGroupObjectValue> getFilterColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    public Column getFilterColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         ClientPropertyDraw actualProperty = property;
         ClientGroupObjectValue actualColumnKey = columnKey;
 
@@ -149,6 +149,6 @@ public abstract class AbstractTableController implements TableController {
         }
         // no column - a grid with no columns yet - is the column of the current objects of the column groups, as the
         // server takes it and reports it back
-        return Pair.create(actualProperty, actualColumnKey != null ? actualColumnKey : ClientGroupObjectValue.EMPTY);
+        return new Column(actualProperty, actualColumnKey != null ? actualColumnKey : ClientGroupObjectValue.EMPTY);
     }
 }

@@ -2175,7 +2175,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private static ArrayList<GPropertyFilterDTO> getFilterDTOs(List<GPropertyFilter> filters) {
         ArrayList<GPropertyFilterDTO> filterDTOs = new ArrayList<>();
         for (GPropertyFilter filter : filters) {
-            if (filter.property.canBeFiltered()) {
+            if (filter.column.property.canBeFiltered()) {
                 filterDTOs.add(filter.getFilterDTO());
             }
         }

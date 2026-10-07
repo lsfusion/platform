@@ -30,10 +30,10 @@ public abstract class DataFilterValueView extends FlexPanel {
         this.filterValue = condition.value;
         logicsSupplier = ilogicsSupplier;
 
-        this.columnKey = condition.columnKey;
+        this.columnKey = condition.column.columnKey;
 
         // непосредственно объект для изменения значения свойств
-        valueTable = new DataFilterValueViewTable(this, condition.property, condition.compare, ilogicsSupplier);
+        valueTable = new DataFilterValueViewTable(this, condition.column.property, condition.compare, ilogicsSupplier);
 
         addFill(valueTable);
         
@@ -64,7 +64,7 @@ public abstract class DataFilterValueView extends FlexPanel {
     }
 
     public void changeProperty(ClientPropertyFilter condition, boolean readSelectedValue) {
-        valueTable.setProperty(condition.property);
+        valueTable.setProperty(condition.column.property);
         if (readSelectedValue) {
             filterValue.setValue(readSelectedValue(condition));
         }
@@ -87,7 +87,7 @@ public abstract class DataFilterValueView extends FlexPanel {
     }
     
     private Object readSelectedValue(ClientPropertyFilter condition) {
-        return SwingUtils.escapeSeparator(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare); 
+        return SwingUtils.escapeSeparator(logicsSupplier.getSelectedValue(condition.column.property, condition.column.columnKey), condition.compare); 
     }
 
     public void putSelectedValue(ClientPropertyFilter condition) {

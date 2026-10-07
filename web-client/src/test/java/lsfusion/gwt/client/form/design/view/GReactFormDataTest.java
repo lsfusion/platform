@@ -549,7 +549,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static String describe(ArrayList<GPropertyFilter> conditions) {
         StringBuilder text = new StringBuilder();
         for (GPropertyFilter condition : conditions)
-            text.append(" ").append(condition.property.integrationSID).append(condition.compare)
+            text.append(" ").append(condition.column.property.integrationSID).append(condition.compare)
                     .append(condition.negation ? " not" : "").append(condition.junction ? "" : " or");
         return text.toString();
     }
@@ -2095,7 +2095,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(0, length(field(field(f.snapshots[2], "items"), "filters")));
         // c carries no column: a condition names the group's property
         callChange(member, parse("{\"property\": \"price\", \"value\": 4}"));
-        assertSame(f.price, f.stated.get(0).property);
+        assertSame(f.price, f.stated.get(0).column.property);
         ArrayList<GPropertyFilter> conditions = new ArrayList<>();
         conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(3), GCompare.LESS));
         f.filtersController().updateFilters(f.group, dtos(conditions));

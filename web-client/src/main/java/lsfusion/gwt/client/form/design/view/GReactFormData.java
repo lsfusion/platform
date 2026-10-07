@@ -821,7 +821,7 @@ public class GReactFormData {
         void setConditions(ArrayList<GPropertyFilter> conditions) {
             JavaScriptObject array = emptyArray();
             for (GPropertyFilter condition : conditions) {
-                GPropertyDraw property = condition.property;
+                GPropertyDraw property = condition.column.property;
                 if (!isProjectableCondition(property)) {
                     node.reportUnnameable(property, "filters", "filtered", whyNotCondition(property));
                     continue;
@@ -870,11 +870,11 @@ public class GReactFormData {
             ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
             if (isNoValue(value)) {
                 checkFilterFields(errorPrefix, condition, property);
-                result.removeIf(existing -> existing.property.equals(property));
+                result.removeIf(existing -> existing.column.property.equals(property));
             } else {
                 GPropertyFilter changed = readFilterCondition(errorPrefix, node.group, condition, property, value);
                 int first = 0;
-                while (first < result.size() && !result.get(first).property.equals(property))
+                while (first < result.size() && !result.get(first).column.property.equals(property))
                     first++;
                 if (first < result.size())
                     result.set(first, changed);

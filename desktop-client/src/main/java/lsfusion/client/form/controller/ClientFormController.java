@@ -1616,7 +1616,7 @@ public class ClientFormController implements AsyncListener {
     private static byte[][] serializeClientFilters(List<ClientPropertyFilter> filters) throws IOException {
         final List<byte[]> serializedFilters = new ArrayList<>();
         for (ClientPropertyFilter filter : filters) {
-            if (!filter.property.isAction())
+            if (!filter.column.property.isAction())
                 serializedFilters.add(serializeClientFilter(filter));
         }
         return serializedFilters.toArray(new byte[serializedFilters.size()][]);

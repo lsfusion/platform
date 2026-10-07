@@ -57,7 +57,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
         GwtClientUtils.addClassName(sizedView.widget, "form-control");
         sizedView.addFill(this);
 
-        if (readSelectedValue && !condition.property.differentValue)
+        if (readSelectedValue && !condition.column.property.differentValue)
             filterValue.value = readSelectedValue(condition);
 
         cell.updateValue(filterValue.value);
@@ -87,7 +87,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
     }
 
     private PValue readSelectedValue(GPropertyFilter condition) {
-        return PValue.escapeSeparator(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare);
+        return PValue.escapeSeparator(logicsSupplier.getSelectedValue(condition.column.property, condition.column.columnKey), condition.compare);
     } 
     
     public void putSelectedValue(GPropertyFilter condition) {

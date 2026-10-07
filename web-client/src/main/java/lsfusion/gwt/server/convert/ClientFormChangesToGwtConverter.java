@@ -236,9 +236,9 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             GPropertyFilterDTO[] filterDTOs = new GPropertyFilterDTO[filters.size()];
             for (ClientPropertyFilter filter : filters) {
                 GPropertyFilterDTO filterDTO = new GPropertyFilterDTO();
-                filterDTO.propertyID = filter.property.ID;
+                filterDTO.propertyID = filter.column.property.ID;
                 filterDTO.filterValue = new GFilterValueDTO(convertFileValue(filter.value.value, sessionObject, servlet));
-                filterDTO.columnKey = convertOrCast(filter.columnKey);
+                filterDTO.columnKey = convertOrCast(filter.column.columnKey);
                 filterDTO.negation = filter.negation;
                 filterDTO.compareByte = filter.compare.serialize();
                 filterDTO.junction = filter.junction;

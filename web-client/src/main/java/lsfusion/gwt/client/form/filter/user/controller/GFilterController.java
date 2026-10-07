@@ -131,22 +131,22 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     private static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey) {
-        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(logicsSupplier, filter != null ? filter.property: null, columnKey);
+        Column column = getActualColumn(logicsSupplier, filter != null ? filter.property: null, columnKey);
         
-        if (column.first == null)
+        if (column.property == null)
             return null;
 
         if (filter == null) {
-            filter = new GFilter(column.first);
+            filter = new GFilter(column.property);
         } else if (filter.property == null) {
-            filter.property = column.first;
+            filter.property = column.property;
         }
 
         // a condition is of the group of its property, as the server takes it, a tree's selected group or not
-        return new GPropertyFilter(filter, column.first.groupObject, column.second, null, null);
+        return new GPropertyFilter(filter, column.property.groupObject, column.columnKey, null, null);
     }
 
-    private static Pair<GPropertyDraw, GGroupObjectValue> getActualColumn(GTableController logicsSupplier, GPropertyDraw property, GGroupObjectValue columnKey) {
+    private static Column getActualColumn(GTableController logicsSupplier, GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw actualProperty = property;
         GGroupObjectValue actualColumnKey = columnKey;
 
@@ -158,7 +158,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
         // no column - a grid with no columns yet - is the column of the current objects of the column groups, as the
         // server takes it and reports it back
-        return new Pair<>(actualProperty, actualColumnKey != null ? actualColumnKey : GGroupObjectValue.EMPTY);
+        return new Column(actualProperty, actualColumnKey != null ? actualColumnKey : GGroupObjectValue.EMPTY);
     }
 
     public void addCondition() {
@@ -244,10 +244,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
     
     private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(logicsSupplier, propertyDraw, columnKey);
+        Column column = getActualColumn(logicsSupplier, propertyDraw, columnKey);
 
         for (GPropertyFilter filter : conditionViews.keySet()) {
-            if (filter.columnEquals(column)) {
+            if (filter.column.equals(column)) {
                 return conditionViews.get(filter);
             }
         }
@@ -276,7 +276,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             for (GPropertyFilter filter : filters) {
                 boolean filterExists = false;
                 for (GPropertyFilter fixedFilter : fixedFilters) {
-                    if (filter.columnEquals(fixedFilter)) {
+                    if (filter.column.equals(fixedFilter.column)) {
                         fixedFilter.override(filter);
                         GFilterConditionView conditionView = conditionViews.get(fixedFilter);
                         conditionView.applyCondition(filter);
