@@ -90,6 +90,12 @@
     word-break: break-word;
 }
 
+/* the glass over the page while a request blocks the input, only under browser automation (GBusyDialogDisplayer) :
+   the block covers everything */
+.lsf-blocking {
+    z-index: 2147483647;
+}
+
 /* ------------- preferences ----------- */
 
 .dialog-modal-body {
