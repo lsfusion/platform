@@ -1575,6 +1575,12 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
+    // the orders the form has for a group, in their priority order; true - ascending
+    public LinkedHashMap<Column, Boolean> getOrders(ClientGroupObject group) {
+        LinkedHashMap<Column, Boolean> orders = currentOrders.get(group);
+        return orders != null ? orders : new LinkedHashMap<>();
+    }
+
     public void changeFilters(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
         currentFilters.put(groupObject, serializeClientFilters(conditions));
         applyCurrentFilters(Collections.singletonList(groupObject));

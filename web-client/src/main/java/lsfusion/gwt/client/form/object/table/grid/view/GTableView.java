@@ -14,7 +14,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface GTableView extends TableComponent {
@@ -33,7 +32,7 @@ public interface GTableView extends TableComponent {
     // columns
     void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values); // add or update
     void removeProperty(GPropertyDraw property);
-    void updateOrders(LinkedHashMap<Column, Boolean> orders); // the orders the form has, shown
+    void updateOrders(); // the orders the form has for the group changed - a view that shows them reads them there
 
     // EXTRA SETTERS
     // keys

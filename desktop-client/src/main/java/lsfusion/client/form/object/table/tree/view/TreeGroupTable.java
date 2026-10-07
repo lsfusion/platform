@@ -112,7 +112,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     boolean plainTreeMode = false;
     boolean manualExpand;
 
-    private TableSortableHeaderManager<ClientPropertyDraw> sortableHeaderManager;
+    private TableSortableHeaderManager sortableHeaderManager;
 
     private WeakReference<TableCellRenderer> defaultHeaderRendererRef;
     private TableCellRenderer wrapperHeaderRenderer;
@@ -144,24 +144,22 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             setFont(ClientColorUtils.getOrDeriveComponentFont(treeGroup.font, this));
         }
 
-        sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
-            protected void ordersChanged(final ClientPropertyDraw columnKey, final LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        TreeGroupTable.this.ordersChanged(columnKey, orders);
-                    }
-                });
+        // a tree has no columns of a property: a column is its property's, of the group the property is of
+        sortableHeaderManager = new TableSortableHeaderManager(this, true) {
+            @Override
+            protected LinkedHashMap<Column, Boolean> getOrders(ClientGroupObject group) {
+                return form.getOrders(group);
             }
 
             @Override
-            protected ClientPropertyDraw getColumnKey(int column) {
-                return model.getColumnProperty(column);
+            protected void changeOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+                RmiQueue.runAction(() -> form.changeOrders(group, orders));
             }
 
             @Override
-            protected ClientPropertyDraw getColumnProperty(int column) {
-                return model.getColumnProperty(column);
+            protected Column getColumn(int column) {
+                ClientPropertyDraw property = column >= 0 && column < model.getColumnCount() ? model.getColumnProperty(column) : null;
+                return property != null ? new Column(property, ClientGroupObjectValue.EMPTY) : null;
             }
         };
 
@@ -266,15 +264,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         enableEvents(AWTEvent.MOUSE_EVENT_MASK); // just in case, because we override processMouseEvent (however there are addMouseListeners)
     }
 
-    // a tree's header keeps the orders of all its groups: only the clicked column's group's are sent
-    private void ordersChanged(ClientPropertyDraw columnKey, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
-        ClientGroupObject group = columnKey.groupObject;
-        LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
-        for (Map.Entry<ClientPropertyDraw, Boolean> order : orders.entrySet())
-            if (order.getKey().groupObject.equals(group))
-                groupOrders.put(new Column(order.getKey(), ClientGroupObjectValue.EMPTY), order.getValue());
-        form.changeOrders(group, groupOrders);
-    }
 
     @Override
     public boolean getScrollableTracksViewportWidth() {
@@ -1072,16 +1061,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         super.processKeyEvent(e);
     }
 
-    // the orders the form has for a group take the place of the group's: one header keeps the orders of all the groups
-    // of the tree, its columns being the last group's
-    public void updateOrders(ClientGroupObject group, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {
-        LinkedHashMap<ClientPropertyDraw, Boolean> treeOrders = new LinkedHashMap<>();
-        for (Map.Entry<ClientPropertyDraw, Boolean> entry : sortableHeaderManager.getOrderDirections().entrySet())
-            if (!group.equals(entry.getKey().groupObject))
-                treeOrders.put(entry.getKey(), entry.getValue());
-        treeOrders.putAll(orders);
-        if (sortableHeaderManager.updateOrders(treeOrders))
-            tableHeader.repaint();
+    // the orders the form has for a group changed: the header draws them as it reads them
+    public void updateOrders() {
+        tableHeader.repaint();
     }
 
     public int getHeaderHeight() {

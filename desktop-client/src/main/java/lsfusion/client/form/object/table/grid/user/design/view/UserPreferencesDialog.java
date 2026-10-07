@@ -5,13 +5,13 @@ import lsfusion.base.Pair;
 import lsfusion.base.lambda.Callback;
 import lsfusion.client.base.view.ThemedFlatRolloverButton;
 import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.grid.user.design.UserPreferencesPropertyListItem;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.TitledPanel;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.design.FontInfo;
 
 import javax.swing.*;
@@ -437,11 +437,10 @@ public abstract class UserPreferencesDialog extends JDialog {
         confirmDialog.show(new Callback() {
             @Override
             public void done(Object result) {
-                Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
                 Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<>();
                 int j = 0;
-                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()) {
-                    sortDirections.put(entry.getKey().first, new Pair<>(entry.getValue(), j));
+                for (Map.Entry<Column, Boolean> entry : initialTable.getOrders().entrySet()) {
+                    sortDirections.put(entry.getKey().property, new Pair<>(entry.getValue(), j));
                     j++;
                 }
 

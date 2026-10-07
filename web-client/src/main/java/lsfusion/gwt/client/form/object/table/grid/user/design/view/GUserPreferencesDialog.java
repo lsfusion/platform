@@ -10,13 +10,13 @@ import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.HashMap;
 import java.util.List;
@@ -274,10 +274,10 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
             public void onSuccess() {
                 Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<>();
                 int i = 0;
-                for (Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> entry : grid.getOrderDirections().entrySet()) {
+                for (Map.Entry<Column, Boolean> entry : grid.getOrders().entrySet()) {
                     HashMap<Boolean, Integer> dirs = new HashMap<>();
                     dirs.put(entry.getValue(), i);
-                    userSortDirections.put(entry.getKey().keySet().iterator().next(), dirs);
+                    userSortDirections.put(entry.getKey().property, dirs);
                     i++;
                 }
         

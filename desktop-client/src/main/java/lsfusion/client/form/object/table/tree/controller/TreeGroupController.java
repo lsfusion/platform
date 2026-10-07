@@ -349,11 +349,7 @@ public class TreeGroupController extends AbstractTableController {
 
     @Override
     public void updateOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
-        // a tree has no columns of a property
-        LinkedHashMap<ClientPropertyDraw, Boolean> propertyOrders = new LinkedHashMap<>();
-        for (Map.Entry<Column, Boolean> entry : orders.entrySet())
-            propertyOrders.put(entry.getKey().property, entry.getValue());
-        tree.updateOrders(group, propertyOrders);
+        tree.updateOrders();
     }
 
     public ClientGroupObject getCurrentGroupObject() {
