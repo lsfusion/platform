@@ -403,30 +403,31 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // ... and what those producers WRITE on the node in this scope, which is what a projected name can collide with:
-    // the node's own names, the grid's and the sortings' where this container draws the group's rows, and the user
-    // filters' where it draws what FILTERS(g) holds.
+    // the node's own names, and the names of the parts of the group placed in this container - asked once per place a
+    // part goes to (mirrors where GReactFormData's createGroupController, createOrdersController and
+    // createFiltersController place the parts)
     private String[] getReservedNodeNames(GroupObjectEntity group, ContainerView scope) {
         // the top level, the empty group's node: named on the controller too, so the controller's names
         if (group == null)
             return CONTROLLER_NAMES;
         String[] reserved = NODE_OWN_NAMES;
-        if (rowsScope(group) == scope) {
+        if (rowsScope(group) == scope) { // where the rows are drawn: the grid's part, a tree's beside it, the sortings'
             reserved = ArrayUtils.addAll(reserved, GRID_PART_NAMES);
-            if (group.isInTree()) // ... and the TREE's, which is the component drawing those rows
+            if (group.isInTree())
                 reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
-        }
-        // the sortings' part, placed with the rows - the order they are drawn in -, as a group's design has no box of
-        // its sortings (mirrors GReactFormData.createOrdersController)
-        if (rowsScope(group) == scope)
             reserved = ArrayUtils.addAll(reserved, ORDERS_PART_NAMES);
-        if (getFiltersContainer(group).getChildrenReactPlace() == scope)
+        }
+        if (getFiltersContainer(group).getChildrenReactPlace() == scope) // where what FILTERS(g) holds is drawn
             reserved = ArrayUtils.addAll(reserved, FILTERS_PART_NAMES);
         return reserved;
     }
     // ... and what a ROW of it carries - asked only where the rows are drawn, the one scope a column is claimed in:
-    // the grid's names, and in a tree the tree's too, which states where the row hangs
+    // the grid's names, and a tree's beside them
     private String[] getReservedRowNames(GroupObjectEntity group) {
-        return group.isInTree() ? ArrayUtils.addAll(ROW_NAMES, TREE_ROW_NAMES) : ROW_NAMES;
+        String[] reserved = GRID_ROW_NAMES;
+        if (group.isInTree())
+            reserved = ArrayUtils.addAll(reserved, TREE_ROW_NAMES);
+        return reserved;
     }
     private static void addGroupScope(List<ContainerView> scopes, ContainerView scope) {
         if (scope != null && !scopes.contains(scope))
@@ -893,49 +894,52 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // property and hand the view an object whose members come from somewhere else. Refused at every level it could be
     // written at, like any other name this surface owns
     private static final String PROTO = "__proto__";
-    private static final String[] TOP_NAMES = {PROTO};
+    // what a component's descriptor is claimed against at the top level: data alone - a component has no member
+    private static final String[] TOP_NAMES = {
+            PROTO,
+    };
     // what a controller carries beside its members: the four verbs every controller has (GController.extendController),
     // the editing a view declares (GFormController.extendController) and the batch that is the members' shortcut. A
     // projected name equal to one of them would have to be dropped, and the verbs are how everything outside this
     // surface is reached
-    private static final String[] CONTROLLER_NAMES = {"exec", "eval", "evalAction", "change", "startEditing", "stopEditing",
-            "isEditing", "properties", PROTO};
-    // what a group's node carries besides the properties, ONE LINE PER PRODUCER: a branch that gives a component a
-    // part of its own adds its line here rather than editing another's, so two of them merge instead of colliding.
-    // A name in this array is claimed for the node's DATA and for the group's controller MEMBERS alike - `change` is
-    // the group's own verb - so a feature that writes on the node has one array to update, not two.
-    private static final String[] GRID_PART_NAMES = {
-            "list", "byKey", "keys", "options",                 // the grid's part
+    private static final String[] CONTROLLER_NAMES = {
+            "exec", "eval", "evalAction", "change", "startEditing", "stopEditing", "isEditing", "properties", PROTO,
     };
-    private static final String[] ORDERS_PART_NAMES = {
-            "orders",                                           // the sortings' part, where the rows are
-    };
-    private static final String[] FILTERS_PART_NAMES = {
-            "filters",                                          // the user filters' part, where FILTERS(g) is
-    };
-    // Every group's node reserves them, whatever it carries in this scope: `change` is the verb of a group whose rows
-    // are drawn here, and a name valid with the rows in one container stays valid when they move to another; `__member`
-    // is the stamp GReactFormData.makePropertyMember gives a property member - non-enumerable and non-writable -, kept
-    // the members' own on the group's member too
+    // what every group's node reserves, whatever it carries in this scope - its index, its verb, the stamp: `change` is
+    // the verb of a group whose rows are drawn here, and a name valid with the rows in one container stays valid when
+    // they move to another; `__member` is the stamp GReactFormData.makePropertyMember gives a property member -
+    // non-enumerable and non-writable -, kept the members' own on the group's member too
     private static final String[] NODE_OWN_NAMES = {
-            "properties", "change", PROTO, "__member", // the node's own: its index, its verb, the stamp
+            "properties", "change", PROTO, "__member",
     };
-    private static final String[] ROW_NAMES = {
-            "key", "isCurrent", "objects", "background", "foreground", "selected", PROTO, // the grid's part: a ROW
+    // ... and what each PART of a group writes beside the properties, in the container the part is in - on the group's
+    // node (_PART_NAMES), and on a row of it where it has rows (_ROW_NAMES) -, each part with arrays of its own: a
+    // branch that gives a component a part adds its arrays rather than editing another's, so two of them merge instead
+    // of colliding. A name on the node is claimed for its DATA and for the group's controller MEMBERS alike - a part's
+    // member hangs on the group's -, so a part that writes on the node has one array to update, not two. First the
+    // grid's part, where the rows are drawn - a tree's rows too: the tree draws them as a grid draws its own
+    private static final String[] GRID_PART_NAMES = {
+            "list", "byKey", "keys", "options",
     };
-    // ... and what only the node of a group OF A TREE carries, where the tree's rows are: the TREE's part, claimed
-    // there as the grid's names are
-    private static final String[] TREE_PART_NAMES = { // the tree's part: the NODE - its verbs
-            "expand", "collapse", "toggle", // a node of the group
-            "expandAll", "collapseAll", // ... all of them, and below
+    private static final String[] GRID_ROW_NAMES = {
+            "key", "isCurrent", "objects", "background", "foreground", "selected", PROTO,
     };
-    // ... and what only a row of a group OF A TREE carries: its place in the tree. It is written by the TREE's part,
-    // so it is claimed exactly where that part is - the same scope the grid's names are claimed in. A group outside a
-    // tree states none of it, and a property of one may take these names
-    private static final String[] TREE_ROW_NAMES = { // the tree's part: a ROW, a line per fact it states
-            "parent",
-            "hasChildren",
-            "expanded",
+    // the tree's part, beside the grid's where a tree's rows are drawn: the verbs that open its nodes, and where each
+    // row hangs. A group outside a tree states none of it, and a property of one may take these names
+    private static final String[] TREE_PART_NAMES = {
+            "expand", "collapse", "toggle", "expandAll", "collapseAll",
+    };
+    private static final String[] TREE_ROW_NAMES = {
+            "parent", "hasChildren", "expanded",
+    };
+    // the sortings' part, placed with the rows - the order they are drawn in -, as a group's design has no box of its
+    // sortings to place them by
+    private static final String[] ORDERS_PART_NAMES = {
+            "orders",
+    };
+    // the user filters' part, where what FILTERS(g) holds is drawn
+    private static final String[] FILTERS_PART_NAMES = {
+            "filters",
     };
 
     // a group of SEVERAL objects that the author did not name has no SID of its own: it is synthesized from the object
