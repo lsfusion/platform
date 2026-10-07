@@ -242,7 +242,7 @@ An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVI
 
 - `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md). `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
 
-Activating an element that does not exist, or one hidden by its own `SHOWIF`, throws. Running an action reports no completion, just as a click does not.
+Activating an element that does not exist, or one hidden by a `SHOWIF` — its own or that of a folder above it — throws. Running an action reports no completion, just as a click does not.
 
 ```js
 window.openMonthlyReport = function (controller) {

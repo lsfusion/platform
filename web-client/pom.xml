@@ -66,6 +66,7 @@
                         <exclude>lsfusion/gwt/client/form/order/user/GGridSortableHeaderManagerTest.java</exclude>
                         <exclude>lsfusion/gwt/client/GFormChangesTest.java</exclude>
                         <exclude>lsfusion/gwt/client/base/view/ReactRootTest.java</exclude>
+                        <exclude>lsfusion/gwt/client/navigator/controller/dispatch/GNavigatorActionDispatcherTest.java</exclude>
                     </excludes>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>
