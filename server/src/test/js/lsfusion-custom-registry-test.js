@@ -59,12 +59,16 @@ function makeReact() {
             if (changed) { s.fn = fn; s.deps = deps; }
             return s.fn;
         },
+        // ... and the cleanup the effect's last run returned runs before its next one, and at unmount(instance)
         useEffect: (fn, deps) => {
-            const s = slot(() => ({ deps: null, ran: false }));
+            const s = slot(() => ({ deps: null, ran: false, cleanup: null }));
             const changed = !s.ran || !deps || !s.deps || deps.length !== s.deps.length
                 || deps.some((d, i) => !Object.is(d, s.deps[i]));
             s.ran = true; s.deps = deps;
-            if (changed) makeReact.__effects.push(fn);
+            if (changed) makeReact.__effects.push(() => {
+                if (typeof s.cleanup === 'function') s.cleanup();
+                s.cleanup = fn();
+            });
         },
         useLayoutEffect: () => {},
         useState: (v) => [v, () => {}],
@@ -81,6 +85,11 @@ const instance = () => ({ slots: [], cursor: 0 });
 function flushEffects() {
     const effects = makeReact.__effects.splice(0);
     for (const effect of effects) effect();
+}
+// the component taken down: what its effects left to clean up, cleaned up
+function unmount(instance) {
+    for (const s of instance.slots)
+        if (s && typeof s.cleanup === 'function') { const cleanup = s.cleanup; s.cleanup = null; cleanup(); }
 }
 
 function load() {
@@ -439,6 +448,48 @@ console.log('BucketScope');
     try { w.lsfusion.BucketScope({ group: 'k', bucketOf: () => 'x', children: 'CELLS' }); } catch (e) { named = e; }
     check("...and over a node whose panel property is named 'keys'", named !== null
         && named.message === "<BucketScope> is given the group 'k', whose rows this view does not draw", String(named));
+}
+
+// ---- useShown ----------------------------------------------------------------------------------------------------
+console.log('useShown');
+{
+    const w = load();
+    const told = [];
+    makeReact.__ctxValue = { view: { entryOf, show: (name, shown) => told.push(name + (shown ? ' shown' : ' not shown')) } };
+    const strip = instance();
+    render(strip, () => w.lsfusion.useShown('PAGE2', false));
+    check('nothing is told while the component draws', told.length === 0);
+    flushEffects();
+    check('the commit over, the view is told the container is not shown', told.join() === 'PAGE2 not shown', told.join());
+    render(strip, () => w.lsfusion.useShown('PAGE2', false));
+    flushEffects();
+    check('the same again tells nothing', told.length === 1, told.join());
+    render(strip, () => w.lsfusion.useShown('PAGE2', true));
+    flushEffects();
+    check('shown again: what was said is taken back, and the new state told',
+        told.join() === 'PAGE2 not shown,PAGE2 shown,PAGE2 shown', told.join());
+    render(strip, () => w.lsfusion.useShown('PAGE2', false));
+    flushEffects();
+    unmount(strip);
+    check('unmounted, the hook leaves the container shown', told[told.length - 1] === 'PAGE2 shown', told.join());
+
+    render(instance(), () => w.lsfusion.useShown('PAGE3'));
+    flushEffects();
+    check('`shown` left out is true', told[told.length - 1] === 'PAGE3 shown', told.join());
+    render(instance(), () => w.lsfusion.useShown(7, false));
+    flushEffects();
+    check('a number name is told as its string', told[told.length - 1] === '7 not shown', told.join());
+
+    const before = told.length;
+    render(instance(), () => w.lsfusion.useShown('', false));
+    flushEffects();
+    check('a nameless one tells nothing, and says why', told.length === before
+        && w.__errors.some(e => e.indexOf('useShown has no name') >= 0), JSON.stringify(w.__errors));
+    makeReact.__ctxValue = null;
+    render(instance(), () => w.lsfusion.useShown('PAGE2', false));
+    flushEffects();
+    check("one outside the platform's view tells nothing, and says why", told.length === before
+        && w.__errors.some(e => e.indexOf('useShown is outside') >= 0), JSON.stringify(w.__errors));
 }
 
 console.log('useSeekOnScroll');

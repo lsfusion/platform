@@ -57,6 +57,13 @@ public class ReactRoot {
         default JavaScriptObject entryOf(JavaScriptObject data, String name) {
             return GwtClientUtils.getOwnField(data, name);
         }
+
+        // whether the component shows a container it draws itself (useShown): only a form container's view draws any -
+        // the server reads what is inside one only while it is shown -, any other owner has none to show or hide
+        default void show(String name, boolean shown) {
+            GwtClientUtils.logLsfViewError("useShown('" + name + "') does nothing here: only the view of a form's"
+                    + " container draws containers of its own to show or hide");
+        }
     }
 
     // `element` is the node the root is mounted in, set at mount: what the component draws is inside it, and nothing a
@@ -74,6 +81,9 @@ public class ReactRoot {
             },
             entryOf: function(data, name) {
                 return placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::entryOf(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(data, name);
+            },
+            show: function(name, shown) {
+                placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::show(Ljava/lang/String;Z)(name, !!shown);
             },
             marks: marks } };
     }-*/;

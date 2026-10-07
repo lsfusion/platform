@@ -30,6 +30,9 @@ public class ReactContainerView extends ParkedContainerView {
     // ... and of them the lsf ones, placed whole, one view each, named or not: what the server is told of
     // (reconcilePlaced)
     private final List<GComponent> lsfViews = new ArrayList<>();
+    // ... and the containers it draws itself, named, each with whether the component shows it (useShown): the server
+    // is told of them too - a container is shown until the component says otherwise
+    private final Map<GComponent, Boolean> drawnShown = new LinkedHashMap<>();
 
     // name -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
     // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfLsfView(sid) >= 0
@@ -102,6 +105,19 @@ public class ReactContainerView extends ParkedContainerView {
                 GComponent component = placeable.get(name);
                 return component instanceof GPropertyDraw ? state.entryOf(data, (GPropertyDraw) component) : ReactRoot.Placement.super.entryOf(data, name);
             }
+
+            // whether the component shows a container it draws itself - kept, and the server told with the placements
+            @Override
+            public void show(String name, boolean shown) {
+                GComponent component = placeable.get(name);
+                if (!drawnShown.containsKey(component)) {
+                    GwtClientUtils.logLsfViewError("useShown('" + name + "'): '" + name + "' is not a container '"
+                            + container.sID + "' draws itself - an lsf one is shown by placing it with <Lsf>");
+                    return;
+                }
+                if (drawnShown.put(component, shown) != shown)
+                    scheduleReconcile();
+            }
         });
         GwtClientUtils.addClassName(panel, "panel-react");
         panel.addAttachHandler(event -> {
@@ -126,6 +142,8 @@ public class ReactContainerView extends ParkedContainerView {
                     placeable.put(name, child);
                 if (child.isLsfView())
                     lsfViews.add(child);
+                else if (child instanceof GContainer && name != null)
+                    drawnShown.put(child, true);
             }
             addPlaceable(child);
         }
@@ -270,9 +288,10 @@ public class ReactContainerView extends ParkedContainerView {
     // a tab strip tells it which page is active, and a collapse header whether it is collapsed. What is sent is the
     // STATE, worked out from the placements as they stand, never from the mount / unmount that changed them: a child
     // handed to a waiting host is placed however it got there, and a child no <Lsf> ever named is not. A child with a
-    // host - holding its view, or waiting for it - is placed; only a change is sent. Settled once the commit that
-    // changed the placements is over, after every publication and after a mount that draws, so the first draw settles
-    // it too even when it renders no <Lsf> at all
+    // host - holding its view, or waiting for it - is placed; only a change is sent. And which containers it draws
+    // itself it shows (useShown), the same way. Settled once the commit that changed the placements is over, after
+    // every publication and after a mount that draws, so the first draw settles it too even when it renders no <Lsf>
+    // at all
     private void scheduleReconcile() {
         if (reconcilePending)
             return;
@@ -288,10 +307,14 @@ public class ReactContainerView extends ParkedContainerView {
     private void reconcilePlaced() {
         for (GComponent child : lsfViews) {
             String name = GReactFormData.getName(child);
-            boolean hidden = name == null || !placed.isHeld(name); // no <Lsf> names one with no name
-            if (hidden ? reportedHidden.add(child) : reportedHidden.remove(child))
-                formController.setUserHidden(child, hidden);
+            report(child, name == null || !placed.isHeld(name)); // no <Lsf> names one with no name
         }
+        for (Map.Entry<GComponent, Boolean> drawn : drawnShown.entrySet())
+            report(drawn.getKey(), !drawn.getValue());
+    }
+    private void report(GComponent component, boolean hidden) {
+        if (hidden ? reportedHidden.add(component) : reportedHidden.remove(component))
+            formController.setUserHidden(component, hidden);
     }
 
     private void attachView(int index, Element host) {

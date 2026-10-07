@@ -40,3 +40,9 @@ readShown () {
     shownInForm(Object o) <- NULL;
     readShownRows();
 }
+
+// which of the server's walks of a form's design reach a component - the words of those that do: `found` (by its id),
+// `read` (its readers), `sent` (its visibility), and `hidable` where a client hides it by naming it so - failing unless
+// they are `walks`
+assertWalked (STRING form, STRING component, STRING walks)
+    INTERNAL 'lsfusion.tests.DesignWalksAction' (STRING, STRING, STRING);

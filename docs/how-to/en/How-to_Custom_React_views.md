@@ -394,7 +394,7 @@ Every component the view draws, other than a property it carries — a container
 
 A `CUSTOM REACT` container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on an `lsf` child: its visibility is the view's.
 
-`Lsf`, `useLsf`, `Caption` and `Image` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Lsf, useLsf, Caption, Image } = window.lsfusion;`.
+`Lsf`, `useLsf`, `useShown`, `Caption` and `Image` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Lsf, useLsf, useShown, Caption, Image } = window.lsfusion;`.
 
 The component names each child it places, and draws the caption itself where it wants it:
 
@@ -486,6 +486,18 @@ These rules bound the placement:
 A placement that cannot work says so in the host itself, not only in the console: a name that names nothing inside the container (nor in a container it draws itself), a component without `lsf`, a second host for the same child, a name given a `row` that names no `LSF` grid property of a group this view draws, a `row` of another group, and a `row` that is not a row each render their message into the host, in an element of the class `lsf-view-error`. The host's own class stays as the component gave it.
 
 The view tells the server which `lsf` children it places — the set of them, not the mounts and unmounts that changed it: it is worked out after every change of placement and once after the component first draws, and only what changed is sent. A child with a host — holding its view, or waiting for it — is placed. A child no `<Lsf>` places is not read, the same gating an inactive tab or a collapsed container gets — except what labels it: its caption, image and comment go on being read, as an inactive tab's title is, so the component can still name it. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still placed as far as the server knows, and goes on being read. For the same reason the visibility of an lsf child belongs to the component alone — its `collapsible`, `collapsed` and `activated` attributes are ignored, and a scripted `COLLAPSE` / `EXPAND` or `ACTIVATE TAB` on it is an error.
+
+A container the view draws itself — a page of a tab strip the view lays out, a section it folds — the server reads as a shown one for as long as the view says nothing of it: it cannot see what the view shows. `useShown(name, shown)` says it. A container the view does not show is not read, and neither is anything inside it — an `lsf` child placed there included, host or no host —, the same gating an inactive tab gets, its caption and image going on being read as an inactive tab's title is: a property there that changes meanwhile reads as `null` until the container is shown again, as on an inactive tab. Call it where it stays mounted while the container comes and goes — in the strip, not in the page —, one hook per container, under the container's design name: unmounted, the hook leaves the container shown, which is what the server assumes of a container no hook names. `shown` left out is `true`. A name that is no container the view draws itself is reported in the console. The container's `SHOWIF` stays the form's, and its entry's `hidden` says only that.
+
+```jsx
+// a tab of the strip: mounted for as long as the strip is, whichever page is shown
+function Tab(props) {
+    useShown(props.name, props.active);
+    return <button role="tab" aria-selected={props.active} onClick={props.onClick}>
+        <Caption value={props.entry.caption}/>
+    </button>;
+}
+```
 
 ### A live editor in every row {#live-editor}
 

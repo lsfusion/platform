@@ -1,0 +1,31 @@
+MODULE ReactShown;
+
+REQUIRE TestUtils;
+
+// a container a react view draws itself - a page of a tab strip it lays out - is shown or not as the view says
+// (useShown): a client names it hidden, and nothing inside it is read, an lsf child placed there included. The view's
+// own container is the platform's to show, as is anything the platform draws
+
+CLASS RsnItem 'Item';
+rsnName 'Name' = DATA STRING[20] (RsnItem);
+
+FORM rsnPages 'Pages'
+    OBJECTS i = RsnItem
+    PROPERTIES(i) rsnName
+;
+
+DESIGN rsnPages {
+    NEW rsnBoard {
+        custom = 'RsnBoard';
+        NEW rsnPage {
+            MOVE BOX(i);
+            NEW rsnPlaced { lsf = TRUE; }
+        }
+    }
+}
+
+testAContainerAViewDrawsIsShownByIt 'A container a react view draws itself is one a client hides by naming it' () {
+    assertWalked('ReactShown.rsnPages', 'rsnPage', 'found hidable');
+    assertWalked('ReactShown.rsnPages', 'rsnPlaced', 'found hidable');
+    assertWalked('ReactShown.rsnPages', 'rsnBoard', 'found');
+}

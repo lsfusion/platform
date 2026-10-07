@@ -305,6 +305,13 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         // component; '', an HTML template ('<div><Lsf:child></div>'), or a lower-case/path string is a plain custom design
         return Custom.isReactComponent(getCustom());
     }
+    // ... a container the view draws too, lsf or not: one it draws itself - a page of a tab strip it draws - it shows
+    // or hides itself (useShown), and what is inside it is read only while it shows it
+    @Override
+    public boolean isReactHidable() {
+        return getReactPlace() != null;
+    }
+
     // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (ComponentView.getReactPlace) - the container itself
     // when it is a react one, whose component draws its children, else where the container is, unless it is an lsf
     // one. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors GContainer.getChildrenReactPlace)

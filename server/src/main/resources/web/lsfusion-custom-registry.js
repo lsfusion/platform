@@ -228,6 +228,31 @@
             host.style = props.style;
             return React.createElement('div', host);
         };
+        // useShown(name, shown): whether the view shows a container it draws itself - a page of a tab strip it draws,
+        // a section it folds. The server reads what is inside a container the view draws as long as the view says
+        // nothing, as it reads a shown one; told it is not shown, it reads nothing inside it - an lsf child placed
+        // there included, host or no host -, as it reads nothing of a tab page that is not active. So it is called
+        // where it stays mounted while the container comes and goes - the strip, not the page -, and unmounted it
+        // leaves the container shown again, the server's default. `shown` left out is true. Its SHOWIF is the form's,
+        // and the container's entry says only that (`hidden`)
+        ns.useShown = function (name, shown) {
+            var context = React.useContext(Ctx);
+            var view = context ? context.view : null;
+            var named = name === undefined || name === null || name === '' ? null : String(name);
+            var showing = shown === undefined || !!shown;
+            React.useEffect(function () {
+                if (!view) {
+                    window.console.error("lsFusion custom view: useShown is outside the view the platform draws, so it has no container to show or hide");
+                    return undefined;
+                }
+                if (named === null) {
+                    window.console.error("lsFusion custom view: useShown has no name, so it shows or hides no container");
+                    return undefined;
+                }
+                view.show(named, showing);
+                return function () { view.show(named, true); };
+            }, [view, named, showing]);
+        };
         // A lsf child's caption / image is NOT drawn by the platform - it is handed to React in its own entry, under the
         // name the child is placed by: a container's or any other component's is data[componentSID], a property's -
         // panel or table - is data.<group>[integrationSID] (data[integrationSID] for the empty group), where its value

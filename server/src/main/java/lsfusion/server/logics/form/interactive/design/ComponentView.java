@@ -438,10 +438,11 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         return !isLsfView() && getReactPlace() != null;
     }
 
-    // an lsf component a React view places - at any depth under the containers that view draws itself - whose view
-    // shows it or not (ReactContainerView reports which, as a set). An LSF LIST property is one too, which no view
-    // reports - its renderers are placed per row -, and it is not asked: a list property is as hidden as what draws its
-    // rows (FormEntity.getDrawComponent)
+    // a component a React view shows or not, telling the server which (ReactContainerView reports them, as a set): an
+    // lsf component it places - at any depth under the containers that view draws itself -, shown while placed. An LSF
+    // LIST property is one too, which no view reports - its renderers are placed per row -, and it is not asked: a list
+    // property is as hidden as what draws its rows (FormEntity.getDrawComponent). And a container the view draws
+    // (ContainerView)
     public boolean isReactHidable() {
         return isLsfView() && getReactPlace() != null;
     }
