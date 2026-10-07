@@ -5,7 +5,7 @@ title: 'How-to'
 
 ### How to read these sections
 
-1.  [Computations](How-to_Computations.md): The mechanism for composing computable properties.
+1.  [Computations](How-to_Computations.md): The mechanism for composing calculated properties.
 2.  [GUI](How-to_GUI.md): Development of a graphical user interface.
 3.  [Imperative logic](How-to_Imperative_logic.md): Development of [actions](../paradigm/Actions.md), [events](../paradigm/Events.md), and [constraints](../paradigm/Constraints.md).
 4.  [Declarative logic](How-to_Declarative_logic.md): Development of [constraints](../paradigm/Constraints.md) and [aggregations](../paradigm/Aggregations.md), and also [inheritance](../paradigm/User_classes.md#inheritance) of custom classes.

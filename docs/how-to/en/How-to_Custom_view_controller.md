@@ -177,7 +177,7 @@ controller.<group>.<property>.getValues([object,] value[, mode], ok, fail[, coun
   | `'values'` | the distinct values of the property | `null` (use `displayString` / `rawString`) |
   | `'change'` | the property's edit-time suggestions | depends on the property |
 
-  `'change'` reflects how the property is *edited* — a custom `INPUT` list, a `notNull` constraint, or a custom change action — rather than the distinct values already present. For a property that cannot be changed in this context (for example, a read-only property, or a computed property without a change action) there are no such suggestions, and `fail` is called, whereas `'values'` still returns its distinct values.
+  `'change'` reflects how the property is *edited* — a custom `INPUT` list, a `notNull` constraint, or a custom change action — rather than the distinct values already present. For a property that cannot be changed in this context (for example, a read-only property, or a calculated property without a change action) there are no such suggestions, and `fail` is called, whereas `'values'` still returns its distinct values.
 
 - `ok(result)` / `fail()` — success and failure callbacks.
 - `count` — raises the number of items requested, for paging.

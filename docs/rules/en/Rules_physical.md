@@ -27,7 +27,7 @@ How data is stored in the database is described in [tables](../paradigm/Tables.m
 
 The mechanism itself is described in [materializations](../paradigm/Materializations.md).
 
-1. Aggregated properties that are read, or used in filter conditions, considerably more often than the data they depend on changes SHOULD be materialized.
+1. Calculated properties that are read, or used in filter conditions, considerably more often than the data they depend on changes SHOULD be materialized.
 
 2. Properties whose value is non-`NULL` for an infinite number of object sets SHOULD NOT be materialized — such a property cannot be materialized at all. The typical case is a property with a built-in class parameter, such as a date, that is not restricted by a condition.
 
@@ -37,7 +37,7 @@ The mechanism itself is described in [materializations](../paradigm/Materializat
 
 5. After a materialized property's definition changes — a changed or added `+=` implementation of a materialized abstract property included — or after a direct data fix in the database, the stored values MUST be recomputed with the [`RECALCULATE` operator](../language/RECALCULATE_operator.md). A server restart does not do it for a changed definition alone: until the recalculation the stored values stay inconsistent with it, and a change of the data does not necessarily repair even the values it touches (see [materializations](../paradigm/Materializations.md)).
 
-6. When an aggregation over another aggregated property fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)). The `HINT` / `NOHINT` options do not split such a query. The same applies to the update of a materialized grouping when the definitions of the properties it reads, its grouping keys included, make the query too long — a smaller batch does not necessarily help.
+6. When a [set operation](../paradigm/Set_operations.md) reads a property created by another set operation and fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)). The `HINT` / `NOHINT` options do not split such a query. The same applies to the update of a materialized grouping when the definitions of the properties it reads, its grouping keys included, make the query too long — a smaller batch does not necessarily help.
 
 ### Indexes
 

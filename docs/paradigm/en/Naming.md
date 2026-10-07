@@ -33,7 +33,7 @@ Item.name
 Sale.Document
 ```
 
-Since properties and actions can have the same names within the same namespace, the full name of a property may not be unique. Therefore, the canonical name of the properties / actions also includes a signature, that is, a list of the canonical names of the classes of the property / action's parameters, separated by commas. If a parameter's class is not determined, then the question mark character `?` is used instead of the canonical class name:
+Since properties and actions can have the same names within the same namespace, the full name of a property may not be unique. Therefore, the canonical name of the properties / actions also includes a [signature](Properties.md#type), that is, a list of the canonical names of the classes of the property / action's parameters, separated by commas. If a parameter's class is not determined, then the question mark character `?` is used instead of the canonical class name:
 
 ```
 <namespace name>.<Property/action name>[<class1>,...,<classN>]

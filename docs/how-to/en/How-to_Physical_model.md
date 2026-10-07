@@ -36,7 +36,7 @@ averageAge 'Average age' = DATA NUMERIC[8,2] (Animal, Country) TABLE ageAnimalCo
 
 This table will only store properties for which it is explicitly specified. All others will go into the first table declared with the necessary signature.
 
-Computed properties that need to be stored [permanently](../paradigm/Materializations.md) in the table need to be marked with the keyword `MATERIALIZED`:
+Calculated properties that need to be stored [permanently](../paradigm/Materializations.md) in the table need to be marked with the keyword `MATERIALIZED`:
 
 ```lsf
 totalPopulation 'Total number' (Animal a) = GROUP SUM population(a, Country c) MATERIALIZED;

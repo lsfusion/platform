@@ -82,7 +82,7 @@ slug: "/Brief"
 5. `SHOW / DIALOG / PRINT` → открыть или напечатать форму.
 6. `EXPORT / IMPORT` → внешние форматы для свойств и форм.
 7. `GROUP / PARTITION` → агрегации значений.
-8. `GROUP AGGR / AGGR` → агрегированные объекты.
+8. `GROUP AGGR / AGGR` → агрегируемые объекты.
 9. `NEWSESSION / APPLY / canceled()` → управление сессией.
 10. `EXTEND / ABSTRACT / += / +{` → точки расширения и полиморфизма.
 11. `WHEN`, `<- WHEN` → события на изменение данных; `ON` внутри `FORM` →

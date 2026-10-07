@@ -624,10 +624,10 @@ FORM order 'Order'
 
     // adding a property that will display the ordered quantity by sku in this order
     PROPERTIES quantity(o, s) 
-               // by default, even though the property is not marked READONLY and nothing will happen when the user
-               // tries to change it, since quantity is an aggregated property. In this case, a note is made that 
-               // when the user tries to change, the changeQuantity action will be called. An algorithm is written
-               // in this property that will create/delete order lines or change the quantity in them
+               // by default, even though the property is not marked READONLY, nothing will happen when the user
+               // tries to change it, since quantity is a sum over the order lines. In this case, a note is made that 
+               // when the user tries to change it, the changeQuantity action will be called. An algorithm is written
+               // in this action that will create/delete order lines or change the quantity in them
                ON CHANGE changeQuantity(o, s) 
                // making  the property unavailable for editing, if the order is prohibited for this sku
                READONLYIF stopOrder(s) 
