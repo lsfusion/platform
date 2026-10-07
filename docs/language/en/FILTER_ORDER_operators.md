@@ -57,7 +57,7 @@ If the `FROM` or `TO` block is omitted, the corresponding property of the [`User
 
 - `expr`
 
-    An [expression](Expression.md) whose value is applied to the form element. Its class determines the form of serialization.
+    An [expression](Expression.md) whose value is applied to the form element. Its class determines the form of serialization (see Description). In a plain string literal curly braces delimit a [localization](String_literal.md#localization) identifier, so `JSON` given by a literal is written as a raw string literal `r'...'`, which keeps them.
 
 - `propId`
 
@@ -86,6 +86,9 @@ restoreFilters ()  { FILTER orders.o FROM savedFilters; }
 // read the current order of group object o;
 // currentOrders gets JSON like [{"property": "date", "desc": true}, {"property": "number", "desc": false}]
 readOrders ()  { ORDERS orders.o TO currentOrders; }
+
+// order group object o by date, latest first: JSON given by a literal is a raw literal
+sortByDate ()  { ORDER orders.o FROM JSON(r'[{"property": "date", "desc": true}]'); }
 
 // activate the second filter ("Small") in the filter group amount
 showSmall ()  { FILTERGROUP orders.amount FROM 2; }

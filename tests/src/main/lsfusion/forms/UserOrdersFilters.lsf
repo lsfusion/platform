@@ -48,3 +48,15 @@ testFilterTakesBackFilters 'FILTER takes back what FILTERS wrote' () {
     };
     assertEquals(STRING(uofFiltersAgain()), STRING(uofFilters()), 'FILTERS read ' + STRING(uofFiltersAgain()) + ' after FILTER of ' + STRING(uofFilters()));
 }
+
+// JSON given by a literal is a raw literal (FILTER_ORDER_operators.md): in a plain one {...} is a localization
+// identifier, replaced, with no translation, by itself without the braces - no JSON any more (and one with a space
+// inside the braces does not compile at all)
+testOrderFromRawLiteral 'ORDER takes JSON given by a raw literal, which a plain literal is not' () {
+    assertEquals(STRING('[{"property":"qty"}]'), r'["property":"qty"]', 'a plain literal kept its braces');
+    SHOW uofItems NOWAIT {
+        ORDER uofItems.i FROM JSON(r'[{"property": "qty", "desc": true}]');
+        ORDERS uofItems.i TO uofOrders;
+    };
+    assertEquals(STRING(uofOrders()), STRING(JSON(r'[{"property": "qty", "desc": true}]')), 'ORDERS read ' + STRING(uofOrders()));
+}

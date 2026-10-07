@@ -57,7 +57,7 @@ FILTERS PROPERTY formPropertyId  [TO propId]
 
 - `expr`
 
-    [Выражение](Expression.md), значение которого применяется к элементу формы. Его класс определяет вид сериализации (см. «Описание»).
+    [Выражение](Expression.md), значение которого применяется к элементу формы. Его класс определяет вид сериализации (см. «Описание»). В обычном строковом литерале фигурные скобки выделяют идентификатор [локализации](String_literal.md#localization), поэтому `JSON`, заданный литералом, записывается сырым строковым литералом `r'...'`, который их сохраняет.
 
 - `propId`
 
@@ -86,6 +86,9 @@ restoreFilters ()  { FILTER orders.o FROM savedFilters; }
 // прочитать текущий порядок группы объектов o;
 // currentOrders получит JSON вида [{"property": "date", "desc": true}, {"property": "number", "desc": false}]
 readOrders ()  { ORDERS orders.o TO currentOrders; }
+
+// упорядочить группу объектов o по дате, сначала последние: JSON, заданный литералом, — сырой литерал
+sortByDate ()  { ORDER orders.o FROM JSON(r'[{"property": "date", "desc": true}]'); }
 
 // активировать второй фильтр («Мелкие») в группе фильтров amount
 showSmall ()  { FILTERGROUP orders.amount FROM 2; }
