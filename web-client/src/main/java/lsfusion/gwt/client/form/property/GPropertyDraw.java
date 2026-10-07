@@ -638,6 +638,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         return getValueType() instanceof GActionType;
     }
 
+    // a filter is a comparison with this property's value, and an action has none - so the filters a client sends
+    // leave a condition on one out (GFormController.getFilterDTOs)
+    public boolean canBeFiltered() {
+        return !isAction();
+    }
+
     public boolean hideOrRemove() {
         return hide || remove;
     }

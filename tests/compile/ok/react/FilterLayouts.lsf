@@ -1,0 +1,30 @@
+MODULE FilterLayouts;
+
+REQUIRE System;
+
+// what a React view drawing a group's user filters accepts: `filters` is reserved only on the node where they are, so
+// a panel property of the group in another React container may be called `filters`; and a name a group carries on two
+// properties is refused only where a view draws that group's filters, so another group may carry one
+CLASS FilterLayoutItem;
+filterLayoutName = DATA STRING[20] (FilterLayoutItem);
+filterLayoutNote = DATA STRING[20] (FilterLayoutItem);
+
+CLASS FilterLayoutTag;
+filterLayoutTagName = DATA STRING[20] (FilterLayoutTag);
+filterLayoutTagNote = DATA STRING[20] (FilterLayoutTag);
+
+FORM filterLayouts
+    OBJECTS i = FilterLayoutItem
+    PROPERTIES(i) filterLayoutName
+    PROPERTIES(i) PANEL filterLayoutNote EXTID 'filters'
+    OBJECTS t = FilterLayoutTag
+    PROPERTIES(t) filterLayoutTagName EXTID 'title', filterLayoutTagNote EXTID 'title'
+;
+
+DESIGN filterLayouts {
+    FILTERS(i) { custom = 'FilterPanel'; }
+    NEW side {
+        custom = 'ItemSide';
+        MOVE PROPERTY(filterLayoutNote(i));
+    }
+}

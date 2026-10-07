@@ -10,17 +10,22 @@ import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
+import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
+import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
@@ -46,6 +51,7 @@ import lsfusion.gwt.client.form.property.GReadOnlyReader;
 import lsfusion.gwt.client.form.property.GRowSelectReader;
 import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GValueElementClassReader;
+import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
@@ -87,8 +93,20 @@ public class GReactFormDataTest extends GWTTestCase {
         LinkedHashMap<Column, Boolean> sorted; // the sortings a group's orders.change() handed the form
         GGroupObject sortedGroup; // ... for which group
         int sortedCalls; // ... and how many times
+        // FILTERS(g) as a plain box in a, beside the rows
+        void filtersBesideRows() {
+            GContainer filters = container(5); filters.react = false; filters.custom = null;
+            filters.container = a; a.children.add(filters);
+            group.filtersContainer = filters;
+        }
+        // ... or FILTERS(g) { custom = ... } in c: the conditions drawn by a view of their own, the rows in a
+        void filtersApart() {
+            group.filtersContainer = c;
+        }
         GGroupObjectValue chosen, changed; // what a member handed the form: the row its group's change(row) chose, and
                                            // the cell a property member changed
+        final ArrayList<String> filtersCalls = new ArrayList<>(); // ... and the calls a filters member made, in order
+        ArrayList<GPropertyFilter> stated; // ... and the last list of conditions it stated
 
         // the scene, and what a test adds to it before the projection is built: each addition is a method of its own
         Fixture() { this(f -> { }); }
@@ -136,6 +154,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void expandAll(GGroupObject group) { }
                 public void collapseAll(GGroupObject group) { }
                 public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { sortedGroup = group; sortedCalls++; sorted = orders; }
+                public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { filtersCalls.add("changeFilters " + group.sID + describe(conditions)); stated = conditions; return 0; }
             });
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
@@ -208,6 +227,14 @@ public class GReactFormDataTest extends GWTTestCase {
         GGroupController controller(GGroupObject group) {
             return controllers.groups.get(group);
         }
+        // ... and what shows the group's sortings
+        GUserOrdersController ordersController() {
+            return controllers.orders.get(group);
+        }
+        // ... and what shows the group's user filters
+        GUserFiltersController filtersController() {
+            return controllers.filters.get(group);
+        }
         GPropertyController controller(GPropertyDraw property) {
             return controllers.properties.get(property);
         }
@@ -254,6 +281,7 @@ public class GReactFormDataTest extends GWTTestCase {
             projection.flush();
         }
         public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { }
+        public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { return 0; }
         long ask(String request) {
             asked.add(request);
             return ++requestIndex;
@@ -434,13 +462,18 @@ public class GReactFormDataTest extends GWTTestCase {
     private static final class Controllers {
         final GForm form;
         final LinkedHashMap<GGroupObject, GGroupController> groups = new LinkedHashMap<>();
+        final LinkedHashMap<GGroupObject, GUserOrdersController> orders = new LinkedHashMap<>();
+        final LinkedHashMap<GGroupObject, GUserFiltersController> filters = new LinkedHashMap<>();
         final LinkedHashMap<GPropertyDraw, GPropertyController> properties = new LinkedHashMap<>();
         final LinkedHashMap<GComponent, GComponentController> components = new LinkedHashMap<>();
 
         Controllers(GReactFormData projection, GForm form, RecordingTableController lsf, RecordingLayoutController layout) {
             this.form = form;
-            for (GGroupObject group : form.groupObjects)
+            for (GGroupObject group : form.groupObjects) {
                 groups.put(group, projection.createGroupController(group, lsf));
+                orders.put(group, projection.createOrdersController(group, groups.get(group))); // as the form does
+                filters.put(group, projection.createFiltersController(group, groups.get(group)));
+            }
             for (GPropertyDraw property : form.propertyDraws) {
                 GPropertyController controller = projection.createPropertyController(property, lsf);
                 if (controller != null) // none, as the form keeps it: React keeps nothing of it
@@ -508,6 +541,28 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native boolean plain(JavaScriptObject object) /*-{ return Object.getPrototypeOf(object) === Object.prototype; }-*/;
     private static native JavaScriptObject at(JavaScriptObject array, int index) /*-{ return array[index]; }-*/;
     private static native String join(JavaScriptObject array) /*-{ return array.join(","); }-*/;
+    // a condition list as the recorder keeps it: each one's property, compare and flags, in order
+    private static String describe(ArrayList<GPropertyFilter> conditions) {
+        StringBuilder text = new StringBuilder();
+        for (GPropertyFilter condition : conditions)
+            text.append(" ").append(condition.property.integrationSID).append(condition.compare)
+                    .append(condition.negation ? " not" : "").append(condition.junction ? "" : " or");
+        return text.toString();
+    }
+    // a condition on price whose value is 5 the first time it is read and nothing after
+    private static native JavaScriptObject valueReadOnce() /*-{
+        var condition = {property: 'price'}, reads = 0;
+        Object.defineProperty(condition, 'value', {enumerable: true, get: function() { return reads++ === 0 ? 5 : null; }});
+        return condition;
+    }-*/;
+    private static native void callFilters(JavaScriptObject member) /*-{
+        member.change([{property: 'price', compare: '<', value: 3, or: true}, {property: 'price'}]);
+        member.change({property: 'price', value: 5, negation: true});
+        member.change({property: 'price', value: ''});
+    }-*/;
+    private static native String refusedFilters(JavaScriptObject member, JavaScriptObject conditions) /*-{
+        try { member.change(conditions); return null; } catch (e) { return e.message; }
+    }-*/;
     // a member of a view's controller, at a group (null: the empty group, the controller itself)
     private static JavaScriptObject member(GReactFormData.ContainerState state, String group, String name) {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
@@ -1781,8 +1836,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(field(field(f.snapshots[1], "items"), "orders")); // b holds a panel property of the group, no rows
     }
 
-    // the sortings the form hands the node - its own ORDERS in the first changes, then what the server reports - are
-    // projected in priority order and in the ORDER operator's shape, replacing the ones before; the node keeps a map of
+    // the sortings the form hands their part - its own ORDERS in the first changes, then what the server reports - are
+    // projected in priority order and in the ORDER operator's shape, replacing the ones before; the part keeps a map of
     // its own, the rows stay as they are, and a value that changes leaves the sortings as they were
     public void testSortingsAreTheOnesTheFormHasNow() {
         Fixture f = new Fixture();
@@ -1790,7 +1845,7 @@ public class GReactFormDataTest extends GWTTestCase {
         orders.put(column(f.quantity), false);
         orders.put(column(f.price), true);
         JavaScriptObject list = field(f.node(), "list");
-        f.controller(f.group).updateOrders(f.group, orders);
+        f.ordersController().updateOrders(f.group, orders);
         f.projection.flush();
         JavaScriptObject sorted = field(f.node(), "orders");
         assertEquals(2, length(sorted));
@@ -1799,13 +1854,14 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("price", text(at(sorted, 1), "property"));
         assertFalse(flag(at(sorted, 1), "desc"));
         assertSame(list, field(f.node(), "list")); // the rows for the new order come from the server, separately
-        orders.clear(); // the caller's map, changed after: the node keeps a map of its own
+        assertNotSame(f.controller(f.group), f.ordersController()); // their part shows them, not the rows' node
+        orders.clear(); // the caller's map, changed after: the part keeps a map of its own
         f.setValue(f.price, f.one, 11); // a value changes, the sortings do not: the same array
         f.projection.flush();
         assertSame(sorted, field(f.node(), "orders"));
         LinkedHashMap<Column, Boolean> next = new LinkedHashMap<>();
         next.put(column(f.price), false);
-        f.controller(f.group).updateOrders(f.group, next); // ... and the next list replaces them
+        f.ordersController().updateOrders(f.group, next); // ... and the next list replaces them
         f.projection.flush();
         assertEquals(1, length(field(f.node(), "orders")));
         assertTrue(flag(at(field(f.node(), "orders"), 0), "desc"));
@@ -1818,7 +1874,7 @@ public class GReactFormDataTest extends GWTTestCase {
         LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
         orders.put(column(f.twin), true);
         orders.put(column(f.quantity), false);
-        f.controller(f.group).updateOrders(f.group, orders);
+        f.ordersController().updateOrders(f.group, orders);
         f.projection.flush();
         JavaScriptObject sorted = field(f.node(), "orders");
         assertEquals(1, length(sorted));
@@ -1865,16 +1921,16 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(Boolean.TRUE, f.sorted.get(column(f.price)));
         callChange(orders, parse("[]")); // the whole list: none
         assertEquals(0, f.sorted.size());
-        // one order is merged into the sortings the node holds: a property already sorted keeps its place, another is
+        // one order is merged into the sortings their part holds: a property already sorted keeps its place, another is
         // appended, and the rest stay as they are
         LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
         held.put(column(f.quantity), true);
-        f.controller(f.group).updateOrders(f.group, held);
+        f.ordersController().updateOrders(f.group, held);
         callChange(orders, parse("{\"property\": \"price\", \"desc\": true}"));
         assertEquals(columns(f.quantity, f.price), new ArrayList<>(f.sorted.keySet())); // appended
         assertEquals(Boolean.FALSE, f.sorted.get(column(f.price)));
         held.put(column(f.price), true);
-        f.controller(f.group).updateOrders(f.group, held);
+        f.ordersController().updateOrders(f.group, held);
         callChange(orders, parse("{\"property\": \"quantity\", \"desc\": true}"));
         assertEquals(columns(f.quantity, f.price), new ArrayList<>(f.sorted.keySet())); // in its place
         assertEquals(Boolean.FALSE, f.sorted.get(column(f.quantity)));
@@ -1902,7 +1958,7 @@ public class GReactFormDataTest extends GWTTestCase {
         // ... while taking a noSort sorting off is allowed: a form's default ORDERS may name one
         LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
         held.put(column(f.quantity), true);
-        f.controller(f.group).updateOrders(f.group, held);
+        f.ordersController().updateOrders(f.group, held);
         callChange(orders, parse("{\"property\": \"quantity\"}"));
         assertEquals(1, f.sortedCalls);
         assertEquals(0, f.sorted.size());
@@ -1915,7 +1971,7 @@ public class GReactFormDataTest extends GWTTestCase {
         LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
         held.put(column(f.twin), true);
         held.put(column(f.price), true);
-        f.controller(f.group).updateOrders(f.group, held);
+        f.ordersController().updateOrders(f.group, held);
         JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
         callChange(orders, parse("{\"property\": \"price\", \"desc\": true}"));
         assertEquals(columns(f.twin, f.price), new ArrayList<>(f.sorted.keySet()));
@@ -1948,5 +2004,138 @@ public class GReactFormDataTest extends GWTTestCase {
     }
     private static boolean refusesChange(JavaScriptObject member, JavaScriptObject argument) {
         try { callChange(member, argument); return false; } catch (RuntimeException e) { return true; }
+    }
+
+    // conditions as the form hands them on - the way the client sends them and the server reports them
+    private static ArrayList<GPropertyFilterDTO> dtos(List<GPropertyFilter> conditions) {
+        ArrayList<GPropertyFilterDTO> dtos = new ArrayList<>();
+        for (GPropertyFilter condition : conditions)
+            dtos.add(condition.getFilterDTO());
+        return dtos;
+    }
+
+    public void testConditionsAreOnTheNodeWhereFiltersAre() {
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
+        assertEquals(0, length(field(f.node(), "filters"))); // always there, empty while the group is unfiltered
+        assertNull(field(f.node(), "filtersApplied")); // one list, what the server filters by: nothing held back here
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(15), true, GCompare.GREATER, false));
+        JavaScriptObject list = field(f.node(), "list");
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        JavaScriptObject filters = field(f.node(), "filters"); // in the FILTER operator's shape
+        assertEquals(1, length(filters));
+        assertEquals("price", text(at(filters, 0), "property"));
+        assertEquals(">", text(at(filters, 0), "compare"));
+        assertEquals(15.0, number(at(filters, 0), "value"), 0.0);
+        assertTrue(flag(at(filters, 0), "negation"));
+        assertTrue(flag(at(filters, 0), "or"));
+        assertSame(list, field(f.node(), "list")); // the rows they leave come from the server, separately
+        // b holds a panel property of the group, no filters
+        assertNull(field(field(f.snapshots[1], "items"), "filters"));
+        assertNotSame(f.controller(f.group), f.filtersController()); // their part shows them, not the rows' node
+        assertNotNull(field(field(f.sa.controller, "items"), "filters")); // the member, where the part is
+        assertNull(field(field(f.sb.controller, "items"), "filters"));
+        f.controller(f.group).updateCurrentKey(f.two); // an unrelated change: the node is new, the array is not
+        f.projection.flush();
+        assertTrue(flag(f.row("2"), "isCurrent"));
+        assertSame(filters, field(f.node(), "filters"));
+
+        // a condition's value is its filter type's: a property named `image` draws its own value as an image, not this
+        GPropertyDraw image = f.property(71, "image", f.group, true, f.a);
+        image.valueType = new GStringType(GExtInt.UNLIMITED, false, false);
+        conditions.add(new GPropertyFilter(new GFilter(image), f.group, GGroupObjectValue.EMPTY, PValue.getPValue("logo.svg"), GCompare.EQUALS));
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        assertEquals("logo.svg", text(at(field(f.node(), "filters"), 1), "value"));
+    }
+
+    public void testAPropertyOfAGroupSaysWhatItIsComparedBy() {
+        Fixture f = new Fixture(fixture -> fixture.property(73, "approve", fixture.group, true, fixture.a).valueType = GActionType.instance);
+        // what the platform's own editor offers, in the same spelling - its list as it is, in its order, the default
+        // beside it
+        JavaScriptObject price = field(f.node(), "price");
+        assertEquals(f.price.getDefaultCompare().toString(), text(price, "defaultCompare"));
+        StringBuilder compares = new StringBuilder();
+        for (GCompare compare : f.price.getFilterCompares())
+            compares.append(compares.length() == 0 ? "" : ",").append(compare);
+        assertEquals(compares.toString(), join(field(price, "compares")));
+        // ... and an action, which no condition can be on, says nothing of it
+        JavaScriptObject approve = field(f.node(), "approve");
+        assertNotNull(approve);
+        assertFalse(own(approve, "compares"));
+        assertFalse(own(approve, "defaultCompare"));
+    }
+
+    public void testConditionsApartNameTheColumnsWhereTheRowsAre() {
+        Fixture f = new Fixture(Fixture::filtersApart); // FILTERS(g) is c, the rows are in a
+        assertNull(field(field(f.snapshots[2], "items"), "list")); // c does not draw the rows
+        assertNotNull(field(field(f.sc.controller, "items"), "filters")); // FILTERS(g) apart: its member is there,
+        assertNull(field(field(f.sc.controller, "items"), "change"));     // and no row to choose
+        assertNull(field(field(f.sa.controller, "items"), "filters"));
+        callFilters(field(field(f.sc.controller, "items"), "filters")); // the member hands the form its group's edit
+        // ... read where the member is and handed over as the list it makes: a condition with no value is dropped from
+        // a list, and on its own takes its property's conditions off (the recorder hands nothing back, so each call
+        // merges into the empty list the part was given)
+        assertEquals(Arrays.asList("changeFilters items price< or", "changeFilters items price= not", "changeFilters items"),
+                f.filtersCalls);
+        JavaScriptObject member = field(field(f.sc.controller, "items"), "filters"); // every mistake is refused there,
+        String refused = refusedFilters(member, parse("{\"property\": \"nosuch\", \"value\": 1}")); // with the call
+        assertTrue(refused, refused.contains("controller.items.filters.change(): ") && refused.contains("nosuch"));
+        refused = refusedFilters(member, parse("[{\"property\": \"price\", \"value\": 1, \"or\": \"yes\"}]"));
+        assertTrue(refused, refused.contains("condition 0: ") && refused.contains("'or' must be true or false"));
+        refused = refusedFilters(member, parse("{\"property\": \"price\", \"compare\": \"IN ARRAY\", \"value\": 1}"));
+        assertTrue(refused, refused.contains("'IN ARRAY' is no comparison of a filter condition"));
+        assertEquals(3, f.filtersCalls.size()); // ... and the form is handed nothing
+        assertNull(field(f.node(), "filters")); // not a part of the rows
+        assertEquals(0, length(field(field(f.snapshots[2], "items"), "filters")));
+        // c carries no column: a condition names the group's property
+        callChange(member, parse("{\"property\": \"price\", \"value\": 4}"));
+        assertSame(f.price, f.stated.get(0).property);
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(3), GCompare.LESS));
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        JavaScriptObject filters = field(field(f.snapshots[2], "items"), "filters");
+        assertEquals(1, length(filters));
+        assertEquals("price", text(at(filters, 0), "property"));
+    }
+
+    public void testOneConditionIsMergedWhereThePartIs() {
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
+        GPropertyFilter low = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.GREATER);
+        GPropertyFilter high = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.LESS);
+        GPropertyFilter amount = new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS);
+        // a range on price - two conditions - and one on quantity, what the server filters by: what one condition
+        // merges into
+        ArrayList<GPropertyFilterDTO> handed = dtos(Arrays.asList(low, high, amount));
+        f.filtersController().updateFilters(f.group, handed);
+        handed.clear(); // the part keeps a list of its own: the one handed over is the sender's
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, parse("{\"property\": \"price\", \"compare\": \">=\", \"value\": 3}"));
+        // the FIRST on price, in place, and the other bound kept as it was
+        assertEquals("changeFilters items price>= price< quantity=", f.filtersCalls.get(0));
+        callChange(member, parse("{\"property\": \"panel\", \"value\": 7}")); // a property with none: appended
+        assertEquals("changeFilters items price> price< quantity= panel=", f.filtersCalls.get(1));
+        callChange(member, parse("{\"property\": \"price\"}")); // no value: every condition on price goes
+        assertEquals("changeFilters items quantity=", f.filtersCalls.get(2));
+        // (each merged into the list the part holds, which only the form changes - and the recorder hands none back)
+        callChange(member, valueReadOnce()); // a value read a second time would be none: it is read once
+        assertEquals("changeFilters items price= price< quantity=", f.filtersCalls.get(3));
+        assertFalse(f.stated.get(0).nullValue());
+    }
+
+    // the form tells what shows a group's filters of every list it sends, before the answer (GFormController
+    // .applyCurrentFilters): a second change merges into the list the first one sent, not into the one before it - so
+    // two changes in a row both stand
+    public void testAChangeMergesIntoTheListTheFormLastSent() {
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, parse("{\"property\": \"price\", \"compare\": \">\", \"value\": 1}"));
+        f.filtersController().changeFilters(f.group, dtos(f.stated)); // as the form does, once it has sent the list
+        f.projection.flush();
+        assertEquals("price", text(at(field(f.node(), "filters"), 0), "property")); // shown at once
+        callChange(member, parse("{\"property\": \"quantity\", \"value\": 2}"));
+        assertEquals("changeFilters items price> quantity=", f.filtersCalls.get(1));
     }
 }

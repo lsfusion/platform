@@ -294,6 +294,12 @@ public class GContainer extends GComponent implements HasNativeSID {
     public boolean isReact() {
         return react; // custom holds the React component name
     }
+    // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (GComponent.getReactPlace) - the container itself when
+    // it is a react one, whose component draws its children, else where the container is, unless it is an lsf one.
+    // FILTERS(g) is asked it: what it holds is the group's user filters (mirrors ContainerView.getChildrenReactPlace)
+    public GContainer getChildrenReactPlace() {
+        return getReactPlaceFrom(this);
+    }
 
     private class GCaptionReader implements GComponentLabelReader {
         public GCaptionReader() {

@@ -1,0 +1,19 @@
+MODULE FilterConditionNameTwice;
+
+REQUIRE System;
+
+// two properties of a group under one integration name, where a React view draws the group's user filters: a condition
+// names a property of the GROUP by that name, wherever it is drawn, so it would name neither. Neither is projected here
+// - the platform draws the rows - so only the filters refuse it
+CLASS ConditionTwiceItem;
+conditionTwiceName = DATA STRING[20] (ConditionTwiceItem);
+conditionTwiceNote = DATA STRING[20] (ConditionTwiceItem);
+
+FORM conditionTwice
+    OBJECTS i = ConditionTwiceItem
+    PROPERTIES(i) conditionTwiceName EXTID 'title', conditionTwiceNote EXTID 'title'
+;
+
+DESIGN conditionTwice {
+    FILTERS(i) { custom = 'FilterPanel'; }
+}

@@ -305,7 +305,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // about a group's node starts by asking this, so the pair is asked as one question and composed by no caller
     // (mirrors GReactFormData.rowsScope, which is where the client asks it)
     private ContainerView rowsScope(GroupObjectEntity group) {
-        return contentScope(getDrawComponent(group));
+        return componentScope(getDrawComponent(group));
     }
 
     // WHAT REACT KEEPS NOTHING OF as a component: the client has no controller of it, so nothing is sent for it as
@@ -317,15 +317,16 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // which has no entry to go to (mirrors GReactFormData.reactKeepsNothing)
     public boolean reactKeepsNothing(ComponentView component) {
         if (component instanceof PropertyDrawView)
-            return contentScope(component) != null;
+            return componentScope(component) != null;
         return component.getSID() == null && component.isReactDrawn();
     }
 
-    // (mirrors GReactFormData.contentScope)
-    private ContainerView contentScope(ComponentView component) {
+    // where a COMPONENT is drawn: the react container that draws it, null when the platform does - an lsf one too,
+    // whose content is the platform's wherever React places it (mirrors GReactFormData.componentScope)
+    private ContainerView componentScope(ComponentView component) {
         // a LIST property has no place of its own: it is parked in its group's generated box, which says nothing about
         // where its column is drawn, so asking THAT container answers about the wrong component - its placement is
-        // DERIVED from whoever draws the rows, in the same words as the client (GReactFormData.contentScope). Asked
+        // DERIVED from whoever draws the rows, in the same words as the client (GReactFormData.componentScope). Asked
         // here rather than at each caller, or the rule is restated wherever a name is claimed and a caller that
         // forgets it is answered about the box. isList says there is a group to ask.
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity))
@@ -360,22 +361,25 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return container.isReact() || nameScope(container) != null;
     }
 
-    // the scopes a group's node appears in - every container that draws its rows or names a property of it (mirrors
-    // the nodes GReactFormData's createGroupController and createPropertyController make, and must gain a producer kind
-    // at the same time they do)
+    // the scopes a group's node appears in - every container that draws its rows or its user filters, or names a
+    // property of it (mirrors the nodes GReactFormData's createGroupController, createFiltersController and
+    // createPropertyController make, and must gain a producer kind at the same time they do)
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
         List<ContainerView> scopes = new ArrayList<>();
         for (ComponentView producer : getPartProducers(group))
-            addGroupScope(scopes, producer instanceof PropertyDrawView ? nameScope(producer) : contentScope(producer));
+            addGroupScope(scopes, producer instanceof PropertyDrawView ? nameScope(producer) // where it is named
+                    : producer instanceof ContainerView // FILTERS(g): where what it holds is
+                            ? ((ContainerView) producer).getChildrenReactPlace()
+                    : componentScope(producer)); // what draws the rows: where it is drawn
         return scopes;
     }
 
     // THE list of components that produce a part of a group - the one place a KIND is enumerated on this side, and the
-    // twin of GReactFormData's createGroupController and createPropertyController, which make the nodes: a branch that
-    // gives a component a part adds it to BOTH in one commit, or the two sides answer differently. Two kinds today: the
-    // component that draws the rows, and each panel property with an entry - one React draws, and one it places (lsf).
-    // What is deliberately absent is the chrome (toolbar,
-    // filters, calculations) - it draws nothing yet.
+    // twin of GReactFormData's createGroupController, createFiltersController and createPropertyController, which make
+    // the nodes: a branch that gives a component a part adds it to BOTH in one commit, or the two sides answer
+    // differently. Three kinds today: the component that draws the rows; each panel property with an entry, one React
+    // draws or one it places (lsf); and FILTERS(g), whose part is the user filters it holds. What is deliberately
+    // absent is the rest of the chrome (toolbar, calculations) - it draws nothing yet.
     private List<ComponentView> getPartProducers(GroupObjectEntity group) {
         List<ComponentView> producers = new ArrayList<>();
         producers.add(getDrawComponent(group));
@@ -383,6 +387,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             if (!property.entity.isList(entity) && group.equals(property.entity.getToDraw(entity))
                     && hasEntry(property))
                 producers.add(property);
+        producers.add(getFiltersContainer(group)); // the user filters: what FILTERS(g) holds
         return producers;
     }
     // whether a property the view names has an entry there: not an lsf ACTION - its caption and image are its
@@ -392,9 +397,14 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     private boolean hasEntry(PropertyDrawView property) {
         return property.isLsfView() ? property.entity.isStaticProperty() : property.entity.getIntegrationSID() != null;
     }
+    // the group's FILTERS box: its grid's, or its tree's - one box for all the tree's groups
+    private ContainerView getFiltersContainer(GroupObjectEntity group) {
+        return ((GridPropertyView<?, ?>) getDrawComponent(group)).filtersContainer;
+    }
 
     // ... and what those producers WRITE on the node in this scope, which is what a projected name can collide with:
-    // the node's own names, and the grid's where this container draws the group's rows.
+    // the node's own names, the grid's and the sortings' where this container draws the group's rows, and the user
+    // filters' where it draws what FILTERS(g) holds.
     private String[] getReservedNodeNames(GroupObjectEntity group, ContainerView scope) {
         // the top level, the empty group's node: named on the controller too, so the controller's names
         if (group == null)
@@ -405,6 +415,12 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             if (group.isInTree()) // ... and the TREE's, which is the component drawing those rows
                 reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
         }
+        // the sortings' part, placed with the rows - the order they are drawn in -, as a group's design has no box of
+        // its sortings (mirrors GReactFormData.createOrdersController)
+        if (rowsScope(group) == scope)
+            reserved = ArrayUtils.addAll(reserved, ORDERS_PART_NAMES);
+        if (getFiltersContainer(group).getChildrenReactPlace() == scope)
+            reserved = ArrayUtils.addAll(reserved, FILTERS_PART_NAMES);
         return reserved;
     }
     // ... and what a ROW of it carries - asked only where the rows are drawn, the one scope a column is claimed in:
@@ -740,7 +756,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             if (component instanceof ContainerView) {
                 ContainerView container = (ContainerView) component;
                 // climbs, so a plain box in between does not hide it
-                ContainerView drawer = container.isReact() ? contentScope(container) : null;
+                ContainerView drawer = container.isReact() ? componentScope(container) : null;
                 if (drawer != null) // drawn by another react container, not placed by it
                     throw new IllegalStateException(formErrorPrefix() + "container '" + container.getSID() + "' is the React"
                             + " component '" + container.getCustom() + "', but it is itself drawn by the React component '"
@@ -855,6 +871,12 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 claimProjectionName(inScope(rowNames, scope), group, integrationSID, source,
                         getReservedRowNames(group));
         }
+
+        // ... and where a group's user filters are projected, a name the group carries on two properties anywhere -
+        // asked once the names are claimed, so a name two projected properties share on one node is told as that
+        for (GroupObjectView groupObject : getGroupObjectsIt())
+            if (getFiltersContainer(groupObject.entity).getChildrenReactPlace() != null)
+                checkConditionNames(groupObject.entity);
     }
 
     private static Map<GroupObjectEntity, Set<String>> inScope(Map<ContainerView, Map<GroupObjectEntity, Set<String>>> names, ContainerView scope) {
@@ -884,7 +906,12 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // the group's own verb - so a feature that writes on the node has one array to update, not two.
     private static final String[] GRID_PART_NAMES = {
             "list", "byKey", "keys", "options",                 // the grid's part
-            "orders",                                           // ... and what its rows are ordered BY
+    };
+    private static final String[] ORDERS_PART_NAMES = {
+            "orders",                                           // the sortings' part, where the rows are
+    };
+    private static final String[] FILTERS_PART_NAMES = {
+            "filters",                                          // the user filters' part, where FILTERS(g) is
     };
     // Every group's node reserves them, whatever it carries in this scope: `change` is the verb of a group whose rows
     // are drawn here, and a name valid with the rows in one container stays valid when they move to another; `__member`
@@ -922,6 +949,22 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     + "': it is a group of several objects with no name of its own, so its SID is their names joined"
                     + " with dots - and a react view names a group as one word. Name the group: OBJECTS <name> = ("
                     + group.getSID().replace('.', ',') + ")");
+    }
+
+    // a user-filter condition names a property of the GROUP by its integration SID: the filters part need not be where
+    // any entry of the group is - FILTERS(g) with a view of its own over the platform's grid is where no node names a
+    // column - so no node's names settle what a condition means. Where the group's filters are projected, a name it
+    // carries on two properties would name no condition: refused here, like any other name the projection could not
+    // mean, rather than left to a view that finds its condition unlisted
+    private void checkConditionNames(GroupObjectEntity group) {
+        Set<String> names = new HashSet<>();
+        for (PropertyDrawView property : getPropertiesIt()) {
+            String integrationSID = property.entity.getIntegrationSID();
+            if (integrationSID != null && group.equals(property.entity.getToDraw(entity)) && !names.add(integrationSID))
+                throw new IllegalStateException(formErrorPrefix() + "cannot project the user filters of object group '"
+                        + group.getSID() + "': '" + integrationSID + "' is drawn more than once on it, and a condition names"
+                        + " a property of the group by that name. Give them explicit EXTIDs");
+        }
     }
 
     // a projected name is a path a view WRITES - data.<group>.<name>, controller.<group>.<name>, <Lsf name="o.note"/> -

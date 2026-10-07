@@ -54,6 +54,8 @@ import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
+import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
+import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.controller.GLayoutController;
 import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
@@ -150,6 +152,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // initializeOwnerControllers: who draws what is design data, so one asked for per delta re-derived what the
     // controllers themselves were built from.
     private final LinkedHashMap<GGroupObject, GGroupController> groupControllers = new LinkedHashMap<>();
+    // ... and what shows each group's user orders and its user filters, settled beside it
+    // (GReactFormData.createOrdersController, createFiltersController)
+    private final NativeSIDMap<GGroupObject, GUserOrdersController> ordersControllers = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, GUserFiltersController> filtersControllers = new NativeSIDMap<>();
     private final LinkedHashMap<GPropertyDraw, GPropertyController> propertyControllers = new LinkedHashMap<>();
     private final LinkedHashMap<GComponent, GComponentController> componentControllers = new LinkedHashMap<>();
     // groups with LSF properties
@@ -427,6 +433,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     //   controller.<group>.expand(row) / .collapse(row) / .toggle(row)   one node of a tree
     //   controller.<group>.expandAll() / .collapseAll()                  ... every node of its group and below it
     //   controller.<group>.orders.change(...)                         its sortings
+    //   controller.<group>.filters.change(...)                        its user filters
     //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
     //   controller.properties.change([{property, object, value}])     the one batch — it belongs to no single member
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
@@ -745,7 +752,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     private void initializeControllers() {
         for (GTreeGroup treeGroup : form.treeGroups) {
-            if (reactData.contentScope(treeGroup) == null) // a tree React draws has no GWT tree controller
+            if (reactData.componentScope(treeGroup) == null) // a tree React draws has no GWT tree controller
                 initializeTreeController(treeGroup);
         }
 
@@ -773,8 +780,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // included; as a component only its class is sent, which is the platform's to apply (createComponentController).
     // These controllers are design data, like the platform's: made once, they live as long as the form.
     private void initializeOwnerControllers() {
-        for (GGroupObject group : form.groupObjects)
-            groupControllers.put(group, reactData.createGroupController(group, getTableController(group)));
+        for (GGroupObject group : form.groupObjects) {
+            GGroupController groupController = reactData.createGroupController(group, getTableController(group));
+            groupControllers.put(group, groupController);
+            ordersControllers.put(group, reactData.createOrdersController(group, groupController));
+            filtersControllers.put(group, reactData.createFiltersController(group, groupController));
+        }
         // a group can have both: React draws its rows from the projection, and the platform draws its LSF properties
         // into each of those rows - the only rows such a property is drawn in (FormView.checkLsfListView), so its
         // controller is made over them, before the properties, whose controller it is (getLsfPropertyController)
@@ -1070,16 +1081,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         fc.objects.foreachEntry((key, value) -> getGroupController(key).updateCurrentKey(value));
     }
 
+    // the orders the server reports for a group, handed to what shows them only when they are other orders
     private void applyOrderChanges(GFormChanges fc) {
-        fc.userOrders.foreachEntry((group, orders) -> showOrders(group, orders));
-    }
-
-    // the orders the form has for a group, given to the group's controller only when they are other orders
-    private void showOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
-        if (!equalOrders(orders, currentOrders.get(group))) {
-            currentOrders.put(group, orders);
-            getGroupController(group).updateOrders(group, orders);
-        }
+        fc.userOrders.foreachEntry((group, orders) -> {
+            if (!equalOrders(orders, currentOrders.get(group))) {
+                currentOrders.put(group, orders);
+                ordersControllers.get(group).updateOrders(group, orders);
+            }
+        });
     }
 
     // the same orders in another priority are other orders
@@ -1092,7 +1101,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         fc.userFilters.foreachEntry((group, filters) -> {
             if (!filters.equals(currentFilters.get(group))) {
                 currentFilters.put(group, filters);
-                getGroupController(group).updateFilters(group, filters);
+                filtersControllers.get(group).updateFilters(group, filters);
             }
         });
     }
@@ -2046,34 +2055,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }, onExec);
     }
 
-    // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
-    // for them, as the form keeps them: they are shown through the hook the reports use, unlike the filters, which the
-    // filter panel shows itself. The orders member of a view that draws the group's rows states them here too
-    // (GReactFormData.Verbs)
-    @Override
-    public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
-        showOrders(group, orders);
-
-        List<Integer> propertyList = new ArrayList<>();
-        List<GGroupObjectValue> columnKeyList = new ArrayList<>();
-        List<Boolean> orderList = new ArrayList<>();
-        for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
-            propertyList.add(order.getKey().property.ID);
-            columnKeyList.add(order.getKey().columnKey);
-            orderList.add(order.getValue());
-        }
-        long requestIndex = asyncResponseDispatch(new SetPropertyOrders(group.ID, propertyList, columnKeyList, orderList));
-        pendingChangeOrdersRequests.put(group, requestIndex);
-        // what the hook wrote where React draws the rows, published once the request is queued, as changeGroupObject
-        // publishes its current object
-        refreshReactOptimistic();
-    }
-
-    public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
-        LinkedHashMap<Column, Boolean> orders = currentOrders.get(group);
-        return orders != null ? orders : new LinkedHashMap<>();
-    }
-
     public long expandGroupObjectRecursive(GGroupObject group, boolean current, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
         return asyncResponseDispatch(open ? new ExpandGroupObjectRecursive(group.ID, current) : new CollapseGroupObjectRecursive(group.ID, current));
@@ -2135,6 +2116,38 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
     }
 
+    // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
+    // for them, as the form keeps them: what shows them is told of other ones (changeOrders) and shows them as it shows
+    // reported ones, unlike the filter panel, which shows the filters it sends itself. The orders member of a view
+    // that draws the group's rows states them here too (GReactFormData.Verbs)
+    @Override
+    public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        if (!equalOrders(orders, currentOrders.get(group))) {
+            currentOrders.put(group, orders);
+            ordersControllers.get(group).changeOrders(group, orders);
+        }
+
+        List<Integer> propertyList = new ArrayList<>();
+        List<GGroupObjectValue> columnKeyList = new ArrayList<>();
+        List<Boolean> orderList = new ArrayList<>();
+        for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
+            propertyList.add(order.getKey().property.ID);
+            columnKeyList.add(order.getKey().columnKey);
+            orderList.add(order.getValue());
+        }
+        long requestIndex = asyncResponseDispatch(new SetPropertyOrders(group.ID, propertyList, columnKeyList, orderList));
+        pendingChangeOrdersRequests.put(group, requestIndex);
+        // what changeOrders wrote where React draws the rows, published once the request is queued, as
+        // changeGroupObject publishes its current object
+        refreshReactOptimistic();
+    }
+
+    public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
+        LinkedHashMap<Column, Boolean> orders = currentOrders.get(group);
+        return orders != null ? orders : new LinkedHashMap<>();
+    }
+
+    @Override
     public long changeFilters(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, getFilterDTOs(conditions));
         return applyCurrentFilters(Collections.singletonList(groupObject));
@@ -2162,7 +2175,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private static ArrayList<GPropertyFilterDTO> getFilterDTOs(List<GPropertyFilter> filters) {
         ArrayList<GPropertyFilterDTO> filterDTOs = new ArrayList<>();
         for (GPropertyFilter filter : filters) {
-            if (!filter.property.isAction()) {
+            if (filter.property.canBeFiltered()) {
                 filterDTOs.add(filter.getFilterDTO());
             }
         }
@@ -2177,7 +2190,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         long requestIndex = asyncResponseDispatch(new SetUserFilters(filters));
         for (GGroupObject group : groups) {
             pendingChangeFiltersRequests.put(group, requestIndex);
+            // ... and what shows them told of them, before the answer (GUserFiltersController.changeFilters)
+            filtersControllers.get(group).changeFilters(group, currentFilters.get(group));
         }
+        // what that wrote where React draws the filters, published once the request is queued, as changeOrders
+        // publishes its orders
+        refreshReactOptimistic();
         return requestIndex;
     }
 

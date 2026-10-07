@@ -2086,7 +2086,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if (filters.isEmpty())
                     updateView(true, null);
                 else
-                    grid.filter.addConditions(filters, false, true);
+                    grid.replaceFilterConditions(filters);
             });
             menuBar.addItem(menuItem);
             menuBar.getElement().getStyle().setProperty("maxHeight", getElement().getOffsetHeight() + "px");
