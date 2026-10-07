@@ -245,6 +245,7 @@ public class GReactFormDataTest extends GWTTestCase {
             ((GComponent) property).ID = id; ((GComponent) property).sID = name;
             property.groupObject = group; property.isList = list; property.container = scope;
             property.valueType = GIntegerType.instance;
+            property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1);
             form.propertyDraws.add(property); scope.children.add(property);
             return property;
         }
@@ -454,7 +455,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // surface, which the projection never asks of it, does nothing
     private static final class RecordingTableController extends GAbstractTableController {
         final ArrayList<GPropertyReader> updated = new ArrayList<>();
-        final ArrayList<GPropertyDraw> dropped = new ArrayList<>(), focused = new ArrayList<>();
+        final ArrayList<GPropertyDraw> dropped = new ArrayList<>(), focused = new ArrayList<>(), loading = new ArrayList<>();
 
         RecordingTableController() {
             super(null, null, false);
@@ -466,7 +467,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public void dropProperty(GPropertyDraw property) { dropped.add(property); }
         public boolean isPropertyShown(GPropertyDraw property) { return true; }
         public void focusProperty(GPropertyDraw property) { focused.add(property); }
-        public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) { return null; }
+        public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) { loading.add(property); return null; }
         public GGroupObjectValue getSelectedKey() { return null; }
         public int getSelectedRow() { return -1; }
         public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) { }
@@ -1420,13 +1421,63 @@ public class GReactFormDataTest extends GWTTestCase {
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, null);
         assertFalse(reachesLsf(f.lsf, f.controllers, f.box.elementClassReader, values));
-        assertFalse(reachesLsf(f.lsf, f.controllers, new GLoadingReader(20, 10), values));
         assertTrue(reachesLsf(f.lsf, f.controllers, f.a.showIfReader, values));
         assertTrue(reachesLsf(f.lsf, f.controllers, f.a.captionReader, values));
         assertTrue(reachesLsf(f.lsf, f.controllers, f.form.mainContainer.showIfReader, values));
         f.projection.flush();
         assertSame(before, f.data());
         assertEquals(1, f.publications[0]);
+    }
+
+    // a change a view sent of a cell: the cell says `loading` until the answer to it. The form marks it through the
+    // property's controller (setLoadingValueAt: with the value it shows, or with its own for UNDEFINED) and takes it
+    // off with the loading reader - null for the cells the answer is to, the others' kept. What React draws it marks;
+    // what the platform draws, the platform's own controller
+    public void testACellSaysItIsLoadingUntilItsChangeIsAnswered() {
+        Fixture f = new Fixture();
+        assertFalse(own(field(f.row("1"), "price"), "loading"));
+        // nothing to show: the cell, keyed as the answer keys it, and its value before
+        Pair<GGroupObjectValue, PValue> cell = f.controller(f.price).setLoadingValueAt(f.price, f.one, PValue.UNDEFINED);
+        assertEquals(f.one, cell.first);
+        assertEquals(PValue.getPValue(10), cell.second);
+        assertEquals(f.two, f.controller(f.price).setLoadingValueAt(f.price, f.two, PValue.UNDEFINED).first);
+        f.projection.flush();
+        assertTrue(flag(field(f.row("1"), "price"), "loading"));
+        assertEquals(10.0, value(f.row("1"), "price"), 0.0); // its own value, kept
+        assertTrue(flag(field(f.row("2"), "price"), "loading"));
+        assertFalse(own(field(f.row("1"), "quantity"), "loading"));
+        assertFalse(own(field(f.node(), "price"), "loading")); // a cell's, not the column's
+        GFormChanges answer = new GFormChanges(); // the answer to the first: as the form makes it
+        put(answer, f.price.loadingReader, f.one, null);
+        answer.updateProperties.add(f.price.loadingReader);
+        NativeHashMap<GGroupObjectValue, PValue> answered = answer.properties.get(f.price.loadingReader);
+        f.apply(answer);
+        assertFalse(own(field(f.row("1"), "price"), "loading"));
+        assertTrue(flag(field(f.row("2"), "price"), "loading"));
+        assertFalse(reachesLsf(f.lsf, f.controllers, f.price.loadingReader, answered)); // React's alone
+        // ... and one with a value to show says it with the value
+        f.setValue(f.quantity, f.one, 7);
+        f.projection.flush();
+        assertEquals(7.0, value(f.row("1"), "quantity"), 0.0);
+        assertTrue(flag(field(f.row("1"), "quantity"), "loading"));
+
+        // a panel entry is its one cell: an action's says so while it runs
+        assertEquals(GGroupObjectValue.EMPTY, f.controller(f.panel).setLoadingValueAt(f.panel, GGroupObjectValue.EMPTY, PValue.UNDEFINED).first);
+        f.projection.flush();
+        assertTrue(flag(field(field(f.snapshots[1], "items"), "panel"), "loading"));
+        // dropped, its loading goes with its values - no answer takes it off then - so it does not come back with it
+        f.apply(drop(f.panel));
+        GFormChanges back = new GFormChanges();
+        put(back, f.panel, GGroupObjectValue.EMPTY, 30);
+        f.apply(back);
+        assertFalse(own(field(field(f.snapshots[1], "items"), "panel"), "loading"));
+
+        // the platform's: its own controller marks it - an lsf property's included, React handing it over -, and it is
+        // handed the answer
+        f.controller(f.nativeProperty).setLoadingValueAt(f.nativeProperty, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
+        f.controller(f.plain).setLoadingValueAt(f.plain, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
+        assertEquals(Arrays.asList(f.nativeProperty, f.plain), f.lsf.loading);
+        assertTrue(reachesLsf(f.lsf, f.controllers, f.nativeProperty.loadingReader, answered));
     }
 
     public void testDroppedPropertyComesBackWithItsValues() {
@@ -1873,10 +1924,13 @@ public class GReactFormDataTest extends GWTTestCase {
         int publications = f.publications;
         callNode(cat, "expand", f.row(f.cat, f.c2));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once, published, before its children
+        assertTrue(flag(f.row(f.cat, f.c2), "loading")); // ... and says it waits for the answer
         assertEquals(publications + 1, f.publications);
         assertSame(c1, f.row(f.cat, f.c1)); // the other node kept its object
+        assertFalse(own(c1, "loading"));
         f.answer(new GFormChanges(), 0); // an answer to a request before it changes nothing
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "loading"));
         GFormChanges gone = new GFormChanges(); // ... nor does one that takes the node away and brings it back: a row
         gone.gridObjects.put(f.cat, rows(f.c1)); // made anew is given what was asked of it
         f.answer(gone, 0);
@@ -1887,14 +1941,17 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         f.answer(openPage(f), 1); // its answer: the children, and 2 open as the rows say
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertFalse(own(f.row(f.cat, f.c2), "loading"));
         assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
         callNode(cat, "collapse", f.row(f.cat, f.c2));
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // closed at once, while its child is still loaded
         assertNotNull(f.row(f.item, f.i27));
+        assertFalse(own(f.row(f.cat, f.c2), "loading")); // closing a node loads nothing
         f.answer(new GFormChanges(), 2); // an answer with no keys - a failed one - leaves it as asked, as the platform's
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // tree does
         f.answer(openPage(f), 2); // ... and keys that still hold its child: the server did not close it
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertFalse(own(f.row(f.cat, f.c2), "loading"));
     }
     // ... and so do two toggles of a node made in one batch: the second reads what the first asked, and the projection
     // is published when the batch ends - the view never sees the node opened in between. Both are asked under the one
@@ -1938,7 +1995,7 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject c2 = f.row(f.cat, f.c2);
         int publications = f.publications;
         callNode(field(f.sa.controller, "cat"), "expand", c2);
-        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // asked, but there is nothing to open
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // asked, but there is nothing to open - nor to load
         assertSame(c2, f.row(f.cat, f.c2)); // so nothing is rewritten, nothing published
         assertEquals(publications, f.publications);
         assertEquals(Arrays.asList("expand cat 2"), f.verbs.asked); // the server is asked all the same

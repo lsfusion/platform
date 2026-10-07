@@ -15,6 +15,9 @@ import lsfusion.gwt.client.form.property.PValue;
 public interface GPropertyController {
     boolean isPropertyShown(GPropertyDraw property);
     void focusProperty(GPropertyDraw property);
+    // a change of the cell sent: it says it is loading until the answer comes, showing `value` meanwhile - its own when
+    // that is PValue.UNDEFINED, there being none to show (an action's run, a value the server decides); its key, the way
+    // the answer's loading is keyed, and its value before - null where the controller has no cell for it
     Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value);
     // its own values, the property being the reader of them
     void updateValue(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial);

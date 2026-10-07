@@ -1222,6 +1222,17 @@ public class GReactFormData {
                 boolean expanded = isOpen(key);
                 if (!isField(row, "expanded", expanded))
                     setField(editRow(key), "expanded", expanded);
+                // ... and that its children are being loaded: a view asked to open it, and the rows of the answer have not
+                // come - as a changed cell says it waits for its answer. Closing a node loads nothing, and nor does
+                // opening one with no children, which stays closed (isOpen). There only while it is so
+                boolean loading = pendingExpanding.get(key) != null && expanded;
+                if (loading != isField(row, "loading", true)) {
+                    JavaScriptObject edited = editRow(key);
+                    if (loading)
+                        setField(edited, "loading", true);
+                    else
+                        deleteField(edited, "loading");
+                }
             }
         }
         // whether the server counts children under a row, loaded or not
@@ -1374,12 +1385,14 @@ public class GReactFormData {
                 setShown(true);
             }
         }
-        // its values go with it; its attributes stay as the server last sent them
+        // its values go with it, and so does what loads them - an answer to a change of a property the form no longer
+        // shows takes no loading off; its attributes stay as the server last sent them
         public void dropProperty(GPropertyDraw dropped) {
             values.remove(property);
+            values.remove(property.loadingReader);
             setShown(false);
         }
-        // what React draws nothing from - its loading, its classes, its change keys - goes nowhere
+        // what React draws nothing from - its classes, its change keys - goes nowhere
         public void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         }
         // what it is drawn with - an attribute of it, what labels it too: kept where its entry says (attribute)
@@ -1413,7 +1426,10 @@ public class GReactFormData {
             if (cellKey == null)
                 return null;
             PValue oldValue = values.get(property, cellKey);
-            put(cellKey, value);
+            // the cell says `loading` until the answer to its change takes it off (GLoadingReader), as the platform's does
+            put(property.loadingReader, cellKey, PValue.getPValue(true));
+            if (value != PValue.UNDEFINED) // none to show - an action's run, a value the server decides -: its own
+                put(property, cellKey, value);
             return new Pair<>(cellKey, oldValue);
         }
         // the key of its cell for the edited one, which is what setLoadingValueAt RETURNS: the caller keys the pending
@@ -1421,9 +1437,9 @@ public class GReactFormData {
         // `fullCurrentKey` is every group's current object plus the edited cell's key
         // (GFormController.getFullCurrentKey), and null - the key holds no cell of it - is "no cell"
         abstract GGroupObjectValue getCellKey(GGroupObjectValue fullCurrentKey);
-        // one value, the client's own: it is kept, and its key rebuilt
-        void put(GGroupObjectValue key, PValue value) {
-            if (values.put(property, key, value))
+        // one value of a cell, the client's own - its value, or its loading -: it is kept, and the cell rebuilt
+        void put(GPropertyReader reader, GGroupObjectValue key, PValue value) {
+            if (values.put(reader, key, value))
                 valueChanged(key);
         }
         // its value, or an attribute keyed like one

@@ -105,7 +105,8 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         PValue oldValue = getValue();
 
         setLoading();
-        setValue(value);
+        if(value != PValue.UNDEFINED) // none to show - an action's run, a value the server decides -: its own, loading
+            setValue(value);
 
         update();
 

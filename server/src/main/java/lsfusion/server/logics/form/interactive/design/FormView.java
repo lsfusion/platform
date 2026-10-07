@@ -926,7 +926,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             "expand", "collapse", "toggle", "expandAll", "collapseAll",
     };
     private static final String[] TREE_ROW_NAMES = {
-            "parent", "hasChildren", "expanded",
+            "parent", "hasChildren", "expanded", "loading",
     };
     // the sortings' part, placed with the rows - the order they are drawn in -, as a group's design has no box of its
     // sortings to place them by

@@ -733,17 +733,18 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         changeProperty(property, getControllerColumnKey(objectKey), GSimpleStateTableView.convertFromJSUndefValue(property, value));
     }
     // the typed core: a resolved property, key and value -> the same classic edit dispatch as a normal user edit - a
-    // member's, once it has read what it names (GReactFormData), and the classic changeProperty's
+    // member's, once it has read what it names (GReactFormData), and the classic changeProperty's. Its cell says it
+    // waits for the answer, whatever draws it and whoever sent it: with the value it shows, or with its own
     @Override
     public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
         executePropertyEventAction(property, key, value, requestIndex -> {
             // WYSIWYG guard (like GSimpleStateTableView.changeProperties): only overlay the optimistic value when the
             // input writes the displayed property value; a non-WYSIWYG change (custom action / unbound input) must wait
-            // for the server
-            if (value != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE))
-                // optimistic overlay (+ optimistic react through the property's controller,
-                // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
-                setLoadingValueAt(property, key, value, requestIndex);
+            // for the server, the cell loading with the value it has - as one with no value does (UNDEFINED already).
+            // Optimistic overlay (+ optimistic react through the property's controller,
+            // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
+            PValue shownValue = property.hasExternalChangeActionForRendering(RendererType.SIMPLE) ? value : PValue.UNDEFINED;
+            setLoadingValueAt(property, key, shownValue, requestIndex);
             refreshReactOptimistic();
         });
     }
@@ -1387,6 +1388,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                     if (propertyLoadings == null) {
                         propertyLoadings = new NativeHashMap<>();
                         fc.properties.put(property.loadingReader, propertyLoadings);
+                        // the cells whose requests are answered, the others' loading kept: what React keeps of the
+                        // reader merges it (the platform's views merge every loading they are given)
+                        fc.updateProperties.add(property.loadingReader);
                     }
                     propertyLoadings.put(keys, null);
                 }
@@ -2272,7 +2276,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         Pair<GGroupObjectValue, PValue> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
 
         if(propertyCell != null) {
-            pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
+            if(value != PValue.UNDEFINED) // the value shown is taken back if the request fails
+                pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
             pendingLoadingProperty(property, propertyCell.first, requestIndex);
         }
     }
