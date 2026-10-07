@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -281,7 +282,8 @@ public class GReactFormDataTest extends GWTTestCase {
             projection.flush();
         }
         public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { }
-        public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { return 0; }
+        final ArrayList<String> filtered = new ArrayList<>(); // what a group's filters member handed the form, in order
+        public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { filtered.add(group.getSID() + describe(conditions)); return 0; }
         long ask(String request) {
             asked.add(request);
             return ++requestIndex;
@@ -430,7 +432,8 @@ public class GReactFormDataTest extends GWTTestCase {
         public void removeProperty(GPropertyDraw property) { }
         protected void configureToolbar() { }
         public List<GFilter> getFilters() { return null; }
-        protected long changeFilter(ArrayList<GPropertyFilter> conditions) { return -1; }
+        final ArrayList<String> changedFilters = new ArrayList<>(); // the lists it handed the form, in order
+        protected long changeFilter(ArrayList<GPropertyFilter> conditions) { changedFilters.add(describe(conditions)); return -1; }
         public boolean focusFirstWidget(FocusUtils.Reason reason) { return false; }
         public GGridProperty getGridComponent() { return null; }
         public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) { }
@@ -443,7 +446,8 @@ public class GReactFormDataTest extends GWTTestCase {
         public GGroupObjectValue getSelectedColumnKey() { return null; }
         public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) { return null; }
         public List<Pair<Column, String>> getFilterColumns() { return null; }
-        public GContainer getFiltersContainer() { return null; }
+        GContainer filtersContainer; // the group's FILTERS box, when a test gives it one
+        public GContainer getFiltersContainer() { return filtersContainer; }
         public GFilterControls getFilterControls() { return null; }
     }
     // ... and the platform's controller of the components, the layout: what reaches it is recorded in the same log
@@ -2138,4 +2142,185 @@ public class GReactFormDataTest extends GWTTestCase {
         callChange(member, parse("{\"property\": \"quantity\", \"value\": 2}"));
         assertEquals("changeFilters items price> quantity=", f.filtersCalls.get(1));
     }
+
+    // ===== the projection's non-obvious behaviour, each pinned (React: common's QA, 2026-10-07)
+
+    // a condition set elsewhere that compares with no value - the platform's panel can state one - is listed with a
+    // null `value`, so a view that hands the list back takes it off; on a LOGICAL property the filter type's JS value
+    // of nothing is `false`, so there it is listed as false
+    public void testAConditionWithNoValueIsListedAsNullAndOnALogicalPropertyAsFalse() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(74, "active", fixture.group, true, fixture.a).valueType = GLogicalType.instance;
+        });
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "active")), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        JavaScriptObject filters = field(f.node(), "filters");
+        assertEquals(2, length(filters));
+        assertEquals("price", text(at(filters, 0), "property"));
+        assertTrue(isNullField(at(filters, 0), "value"));
+        assertEquals("active", text(at(filters, 1), "property"));
+        assertTrue(isFalseField(at(filters, 1), "value"));
+    }
+
+    // a condition set elsewhere on what no condition the projection names can be on - an action, a property grouped in
+    // columns, a property with no integration SID - is left out of `filters`, the rest listed in their order, and the
+    // console says which and why, once per property however many times the list comes
+    public void testAConditionTheProjectionCannotNameIsLeftOutAndSaidOnce() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(75, "approve", fixture.group, true, fixture.a).valueType = GActionType.instance;
+            fixture.property(76, "perColumn", fixture.group, true, fixture.a).columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
+            fixture.property(77, "hidden", fixture.group, true, fixture.a).integrationSID = null;
+        });
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "approve")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.GREATER));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "perColumn")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "hidden")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.EQUALS));
+        JavaScriptObject errors = spyConsoleErrors();
+        try {
+            f.filtersController().updateFilters(f.group, dtos(conditions));
+            f.projection.flush();
+            JavaScriptObject filters = field(f.node(), "filters");
+            assertEquals(1, length(filters));
+            assertEquals("price", text(at(filters, 0), "property"));
+            assertEquals(3, countMatching(errors, "data.items.filters"));
+            assertEquals(1, countMatching(errors, "an action"));
+            assertEquals(1, countMatching(errors, "grouped in columns"));
+            assertEquals(1, countMatching(errors, "no integration SID"));
+            f.filtersController().updateFilters(f.group, dtos(conditions)); // the same list again: nothing said twice
+            f.projection.flush();
+            assertEquals(3, countMatching(errors, "data.items.filters"));
+        } finally {
+            restoreConsole(errors);
+        }
+    }
+
+    // what the member refuses, the form is not handed at all - a condition on an action or on a property grouped in
+    // columns, an unknown field, an unknown compare, a `negation` that is no boolean - and the message quotes the call
+    public void testTheFiltersMemberRefusesWhatNoConditionCanBe() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(75, "approve", fixture.group, true, fixture.a).valueType = GActionType.instance;
+            fixture.property(76, "perColumn", fixture.group, true, fixture.a).columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
+        });
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        String refused = refusedFilters(member, parse("{\"property\": \"approve\", \"value\": 1}"));
+        assertTrue(refused, refused != null && refused.contains("controller.items.filters.change(): ") && refused.contains("an action"));
+        refused = refusedFilters(member, parse("{\"property\": \"perColumn\", \"value\": 1}"));
+        assertTrue(refused, refused != null && refused.contains("grouped in columns"));
+        refused = refusedFilters(member, parse("{\"property\": \"price\", \"value\": 1, \"vaule\": 2}"));
+        assertTrue(refused, refused != null && refused.contains("unknown field 'vaule'"));
+        refused = refusedFilters(member, parse("{\"property\": \"price\", \"compare\": \"~\", \"value\": 1}"));
+        assertTrue(refused, refused != null && refused.contains("unknown compare '~'"));
+        refused = refusedFilters(member, parse("{\"property\": \"price\", \"value\": 1, \"negation\": \"yes\"}"));
+        assertTrue(refused, refused != null && refused.contains("'negation' must be true or false"));
+        refused = refusedFilters(member, parse("[{\"property\": \"price\", \"value\": 1}, {\"property\": \"approve\", \"value\": 1}]"));
+        assertTrue(refused, refused != null && refused.contains("condition 1: ")); // one wrong entry refuses the whole list
+        assertEquals(0, f.filtersCalls.size());
+    }
+
+    // a sorting set elsewhere on a property with no integration SID is left out of `orders`, and said once; a sorting a
+    // view asks for by a name the node does not carry is refused, and the form handed nothing
+    public void testASortingTheProjectionCannotNameIsLeftOutAndAnUnknownOneRefused() {
+        Fixture f = new Fixture(fixture -> fixture.property(77, "hidden", fixture.group, true, fixture.a).integrationSID = null);
+        LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
+        held.put(column(byName(f.form, "hidden")), true);
+        held.put(column(f.price), false);
+        JavaScriptObject errors = spyConsoleErrors();
+        try {
+            f.ordersController().updateOrders(f.group, held);
+            f.projection.flush();
+            JavaScriptObject sorted = field(f.node(), "orders");
+            assertEquals(1, length(sorted));
+            assertEquals("price", text(at(sorted, 0), "property"));
+            assertEquals(1, countMatching(errors, "data.items.orders"));
+            f.ordersController().updateOrders(f.group, held);
+            f.projection.flush();
+            assertEquals(1, countMatching(errors, "data.items.orders"));
+        } finally {
+            restoreConsole(errors);
+        }
+        assertTrue(refusesChange(field(field(f.sa.controller, "items"), "orders"), parse("{\"property\": \"nosuch\", \"desc\": true}")));
+        assertEquals(0, f.sortedCalls);
+    }
+
+    // a tree's groups share one FILTERS box, and each is filtered by its own name: a group's list goes to that group's
+    // node only, and a change through a group's member states that group's conditions - the tree's other group keeps
+    // its own
+    public void testATreeGroupIsFilteredByItsOwnName() {
+        TreeFixture f = new TreeFixture(fixture -> {
+            GContainer filters = container(5); filters.react = false; filters.custom = null;
+            filters.container = fixture.a; fixture.a.children.add(filters);
+            fixture.tree.filtersContainer = filters;
+            GPropertyDraw price = new GPropertyDraw();
+            price.ID = 63; price.nativeSID = "p63"; price.sID = "price"; price.integrationSID = "price";
+            ((GComponent) price).ID = 63; ((GComponent) price).sID = "price";
+            price.groupObject = fixture.item; price.isList = true; price.container = fixture.a;
+            price.valueType = GIntegerType.instance;
+            fixture.form.propertyDraws.add(price); fixture.a.children.add(price);
+        });
+        f.apply(f.page());
+        assertEquals(0, length(field(field(f.data, "cat"), "filters")));
+        assertEquals(0, length(field(field(f.data, "item"), "filters")));
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "price")), f.item, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.GREATER));
+        f.controllers.filters.get(f.item).updateFilters(f.item, dtos(conditions));
+        f.projection.flush();
+        assertEquals(1, length(field(field(f.data, "item"), "filters")));
+        assertEquals("price", text(at(field(field(f.data, "item"), "filters"), 0), "property"));
+        assertEquals(0, length(field(field(f.data, "cat"), "filters"))); // the other group of the tree: none
+        callChange(field(field(f.sa.controller, "item"), "filters"), parse("{\"property\": \"price\", \"compare\": \"<\", \"value\": 9}"));
+        assertEquals(Arrays.asList("item price<"), f.verbs.filtered); // the item group's own list, merged into its own
+        callChange(field(field(f.sa.controller, "cat"), "filters"), parse("[]"));
+        assertEquals(Arrays.asList("item price<", "cat"), f.verbs.filtered); // the cat group's, empty: nothing of item's
+    }
+
+    // where React draws what the group's FILTERS box holds, the platform builds no filter panel (initFilters): the keys
+    // that would add, replace or reset a condition find no panel and change nothing, while a pivot's drill-down states
+    // its conditions through the form (replaceFilterConditions -> changeFilter), whose list the view's FILTERS is shown
+    public void testNoFilterPanelWhereReactDrawsTheFilters() {
+        GContainer main = container(0); main.react = false; main.custom = null; main.main = true;
+        GContainer filters = container(5); // react: a view draws what it holds
+        filters.container = main; main.children.add(filters);
+        RecordingTableController table = new RecordingTableController();
+        table.filtersContainer = filters;
+        table.initFilters();
+        assertNull(table.filter); // no panel: no toolbar button, no controls, no condition rows
+        table.addFilter(null); table.replaceFilter(null); table.quickEditFilter(null, null, null); // F3, Alt+F3, typing
+        table.resetFilters(); // Shift+F3, Escape, the controls' reset
+        assertEquals(0, table.changedFilters.size()); // ... change nothing
+        GGroupObject group = new GGroupObject();
+        GPropertyDraw name = new GPropertyDraw();
+        name.ID = 81; name.sID = "name"; name.integrationSID = "name"; name.groupObject = group;
+        name.valueType = new GStringType(GExtInt.UNLIMITED, false, false);
+        ArrayList<GPropertyFilter> drillDown = new ArrayList<>();
+        drillDown.add(new GPropertyFilter(new GFilter(name), group, GGroupObjectValue.EMPTY, PValue.getPValue("Apple"), GCompare.EQUALS));
+        table.replaceFilterConditions(drillDown); // a pivot cell's drill-down
+        assertEquals(Arrays.asList(" name="), table.changedFilters); // the group's list, sent through the form
+    }
+
+    private static GPropertyDraw byName(GForm form, String sID) {
+        for (GPropertyDraw property : form.propertyDraws)
+            if (sID.equals(property.sID))
+                return property;
+        throw new IllegalArgumentException(sID);
+    }
+    private static native boolean isNullField(JavaScriptObject object, String name) /*-{ return object[name] === null; }-*/;
+    private static native boolean isFalseField(JavaScriptObject object, String name) /*-{ return object[name] === false; }-*/;
+    // the errors the console is told while the spy is on, the console's own error put back by restoreConsole
+    private static native JavaScriptObject spyConsoleErrors() /*-{
+        var log = [], original = $wnd.console.error;
+        $wnd.console.error = function () { log.push(Array.prototype.join.call(arguments, ' ')); };
+        log.restore = function () { $wnd.console.error = original; };
+        return log;
+    }-*/;
+    private static native void restoreConsole(JavaScriptObject log) /*-{ log.restore(); }-*/;
+    private static native int countMatching(JavaScriptObject log, String part) /*-{
+        return log.filter(function (message) { return message.indexOf(part) >= 0; }).length;
+    }-*/;
 }
