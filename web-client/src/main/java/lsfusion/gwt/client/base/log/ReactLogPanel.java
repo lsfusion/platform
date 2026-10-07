@@ -86,8 +86,8 @@ public class ReactLogPanel extends LogPanel {
             }
 
             @Override
-            public boolean marksHosts() {
-                return false; // a message's host is left as the component rendered it
+            public ReactRoot.Host getHost() {
+                return new ReactRoot.PlainHost(); // a message's host is left as the component rendered it
             }
         });
         // nothing is logged yet, and that is a state the component draws, so the window starts from it - shaped as

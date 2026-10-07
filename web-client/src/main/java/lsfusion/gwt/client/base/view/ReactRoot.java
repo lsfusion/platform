@@ -32,7 +32,7 @@ public class ReactRoot {
         this.componentName = componentName;
         this.placement = placement;
         this.store = createStore();
-        this.context = createContext(store, controller, placement, placement.marksHosts(), this);
+        this.context = createContext(store, controller, placement, placement.getHost(), this);
     }
 
     // where a placed view goes and where it is taken back from: <Lsf name/> renders the node, the owner moves its own
@@ -43,13 +43,11 @@ public class ReactRoot {
         void mount(String name, Element host, JavaScriptObject row);
         void unmount(String name, Element host, JavaScriptObject row);
 
-        // whether a host is marked as holding one of the platform's views: the lsf-view class, which the layout fills
-        // the host by - a flex column, with the min-size reset a moved view needs -, and data-lsf-sid, which a
-        // stylesheet addresses the host by. <Lsf> renders the marks itself, as props of its own, since a class written
-        // into a node React renders is lost the moment the component's own class for it changes. Each owner says it: a
-        // form container and the forms window mark theirs, which hold a view the layout fills them with; the navigator
-        // and the log windows leave theirs as the component rendered them
-        boolean marksHosts();
+        // what its hosts are dressed in, besides the ref and `hidden` the hook gives each (useLsf): the kind of host
+        // it places into - a form container and the forms window put a view into theirs, which the layout fills them
+        // with by their marks (MarkedHost); the navigator and the log windows leave theirs as the component rendered
+        // them (PlainHost)
+        Host getHost();
 
         // the entry a placed name keys in the owner's `data` - what hides its host while it says `hidden` (useLsf): the
         // field of that name, unless the owner keys what it places otherwise - a form container keys an lsf panel
@@ -66,9 +64,31 @@ public class ReactRoot {
         }
     }
 
+    // A HOST's props besides its ref and `hidden`, which the hook adds (useLsf): the class the component gives it, and
+    // what the kind of host adds to it. Props of the host's own, rendered by <Lsf> / useLsf, rather than anything
+    // written into the node behind React's back: a class written into a node React renders is lost the moment the
+    // component's own class for it changes
+    public abstract static class Host {
+        public abstract JavaScriptObject props(String name, String className);
+    }
+    // ... one a view of the platform's is put into: marked so - the lsf-view class, which the layout fills the host by
+    // (a flex column, with the min-size reset a moved view needs), merged with the component's own, and data-lsf-sid,
+    // which a stylesheet addresses the host by
+    public static final class MarkedHost extends Host {
+        public native JavaScriptObject props(String name, String className) /*-{
+            return { className: className ? 'lsf-view ' + className : 'lsf-view', 'data-lsf-sid': name };
+        }-*/;
+    }
+    // ... one left as the component rendered it: the class it gives it alone, none where it gives none
+    public static final class PlainHost extends Host {
+        public native JavaScriptObject props(String name, String className) /*-{
+            return className == null ? {} : { className: className };
+        }-*/;
+    }
+
     // `element` is the node the root is mounted in, set at mount: what the component draws is inside it, and nothing a
     // view does may reach above it - everything there belongs to the platform or to another view
-    private static native JavaScriptObject createContext(JavaScriptObject store, JavaScriptObject controller, Placement placement, boolean marks, ReactRoot root)/*-{
+    private static native JavaScriptObject createContext(JavaScriptObject store, JavaScriptObject controller, Placement placement, Host host, ReactRoot root)/*-{
         return { store: store, controller: controller, element: null, view: {
             mount: function(name, host, row) {
                 placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::mount(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(name, host, row || null);
@@ -85,7 +105,9 @@ public class ReactRoot {
             show: function(name, shown) {
                 placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::show(Ljava/lang/String;Z)(name, !!shown);
             },
-            marks: marks } };
+            host: function(name, className) {
+                return host.@lsfusion.gwt.client.base.view.ReactRoot.Host::props(Ljava/lang/String;Ljava/lang/String;)(name, className === undefined ? null : className);
+            } } };
     }-*/;
 
     // a host is judged only once the commit that rendered it is over, and the registry says when that is. At the moment

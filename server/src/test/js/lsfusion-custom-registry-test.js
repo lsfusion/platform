@@ -77,6 +77,8 @@ function makeReact() {
 }
 // what every root's view answers for a name it keys as itself (ReactRoot.Placement.entryOf's default)
 const entryOf = (data, name) => data[name];
+// what a root dresses a host in (ReactRoot.Host - its kinds are tested with the GWT tests): here, what it was asked
+const host = (name, className) => ({ className: className, dressed: name + '|' + className });
 function render(instance, fn) {
     makeReact.__render = instance; instance.cursor = 0;
     try { return fn(); } finally { makeReact.__render = null; }
@@ -195,7 +197,7 @@ console.log('Lsf');
     const w = load();
     // the context every hook reads; the double returns it from useContext
     const crossed = [];
-    makeReact.__ctxValue = { view: { entryOf,
+    makeReact.__ctxValue = { view: { entryOf, host,
         mount: (name, host, row) => crossed.push(['mount', name, row]),
         unmount: (name, host, row) => crossed.push(['unmount', name, row]),
     } };
@@ -213,7 +215,7 @@ console.log('Lsf');
     // string "undefined" and be blamed on whatever the window holds
     for (const missing of [undefined, null, '']) {
         const w2 = load();
-        makeReact.__ctxValue = { view: { entryOf, mount: () => check('nothing crosses for a nameless <Lsf>', false),
+        makeReact.__ctxValue = { view: { entryOf, host, mount: () => check('nothing crosses for a nameless <Lsf>', false),
                                          unmount: () => {} } };
         const noRef = w2.lsfusion.useLsf(missing).ref;
         noRef({ tag: 'host' });
@@ -225,7 +227,7 @@ console.log('Lsf');
     // even after the row object has been rebuilt - which is why the hook keys on the row's handle and remembers the row
     const w4 = load();
     const seen = [];
-    makeReact.__ctxValue = { view: { entryOf, mount: (n, h, r) => seen.push(['mount', n, r && r.key]),
+    makeReact.__ctxValue = { view: { entryOf, host, mount: (n, h, r) => seen.push(['mount', n, r && r.key]),
                                      unmount: (n, h, r) => seen.push(['unmount', n, r && r.key]) } };
     const rowA = { key: 'r1', qty: 1 };
     const rowRef = w4.lsfusion.useLsf('o.qty', { row: rowA }).ref;
@@ -238,7 +240,7 @@ console.log('Lsf');
     // a per-row name is an integration name, which two groups may share, and their rows may share a key: the host is
     // placed again when the row is another group's, and not when the same row is rebuilt - its `objects` handle stays
     const w4b = load();
-    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {} } };
+    makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
     const hostOf = { cursor: 0, slots: [] };
     const handleA = { group: 'a' }, handleB = { group: 'b' };
     const refA = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA } }).ref);
@@ -256,7 +258,7 @@ console.log('Lsf');
     // both to the platform, which is where the "first one keeps it" rule lives
     const w5 = load();
     const both = [];
-    makeReact.__ctxValue = { view: { entryOf, mount: (n, h) => both.push(h.tag), unmount: () => {} } };
+    makeReact.__ctxValue = { view: { entryOf, host, mount: (n, h) => both.push(h.tag), unmount: () => {} } };
     w5.lsfusion.useLsf('a').ref({ tag: 'h1' });
     w5.lsfusion.useLsf('a').ref({ tag: 'h2' });
     check('two hosts for one name both reach the platform', both.join(',') === 'h1,h2', both.join(','));
@@ -265,7 +267,7 @@ console.log('Lsf');
     // projection calls "8" would find nothing under a type-strict key
     const w6 = load();
     const asked = [];
-    makeReact.__ctxValue = { view: { entryOf, mount: (n) => asked.push([n, typeof n]), unmount: () => {} } };
+    makeReact.__ctxValue = { view: { entryOf, host, mount: (n) => asked.push([n, typeof n]), unmount: () => {} } };
     w6.lsfusion.useLsf(8).ref({ tag: 'h' });
     check('a number name reaches the platform as its string', asked.length === 1 && asked[0][0] === '8'
         && asked[0][1] === 'string', JSON.stringify(asked));
@@ -275,7 +277,7 @@ console.log('Lsf');
     makeReact.__ctxValue = null; // no Provider above it
     const orphan = w7.lsfusion.useLsf('a', { className: 'c' });
     check('an <Lsf> outside the platform root does not throw', typeof orphan.ref === 'function');
-    check('...is not marked, having nothing to hold', orphan.className === 'c' && !('data-lsf-sid' in orphan),
+    check('...and is dressed as holding nothing, having nothing to hold', orphan.className === 'c' && !('dressed' in orphan),
         JSON.stringify(orphan));
     orphan.ref({ tag: 'h' });
     check('...and says why', w7.__errors.length === 1 && w7.__errors[0].indexOf('outside the view') > 0,
@@ -283,53 +285,41 @@ console.log('Lsf');
 
     // the host never renders React children of its own - the platform owns what goes inside it
     const w3 = load();
-    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: true } };
+    makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
     const element = w3.lsfusion.Lsf({ name: 'a', className: 'c', style: { height: 1 }, children: 'IGNORED' });
     check('Lsf renders a div', element.type === 'div');
-    check('...with the class it was given, after its own mark', element.props.className === 'lsf-view c',
-        element.props.className);
-    check('...naming what it holds', element.props['data-lsf-sid'] === 'a', element.props['data-lsf-sid']);
+    check('...dressed as the root dresses a host, given its name and class', element.props.dressed === 'a|c',
+        element.props.dressed);
+    check('...holding the ref that places the child', typeof element.props.ref === 'function');
     check('...with the style it was given', element.props.style && element.props.style.height === 1);
     check('...and never its own children', element.children.filter(c => c !== undefined).length === 0,
         JSON.stringify(element.children));
 
-    // the marks are the host's own props, so a class that changes between renders cannot take them away: React
-    // rewrites the whole class attribute from the className prop, and the marks are in it every time
+    // the dress is the host's own props, asked of the root at every render: a class that changes between renders is
+    // dressed anew, as React rewrites the whole class attribute from the className prop
     const w8 = load();
-    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: true } };
+    makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
     const first = w8.lsfusion.Lsf({ name: 'BOX(o)', className: 'panel' });
     const second = w8.lsfusion.Lsf({ name: 'BOX(o)', className: 'panel panel-wide' });
-    check('a changed class keeps the mark', first.props.className === 'lsf-view panel'
-        && second.props.className === 'lsf-view panel panel-wide', first.props.className + ' / ' + second.props.className);
-    check('...and the name', second.props['data-lsf-sid'] === 'BOX(o)');
-    check('a host with no class of its own is still marked', w8.lsfusion.Lsf({ name: 'x' }).props.className === 'lsf-view');
+    check('a changed class is dressed anew', first.props.dressed === 'BOX(o)|panel'
+        && second.props.dressed === 'BOX(o)|panel panel-wide', first.props.dressed + ' / ' + second.props.dressed);
 
-    // useLsf puts the same marks on the component's own element, merged with the class it is given
+    // useLsf dresses the component's own element the same way, with the class it is given
     const own = w8.lsfusion.useLsf('BOX(o)', { className: 'board-panel' });
-    check('useLsf merges the class it is given with the mark', own.className === 'lsf-view board-panel', own.className);
-    check('...and names what the element holds', own['data-lsf-sid'] === 'BOX(o)', own['data-lsf-sid']);
-    check('a number name is marked as its string', w8.lsfusion.useLsf(8)['data-lsf-sid'] === '8');
+    check('useLsf dresses the element with the class it is given', own.dressed === 'BOX(o)|board-panel', own.dressed);
+    check('...and adds the ref', typeof own.ref === 'function');
+    check('a number name is dressed as its string', w8.lsfusion.useLsf(8).dressed === '8|undefined');
 
-    // a host that names nothing places nothing, so it is not marked as holding anything
+    // a host that names nothing places nothing, so it is dressed as holding nothing: the component's class alone
     const nameless = w8.lsfusion.Lsf({ className: 'c' });
-    check('a nameless host is not marked', nameless.props.className === 'c' && !('data-lsf-sid' in nameless.props),
+    check('a nameless host is not dressed', nameless.props.className === 'c' && !('dressed' in nameless.props),
         JSON.stringify(nameless.props));
-
-    // the navigator and the log windows leave their hosts as the component rendered them: the class is the
-    // component's alone (a form container and the forms window mark theirs)
-    const w9 = load();
-    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: false } };
-    const plain = w9.lsfusion.Lsf({ name: 'Sale.sales', className: 'menu-main' });
-    check('a host of a root that marks nothing keeps its own class', plain.props.className === 'menu-main',
-        plain.props.className);
-    check('...and no name', !('data-lsf-sid' in plain.props));
-    check('...nor a class when it was given none', w9.lsfusion.Lsf({ name: 'Sale.sales' }).props.className === undefined);
 
     // a host is hidden while the entry its name keys says `hidden` - a descriptor, following SHOWIF - and it stays:
     // only `hidden` says so, the ref being the same, so the child is not taken out and goes on being read
     const w10 = load();
     const snapshot = { 'BOX(o)': { caption: 'Orders', hidden: true }, 'BOX(i)': { caption: 'Items' } };
-    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {}, marks: true },
+    makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} },
                              store: { subscribe: () => () => {}, getSnapshot: () => snapshot } };
     check('a host whose entry says hidden is hidden', w10.lsfusion.useLsf('BOX(o)').hidden === true);
     check('a host whose entry does not say so is not', w10.lsfusion.useLsf('BOX(i)').hidden === undefined);
@@ -340,12 +330,12 @@ console.log('Lsf');
     // the root's view says which entry a name keys: a form container keys an lsf panel property's by its integration
     // name on its group's node, and places the property by that same path, o.note
     const keyed = { 'BOX(o)': { caption: 'Orders' }, o: { note: { caption: 'Note', hidden: true } } };
-    makeReact.__ctxValue = { view: { mount: () => {}, unmount: () => {}, marks: true,
+    makeReact.__ctxValue = { view: { host, mount: () => {}, unmount: () => {},
                                      entryOf: (data, name) => name === 'o.note' ? data.o.note : data[name] },
                              store: { subscribe: () => () => {}, getSnapshot: () => keyed } };
     check("a host is hidden by the entry the root's view says its name keys", w10.lsfusion.useLsf('o.note').hidden === true);
     check('...and a name the view keys as itself is read as itself', w10.lsfusion.useLsf('BOX(o)').hidden === undefined);
-    makeReact.__ctxValue = { view: { entryOf, mount: () => {}, unmount: () => {} } }; // a root with no store
+    makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } }; // a root with no store
     check('a root with no store hides nothing', w10.lsfusion.useLsf('BOX(o)').hidden === undefined);
 }
 
@@ -455,7 +445,7 @@ console.log('useShown');
 {
     const w = load();
     const told = [];
-    makeReact.__ctxValue = { view: { entryOf, show: (name, shown) => told.push(name + (shown ? ' shown' : ' not shown')) } };
+    makeReact.__ctxValue = { view: { entryOf, host, show: (name, shown) => told.push(name + (shown ? ' shown' : ' not shown')) } };
     const strip = instance();
     render(strip, () => w.lsfusion.useShown('PAGE2', false));
     check('nothing is told while the component draws', told.length === 0);

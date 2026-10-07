@@ -6,7 +6,8 @@ import com.google.gwt.junit.client.GWTTestCase;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 
 // the store a ReactRoot hands its component's hooks, with no React drawing anything: the root is never mounted, so the
-// first push, which would draw the component, draws nothing, and every later one only tells the store's subscribers
+// first push, which would draw the component, draws nothing, and every later one only tells the store's subscribers.
+// And what a root dresses a host in, by the kind of host its owner places into (ReactRoot.Host)
 public class ReactRootTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -15,7 +16,7 @@ public class ReactRootTest extends GWTTestCase {
     private static class NoPlacement implements ReactRoot.Placement {
         public void mount(String name, Element host, JavaScriptObject row) { fail("nothing is placed"); }
         public void unmount(String name, Element host, JavaScriptObject row) { fail("nothing is placed"); }
-        public boolean marksHosts() { return false; }
+        public ReactRoot.Host getHost() { return new ReactRoot.PlainHost(); }
     }
 
     // #46: a listener that throws - a view's bucketOf, a selector - is its own error, logged where it is thrown, and
@@ -73,4 +74,27 @@ public class ReactRootTest extends GWTTestCase {
     private static native int countMatching(JavaScriptObject log, String part) /*-{
         return log.filter(function (message) { return message.indexOf(part) >= 0; }).length;
     }-*/;
+
+    // a host a view of the platform's is put into is marked so: the class the layout fills it by, merged with the
+    // component's own - asked at every render, so a class that changes keeps the mark -, and the name it holds
+    public void testAHostAViewGoesIntoIsMarked() {
+        ReactRoot.Host host = new ReactRoot.MarkedHost();
+        JavaScriptObject panel = host.props("BOX(o)", "panel"), wide = host.props("BOX(o)", "panel panel-wide");
+        assertEquals("lsf-view panel", text(panel, "className"));
+        assertEquals("lsf-view panel panel-wide", text(wide, "className"));
+        assertEquals("BOX(o)", text(wide, "data-lsf-sid"));
+        assertEquals("lsf-view", text(host.props("x", null), "className")); // no class of its own: still marked
+    }
+
+    // ... and one a component lays out itself is left as it rendered it: its own class, and no name
+    public void testAHostTheComponentLaysOutIsLeftAsItIs() {
+        ReactRoot.Host host = new ReactRoot.PlainHost();
+        JavaScriptObject menu = host.props("Sale.sales", "menu-main");
+        assertEquals("menu-main", text(menu, "className"));
+        assertFalse(has(menu, "data-lsf-sid"));
+        assertFalse(has(host.props("Sale.sales", null), "className")); // no class given: none, not a null one
+    }
+
+    private static native String text(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
+    private static native boolean has(JavaScriptObject object, String name) /*-{ return name in object; }-*/;
 }

@@ -94,8 +94,8 @@ public class ReactContainerView extends ParkedContainerView {
             }
 
             @Override
-            public boolean marksHosts() {
-                return true; // a host here holds a view of the form, which the layout styles by its marks
+            public ReactRoot.Host getHost() {
+                return new ReactRoot.MarkedHost(); // a host here holds a view of the form, which the layout styles by its marks
             }
 
             // the entry a name keys: a property's where its name says - data.o.note -, any other component's descriptor

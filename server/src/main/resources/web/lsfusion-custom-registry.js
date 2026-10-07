@@ -140,21 +140,21 @@
         // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
         // useLsf(name[, { row, className }]) -> the props of a host, to spread onto an element the component ALREADY
-        // renders, so no placeholder node exists at all: the ref that mounts the lsf child into it, the host's marks
-        // and, while the child's entry says so, `hidden`.
+        // renders, so no placeholder node exists at all: the ref that mounts the lsf child into it, what the root dresses
+        // a host in, and, while the child's entry says so, `hidden`.
         // `name` is whatever the root it is mounted under names the thing being placed: for a form container, a
         // component's DESIGN identifier, or a property's name as the view has it - o.note, the path of its entry -; the
         // canonical name of an element for a navigator window.
         // pass `row` for an LSF grid property: the name is the property's, as a panel one's is - o.qty - and the row says
         // which of its per-row renderers, so the same name legitimately has one host per row. Pass the row object out of
         // the projected data (or its `objects`) - a key string cannot be resolved back to a row.
-        // The marks - the lsf-view class the layout styles a host by, and data-lsf-sid a stylesheet addresses it by -
-        // are props of the host's OWN, merged with the className the component gives it, and not something written into
-        // the DOM behind React's back: a className is React's, and the render that changes it rewrites the whole class
-        // attribute, which took every mark written there with it. So the component hands its class HERE, not to the
-        // element after the spread, where it would replace the merged one. Only a root whose owner marks its hosts has
-        // them - a form container, the forms window; the navigator's and the log's hosts are left as the component
-        // rendered them
+        // What a host is dressed in is the root's (its view's `host`, ReactRoot.Host): a form container's and the forms
+        // window's are marked as holding one of the platform's views - the lsf-view class the layout styles a host by,
+        // and data-lsf-sid a stylesheet addresses it by -, merged with the className the component gives it; the
+        // navigator's and the log's are left as the component rendered them. Props of the host's OWN, not something
+        // written into the DOM behind React's back: a className is React's, and the render that changes it rewrites the
+        // whole class attribute, which took every mark written there with it. So the component hands its class HERE,
+        // not to the element after the spread, where it would replace the merged one
         // While the entry the name keys in the root's data says `hidden` - an lsf child's entry: its SHOWIF, or a
         // container's above it - the host is `hidden` too, and stays: a child no host places is not read, SHOWIF and
         // all, so it would never come back. The root's view says which entry a name keys: a component's descriptor under
@@ -213,16 +213,14 @@
             // whenever its values change, but keeps its `objects`, which is the row's identity - its key alone is not:
             // rows of two groups may have one key, and a host handed another row with the same key has to be placed
             // again, if only to say the row is not its group's
-            // a host that names nothing places nothing, so it is not marked as holding anything either
-            var marked = !!(view && view.marks && !nameless);
-            var host = { ref: ref, className: marked ? (className ? 'lsf-view ' + className : 'lsf-view') : className };
-            if (marked)
-                host['data-lsf-sid'] = named;
+            // a host that names nothing places nothing, so it is dressed as holding nothing either: the component's class
+            var host = view && !nameless ? view.host(named, className) : { className: className };
+            host.ref = ref;
             if (hidden)
                 host.hidden = true;
             return host;
         };
-        // <Lsf name row className style/> is useLsf on a <div> of its own: the same props, the same marks
+        // <Lsf name row className style/> is useLsf on a <div> of its own: the same props, the same dress
         ns.Lsf = function (props) {
             var host = ns.useLsf(props.name, props);
             host.style = props.style;
