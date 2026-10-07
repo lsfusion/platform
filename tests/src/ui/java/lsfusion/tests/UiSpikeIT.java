@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -34,6 +35,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -63,6 +68,16 @@ public class UiSpikeIT {
     private static final List<String> rows = new ArrayList<>(); // iteration,step,millis or failed : every step of every run, for iterations.csv
     private static int iteration; // 0 while the stack starts
 
+    // a step that runs longer than this is caught in the act - see watch
+    private static final long SLOW_STEP = Long.getLong("ui.slowStep", 8_000);
+    private static final ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "ui-watchdog");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private static final List<String> slow = new ArrayList<>(); // the dumps the watchdog took, for the report
+    private static volatile boolean slowIteration; // keep the iteration's trace
+
     private static Process server, jetty;
     private static int httpPort, webPort;
     private static Playwright playwright;
@@ -72,6 +87,7 @@ public class UiSpikeIT {
     @BeforeClass
     public static void start() throws Exception {
         Files.createDirectories(UI.resolve("failures"));
+        Files.createDirectories(UI.resolve("slow"));
 
         int[] ports = freePorts(5);
         httpPort = ports[0];
@@ -104,7 +120,13 @@ public class UiSpikeIT {
                 "-Dapp.server=localhost", "-Dapp.port=" + rmiPort,
                 "-jar", UI.resolve("jetty-runner.jar").toString(), "--port", String.valueOf(webPort), System.getProperty("ui.war"))
                 .redirectErrorStream(true).redirectOutput(jettyLog.toFile()).start();
-        waitFor(() -> answers("http://localhost:" + webPort + "/"), jetty, jettyLog, "the web client did not start");
+        // jetty itself is up in some 15 s on the Jenkins box, the first answer came 24 s later
+        ScheduledFuture<?> watch = watch("000-web client start", 20_000);
+        try {
+            waitFor(() -> answers("http://localhost:" + webPort + "/"), jetty, jettyLog, "the web client did not start");
+        } finally {
+            watch.cancel(false);
+        }
         record("web client start", started);
 
         started = System.nanoTime();
@@ -142,6 +164,39 @@ public class UiSpikeIT {
         record("browser launch", started);
     }
 
+    // nothing in the logs tells what a stalled step waits for (on the Jenkins box some loads take 10-30 s instead of 4,
+    // and the first answer of the web client 24 s), so the watchdog takes thread dumps of the server and of jetty once
+    // the step has run for threshold ms, and every 5 s after while it lasts, up to 4 times ; the iteration keeps its trace
+    private static ScheduledFuture<?> watch(String name, long threshold) {
+        int[] count = {0};
+        return watchdog.scheduleAtFixedRate(() -> {
+            if (++count[0] > 4)
+                return;
+            slowIteration = true;
+            String file = "slow/" + name + "-" + count[0] + ".txt";
+            StringBuilder dumps = new StringBuilder();
+            for (Process process : Arrays.asList(server, jetty))
+                if (process != null)
+                    try {
+                        Process jcmd = new ProcessBuilder(Paths.get(System.getProperty("java.home"), "bin", "jcmd").toString(),
+                                String.valueOf(process.pid()), "Thread.print").redirectErrorStream(true).start();
+                        dumps.append("==== ").append(process == server ? "server" : "jetty").append(" at ").append(java.time.LocalTime.now()).append('\n')
+                                .append(new String(jcmd.getInputStream().readAllBytes(), StandardCharsets.UTF_8)).append('\n');
+                        jcmd.waitFor();
+                    } catch (Exception e) { // a task of the executor that throws is not run again
+                        dumps.append("==== ").append(e).append('\n');
+                    }
+            try {
+                Files.write(UI.resolve(file), dumps.toString().getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            synchronized (slow) {
+                slow.add(file);
+            }
+        }, threshold, 5_000, TimeUnit.MILLISECONDS);
+    }
+
     private static String docker(String... args) throws Exception {
         List<String> command = new ArrayList<>(Collections.singletonList("docker"));
         command.addAll(Arrays.asList(args));
@@ -154,6 +209,7 @@ public class UiSpikeIT {
 
     @AfterClass
     public static void stop() throws Exception {
+        watchdog.shutdownNow();
         if (browser != null)
             browser.close();
         if (playwright != null)
@@ -198,8 +254,10 @@ public class UiSpikeIT {
             String failed = null;
             int quantity = 100 + iteration; // under 1000 : the grid shows a thousands separator
             String answer = "answer " + iteration;
+            slowIteration = false;
             for (String step : Arrays.asList("load", "items", "edit", "tree", "dialog")) {
                 long started = System.nanoTime();
+                ScheduledFuture<?> watch = watch(String.format("%03d-%s", iteration, step), SLOW_STEP);
                 try {
                     switch (step) {
                         case "load": load(page); break;
@@ -222,10 +280,16 @@ public class UiSpikeIT {
                     if (trace)
                         context.tracing().stop(new Tracing.StopOptions().setPath(UI.resolve("failures/" + name + ".zip")));
                     break; // the steps after it start from where it should have left the page
+                } finally {
+                    watch.cancel(false);
                 }
             }
-            if (trace && failed == null)
-                context.tracing().stop();
+            if (trace && failed == null) {
+                if (slowIteration) // its network timings, beside the thread dumps the watchdog took
+                    context.tracing().stop(new Tracing.StopOptions().setPath(UI.resolve(String.format("slow/%03d.zip", iteration))));
+                else
+                    context.tracing().stop();
+            }
             context.close();
         }
         int failed = failures.values().stream().mapToInt(List::size).sum();
@@ -440,6 +504,10 @@ public class UiSpikeIT {
         }
         for (StringBuilder line : byIteration.values())
             report.append(line).append('\n');
+        synchronized (slow) {
+            for (String file : slow)
+                report.append("slow: target/ui/").append(file).append('\n');
+        }
         return report.toString();
     }
 }
