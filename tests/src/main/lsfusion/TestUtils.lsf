@@ -2,8 +2,9 @@ MODULE TestUtils;
 
 REQUIRE System;
 
-// the only way to make a test action fail : the message ends up in the http response the runner reports
-fail 'Fail' (STRING message) INTERNAL 'lsfusion.tests.FailAction' (STRING);
+// the only way to make a test action fail : the message ends up in the http response the runner reports. NULL: a message
+// names the values an assertion compared, so it is NULL when one of them is, and an INTERNAL action skips a NULL argument
+fail 'Fail' (STRING message) INTERNAL 'lsfusion.tests.FailAction' (STRING) NULL;
 
 assertTrue (BOOLEAN value, STRING message) {
     IF NOT value THEN
