@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.classes.data.GFileType;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -2006,10 +2007,14 @@ public class GReactFormData {
 
     // ... and one with a value, which the caller read - each field is read once, so the condition is what was read -,
     // on the property already resolved: the singular call needs the property first, as it merges by property. The
-    // value is the ONE field whose kind is not checked: whatever it holds is converted by the property's own FILTER
-    // type, so "anything" IS the contract here, unlike `compare` or the flags
+    // value is the ONE field whose kind is not checked here: it is converted by the property's own FILTER type, the
+    // way `filters` gives it - so a condition `filters` lists is taken back as it is. But for a file's: `filters` says
+    // a link to the file, which is not the file a condition compares with, so a view can take one off, not state one
     private GPropertyFilter readFilterCondition(String errorPrefix, GGroupObject group, JavaScriptObject condition,
                                                 GPropertyDraw property, JavaScriptObject value) {
+        if (property.getFilterBaseType().getDataType() instanceof GFileType)
+            throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' is a file: a condition on it has"
+                    + " a link to the file for its value, which is not the file, so it can be taken off, not stated");
         GCompare compare = readFilterCompare(errorPrefix, condition, property);
         boolean negation = readFlag(errorPrefix, condition, "negation");
         boolean or = readFlag(errorPrefix, condition, "or");

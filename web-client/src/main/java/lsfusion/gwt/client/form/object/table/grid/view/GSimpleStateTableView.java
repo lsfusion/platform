@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
@@ -181,8 +182,30 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
         if (type instanceof GADateType)
             return ((GADateType) type).fromJsDate((JsDate)value);
+        // a color and an interval go out as strings of their own (convertToJSValue: the value's toString), and come
+        // back as what they are - a string the server is handed for one is no color and no interval to it
+        if (type instanceof GColorType) {
+            String color = isString(value) ? toString(value) : null; // "#rrggbb" (ColorDTO)
+            if (color == null || !color.matches("#[0-9a-fA-F]{6}"))
+                throw new RuntimeException(notTakenBack(value, "a color", "'#rrggbb'"));
+            return PValue.getPValue(new ColorDTO(color.substring(1)));
+        }
+        if (type instanceof GIntervalType) {
+            String interval = isString(value) ? toString(value) : null; // "<from>.<to>" (GIntervalValue)
+            int dot = interval != null ? interval.indexOf('.') : -1;
+            try {
+                if (dot > 0)
+                    return PValue.getPValue(Long.parseLong(interval.substring(0, dot)), Long.parseLong(interval.substring(dot + 1)));
+            } catch (NumberFormatException e) {
+                // said below, as a string with no dot is
+            }
+            throw new RuntimeException(notTakenBack(value, "an interval", "'<from>.<to>', its bounds in milliseconds"));
+        }
 
         return PValue.getPValue(toString(value));
+    }
+    private static String notTakenBack(JavaScriptObject value, String what, String shape) {
+        return GwtClientUtils.jsonStringify(value) + " is not " + what + ": " + what + " is given in the shape it is projected in, " + shape;
     }
 
     // JS-VALUE STRATEGY SEAM (V1 server-projection; V2 client-typed). Switch point.

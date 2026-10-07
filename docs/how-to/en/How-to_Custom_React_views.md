@@ -80,12 +80,16 @@ A property's `value` is converted to a JS value depending on the property's clas
 | numeric classes | number |
 | user classes | number — the object's internal id |
 | date and time classes | `Date` |
+| interval classes | string `<from>.<to>` |
+| `COLOR` | string `#rrggbb` |
 | `JSON` | parsed JSON value |
 | file classes | string with a download link |
 | images | string with the image address or HTML |
 | other classes | string |
 
 Except for `BOOLEAN`, a `NULL` value is converted to `null`.
+
+An interval's bounds are milliseconds since 1970: a bound of an `INTERVAL[ZDATETIME]` is the moment itself, while the other interval classes keep their date and time as those of UTC — `new Date(from).getUTCDate()` is the day an `INTERVAL[DATE]` starts on. A value a view hands back — to a member's `change`, or as a condition's `value` — is read the way this table writes it, so a value taken from `data` goes back as it is — but for a file's: a link is not the file —, and a `COLOR` or an interval written any other way is refused.
 
 `list` contains only the read page, not all rows of the group. The view type of a group rendered by a React container remains the table, and the group is read page by page, but since the table itself is not displayed, the page size is not adjusted to the visible rows — the server default page size (50 objects) applies. For a view that shows all rows of the group — a calendar, a board, a map — specify the `PAGESIZE 0` option (read all objects) or an explicit page size in the [`OBJECTS`](../language/Object_blocks.md) block.
 
@@ -1152,8 +1156,9 @@ until they have explicit `EXTID`s.
 empty: the properties a condition can name are the group's, not the node's.
 
 The controller takes a condition in the same shape, so a projected condition that has a value can be handed back to
-it as it is. A condition with no `compare` is read with the property's `defaultCompare`. One on a `COLOR`, an interval
-or a file property is the exception: the controller reads its value as a string, which the server does not take.
+it as it is. A condition with no `compare` is read with the property's `defaultCompare`. One on a file property is the
+exception: its `value` is a link to the file, not the file a condition compares with, so the controller refuses one
+that has a value; one with none takes the conditions on that property off, as for any other.
 
 `controller.<group>.filters.change(condition)` — a member of the group where `filters` is — changes **one**
 condition and leaves the group's other conditions, and their order, alone: it takes the place of the FIRST condition

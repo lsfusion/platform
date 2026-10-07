@@ -9,6 +9,9 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GActionType;
+import lsfusion.gwt.client.classes.data.GCSVType;
+import lsfusion.gwt.client.classes.data.GColorType;
+import lsfusion.gwt.client.classes.data.GDateIntervalType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GStringType;
@@ -54,6 +57,7 @@ import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GValueElementClassReader;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
@@ -110,6 +114,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GGroupObjectValue chosen, changed; // what a member handed the form: the row its group's change(row) chose, and
                                            // the cell a property member changed
         final ArrayList<String> edits = new ArrayList<>(); // ... and every edit it was handed, in order
+        PValue changedTo; // ... and the value it changed that cell to
         final ArrayList<String> filtersCalls = new ArrayList<>(); // ... and the calls a filters member made, in order
         ArrayList<GPropertyFilter> stated; // ... and the last list of conditions it stated
 
@@ -154,6 +159,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); }
                 public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
                     changed = key;
+                    changedTo = value;
                     edits.add("cell " + property.integrationSID + "@" + key.toKeyString());
                 }
                 public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
@@ -591,7 +597,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static void put(GFormChanges changes, GPropertyReader reader, GGroupObjectValue key, Object value) {
         NativeHashMap<GGroupObjectValue, PValue> values = changes.properties.get(reader);
         if (values == null) { values = new NativeHashMap<>(); changes.properties.put(reader, values); }
-        values.put(key, value == null ? null : value instanceof Boolean ? PValue.getPValue((Boolean) value)
+        values.put(key, value == null ? null : value instanceof PValue ? (PValue) value : value instanceof Boolean ? PValue.getPValue((Boolean) value)
                 : value instanceof String ? PValue.getPValue((String) value) : PValue.getPValue((Integer) value));
     }
     private static GFormChanges drop(GPropertyDraw... properties) {
@@ -634,6 +640,10 @@ public class GReactFormDataTest extends GWTTestCase {
     // what a call through a state member is refused with, null where it is made
     private static native String refusedChange(JavaScriptObject member, JavaScriptObject argument) /*-{
         try { member.change(argument); return null; } catch (e) { return e.message; }
+    }-*/;
+    // a member's change(value, row) with a value as a view writes it, and the reason it is refused, if it is
+    private static native String refusedChange(JavaScriptObject member, String value, JavaScriptObject row) /*-{
+        try { member.change(value, row); return null; } catch (e) { return e.message; }
     }-*/;
     // a member of a view's controller, at a group (null: the empty group, the controller itself)
     private static JavaScriptObject member(GReactFormData.ContainerState state, String group, String name) {
@@ -2581,4 +2591,62 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native int countMatching(JavaScriptObject log, String part) /*-{
         return log.filter(function (message) { return message.indexOf(part) >= 0; }).length;
     }-*/;
+
+    // a color and an interval go out as strings of their own, and come back as what they are: a condition `filters`
+    // lists, handed back as it is, is the condition it was, and a member given a value in that shape changes the cell
+    // to it - one in another shape is refused, not sent as a string the server takes for neither. A file's condition
+    // says a link to the file, which is not the file: it can be taken off, not stated
+    public void testAValueComesBackAsItWentOut() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            GPropertyDraw tint = fixture.property(74, "tint", fixture.group, true, fixture.a);
+            tint.valueType = tint.externalChangeType = GColorType.instance;
+            GPropertyDraw period = fixture.property(75, "period", fixture.group, true, fixture.a);
+            period.valueType = period.externalChangeType = GDateIntervalType.instance;
+            fixture.property(76, "scan", fixture.group, true, fixture.a).valueType = new GCSVType();
+        });
+        GPropertyDraw tint = f.form.getPropertyDraw(f.group, "tint"), period = f.form.getPropertyDraw(f.group, "period");
+        PValue red = PValue.getPValue(new ColorDTO("ff0000")), year = PValue.getPValue(1000L, 2000L);
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(tint), f.group, GGroupObjectValue.EMPTY, red, GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(period), f.group, GGroupObjectValue.EMPTY, year, GCompare.EQUALS));
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        JavaScriptObject filters = field(f.node(), "filters");
+        assertEquals("#ff0000", text(at(filters, 0), "value"));
+        assertEquals("1000.2000", text(at(filters, 1), "value"));
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, filters); // handed back as it is
+        assertEquals(red, f.stated.get(0).value.value);
+        assertEquals(year, f.stated.get(1).value.value);
+        String refused = refusedChange(member, parse("{\"property\": \"tint\", \"value\": \"red\"}"));
+        assertTrue(refused, refused != null && refused.contains("is not a color"));
+        refused = refusedChange(member, parse("{\"property\": \"period\", \"value\": \"1000-2000\"}"));
+        assertTrue(refused, refused != null && refused.contains("is not an interval"));
+
+        // a cell: the value its member is given in the shape it is projected in
+        GFormChanges shown = new GFormChanges();
+        put(shown, tint, f.one, red);
+        put(shown, period, f.one, year);
+        f.apply(shown);
+        JavaScriptObject items = field(f.sa.controller, "items");
+        assertNull(refusedChange(field(items, "tint"), "#00FF00", f.row("1")));
+        assertEquals(PValue.getPValue(new ColorDTO("00FF00")), f.changedTo);
+        assertNull(refusedChange(field(items, "period"), "-5.3000", f.row("1"))); // a bound before 1970
+        assertEquals(PValue.getPValue(-5L, 3000L), f.changedTo);
+        refused = refusedChange(field(items, "tint"), "#0f0", f.row("1"));
+        assertTrue(refused, refused != null && refused.contains("is not a color"));
+
+        // a file's condition: what `filters` would say of its value is a link to the file (a link this test has no
+        // page to build), which is not the file - so a condition on it is not stated, alone or in a list
+        int calls = f.filtersCalls.size();
+        refused = refusedChange(member, parse("{\"property\": \"scan\", \"value\": \"files/scan.csv\"}"));
+        assertTrue(refused, refused != null && refused.contains("'scan' is a file"));
+        refused = refusedChange(member, parse("[{\"property\": \"tint\", \"value\": \"#ff0000\"},"
+                + " {\"property\": \"scan\", \"value\": \"files/scan.csv\"}]"));
+        assertTrue(refused, refused != null && refused.contains("condition 1: ") && refused.contains("'scan' is a file"));
+        assertEquals(calls, f.filtersCalls.size());
+        callChange(member, parse("{\"property\": \"scan\"}")); // ... and taken off, as any other property's is
+        assertEquals("changeFilters items tint= period=", f.filtersCalls.get(calls));
+    }
 }
