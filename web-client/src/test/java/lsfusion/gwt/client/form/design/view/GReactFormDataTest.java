@@ -2304,6 +2304,16 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(Arrays.asList(" name="), table.changedFilters); // the group's list, sent through the form
     }
 
+    // the row a per-row <Lsf> is given has to be a row of the property's group, read as a group's change(row) reads it
+    // (GGroupObject.getRowKey): a tree's row of a group below passes, narrowed to the path down to the group, while a
+    // row of a group above names no row of the one below
+    public void testATreeRowNarrowsUpToAGroupButNotDown() {
+        TreeFixture f = new TreeFixture();
+        assertEquals(f.c1, f.cat.getRowKey(f.i15)); // an item under category 1: category 1's row
+        assertEquals(f.i15, f.item.getRowKey(f.i15)); // the item's own
+        assertNull(f.item.getRowKey(f.c1)); // a category's row is no item's
+    }
+
     private static GPropertyDraw byName(GForm form, String sID) {
         for (GPropertyDraw property : form.propertyDraws)
             if (sID.equals(property.sID))

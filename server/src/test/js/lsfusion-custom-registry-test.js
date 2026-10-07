@@ -237,6 +237,11 @@ console.log('Lsf');
     const refB = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleB } }).ref);
     check('the same row rebuilt keeps its host placed', refA === refA2);
     check("another group's row with the same key is placed again", refA2 !== refB);
+    // ... and the row's `objects` handle names the host the row itself does: `row={row.objects}` is placed as
+    // `row={row}` is, the hook keying on the handle either way
+    const refC = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA } }).ref);
+    const refH = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: handleA }).ref);
+    check('row={row.objects} keeps the host row={row} placed', refC === refH);
 
     // a second host for the same name while the first still holds it: the hook itself does not judge that - it hands
     // both to the platform, which is where the "first one keeps it" rule lives
