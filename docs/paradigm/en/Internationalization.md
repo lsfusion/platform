@@ -37,7 +37,7 @@ Otherwise, the current locale is determined by the values of the following prope
 | ------------------------------------ | ---------------------------------------------- |
 | Language                             | `Authentication.language[CustomUser]`          |
 | Country                              | `Authentication.country[CustomUser]`           |
-| Timezone                             | `Authentication.timezone[CustomUser]`          |
+| Timezone                             | `Authentication.timeZone[CustomUser]`          |
 | Starting year of the 100-year period | `Authentication.twoDigitYearStart[CustomUser]` |
 
 In the current platform implementation, the above properties allow you both to use the locale parameters of the user's operating system and to set these parameters explicitly for specific users, or, for example, to use the server locale for all users (this is the default behavior).

@@ -27,6 +27,8 @@ title: 'Time'
 
 ### Преобразование
 
+[Оператор преобразования типа](Type_conversion.md) позволяет получить `DATE`, `DATETIME` или `TIME` из `ZDATETIME`.
+
 | Свойство                                          | Что делает                                                                                                                                                  |
 |---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `toDate[DATETIME]` / `toTime[DATETIME]`           | принимают `DATETIME`, возвращают его дату как `DATE` / его время как `TIME`; встроенные приведения класса `DATE(...)` / `TIME(...)`                          |
@@ -34,7 +36,7 @@ title: 'Time'
 | `toDateTime[DATE, TIME]`                          | собирает `DATETIME` из `DATE` и `TIME`; PG `$1 + $2` (дата плюс время)                                                                                       |
 | `toSeconds[TIME]`                                 | принимает `TIME`, возвращает число секунд от полуночи как `INTEGER`; PG `extract(epoch from $1)`                                                             |
 | `toTime[INTEGER]`                                 | принимает счёт секунд, возвращает `TIME` через столько секунд после полуночи; PG `TIME '00:00' + INTERVAL '1 second' * $1` (счёт от 86400 и больше, а также отрицательный, заворачивается по 24-часовому циферблату) |
-| `toDateTime[LONG]` / `toZDateTime[LONG]`          | принимают Unix-время в секундах (несмотря на имя параметра `millis` в исходнике), возвращают `DATETIME` / `ZDATETIME`; PG `to_timestamp(CAST($1 AS NUMERIC), 'UTC')::timestamp` / `to_timestamp(CAST($1 AS NUMERIC))` |
+| `toZDateTime[LONG]`                               | принимает Unix-время в секундах (несмотря на имя параметра `millis` в исходнике), возвращает `ZDATETIME`; PG `to_timestamp(CAST($1 AS NUMERIC))`                                                   |
 | `toDateFormat[STRING, STRING]`                    | разбирает `DATE` из первой строки по шаблону формата во второй; PG `to_date($1, $2)`                                                                         |
 | `toDateTimeFormat[STRING, STRING]`                | разбирает `DATETIME` из первой строки по шаблону формата во второй; PG `to_timestamp($1, $2)`                                                                |
 | `toDateISO[DATE]`                                 | форматирует `DATE` как строку `'YYYY-MM-DD'`; PG `to_char($1, 'YYYY-MM-DD')`                                                                                 |

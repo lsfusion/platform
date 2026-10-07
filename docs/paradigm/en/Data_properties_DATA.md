@@ -3,7 +3,7 @@ slug: "/Data_properties_DATA"
 title: 'Data properties (DATA)'
 ---
 
-*Data property* is a [property](Properties.md) which value is stored in the database and may change through the execution of the [corresponding](Property_change_CHANGE.md) action. Each parameter and the value of a data property must belong to a certain specified [class](Classes.md). If a parameter does not belong to the specified class or is `NULL`, then the property value will return `NULL`. 
+*Data property* is a [property](Properties.md) which value is stored in the database and may change through the execution of the [corresponding](Property_change_CHANGE.md) action. Each parameter and the value of a data property must belong to a certain specified [class](Classes.md). If a parameter does not belong to the specified class or is `NULL`, then the property value will return `NULL`. When an object is [deleted or changes its class](Class_change_CHANGECLASS_DELETE.md), the value of a data property is reset to `NULL` if the object is an argument or the value of that property and no longer belongs to the corresponding declared class. 
 
 ### Local data properties {#local}
 

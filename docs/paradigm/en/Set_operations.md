@@ -23,6 +23,8 @@ The table below shows the currently supported types of aggregate functions:
 |`CONCAT`               |`NULL`       |separator, operand   |result = CONCAT separator, result, operand|result|-|string|
 |`LAST` / `PREV`        |`NULL`       |where, operand       |result = IF where THEN operand ELSE result|result|-|any|
 
+For string concatenation, an object collection takes part in the aggregation only when both its operand and its separator are not `NULL`.
+
 From the perspective of determining the set of object collections and the result display method, four main operators for working with sets can be distinguished:
 
 -   [Group (`GROUP`)](Grouping_GROUP.md) — divides the object collections into groups and computes one result per group.

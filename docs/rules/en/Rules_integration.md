@@ -166,6 +166,12 @@ title: 'Rules: integration'
     a `LOCAL` that an import form uses or several related
     actions share.
 
+15. An imported flag whose absence must be represented by `NULL`
+    MUST be declared with `NULL` in `FIELDS`: otherwise a missing
+    value is replaced with the
+    [default value](../paradigm/Built-in_classes.md#defaultvalue)
+    of the class (`0` for a number).
+
 ## Data export (EXPORT)
 
 ### Choosing the export source
