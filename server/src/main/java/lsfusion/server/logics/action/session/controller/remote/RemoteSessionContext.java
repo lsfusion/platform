@@ -55,8 +55,9 @@ public class RemoteSessionContext extends RemoteConnectionContext {
 
     // an action called through the program interface has no client to show a form to, so opening one fails (see
     // AbstractContext) - unless openFormsWithoutClient is set, as the platform's tests do: then SHOW ... NOWAIT creates the
-    // form, which runs its ON INIT, and requestFormUserInteraction closes it right away, the way a form whose client has
-    // gone is closed, with no ON CLOSE
+    // form, which runs its ON INIT, and requestFormUserInteraction reads it once, as a client gets its first changes -
+    // the events that reading fires run (ON ORDER, ON FILTER, ON SELECT, an object's ON CHANGE) -, and closes it right
+    // away, the way a form whose client has gone is closed, with no ON CLOSE
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
         if(!Settings.get().isOpenFormsWithoutClient())
@@ -72,7 +73,12 @@ public class RemoteSessionContext extends RemoteConnectionContext {
     public void requestFormUserInteraction(FormInstance formInstance, FormOptions formOptions, ExecutionStack stack) throws SQLException, SQLHandledException {
         if(!Settings.get().isOpenFormsWithoutClient())
             super.requestFormUserInteraction(formInstance, formOptions, stack);
-        else
-            formInstance.close();
+        else {
+            try {
+                formInstance.getChanges(stack, formInstance.context);
+            } finally { // a handler of the reading may fail: the form is closed all the same
+                formInstance.close();
+            }
+        }
     }
 }
