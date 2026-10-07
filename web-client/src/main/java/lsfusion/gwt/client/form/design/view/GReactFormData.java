@@ -47,7 +47,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 
 // The projection of a form's react containers. Each container owns its state (ContainerState): its nodes and its
 // published snapshot - what its view is given - and its controller, whose members mirror that snapshot's
-// entries - what the view changes them through. What React has of each group, property and component - its rows node,
+// entries - what the view changes them through. What React has of each group, property and component - its rows' part,
 // its entry, its descriptor - is the form's controller of it (GFormController.initializeOwnerControllers): made here
 // once, from the platform's controller of it, and handed all the form sends for it, which it keeps itself: the values
 // of the readers it draws from (ReaderValues), its rows, whether the form shows it. The projection keeps the
@@ -79,7 +79,7 @@ public class GReactFormData {
     }
 
     // WHAT A MEMBER DOES: the form's own edit, the one a user makes. The members are made here, beside the entries they
-    // mirror, and each holds the state it stands for (ReactPropertyEntry, RowsGroupNode; the batch, ContainerState): a
+    // mirror, and each holds the state it stands for (ReactPropertyEntry, a GroupPart; the batch, ContainerState): a
     // call through one reads what it names - the row, the value - from that state, and hands the form the edit
     public interface Verbs {
         // the current object of a group whose rows a view draws: one of those rows
@@ -116,17 +116,16 @@ public class GReactFormData {
 
     // ===== THE FORM'S CONTROLLER OF EACH OWNER, made once, when every react container is there, from the platform's
     // controller of it (GFormController.initializeOwnerControllers): placement is design data. The groups first, the
-    // nodes the rows are drawn on - a list property's column is on one - then the properties, in the form's order, the
-    // order of the names a node carries, then the components
-    // ... of a group: the node its rows are drawn on, where React draws them; else the platform's
+    // parts of each - its rows', a list property's column going with them - then the properties, in the form's order,
+    // the order of the names a node carries, then the components
+    // ... of a group: its rows' part, on its node where React draws them; else the platform's
     public GGroupController createGroupController(GGroupObject group, GAbstractTableController lsf) {
         GContainer rows = rowsScope(group);
-        return rows != null ? containers.get(rows).createRowsGroupNode(group) : lsf;
+        return rows != null ? containers.get(rows).createRowsPart(group) : lsf;
     }
-    // ... and what shows its USER ORDERS: their part, a part of the group of their own, on the node its rows are drawn
-    // on - a sorting being the order they are drawn in, and a group's design having no box of its sortings to place
-    // them by -, else the group's controller, whose header shows them. Made right after the group's controller, as its
-    // rows' node comes first (createRowsGroupNode)
+    // ... and what shows its USER ORDERS: their part, a part of the group of their own, on its node where its rows are
+    // drawn - a sorting being the order they are drawn in, and a group's design having no box of its sortings to place
+    // them by -, else the group's controller, whose header shows them
     public GUserOrdersController createOrdersController(GGroupObject group, GGroupController groupController) {
         GContainer orders = rowsScope(group);
         if (orders == null)
@@ -135,7 +134,7 @@ public class GReactFormData {
     }
     // ... and what shows its USER FILTERS: their part, a part of the group of their own, where what its FILTERS box
     // holds is drawn - the box being a producer whose part is its content (FormView.getPartProducers) -, else the
-    // group's controller. Made after the group's controller, as its rows' node comes first (createRowsGroupNode)
+    // group's controller
     public GUserFiltersController createFiltersController(GGroupObject group, GGroupController groupController) {
         GContainer filtersBox = group.getFiltersContainer();
         GContainer filters = filtersBox != null ? filtersBox.getChildrenReactPlace() : null;
@@ -155,8 +154,8 @@ public class GReactFormData {
         if (!hasEntry(property)) // ... and where it has no entry, it brings no node either
             return noEntry(property, lsf);
         ContainerState state = containers.get(scope);
-        if (property.isList) { // its content is its column, on the node its group's rows are drawn on
-            RowsGroupNode rows = state.rowsGroupNodes.get(property.groupObject);
+        if (property.isList) { // its content is its column, with its group's rows, on their node
+            RowsPart rows = state.rowsParts.get(property.groupObject);
             return property.isLsfView() ? new LsfColumnPropertyEntry(rows, property, lsf) : new ReactColumnPropertyEntry(rows, property);
         }
         // a panel property is a part of its group: on the group's node here, the empty group's on the top level
@@ -199,17 +198,16 @@ public class GReactFormData {
         return component.sID == null && !component.isLsfView() && placed(component) != null;
     }
     // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GGridPanelController): a group's lsf list properties are drawn per
-    // row only where React draws the group's rows (FormView.checkLsfListView), so what they follow is the node the rows
-    // are drawn on
+    // row only where React draws the group's rows (FormView.checkLsfListView), so what they follow is the rows' part
     public interface Rows {
-        // its rows as the view has them, its own add or remove included - the node's own list, which it replaces and
+        // its rows as the view has them, its own add or remove included - the part's own list, which it replaces and
         // never changes: a list handed out keeps saying what it said
         ArrayList<GGroupObjectValue> getRows();
     }
     // ... of a group whose rows React draws, handed out once, while the form is built: placement is asked here, and
     // then never again
     public Rows getRows(GGroupObject group) {
-        return containers.get(rowsScope(group)).rowsGroupNodes.get(group);
+        return containers.get(rowsScope(group)).rowsParts.get(group);
     }
     // ... and then what the nodes carry of it all, once: a group's rows are there from the start, none of them yet; the
     // names every node carries; the members that mirror its entries
@@ -218,7 +216,7 @@ public class GReactFormData {
     }
 
     // THE VALUES OF AN OWNER'S READERS, as the server last sent them, with the client's own on top - kept by the owner
-    // that draws from them: an entry its own, the node a group's rows are drawn on the group's
+    // that draws from them: an entry its own, a group's rows' part the group's
     private static final class ReaderValues {
         private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
 
@@ -328,10 +326,10 @@ public class GReactFormData {
     public final class ContainerState {
         final GContainer scope;
         final Consumer<JavaScriptObject> publish;
-        // each group's node here, of whichever kind; and those its ROWS are drawn on, as their kind - what a list
-        // property's column is carried on, and what answers for an lsf property drawn per row (createRowsGroupNode)
+        // each group's node here; and the ROWS of those whose rows are drawn here, as their kind - what a list
+        // property's column goes with, and what answers for an lsf property drawn per row (createRowsPart)
         final NativeSIDMap<GGroupObject, GroupNode> nodes = new NativeSIDMap<>();
-        final NativeSIDMap<GGroupObject, RowsGroupNode> rowsGroupNodes = new NativeSIDMap<>();
+        final NativeSIDMap<GGroupObject, RowsPart> rowsParts = new NativeSIDMap<>();
         final TopNode top; // the empty group's node: the container's top level, the descriptors' as well
         JavaScriptObject data = newObject();
         JavaScriptObject draft;
@@ -355,14 +353,14 @@ public class GReactFormData {
             }
             return draft;
         }
-        // ... or only its commit, which may write or not: in the batch, nothing copied yet (TreeRowsGroupNode.touch)
+        // ... or only its commit, which may write or not: in the batch, nothing copied yet (TreeRowsPart.touch)
         void enlist() {
             pending.put(scope, this);
         }
         // the draft becomes the data - what its rows state about each other placed in it first, from the completed batch
-        // (RowsGroupNode.place)
+        // (RowsPart.place)
         void commit() {
-            rowsGroupNodes.foreachValue(RowsGroupNode::place);
+            rowsParts.foreachValue(RowsPart::place);
             if (draft != null) {
                 data = draft;
                 draft = null;
@@ -377,29 +375,26 @@ public class GReactFormData {
             return nodeData != null ? getOwnField(nodeData, property.integrationSID) : null;
         }
 
-        // the node where a part of the group is drawn here, made the first time it is asked for: a panel node, unless
-        // the group's rows are drawn here, whose node is there already (createRowsGroupNode: the groups come first)
+        // the group's node here, where its parts and entries drawn here go, made the first time it is asked for
         GroupNode getOrCreateGroupNode(GGroupObject group) {
             GroupNode node = nodes.get(group);
             if (node == null)
-                nodes.put(group, node = new PanelGroupNode(this, group));
+                nodes.put(group, node = new GroupNode(this, group));
             return node;
         }
-        // ... the one the group's ROWS are drawn on, made before any other part of the group is placed
-        // (createGroupController)
-        RowsGroupNode createRowsGroupNode(GGroupObject group) {
-            assert nodes.get(group) == null;
-            RowsGroupNode node = group.isInTree() // its kind, chosen here and once: a grid's rows, or a tree's
-                    ? new TreeRowsGroupNode(this, group) : new GridRowsGroupNode(this, group);
-            nodes.put(group, node);
-            rowsGroupNodes.put(group, node);
-            return node;
+        // ... and the group's ROWS, a part of it on that node (createGroupController)
+        RowsPart createRowsPart(GGroupObject group) {
+            GroupNode node = getOrCreateGroupNode(group);
+            RowsPart rows = group.isInTree() // its kind, chosen here and once: a grid's rows, or a tree's
+                    ? new TreeRowsPart(node) : new GridRowsPart(node);
+            rowsParts.put(group, rows);
+            return rows;
         }
         Node nodeOf(GGroupObject group) {
             return group == null ? top : nodes.get(group);
         }
-        // what each node sets out once - a rows node its rows, none of them yet, and every node the names it carries
-        // and the members that mirror its entries: they are design data, as the entries are. The groups come in the
+        // what each node sets out once - what each part of it writes, its rows none of them yet, the names it carries
+        // and the members of its parts and entries: they are design data, as the entries are. The groups come in the
         // form's order, then the empty group's members, on the controller itself
         void initialize() {
             for (GGroupObject group : form.groupObjects) {
@@ -418,17 +413,17 @@ public class GReactFormData {
         }
         // the lsf list property whose per-row renderers an <Lsf> places, named as a panel property is - its group, then
         // its integration name, o.qty, the path of its column entry -, of a group whose rows this container draws:
-        // asked of the nodes the rows are drawn on, not of the container's children, such a property being no child of
-        // it (FormView.checkLsfListView). The row an <Lsf> gives says which renderer, and has to be a row of that group
+        // asked of the rows' parts, not of the container's children, such a property being no child of it
+        // (FormView.checkLsfListView). The row an <Lsf> gives says which renderer, and has to be a row of that group
         public GPropertyDraw getRowLsfProperty(String name) {
             int dot = name.lastIndexOf('.');
             if (dot < 0) // a grid property always has a group
                 return null;
             String groupSID = name.substring(0, dot);
             for (GGroupObject group : form.groupObjects) {
-                RowsGroupNode node = rowsGroupNodes.get(group);
-                if (node != null && group.getSID().equals(groupSID))
-                    return node.getRowLsfProperty(name.substring(dot + 1));
+                RowsPart rows = rowsParts.get(group);
+                if (rows != null && group.getSID().equals(groupSID))
+                    return rows.getRowLsfProperty(name.substring(dot + 1));
             }
             return null;
         }
@@ -579,12 +574,11 @@ public class GReactFormData {
         }
     }
     // any other group's node: data.<group> - its OWN field: a plain object answers for Object.prototype's names before
-    // any node is written under one - and its member controller.<group>
-    private abstract class GroupNode extends Node {
+    // any node is written under one - and its member controller.<group>: the entries of the group's properties it
+    // carries by name, and the parts of the group placed on it (GroupPart), each writing its own there
+    private final class GroupNode extends Node {
         final GGroupObject group;
-        // the parts of the group placed on this node beside its own - its sortings', its FILTERS box's -, whose members
-        // go beside the group's (fillController)
-        final ArrayList<GroupPart> parts = new ArrayList<>();
+        final ArrayList<GroupPart> parts = new ArrayList<>(); // in the order they are placed
         final NativeHashMap<String, Boolean> unnameable = new NativeHashMap<>(); // reported already (reportUnnameable)
 
         GroupNode(ContainerState state, GGroupObject group) {
@@ -615,25 +609,26 @@ public class GReactFormData {
                 push(names, propertyEntry.property.integrationSID);
             setField(edit(), "properties", names);
         }
-        // controller.<group>: its member, and on it the members of the entries it carries
+        // controller.<group>: its member, and on it the members of its parts and of the entries it carries
         void fillController() {
-            JavaScriptObject member = makeMember();
+            JavaScriptObject member = newObject();
             setField(state.controller, group.getSID(), member);
-            putPropertyMembers(member);
-            for (GroupPart part : parts) // ... and the members of the parts placed on it
+            for (GroupPart part : parts)
                 part.putMember(member);
+            putPropertyMembers(member);
         }
-        // the group's own state, named the way data.<group> names it
-        abstract JavaScriptObject makeMember();
-        // what it sets out once: the names of its entries in `data`, the members that mirror them on the controller
+        // what it sets out once: what its parts write - its rows, none of them yet -, the names of its entries in
+        // `data`, the members on the controller
         void initialize() {
+            for (GroupPart part : parts)
+                part.initialize();
             fillDataProperties();
             fillController();
         }
         // a property one of the group's lists leaves out, as the projection does not name it there - for the reason
         // given: reported once per list and property
         void reportUnnameable(GPropertyDraw property, String field, String what, String why) {
-            String name = property != null ? property.sID : "?";
+            String name = property.sID;
             String key = field + ":" + name;
             if (unnameable.get(key) == null) {
                 unnameable.put(key, Boolean.TRUE);
@@ -642,18 +637,9 @@ public class GReactFormData {
             }
         }
     }
-    // ... where the group's rows are not drawn: its panel properties, whose members its member holds, and its user
-    // filters
-    private final class PanelGroupNode extends GroupNode {
-        PanelGroupNode(ContainerState state, GGroupObject group) {
-            super(state, group);
-        }
-        JavaScriptObject makeMember() {
-            return newObject();
-        }
-    }
-    // a part of a group placed on one of its nodes beside the node's own, its member going into the group's member
-    // there once the node has made it (GroupNode.fillController)
+    // a PART of a group - its rows, its sortings, its user filters -, placed on the group's node in the container where
+    // its component is: its state, what it writes on the node, and its member, which goes on the group's member there
+    // (GroupNode.fillController). It is the form's controller of what it shows
     private abstract class GroupPart {
         final GroupNode node;
 
@@ -661,6 +647,9 @@ public class GReactFormData {
             this.node = node;
             node.parts.add(this);
         }
+        // what it writes, set out once - there from the start -, when every part and entry of the form is made
+        abstract void initialize();
+        // its member, on the group's member
         abstract void putMember(JavaScriptObject groupMember);
     }
     // a group's USER ORDERS where React draws them: a part of the group of their own, as if a group's design had a box
@@ -674,7 +663,11 @@ public class GReactFormData {
 
         OrdersPart(GroupNode node) {
             super(node);
-            replaceOrders(); // always there - empty while the group is sorted by nothing
+        }
+        // `orders`, always there - empty while the group is sorted by nothing
+        @Override
+        void initialize() {
+            replaceOrders();
         }
         // the group's sortings as the form has them: its own ORDERS in the first changes, then every list the server
         // reports - an ORDER action's too -, handed over only when it is another one
@@ -796,7 +789,11 @@ public class GReactFormData {
 
         FiltersPart(GroupNode node) {
             super(node);
-            setField(node.edit(), "filters", emptyArray()); // always there - empty while the group is unfiltered
+        }
+        // `filters`, always there - empty while the group is unfiltered
+        @Override
+        void initialize() {
+            setField(node.edit(), "filters", emptyArray());
         }
         // the group's list as the form has it, whoever changed it - the server, or the form sending it: a view shows
         // it either way
@@ -885,12 +882,12 @@ public class GReactFormData {
         }
     }
 
-    // the node a group's ROWS are drawn on: the list, where each row sits in it, which of them is current; its member's
-    // change(row), a current object being chosen among them; and the group's own readers, its row attributes and its
-    // group attributes - React's alone. Whether the component drawing the rows is shown is that component's descriptor,
-    // as anything else's is. It is the group's controller too, as a grid's controller is where the platform draws the
-    // rows
-    private abstract class RowsGroupNode extends GroupNode implements GGroupController, Rows {
+    // a group's ROWS where React draws them: a part of the group, on its node where the component drawing them is -
+    // the list, where each row sits in it, which of them is current; its member's change(row), a current object being
+    // chosen among them; and the group's own readers, its row attributes and its group attributes - React's alone.
+    // Whether the component drawing the rows is shown is that component's descriptor, as anything else's is. It is the
+    // group's controller too, as a grid's controller is where the platform draws the rows
+    private abstract class RowsPart extends GroupPart implements GGroupController, Rows {
         // as the server sends them, with a view's own add/remove on top - none before the first delivery: its own list
         // from the start, which it replaces and never changes
         ArrayList<GGroupObjectValue> rows = new ArrayList<>();
@@ -900,28 +897,30 @@ public class GReactFormData {
         // what each row carries of the group's own readers: its colors, its selection
         final GPropertyReader[] rowReaders;
 
-        RowsGroupNode(ContainerState state, GGroupObject group) {
-            super(state, group);
+        RowsPart(GroupNode node) {
+            super(node);
             ArrayList<GPropertyReader> rowReaders = new ArrayList<>();
-            for (GGroupObjectPropertyReader reader : group.getPresentationReaders())
+            for (GGroupObjectPropertyReader reader : node.group.getPresentationReaders())
                 if (reader != null && reader.getAttributeScope() == GGroupAttributeScope.ROW)
                     rowReaders.add(reader);
             this.rowReaders = rowReaders.toArray(new GPropertyReader[0]);
         }
-        JavaScriptObject makeMember() {
-            return makeRowsMember(this, group.getSID());
-        }
-        // ... its rows first, none of them yet
+        // its rows, none of them yet
+        @Override
         void initialize() {
             replaceRows();
-            super.initialize();
+        }
+        // its member, the group's own: change(row)
+        @Override
+        void putMember(JavaScriptObject groupMember) {
+            addRowsVerbs(this, groupMember, node.group.getSID());
         }
         // what its rows state about each other, written once the batch is complete (ContainerState.commit)
         abstract void place();
         // the lsf list property whose per-row renderers go into the rows drawn here, by its integration name
         GPropertyDraw getRowLsfProperty(String integrationSID) {
             for (GPropertyDraw property : form.propertyDraws)
-                if (property.groupObject == group && property.isLsfViewPerRow() && integrationSID.equals(property.integrationSID))
+                if (property.groupObject == node.group && property.isLsfViewPerRow() && integrationSID.equals(property.integrationSID))
                     return property;
             return null;
         }
@@ -943,13 +942,13 @@ public class GReactFormData {
         public void changeCurrentKey(GGroupObjectValue currentKey) {
             setCurrentObject(currentKey);
         }
-        // the group's sortings: their part on this node shows them (createOrdersController) - the form tells it, never
-        // this node
+        // the group's sortings: their part, on this part's node, shows them (createOrdersController) - the form tells
+        // it, never this part
         public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         }
         public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         }
-        // the group's user filters, where this node is what shows them - no view draws the FILTERS box, and there is no
+        // the group's user filters, where this part is what shows them - no view draws the FILTERS box, and there is no
         // filter panel beside the rows React draws: none (createFiltersController)
         public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
         }
@@ -978,7 +977,7 @@ public class GReactFormData {
             Integer position = currentKey != null ? positions.get(currentKey) : null;
             return position != null ? position : -1;
         }
-        // the rows as the view has them, its own add or remove included - the node's own list, which is replaced and
+        // the rows as the view has them, its own add or remove included - the part's own list, which is replaced and
         // never changed (setRows)
         public ArrayList<GGroupObjectValue> getRows() {
             return rows;
@@ -1002,7 +1001,7 @@ public class GReactFormData {
             rowChanged(key);
         }
         void attributeChanged(GPropertyReader reader) {
-            replaceAttribute(edit(), reader, values.get(reader, GGroupObjectValue.EMPTY));
+            replaceAttribute(node.edit(), reader, values.get(reader, GGroupObjectValue.EMPTY));
         }
         void rowChanged(GGroupObjectValue key) {
             if (key != null) {
@@ -1015,10 +1014,10 @@ public class GReactFormData {
             Integer position = positions.get(key);
             if (position == null)
                 return null; // values can arrive before their row, or outside the current page
-            JavaScriptObject current = current();
+            JavaScriptObject current = node.current();
             JavaScriptObject byKey = field(current, "byKey");
             JavaScriptObject row = field(byKey, key.toKeyString());
-            JavaScriptObject original = published();
+            JavaScriptObject original = node.published();
             // Identity tells whether this object still belongs to the published snapshot. A copied or newly
             // inserted row is already writable, including after a reorder within the same batch.
             if (row == field(field(original, "byKey"), key.toKeyString())) {
@@ -1026,8 +1025,8 @@ public class GReactFormData {
                 if (list == field(original, "list")) {
                     list = copyArray(list);
                     byKey = copyKeepingPrototype(byKey);
-                    setField(edit(), "list", list);
-                    setField(edit(), "byKey", byKey);
+                    setField(node.edit(), "list", list);
+                    setField(node.edit(), "byKey", byKey);
                 }
                 row = copyKeepingPrototype(row);
                 setField(byKey, key.toKeyString(), row);
@@ -1036,7 +1035,7 @@ public class GReactFormData {
             return row;
         }
         void replaceRows() {
-            JavaScriptObject previous = field(current(), "byKey");
+            JavaScriptObject previous = field(node.current(), "byKey");
             JavaScriptObject list = emptyArray();
             JavaScriptObject byKey = newBareObject();
             JavaScriptObject keys = emptyArray();
@@ -1049,7 +1048,7 @@ public class GReactFormData {
                     GGroupObjectValue.registerRow(row, key);
                     fillRowAttributes(row, key);
                     // the node holds panel properties and lsf columns too
-                    for (PropertyEntry propertyEntry : properties)
+                    for (PropertyEntry propertyEntry : node.properties)
                         propertyEntry.fillRow(row, key);
                 }
                 positions.put(key, position++);
@@ -1057,9 +1056,9 @@ public class GReactFormData {
                 push(list, row);
                 push(keys, key.toKeyString());
             }
-            setField(edit(), "list", list);
-            setField(edit(), "byKey", byKey);
-            setField(edit(), "keys", keys);
+            setField(node.edit(), "list", list);
+            setField(node.edit(), "byKey", byKey);
+            setField(node.edit(), "keys", keys);
         }
         // a row's own attributes: whether it is the current one, and what the group's readers say of it
         void fillRowAttributes(JavaScriptObject row, GGroupObjectValue key) {
@@ -1070,7 +1069,7 @@ public class GReactFormData {
 
         // ===== a call through its member: change(row), the current object chosen among the rows drawn here
         void change(String surface, JavaScriptObject objectOrKey) {
-            verbs.changeCurrentObject(group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
+            verbs.changeCurrentObject(node.group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
         // the row of THIS group a call names (resolveRow), narrowed by the group's own rule - which both checks and
         // cuts. A key that is not this group's row at all answers null: it would otherwise set the objects it does
@@ -1082,9 +1081,9 @@ public class GReactFormData {
         // no row of this group is found by
         GGroupObjectValue resolveGroupRow(String errorPrefix, JavaScriptObject objectOrKey) {
             GGroupObjectValue key = resolveRow(errorPrefix, objectOrKey);
-            GGroupObjectValue rowKey = key.isEmpty() ? null : group.getRowKey(key);
+            GGroupObjectValue rowKey = key.isEmpty() ? null : node.group.getRowKey(key);
             if (rowKey == null)
-                throw new RuntimeException(errorPrefix + "that row is not a row of '" + group.getSID() + "'");
+                throw new RuntimeException(errorPrefix + "that row is not a row of '" + node.group.getSID() + "'");
             return rowKey;
         }
         // a row of this group, named however the view has it: the row, its `objects` handle, or the key the projection
@@ -1092,18 +1091,18 @@ public class GReactFormData {
         GGroupObjectValue resolveRow(String errorPrefix, JavaScriptObject objectOrKey) {
             GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey);
             if (key == null)
-                key = GGroupObjectValue.resolveObject(keyedRow(field(current(), "byKey"), objectOrKey));
+                key = GGroupObjectValue.resolveObject(keyedRow(field(node.current(), "byKey"), objectOrKey));
             if (key == null)
-                throw new RuntimeException(errorPrefix + "expects a row of '" + group.getSID() + "', its objects handle, or its key;"
+                throw new RuntimeException(errorPrefix + "expects a row of '" + node.group.getSID() + "', its objects handle, or its key;"
                         + " that is none of them, or names no row the group has now");
             return key;
         }
     }
 
     // ... of a GRID: its rows and nothing else
-    private final class GridRowsGroupNode extends RowsGroupNode {
-        GridRowsGroupNode(ContainerState state, GGroupObject group) {
-            super(state, group);
+    private final class GridRowsPart extends RowsPart {
+        GridRowsPart(GroupNode node) {
+            super(node);
         }
         // a grid's rows state nothing about each other
         void place() {
@@ -1116,10 +1115,10 @@ public class GReactFormData {
     }
     // ... of a group of a TREE: its rows say where they hang in it, from the hierarchy sent beside them. A node's
     // children are rows of its own group, when that one recurses, or of the group below; the tree draws all its groups,
-    // so the node of each of them is here, and knows the nodes above and below it
-    private final class TreeRowsGroupNode extends RowsGroupNode {
-        TreeRowsGroupNode up; // null: the tree's top group
-        TreeRowsGroupNode down; // null: its bottom group
+    // so the rows of each of them are here, and the rows of a group know those of the groups above and below it
+    private final class TreeRowsPart extends RowsPart {
+        TreeRowsPart up; // null: the tree's top group
+        TreeRowsPart down; // null: its bottom group
         // the row each row hangs under, as the server last sent it
         NativeHashMap<GGroupObjectValue, GGroupObjectValue> parents = new NativeHashMap<>();
         // ... so the rows the rows hang under, as they stand: the nodes whose children are loaded (isOpen)
@@ -1131,24 +1130,25 @@ public class GReactFormData {
         final NativeHashMap<GGroupObjectValue, ExpandRequest> pendingExpanding = new NativeHashMap<>();
         boolean touched;
 
-        TreeRowsGroupNode(ContainerState state, GGroupObject group) {
-            super(state, group);
+        TreeRowsPart(GroupNode node) {
+            super(node);
         }
-        // ... and the nodes above and below it, all of them made by now: in the form's order, which need not be the
-        // tree's
+        // ... and the rows of the groups above and below it, all of them made by now: in the form's order, which need
+        // not be the tree's
+        @Override
         void initialize() {
             super.initialize();
-            GGroupObject upGroup = group.getUpTreeGroup();
+            GGroupObject upGroup = node.group.getUpTreeGroup();
             if (upGroup != null) {
-                up = (TreeRowsGroupNode) state.rowsGroupNodes.get(upGroup); // a group of the same tree
+                up = (TreeRowsPart) node.state.rowsParts.get(upGroup); // a group of the same tree
                 up.down = this;
             }
         }
-        // a tree's rows are its nodes: the verbs that open them are here, with them
-        JavaScriptObject makeMember() {
-            JavaScriptObject member = super.makeMember();
-            addNodeVerbs(this, member, group.getSID());
-            return member;
+        // a tree's rows are its nodes: the verbs that open them are here, with them, on the group's member as well
+        @Override
+        void putMember(JavaScriptObject groupMember) {
+            super.putMember(groupMember);
+            addNodeVerbs(this, groupMember, node.group.getSID());
         }
         // its rows, and the hierarchy sent beside them, as the platform's own tree reads it there too. They answer a
         // request to open or close a node they hang under, of this group or of the one above: the server sends them
@@ -1178,11 +1178,11 @@ public class GReactFormData {
             NativeHashMap<GGroupObjectValue, GGroupObjectValue> keyed = new NativeHashMap<>();
             if (rows.size() == parents.size()) {
                 for (int i = 0; i < rows.size(); i++)
-                    keyed.put(rows.get(i), group.getParentRowKey(rows.get(i), parents.get(i)));
+                    keyed.put(rows.get(i), node.group.getParentRowKey(rows.get(i), parents.get(i)));
             } else {
                 // parallel by construction; if they ever are not, no row states a parent
-                GwtClientUtils.logLsfViewError("data." + group.getSID() + ": " + parents.size() + " parents came for "
-                        + rows.size() + " rows; the hierarchy is dropped");
+                GwtClientUtils.logLsfViewError("data." + node.group.getSID() + ": " + parents.size()
+                        + " parents came for " + rows.size() + " rows; the hierarchy is dropped");
             }
             if (keyed.equals(this.parents)) // a hierarchy sent again unchanged touches nothing
                 return;
@@ -1220,7 +1220,7 @@ public class GReactFormData {
         // ... and the container with it: its commit places the rows (place)
         void touch() {
             touched = true;
-            state.enlist();
+            node.state.enlist();
         }
         // each row of the group states its facts in the tree, once the batch is complete - the rows of a node's children
         // may come after it - each compared with what the row says now and written only where it differs: a row whose
@@ -1263,7 +1263,7 @@ public class GReactFormData {
         }
         // the row as it stands now: in the draft, or as published
         JavaScriptObject currentRow(GGroupObjectValue key) {
-            return field(field(current(), "byKey"), key.toKeyString());
+            return field(field(node.current(), "byKey"), key.toKeyString());
         }
         // ===== a call through its member: expand(row), collapse(row), toggle(row) - a node of the tree, one of the
         // rows drawn here, named as change(row) names a row of its group (resolveGroupRow): a row of a group BELOW
@@ -1272,27 +1272,27 @@ public class GReactFormData {
         // rows a group returns at all), so these return nothing: the children arrive as rows. The node's `expanded`
         // says what was asked at once, as a changed value does, and what the rows say once the server answers
         void expand(String surface, JavaScriptObject objectOrKey) {
-            verbs.expandNode(group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
+            verbs.expandNode(node.group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
         void collapse(String surface, JavaScriptObject objectOrKey) {
-            verbs.collapseNode(group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
+            verbs.collapseNode(node.group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
         // ... the opposite of what the node says now (`expanded`) - what was asked of it included, so two toggles
         // before the answer open it and close it again
         void toggle(String surface, JavaScriptObject objectOrKey) {
             GGroupObjectValue key = resolveGroupRow(controllerPrefix(surface), objectOrKey);
             if (isOpen(key))
-                verbs.collapseNode(group, key);
+                verbs.collapseNode(node.group, key);
             else
-                verbs.expandNode(group, key);
+                verbs.expandNode(node.group, key);
         }
         // ... expandAll(), collapseAll(): every node of the group, and of the groups below it - for the tree's top
         // group, the whole tree
         void expandAll() {
-            verbs.expandAll(group);
+            verbs.expandAll(node.group);
         }
         void collapseAll() {
-            verbs.collapseAll(group);
+            verbs.collapseAll(node.group);
         }
         // ===== the group's controller (GFormController.groupControllers), of a tree: a node asked to open or close,
         // once the request is sent - into the drafts only, as the form publishes then - shown as asked until the keys
@@ -1304,13 +1304,13 @@ public class GReactFormData {
         // is the one it shows
         public void changeExpandedAll(boolean open, long requestIndex) {
             ExpandRequest request = new ExpandRequest(open, requestIndex);
-            for (TreeRowsGroupNode node = this; node != null; node = node.down)
-                for (GGroupObjectValue key : node.rows)
-                    node.setPendingExpanding(key, request);
+            for (TreeRowsPart part = this; part != null; part = part.down)
+                for (GGroupObjectValue key : part.rows)
+                    part.setPendingExpanding(key, request);
         }
         // ... kept only where a node may have children: nothing opens elsewhere, and no keys would answer it
         void setPendingExpanding(GGroupObjectValue key, ExpandRequest request) {
-            if (!group.mayHaveChildren())
+            if (!node.group.mayHaveChildren())
                 return;
             pendingExpanding.put(key, request);
             touch();
@@ -1537,15 +1537,15 @@ public class GReactFormData {
             return GGroupObjectValue.EMPTY;
         }
     }
-    // a list property's column, and its cells in the rows of the node the column is on
+    // a list property's column, on the node its group's rows are on, and its cells in those rows
     private final class ReactColumnPropertyEntry extends ReactPropertyEntry {
-        final RowsGroupNode rowsGroupNode;
+        final RowsPart rowsPart;
         // what it is drawn with, by the side of the column / cell split each lands on - an ACTION's image is a cell's
         final GPropertyReader[] columnReaders, cellReaders;
 
-        ReactColumnPropertyEntry(RowsGroupNode rowsGroupNode, GPropertyDraw property) {
-            super(rowsGroupNode, property);
-            this.rowsGroupNode = rowsGroupNode;
+        ReactColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property) {
+            super(rowsPart.node, property);
+            this.rowsPart = rowsPart;
             ArrayList<GPropertyReader> column = new ArrayList<>(), cell = new ArrayList<>();
             for (GPropertyReader reader : present(property.getPresentationReaders()))
                 (reader.isColumnAttribute(property) ? column : cell).add(reader);
@@ -1559,7 +1559,7 @@ public class GReactFormData {
         }
         void shownChanged() { // the column says it, and so does every cell
             updateEntry();
-            for (GGroupObjectValue key : rowsGroupNode.rows)
+            for (GGroupObjectValue key : rowsPart.rows)
                 writeCell(key);
         }
         void valueChanged(GGroupObjectValue key) {
@@ -1571,7 +1571,7 @@ public class GReactFormData {
             emitPropertyFacts(entry, property);
         }
         void writeCell(GGroupObjectValue key) {
-            JavaScriptObject row = rowsGroupNode.editRow(key);
+            JavaScriptObject row = rowsPart.editRow(key);
             if (row != null)
                 fillRow(row, key);
         }
@@ -1585,7 +1585,7 @@ public class GReactFormData {
         // restated here, which on a tree gives a key no row is found by: what is dropped is the other groups' objects
         // and a column key, and an empty key is the current row's
         GGroupObjectValue getCellKey(GGroupObjectValue fullCurrentKey) {
-            return fullCurrentKey.isEmpty() ? rowsGroupNode.currentKey : property.groupObject.getRowKey(fullCurrentKey);
+            return fullCurrentKey.isEmpty() ? rowsPart.currentKey : property.groupObject.getRowKey(fullCurrentKey);
         }
         // a row the member names: one drawn where the member is, as a row, its `objects` handle, or its key. A row of
         // ANOTHER group is refused - exactly as the group's own change(row) refuses it, and for the same reason: the
@@ -1599,7 +1599,7 @@ public class GReactFormData {
                 return GGroupObjectValue.EMPTY;
             GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
             if (objectKey == null) // ... a KEY, looked up in the rows the column is drawn in
-                return rowsGroupNode.resolveRow(errorPrefix, objectOrKey);
+                return rowsPart.resolveRow(errorPrefix, objectOrKey);
             if (!objectKey.isEmpty() && property.groupObject.filterRowKeys(objectKey) == null)
                 throw new RuntimeException(errorPrefix + "that row is not a row of '" + property.groupObject.getSID() + "'");
             return objectKey;
@@ -1667,8 +1667,8 @@ public class GReactFormData {
     // entry - what labels it, its caption, image, footer and comment, and what the property is - carried by name on the
     // node the rows are on
     private final class LsfColumnPropertyEntry extends LsfPropertyEntry {
-        LsfColumnPropertyEntry(RowsGroupNode rowsGroupNode, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(rowsGroupNode, property, lsf, property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
+        LsfColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(rowsPart.node, property, lsf, property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
         }
         // what labels it, and what the property is: an LSF column is filtered and sorted like any other, and the
         // platform draws its VALUE, which says nothing about what the value is
@@ -1762,7 +1762,7 @@ public class GReactFormData {
     }-*/;
 
     // ===== the members. A member IS the address: it holds the state it stands for - a property member its property's
-    // value, a group member the node the rows are drawn on - so a call through it names nothing it changes, and its
+    // value, a part's member its part - so a call through it names nothing it changes, and its
     // arguments come in a fixed order, the value first, then the row. FormView refused a name that would take a
     // controller verb, a group's own member or `__proto__` when it built the form (claimProjectionName), so none of
     // them is taken here.
@@ -1791,34 +1791,31 @@ public class GReactFormData {
         };
     }-*/;
 
-    // the member of a group whose rows are drawn here, named the way data.<group> names it: its current object is
-    // chosen among its rows, so .change(row) is there, and only there. A feature that states a LIST of things adds its
-    // member beside this one
-    private static native JavaScriptObject makeRowsMember(RowsGroupNode node, String sid) /*-{
-        return {
-            change: function (row) {
-                return node.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsGroupNode::change(*)(sid + ".change()", row);
-            }
+    // the verb of a group whose rows are drawn here, on its member, named the way data.<group> names it: its current
+    // object is chosen among its rows, so .change(row) is there, and only there
+    private static native void addRowsVerbs(RowsPart part, JavaScriptObject member, String sid) /*-{
+        member.change = function (row) {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsPart::change(*)(sid + ".change()", row);
         };
     }-*/;
 
     // ... and on a group of a TREE, its node verbs: a node IS a row, so the verbs that open one are the group's - and
     // those that open all of them
-    private static native void addNodeVerbs(TreeRowsGroupNode node, JavaScriptObject member, String sid) /*-{
+    private static native void addNodeVerbs(TreeRowsPart part, JavaScriptObject member, String sid) /*-{
         member.expand = function (row) {
-            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::expand(*)(sid + ".expand()", row);
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsPart::expand(*)(sid + ".expand()", row);
         };
         member.collapse = function (row) {
-            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::collapse(*)(sid + ".collapse()", row);
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsPart::collapse(*)(sid + ".collapse()", row);
         };
         member.toggle = function (row) {
-            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::toggle(*)(sid + ".toggle()", row);
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsPart::toggle(*)(sid + ".toggle()", row);
         };
         member.expandAll = function () {
-            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::expandAll()();
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsPart::expandAll()();
         };
         member.collapseAll = function () {
-            return node.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsGroupNode::collapseAll()();
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.TreeRowsPart::collapseAll()();
         };
     }-*/;
 
@@ -2016,7 +2013,7 @@ public class GReactFormData {
     }
 
     // a flag is a boolean or absent - a truthy string like "false" would otherwise mean true: a condition's `negation`
-    // and `or`. A sorting's `desc` is not a flag: an order with none takes its sorting off (RowsGroupNode.applyOrder)
+    // and `or`. A sorting's `desc` is not a flag: an order with none takes its sorting off (OrdersPart.applyOrder)
     private boolean readFlag(String errorPrefix, JavaScriptObject entry, String field) {
         if (!hasOwnField(entry, field)) // absent is false; anything PRESENT has to be the boolean it claims to be,
             return false;                 // `null` and `undefined` included - they are given, and they are not flags

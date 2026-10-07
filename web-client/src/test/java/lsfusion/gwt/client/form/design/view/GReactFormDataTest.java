@@ -223,7 +223,7 @@ public class GReactFormDataTest extends GWTTestCase {
             changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
             projection.flush();
         }
-        // the form's controller of a group (GFormController.groupControllers): the node React draws the rows on - for
+        // the form's controller of a group (GFormController.groupControllers): the part React draws the rows as - for
         // any other group, the platform's grid, not built here - and of a property
         GGroupController controller(GGroupObject group) {
             return controllers.groups.get(group);
@@ -939,7 +939,7 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // the form's controllers of what React draws are what React has of it: a group's rows, its current object, the
-    // client's own add or remove go to the node the rows are drawn on; a property's optimistic value, and whether the
+    // client's own add or remove go to the part the rows are drawn as; a property's optimistic value, and whether the
     // form shows it, to what React has of the property - whatever group it is of, one whose rows React draws or one
     // whose rows GWT draws - and one React carries by no name has none: nothing is sent for it. Which controller the
     // form takes is GFormController.initializeOwnerControllers', not built here
@@ -1858,7 +1858,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("price", text(at(sorted, 1), "property"));
         assertFalse(flag(at(sorted, 1), "desc"));
         assertSame(list, field(f.node(), "list")); // the rows for the new order come from the server, separately
-        assertNotSame(f.controller(f.group), f.ordersController()); // their part shows them, not the rows' node
+        assertNotSame(f.controller(f.group), f.ordersController()); // their part shows them, not the rows' part
         orders.clear(); // the caller's map, changed after: the part keeps a map of its own
         f.setValue(f.price, f.one, 11); // a value changes, the sortings do not: the same array
         f.projection.flush();
@@ -2037,7 +2037,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertSame(list, field(f.node(), "list")); // the rows they leave come from the server, separately
         // b holds a panel property of the group, no filters
         assertNull(field(field(f.snapshots[1], "items"), "filters"));
-        assertNotSame(f.controller(f.group), f.filtersController()); // their part shows them, not the rows' node
+        assertNotSame(f.controller(f.group), f.filtersController()); // their part shows them, not the rows' part
         assertNotNull(field(field(f.sa.controller, "items"), "filters")); // the member, where the part is
         assertNull(field(field(f.sb.controller, "items"), "filters"));
         f.controller(f.group).updateCurrentKey(f.two); // an unrelated change: the node is new, the array is not

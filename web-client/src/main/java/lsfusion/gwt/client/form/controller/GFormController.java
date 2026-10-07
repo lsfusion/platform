@@ -520,13 +520,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // "groupSID.integrationSID" by itself; rows/handles resolve via GGroupObjectValue.resolveObject (the row-carried
     // `objects` handle + raw-GGV accept). Dispatch through the SAME classic path as a normal edit
     // (executePropertyEventAction / changeGroupObject + setLoadingValueAt) ===== a group member's change(row), once it
-    // has read the row (GReactFormData.RowsGroupNode.change): the group's current object
+    // has read the row (GReactFormData.RowsPart.change): the group's current object
     @Override
     public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
         changeGroupObject(group, key, null, null);
     }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
-    // (TreeRowsGroupNode): the platform's own request, which takes the state asked for - and the group's controller
+    // (TreeRowsPart): the platform's own request, which takes the state asked for - and the group's controller
     // told of it, to show it at once until the keys of the answer come with the request's index, as changeGroupObject
     // tells it of a current object
     @Override
@@ -772,10 +772,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // the form's controller of each group, property and component, taken once, from the questions the platform's
     // controllers were made by: the platform's controller of it, or what React has of it, made here by the projection
     // from the platform's (GReactFormData.createGroupController / createPropertyController / createComponentController)
-    // - a group's rows node where React draws the rows, a property's entry where React draws or labels it, a
-    // component's descriptor. The groups first, whose rows nodes a list property's column is on, then the grid panel
-    // controllers, which draw over those rows, then the properties, in the form's order, which is the order of the
-    // names a node carries, then the components; then the projection
+    // - a group's rows' part where React draws the rows, a property's entry where React draws or labels it, a
+    // component's descriptor. The groups first, whose rows' parts a list property's column goes with, then the grid
+    // panel controllers, which draw over those rows, then the properties, in the form's order, which is the order of
+    // the names a node carries, then the components; then the projection
     // sets out what it has. A property is ONE owner: all that is sent for it goes to its controller, what labels it
     // included; as a component only its class is sent, which is the platform's to apply (createComponentController).
     // These controllers are design data, like the platform's: made once, they live as long as the form.

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 // what shows a group's USER FILTERS, settled once where the design says who draws its FILTERS box
 // (GFormController.filtersControllers): React's part of them where a view draws the box (GReactFormData.FiltersPart),
 // else the group's controller (GGroupController extends it) - the platform's grid or tree, whose filter panel shows
-// them, or the node React draws the rows on, which shows none
+// them, or the part of the group React draws the rows as, which shows none
 public interface GUserFiltersController {
     // the group's user filters as the server reports them, which it has applied already: shown, not sent
     void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters);
