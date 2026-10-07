@@ -197,3 +197,21 @@ testExpandAllTopOfARecursiveLevelBelowClosedRows 'EXPAND ALL TOP on a recursive 
         assertFalse(tecShown(tecSub1()), 'EXPAND ALL TOP of the categories opened the categories of regions that were closed');
     };
 }
+
+// a row of a level below the top one is keyed by the levels above it too: the OBJECTS name their objects as well, and
+// naming the level's own alone is refused
+testExpandDownOfARowBelowNamesTheObjectsAbove 'EXPAND DOWN of a row below the top names the objects above it too' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        TRY {
+            EXPAND DOWN tecTree.c OBJECTS c = tecCity1();
+        } CATCH {
+        }
+        assertNotNull(messageCaughtException(), 'EXPAND DOWN of the city named by its own object alone was not refused');
+        assertTrue(messageCaughtException() LIKE '%EXPAND / COLLAPSE%OBJECTS for r:%', 'EXPAND DOWN of the city alone failed with ' + messageCaughtException());
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity1());
+        EXPAND DOWN tecTree.c OBJECTS r = tecRegion(tecCity1()), c = tecCity1();
+        readShown();
+        assertTrue(tecShown(tecShop1()), 'EXPAND DOWN of the city named with its region did not open it');
+    };
+}

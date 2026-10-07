@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.action.expand;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -54,6 +55,12 @@ public class ExpandCollapseGroupObjectAction extends SeekAction {
                     return; // do not expand/collapse if object not found
                 }
             }
+            // a row of a tree's group is keyed by its objects and those of the groups above it
+            ImSet<ObjectInstance> missing = GroupObjectInstance.getObjects(groupObjectInstance.getUpTreeGroups()).remove(value.keys());
+            if (!missing.isEmpty() && type != ExpandCollapseType.ALLTOP)
+                throw new RuntimeException("cannot EXPAND / COLLAPSE a row of '" + groupObject.getSID() + "' with no"
+                        + " OBJECTS for " + missing.toString(ObjectInstance::getSID, ", ") + ": a row of a tree's group is named"
+                        + " by its objects and those of the groups above it");
         }
 
         switch (type) {
