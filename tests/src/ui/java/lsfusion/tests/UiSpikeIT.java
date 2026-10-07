@@ -60,6 +60,8 @@ public class UiSpikeIT {
 
     private static final Map<String, List<Long>> times = new LinkedHashMap<>(); // step -> millis of each passed run
     private static final Map<String, List<String>> failures = new LinkedHashMap<>(); // step -> what each failed run said
+    private static final List<String> rows = new ArrayList<>(); // iteration,step,millis or failed : every step of every run, for iterations.csv
+    private static int iteration; // 0 while the stack starts
 
     private static Process server, jetty;
     private static int httpPort, webPort;
@@ -92,8 +94,12 @@ public class UiSpikeIT {
 
         started = System.nanoTime();
         Path jettyLog = UI.resolve("jetty.log");
+        Path jettyTmp = Files.createDirectories(UI.resolve("jetty-tmp")); // its work dirs outlive the forced stop: mvn clean takes them
         jetty = new ProcessBuilder(Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
                 "--add-opens=java.base/java.util=ALL-UNNAMED", "--add-opens=java.base/java.lang=ALL-UNNAMED", // gwt-rpc serializes LinkedHashMap by reflection
+                "-Djava.io.tmpdir=" + jettyTmp,
+                // jetty-runner logs nothing without it: the start's phases (annotation scanning, context) for the report
+                "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StdErrLog", "-Dorg.eclipse.jetty.LEVEL=INFO",
                 "-Duser.language=en", "-Duser.country=US", "-Duser.timezone=UTC",
                 "-Dapp.server=localhost", "-Dapp.port=" + rmiPort,
                 "-jar", UI.resolve("jetty-runner.jar").toString(), "--port", String.valueOf(webPort), System.getProperty("ui.war"))
@@ -163,6 +169,8 @@ public class UiSpikeIT {
         String report = report();
         System.out.println(report);
         Files.write(UI.resolve("report.txt"), report.getBytes(StandardCharsets.UTF_8));
+        rows.add(0, "iteration,step,ms");
+        Files.write(UI.resolve("iterations.csv"), rows);
 
         if (server == null || Boolean.getBoolean("lsf.keepDb"))
             return;
@@ -176,7 +184,7 @@ public class UiSpikeIT {
     public void measure() throws Exception {
         int repeat = Integer.getInteger("ui.repeat", 10);
         boolean trace = !"false".equals(System.getProperty("ui.trace"));
-        for (int iteration = 1; iteration <= repeat; iteration++) {
+        for (iteration = 1; iteration <= repeat; iteration++) {
             BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                     .setLocale("en-US").setTimezoneId("UTC").setViewportSize(1280, 800).setReducedMotion(com.microsoft.playwright.options.ReducedMotion.REDUCE));
             context.setDefaultTimeout(30_000);
@@ -203,6 +211,7 @@ public class UiSpikeIT {
                     record(step, started);
                 } catch (Throwable t) {
                     failed = step;
+                    rows.add(iteration + "," + step + ",failed");
                     String name = String.format("%03d-%s", iteration, step);
                     try {
                         page.screenshot(new Page.ScreenshotOptions().setPath(UI.resolve("failures/" + name + ".png")).setFullPage(true));
@@ -394,7 +403,9 @@ public class UiSpikeIT {
     // ---------------------------------------------------------------- the report
 
     private static synchronized void record(String step, long startedNanos) {
-        times.computeIfAbsent(step, s -> new ArrayList<>()).add((System.nanoTime() - startedNanos) / 1_000_000);
+        long millis = (System.nanoTime() - startedNanos) / 1_000_000;
+        times.computeIfAbsent(step, s -> new ArrayList<>()).add(millis);
+        rows.add(iteration + "," + step.trim() + "," + millis);
     }
 
     private static String firstLine(Throwable t) {
@@ -420,6 +431,15 @@ public class UiSpikeIT {
         for (Map.Entry<String, List<String>> entry : failures.entrySet())
             for (String failure : entry.getValue())
                 report.append(entry.getKey()).append(' ').append(failure).append('\n');
+        // each iteration on a line of its own, so that a slow one shows which step it was slow in
+        Map<String, StringBuilder> byIteration = new LinkedHashMap<>();
+        for (String row : rows) {
+            String[] cells = row.split(",");
+            if (!cells[0].equals("0"))
+                byIteration.computeIfAbsent(cells[0], i -> new StringBuilder("#" + i)).append(' ').append(cells[1]).append('=').append(cells[2]);
+        }
+        for (StringBuilder line : byIteration.values())
+            report.append(line).append('\n');
         return report.toString();
     }
 }
