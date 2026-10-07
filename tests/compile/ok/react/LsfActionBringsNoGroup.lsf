@@ -1,0 +1,21 @@
+MODULE LsfActionBringsNoGroup;
+
+REQUIRE System;
+
+// an lsf ACTION has no entry - its caption and image are its button's face, the platform's - so it brings no node of
+// its group to the react container that places it: the group is not projected there, and its name, a reserved one at
+// that container's top level, claims nothing
+CLASS LsfActItem;
+lsfActRun 'Run' (LsfActItem i) { MESSAGE 'run'; }
+
+FORM lsfActionNoGroup
+    OBJECTS exec = LsfActItem PANEL
+    PROPERTIES(exec) lsfActRun
+;
+
+DESIGN lsfActionNoGroup {
+    NEW board {
+        custom = 'LsfActBoard';
+        MOVE PROPERTY(lsfActRun(exec)) { lsf = TRUE; }
+    }
+}

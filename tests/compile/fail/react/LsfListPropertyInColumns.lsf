@@ -1,0 +1,22 @@
+MODULE LsfListPropertyInColumns;
+
+REQUIRE System;
+
+// an LSF grid property grouped in COLUMNS: its renderers are placed per ROW (<Lsf name row/>), while its cells are one
+// per row AND column - a value would be written under one key and read under the other
+CLASS LsfColItem;
+CLASS LsfColKind;
+lsfColQty = DATA INTEGER (LsfColItem, LsfColKind);
+
+FORM lsfListInColumns
+    OBJECTS k = LsfColKind
+    OBJECTS i = LsfColItem
+    PROPERTIES(i, k) lsfColQty LSF COLUMNS (k)
+;
+
+DESIGN lsfListInColumns {
+    NEW board {
+        custom = 'LsfColBoard';
+        MOVE BOX(i);
+    }
+}
