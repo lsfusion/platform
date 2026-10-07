@@ -34,6 +34,7 @@ Note that IDEA remembers the downloaded/specified application server file in its
 ### Install desktop client
 
 -   After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file (for example, https://download.lsfusion.org/java/lsfusion-client-6.2.jnlp), which when run will automatically install the client using Java Web Start technology.
+-   In Maven projects the desktop client can also be [started directly from the IDE](#mavenclient).
 
 ### Install Web Client
 
@@ -87,6 +88,37 @@ For an existing maven project, server installation and loading can (and should) 
     In the second case, all of the above must be manually configured directly by the developer.
 
     As for other projects not created using the operation for creating a new lsFusion project, for a maven project you must manually create a [settings file](Launch_parameters.md#filesettings) and a [startup configuration](IDE.md#configuration) (or, if the platform needs to be loaded as a library, use a [special Spring bean](#existingide))
+
+### Running the desktop client via Maven (only for Maven projects with parent `logics`) {#mavenclient}
+
+If `lsfusion.platform.build:logics` is registered as parent, the desktop client can be started directly from the IDE using the maven profile `exec-client`. The client of the same platform version as the one specified in `pom.xml` is taken as a Maven dependency, so it does not need to be downloaded and installed separately.
+
+-   Create a Maven startup configuration (`Run > Edit Configurations > + > Maven`):
+    -   `Working directory` - the folder of the project module
+    -   `Command line`:
+        ```
+        antrun:run --non-recursive -Dlsfusion.client.hostname=localhost -Dlsfusion.client.hostport=7652
+        ```
+    -   `Profiles` - `exec-client`
+    -   `JRE` (in the `Java` section) - the Java the client will be started with
+
+    The client is started by Maven in a separate Java process, so starting this configuration in Debug mode debugs Maven, not the client.
+-   The client is configured with system properties in the `Command line`:
+
+    |Property|Description|
+    |---|---|
+    |`lsfusion.client.hostname`|Application server host|
+    |`lsfusion.client.hostport`|Application server port (usually `7652`), must be set together with `lsfusion.client.hostname`|
+    |`lsfusion.client.exportname`|Export name of the application server (`default` by default)|
+    |`lsfusion.client.user`, `lsfusion.client.password`|Login and password the client logs in with without the authorization dialog if `lsfusion.client.hostname` is also set (the dialog is shown only if authentication fails)|
+    |`lsfusion.client.autologin`|If `true`, the client connects anonymously without the authorization dialog. Anonymous access to the UI must be enabled on the server (`enableUI` [parameter](Working_parameters.md) or [development mode](Launch_parameters.md#devmode))|
+
+:::info
+If Java 16 or later is used, the client requires access to the internal packages of the `java.desktop` module. Since the client is started in a separate Java process, the `VM options` of the configuration do not apply to it, so the parameters must be passed through the `JDK_JAVA_OPTIONS` environment variable (`Environment variables` field of the configuration):
+```
+JDK_JAVA_OPTIONS=--add-opens=java.desktop/sun.swing=ALL-UNNAMED --add-opens=java.desktop/sun.font=ALL-UNNAMED --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.desktop/javax.swing.text=ALL-UNNAMED --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-exports=java.desktop/sun.awt=ALL-UNNAMED
+```
+:::
 
 
 :::info
