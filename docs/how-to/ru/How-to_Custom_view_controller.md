@@ -48,7 +48,7 @@ await controller.form.change('customerOrder', orderId, customerId);
 | `<group>.<property>.getValues([object,] value[, mode], ok[, fail][, count])` | ограниченный список подсказок с сервера | — (через `ok`) |
 | `<property>.change(value)` / `.exec()` / `.getValues(...)` | то же для свойства пустой группы — без строки | — |
 | `<group>.expand(row)` / `.collapse(row)` / `.toggle(row)` | раскрывает или сворачивает один узел [дерева](How-to_Custom_React_views.md#trees) — узел это строка группы; только там, где рисуются строки дерева | — |
-| `<group>.expandAll()` / `.collapseAll()` | раскрывает все узлы группы и групп под ней — у верхней группы всё дерево — или сворачивает узлы группы; там, где рисуются строки дерева | — |
+| `<group>.expandAll()` / `.collapseAll()` | раскрывает все узлы группы и групп под ней — у верхней группы всё дерево — или сворачивает их; там, где рисуются строки дерева | — |
 | `<group>.filters.change(condition)` | меняет одно условие фильтра группы, не трогая остальные, — там, где стоит `FILTERS(<group>)` | — |
 | `<group>.filters.change(conditions)` | массив задаёт их все: заменяет весь список условий | — |
 | `properties.change([{property, object, value}])` | несколько изменений свойств ОДНИМ запросом | — |

@@ -1,0 +1,199 @@
+MODULE TreeExpandCollapse;
+
+REQUIRE TestUtils;
+
+// EXPAND and COLLAPSE on a tree of three levels: a region opens to its cities, a city to its shops. A row of a level
+// below the top one is shown when the row above it is open, so what a level shows says which rows above it are open.
+// Before the fix, ALL with OBJECTS acted as ALL TOP while the level of the row named had no current row: a test naming
+// a row of the top level reads the rows first, which gives that level one, so as not to miss what it is about. A level
+// below the top gets no current row so (the server picks one only at the top) - naming a row there failed on that alone
+
+CLASS TecRegion 'Region';
+CLASS TecCity 'City';
+tecRegion = DATA TecRegion (TecCity);
+CLASS TecShop 'Shop';
+tecCity = DATA TecCity (TecShop);
+
+FORM tecTree 'Regions'
+    TREE t r = TecRegion, c = TecCity, s = TecShop
+    FILTERS tecRegion(c) == r, tecCity(s) == c
+;
+
+// what the tree shows: the form sends the rows of a level under every open row of the level above, shown or not, and
+// the client hangs a row only under a row it shows
+tecShown (TecCity c) = shownInForm(c);
+tecShown (TecShop s) = shownInForm(s) AND tecShown(tecCity(s));
+
+// two regions, a city in each, a shop in each city
+tecCity1 = DATA LOCAL TecCity ();
+tecCity2 = DATA LOCAL TecCity ();
+tecShop1 = DATA LOCAL TecShop ();
+tecShop2 = DATA LOCAL TecShop ();
+tecRegions () {
+    NEW r = TecRegion { NEW c = TecCity { tecRegion(c) <- r; tecCity1() <- c; } }
+    NEW r = TecRegion { NEW c = TecCity { tecRegion(c) <- r; tecCity2() <- c; } }
+    NEW s = TecShop { tecCity(s) <- tecCity1(); tecShop1() <- s; }
+    NEW s = TecShop { tecCity(s) <- tecCity2(); tecShop2() <- s; }
+}
+
+testCollapseAllTopClosesTheLevelsBelow 'COLLAPSE ALL TOP closes the rows below the level it is called on too' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        EXPAND ALL TOP tecTree.r;
+        readShown();
+        assertTrue(tecShown(tecShop1()), 'EXPAND ALL TOP did not open every level');
+
+        COLLAPSE ALL TOP tecTree.r;
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertTrue(tecShown(tecCity1()), 'the region opened again does not show its city');
+        assertFalse(tecShown(tecShop1()), 'COLLAPSE ALL TOP left the city open: its shop is shown once the region is opened again');
+    };
+}
+
+testCollapseAllClosesTheRow 'COLLAPSE ALL closes the row it is called on and the rows below it' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        readShown(); // a current row (see above)
+        EXPAND ALL TOP tecTree.r;
+        COLLAPSE ALL tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertFalse(tecShown(tecCity1()), 'COLLAPSE ALL left the region open');
+        assertTrue(tecShown(tecShop2()), 'COLLAPSE ALL of one region closed another');
+
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertFalse(tecShown(tecShop1()), 'COLLAPSE ALL of the region left its city open: its shop is shown once the region is opened again');
+    };
+}
+
+testExpandAllKeepsOtherRowsOpen 'EXPAND ALL of a row opens the rows below it and leaves the rows open elsewhere as they are' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        readShown(); // a current row (see above)
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity2());
+        EXPAND DOWN tecTree.c OBJECTS r = tecRegion(tecCity2()), c = tecCity2();
+        EXPAND ALL tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertTrue(tecShown(tecShop1()), 'EXPAND ALL did not open the rows below the region');
+        assertTrue(tecShown(tecShop2()), 'EXPAND ALL of one region closed the city of another');
+    };
+}
+
+testExpandAllTopBelowClosedRows 'EXPAND ALL TOP on a level below opens nothing under the rows above it that are closed' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        EXPAND ALL TOP tecTree.c; // no region is open
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertTrue(tecShown(tecCity1()), 'the region opened does not show its city');
+        assertFalse(tecShown(tecShop1()), 'EXPAND ALL TOP of the cities opened the cities of regions that were closed');
+    };
+}
+
+testExpandAllTopBelowClosedRowsOnceOpened 'The same, once a row above was opened and closed again' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity2());
+        COLLAPSE DOWN tecTree.r OBJECTS r = tecRegion(tecCity2());
+        EXPAND ALL TOP tecTree.c; // no region is open
+        EXPAND DOWN tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertTrue(tecShown(tecCity1()), 'the region opened does not show its city');
+        assertFalse(tecShown(tecShop1()), 'EXPAND ALL TOP of the cities opened the cities of regions that were closed');
+    };
+}
+
+testCollapseAllOfANamedRowBeforeACurrentOne 'COLLAPSE ALL closes the row OBJECTS names, also while the group has no current row' () {
+    tecRegions();
+    SHOW tecTree NOWAIT {
+        EXPAND ALL TOP tecTree.r; // the form has read no rows, so no group has a current one
+        COLLAPSE ALL tecTree.r OBJECTS r = tecRegion(tecCity1());
+        readShown();
+        assertFalse(tecShown(tecCity1()), 'COLLAPSE ALL left the region it names open');
+        assertTrue(tecShown(tecShop2()), 'COLLAPSE ALL of the region it names, with no current row, closed every region');
+    };
+}
+
+// a recursive level between two plain ones: a region opens to its categories, a category to its subcategories and its
+// items
+CLASS TecCategory 'Category';
+tecCategoryRegion = DATA TecRegion (TecCategory);
+tecParent = DATA TecCategory (TecCategory);
+CLASS TecItem 'Item';
+tecCategory = DATA TecCategory (TecItem);
+
+FORM tecCatalogue 'Catalogue'
+    TREE t r = TecRegion, k = TecCategory PARENT tecParent(k), i = TecItem
+    FILTERS tecCategoryRegion(k) == r, tecCategory(i) == k
+;
+
+// a subcategory is sent under its parent open, shown or not, as a level's rows are (two levels of categories here)
+tecShown (TecCategory k) = shownInForm(k) AND (NOT tecParent(k) OR shownInForm(tecParent(k)));
+tecShown (TecItem i) = shownInForm(i) AND tecShown(tecCategory(i));
+
+// a region with two root categories, a subcategory in the first; an item in that subcategory and one in the second root
+tecRoot1 = DATA LOCAL TecCategory ();
+tecSub1 = DATA LOCAL TecCategory ();
+tecRoot2 = DATA LOCAL TecCategory ();
+tecItem1 = DATA LOCAL TecItem ();
+tecItem2 = DATA LOCAL TecItem ();
+tecCatalogueRows () {
+    NEW r = TecRegion {
+        NEW k = TecCategory { tecCategoryRegion(k) <- r; tecRoot1() <- k; }
+        NEW k = TecCategory { tecCategoryRegion(k) <- r; tecParent(k) <- tecRoot1(); tecSub1() <- k; }
+        NEW k = TecCategory { tecCategoryRegion(k) <- r; tecRoot2() <- k; }
+    }
+    NEW i = TecItem { tecCategory(i) <- tecSub1(); tecItem1() <- i; }
+    NEW i = TecItem { tecCategory(i) <- tecRoot2(); tecItem2() <- i; }
+}
+
+testCollapseAllTopClosesARecursiveLevelBelow 'COLLAPSE ALL TOP closes every row of a recursive level below it' () {
+    tecCatalogueRows();
+    SHOW tecCatalogue NOWAIT {
+        EXPAND ALL TOP tecCatalogue.r;
+        readShown();
+        assertTrue(tecShown(tecItem1()), 'EXPAND ALL TOP did not open every level');
+
+        COLLAPSE ALL TOP tecCatalogue.r;
+        EXPAND DOWN tecCatalogue.r OBJECTS r = tecCategoryRegion(tecRoot1());
+        readShown();
+        assertTrue(tecShown(tecRoot1()), 'the region opened again does not show its category');
+        assertFalse(tecShown(tecSub1()), 'COLLAPSE ALL TOP left the category open: its subcategory is shown once the region is opened again');
+    };
+}
+
+testCollapseAllOfARecursiveRowClosesItsSubtree 'COLLAPSE ALL of a row of a recursive level closes the rows below it at every level' () {
+    tecCatalogueRows();
+    SHOW tecCatalogue NOWAIT {
+        EXPAND ALL TOP tecCatalogue.r;
+        COLLAPSE ALL tecCatalogue.k OBJECTS r = tecCategoryRegion(tecRoot1()), k = tecRoot1();
+        EXPAND DOWN tecCatalogue.k OBJECTS r = tecCategoryRegion(tecRoot1()), k = tecRoot1();
+        readShown();
+        assertTrue(tecShown(tecSub1()), 'the category opened again does not show its subcategory');
+        assertFalse(tecShown(tecItem1()), 'COLLAPSE ALL of the category left its subcategory open');
+        assertTrue(tecShown(tecItem2()), 'COLLAPSE ALL of one category closed another');
+    };
+}
+
+testExpandAllOfARecursiveRowOpensItsSubtree 'EXPAND ALL of a row of a recursive level opens the rows below it at every level, and only them' () {
+    tecCatalogueRows();
+    SHOW tecCatalogue NOWAIT {
+        EXPAND DOWN tecCatalogue.r OBJECTS r = tecCategoryRegion(tecRoot1());
+        EXPAND ALL tecCatalogue.k OBJECTS r = tecCategoryRegion(tecRoot1()), k = tecRoot1();
+        readShown();
+        assertTrue(tecShown(tecItem1()), 'EXPAND ALL of the category did not open its subcategory');
+        assertFalse(tecShown(tecItem2()), 'EXPAND ALL of one category opened another');
+    };
+}
+
+testExpandAllTopOfARecursiveLevelBelowClosedRows 'EXPAND ALL TOP on a recursive level opens nothing under the rows above it that are closed' () {
+    tecCatalogueRows();
+    SHOW tecCatalogue NOWAIT {
+        EXPAND ALL TOP tecCatalogue.k; // no region is open
+        EXPAND DOWN tecCatalogue.r OBJECTS r = tecCategoryRegion(tecRoot1());
+        readShown();
+        assertTrue(tecShown(tecRoot1()), 'the region opened does not show its category');
+        assertFalse(tecShown(tecSub1()), 'EXPAND ALL TOP of the categories opened the categories of regions that were closed');
+    };
+}

@@ -48,7 +48,7 @@ Optional arguments are bracketed.
 | `<group>.<property>.getValues([object,] value[, mode], ok[, fail][, count])` | a capped server suggestion list | — (via `ok`) |
 | `<property>.change(value)` / `.exec()` / `.getValues(...)` | the same, for a property of the empty group — with no row | — |
 | `<group>.expand(row)` / `.collapse(row)` / `.toggle(row)` | open or close one node of a [tree](How-to_Custom_React_views.md#trees) — a node is a row of a group; only where the tree's rows are drawn | — |
-| `<group>.expandAll()` / `.collapseAll()` | open every node of the group and of the groups below it — the whole tree on its top group — or close the group's nodes; where the tree's rows are drawn | — |
+| `<group>.expandAll()` / `.collapseAll()` | open every node of the group and of the groups below it — the whole tree on its top group — or close them; where the tree's rows are drawn | — |
 | `<group>.filters.change(condition)` | change one of the group's user filter conditions, leaving the rest — where `FILTERS(<group>)` is | — |
 | `<group>.filters.change(conditions)` | an array states them all: replace the whole condition list | — |
 | `properties.change([{property, object, value}])` | several property changes in ONE request | — |

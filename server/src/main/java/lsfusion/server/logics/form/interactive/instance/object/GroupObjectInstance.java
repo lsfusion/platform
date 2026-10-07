@@ -731,55 +731,60 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         expandCollapseAll(form, null, current, expand);
     }
 
+    // current: the row given, or with none the current one, and the rows below it - and while there is no current row
+    // either, every row of the top, as when not current; not current: every row of the group under the open rows above
     public void expandCollapseAll(FormInstance form, ImMap<ObjectInstance, DataObject> value, boolean current, boolean expand) throws SQLException, SQLHandledException {
-        if (current && !isNull()) {
+        if (current && (value != null || !isNull())) {
             expandCollapseAll(form, value != null ? value : getGroupObjectValue(), expand);
         } else {
             GroupObjectInstance upTreeGroup = getUpTreeGroup();
-            expandCollapseAll(form, upTreeGroup == null ? null : upTreeGroup.expandTable, expand);
+            if (upTreeGroup == null)
+                expandCollapseAllUnder(form, null, expand);
+            // with no expand table above, no row there has ever been open, and the group shows no row to open or close
+            else if (upTreeGroup.expandTable != null)
+                expandCollapseAllUnder(form, upTreeGroup.expandTable, expand);
         }
     }
 
+    // opens or closes the row given - and, in a group that recurses, every row of the group below it - and the rows of
+    // the groups below under them
     private void expandCollapseAll(FormInstance form, ImMap<ObjectInstance, DataObject> objects, boolean expand) throws SQLException, SQLHandledException {
-        if (expandTable == null)
-            expandTable = createKeyTable("expgo");
-
-        NoPropertyTableUsage<ObjectInstance> expandingTable = createKeyTable("expinggo");
+        NoPropertyTableUsage<ObjectInstance> rows = createKeyTable("expinggo");
         try {
             if(parent != null) {
                 Query<ObjectInstance, String> query = getRecursiveExpandQuery(true, objects, form.getModifier(), form);
-                expandingTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
+                rows.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
             } else
-                expandingTable.modifyRecord(form.session.sql, objects, expand ? Modify.ADD : Modify.DELETE, form.session.getOwner());
-            expandCollapseAllDown(form, expandingTable, expand);
-
-            expandTable.modifyRows(form.session.sql, expandingTable.getQuery(), form.session.baseClass, expand ? Modify.LEFT : Modify.DELETE, form.getQueryEnv(), SessionTable.nonead);
+                rows.modifyRecord(form.session.sql, objects, Modify.ADD, form.session.getOwner());
+            expandCollapse(form, rows, expand);
         } finally {
-            expandingTable.drop(form.session.sql, form.getQueryEnv().getOpOwner());
+            rows.drop(form.session.sql, form.getQueryEnv().getOpOwner());
         }
-
-        updated |= UPDATED_EXPANDS;
     }
 
-    private void expandCollapseAllDown(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable, boolean expand) throws SQLException, SQLHandledException {
-        GroupObjectInstance downGroup = treeGroup.getDownTreeGroup(this);
-        if (downGroup != null)
-            downGroup.expandCollapseAll(form, expandingTable, expand);
+    // opens or closes every row of this group under the rows of the group above that a table holds, or, with no table
+    // at the top of the tree, every row of it - and the rows of the groups below under them
+    private void expandCollapseAllUnder(FormInstance form, NoPropertyTableUsage<ObjectInstance> upRows, boolean expand) throws SQLException, SQLHandledException {
+        NoPropertyTableUsage<ObjectInstance> rows = createKeyTable("expinggo");
+        try {
+            rows.writeRows(form.session.sql, getAllExpandQuery(upRows, form.getModifier(), form), form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
+            expandCollapse(form, rows, expand);
+        } finally {
+            rows.drop(form.session.sql, form.getQueryEnv().getOpOwner());
+        }
     }
 
-    private void expandCollapseAll(FormInstance form, NoPropertyTableUsage<ObjectInstance> expandingTable, boolean expand) throws SQLException, SQLHandledException {
+    // opens or closes the rows a table holds and, in the groups below, every row under them - only these rows: a row
+    // opened or closed anywhere else stays as it is
+    private void expandCollapse(FormInstance form, NoPropertyTableUsage<ObjectInstance> rows, boolean expand) throws SQLException, SQLHandledException {
         if (expandTable == null)
             expandTable = createKeyTable("expgo");
-
-        Query<ObjectInstance, String> query = getAllExpandQuery(expandingTable, form.getModifier(), form);
-        if (expand)
-            expandTable.writeRows(form.session.sql, query, form.session.baseClass, form.getQueryEnv(), SessionTable.nonead);
-        else
-            expandTable.modifyRows(form.session.sql, query, form.session.baseClass, Modify.DELETE, form.getQueryEnv(), SessionTable.nonead);
-
-        expandCollapseAllDown(form, expandTable, expand);
-
+        expandTable.modifyRows(form.session.sql, rows.getQuery(), form.session.baseClass, expand ? Modify.LEFT : Modify.DELETE, form.getQueryEnv(), SessionTable.nonead);
         updated |= UPDATED_EXPANDS;
+
+        GroupObjectInstance downGroup = treeGroup.getDownTreeGroup(this);
+        if (downGroup != null)
+            downGroup.expandCollapseAllUnder(form, rows, expand);
     }
 
     private Where getRecursiveStepWhere(ImRevMap<ObjectInstance, KeyExpr> mapKeys1, ImMap<ObjectInstance, ? extends Expr> mapKeys2, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -812,11 +817,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
     }
 
-    private Query<ObjectInstance, String> getAllExpandQuery(NoPropertyTableUsage<ObjectInstance> expandingTable, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    private Query<ObjectInstance, String> getAllExpandQuery(NoPropertyTableUsage<ObjectInstance> upRows, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
         Where expandWhere = getWhere(mapKeys, modifier, reallyChanged).and(
-                            expandingTable != null ? expandingTable.join(mapKeys).getWhere() : Where.TRUE());
+                            upRows != null ? upRows.join(mapKeys).getWhere() : Where.TRUE());
 
         return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
     }

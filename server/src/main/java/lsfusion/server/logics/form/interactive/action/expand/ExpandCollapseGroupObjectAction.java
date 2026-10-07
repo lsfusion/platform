@@ -63,8 +63,8 @@ public class ExpandCollapseGroupObjectAction extends SeekAction {
             case DOWN:
                 groupObjectInstance.expandCollapseDown(form, value, expand);
                 break;
-            case ALL:
-                groupObjectInstance.expandCollapseAll(form, value, true, expand);
+            case ALL: // with no OBJECTS, ALL takes the current row, and every row of the top while there is none
+                groupObjectInstance.expandCollapseAll(form, objects.isEmpty() ? null : value, true, expand);
                 break;
             case ALLTOP:
                 groupObjectInstance.expandCollapseAll(form, false, expand);

@@ -29,3 +29,13 @@ assertEquals (a, b, STRING message) {
     IF NOT (a = b) THEN
         fail(message);
 }
+
+// whether a group of the open form the action runs in has an object in one of its rows, as of the last readShown(): the
+// rows the form sends its client, read the way the form reads them before it answers it - which a form with no client
+// never does. A level of a tree gets its rows under every open row of the level above, whether that one is shown or not
+shownInForm = DATA LOCAL BOOLEAN (Object);
+readShownRows INTERNAL 'lsfusion.tests.ReadShownAction' ();
+readShown () {
+    shownInForm(Object o) <- NULL;
+    readShownRows();
+}

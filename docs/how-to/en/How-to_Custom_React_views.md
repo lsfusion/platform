@@ -990,9 +990,8 @@ they are the group's. Each takes a row (the row, its `objects` handle, or its ke
 `expanded` changes at once, and its children arrive as rows. `toggle` asks for the opposite of what the row's `expanded`
 says now, so two toggles before the answer open the node and close it again. `controller.<g>.expandAll()` opens every
 node of the group and of the groups below it: on the tree's top group, the whole tree; on a group below, its nodes under
-the nodes open above it. `controller.<g>.collapseAll()` closes the nodes of the group, and what hangs under them goes
-with them; a node further down that was open stays open on the server, so it shows open again once the node above it is
-opened. Their rows' `expanded` changes at once too. A group outside a tree has no such members at all: the five are
+the nodes open above it. `controller.<g>.collapseAll()` closes the same nodes and every node below them, so a node
+opened again afterwards shows its children closed. Their rows' `expanded` changes at once too. A group outside a tree has no such members at all: the five are
 installed on a group of a tree and nowhere else, and they are reserved on that group's node, as `list` is.
 
 ```lsf
