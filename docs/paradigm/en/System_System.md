@@ -40,6 +40,8 @@ title: 'System'
 | `logMessage[]`                                                | message emitted into the system log on certain events                                       |
 | `empty[]` / `empty[Object]`                                   | no-op actions                                                                               |
 
+Under the `onlyCheck` filter the apply transaction runs only the handlers that can cancel the apply — [constraint](Constraints.md) checks among them — and what they depend on, directly or through other handlers: the event handlers changing the properties they read and the updates of the [materializations](Materializations.md) they read. The other handlers and [deferred actions](New_session_NEWSESSION_NESTEDSESSION.md) are not executed, and after the checks the transaction is rolled back: nothing is written to the database, the changes of the handlers are rolled back with it, the session changes made before the apply remain, and `canceled[]` and `applyMessage[]` carry the result. This makes `check[]` a trial constraint check, but its outcome can differ from a real apply, which runs all the handlers.
+
 ### HTTP request context
 
 The platform fills the following `NESTED LOCAL` properties on an incoming HTTP request and reads them on the outgoing response.

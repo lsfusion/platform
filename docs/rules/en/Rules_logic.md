@@ -694,6 +694,10 @@ title: 'Rules: domain logic'
    is created at all, the inner action is deferred and runs in
    the current session, inside the same transaction. The
    assistant MUST NOT expect an independent commit there.
+   The deferred action runs only after the constraint checks
+   of that pass, so the changes needed to keep a constraint of
+   the same apply from being violated MUST be made by the handler
+   directly, without deferring them through `NEWSESSION`.
    - isolated independent unit -> `NEWSESSION`
    - isolated unit that must also see selected local properties
      from the upper session -> `NEWSESSION NESTED (...)`
