@@ -151,19 +151,9 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <!-- the compile corpus has a run of its own -->
-                            <skipTests>true</skipTests>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <includes>
-                                <include>**/Ui*IT.java</include>
-                            </includes>
+                            <!-- the browser tests run along with the others -->
                             <excludes combine.self="override"/>
                             <systemPropertyVariables>
                                 <!-- the war of the checkout under test, built by web-client beside it -->
