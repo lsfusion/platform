@@ -7,7 +7,8 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust # matches the runner's defaults : user postgres, no password
       PGDATA: /var/lib/postgresql/data # the image's own default moved with the version, this one does not
-    command: postgres -c fsync=off -c synchronous_commit=off
+    # jit off : compiling the server's long queries pushes them over the time the server allows them, and it cancels and reruns them
+    command: postgres -c fsync=off -c synchronous_commit=off -c jit=off
     tmpfs:
       - /var/lib/postgresql/data
     ports:
