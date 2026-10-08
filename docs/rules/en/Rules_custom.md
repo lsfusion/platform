@@ -67,11 +67,11 @@ title: 'Rules: custom views'
    view that one property, whatever the policy on the
    properties it is built from.
 
-   A screen made of several independent lists is split into
-   several object groups and, where the standard views do not
-   fit, into several `custom` containers, each over its own
-   group with its own component — not one component over one
-   payload of the whole database. A group whose rows a board
+   A screen made of several lists is split into several
+   object groups and, where the standard views do not fit,
+   into several `custom` containers — one per region, rule 3
+   — not one component over one payload of the whole
+   database. A group whose rows a board
    or a calendar shows all at once gets `PAGESIZE 0`; a list
    whose number of rows is unbounded keeps the page and follows
    the scroll with `useSeekOnScroll`.
@@ -104,6 +104,55 @@ title: 'Rules: custom views'
    events. When a property view has to show several values,
    the view is the wrong kind: the assistant switches to a
    `CUSTOM` object-group view or a React container.
+
+3. A page is split into `custom` containers by region — a
+   list, a detail panel, a filter bar, a cart — and the
+   regions are laid out by ordinary `DESIGN` containers. The
+   assistant MUST NOT wrap a whole form into one `custom`
+   container (`MOVE PANEL; MOVE OBJECTS`): a container's
+   component re-renders whenever anything in its projection
+   changes, and a React composition cannot be extended from
+   `DESIGN` by another module. Groups that depend on one
+   another (category → item → detail) are still split: the
+   filters of the groups below already follow the current
+   object of the group above. One root component over the
+   whole page is justified only for a small form that changes
+   as a whole, or when the layout itself is computed from the
+   data or is dictated by a UI library, and the reason is
+   stated in the code. A container is given only what it
+   draws, and a part of a group is projected where its
+   component stands — the rows where the group's grid is, a
+   panel property where the property itself is: what another
+   container shows of the current row is added as a panel
+   property under an alias and moved there
+   (`PROPERTIES(i) nameItem = name PANEL`,
+   `MOVE PROPERTY(nameItem)` — the how-to, `A page of several
+   containers`), and a form-level property two containers
+   show is added twice, under two aliases, one in each
+   container.
+
+4. Selecting, ordering and totals belong to the form, not to
+   the component. Every piece of UI state that decides which
+   rows are shown — the chosen section or tab, a category,
+   the search text, the opened record — MUST belong to the
+   form: as the current object of a group
+   (`<group>.change(row)`) when a record or a category is
+   chosen from a list, and otherwise as a form property
+   (normally `DATA LOCAL`) changed through the controller, and
+   the rows MUST be selected by the form's `FILTERS` /
+   `FILTERGROUP` and ordered by `ORDERS` over it. The
+   component MUST NOT filter, search, sort, count or sum the
+   projected rows, nor compute a value from two rows of them:
+   a count or a total over the rows that pass the form's
+   filter is a property
+   (`GROUP SUM 1 IF [ FILTER orders.o](Order o)`, the how-to),
+   a heading is a property, the section of a row in a flat
+   list is a property of the row. Only the number of rows
+   already read is `list.length`. Placing the rows the server
+   selected into visual blocks by such a server-computed value
+   is rendering (the `bucketOf` of the how-to) and is allowed.
+   Only presentation state — an expanded card, an open sheet,
+   an input draft — lives in React state.
 
 ## Projection and editing
 
@@ -199,7 +248,12 @@ title: 'Rules: custom views'
    form on every run, so such a form is kept small: there is
    no refresh of one object group — `forceUpdate[STRING]`
    only applies the pending update of a group in manual
-   update mode.
+   update mode. A form refreshed this way reads only what is
+   shown: rows outside the current section, search or
+   selection are excluded by the form's filters (data path
+   rule 4), not hidden by the component, and the view SHOULD
+   read through `List`, memoized rows and `useData` so that a
+   changed value does not re-render every row of the view.
 
 ## Server calls
 

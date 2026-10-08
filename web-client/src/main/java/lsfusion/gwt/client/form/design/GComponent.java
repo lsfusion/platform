@@ -123,7 +123,12 @@ public class GComponent implements Serializable {
     // when the form is built (FormView.checkCustomReactSwallowed), so the first one reached is the only one there is
     // (mirrors ComponentView.getReactPlace)
     public GContainer getReactPlace() {
-        for (GComponent parent = getHiddenContainer(); parent != null; parent = parent.getHiddenContainer()) {
+        return getReactPlaceFrom(getHiddenContainer());
+    }
+    // ... the walk itself, up from a component: the walk of what a container holds starts at the container
+    // (GContainer.getChildrenReactPlace)
+    protected static GContainer getReactPlaceFrom(GComponent component) {
+        for (GComponent parent = component; parent != null; parent = parent.getHiddenContainer()) {
             // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
             if (parent instanceof GContainer && ((GContainer) parent).isReact())
                 return parent.isInForm() ? (GContainer) parent : null;

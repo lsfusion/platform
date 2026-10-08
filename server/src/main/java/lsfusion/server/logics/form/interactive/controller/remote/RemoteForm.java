@@ -700,7 +700,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-            form.setRegularFilter(filterGroup, filterID, getStack());
+            form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID));
+            form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
                 logger.debug(String.format("filter ID: %s", filterID));

@@ -13,7 +13,6 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GInputEvent;
-import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
@@ -32,8 +31,10 @@ import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GGroupObjectPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public abstract class GAbstractTableController extends GLsfPropertyController implements GTableController, GGroupController {
@@ -101,18 +102,27 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
 
     public abstract List<GFilter> getFilters();
 
+    // ===== what shows the group's user orders and filters, on the platform's side (GUserOrdersController,
+    // GUserFiltersController): a header only asks for orders, and shows the ones the form changes as the reported ones
+    // (updateOrders, the grid's and the tree's own); the filter panel shows the filters it sent itself
+    public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+        updateOrders(group, orders);
+    }
     @Override
     public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
-        if (filter != null) {
-            List<GPropertyFilter> conditions = new ArrayList<>();
-            for (GPropertyFilterDTO filterDTO : filters)
-                conditions.add(new GPropertyFilter(new GFilter(formController.getProperty(filterDTO.propertyID)), group, filterDTO.columnKey,
-                        PValue.convertFileValue(filterDTO.filterValue.content), filterDTO.negation, GCompare.get(filterDTO.compareByte), filterDTO.junction));
-            filter.updateFilters(group, conditions);
-        }
+        if (filter != null)
+            filter.updateFilters(group, GPropertyFilter.getConditions(formController.getForm(), group, filters));
+    }
+    public void changeFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
     }
 
     public void initFilters() {
+        // where React draws what the FILTERS box holds, the conditions are a view's (GReactFormData.FiltersPart): the
+        // platform builds no panel for them - no toolbar button, no controls, no rows -, and a table with no panel goes
+        // on as it does where the design hides the filters (filter == null)
+        if (getFiltersContainer().getChildrenReactPlace() != null)
+            return;
+
         GToolbarButtonGroup filterButtonGroup = new GToolbarButtonGroup();
         filter = new GFilterController(this, getFilters(), getFilterControls(), getFormLayout().getContainerView(getFiltersContainer()) != null) {
             @Override
@@ -174,6 +184,15 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
         }
     }
 
+    // the group's conditions replaced by these - a pivot's drill-down: put into the panel, which sends them as its
+    // rows, or, with no panel, sent as they are, which what shows the group's filters is told of (changeFilter)
+    public void replaceFilterConditions(ArrayList<GPropertyFilter> conditions) {
+        if (filter != null)
+            filter.addConditions(conditions, false, true);
+        else
+            changeFilter(conditions);
+    }
+
     public void resetFilters() {
         if (filter != null) {
             filter.resetConditions();
@@ -220,9 +239,13 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
     public abstract void updateCurrentKey(GGroupObjectValue currentKey);
 
     // ===== the platform's side of the form's controller of a group whose rows it draws (GGroupController, of the grid
-    // and the tree): a current object the view chose itself, and a reader of the group by that reader's own update of
-    // this controller
+    // and the tree): a current object the view chose itself and a node the tree opened itself, and a reader of the
+    // group by that reader's own update of this controller
     public void changeCurrentKey(GGroupObjectValue currentKey) {
+    }
+    public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
+    }
+    public void changeExpandedAll(boolean open, long requestIndex) {
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updateLsf(this, values, partial);

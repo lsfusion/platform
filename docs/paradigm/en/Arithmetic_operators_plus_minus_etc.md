@@ -27,7 +27,7 @@ The remainder of division, integer division, and exponentiation have no operator
 |Integer division|`divideInteger[…, …]`|Casts both operands to `INTEGER` (non-integer values are rounded) and returns their ratio — integer division, truncating the fractional part|`divideInteger(7, 2)`|`3`|
 |Exponentiation|`power[…, …]`|Takes two input operands and returns the first raised to the power of the second; the result is `DOUBLE`|`power(2, 3)`|`8`|
 
-### Determining the result class
+### Result class
 
 The result class is determined as:
 

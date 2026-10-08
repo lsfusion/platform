@@ -75,7 +75,7 @@ This component layout algorithm is a special case of [CSS Flexible Box Layout](h
 
 The column container breaks its static (horizontal) direction into `N` identical parts (where `N` is the number of columns): each part then has its own components, as if this part were a separate vertical container.
 
-For base components, you can specify the *automatic size* option (`autoSize`): in this case, the base size will change automatically in to enclose exactly the entire contents of this base component (for example, for a table: all its records plus a title). For a property this option applies to the value cell: its height, and in a panel also its width, unless set explicitly in pixels, follow the content instead of being determined by the value class. The width of a table column is still determined by the value class with this option.
+For base components, instead of a base size in pixels, you can specify the *automatic size* (the base size `-1`): the base size is then not fixed but follows the content of the component — for a table, its base height encloses the rows it has loaded plus the header. For a property the automatic size is specified for the [value cell](#valueWidth) (in the web client; the desktop client always sizes the cell by the value class): its height, and in a panel also its width, then follow the content instead of being determined by the value class. The width of a table column is still determined by the value class.
 
 The properties layout in a table (or rather, the columns that display their values) is done the same way as if the table were a horizontal container, and the columns of the table were internal components of this container. 
 
@@ -96,7 +96,7 @@ In addition, cell widths can be specified in *characters* (`charWidth`), which i
 
 In the last two cases (that is, when specifying the width as a sample value or in characters), if the property value class implies the presence of buttons on the right during [input](Primitive_input_INPUT.md) (for example, `DATE` class), then the width of this button (21 pixels) is added to the width of the property value cell.
 
-### Default dimensions and layout
+### Default dimensions and layout {#defaultSizes}
 
 By default, the extension coefficient and alignment for components are determined as follows:
 
@@ -112,7 +112,7 @@ The `0` of the last row is not quite `0` for a column of a table. While the [wor
 
 The base container size (except the tab panel) is equal by default to the sum of the base sizes of all its child components for the dynamic direction, and the maximum for the static direction. The base height of the tab panel is the sum of the base height of its current tab and the height of the tab title bar, the base width is the same as the base width of the current tab.
 
-The base width of tables/trees is `130` pixels by default, and the height is `70` pixels. The base size of the property panel is determined in the same way as if the panel was a container (horizontal if the caption is on the left, vertical if it is at the top) consisting of the caption and the value cell. The base size of the remaining base components (as well as the caption in the property panel) is determined in such a way as to enclose all the text contained in them.
+The base size of a table or tree is computed by default from its content: the height encloses `lineHeight` rows (`5` by default) of the base row height — the tallest value cell of its columns by its explicit height, `charHeight` or class — plus the header, the width — `lineWidth` columns of the average base column width (by default all the columns when there are at most three, otherwise from three to six, growing with the number of columns), for a tree plus its hierarchical column. The base size of the property panel is determined in the same way as if the panel was a container (horizontal if the caption is on the left, vertical if it is at the top) consisting of the caption and the value cell. The base size of the remaining base components (as well as the caption in the property panel) is determined in such a way as to enclose all the text contained in them.
 
 #### Property value cell dimensions
 
@@ -132,9 +132,9 @@ The following formulas are used by default to determine the width of a property 
 
 The default height of a property value cell is equal to the height of the font used, except properties whose values belong to the `TEXT`, `RICHTEXT` and `HTMLTEXT` classes (in this case, the height is four times the font height, and the width is that of a string of unlimited length). In a panel this height is the base size of the cell, which does not change with the content: text longer than four lines scrolls inside the input field or the rich text editor, while the content of a cell shown as is - HTML, read-only text - is clipped by default.
 
-### Window size
+### Window size {#windowSize}
 
-If the form opens in [window](In_an_interactive_view_SHOW_DIALOG.md#location) mode it does not have an upper container, so you need to determine this window's initial size. This size is determined similarly to the default base size, the only difference is that for tables/trees the default size is determined not as a constant (the default is `130`, `70`) but in such a way that it contains their whole contents (similar to the automatic sizing mechanism), but no less than `130` in width and `140` in height.
+If the form opens in [window](In_an_interactive_view_SHOW_DIALOG.md#location) mode it does not have an upper container, so you need to determine this window's initial size. This size is determined similarly to the default base size, the only difference is that for tables/trees the default size is determined not as the default base size but by the rows loaded at opening (similar to the automatic size), within the screen size.
 
 The size is computed from the content present at the moment the window opens and does not change afterwards (only the user can resize the window). In the web client, the content of a container rendered by a React component is drawn by the component itself — after the window size has been computed — so such a container without a base size counts as empty, and its content then does not fit the window and pushes the components below it, including the system buttons, past its edge. A component's base size is taken as the minimum when the window size is computed, so such a container is given a base size. Content that does not fit in it scrolls inside the container by default.
 

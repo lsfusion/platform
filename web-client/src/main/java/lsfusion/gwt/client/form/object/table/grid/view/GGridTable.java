@@ -143,6 +143,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 key.put(getProperty(column), GGridTable.this.getColumnKey(column));
                 return key;
             }
+
+            @Override
+            protected boolean noSort(Map<GPropertyDraw, GGroupObjectValue> columnKey) { // the column's property, mapped
+                for (GPropertyDraw property : columnKey.keySet())
+                    if (property.noSort)
+                        return true;
+                return false;
+            }
         };
     }
 

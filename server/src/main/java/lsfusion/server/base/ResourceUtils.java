@@ -5,6 +5,7 @@ import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.EFunction;
@@ -342,21 +343,43 @@ public class ResourceUtils {
         cache.keySet().stream().filter(checkExtension).forEach(cache::remove);
     }
 
+    private static String devRevision;
+
+    // in dev mode there is no assembled jar with SCM-Version in its manifest, so we read the svn revision of the working directory (the project module)
+    // the same way svn-revision-number-maven-plugin reads it (depth empty) when the jar is assembled
+    private static String getDevRevision() {
+        if (devRevision == null) {
+            String revision = "";
+            try {
+                // outside a working copy svn writes only to stderr, so the output is empty
+                Integer parsed = BaseUtils.parseInt(SystemUtils.runCmd("svn info --show-item revision", null, true).getCmdOut());
+                if (parsed != null && parsed > 0)
+                    revision = parsed.toString();
+            } catch (IOException ignore) { // svn is not installed
+            }
+            devRevision = revision;
+        }
+        return devRevision.isEmpty() ? null : devRevision;
+    }
+
     public static String getRevision(boolean inDevMode) {
-        if (!inDevMode) {
+        if (inDevMode) {
+            return getDevRevision();
+        } else {
             try {
                 String[] paths = getClassPathElements();
                 for (String path : paths) {
                     if (!isRedundantString(path) && path.toLowerCase().endsWith(".jar")) {
                         File file = new File(path);
                         if (file.exists()) {
-                            JarFile jarFile = new JarFile(file);
-                            Manifest manifest = jarFile.getManifest();
-                            if (manifest != null) {
-                                String revisionString = manifest.getMainAttributes().getValue("SCM-Version");
-                                Integer revision = BaseUtils.parseInt(revisionString);
-                                if (revision != null && revision > 0) {
-                                    return revisionString;
+                            try(JarFile jarFile = new JarFile(file)) {
+                                Manifest manifest = jarFile.getManifest();
+                                if (manifest != null) {
+                                    String revisionString = manifest.getMainAttributes().getValue("SCM-Version");
+                                    Integer revision = BaseUtils.parseInt(revisionString);
+                                    if (revision != null && revision > 0) {
+                                        return revisionString;
+                                    }
                                 }
                             }
                         }

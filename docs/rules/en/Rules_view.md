@@ -318,7 +318,7 @@ title: 'Rules: view logic'
    (`charHeight`) or pixels (`valueHeight`), with an extension
    coefficient
    (`PROPERTY(comment(t)) { fill = 1; charHeight = 10; captionVertical = TRUE; }`),
-   rendered HTML and read-only text get `autoSize = TRUE`.
+   rendered HTML and read-only text get the height of their content (`valueHeight = -1`, in the web client).
 
 8. To display data, the assistant MUST first consider
    the standard object group view types: the table,

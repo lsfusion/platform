@@ -14,7 +14,7 @@ These abstract action lists are the [launch-event](Launch_events.md) handlers â€
 | `onInit[]`                       | early server initialization, before the main start; runs version synchronization              |
 | `onStarted[]`                    | application-server start, before the server accepts client connections                         |
 | `onFirstStarted[]`               | the very first application-server start only (when `firstStart[]` holds)                        |
-| `onFinallyStarted[]`             | after `onStarted[]`, at the end of the start sequence                                          |
+| `onFinallyStarted[]`             | after `onStarted[]` and the [`Reflection`](System_Reflection.md) metadata synchronization stage, at the end of the start sequence                                          |
 | `onClientStarted[]`              | a client connecting; dispatches to the desktop or web handler by client type                  |
 | `onDesktopClientStarted[]`       | a desktop client connecting                                                                    |
 | `onWebClientStarted[]`           | a web client connecting                                                                        |

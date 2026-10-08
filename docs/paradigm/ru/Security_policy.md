@@ -138,3 +138,12 @@ IF NOT customUserLogin('jsmith') THEN
 - Пароль хранится в виде хеша в `sha256Password[CustomUser]`. Действие `setSHA256Password[CustomUser, STRING]` хеширует переданный пароль и записывает хеш туда.
 - Главная роль записывается в `mainRole[User]`, а дополнительная роль назначается записью `TRUE` в `in[CustomUser, UserRole]`. `userRoleSID[STRING]` находит роль по коду, а `customUserLogin[ISTRING]` — пользователя по логину. При сохранении изменений созданному пользователю автоматически назначается также дополнительная роль `default` (а при логине `admin` — ещё и роль `admin`).
 - Объект приложения (например, сотрудник) связывается со своим пользователем обычным первичным свойством, объявляемым в приложении: `user = DATA CustomUser (Employee);`.
+
+Права записываются так же — в хранимые свойства прав модуля [`Security`](System_Security.md): `dataPermission[UserRole, NavigatorElement]` для элемента навигатора, `dataPermissionView[UserRole, ActionOrProperty]` и остальные типы прав для свойства или действия, — с ключами-объектами модуля [`Reflection`](System_Reflection.md), которые `navigatorElementCanonicalName[STRING]`, `propertyCanonicalName[STRING]` и `actionCanonicalName[STRING]` находят по каноническому имени. Эти объекты появляются только после синхронизации метаданных при запуске, которая выполняется после `onStarted[]` ([события запуска](Launch_events.md)), поэтому права заполняют в `onFinallyStarted[]`: раньше поиск элемента, добавленного после предыдущего запуска, возвращает `NULL`, а запись по ключу `NULL` ничего не меняет.
+
+```lsf
+onFinallyStarted() + {
+    dataPermission(userRoleSID('manager'), navigatorElementCanonicalName('HR.salaries')) <- Permission.forbid;
+    dataPermissionView(userRoleSID('manager'), propertyCanonicalName('HR.salary[HR.Employee]')) <- Permission.forbid;
+}
+```

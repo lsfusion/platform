@@ -24,6 +24,9 @@ public class GGridSortableHeaderManagerTest extends GWTTestCase {
             protected String getColumnKey(int column) {
                 throw new UnsupportedOperationException();
             }
+            protected boolean noSort(String columnKey) { // `sku`: a column the design says not to sort by
+                return "sku".equals(columnKey);
+            }
         };
     }
 
@@ -56,6 +59,15 @@ public class GGridSortableHeaderManagerTest extends GWTTestCase {
         manager.changeOrder("name", GOrder.REPLACE);
         assertEquals(orders("name", true), asked);
         assertEquals(orders("price", true), manager.getOrderDirections());
+    }
+
+    // a click on a column the design says not to sort by asks for nothing - the column key telling it of each kind of
+    // table, a grid's map or a tree's property alike (noSort)
+    public void testAClickOnANoSortColumnAsksForNothing() {
+        manager.changeOrder("sku", GOrder.REPLACE);
+        assertNull(asked);
+        manager.changeOrder("price", GOrder.REPLACE);
+        assertEquals(orders("price", true), asked);
     }
 
     public void testAClickOnTheSortedColumnTurnsIt() {

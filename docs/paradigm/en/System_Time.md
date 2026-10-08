@@ -27,6 +27,8 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 
 ### Conversion
 
+A `ZDATETIME` is converted to `DATE`, `DATETIME` and `TIME` by [type conversion](Type_conversion.md).
+
 | Property                                          | What it does                                                                                                                                              |
 |---------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `toDate[DATETIME]` / `toTime[DATETIME]`           | take a `DATETIME`, return its date part as `DATE` / its time part as `TIME`; built-in `DATE(...)` / `TIME(...)` class casts                                |
@@ -34,7 +36,7 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 | `toDateTime[DATE, TIME]`                          | combine a `DATE` and a `TIME` into a `DATETIME`; PG `$1 + $2` (date plus time)                                                                             |
 | `toSeconds[TIME]`                                 | takes a `TIME`, returns seconds since midnight as `INTEGER`; PG `extract(epoch from $1)`                                                                   |
 | `toTime[INTEGER]`                                 | takes a second count, returns the `TIME` that many seconds after midnight; PG `TIME '00:00' + INTERVAL '1 second' * $1` (counts of 86400 or more, or negative, wrap over the 24-hour clock) |
-| `toDateTime[LONG]` / `toZDateTime[LONG]`          | take a Unix time in seconds (despite the parameter name `millis` in the source), return `DATETIME` / `ZDATETIME`; PG `to_timestamp(CAST($1 AS NUMERIC), 'UTC')::timestamp` / `to_timestamp(CAST($1 AS NUMERIC))` |
+| `toZDateTime[LONG]`                               | takes a Unix time in seconds (despite the parameter name `millis` in the source), returns `ZDATETIME`; PG `to_timestamp(CAST($1 AS NUMERIC))`                                                        |
 | `toDateFormat[STRING, STRING]`                    | parse a `DATE` from the first string by the format pattern in the second; PG `to_date($1, $2)`                                                             |
 | `toDateTimeFormat[STRING, STRING]`                | parse a `DATETIME` from the first string by the format pattern in the second; PG `to_timestamp($1, $2)`                                                    |
 | `toDateISO[DATE]`                                 | formats a `DATE` as a `'YYYY-MM-DD'` string; PG `to_char($1, 'YYYY-MM-DD')`                                                                                |
@@ -90,7 +92,7 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 
 ### Calendar classes and forms
 
-`Month` and `DOW` are built-in static [classes](User_classes.md#static) describing months (12 objects) and days of the week (7 objects). They carry these properties:
+`Month` and `DOW` are classes whose [static objects](Static_objects.md) describe months (12 objects) and days of the week (7 objects). They carry these properties:
 
 | Property        | What it returns                                                                                              |
 |-----------------|-------------------------------------------------------------------------------------------------------------|
@@ -102,7 +104,7 @@ The signatures below use the built-in time classes `DATE`, `TIME`, `DATETIME` (w
 
 Lookup by number runs the other way: `month[INTEGER]`, `DOW[INTEGER]`. The forms `months` and `DOWs` show these classes as directories.
 
-`DateTimePickerRanges` and `DateTimeIntervalPickerRanges` are static [classes](User_classes.md#static) with ready-made shortcut sets (`rangeToday`, `rangeYesterday`, `rangeLast7Days`, and so on) for picking a single date or a date interval in the UI.
+`DateTimePickerRanges` and `DateTimeIntervalPickerRanges` are classes whose [static objects](Static_objects.md) are ready-made shortcuts (`rangeToday`, `rangeYesterday`, `rangeLast7Days`, and so on) for picking a single date or a date interval in the UI.
 
 ### Recipes
 

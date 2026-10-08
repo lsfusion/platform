@@ -739,7 +739,15 @@ title: 'Rules: domain logic'
    locals carried in by `NEWSESSION NESTED (...)` or
    `NEWSESSION NESTED LOCAL` when their result is to be copied
    back to the upper session, since it is the cleared values
-   that would be copied back.
+   that would be copied back. So a form that keeps its page
+   state — the chosen section, the search text — in local
+   properties does not run an applying action under
+   `NEWSESSION NESTED LOCAL`: it carries into the new session
+   every local the action uses or changes — every local at
+   all when the action can open an interactive form — and
+   after a successful `APPLY` returns the plain ones cleared.
+   Only the locals the action needs are listed instead:
+   `NEWSESSION NESTED (a, b)`.
 
    An `APPLY` that fails or is cancelled leaves the session
    as it was, locals included — which is why the assistant

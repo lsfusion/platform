@@ -106,7 +106,7 @@ DESIGN order {
 
 A component is given a *base size* in pixels (`size`, `width`, `height`). Beyond that, [along the main direction](../paradigm/Form_design.md#components) of a container the free space is divided between the children in proportion to their *extension coefficient* `flex` (the `fill` option sets it together with the alignment), and across that direction the *alignment* `align` applies — `START`, `CENTER`, `END`, `STRETCH`. **Analogy**: CSS Flexible Box Layout, where `flex` is `flex-grow` and the base size is `flex-basis`. In the web client the layout is implemented through it.
 
-For a property, the size of the [value cell](../paradigm/Form_design.md#valueWidth) is set separately from the whole component: `valueWidth` and `valueHeight` in pixels, `charWidth` and `charHeight` in characters. It is also what sets the column width when the property is shown in a table. The `autoSize` option fits the base size to the content, and applies to text components only.
+For a property, the size of the [value cell](../paradigm/Form_design.md#valueWidth) is set separately from the whole component: `valueWidth` and `valueHeight` in pixels, `charWidth` and `charHeight` in characters. It is also what sets the column width when the property is shown in a table. The size `-1` fits the base size to the content: `valueHeight = -1` gives a text cell the height of its text (web client), `size = (-1, -1)` gives a table the height of its loaded rows.
 
 ### The default design
 

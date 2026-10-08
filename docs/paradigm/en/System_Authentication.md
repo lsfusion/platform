@@ -13,7 +13,7 @@ A *design environment* is the entity that personal interface settings (navigator
 |-------------------------------------------|----------------------------------------------------------------------------------------------|
 | `DesignEnv`                               | the abstract base class of design environments; `Computer` and `User` both inherit from it  |
 | `currentDesignEnv[]`                      | the current design environment: `currentComputer[]` when `storeNavigatorSettingsForComputer[]` is set, otherwise `currentUser[]` |
-| `ColorTheme`                              | a static class with two objects, `light` and `dark`                                         |
+| `ColorTheme`                              | a class with two [static objects](Static_objects.md), `light` and `dark`                                         |
 | `designEnvColorTheme[DesignEnv]`          | the color theme chosen for a design environment                                             |
 | `colorTheme[DesignEnv]`                   | the resolved theme: `designEnvColorTheme[DesignEnv]` if set, otherwise `clientColorTheme[DesignEnv]` |
 | `isDarkTheme[]`                           | flag set when `colorTheme[DesignEnv]` of the current design environment equals `ColorTheme.dark` |
@@ -201,7 +201,7 @@ The navigator gets a `security` folder (under `System`, holding `customUsers` an
 ### See also
 
 - [`System modules`](System_modules.md) — the general inventory of platform modules.
-- [`User classes`](User_classes.md) — what abstract and static classes are, as used by `User`, `Contact`, and `ColorTheme`.
+- [`User classes`](User_classes.md) — what abstract classes and [static objects](Static_objects.md) are, as used by `User`, `Contact`, and `ColorTheme`.
 - [`Security policy`](Security_policy.md) — how access rights are assigned to the users declared here.
 - [`Security`](System_Security.md) — the separate module for roles and access policies.
 - [`Service`](System_Service.md) — administration and service actions.

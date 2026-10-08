@@ -11,7 +11,7 @@ String operators are operators which parameters and result are the properties wh
 
 The `+` operator returns `NULL` if one of the operands is `NULL`. The `CONCAT` operator treats a `NULL` operand as an empty string (however, concatenating values that are all `NULL` still returns `NULL`) and joins the operands with a *delimiter* that is inserted only between operands that are not `NULL`. For example, `CONCAT ' ', 'John', 'Smith'` = `'John Smith'`, but `CONCAT ' ', 'John', NULL` = `'John'`.
 
-### Determining the result class
+### Result class
 
 The result class is defined as:
 

@@ -26,7 +26,7 @@ The `ACTIVE TAB` and `ACTIVE PROPERTY` forms create a parameterless `BOOLEAN` pr
 - `TAB` — the value is recomputed whenever the active tab on the form changes. Typically used to gate other properties' computation (for example, in `SHOWIF`, export conditions, etc.) to avoid doing work for tabs that are not currently visible.
 - `PROPERTY` — the value is recomputed whenever the focus changes on the form and pushed to the client.
 
-To run an action at the moment a tab is switched to (as opposed to reading the current state), use the [`EVENTS ON TAB`](Event_block.md) handler.
+To run an action at the moment the user switches to a tab (as opposed to reading the current state), use the [`EVENTS ON TAB`](Event_block.md) handler.
 
 #### Form activity
 

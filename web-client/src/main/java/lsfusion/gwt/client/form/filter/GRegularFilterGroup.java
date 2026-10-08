@@ -7,7 +7,14 @@ import java.util.ArrayList;
 
 public class GRegularFilterGroup extends GComponent {
     public ArrayList<GRegularFilter> filters = new ArrayList<>();
-    public int defaultFilterIndex;
     public GGroupObject groupObject;
     public boolean noNull;
+
+    // null for none
+    public GRegularFilter getFilter(int filterID) {
+        for (GRegularFilter filter : filters)
+            if (filter.ID == filterID)
+                return filter;
+        return null;
+    }
 }

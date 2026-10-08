@@ -26,7 +26,7 @@ title: 'Email'
 | `fromAddress[Account]`                         | sender address put into outgoing mail                                      |
 | `isDefaultInbox[Account]`                     | flag marking the account as the default one for sending                    |
 
-`EncryptedConnectionTypeStatus` is a static [class](User_classes.md#static) with two objects — `SSL` and `TLS` — for the SMTP encryption mode. The `encryptedConnectionTypeStatuses` form lists them.
+`EncryptedConnectionTypeStatus` is a class with two [static objects](Static_objects.md) — `SSL` and `TLS` — for the SMTP encryption mode. The `encryptedConnectionTypeStatuses` form lists them.
 
 `inboxAccount[STRING]` picks the account used to send a message from a given sender address: it returns the account whose `fromAddress[Account]` equals that address (`accountFromAddress`), and falls back to the account flagged `isDefaultInbox[Account]` (`defaultInboxAccount`) when no account matches the address.
 
@@ -45,7 +45,7 @@ title: 'Email'
 | `ignoreExceptions[Account]`                   | flag to keep going past a message that fails to process                   |
 | `readAllFolders[Account]`                     | flag to read every server folder, not just the inbox                      |
 
-`ReceiveAccountType` is a static [class](User_classes.md#static) with four objects for the receive protocol: `POP3`, `POP3S`, `IMAP`, `IMAPS`. The `receiveAccountTypes` form lists them.
+`ReceiveAccountType` is a class with four [static objects](Static_objects.md) for the receive protocol: `POP3`, `POP3S`, `IMAP`, `IMAPS`. The `receiveAccountTypes` form lists them.
 
 ### Folders
 

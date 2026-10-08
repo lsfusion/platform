@@ -1,11 +1,14 @@
 package lsfusion.gwt.client.form.filter.user;
 
+import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+
+import java.util.ArrayList;
 
 public class GPropertyFilter {
     public GFilter filter;
@@ -48,6 +51,17 @@ public class GPropertyFilter {
         filterDTO.junction = junction;
 
         return filterDTO;
+    }
+    // ... and back, for a group's whole list: the conditions its filters are, as a client sent them or the server
+    // reported them - what the group's panel shows, and what a view drawing the group's FILTERS box is shown
+    public static ArrayList<GPropertyFilter> getConditions(GForm form, GGroupObject group,
+                                                           ArrayList<GPropertyFilterDTO> filters) {
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        for (GPropertyFilterDTO filter : filters)
+            conditions.add(new GPropertyFilter(new GFilter(form.getProperty(filter.propertyID)), group,
+                    filter.columnKey, PValue.convertFileValue(filter.filterValue.content), filter.negation,
+                    GCompare.get(filter.compareByte), filter.junction));
+        return conditions;
     }
     
     public boolean nullValue() {

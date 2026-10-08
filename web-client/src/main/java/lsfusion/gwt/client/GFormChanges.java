@@ -4,6 +4,8 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.filter.GRegularFilter;
+import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -43,6 +45,9 @@ public class GFormChanges {
     // ascending; the filters as a client sends them (GPropertyFilter.getFilterDTO)
     public final NativeSIDMap<GGroupObject, LinkedHashMap<Column, Boolean>> userOrders = new NativeSIDMap<>();
     public final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilterDTO>> userFilters = new NativeSIDMap<>();
+
+    // the filter selected in the filter groups it was set for, null for none
+    public final LinkedHashMap<GRegularFilterGroup, GRegularFilter> regularFilters = new LinkedHashMap<>();
 
     public final HashSet<GPropertyReader> updateProperties = new HashSet<>();
 
@@ -104,6 +109,11 @@ public class GFormChanges {
 
         for (int i = 0; i < dto.userFiltersGroupIds.length; i++) {
             remapped.userFilters.put(form.getGroupObject(dto.userFiltersGroupIds[i]), new ArrayList<>(Arrays.asList(dto.userFilters[i])));
+        }
+
+        for (int i = 0; i < dto.regularFilterGroupIds.length; i++) {
+            GRegularFilterGroup filterGroup = form.getRegularFilterGroup(dto.regularFilterGroupIds[i]);
+            remapped.regularFilters.put(filterGroup, filterGroup.getFilter(dto.regularFilterIds[i]));
         }
 
         remapped.needConfirm = dto.needConfirm;

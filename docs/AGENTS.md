@@ -838,6 +838,51 @@ construction-specific
 detail
 MUST be omitted.
 
+A link
+to a section
+MUST point
+to an anchor
+that the target
+actually defines,
+either explicitly
+or through a heading.
+Whenever the assistant
+adds or changes
+such a link,
+it MUST check
+that the anchor exists,
+and whenever it removes
+or renames an anchor —
+including rewording
+a heading
+whose generated anchor
+is linked —
+it MUST update
+every link to it.
+A section
+that links point to
+SHOULD carry
+an explicit anchor,
+identical
+in both language versions,
+and links SHOULD use it
+rather than the anchor
+generated from
+the heading text,
+since a generated anchor
+changes
+with the heading's wording
+and differs
+between the two
+language versions.
+When the documentation
+already links a concept
+to a particular section,
+a new link
+to that concept
+SHOULD go
+to the same section.
+
 What not to restate or invent:
 
 When documenting

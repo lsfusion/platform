@@ -1697,7 +1697,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public void addPivotColumn(PropertyDrawEntityOrPivotColumn column, Version version) {
-        pivotColumns.add(ListFact.singleton(column), version);
+        ImList<PropertyDrawEntityOrPivotColumn> columnList = ListFact.singleton(column);
+        pivotColumns.add(columnList, version);
+        addPivotColumnView(columnList, version);
     }
 
     public void addPivotColumns(List<List<PropertyDrawEntityOrPivotColumn>> columns, Version version) {
@@ -1709,7 +1711,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public void addPivotRow(PropertyDrawEntityOrPivotColumn row, Version version) {
-        pivotRows.add(ListFact.singleton(row), version);
+        ImList<PropertyDrawEntityOrPivotColumn> rowList = ListFact.singleton(row);
+        pivotRows.add(rowList, version);
+        addPivotRowView(rowList, version);
     }
 
     public void addPivotRows(List<List<PropertyDrawEntityOrPivotColumn>> rows, Version version) {
@@ -1722,6 +1726,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     public void addPivotMeasure(PropertyDrawEntity measure, Version version) {
         pivotMeasures.add(measure, version);
+        addPivotMeasureView(measure, version);
     }
 
     public void addPivotMeasures(List<PropertyDrawEntity> measures, Version version) {
@@ -1960,7 +1965,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         mapping.add(defaultOrders, src.defaultOrders);
         mapping.add(fixedOrders, src.fixedOrders);
         mapping.addl(pivotColumns, src.pivotColumns);
-        mapping.addl(pivotRows, src.pivotColumns);
+        mapping.addl(pivotRows, src.pivotRows);
         mapping.add(pivotMeasures, src.pivotMeasures);
 
         forms.add(new Pair<>(src, mapping));

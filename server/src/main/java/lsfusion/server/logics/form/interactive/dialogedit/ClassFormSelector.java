@@ -84,7 +84,8 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
 
     @Override
     public FormEntity getStaticForm(BusinessLogics BL, CustomClass customClass) {
-        if(customClass == null)
+        // the class of the passed object can be wider than the class of the form (SHOW EDIT B = a, where B extends A), then the object class says nothing about the poly form
+        if(customClass == null || !customClass.isChild(cls))
             return getStaticForm(BL);
 
         ClassFormEntity form = getForm(BL, customClass);

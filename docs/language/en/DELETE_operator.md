@@ -13,7 +13,7 @@ DELETE expr [WHERE whereExpr]
 
 ### Description
 
-The `DELETE` operator creates an action that removes from the system the object given by `expr` for every set of arguments where `whereExpr` is not `NULL`.
+The `DELETE` operator creates an action that removes from the system the object given by `expr` for every set of arguments where `whereExpr` is not `NULL`. After deletion, every [data property](../paradigm/Data_properties_DATA.md) that had the object as an argument or as its value is reset to `NULL`.
 
 The operator may introduce a local parameter in `expr`. In that case the `WHERE` block is required. Such a parameter corresponds to objects being iterated and is not a parameter of the created action.
 

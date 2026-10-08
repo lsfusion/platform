@@ -1,0 +1,17 @@
+MODULE FiltersReservedName;
+
+REQUIRE System;
+
+// a property of a group named like the group's user filters, on the node where a React view draws them - a custom on
+// the group's box draws the rows and the filters on one node: it would shadow `filters`
+CLASS FiltersNameItem;
+filtersNameText = DATA STRING[20] (FiltersNameItem);
+
+FORM filtersReservedName
+    OBJECTS i = FiltersNameItem
+    PROPERTIES(i) filtersNameText EXTID 'filters'
+;
+
+DESIGN filtersReservedName {
+    BOX(i) { custom = 'ItemBoard'; }
+}

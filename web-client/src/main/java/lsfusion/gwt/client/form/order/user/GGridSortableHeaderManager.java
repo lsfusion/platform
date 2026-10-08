@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.form.order.user;
 
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -86,16 +84,6 @@ public abstract class GGridSortableHeaderManager<T> {
         return false;
     }
 
-    private boolean noSort(T columnKey) {
-        if (columnKey instanceof HashMap) {
-            for (Object entry : ((HashMap) columnKey).keySet()) {
-                if (entry instanceof GPropertyDraw && ((GPropertyDraw) entry).noSort)
-                    return true;
-            }
-        }
-        return false;
-    }
-
     public Map<T, Boolean> getOrderDirections() {
         return orderDirections;
     }
@@ -105,4 +93,8 @@ public abstract class GGridSortableHeaderManager<T> {
     protected abstract void ordersChanged(T columnKey, LinkedHashMap<T, Boolean> orders);
 
     protected abstract T getColumnKey(int column);
+
+    // whether the design says the column must not be sorted by (noSort) - asked of the column key, which each kind of
+    // table has its own shape of
+    protected abstract boolean noSort(T columnKey);
 }

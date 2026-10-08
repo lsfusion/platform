@@ -26,7 +26,7 @@ The operators work with the [interactive view](../paradigm/Interactive_view.md) 
 - the singular operators (`ORDER`, `FILTER`, `FILTERGROUP`, `FILTER PROPERTY`) **apply** the value from the `FROM` block to the form element — the same orders and filters the user can set on it;
 - the plural operators (`ORDERS`, `FILTERS`, `FILTERGROUPS`, `FILTERS PROPERTY`) **read** the current value of the form element into the property from the `TO` block.
 
-`ORDER`, `FILTER` and `FILTER PROPERTY` apply the value at once: a plural operator later in the same action reads the new value, and the form shows it together with its other changes. They do not trigger the [form events](../paradigm/Form_events.md) `ORDERS`, `FILTERS` and `FILTERS PROPERTY`, which occur when the user changes the orders or filters; the `ORDER` and `FILTER` events of a group object occur on any change of them, this one included.
+A singular operator applies the value at once: a plural operator later in the same action reads the new value, and the form shows it together with its other changes. It does not trigger the [form events](../paradigm/Form_events.md) `ORDERS`, `FILTERS`, `FILTERGROUPS` and `FILTERS PROPERTY`, which occur when the user changes the orders or filters; the `ORDER` and `FILTER` events of a group object occur on any change of them, this one included.
 
 The form element is given by its name: `groupObjectId` — a group object (its orders or filters), `filterGroupId` — a filter group, `formPropertyId` — a form property (its filter).
 
@@ -34,7 +34,7 @@ The value is in a serialized form that depends on the element:
 
 - for a group object's orders (`ORDER` / `ORDERS`) — `JSON`: a list of orders (the property name and the descending flag);
 - for a group object's filters (`FILTER` / `FILTERS`) — `JSON`: a list of filter conditions (the property name, comparison, negation, value, and `OR` junction);
-- for a filter group (`FILTERGROUP` / `FILTERGROUPS`) — `INTEGER`: the number of the active filter in the group;
+- for a filter group (`FILTERGROUP` / `FILTERGROUPS`) — `INTEGER`: the number of the active filter in the group, counting from 1, or 0 when no filter is active, in a `NONULL` group too; a number naming no filter of the group changes nothing;
 - for a property's filter (`FILTER PROPERTY` / `FILTERS PROPERTY`) — `STRING`: the property's filter value.
 
 `ORDER` and `FILTER` skip an item that names a property of another group object or a property with the `COLUMNS` option, since an item names no column. A filter condition with no comparison gets the default comparison of the property.
@@ -87,8 +87,8 @@ restoreFilters ()  { FILTER orders.o FROM savedFilters; }
 // currentOrders gets JSON like [{"property": "date", "desc": true}, {"property": "number", "desc": false}]
 readOrders ()  { ORDERS orders.o TO currentOrders; }
 
-// activate the second filter ("Small") in the filter group amount (zero-based)
-showSmall ()  { FILTERGROUP orders.amount FROM 1; }
+// activate the second filter ("Small") in the filter group amount
+showSmall ()  { FILTERGROUP orders.amount FROM 2; }
 
 // filter the customer property by the value 'Acme'
 filterAcme ()  { FILTER PROPERTY orders.customer FROM 'Acme'; }

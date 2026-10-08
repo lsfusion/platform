@@ -71,7 +71,9 @@ the name in the first column.
    implementation of these mechanisms in Java, JavaScript or
    another language: a separate server part, a separate
    interface with its own data operations, a computation or
-   a check duplicated outside the platform.
+   a check duplicated outside the platform, rows filtered,
+   sorted or summed in a client component instead of the
+   form's filters and properties.
 
 2. WHAT IS NOT APPLICATION CODE. The rule concerns the
    application's own code. It does not concern the platform's
@@ -123,6 +125,18 @@ the name in the first column.
 
    Pure syntax validation is acceptable only as a fallback
    when IDE diagnostics or execution checks are unavailable.
+
+   An IDE diagnostics call that is cancelled or aborted right
+   after a file was created or changed outside the IDE is not
+   necessarily a user cancel: repeat it after a pause before
+   falling back.
+
+   If the IDE cannot resolve an element declared by a metacode
+   usage, expand that usage in its file
+   (`lsfusion_set_meta_visibility`, `show`) and repeat the
+   diagnostics: the IDE sees such declarations only in expanded
+   code. A dry run or a server start checks them as well.
+   Collapse the usage (`hide`) before committing.
 
 ## Rules for using lsFusion tools
 
@@ -264,7 +278,9 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
    or matching an explicit user request.
 
 2. Properties and forms MUST be declared before use.
-   The assistant MUST NOT rely on forward use.
+   The assistant MUST NOT rely on forward use: an unqualified
+   use above the declaration silently binds to a matching
+   element of another required namespace instead of failing.
 
 3. String literals MUST use single quotes.
    Double quotes are NOT a valid string literal delimiter

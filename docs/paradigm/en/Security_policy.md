@@ -137,3 +137,12 @@ IF NOT customUserLogin('jsmith') THEN
 - The password is stored as a hash in `sha256Password[CustomUser]`. The action `setSHA256Password[CustomUser, STRING]` hashes the given password and writes the hash there.
 - The main role is written to `mainRole[User]`, and an additional role is assigned by writing `TRUE` to `in[CustomUser, UserRole]`. `userRoleSID[STRING]` finds a role by its code, and `customUserLogin[ISTRING]` finds a user by login. When the changes are saved, a newly created user is also assigned the `default` additional role automatically (and the `admin` role too when the login is `admin`).
 - An application object (for example, an employee) is linked to its user by an ordinary data property declared in the application: `user = DATA CustomUser (Employee);`.
+
+Permissions are written the same way into the stored permission properties of the [`Security`](System_Security.md) module — `dataPermission[UserRole, NavigatorElement]` for a navigator element, `dataPermissionView[UserRole, ActionOrProperty]` and the other permission types for a property or action — keyed by the [`Reflection`](System_Reflection.md) objects that `navigatorElementCanonicalName[STRING]`, `propertyCanonicalName[STRING]` and `actionCanonicalName[STRING]` find by canonical name. Those objects appear only when the start synchronizes the metadata, which happens after `onStarted[]` ([launch events](Launch_events.md)), so permissions are seeded in `onFinallyStarted[]`: earlier, the lookup of an element added since the previous start returns `NULL`, and an assignment with a `NULL` key changes nothing.
+
+```lsf
+onFinallyStarted() + {
+    dataPermission(userRoleSID('manager'), navigatorElementCanonicalName('HR.salaries')) <- Permission.forbid;
+    dataPermissionView(userRoleSID('manager'), propertyCanonicalName('HR.salary[HR.Employee]')) <- Permission.forbid;
+}
+```

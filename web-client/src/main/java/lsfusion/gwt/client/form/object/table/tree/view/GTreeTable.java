@@ -104,6 +104,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             protected GPropertyDraw getColumnKey(int column) {
                 return getTreeGridColumn(column).getColumnProperty();
             }
+
+            @Override
+            protected boolean noSort(GPropertyDraw columnKey) { // a tree's column key IS the property
+                return columnKey.noSort;
+            }
         };
 
         form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null, null, null, null),

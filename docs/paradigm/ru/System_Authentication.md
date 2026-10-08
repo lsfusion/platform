@@ -13,7 +13,7 @@ title: 'Authentication'
 |-------------------------------------------|----------------------------------------------------------------------------------------------|
 | `DesignEnv`                               | абстрактный базовый класс сред оформления; от него наследуются `Computer` и `User`          |
 | `currentDesignEnv[]`                      | текущая среда оформления: `currentComputer[]` при установленном `storeNavigatorSettingsForComputer[]`, иначе `currentUser[]` |
-| `ColorTheme`                              | статический класс с двумя объектами, `light` и `dark`                                       |
+| `ColorTheme`                              | класс с двумя [статическими объектами](Static_objects.md), `light` и `dark`                                       |
 | `designEnvColorTheme[DesignEnv]`          | цветовая тема, выбранная для среды оформления                                               |
 | `colorTheme[DesignEnv]`                   | итоговая тема: `designEnvColorTheme[DesignEnv]`, если задана, иначе `clientColorTheme[DesignEnv]` |
 | `isDarkTheme[]`                           | признак, что `colorTheme[DesignEnv]` текущей среды равна `ColorTheme.dark`                  |
@@ -201,7 +201,7 @@ title: 'Authentication'
 ### Связано
 
 - [`System modules`](System_modules.md) — общий перечень модулей платформы.
-- [`Пользовательские классы`](User_classes.md) — что такое абстрактные и статические классы, как их используют `User`, `Contact` и `ColorTheme`.
+- [`Пользовательские классы`](User_classes.md) — что такое абстрактные классы и [статические объекты](Static_objects.md), как их используют `User`, `Contact` и `ColorTheme`.
 - [`Политика безопасности`](Security_policy.md) — как назначаются права доступа объявленным здесь пользователям.
 - [`Security`](System_Security.md) — отдельный модуль ролей и политик доступа.
 - [`Service`](System_Service.md) — административные и служебные действия.

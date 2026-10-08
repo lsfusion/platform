@@ -349,10 +349,12 @@ public class GFormLayout extends SizedFlexPanel {
 
     // the single funnel every built view goes through, and the one place that sees BOTH that a view was built and
     // where it landed. A react container draws its children from `data` and parks everything else until an <Lsf>
-    // places it; a child with no `lsf = TRUE` that nevertheless has a view of its own - a group's toolbar or filter
-    // box moved in, say - is drawn by nobody: React has at most what labels it, and the park is not a place. Marking
+    // places it; a child with no `lsf = TRUE` that nevertheless has a view of its own - a group's toolbar moved in,
+    // say - is drawn by nobody: React has at most what labels it, and the park is not a place. Marking
     // it `lsf = TRUE` is what the author means, and then the view names it in an <Lsf>. A component the design does not
-    // name - a user filter's - is placed with the named container that holds it
+    // name - a user filter's - is placed with the named container that holds it. A group's filter box moved in is not
+    // such a child: the platform builds no panel for it (GAbstractTableController.initFilters), and its conditions are
+    // the view's
     private void reportUnplaceable(GComponent key, GAbstractContainerView containerView) {
         if (!(containerView instanceof ReactContainerView) || key.isLsfView() || !unplaceable.add(key))
             return;

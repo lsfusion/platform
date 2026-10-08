@@ -9,7 +9,7 @@ The operator returns `NULL` if the number being rounded or the precision is `NUL
 
 How values exactly halfway between two possible results are rounded is determined by the database, not fixed by the platform.
 
-### Determining the result class
+### Result class
 
 The result class depends on whether the precision is given as a constant integer literal:
 

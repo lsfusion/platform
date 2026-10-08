@@ -3,7 +3,6 @@ package lsfusion.client.form.filter.view;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.view.widget.CheckBoxWidget;
 import lsfusion.client.form.filter.ClientRegularFilter;
-import lsfusion.client.form.filter.ClientRegularFilterGroup;
 
 import java.awt.*;
 import java.awt.event.FocusEvent;
@@ -17,7 +16,7 @@ public abstract class SingleFilterBox extends CheckBoxWidget {
     private AWTEvent latestCheckBoxEvent;
     private boolean internalChange = false;
 
-    public SingleFilterBox(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
+    public SingleFilterBox(final ClientRegularFilter singleFilter) {
         super(singleFilter.getFullCaption());
 
         addItemListener(new ItemListener() {
@@ -59,10 +58,6 @@ public abstract class SingleFilterBox extends CheckBoxWidget {
                 }
             }
         });
-
-        if (filterGroup.defaultFilterIndex >= 0) {
-            setSelected(true);
-        }
     }
 
     @Override
@@ -71,9 +66,12 @@ public abstract class SingleFilterBox extends CheckBoxWidget {
         super.processEvent(e);
     }
 
-    public void forceSelect(boolean select) {
-        latestCheckBoxEvent = null;
-        setSelected(select);
+    // shows the filter the server reports selected or not, which it has applied already: nothing is sent
+    public void showSelected(boolean select) {
+        if (isSelected() != select) {
+            internalChange = true;
+            setSelected(select);
+        }
     }
     
     public abstract void selected() throws IOException;

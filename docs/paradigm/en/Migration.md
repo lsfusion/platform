@@ -80,7 +80,7 @@ V0.3.1 {
  
 V0.4 {
     FORM PROPERTY Document.documentForm.name(i) -> Document.itemForm.itemName(i)
-    FORM PROPERTY Item.itemForm.itemName(i) -> Item.itemForm.iname // adding of an explicit name for a property on a formе: iname = itemName(i)
+    FORM PROPERTY Item.itemForm.itemName(i) -> Item.itemForm.iname // adding of an explicit name for a property on a form: iname = itemName(i)
     CLASS Date.DateInterval -> Date.Interval
     OBJECT Geo.Direction.North -> Geo.Direction.north
     TABLE User.oldTable -> User.newTable

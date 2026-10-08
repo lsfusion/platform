@@ -194,6 +194,11 @@ public class GGroupObject implements Serializable, HasNativeSID {
         // a group in a tree has no grid of its own: the tree draws it
         return parent != null ? parent : grid;
     }
+    // ... and its FILTERS box: its own, or its tree's - one box for all the tree's groups (mirrors
+    // FormView.getFiltersContainer)
+    public GContainer getFiltersContainer() {
+        return parent != null ? parent.filtersContainer : filtersContainer;
+    }
 
     // the key a ROW of this group is keyed by, taken out of a fuller one. A grid keys its rows by the group's own
     // objects; a TREE keys them by the path down to the group, every group above included - which is what its rows,

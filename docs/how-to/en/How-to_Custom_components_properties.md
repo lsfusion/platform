@@ -263,7 +263,7 @@ The message displayed by the created component will look like this:
 
 In this example, we will handle two user actions for any of the messages: clicking on the quoted message and clicking on the Reply button.
 In the first case, the transition to the original message will be done, and in the second case - storing the message
-in [local property](../paradigm/Data_properties_DATA.md#---local) and setting the focus in the input field of the new message.
+in [local property](../paradigm/Data_properties_DATA.md#local) and setting the focus in the input field of the new message.
 
 Let's declare [actions](../paradigm/Actions.md) for them and add them to the form:
 ```lsf
@@ -410,7 +410,7 @@ DESIGN chat {
             alignment = STRETCH;
             MOVE PROPERTY(message()) {
                 fill = 1;
-                autoSize = TRUE;
+                valueHeight = -1;
                 width = 0;
                 caption = '';
             }
@@ -419,7 +419,7 @@ DESIGN chat {
     }  
 }
 ```
-By setting the _autoSize_ and _width_ attributes, the input component will stretch as the message size grows.
+By setting the _valueHeight_ (`-1`, the height of the content) and _width_ attributes, the input component will stretch as the message size grows.
 
 The final form will look like this:
 

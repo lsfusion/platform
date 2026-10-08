@@ -17,6 +17,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     protected final ArrayList<ClientComponent> visibleChildren = new ArrayList<>();
 
+    // the tab the server has active, as far as the client knows: selecting it sends nothing
     protected ClientComponent currentChild;
 
     public TabbedClientContainerView(final ClientFormController formController, final ClientContainer container) {
@@ -48,6 +49,20 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         if(index >= 0) {
             panel.selectTab(index);
         }
+    }
+
+    // a tab the server has made active (ACTIVATE TAB): selected with nothing sent, now if it is shown, else when the
+    // panel selects a tab (ensureTabSelection) or once it is shown (activateTab)
+    public void setActiveTab(ClientComponent component) {
+        currentChild = component;
+        activateTab(component);
+    }
+
+    // a tab the server has made active, selected after the layout once it is shown: only while it is the server's tab -
+    // a later one of the container, reported or the user's, takes its place, and selecting this one would send it
+    public void activateServerTab(ClientComponent component) {
+        if (component.equals(currentChild))
+            activateTab(component);
     }
 
     public void updateCaption(ClientContainer container) {
@@ -107,9 +122,11 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         super.updateLayout(childrenVisible);
     }
 
+    // the tab the server has active if it is shown, else the first one, which is then sent as the client's choice
     private void ensureTabSelection() {
         if (panel.getSelectedTab() == -1 && panel.getTabCount() != 0) {
-            panel.selectTab(0);
+            int index = visibleChildren.indexOf(currentChild);
+            panel.selectTab(index >= 0 ? index : 0);
         }
     }
 

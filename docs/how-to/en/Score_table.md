@@ -163,7 +163,7 @@ CONSTRAINT ((hostGoals(Game game) (-) guestGoals(game)) > 1 OR (hostGoals(game) 
     MESSAGE 'The result of the game is determined automatically';
 ```
 
-To determine the game result, the `OVERRIDE` operator is used, which returns the first non-`NULL` value in the order in which expressions are specified. In this case, calculating the `result` property will return either an object of the static class `GameResult.win`, if the goal difference in the game is greater than `1`, or the value of the `userResult` data property.
+To determine the game result, the `OVERRIDE` operator is used, which returns the first non-`NULL` value in the order in which expressions are specified. In this case, calculating the `result` property will return either the static object `GameResult.win`, if the goal difference in the game is greater than `1`, or the value of the `userResult` data property.
 
 In order to always determine a result for the game, we create a constraint that ensures that the user sets the value of the `userResult` property if the result is not calculated based on the game score.
 

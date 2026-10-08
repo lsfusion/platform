@@ -409,7 +409,12 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     // (FormView.checkCustomReactSwallowed), so the first one reached is the only one there is (mirrors
     // GComponent.getReactPlace)
     public ContainerView getReactPlace() {
-        for (ComponentView parent = getHiddenContainer(); parent != null; parent = parent.getHiddenContainer()) {
+        return getReactPlaceFrom(getHiddenContainer());
+    }
+    // ... the walk itself, up from a component: the walk of what a container holds starts at the container
+    // (ContainerView.getChildrenReactPlace)
+    protected static ContainerView getReactPlaceFrom(ComponentView component) {
+        for (ComponentView parent = component; parent != null; parent = parent.getHiddenContainer()) {
             // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
             if (parent instanceof ContainerView && ((ContainerView) parent).isReact())
                 return parent.isInForm() ? (ContainerView) parent : null;

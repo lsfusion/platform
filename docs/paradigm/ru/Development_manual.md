@@ -34,6 +34,7 @@ title: 'Для разработки'
 ### Установка десктоп-клиента
 
 -   После старта сервера в логе старта одной из последних строк будет строка со ссылкой на jnlp-файл (например, https://download.lsfusion.org/java/lsfusion-client-6.2.jnlp), запуск которого приведёт к автоматической установке клиента при помощи технологии Java Web Start.
+-   В Maven проектах десктоп-клиент также можно [запускать прямо из IDE](#mavenclient).
 
 ### Установка веб-клиента
 
@@ -86,6 +87,37 @@ title: 'Для разработки'
     По втором варианте все вышеперечисленное необходимо настраивать вручную непосредственно разработчику.
 
     Также как и для других проектов, не созданных при помощи операции создания нового lsFusion проекта, для maven-проекта необходимо вручную создать [файл настроек](Launch_parameters.md#filesettings) и [конфигурацию запуска](IDE.md#configuration) (или если платформу необходимо подключить в качестве библиотеки использовать [специальный Spring bean](#existingide))
+
+### Запуск десктоп-клиента через Maven (только для Maven проектов с parent `logics`) {#mavenclient}
+
+Если в качестве parent прописан `lsfusion.platform.build:logics`, десктоп-клиент можно запускать прямо из IDE при помощи maven-профиля `exec-client`. Клиент той же версии платформы, что указана в `pom.xml`, подключается как Maven-зависимость, поэтому его не нужно отдельно скачивать и устанавливать.
+
+-   Создать Maven-конфигурацию запуска (`Run > Edit Configurations > + > Maven`):
+    -   `Working directory` - папка модуля проекта
+    -   `Command line`:
+        ```
+        antrun:run --non-recursive -Dlsfusion.client.hostname=localhost -Dlsfusion.client.hostport=7652
+        ```
+    -   `Profiles` - `exec-client`
+    -   `JRE` (в разделе `Java`) - Java, на которой будет запускаться клиент
+
+    Клиент запускается Maven'ом в отдельном Java-процессе, поэтому запуск этой конфигурации в режиме Debug отлаживает Maven, а не клиент.
+-   Клиент настраивается системными свойствами в `Command line`:
+
+    |Свойство|Описание|
+    |---|---|
+    |`lsfusion.client.hostname`|Хост сервера приложений|
+    |`lsfusion.client.hostport`|Порт сервера приложений (обычно `7652`), задается вместе с `lsfusion.client.hostname`|
+    |`lsfusion.client.exportname`|Имя экспорта сервера приложений (по умолчанию `default`)|
+    |`lsfusion.client.user`, `lsfusion.client.password`|Логин и пароль, с которыми клиент входит без диалога авторизации, если задан также `lsfusion.client.hostname` (диалог показывается, только если авторизация не прошла)|
+    |`lsfusion.client.autologin`|Если `true`, клиент подключается анонимно без диалога авторизации. На сервере должен быть разрешен анонимный доступ к UI ([параметр](Working_parameters.md) `enableUI` или [режим разработки](Launch_parameters.md#devmode))|
+
+:::info
+Если используется Java 16 и выше, клиенту нужен доступ к внутренним пакетам модуля `java.desktop`. Так как клиент запускается в отдельном Java-процессе, `VM options` конфигурации на него не действуют, поэтому параметры нужно передать через переменную окружения `JDK_JAVA_OPTIONS` (поле `Environment variables` конфигурации):
+```
+JDK_JAVA_OPTIONS=--add-opens=java.desktop/sun.swing=ALL-UNNAMED --add-opens=java.desktop/sun.font=ALL-UNNAMED --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.desktop/javax.swing.text=ALL-UNNAMED --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-exports=java.desktop/sun.awt=ALL-UNNAMED
+```
+:::
 
 
 :::info
