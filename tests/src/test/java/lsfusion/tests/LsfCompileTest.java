@@ -9,7 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -23,31 +27,37 @@ import static org.junit.Assert.fail;
 /** The compile corpus. The server runs with dryRun, which compiles the logic and exits before it opens
  *  a database connection. compile/ok has to compile; every compile/fail module has to fail with the lines its
  *  .expected lists. The ok modules go in one run, a failing one needs a run of its own - the log then holds the
- *  errors of that module and nothing else. */
+ *  errors of that module and nothing else. The runs do not depend on each other, so they go several at a time: each
+ *  case's server starts as soon as the corpus is read, and its test only waits for it. */
 @RunWith(Parameterized.class)
 public class LsfCompileTest {
 
+    // a run takes one to two cores
+    private static final ExecutorService SERVERS = Executors.newFixedThreadPool(Math.max(1, Runtime.getRuntime().availableProcessors() / 2));
+    // a dryRun lives seconds, and the C2 compiler took most of its cpu
+    private static final List<String> JVM_OPTIONS = Collections.singletonList("-XX:TieredStopAtLevel=1");
+
     private final String name;
-    private final String includePaths;
+    private final Future<Integer> run; // the server's exit code, null when it did not finish in time
     private final List<String> expected; // null for the ok corpus, which only has to compile
 
-    public LsfCompileTest(String name, String includePaths, List<String> expected) {
+    public LsfCompileTest(String name, Future<Integer> run, List<String> expected) {
         this.name = name;
-        this.includePaths = includePaths;
+        this.run = run;
         this.expected = expected;
     }
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> corpus() throws IOException {
         List<Object[]> cases = new ArrayList<>();
-        cases.add(new Object[]{"ok", "/ok/*", null});
+        cases.add(new Object[]{"ok", compile("ok", "/ok/*"), null});
 
         Path fail = BASE.resolve("compile/fail");
         try (Stream<Path> modules = Files.walk(fail)) {
             for (Path module : (Iterable<Path>) modules.filter(path -> path.toString().endsWith(".lsf")).sorted()::iterator) {
                 String file = fail.relativize(module).toString().replace('\\', '/');
                 String name = file.substring(0, file.length() - ".lsf".length()); // the case is the .lsf and its .expected together
-                cases.add(new Object[]{"fail/" + name, "/fail/" + file, expectedLines(fail.resolve(name + ".expected"))});
+                cases.add(new Object[]{"fail/" + name, compile("fail/" + name, "/fail/" + file), expectedLines(fail.resolve(name + ".expected"))});
             }
         }
         return cases;
@@ -61,20 +71,31 @@ public class LsfCompileTest {
         return lines;
     }
 
+    private static Path log(String name) {
+        return BASE.resolve("target/compile-" + name.replace('/', '-') + ".log");
+    }
+
+    private static Future<Integer> compile(String name, String includePaths) {
+        return SERVERS.submit(() -> {
+            Process server = TestServer.start(TestServer.classPath("compile"), log(name), JVM_OPTIONS,
+                    "settings.dryRun=true", "logics.includePaths=" + includePaths);
+            if (!server.waitFor(10, TimeUnit.MINUTES)) { // a compiler that loops would hold the build until someone stops it
+                server.destroyForcibly();
+                return null;
+            }
+            return server.exitValue();
+        });
+    }
+
     @Test
     public void compiles() throws Exception {
-        Path log = BASE.resolve("target/compile-" + name.replace('/', '-') + ".log");
-        Process server = TestServer.start(TestServer.classPath("compile"), log,
-                "settings.dryRun=true", "logics.includePaths=" + includePaths);
-        if (!server.waitFor(10, TimeUnit.MINUTES)) { // a compiler that loops would hold the build until someone stops it
-            server.destroyForcibly();
-            fail("did not compile in 10 minutes\n" + excerpt(read(log)));
-        }
-        int exitCode = server.exitValue();
-        String output = read(log);
+        Integer exitCode = run.get();
+        String output = read(log(name));
+        if (exitCode == null)
+            fail("did not compile in 10 minutes\n" + excerpt(output));
 
         if (expected == null) {
-            assertEquals(excerpt(output), 0, exitCode);
+            assertEquals(excerpt(output), 0, exitCode.intValue());
         } else {
             assertTrue("compiled, but was expected to fail\n" + excerpt(output), exitCode != 0);
             for (String line : expected)

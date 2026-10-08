@@ -8,10 +8,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-// starts the platform's bootstrap in a jvm of its own, with the command line production uses
+// starts the platform's bootstrap in a jvm of its own, with the command line production uses and the jvm options a
+// runner adds
 class TestServer {
     static final Path BASE = Paths.get("").toAbsolutePath();
 
@@ -25,11 +27,16 @@ class TestServer {
     }
 
     static Process start(String classPath, Path log, String... properties) throws IOException {
+        return start(classPath, log, Collections.emptyList(), properties);
+    }
+
+    static Process start(String classPath, Path log, List<String> jvmOptions, String... properties) throws IOException {
         List<String> command = new ArrayList<>(Arrays.asList(
                 Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
                 "-cp", classPath,
                 "--add-opens=java.base/java.util=ALL-UNNAMED",
                 "--add-opens=java.base/java.lang=ALL-UNNAMED"));
+        command.addAll(jvmOptions);
         for (String property : properties)
             command.add("-D" + property);
         command.add("lsfusion.server.logics.BusinessLogicsBootstrap");
