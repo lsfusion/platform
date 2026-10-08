@@ -8,7 +8,7 @@ title: 'Инструкция WHEN'
 ### Синтаксис 
 
 ```
-WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] [NOINLINE [(param1, ..., paramN)]] [INLINE] DO eventAction;
 ```
 
 ### Описание
@@ -22,7 +22,7 @@ WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAc
 Использование инструкции `WHEN` во многом аналогично следующей инструкции:
 
 ```
-ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] [NOINLINE [(param1, ..., paramN)]] [INLINE] DO eventAction;
 ```
 
 но при этом имеет [ряд преимуществ](../paradigm/Simple_event.md).
@@ -49,6 +49,18 @@ ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO event
 - `orderExpr1, ..., orderExprM`
 
     Список выражений, определяющих порядок, в котором будут вызываться обработки для наборов объектов, для которых выполнилось условие события. Для определения порядка сначала используется значение первого выражения, затем при равенстве используется значение второго и т.д. 
+
+- `NOINLINE`
+
+    Ключевое слово. Как в [операторе `FOR`](FOR_operator.md): обработчик выполняется по одному разу для каждого набора объектов, а не его присваивания сразу для всех наборов объектов.
+
+- `param1, ..., paramN`
+
+    Параметры, объявленные в условии события, к которым относится `NOINLINE`, как в операторе `FOR`.
+
+- `INLINE`
+
+    Ключевое слово. Как в операторе `FOR`: условие независимости присваиваний обработчика друг от друга не проверяется.
 
 ### Примеры
 

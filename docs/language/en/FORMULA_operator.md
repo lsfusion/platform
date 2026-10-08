@@ -35,9 +35,10 @@ See the [custom formula](../paradigm/Custom_formula_FORMULA.md) abstraction for 
 
 - `NULL`
 
-    Keyword that loosens the default `NULL`-handling rules of a non-table-valued formula (table-valued mode ignores both positions). Two forms in increasing strength:
-    - before `className` — declares that the property may return `NULL` even when all parameter values are non-`NULL`. Without this form (and without the trailing one below), the formula must produce a non-`NULL` result for non-`NULL` arguments — failing this may lead to unpredictable results.
-    - at the end — the formula accepts `NULL` parameter values and is executed over them. Without it, a `NULL` argument produces a `NULL` result without calling the formula. This form subsumes the leading one — once the formula sees `NULL` arguments and decides what to return, declaring that the result may be `NULL` adds nothing.
+    Keyword that loosens the default `NULL`-handling rules of a non-table-valued formula (table-valued mode ignores both positions). The formula text is executed as written, with the SQL values of its arguments, and the platform does not check that it follows the rules of its form: the non-`NULL` condition of the property — the condition used wherever the property serves as a condition, in a selection operator or in an assignment — is derived as described below, while a value read as is (in an export or on a form) is the result of the SQL text. In the two forms without the trailing keyword, an argument that is `NULL` by construction — the `NULL` literal or a local property without a value — makes the property `NULL` without executing the formula. The formula must therefore follow the rules of its form itself:
+    - without the keyword — the property is non-`NULL` when all its arguments are non-`NULL`. The formula must return a non-`NULL` value for them and `NULL` when any argument is `NULL`: an SQL function that returns a value for `NULL` input (`concat`, `COALESCE`, `string_to_array` with a `NULL` delimiter) needs an explicit check (`CASE WHEN $2 IS NULL THEN NULL ELSE ... END`), otherwise the value read as is differs from the condition.
+    - before `className` — the formula may also return `NULL` for non-`NULL` arguments: the property is non-`NULL` when the value computed by the formula is non-`NULL`, so the formula is executed over `NULL` arguments as well and must return `NULL` for them.
+    - at the end — the formula is a union of its arguments: it is executed over `NULL` arguments, the `NULL` literal included, and the property is non-`NULL` when at least one argument is non-`NULL`. The formula must return a non-`NULL` value in that case and `NULL` when all arguments are `NULL`. Its result is not checked. If both keywords are given, this form applies.
 
 - `className`
 
@@ -100,6 +101,6 @@ map (JSON json, STRING key) = FORMULA JSON value 'jsonb_each($json)';
 // STRING names the value column, and `key0` is the key column of that external table
 country (LONG key0) = FORMULA STRING 'country_name' '_auto_country';
 
-// trailing NULL: the formula itself decides what to return when the argument is NULL
-coalesceName = FORMULA TEXT 'COALESCE($1, \'(unknown)\')' (TEXT name) NULL;
+// trailing NULL: the formula is executed over NULL arguments, the property is non-NULL when at least one argument is
+firstNonNull = FORMULA TEXT 'COALESCE($1, $2)' (TEXT name, TEXT login) NULL;
 ```

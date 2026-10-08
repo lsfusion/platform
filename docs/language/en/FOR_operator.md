@@ -10,6 +10,7 @@ The `FOR` operator creates an [action](../paradigm/Actions.md) that implements [
 ```
 FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
 [TOP topExpr] [OFFSET offsetExpr]
+[NOINLINE [(param1, ..., paramN)]] [INLINE]
 [NEW [alias =] className]
 DO action
 [ELSE alternativeAction]
@@ -29,6 +30,8 @@ The `FOR` operator creates an action that implements a loop. This operator can a
 The object iteration order in the `FOR` operator can be specified with an `ORDER` block. If a new parameter is declared in the expressions that define the order (a parameter not previously encountered in the `FOR` clause or in the upper context), the condition that all these expressions are non-`NULL` is automatically added.
 
 The main action is specified after the keyword `DO`, and an alternative may be specified after the keyword `ELSE`.
+
+When the main action consists of assignments, the platform executes them, where this is possible, for all iterated object collections at once instead of once per collection (the conditions are given in the [loop](../paradigm/Loop_FOR.md) abstraction). The `NOINLINE` block forbids this for all or for the listed local parameters, and the `INLINE` block lifts the condition that the assignments do not depend on one another.
 
 In the case when the operator contains a `NEW` block, and no condition is specified, the main action will be called for the created object.
 
@@ -53,6 +56,18 @@ In the case when the operator contains a `NEW` block, and no condition is specif
 - `OFFSET offsetExpr`
 
     Only records with offset `m` will participate in the iteration, where `m` is value of expression `offsetExpr`.
+
+- `NOINLINE`
+
+    Keyword. The main action is executed once per object collection, as the loop is written, instead of its assignments being executed for all object collections at once.
+
+- `param1, ..., paramN`
+
+    Local parameters declared in the condition or in the `ORDER` expressions to which `NOINLINE` applies. The loop is executed once per combination of their values, and the remaining parameters are iterated inside it, with the assignments executed at once where the conditions allow. With `ORDER` the list is treated as the full one. With `TOP` or `OFFSET` a partial list has no effect, while a full list still applies.
+
+- `INLINE`
+
+    Keyword. The condition that the assignments of the main action do not depend on one another is not checked, so they may be executed for all object collections at once even when they do, which can change the result compared with execution once per collection. The other conditions still apply.
 
 - `alias`
 

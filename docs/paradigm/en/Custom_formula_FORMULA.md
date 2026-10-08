@@ -25,11 +25,13 @@ A custom formula is not limited to producing one scalar value per call — it ma
 
 The rules for how the property's parameters relate to the underlying table belong to the `FORMULA` operator article.
 
-### `NULL` handling
+### `NULL` handling {#null}
 
-Custom formulas integrate with the platform's standard `NULL`-propagation behaviour: by default a `NULL` argument is not passed to the formula and the property yields `NULL` directly, and on non-`NULL` arguments the formula is required to produce a non-`NULL` result.
+A custom formula is executed in SQL exactly as written, with the SQL values of its arguments, and the platform does not check that it follows the rules below. What the platform determines itself is the condition under which the property is non-`NULL`. That condition is used wherever the property serves as a condition, in a selection operator or in an assignment, whereas a value read as is is the result of the SQL text. The formula must therefore keep to the rules of its form itself, otherwise its value and its condition diverge. Except under the second relaxation below, an argument that is `NULL` by construction (the `NULL` literal, a local property without a value) makes the property `NULL` without executing the formula.
 
-This default can be loosened in two nested ways. The smaller relaxation declares that the formula may return `NULL` even when all of its arguments are non-`NULL`. The larger relaxation goes further and lets the formula receive `NULL` arguments itself — useful for SQL functions like `COALESCE` whose whole point is to act on `NULL` — and once it does, the formula has full control over what to return for any input, so the smaller relaxation has no additional effect on top of it.
+By default the property is non-`NULL` when all its arguments are non-`NULL`, and the formula is required to return a non-`NULL` result for them and `NULL` when any argument is `NULL`. This matches the SQL operators and functions that return `NULL` for a `NULL` argument. A formula built on an SQL function that returns a value for `NULL` input must handle `NULL` arguments itself.
+
+This default can be loosened in two ways. The first declares that the formula may return `NULL` even when all of its arguments are non-`NULL`: the property is then non-`NULL` when the computed value is non-`NULL`, so the formula is executed over `NULL` arguments as well and must return `NULL` for them. The second treats the formula as a union of its arguments — useful for SQL functions like `COALESCE` that combine several possibly `NULL` arguments: the formula is executed over `NULL` arguments, and the property is non-`NULL` when at least one argument is non-`NULL`. The formula must then return a non-`NULL` value, and `NULL` when all arguments are `NULL`.
 
 These options apply to scalar formulas only. For table-valued formulas the `NULL` behaviour is determined entirely by the underlying SQL expression and by the table it materialises.
 
