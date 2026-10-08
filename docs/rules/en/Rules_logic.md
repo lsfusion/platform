@@ -55,6 +55,17 @@ title: 'Rules: domain logic'
    - `(+)` / `(-)` or `GROUP SUM` produces `0`
      (a zero result is returned as `NULL`).
 
+   A custom formula (`FORMULA`) is executed as written, and the
+   platform does not check that it follows the rules of its form.
+   Without the trailing `NULL` the SQL
+   text MUST return `NULL` when any argument is `NULL`: on an
+   SQL function that returns a value for `NULL` input (`concat`,
+   `COALESCE`, `string_to_array` with a `NULL` delimiter) an
+   explicit check is needed (`CASE WHEN $2 IS NULL THEN NULL
+   ELSE ... END`). With the trailing `NULL` it MUST return a
+   non-`NULL` value when at least one argument is non-`NULL`, see
+   [custom formula](../paradigm/Custom_formula_FORMULA.md#null).
+
 4. The assistant MUST NOT use `GROUP` with a `BY` block
    (including `GROUP AGGR`) inside expressions:
    in a type cast, in arithmetic

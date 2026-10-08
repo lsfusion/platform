@@ -17,7 +17,7 @@ How data is stored in the database is described in [tables](../paradigm/Tables.m
 
 2. Properties with the same set of parameters that are usually read together SHOULD be stored in one table: reading them then requires no table join.
 
-3. The `NODEFAULT` option SHOULD be used for narrow-purpose tables that properties may enter only explicitly.
+3. The `NODEFAULT` option SHOULD be used for narrow-purpose tables that properties may enter only explicitly. A table whose keys are built-in classes, no keys at all, or classes of other modules MUST be declared `NODEFAULT`, with its own properties placed into it by the `TABLE` option: otherwise at the next start it may receive the automatically placed properties of other modules with those key classes, together with their values.
 
 4. The `FULL` option SHOULD be specified for a table that contains all objects of its key classes. It affects only how queries are executed, so it MUST NOT be specified for a table that is not filled for all objects.
 
