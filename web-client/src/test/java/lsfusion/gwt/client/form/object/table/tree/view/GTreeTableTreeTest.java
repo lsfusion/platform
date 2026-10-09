@@ -89,6 +89,62 @@ public class GTreeTableTreeTest extends GWTTestCase {
         }
     }
 
+    // an answer brings the groups' keys in no order (the web server holds the changes in a HashMap): a level's rows that
+    // come before the nodes they hang under are hung once the nodes come - three levels, in every order
+    public void testTheLevelsBuildTheSameTreeInAnyOrder() {
+        GGroupObject part = new GGroupObject();
+        group(part, 62, "part");
+        part.upTreeGroups.add(cat);
+        part.upTreeGroups.add(item);
+        GGroupObjectValue p159 = new GGroupObjectValue(3, new int[]{60, 61, 62}, new Serializable[]{1, 5, 9});
+        Runnable[] levels = {() -> categories(0), () -> items(0, i15, i16, i27),
+                () -> tree.setKeys(part, keys(p159), noParents(1), new NativeHashMap<>(), 0)};
+        for (int[] order : new int[][]{{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0}}) {
+            tree = new GTreeTableTree(new GForm());
+            for (int level : order)
+                levels[level].run();
+            String at = Arrays.toString(order);
+            assertEquals(at, expected(c1, c2), children(tree.root));
+            assertEquals(at, expected(i15, i16), children(node(cat, c1)));
+            assertEquals(at, expected(i27), children(node(cat, c2)));
+            assertEquals(at, expected(p159), children(node(item, i15)));
+        }
+    }
+    // ... and a node that comes back - a filter on its level gone - gets the rows its level below last came with: that
+    // level, the same all along, is not sent again
+    public void testANodeThatComesBackGetsTheRowsItsLevelBelowLastCameWith() {
+        categories(0);
+        items(0, i15, i16, i27);
+        secondCategoryOnly(1);
+        assertEquals(expected(c2), children(tree.root));
+        categories(2);
+        assertEquals(expected(i15, i16), children(node(cat, c1)));
+        items(3); // every node closed
+        secondCategoryOnly(4);
+        categories(5);
+        assertEquals(expected(), children(node(cat, c1)));
+    }
+    private void secondCategoryOnly(int requestIndex) {
+        NativeHashMap<GGroupObjectValue, Integer> counts = new NativeHashMap<>();
+        counts.put(c2, 1);
+        tree.setKeys(cat, keys(c2), noParents(1), counts, requestIndex);
+    }
+    // ... and so does a node that moves under a later node of its group, the group recursive: the nodes of its own group
+    // first, then the level below's
+    public void testANodeThatMovesKeepsItsRows() {
+        cat.isRecursive = true;
+        GGroupObjectValue c3 = new GGroupObjectValue(60, 3), c4 = new GGroupObjectValue(60, 4), i38 = itemKey(3, 8);
+        GGroupObjectValue top = GGroupObjectValue.EMPTY;
+        NativeHashMap<GGroupObjectValue, Integer> counts = new NativeHashMap<>();
+        counts.put(c3, 2);
+        tree.setKeys(cat, keys(c1, c2, c3, c4), keys(top, top, c1, c3), counts, 0); // 3 under 1, 4 under 3
+        items(0, i27, i38);
+        tree.setKeys(cat, keys(c1, c2, c3, c4), keys(top, top, c2, c3), counts, 1); // 3 moves under 2
+        assertEquals(expected(), children(node(cat, c1)));
+        assertEquals(expected(c3, i27), children(node(cat, c2)));
+        assertEquals(expected(c4, i38), children(node(cat, c3)));
+    }
+
     public void testTheKeysBuildTheNodes() {
         categories(0);
         items(0, i15, i16);
