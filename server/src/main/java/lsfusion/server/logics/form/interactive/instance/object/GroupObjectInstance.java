@@ -1165,6 +1165,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         // FILTERS
 
+        // the filters the FILTER property is calculated with, before the handlers of ON FILTER and ON ORDER
+        ImSet<FilterInstance> eventFilters = getFilters();
         boolean updateFilters = (updated & UPDATED_FILTER) != 0;
         ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
 
@@ -1214,6 +1216,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             changeEvents.onOrderChanged();
 
+            // a handler of ON ORDER may set the orders: the rows are read with the ones it leaves
+            if(!BaseUtils.hashEquals(getSetOrders(), orders)) {
+                orders = getSetOrders();
+                updateOrderProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
+            }
+
             if(selectionDir != 0) { // we need to update selection when order is changed
                 startSelection = readOrderValues(startSelection, sql, env, modifier, baseClass, reallyChanged);
                 endSelection = readOrderValues(endSelection, sql, env, modifier, baseClass, reallyChanged);
@@ -1222,6 +1230,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                 updateSelect = true;
             }
+        }
+
+        // a handler of ON FILTER or ON ORDER may set the filters: the FILTER property is calculated with the ones it
+        // leaves
+        if(!BaseUtils.hashEquals(getFilters(), eventFilters)) {
+            updateFilters = true;
+            updateFilterProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
         }
 
         if(updateSelect)

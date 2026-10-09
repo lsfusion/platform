@@ -60,3 +60,86 @@ testOrderFromRawLiteral 'ORDER takes JSON given by a raw literal, which a plain 
     };
     assertEquals(STRING(uofOrders()), STRING(JSON(r'[{"property": "qty", "desc": true}]')), 'ORDERS read ' + STRING(uofOrders()));
 }
+
+uofName 'Name' = DATA STRING[20] (UofItem);
+uofCurrent = DATA LOCAL UofItem ();
+uofOrderEvents = DATA LOCAL INTEGER ();
+
+// ON ORDER fires while the form reads its changes, before it reads the group's rows: the rows are read with the orders
+// the handler leaves. The reading used to take them before the handler ran, and the rows came in the old ones
+FORM uofOrdered 'Items a handler orders'
+    OBJECTS i = UofItem
+    PROPERTIES(i) READONLY name = uofName, qty = uofQty
+    ORDERS name
+    EVENTS
+        ON ORDER i {
+            uofOrderEvents() <- uofOrderEvents() (+) 1;
+            ORDER uofOrdered.i FROM JSON(r'[{"property": "qty", "desc": true}]');
+        },
+        ON CHANGE i { uofCurrent() <- i; }
+;
+
+testOrderOfAnOrderHandlerIsRead 'An ORDER of ON ORDER is what the rows are read with, and ON ORDER does not fire for it' () {
+    NEW a = UofItem { uofName(a) <- 'A'; uofQty(a) <- 1; }
+    NEW b = UofItem { uofName(b) <- 'B'; uofQty(b) <- 5; }
+    NEW c = UofItem { uofName(c) <- 'C'; uofQty(c) <- 9; }
+    SHOW uofOrdered NOWAIT;
+    // A is the first row by name, C - by the handler's order, qty descending
+    assertEquals(uofName(uofCurrent()), 'C', 'the current object is ' + uofName(uofCurrent()) + ', not C, the first row of the handler\'s order');
+    assertEquals(uofOrderEvents(), 1, 'ON ORDER fired ' + uofOrderEvents() + ' times');
+}
+
+uofFirstOrdered = DATA LOCAL UofItem ();
+
+FORM uofOrderRead 'Items whose ON ORDER reads their orders'
+    OBJECTS i = UofItem
+    PROPERTIES(i) READONLY name = uofName, qty = uofQty
+    ORDERS qty DESC
+;
+
+uofOrderOf = ORDER uofOrderRead.i;
+
+EXTEND FORM uofOrderRead
+    EVENTS ON ORDER i {
+        FOR UofItem x IS UofItem ORDER uofOrderOf(x) DO {
+            uofFirstOrdered() <- x;
+            BREAK;
+        }
+    }
+;
+
+testOrderHandlerReadsTheOrderProperty 'ON ORDER reads the ORDER property of the orders it fires for' () {
+    NEW a = UofItem { uofName(a) <- 'A'; uofQty(a) <- 1; }
+    NEW b = UofItem { uofName(b) <- 'B'; uofQty(b) <- 5; }
+    NEW c = UofItem { uofName(c) <- 'C'; uofQty(c) <- 9; }
+    SHOW uofOrderRead NOWAIT;
+    // C, qty 9, is the first by qty descending
+    assertEquals(uofName(uofFirstOrdered()), 'C', 'ON ORDER read ' + uofName(uofFirstOrdered()) + ' first by the ORDER property, not C');
+}
+
+uofAPasses = DATA LOCAL BOOLEAN ();
+uofNamed (STRING[20] name) = GROUP AGGR UofItem i BY uofName(i);
+
+FORM uofOrderFiltered 'Items a handler filters as they are ordered'
+    OBJECTS i = UofItem
+    PROPERTIES(i) READONLY name = uofName, qty = uofQty
+    ORDERS name
+;
+
+uofPasses = FILTER uofOrderFiltered.i;
+
+EXTEND FORM uofOrderFiltered
+    EVENTS
+        ON ORDER i { FILTER uofOrderFiltered.i FROM JSON(r'[{"property": "qty", "compare": ">", "value": 2}]'); },
+        // the current object changes after the rows are read
+        ON CHANGE i { uofAPasses() <- uofPasses(uofNamed('A')); }
+;
+
+testFilterOfAnOrderHandlerIsTheGroupsFilter 'A FILTER of ON ORDER is what the FILTER property of the group gives' () {
+    NEW a = UofItem { uofName(a) <- 'A'; uofQty(a) <- 1; }
+    NEW b = UofItem { uofName(b) <- 'B'; uofQty(b) <- 5; }
+    NEW c = UofItem { uofName(c) <- 'C'; uofQty(c) <- 9; }
+    SHOW uofOrderFiltered NOWAIT;
+    // A, qty 1, does not pass the handler's filter, qty > 2
+    assertNull(uofAPasses(), 'FILTER of the group passes A, which the handler\'s filter does not');
+}
