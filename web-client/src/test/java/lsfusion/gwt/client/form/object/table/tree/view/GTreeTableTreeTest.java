@@ -144,6 +144,25 @@ public class GTreeTableTreeTest extends GWTTestCase {
         assertEquals(expected(c3, i27), children(node(cat, c2)));
         assertEquals(expected(c4, i38), children(node(cat, c3)));
     }
+    // ... and so does one that moves under a node synchronized before its old one, and it gets the rows of the level below
+    // that come later: it is added while the old one is still there, whose removal leaves it the node the group holds by
+    // its key - which the level below hangs its rows under (setKeys) and the expander finds a node by
+    public void testANodeThatMovesUnderAnEarlierNodeGetsTheRowsThatComeLater() {
+        cat.isRecursive = true;
+        GGroupObjectValue c3 = new GGroupObjectValue(60, 3), i38 = itemKey(3, 8), i39 = itemKey(3, 9);
+        GGroupObjectValue top = GGroupObjectValue.EMPTY;
+        NativeHashMap<GGroupObjectValue, Integer> counts = new NativeHashMap<>();
+        counts.put(c3, 1);
+        tree.setKeys(cat, keys(c1, c2, c3), keys(top, top, c2), counts, 0); // 3 under 2
+        items(0, i38);
+        tree.setKeys(cat, keys(c1, c2, c3), keys(top, top, c1), counts, 1); // 3 moves under 1
+        assertEquals(expected(c3), children(node(cat, c1)));
+        GTreeObjectTableNode moved = (GTreeObjectTableNode) node(cat, c1).getChildren().get(0);
+        assertSame(moved, node(cat, c3));
+        assertSame(moved.getChildren().get(0), node(item, i38));
+        items(2, i38, i39);
+        assertEquals(expected(i38, i39), children(moved));
+    }
 
     public void testTheKeysBuildTheNodes() {
         categories(0);

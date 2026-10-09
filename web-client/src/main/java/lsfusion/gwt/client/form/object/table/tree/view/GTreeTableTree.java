@@ -161,9 +161,7 @@ public class GTreeTableTree {
                 int index = syncChilds.indexOf(childKey);
                 if (index == -1) {
                     node.removeNode(i);
-                    getGroupNodes(syncGroup).remove(childKey);
-
-                    removeChildrenFromGroupNodes(child);
+                    removeFromGroupNodes(child);
                 } else
                     thisGroupChildren[index] = child;
             } else {
@@ -183,8 +181,8 @@ public class GTreeTableTree {
                 // if it is an upper group, there are down groups at the beginning
                 int offset = (isUpperGroup ? downGroups : 0) + i;
                 node.addNode(offset, child);
-                GTreeObjectTableNode result = getGroupNodes(syncGroup).put(child.getKey(), child);
-                assert result == null;
+                // over the node's old one when it moves here from under a node synchronized later (removeFromGroupNodes)
+                getGroupNodes(syncGroup).put(child.getKey(), child);
 
                 // the rows the group below got under this node before the node came
                 GGroupObject downGroup = syncGroup.getDownGroup();
@@ -221,14 +219,18 @@ public class GTreeTableTree {
     }
 
     public void removeChildrenFromGroupNodes(GTreeContainerTableNode node) {
-        for (GTreeChildTableNode child : node.getChildren()) {
-            if(child instanceof GTreeObjectTableNode) {
-                GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
-                getGroupNodes(childObject.getGroup()).remove(childObject.getKey());
+        for (GTreeChildTableNode child : node.getChildren())
+            if(child instanceof GTreeObjectTableNode)
+                removeFromGroupNodes((GTreeObjectTableNode) child);
+    }
 
-                removeChildrenFromGroupNodes(childObject);
-            }
-        }
+    // a node that moves under a node synchronized before its old one is added while the old one is still there: by the
+    // time the old one goes, its key - and those of the rows below it that came back - may be the new ones'
+    private void removeFromGroupNodes(GTreeObjectTableNode node) {
+        NativeHashMap<GGroupObjectValue, GTreeObjectTableNode> nodes = getGroupNodes(node.getGroup());
+        if (nodes.get(node.getKey()) == node)
+            nodes.remove(node.getKey());
+        removeChildrenFromGroupNodes(node);
     }
 
     public NativeHashMap<GGroupObjectValue, GTreeObjectTableNode> getGroupNodes(GGroupObject group) {
