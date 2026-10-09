@@ -2469,7 +2469,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
 
         // because when recreating, there should not be tooltip in the caption (it will break the assertion)
-        TooltipManager.removeTooltip(getCaptionWidget().first);
+        // an embedded / popup form (EditingForm) has no caption, see also GFormLayout.addContainers
+        Widget captionWidget = getCaptionWidget().first;
+        if(captionWidget != null)
+            TooltipManager.removeTooltip(captionWidget);
 
         formHidden = true;
 
