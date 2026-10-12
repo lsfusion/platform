@@ -59,8 +59,10 @@ onClientStartedApply() {
 }
 
 platformVersion = DATA TEXT();
+platformBuildNumber = DATA INTEGER();
 apiVersion = DATA INTEGER();
 revisionVersion = DATA INTEGER();
+fullVersion() = CONCAT ' ', platformVersion(), '(' + (IF platformBuildNumber() THEN 'build ' + apiVersion() + '.' + platformBuildNumber() ELSE '' + apiVersion()) + ')', revisionVersion();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();
 
 resetConnections() ABSTRACT();
@@ -88,7 +90,7 @@ logo() = defaultLogo();
 //logo() = OVERRIDE logicsLogo(), defaultLogo();
 
 logoAction() {
-    MESSAGE CONCAT ' ', 'Current Version:', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
+    MESSAGE CONCAT ' ', 'Current Version:', fullVersion();
 }
 logoActionClass = ABSTRACT STRING();
 logoHeader() = ABSTRACT STRING();
@@ -511,7 +513,7 @@ onStarted() + {
     NEW launch = Launch {
         computer(launch) <- currentComputer();
         time(launch) <- currentDateTime();
-        revision(launch) <- CONCAT ' ', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
+        revision(launch) <- fullVersion();
         currentLaunch() <- launch;
     }
 
