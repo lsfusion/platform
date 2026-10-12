@@ -124,6 +124,8 @@ These per-`User` flags turn on extra logging and query diagnostics for a single 
 | `explainAppEnabled[User]`         | allocation (memory) explains                                               |
 | `volatileStatsEnabled[User]`      | use of volatile statistics for that user's queries                         |
 
+In `server-remote.log`, the requests a client makes to an open form — an [event](Form_events.md#property) of a property or an action, a change of a group's current object (other than a move to its first or last row), of its sortings or user filters, expanding or collapsing a tree's nodes — appear as the remote call `executeBatch`, which carries one such request or several sent together. Its line lists each request the call carries with its arguments, in the order they are made, and the `remoteLogTime` threshold applies to the call as a whole.
+
 ### Per-user runtime settings
 
 These per-user properties tune query execution and client behavior. `execEnv[User]` (class `TypeExecEnv`, with objects `materialize`, `disablenestloop`, `none`) selects the query execution environment and pushes the selected `id[TypeExecEnv]` into the server through the same `set…` / `refresh…` / `WHEN CHANGED` pattern as the diagnostics flags. `nameExecEnv[User]` is its caption. A user for whom no environment is chosen gets the one set by the [working parameter](Working_parameters.md) `defaultTypeExecuteEnvironment`.

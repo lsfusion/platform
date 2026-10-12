@@ -2,8 +2,11 @@ package lsfusion.interop.form.remote;
 
 import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.property.EventSource;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -15,10 +18,35 @@ public abstract class BatchRequest implements Serializable {
     // made by the form: what the request does, on the execution stack of the batch's request
     public abstract <S> void make(Requests<S> requests, S stack) throws Exception;
 
-    // ... and named in the log of the remote call that carries it (RemoteLoggerAspect)
+    // ... and named with its arguments, as a remote method is, in the log of the remote call that carries it
+    // (RemoteLoggerAspect) and on the execution stack
     @Override
     public String toString() {
-        return getClass().getSimpleName();
+        return ReflectionToStringBuilder.toString(this, ArgumentsStyle.INSTANCE);
+    }
+
+    // a value is given as its serialized bytes, which say nothing and can be many - a text a user enters -, so they are
+    // named by their number (byte[26]); a collection as an array, for its values to be too
+    private static final class ArgumentsStyle extends ToStringStyle {
+        static final ArgumentsStyle INSTANCE = new ArgumentsStyle();
+
+        private ArgumentsStyle() {
+            setUseShortClassName(true);
+            setUseIdentityHashCode(false);
+            setNullText("null");
+            setSizeStartText("byte[");
+            setSizeEndText("]");
+        }
+
+        @Override
+        protected void appendDetail(StringBuffer buffer, String fieldName, byte[] array) {
+            appendSummary(buffer, fieldName, array);
+        }
+
+        @Override
+        protected void appendDetail(StringBuffer buffer, String fieldName, Collection<?> coll) {
+            appendDetail(buffer, fieldName, coll.toArray());
+        }
     }
 
     // what the form makes a request with (RemoteForm implements it): the code the request runs, inside the remote call

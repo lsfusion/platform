@@ -35,6 +35,9 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
+import lsfusion.server.base.controller.stack.ParamMessage;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -699,8 +702,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             for (BatchRequest request : requests)
-                request.make(this, stack);
+                makeBatchRequest(stack, request.getClass().getSimpleName(), request);
         });
+    }
+
+    // the remote call is the batch's, whatever requests it carries, so each of them is measured on its own: the
+    // profiler takes it by its kind, as it takes a remote call by its method, and the stack shows its arguments
+    @StackMessage("Batch request")
+    @ThisMessage
+    private void makeBatchRequest(ExecutionStack stack, @ParamMessage String kind, @ParamMessage(profile = false) BatchRequest request) throws Exception {
+        request.make(this, stack);
     }
 
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
