@@ -262,6 +262,7 @@ public class ExecutionStackAspect {
         
         StackAndTime stackAndTime = pushStackItem(item);
         
+        boolean topStack = false;
         try {
             boolean EXPLAINAPP_ENABLED = isExplainAppEnabled();
             boolean PROFILER_ENABLED = isProfilerEnabled() && isProfileStackItem(item);
@@ -269,7 +270,6 @@ public class ExecutionStackAspect {
             boolean ANALYZE_ENABLED = PROFILER_ENABLED || EXPLAINAPP_ENABLED;
 
             ExecutionTimeCounter executionTimeCounter = null;
-            boolean topStack = false;
             long start = 0;
             long sqlStart = 0;
             long uiStart = 0;
@@ -353,7 +353,6 @@ public class ExecutionStackAspect {
                                 sqlTime >= Settings.get().getExplainTopThreshold() ||
                                 (allocatedBytesEnabled && allocatedBytes >= Settings.get().getExplainTopAllocatedBytesThreshold())))
                             ServerLoggers.explainAppLogger.info(explainDetails + '\n' + executionTimeCounter.info.immutableList().reverseList().toString("\n"));
-                        executionTime.set(null);
                     }
                 }
             }
@@ -368,6 +367,10 @@ public class ExecutionStackAspect {
             }
             throw e;
         } finally {
+            // the counter is the top item's: one left behind - by an item that failed, or with only the profiler on -
+            // would make every later item on this thread a nested one, which explain-app collects and never logs
+            if(topStack)
+                executionTime.set(null);
             popStackItem(stackAndTime);
         }
     }
