@@ -109,7 +109,7 @@ NAMESPACE Sale;
 | [`Email`](../paradigm/System_Email.md) | sending and receiving email |
 | [`Icon`](../paradigm/System_Icon.md) | UI icon catalogue |
 
-Auxiliary modules: `Backup`, `Chat`, [`Eval`](../paradigm/Eval_EVAL.md), `Excel`, `Document` / `Word`, `Image` / `OpenCV`, `I18n`, `Integration`, `MasterData`, [`Numerator`](../paradigm/Utils_Numerator.md), `Hierarchy`, `Historizable`, `Geo`, `Printer` / `QZTray` / `Sound` / `Com`, `ProcessMonitor` / `Profiler`, `RabbitMQ` / `WebSocket`, `Messenger` with its `Telegram` / `Slack` / `Viber` / `Whatsapp` / `Skype`, `SQLUtils`, `DefaultData`, `Schedule`.
+Auxiliary modules: `Backup`, `Chat`, [`Eval`](../paradigm/Eval_EVAL.md), `Excel`, `Document` / `Word`, `Image` / `OpenCV`, `I18n`, `Integration`, `MasterData`, [`Numerator`](../paradigm/Utils_Numerator.md), `Hierarchy`, `Historizable`, `Geo`, `Printer` / `QZTray` / `Sound` / `Com`, `ProcessMonitor` / `Profiler`, `RabbitMQ` / `WebSocket`, [`Messenger`](../paradigm/Utils_Messengers.md) with its `Telegram` / `Slack` / `Viber` / `Whatsapp` / `Skype`, `SQLUtils`, `DefaultData`, `Schedule`.
 
 All of this is ordinary `.lsf` declarations, not language primitives: `lpad`, `currentDate`, `currentUser` are properties, and they should be searched for in the `paradigm` branch.
 
