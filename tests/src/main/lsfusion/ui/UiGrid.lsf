@@ -1,0 +1,32 @@
+MODULE UiGrid;
+
+REQUIRE TestUtils;
+
+// the grid UiGridIT edits in the browser, and the actions it seeds and checks its item with
+
+CLASS UiGridItem 'Item';
+uiGridName 'Name' = DATA STRING[50] (UiGridItem);
+uiGridQuantity 'Quantity' = DATA INTEGER (UiGridItem);
+uiGridItem (STRING[50] name) = GROUP AGGR UiGridItem i BY uiGridName(i);
+
+FORM uiGridItems 'Items'
+    OBJECTS i = UiGridItem
+    PROPERTIES(i) uiGridName, uiGridQuantity
+;
+
+NAVIGATOR {
+    NEW FOLDER uiGrid 'UI grid' WINDOW toolbar {
+        NEW uiGridItems;
+    }
+}
+
+uiGridSeed (STRING[50] name) {
+    NEW i = UiGridItem {
+        uiGridName(i) <- name;
+    }
+    APPLY;
+}
+
+uiGridCheckQuantity (STRING[50] name, INTEGER expected) {
+    assertEquals(uiGridQuantity(uiGridItem(name)), expected, CONCAT ' ', 'the quantity of', name, 'is', uiGridQuantity(uiGridItem(name)), 'not', expected);
+}

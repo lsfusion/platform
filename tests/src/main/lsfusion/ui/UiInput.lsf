@@ -1,0 +1,28 @@
+MODULE UiInput;
+
+REQUIRE TestUtils;
+
+// the action UiInputIT answers in the browser, and the action it checks the answer with
+
+uiInputAnswer = DATA STRING[100] ();
+
+uiInputAsk 'Ask' () {
+    INPUT s = STRING[100] DO {
+        uiInputAnswer() <- s;
+        APPLY;
+    }
+}
+
+FORM uiInputDialog 'Input dialog'
+    PROPERTIES() uiInputAsk
+;
+
+NAVIGATOR {
+    NEW FOLDER uiInput 'UI input' WINDOW toolbar {
+        NEW uiInputDialog;
+    }
+}
+
+uiInputCheckAnswer (STRING[100] expected) {
+    assertEquals(uiInputAnswer(), expected, CONCAT ' ', 'the answer is', uiInputAnswer(), 'not', expected);
+}
