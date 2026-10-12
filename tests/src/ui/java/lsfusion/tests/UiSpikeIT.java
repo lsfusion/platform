@@ -96,9 +96,7 @@ public class UiSpikeIT {
 
         long started = System.nanoTime();
         Path serverLog = UI.resolve("server.log");
-        server = TestServer.start(TestServer.classPath("target/classes"), serverLog,
-                "db.name=" + DATABASE, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
-                "http.port=" + httpPort, "rmi.port=" + rmiPort, "webSocket.port=" + ports[2], "debugger.port=" + ports[3],
+        server = TestServer.start(DATABASE, ports, serverLog,
                 "settings.enableAPI=2", "settings.enableUI=2", // anonymous both ways : neither the runner nor the browser logs in
                 "user.language=en", "user.country=US", "user.timezone=UTC"); // the captions and formats follow the server, not the browser
         waitFor(() -> read(serverLog).contains("Server has successfully started"), server, serverLog, "the test server did not start");
