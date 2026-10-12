@@ -28,9 +28,11 @@ These abstract action lists are the [launch-event](Launch_events.md) handlers â€
 | Property                  | What it holds                                                                 |
 |---------------------------|-------------------------------------------------------------------------------|
 | `platformVersion[]`       | platform version as `TEXT`                                                     |
+| `platformBuildNumber[]`   | platform build number as `INTEGER`: the number of commits in the branch the platform was built from (`NULL` if it was not built by Maven from a git repository) |
 | `apiVersion[]`            | API version as `INTEGER`                                                       |
 | `revisionVersion[]`       | source revision as `INTEGER`                                                   |
-| `synchronizeVersions[]`   | reads the running platform / API / revision values into the properties above; run from `onInit[]` |
+| `fullVersion[]`           | the platform version, the API version with the build number, and the revision in one string, for example `6.3-SNAPSHOT (build 376.21539) 80348`; without the build number the API version alone is shown in parentheses: `6.3-SNAPSHOT (376) 80348` |
+| `synchronizeVersions[]`   | reads the running platform / build number / API / revision values into the properties above; run from `onInit[]` |
 
 ### Appearance
 
@@ -118,7 +120,7 @@ The `Launch` class records each application-server start.
 |-----------------------|----------------------------------------------------------------|
 | `computer[Launch]`    | the server computer; `hostname[Launch]` is its host name       |
 | `time[Launch]`        | the start moment as `DATETIME`; `date[Launch]` is its `DATE`   |
-| `revision[Launch]`    | the platform version, API version, and revision of the start   |
+| `revision[Launch]`    | the version of the start, as `fullVersion[]` gives it          |
 
 `currentLaunch[]` holds the launch object of the running server. `onStarted[]` creates a new `Launch` filled from the current computer, time, and version, and sets `currentLaunch[]`. Launches are logged through `@defineLog` and shown on the `launches` form.
 
