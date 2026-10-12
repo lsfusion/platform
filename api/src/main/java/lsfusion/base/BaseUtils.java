@@ -82,6 +82,18 @@ public class BaseUtils {
         }
     }
 
+    public static Integer getPlatformBuildNumber() {
+        try (InputStream stream = BaseUtils.class.getResourceAsStream("/lsfusion.build.number")) {
+            if (stream == null)
+                return null;
+            Integer buildNumber = parseInt(org.apache.commons.io.IOUtils.toString(stream).trim());
+            return buildNumber != null && buildNumber > 0 ? buildNumber : null;
+        } catch (IOException e) {
+            systemLogger.error("Error reading platform build number", e);
+            return null;
+        }
+    }
+
     public static String checkClientVersion(String serverPlatformVersion, Integer serverApiVersion, String clientPlatformVersion, Integer clientApiVersion) {
         if (!clientApiVersion.equals(serverApiVersion)) {
             String serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
