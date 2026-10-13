@@ -3,7 +3,7 @@ slug: "/Calculated_events"
 title: 'Calculated events'
 ---
 
-*Calculated* events are events that change the value of a [data property](Data_properties_DATA.md) when the value of some other property (*condition*) changes to a non-`NULL` value. Moreover, unlike [simple](Simple_event.md) events, this change is not made at the moment the condition is changed but is calculated each time the changed property is accessed. If the property has already been [changed](Property_change_CHANGE.md) in the same session, this change is considered higher priority than the change in the calculated event. In the absence of such a change, the event writes the calculated value even when it equals `NULL`.
+*Calculated* events are events that change the value of a [data property](Data_properties_DATA.md) when the value of some other property (*condition*) changes to a non-`NULL` value. Moreover, unlike [simple](Simple_event.md) events, this change is not made at the moment the condition is changed: it is calculated when the changed property is accessed in a session in which at least one of the properties the condition depends on has changed. When such a session applies its changes, the calculated value is written to the database. Changing only properties that the event's value depends on, but its condition does not, does not trigger recalculation by this event, even when the condition holds. If the property has already been [changed](Property_change_CHANGE.md) in the same session, this change is considered higher priority than the change in the calculated event. In the absence of such a change, the event writes the calculated value even when it equals `NULL`.
 
 For each property, there can only be one calculated event that changes this property.  
 
