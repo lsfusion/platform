@@ -29,10 +29,10 @@ These abstract action lists are the [launch-event](Launch_events.md) handlers â€
 | Property                  | What it holds                                                                 |
 |---------------------------|-------------------------------------------------------------------------------|
 | `platformVersion[]`       | platform version as `TEXT`                                                     |
-| `platformBuildNumber[]`   | platform build number as `INTEGER`: the number of commits in the branch the platform was built from (`NULL` if it was not built by Maven from a git repository) |
+| `platformBuildNumber[]`   | platform build number as `INTEGER`: the number of commits in the branch the platform was built from (`NULL` if it was not built from a git repository) |
 | `apiVersion[]`            | API version as `INTEGER`                                                       |
 | `revisionVersion[]`       | source revision as `INTEGER`                                                   |
-| `fullVersion[]`           | the platform version, the API version with the build number, and the revision in one string, for example `6.3-SNAPSHOT (build 376.21539) 80348`; without the build number the API version alone is shown in parentheses: `6.3-SNAPSHOT (376) 80348` |
+| `fullVersion[]`           | the platform version, the API version with the build number, and the revision in one string, for example `7.0-SNAPSHOT (build 399.24289) 80348`; without the build number the API version alone is shown in parentheses: `7.0-SNAPSHOT (399) 80348` |
 | `synchronizeVersions[]`   | reads the running platform / build number / API / revision values into the properties above; run from `onInit[]` |
 
 ### Appearance
