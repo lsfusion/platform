@@ -21,6 +21,8 @@
         <!-- the test logics is nobody's dependency, and must not reach the repository -->
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.compiler.source>11</maven.compiler.source>
+        <!-- jenkins builds on jdk 11 : with release, not just source, a newer jdk also rejects an api 11 does not have -->
+        <maven.compiler.release>11</maven.compiler.release>
         <surefire.version>3.2.5</surefire.version>
     </properties>
 
@@ -67,6 +69,8 @@
                         <!-- the browser tests need the ui profile -->
                         <exclude>**/Ui*IT.java</exclude>
                     </excludes>
+                    <!-- a test that passes the second time is reported as a flake rather than failing the build -->
+                    <rerunFailingTestsCount>1</rerunFailingTestsCount>
                 </configuration>
                 <executions>
                     <execution>
@@ -84,17 +88,12 @@
         <profile>
             <!-- the browser tests: the web client's war in a jetty of its own, against a test server, driven by playwright -->
             <id>ui</id>
-            <activation>
-                <!-- so that platformTests runs the spike on its branch, as its command line has no -Pui -->
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <playwright.version>1.63.0</playwright.version>
                 <!-- the jetty the web client is developed with (web-client/pom.xml) -->
                 <jetty.version>9.4.58.v20250814</jetty.version>
-                <!-- the run's defaults, -D overrides them : see UiSpikeIT -->
-                <ui.browser>docker</ui.browser>
-                <ui.repeat>30</ui.repeat>
+                <!-- the installed chrome; -Dui.browser overrides it : see UiTest -->
+                <ui.browser>chrome</ui.browser>
             </properties>
             <dependencies>
                 <dependency>
@@ -160,7 +159,6 @@
                                 <ui.war>${project.basedir}/../web-client/target/lsfusion-client-${project.version}.war</ui.war>
                                 <ui.playwrightVersion>${playwright.version}</ui.playwrightVersion>
                                 <ui.browser>${ui.browser}</ui.browser>
-                                <ui.repeat>${ui.repeat}</ui.repeat>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

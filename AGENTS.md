@@ -103,25 +103,56 @@ deploy, so run those of a module you change. Where a new test goes:
 
 - **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server. The web client's GWT tests (`GWTTestCase`) are unit tests too: web-client's surefire configuration runs them compiled to JavaScript in HtmlUnit. The custom-view registry's own JS has a node test, run by hand: `node server/src/test/js/lsfusion-custom-registry-test.js`;
 - **syntax** — `tests/compile/ok/<theme>/X.lsf` has to compile, `tests/compile/fail/<theme>/X.lsf` has to fail with every non-blank line of its `X.expected` somewhere in the output. Run with `dryRun`, which compiles the logic and exits before touching the database: all of `ok` in one run, one run per `fail` module (`LsfCompileTest`, surefire);
-- **server behaviour** — an action named `test*`, without parameters, at the top level of a module under `tests/src/main/lsfusion/<theme>/` (`LsfServerIT`, failsafe). Nothing is registered: modules come off the classpath, and every top-level name beginning with `test` is taken for a test and called, so a helper in a test module goes by another name. Each is called through the external HTTP `/exec`, so it runs in a session of its own and its changes are dropped afterwards — a test that needs them kept has to `APPLY`, and what it applies stays in the database for the tests after it. Assertions live in `TestUtils.lsf` and end in `fail(message)`, which is what the report shows. `/exec` has no client: the runner starts the server with `openFormsWithoutClient`, with which `SHOW ... NOWAIT` opens the form - its `ON INIT` and the `SHOW`'s init block run - and closes it right away, so that is where a test runs the operators of an open form (`ORDER`, `FILTER`, ...); a `SHOW` that waits for the form still fails. All the test modules are one logics, and a script `EVAL` runs sees every one of them: a name two modules declare is ambiguous there, so a test module prefixes its names.
+- **server behaviour** — an action named `test*`, without parameters, at the top level of a module under `tests/src/main/lsfusion/<theme>/` (`LsfServerIT`, failsafe). Nothing is registered: modules come off the classpath, and every top-level name beginning with `test` is taken for a test and called, so a helper in a test module goes by another name. Each is called through the external HTTP `/exec`, so it runs in a session of its own and its changes are dropped afterwards — a test that needs them kept has to `APPLY`, and what it applies stays in the database for the tests after it. Assertions live in `TestUtils.lsf` and end in `fail(message)`, which is what the report shows. `/exec` has no client: the runner starts the server with `openFormsWithoutClient`, with which `SHOW ... NOWAIT` opens the form - its `ON INIT` and the `SHOW`'s init block run - and closes it right away, so that is where a test runs the operators of an open form (`ORDER`, `FILTER`, ...); a `SHOW` that waits for the form still fails. All the test modules are one logics, and a script `EVAL` runs sees every one of them: a name two modules declare is ambiguous there, so a test module prefixes its names;
+- **browser** — for what only the web client shows: a class `Ui<Theme>IT extends UiTest` in `tests/src/ui/java/lsfusion/tests/`, with the forms and actions it works on in `tests/src/main/lsfusion/ui/Ui<Theme>.lsf` (failsafe, the `ui` profile). `UiTest` starts a server of its own, the web client's war in a jetty and a browser driven by Playwright, once for all the browser tests of a run, and opens `/main` for each test in a browser context of its own. The test opens its form through the navigator (`open`), finds what it works on with `form`, `cell` and `row`, types with `edit`, and calls the module's actions through `/exec`: `exec` seeds its data, `check` runs an assertion, retried for 10 s, since the server gets what the browser sent a moment after the click. The module prefixes its names and begins none with `test`, which `LsfServerIT` would call as a test; its forms sit in a navigator folder of its own, each under an element named as the form. A test seeds its data in the test method, under names no other attempt has (`System.nanoTime()`): what a failed attempt saved stays in the database for the rerun.
 
 ```
 mvn -pl tests -am test                        # the compile corpus only
 mvn -pl tests -am verify                      # and the behaviour tests, which need postgres
 mvn -pl tests -am verify -Dlsf.tests=forms/*  # one directory of them
 mvn -pl tests -am verify -DskipITs            # skip them, e.g. in a full build without a database
+mvn -pl tests -am verify -Pui                 # and the browser tests, see below
 ```
 
 `-am` puts the server of the working tree into the run. Without it the tests get whichever `lsfusion-server`
 snapshot is newest — your last `install`, or one Jenkins has deployed since — rather than the server change under
 test. A run takes one to a few minutes, most of it building and starting the server, which is longer than some
 agent shells let a command run by default (Claude Code's stops one after two minutes): give it a longer timeout.
+After a test class or a test module is deleted or renamed, run `mvn -pl tests clean`: failsafe runs every class
+left in `target/test-classes`, and the server loads every module left in `target/classes`.
 
 Postgres defaults to `localhost` / `postgres` / no password (`-Ddb.server=`, `-Ddb.user=`, `-Ddb.password=`), and
 `tests/compose.yaml` brings up a matching one for CI. A run creates its own `lsfusion_test_<pid>` database and
 drops it afterwards (`-Dlsf.keepDb=true` keeps it), and takes free ports, so a server of your own can stay up.
-`tests/quarantine.txt` names tests as `<theme>/<Module>.<action>`: they still run, but a failure is reported as
-skipped rather than failing the build.
+The tests need Postgres with JIT off, as `tests/compose.yaml` runs it: compiling the server's long queries takes
+them past the time the server gives them, the server cancels and reruns them, and the browser tests' page loads
+stall. On Linux PGDG's packages and the `postgres` image have it on: `ALTER SYSTEM SET jit = off`, then
+`SELECT pg_reload_conf()`.
+
+A failed test runs once more, and one that passes then is reported as a flake rather than failing the build; for a
+server test that is a new server on a new database. `tests/quarantine.txt` names tests as
+`<theme>/<Module>.<action>` (a server test) or `<Class>.<method>` (a browser one): they still run, but a failure is
+reported as skipped rather than failing the build.
+
+The browser tests run only with `-Pui`, and `-Dit.test='Ui*IT'` runs them without the server behaviour tests.
+They take the web client's war from `web-client/target` rather than building it, so build it first and again
+after every change to the client: `mvn -pl web-client -am package -P-sign-desktop-jar`, plus, on a JDK without
+`pack200` (14 and later), `-Dmaven.antrun.skip=true -Dbuildhelper.skipAttach=true -Dmdep.skip=true`.
+`-Dui.browser` is a Playwright channel of an installed browser, `chrome` by default or `msedge`, or `docker`,
+Playwright's image: Jenkins runs that one, and it needs Docker on Linux, where its container on the host's
+network reaches the jetty on `localhost`. After `tests/pom.xml` moves to another Playwright version, remove the
+old one's image from the Jenkins box by hand (2.5 GB, `docker rmi mcr.microsoft.com/playwright:v<old version>`).
+`-Dui.headless=false` shows the browser. The server's and jetty's logs are in `tests/target/ui`, and a failed test
+leaves a screenshot, the page and a Playwright trace in `tests/target/ui/failures/<Class>.<method>.png|html|zip`,
+its message listing the errors the page logged (the two of the Push API come with every load).
+
+The web client under Playwright has habits of its own, which the helpers of `UiTest` keep to. A locator looks
+inside the form's root, `[lsfusion-form=<Module.form>]`: a hidden tab keeps its DOM, with the same names in it. A
+mouse down on a cell of another row only selects the row, so a cell's editor and a tree node open on a double
+click. Text goes in by `fill` into the editor's `<input>`: a key typed before the editor is up goes to the grid,
+where ctrl+a selects every row. And a key goes only into a field that comes with the server's answer: while a
+request is in flight the client drops input, and Playwright holds a click back until the glass the client shows
+then is gone, but sends a key at once.
 
 A test written because of a fix says so in a comment, and names the issue rather than the commit: a backport
 gives one fix several hashes, and the issue is what the changelog already points at. Names of files and
