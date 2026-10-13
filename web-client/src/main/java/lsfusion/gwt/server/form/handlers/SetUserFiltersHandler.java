@@ -2,37 +2,33 @@ package lsfusion.gwt.server.form.handlers;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.form.SetUserFilters;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import net.customware.gwt.dispatch.server.ExecutionContext;
+import lsfusion.gwt.server.form.BatchRequestHandler;
+import lsfusion.interop.form.remote.BatchRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUserFilters> {
+public class SetUserFiltersHandler extends BatchRequestHandler<SetUserFilters> {
     public SetUserFiltersHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 
     @Override
-    public ServerResponseResult executeEx(final SetUserFilters action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, remoteForm -> {
-            Map<Integer, byte[][]> serializedFilters = new LinkedHashMap<>();
-            for (Integer gid : action.filters.keySet()) {
-                serializedFilters.put(gid, serializeFilters(action.filters.get(gid)));
-            }
-            return remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, serializedFilters);
-        });
+    public BatchRequest getBatchRequest(SetUserFilters action) {
+        Map<Integer, byte[][]> serializedFilters = new LinkedHashMap<>();
+        for (Integer gid : action.filters.keySet()) {
+            serializedFilters.put(gid, serializeFilters(action.filters.get(gid)));
+        }
+        return new BatchRequest.SetUserFilters(serializedFilters);
     }
 
     protected static byte[][] serializeFilters(List<GPropertyFilterDTO> filtersDTO) {

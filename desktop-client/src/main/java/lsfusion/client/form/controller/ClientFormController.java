@@ -74,6 +74,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.cell.UserInputResult;
+import lsfusion.interop.form.remote.BatchRequest;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 
@@ -992,7 +993,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("expandGroupObjectRecursive - " + group.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.expandGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, group.getID(), current);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ExpandGroupObjectRecursive(group.getID(), current));
             }
         });
     }
@@ -1002,7 +1003,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("expandGroupObject - " + group.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.expandGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize());
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ExpandGroupObject(group.getID(), objectValue.serialize()));
             }
         });
     }
@@ -1012,7 +1013,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("collapseGroupObjectRecursive - " + group.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.collapseGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, group.getID(), current);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.CollapseGroupObjectRecursive(group.getID(), current));
             }
         });
     }
@@ -1022,7 +1023,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("collapseGroupObject") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.collapseGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize());
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.CollapseGroupObject(group.getID(), objectValue.serialize()));
             }
         });
     }
@@ -1050,7 +1051,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize(), null);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ChangeGroupObject(group.getID(), objectValue.serialize(), null));
             }
         });
     }
@@ -1198,6 +1199,12 @@ public class ClientFormController implements AsyncListener {
             ((DockableMainFrame) MainFrame.instance).asyncOpenForm(dispatcher.getAsyncFormController(requestIndex), asyncOpenForm);
     }
 
+    // a request the form's remote interface takes as a BatchRequest: sent alone, as a batch of one - as the web server
+    // sends it too (BatchRequestHandler)
+    private static ServerResponse executeBatch(RemoteFormInterface remoteForm, long requestIndex, long lastReceivedRequestIndex, BatchRequest request) throws RemoteException {
+        return remoteForm.executeBatch(requestIndex, lastReceivedRequestIndex, Collections.singletonList(request));
+    }
+
     private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID) throws RemoteException {
         return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, null);
     }
@@ -1205,7 +1212,7 @@ public class ClientFormController implements AsyncListener {
         return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, false, asyncResult);
     }
     private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID, boolean isBinding, ClientPushAsyncResult asyncResult) throws RemoteException {
-        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new EventSource[] {isBinding ? EventSource.BINDING : EventSource.EDIT}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null});
+        return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ExecuteEventAction(actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new EventSource[] {isBinding ? EventSource.BINDING : EventSource.EDIT}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null}));
     }
 
     public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID, boolean isBinding, ClientPushAsyncResult asyncResult) throws IOException {
@@ -1570,7 +1577,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setPropertyOrders(requestIndex, lastReceivedRequestIndex, group.getID(), propertyList, columnKeyList, orderList);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.SetPropertyOrders(group.getID(), propertyList, columnKeyList, orderList));
             }
         });
     }
@@ -1637,7 +1644,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.SetUserFilters(filters));
             }
         });
     }

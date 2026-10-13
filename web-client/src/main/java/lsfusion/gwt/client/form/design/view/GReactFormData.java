@@ -57,8 +57,8 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 // its component is - the rows where the grid (or the tree) is, a panel property where the property is. The form level
 // is the empty group: its node is each container's top level. Every other component React draws or places has a
 // descriptor - its entry at that top level, keyed by its SID, where a property carried by name is keyed by that name -
-// an lsf one included, which the platform draws and React places; not an lsf ACTION, whose caption and image are its
-// buttons' face, which the platform draws.
+// an lsf one included, which the platform draws and React places: an lsf ACTION's says only whether the form shows it,
+// its caption and image being its buttons' face, which the platform draws.
 // What an entry says is what the server sent, as the platform keeps it for its own components: nothing here decides
 // that something is hidden or empties it. A property the form does not show is dropped by the server, and its entry has
 // no value; a component the form does not show has its SHOWIF, and its descriptor says so - the rows of a hidden grid
@@ -79,14 +79,15 @@ public class GReactFormData {
     }
 
     // WHAT A MEMBER DOES: the form's own edit, the one a user makes. The members are made here, beside the entries they
-    // mirror, and each holds the state it stands for (ReactPropertyEntry, a GroupPart; the batch, ContainerState): a
-    // call through one reads what it names - the row, the value - from that state, and hands the form the edit
+    // mirror, and each holds the state it stands for (a ReactPropertyEntry, a GroupPart): a call through one reads what
+    // it names - the row, the value - from that state, and hands the form the edit, which the form shows at once and
+    // sends at once or, inside a batch, when the batch ends (batch)
     public interface Verbs {
         // the current object of a group whose rows a view draws: one of those rows
         void changeCurrentObject(GGroupObject group, GGroupObjectValue key);
-        // the properties' cells, changed in one request: the key of each (EMPTY: the current objects) and its value
-        // (PValue.UNDEFINED: its change event, or the action)
-        void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values);
+        // a property's cell: its key (EMPTY: the current objects) and its value (PValue.UNDEFINED: its change event, or
+        // the action)
+        void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value);
         // the suggestion list of a property's cell, from the server's lookup `actionSID`
         void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount);
         // a node of a tree whose rows a view draws, opened: one of those rows
@@ -104,7 +105,28 @@ public class GReactFormData {
         // each condition on the property it resolved - sent as the platform's panel sends its list, the request's index
         // returned, which the panel's loading marks need and a view does not
         long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions);
+        // a view's batch: run, the edits made in it shown at once and sent together, in one request, when it ends -
+        // when it throws too -, a call being made when it is made. A batch begun inside it is a part of it; a server
+        // call on a controller, or a lookup, is refused while it runs
+        void batch(Runnable run);
     }
+
+    // a batch's fn (ContainerState.batch): a function, the member calls it makes being sent together
+    private static void checkFunction(String errorPrefix, JavaScriptObject fn) {
+        if (!isFunction(fn))
+            throw new RuntimeException(errorPrefix + "takes a function, the member calls it makes being sent together");
+    }
+    // fn, run at once: what follows an await in it would be made after the batch has ended, so a Promise it returns is
+    // refused - what it made before is sent. A custom grid view's batch runs its fn so too (GSimpleStateTableView)
+    public static void runBatchFunction(String errorPrefix, JavaScriptObject fn) {
+        if (isThenable(GwtClientUtils.call(fn)))
+            throw new RuntimeException(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
+                    + " what follows an await in it would be made outside it. Await before the batch");
+    }
+    private static native boolean isFunction(JavaScriptObject value) /*-{ return typeof value === 'function'; }-*/;
+    private static native boolean isThenable(JavaScriptObject value) /*-{
+        return value != null && typeof value.then === 'function';
+    }-*/;
 
     // a react container's state, made with its view, and its controller with it
     public ContainerState addContainer(GContainer scope, Consumer<JavaScriptObject> publish) {
@@ -145,8 +167,9 @@ public class GReactFormData {
     // ... of a property, ALL of it - its values and what labels it alike: an entry, keyed by its integration name on
     // the node of its group, where React draws it - none where it carries it by no name, the platform's own COUNT of a
     // list group, the pivot's: React keeps nothing of it, and nothing is sent for it; an entry over the platform's,
-    // keyed the same way, where the platform draws it and React labels it - a panel property React places, the column
-    // of the rows React draws -, which keeps what labels the property and hands the rest on; else the platform's
+    // keyed the same way, where the platform draws it and React places it - a panel property React places, the column
+    // of the rows React draws -, which keeps what labels the property and hands the rest on, an action's labels too,
+    // its button's face; else the platform's
     public GPropertyController createPropertyController(GPropertyDraw property, GLsfPropertyController lsf) {
         GContainer scope = nameScope(property);
         if (scope == null)
@@ -156,20 +179,25 @@ public class GReactFormData {
         ContainerState state = containers.get(scope);
         if (property.isList) { // its content is its column, with its group's rows, on their node
             RowsPart rows = state.rowsParts.get(property.groupObject);
-            return property.isLsfView() ? new LsfColumnPropertyEntry(rows, property, lsf) : new ReactColumnPropertyEntry(rows, property);
+            if (!property.isLsfView())
+                return new ReactColumnPropertyEntry(rows, property);
+            return property.isAction() ? new LsfColumnActionEntry(rows, property, lsf) : new LsfColumnPropertyEntry(rows, property, lsf);
         }
         // a panel property is a part of its group: on the group's node here, the empty group's on the top level
         Node node = property.groupObject == null ? state.top : state.getOrCreateGroupNode(property.groupObject);
-        return property.isLsfView() ? new LsfPanelPropertyEntry(node, property, lsf) : new ReactPanelPropertyEntry(node, property);
+        if (!property.isLsfView())
+            return new ReactPanelPropertyEntry(node, property);
+        return property.isAction() ? new LsfPanelActionEntry(node, property, lsf) : new LsfPanelPropertyEntry(node, property, lsf);
     }
-    // whether a property a view names has an entry there: not an lsf ACTION - its caption and image are its buttons'
-    // face, the platform's -, nor one React draws by no name, the group's own COUNT. Any other has a name, the form being
-    // refused without one (FormView.checkReactProjectionNames). A group's node is where an entry of it is (mirrors
-    // FormView.hasEntry)
+    // whether a property a view names has an entry there: one it carries by a name - an lsf ACTION too, whose entry
+    // says whether the form shows it -, not the one React draws by none, the group's own COUNT. Any other has a name,
+    // the form being refused without one (FormView.checkReactProjectionNames). A group's node is where an entry of it
+    // is (mirrors FormView.hasEntry)
     private static boolean hasEntry(GPropertyDraw property) {
-        return property.isLsfView() ? !property.isAction() : property.integrationSID != null;
+        return property.integrationSID != null;
     }
-    // ... and what it has instead: an lsf action is all the platform's, and React keeps nothing of the COUNT
+    // ... and what the COUNT has instead: nothing, React keeping nothing of it - the platform's controller, where the
+    // platform draws it
     private static GPropertyController noEntry(GPropertyDraw property, GLsfPropertyController lsf) {
         return property.isLsfView() ? lsf : null;
     }
@@ -405,12 +433,6 @@ public class GReactFormData {
             top.fillController();
         }
 
-        // the property of this group (null: the empty group) this container carries under the name - which is exactly
-        // how FormView claims the name: per container and group, the group's node here answering for it
-        public GPropertyDraw getGroupProperty(GGroupObject group, String integrationSID) {
-            Node node = nodeOf(group);
-            return node != null ? node.getProperty(integrationSID) : null;
-        }
         // the lsf list property whose per-row renderers an <Lsf> places, named as a panel property is - its group, then
         // its integration name, o.qty, the path of its column entry -, of a group whose rows this container draws:
         // asked of the rows' parts, not of the container's children, such a property being no child of it
@@ -428,47 +450,13 @@ public class GReactFormData {
             return null;
         }
 
-        // the batch: several members' changes in ONE request (no member can be one call for many properties). Every
-        // entry names its property by the MEMBER itself - {property: controller.o.qty, object, value} - so nothing is
-        // read by name: what an entry changes is the state that member holds, which has to be one of THIS view's
-        // controller - a member of another view, or of another form, holds another. An entry with no `value` runs the
-        // change event, as exec() does. Every entry says which of them it is, so a mistake in the fifth entry is not
-        // reported as a mistake in the call
-        void changeProperties(JavaScriptObject entries) {
-            String surface = "properties.change()";
-            String errorPrefix = controllerPrefix(surface);
-            boolean one = !GSimpleStateTableView.isJSArray(entries); // a list states them all, one entry states one
-            int size = one ? 1 : GSimpleStateTableView.jsArrayLength(entries);
-            if (size == 0) // an empty batch is a no-op, not an empty request
-                return;
-
-            GPropertyDraw[] properties = new GPropertyDraw[size];
-            GGroupObjectValue[] keys = new GGroupObjectValue[size];
-            PValue[] values = new PValue[size];
-            for (int i = 0; i < size; i++) {
-                JavaScriptObject entry = one ? entries : GSimpleStateTableView.jsArrayGet(entries, i);
-                String entryPrefix = one ? errorPrefix : errorPrefix + "entry " + i + ": ";
-                String memberPrefix = controllerPrefix(one ? surface : surface + " entry " + i);
-                if (!isJSObject(entry))
-                    throw new RuntimeException(entryPrefix + "a change must be an object {" + CHANGE_ENTRY_FIELDS.replace(",", ", ") + "}");
-                String unknown = getUnknownField(entry, CHANGE_ENTRY_FIELDS);
-                if (unknown != null)
-                    throw new RuntimeException(entryPrefix + "unknown field '" + unknown + "'; a change has " + CHANGE_ENTRY_FIELDS.replace(",", ", "));
-                ReactPropertyEntry propertyEntry = getMemberEntry(getOwnField(entry, "property"));
-                if (propertyEntry == null || propertyEntry.node.state != this)
-                    throw new RuntimeException(entryPrefix + "'property' must be a property member of this view's controller"
-                            + " (controller.<group>.<property>, or controller.<property> for the empty group)");
-                boolean exec = !hasOwnField(entry, "value");
-                if (!exec && isOwnUndefined(entry, "value"))
-                    throw new RuntimeException(entryPrefix + "'value' is undefined - pass null to clear it, or leave 'value' out to run the change event");
-                if (!exec && propertyEntry.property.isAction())
-                    throw new RuntimeException(entryPrefix + "'" + propertyEntry.property.integrationSID + "' is an action, which has no value to set: leave 'value' out to run it");
-                propertyEntry.checkShown(memberPrefix);
-                properties[i] = propertyEntry.property;
-                keys[i] = propertyEntry.getMemberKey(memberPrefix, getOwnField(entry, "object"));
-                values[i] = exec ? PValue.UNDEFINED : GSimpleStateTableView.convertFromJSUndefValue(propertyEntry.property, getOwnField(entry, "value"));
-            }
-            verbs.changeProperties(properties, keys, values);
+        // controller.batch(fn): fn run in the form's batch (Verbs.batch), which sends what it makes when it returns -
+        // what was made before a throw too, as it would have gone outside a batch. fn changes the form through this
+        // view's members: a member of another view called in it goes with this batch
+        void batch(JavaScriptObject fn) {
+            String errorPrefix = controllerPrefix("batch()");
+            checkFunction(errorPrefix, fn);
+            verbs.batch(() -> runBatchFunction(errorPrefix, fn));
         }
     }
 
@@ -547,14 +535,6 @@ public class GReactFormData {
         void putPropertyMembers(JavaScriptObject member) {
             for (PropertyEntry propertyEntry : properties)
                 propertyEntry.putMember(member);
-        }
-        // the property it carries under the name: shown or not, and an lsf one too - a sorting may name an lsf column.
-        // Nothing outside the node answers for a name used in it
-        GPropertyDraw getProperty(String integrationSID) {
-            for (PropertyEntry propertyEntry : properties)
-                if (integrationSID.equals(propertyEntry.property.integrationSID))
-                    return propertyEntry.property;
-            return null;
         }
     }
     // the empty group's node: the container's top level itself - its entries are data's own, its members the
@@ -688,19 +668,16 @@ public class GReactFormData {
         }
         // `orders`, the group's sortings in the SAME shape the .lsf ORDER operator reads and writes: the property by
         // integration SID, and `desc`, the server's and the operator's spelling (the client keeps ascending). A sorting
-        // is named only as its node names it: inside one container a name means one property, but the group may draw a
-        // twin of it in another container under the same SID, and naming that one here would read as a sorting on the
-        // node's own entry
+        // is named as a condition is, by the group's name of its property, wherever that is drawn - here, in another
+        // container, by the platform (readStateProperty) -, so what a view reads it can hand back. A sorting on what no
+        // sorting can name is not listed (isProjectableSorting): it would describe the rows by something nothing can
+        // address
         void replaceOrders() {
             JavaScriptObject array = emptyArray();
             for (Map.Entry<Column, Boolean> order : orders.entrySet()) {
-                GPropertyDraw property = order.getKey().property; // a property React draws is never in columns
-                if (property.integrationSID == null) {
-                    node.reportUnnameable(property, "orders", "sorted", "no integration SID");
-                    continue;
-                }
-                if (node.getProperty(property.integrationSID) != property) {
-                    node.reportUnnameable(property, "orders", "sorted", "this node carries it by no such name");
+                GPropertyDraw property = order.getKey().property;
+                if (!isProjectableSorting(property)) {
+                    node.reportUnnameable(property, "orders", "sorted", whyNotSorting(property));
                     continue;
                 }
                 JavaScriptObject entry = newObject();
@@ -713,16 +690,15 @@ public class GReactFormData {
 
         // ===== what its member reads: a sorting is the state of the rows, so its member is where they are drawn - a
         // view that does not draw them has none. What it is: an object the author wrote, carrying only fields this call
-        // knows, naming a property its node carries - by its integration name, as `data` names it, not by a member: a
-        // state is data, written in the shape the projection publishes it, and may name a property no member stands
-        // for, an lsf column. A call names what it changes by its member (ContainerState.changeProperties)
-        GPropertyDraw readStateProperty(String errorPrefix, JavaScriptObject item, String what, String fields) {
-            String propertySID = readAuthorObject(errorPrefix, item, what, fields);
-            GPropertyDraw property = node.getProperty(propertySID); // a name means the property this view carries
-            if (property == null)
-                throw new RuntimeException(errorPrefix + "'" + propertySID + "' is not a property this view carries on object group '" + node.group.getSID() + "'");
-            // and nothing more to check: a PROJECTED property is never grouped in columns - such a form is refused when
-            // it is built (FormView)
+        // knows, naming a property of the group - by its integration name, as `orders` names it, not by a member: a
+        // state is data, written in the shape the projection publishes it. A call names what it changes by its member
+        // (ReactPropertyEntry.change). The name is the group's (readStateProperty), and one a sorting can name
+        // (isProjectableSorting)
+        GPropertyDraw readSortingProperty(String errorPrefix, JavaScriptObject order) {
+            GPropertyDraw property = readStateProperty(errorPrefix, node.group, readAuthorObject(errorPrefix, order, "an order", ORDER_FIELDS));
+            if (!isProjectableSorting(property))
+                throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' cannot be sorted by here: "
+                        + whyNotSorting(property));
             return property;
         }
 
@@ -743,7 +719,7 @@ public class GReactFormData {
             for (int i = 0; i < size; i++) {
                 JavaScriptObject order = GSimpleStateTableView.jsArrayGet(orders, i);
                 String prefix = errorPrefix + "order " + i + ": ";
-                GPropertyDraw property = readStateProperty(prefix, order, "an order", ORDER_FIELDS);
+                GPropertyDraw property = readSortingProperty(prefix, order);
                 if (!named.add(property))
                     throw new RuntimeException(prefix + "'" + property.integrationSID + "' is already in this list");
                 applyOrder(prefix, order, property, result);
@@ -751,11 +727,11 @@ public class GReactFormData {
             verbs.changeOrders(node.group, result);
         }
         // ... one order, merged into the group's sortings as this part holds them - every one of them, those it does
-        // not name included
+        // not name included, and those an earlier call of a batch stated
         void changeOne(String surface, JavaScriptObject order) {
             String errorPrefix = controllerPrefix(surface);
             LinkedHashMap<Column, Boolean> result = new LinkedHashMap<>(orders);
-            applyOrder(errorPrefix, order, readStateProperty(errorPrefix, order, "an order", ORDER_FIELDS), result);
+            applyOrder(errorPrefix, order, readSortingProperty(errorPrefix, order), result);
             verbs.changeOrders(node.group, result);
         }
         // what one order the author wrote does to sortings: with no direction it is not a sorting, and takes the one on
@@ -764,7 +740,7 @@ public class GReactFormData {
         // already (a map keeps a key where it is), appended when not. `desc` is read once, as every field of what an
         // author wrote is
         void applyOrder(String errorPrefix, JavaScriptObject order, GPropertyDraw property, LinkedHashMap<Column, Boolean> result) {
-            Column column = new Column(property, GGroupObjectValue.EMPTY); // a property React draws is never in columns
+            Column column = new Column(property, GGroupObjectValue.EMPTY); // a sorting names none in columns
             JavaScriptObject desc = getOwnField(order, "desc");
             if (isNoValue(desc)) {
                 result.remove(column);
@@ -856,10 +832,11 @@ public class GReactFormData {
             }
             verbs.changeFilters(node.group, result);
         }
-        // ... one condition, merged into the conditions the server is filtering by, and the list it makes handed over:
-        // with no value, every condition on its property goes - "this column is not filtered by"; with one, it takes
-        // the place of the FIRST on its property - its own `or` along - so the other conditions keep their places and a
-        // range's other bound stays, or is appended when there is none
+        // ... one condition, merged into the conditions the server is filtering by - those an earlier call of a batch
+        // stated included -, and the list it makes handed over: with no value, every condition on its property goes -
+        // "this column is not filtered by"; with one, it takes the place of the FIRST on its property - its own `or`
+        // along - so the other conditions keep their places and a range's other bound stays, or is appended when there
+        // is none
         void changeOne(String surface, JavaScriptObject condition) {
             String errorPrefix = controllerPrefix(surface);
             GPropertyDraw property = readFilterProperty(errorPrefix, node.group, condition);
@@ -1278,7 +1255,7 @@ public class GReactFormData {
             verbs.collapseNode(node.group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
         // ... the opposite of what the node says now (`expanded`) - what was asked of it included, so two toggles
-        // before the answer open it and close it again
+        // before the answer open it and close it again, made one after the other or in one batch
         void toggle(String surface, JavaScriptObject objectOrKey) {
             GGroupObjectValue key = resolveGroupRow(controllerPrefix(surface), objectOrKey);
             if (isOpen(key))
@@ -1375,7 +1352,7 @@ public class GReactFormData {
         void fillRow(JavaScriptObject row, GGroupObjectValue key) {
         }
         // its member, on its node's member as its entry is on its node: none for an lsf property, whose values the
-        // platform draws and edits
+        // platform draws and edits, nor for an lsf action, which the platform's button runs
         void putMember(JavaScriptObject owner) {
         }
         GComponent owner() {
@@ -1474,7 +1451,7 @@ public class GReactFormData {
         }
         private void changeCell(String errorPrefix, JavaScriptObject objectOrKey, PValue value) {
             checkShown(errorPrefix);
-            verbs.changeProperties(new GPropertyDraw[]{property}, new GGroupObjectValue[]{getMemberKey(errorPrefix, objectOrKey)}, new PValue[]{value});
+            verbs.changeProperty(property, getMemberKey(errorPrefix, objectOrKey), value);
         }
         // ... getValues([row,] value[, mode], ok, fail[, count]): the suggestion list of the cell the call names, from
         // the lookup its mode picks - an unknown one is said on the console, and the call fails
@@ -1605,30 +1582,21 @@ public class GReactFormData {
             return objectKey;
         }
     }
-    // a property the platform draws and React labels - an lsf one: the form's controller of it is this entry, over the
-    // platform's (lsf), which draws it. What labels the property is React's, kept here; the rest of it - its values,
-    // its drop, focus, the client's own value, any other attribute or reader - is the platform's, handed on with the
-    // property. There from the start, and `hidden` whenever the platform does not show the property - it shows it from
-    // its first whole delivery until its drop, both of which come through here
+    // a property the platform draws and React places - an lsf one: the form's controller of it is this entry, over the
+    // platform's (lsf), which draws it. Its values, its drop, focus, the client's own value, any other attribute or
+    // reader are the platform's, handed on with the property; what labels it is its kind's - React's for a property,
+    // the platform's for an ACTION, whose caption and image are its button's face. No member: what the platform draws,
+    // the platform changes. There from the start, and `hidden` whenever the platform does not show the property - it
+    // shows it from its first whole delivery until its drop, both of which come through here
     private abstract class LsfPropertyEntry extends PropertyEntry {
         final GLsfPropertyController lsf; // the platform's controller of the property: the view it is drawn in
-        final GPropertyReader[] labelReaders; // its caption, image and comment, a column's footer
 
-        LsfPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf, GPropertyReader... labelReaders) {
+        LsfPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
             super(node, property);
             this.lsf = lsf;
-            this.labelReaders = present(labelReaders);
-            updateEntry(); // there from the start, hidden until the platform shows the property
         }
-        // what labels it: React's
-        public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
-            keep(reader, delivered, partial);
-        }
-        void emit(JavaScriptObject entry) {
-            emitAttributes(entry, labelReaders, GGroupObjectValue.EMPTY);
-        }
-        // ... and the rest the platform's: its values - the platform shows the property from its first whole delivery -
-        // and its drop, focus, the client's own value, any other attribute or reader
+        // its values - the platform shows the property from its first whole delivery - and its drop, focus, the
+        // client's own value, any other attribute or reader: the platform's
         public void updateValue(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
             lsf.updateValue(property, values, partial);
             if (!partial)
@@ -1654,27 +1622,83 @@ public class GReactFormData {
             lsf.updateOther(reader, values, partial);
         }
     }
-    // ... a panel or empty-group one's: its labels - caption, image and comment, the platform drawing none -, keyed by
-    // its integration name on its group's node, where a panel property React draws is, and carried by name with them; no
-    // member, its value being the platform's. An <Lsf> places it by the same name (getName), and hides its host by this
-    // entry (ContainerState.entryOf)
-    private final class LsfPanelPropertyEntry extends LsfPropertyEntry {
-        LsfPanelPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(node, property, lsf, property.captionReader, property.getImageReader(), property.commentReader);
+    // ... a panel or empty-group one's: keyed by its integration name on its group's node, where a panel property React
+    // draws is, and carried by name with them. An <Lsf> places it by the same name (getName), and hides its host by
+    // this entry (ContainerState.entryOf): it says whether the form shows it - all that an action's says
+    private abstract class LsfPanelEntry extends LsfPropertyEntry {
+        LsfPanelEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(node, property, lsf);
+        }
+        void emit(JavaScriptObject entry) {
         }
     }
-    // ... a list one's column, whose cells the platform draws in the rows React draws: React draws the column from this
-    // entry - what labels it, its caption, image, footer and comment, and what the property is - carried by name on the
-    // node the rows are on
-    private final class LsfColumnPropertyEntry extends LsfPropertyEntry {
-        LsfColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(rowsPart.node, property, lsf, property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
+    // ... a property's: its labels too - caption, image and comment, the platform drawing none of them
+    private final class LsfPanelPropertyEntry extends LsfPanelEntry {
+        final GPropertyReader[] labelReaders; // its caption, image and comment
+
+        LsfPanelPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(node, property, lsf);
+            labelReaders = present(property.captionReader, property.getImageReader(), property.commentReader);
+            updateEntry(); // there from the start, hidden until the platform shows the property
         }
-        // what labels it, and what the property is: an LSF column is filtered and sorted like any other, and the
-        // platform draws its VALUE, which says nothing about what the value is
+        // what labels it: React's
+        public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
+            keep(reader, delivered, partial);
+        }
         void emit(JavaScriptObject entry) {
-            super.emit(entry);
+            emitAttributes(entry, labelReaders, GGroupObjectValue.EMPTY);
+        }
+    }
+    // ... an ACTION's: its caption and image are its button's face, which the platform draws, so what labels it is
+    // handed on. The platform's button runs it
+    private final class LsfPanelActionEntry extends LsfPanelEntry {
+        LsfPanelActionEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(node, property, lsf);
+            updateEntry(); // there from the start, hidden until the platform shows the action
+        }
+        // what labels it: the platform's, its button's face
+        public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
+            lsf.updateLabel(reader, delivered, partial);
+        }
+    }
+    // ... a list one's column, whose cells or buttons the platform draws in the rows React draws, carried by name on
+    // the node the rows are on: React draws the column from this entry, which says what the property is - an LSF column
+    // is filtered and sorted like any other, and the platform drawing its VALUE says nothing about what the value is
+    private abstract class LsfColumnEntry extends LsfPropertyEntry {
+        LsfColumnEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(rowsPart.node, property, lsf);
+        }
+        void emit(JavaScriptObject entry) {
             emitPropertyFacts(entry, property);
+        }
+    }
+    // ... a property's: its labels too - caption, image, footer and comment
+    private final class LsfColumnPropertyEntry extends LsfColumnEntry {
+        final GPropertyReader[] labelReaders; // its caption, image, footer and comment
+
+        LsfColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(rowsPart, property, lsf);
+            labelReaders = present(property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
+            updateEntry(); // there from the start, hidden until the platform shows the property
+        }
+        // what labels it: React's
+        public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
+            keep(reader, delivered, partial);
+        }
+        void emit(JavaScriptObject entry) {
+            emitAttributes(entry, labelReaders, GGroupObjectValue.EMPTY);
+            super.emit(entry);
+        }
+    }
+    // ... an ACTION's: what labels it is its buttons' face, handed on - an action's image is a button's, row by row
+    private final class LsfColumnActionEntry extends LsfColumnEntry {
+        LsfColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
+            super(rowsPart, property, lsf);
+            updateEntry(); // there from the start, hidden until the platform shows the action
+        }
+        // what labels it: the platform's, its buttons' face
+        public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
+            lsf.updateLabel(reader, delivered, partial);
         }
     }
 
@@ -1706,9 +1730,9 @@ public class GReactFormData {
     // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component is named in (getName), and
     // where its entry is. A property is named on its group's node, where React draws its content - a list property's
     // column, lsf or not, where the rows are - or, for an lsf panel one, where React places it, its entry labelling what
-    // the platform draws (an ACTION's has no entry: its caption and image are its button's face). Any other component
-    // is named at the top level, where React draws or places it - one the design does not name, a user filter's,
-    // nowhere (mirrors FormView.nameScope)
+    // the platform draws (an ACTION's saying only whether the form shows it: its caption and image are its button's
+    // face). Any other component is named at the top level, where React draws or places it - one the design does not
+    // name, a user filter's, nowhere (mirrors FormView.nameScope)
     public GContainer nameScope(GComponent component) {
         if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList) // its column, where the rows are
             return rowsScope(((GPropertyDraw) component).groupObject);
@@ -1766,27 +1790,14 @@ public class GReactFormData {
     // arguments come in a fixed order, the value first, then the row. FormView refused a name that would take a
     // controller verb, a group's own member or `__proto__` when it built the form (claimProjectionName), so none of
     // them is taken here.
-    // the state a PROPERTY member stands for, or null for anything else: a group node, the batch, a value
-    private static native ReactPropertyEntry getMemberEntry(JavaScriptObject member) /*-{
-        return member && member.__member === "property" ? member.__property : null;
-    }-*/;
-    // ... and its property
-    static GPropertyDraw getMemberProperty(JavaScriptObject member) {
-        ReactPropertyEntry property = getMemberEntry(member);
-        return property != null ? property.property : null;
-    }
 
-    // a controller, with the one mutation no single member can own - a batch spans properties, and groups - so it hangs
-    // at the level whose members those properties are: a list of {property, object, value}, or one of them alone. A
-    // `property` is the MEMBER itself (controller.o.qty), never a name; `object` omitted means the property's group's
-    // current object, and `value` omitted runs its change event. One request for all of them, which is the whole
-    // point - otherwise it is a member's own change / exec
+    // a controller, with what no single member can own: the batch its members' changes are sent together in, as many as
+    // the function makes, of whatever groups and properties - no change of its own, each named by the member that makes
+    // it
     private static native JavaScriptObject makeController(ContainerState state) /*-{
         return {
-            properties: {
-                change: function (entries) {
-                    return state.@lsfusion.gwt.client.form.design.view.GReactFormData.ContainerState::changeProperties(*)(entries);
-                }
+            batch: function (fn) {
+                state.@lsfusion.gwt.client.form.design.view.GReactFormData.ContainerState::batch(*)(fn);
             }
         };
     }-*/;
@@ -1875,10 +1886,6 @@ public class GReactFormData {
                 propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::getValues(*)(qualified + ".getValues()", object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
             }
         };
-        // what the batch reads a member's state from (getMemberEntry): a property's is the one kind of member it
-        // takes. Non-enumerable, so `for (var k in member)` still lists exactly its verbs
-        Object.defineProperty(member, "__member", { value: "property" });
-        Object.defineProperty(member, "__property", { value: propertyEntry });
         return member;
     }-*/;
 
@@ -1900,6 +1907,20 @@ public class GReactFormData {
         }
     }
 
+    // can a sorting be on this property - and so be listed? Two rules: the projection addresses a property by its
+    // integration SID, and a sorting names one property, not one of its COLUMNS - a property grouped in columns is
+    // sorted per column, and no name here says which. The property may be the platform's to draw, so the form being
+    // built says nothing about it. A sorting failing it is not listed (OrdersPart.replaceOrders) - and a view naming
+    // one is refused (OrdersPart.readSortingProperty), by the same rule
+    private static boolean isProjectableSorting(GPropertyDraw property) {
+        return property.integrationSID != null && !property.hasColumnGroupObjects();
+    }
+    // ... and which of them it fails, in words
+    private static String whyNotSorting(GPropertyDraw property) {
+        if (property.integrationSID == null)
+            return "no integration SID";
+        return "it is grouped in columns, and a sorting names no column";
+    }
     // can a condition be on this property - and so be listed? Three rules, each said where it belongs: the projection
     // addresses a property by its integration SID; a filter is on something that can be filtered by
     // (GPropertyDraw.canBeFiltered, which GFormController.getFilterDTOs asks too); and a condition names
@@ -1920,20 +1941,16 @@ public class GReactFormData {
     }
 
     // what the author typed, as a message names it: every controller entry point is given the member path it was
-    // reached by ("g.change()", "g.qty.change()", "properties.change() entry 2"), so an error quotes the call that is
-    // in the view's source instead of a verb name the surface no longer has
+    // reached by ("g.change()", "g.qty.change()", "batch()"), so an error quotes the call that is in the view's source
+    // instead of a verb name the surface no longer has
     public static String controllerPrefix(String surface) {
         return "controller." + surface + ": ";
     }
-    private static final String CHANGE_ENTRY_FIELDS = "property,object,value";
-    private static native boolean isOwnUndefined(JavaScriptObject object, String field) /*-{
-        return Object.prototype.hasOwnProperty.call(object, field) && object[field] === undefined;
-    }-*/;
 
     // ===== WHAT A STATE MEMBER READS - a condition (the user filters) and a sorting: the object the author wrote,
-    // named by its `property`, read by one rule for both (readAuthorObject). Where the name is read is each one's own -
-    // a sorting's on the node of the rows (OrdersPart.readStateProperty) - and a member reads its call as a
-    // property member reads its own, and hands the form (Verbs) only what the call names
+    // named by its `property`, read by one rule for both (readAuthorObject), the name by one lookup for both, the
+    // group's (readStateProperty) - and a member reads its call as a property member reads its own, and hands the form
+    // (Verbs) only what the call names
     private static final String ORDER_FIELDS = "property,desc";
 
     // an object the AUTHOR wrote - a condition, a sorting - named by its `property`: the three shape questions every
@@ -1956,20 +1973,25 @@ public class GReactFormData {
 
     private static final String FILTER_CONDITION_FIELDS = "property,compare,value,negation,or";
 
-    // a condition's `property`: the group's ONE property of that name, wherever it is drawn, and one a condition can
-    // be on (isProjectableCondition). A condition is on a property of the group, and the filters part need not be
-    // where any entry of it is - FILTERS(g) with a view of its own over the platform's grid is where no node names a
-    // column - so the name is the group's, not a node's. One is all there can be: a form whose filters are projected
-    // is not built with a name the group carries on two properties (FormView.checkConditionNames)
-    private GPropertyDraw readFilterProperty(String errorPrefix, GGroupObject group, JavaScriptObject condition) {
-        String propertySID = readAuthorObject(errorPrefix, condition, "a condition", FILTER_CONDITION_FIELDS);
+    // the property a STATE names - a sorting, a condition -: the group's ONE property of that name, wherever it is
+    // drawn - by this view, by another container, by the platform. A state is the group's, and its part need not be
+    // where an entry of the property is - FILTERS(g) with a view of its own over the platform's grid is where no node
+    // names a column, and the rows' node carries no panel property drawn elsewhere -, so the name is the group's, not
+    // a node's. One is all there can be: a form that projects a part of a group's state is not built with a name the
+    // group carries on two properties (FormView.checkStateNames)
+    private GPropertyDraw readStateProperty(String errorPrefix, GGroupObject group, String propertySID) {
         assert form.countPropertyDraws(group, propertySID) <= 1;
         GPropertyDraw property = form.getPropertyDraw(group, propertySID);
         if (property == null)
             throw new RuntimeException(errorPrefix + "unknown property '" + propertySID + "' of object group '"
                     + group.getSID() + "'");
+        return property;
+    }
+    // ... a condition's: one a condition can be on (isProjectableCondition)
+    private GPropertyDraw readFilterProperty(String errorPrefix, GGroupObject group, JavaScriptObject condition) {
+        GPropertyDraw property = readStateProperty(errorPrefix, group, readAuthorObject(errorPrefix, condition, "a condition", FILTER_CONDITION_FIELDS));
         if (!isProjectableCondition(property))
-            throw new RuntimeException(errorPrefix + "'" + propertySID + "' cannot be filtered by here: "
+            throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' cannot be filtered by here: "
                     + whyNotCondition(property));
         return property;
     }

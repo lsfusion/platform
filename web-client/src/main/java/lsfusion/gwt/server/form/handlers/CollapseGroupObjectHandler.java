@@ -1,17 +1,12 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObject;
-import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.remote.RemoteFormInterface;
-import net.customware.gwt.dispatch.server.ExecutionContext;
+import lsfusion.gwt.server.form.BatchRequestHandler;
+import lsfusion.interop.form.remote.BatchRequest;
 
-import java.rmi.RemoteException;
-
-public class CollapseGroupObjectHandler extends FormServerResponseActionHandler<CollapseGroupObject> {
+public class CollapseGroupObjectHandler extends BatchRequestHandler<CollapseGroupObject> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public CollapseGroupObjectHandler(MainDispatchServlet servlet) {
@@ -19,12 +14,8 @@ public class CollapseGroupObjectHandler extends FormServerResponseActionHandler<
     }
 
     @Override
-    public ServerResponseResult executeEx(final CollapseGroupObject action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                byte[] keyValues = gwtConverter.convertOrCast(action.value);
-                return remoteForm.collapseGroupObject(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectId, keyValues);
-            }
-        });
+    public BatchRequest getBatchRequest(CollapseGroupObject action) {
+        byte[] keyValues = gwtConverter.convertOrCast(action.value);
+        return new BatchRequest.CollapseGroupObject(action.groupObjectId, keyValues);
     }
 }

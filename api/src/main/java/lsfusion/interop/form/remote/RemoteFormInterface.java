@@ -10,7 +10,6 @@ import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 
 import java.rmi.RemoteException;
@@ -40,8 +39,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : group objects
 
-    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value, ChangeSelection changeSelection) throws RemoteException;
-
     ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException; // home / end
@@ -57,19 +54,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, ListViewType listViewType) throws RemoteException;
 
-    // events : trees
-
-    ServerResponse expandGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, int groupId, boolean current) throws RemoteException;
-
-    ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException;
-
-    ServerResponse collapseGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, int groupId, boolean current) throws RemoteException;
-
-    ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException;
-
     // events : properties
-
-    ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, EventSource[] eventSources, byte[][] pushAsyncResults) throws RemoteException;
 
     ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, String notification) throws RemoteException;
 
@@ -79,11 +64,11 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : filters + orders
 
-    ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException;
-    
-    ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, Map<Integer, byte[][]> filters) throws RemoteException;
-
     ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException;
+
+    // the requests a BatchRequest kind holds - a group's current object, a property's event action, a tree's nodes,
+    // sortings, user filters -, one or several, made in their order: one processing, one answer
+    ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException;
 
     ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters, int pageSize) throws RemoteException;
 

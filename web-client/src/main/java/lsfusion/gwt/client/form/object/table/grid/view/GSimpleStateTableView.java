@@ -16,6 +16,7 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.view.GReactFormData;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -377,62 +378,51 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected void changeJSProperty(String column, JavaScriptObject object, JavaScriptObject newValue) { // can be UNDEFINED
-        changeJSProperties(new String[]{column}, new JavaScriptObject[]{object}, new JavaScriptObject[]{newValue});
+        Column gridColumn = getColumn(column);
+        if(gridColumn != null) // unknown property key passed from the (external) JS API
+            changeProperty(column, object, GSimpleStateTableView.convertFromJSUndefValue(gridColumn.property, newValue));
     }
 
+    // several cells, changed in one batch - the controller's deprecated changeProperties
     protected void changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
-        PValue[] mappedValues = new PValue[newValues.length];
-        for (int i = 0; i < newValues.length; i++) {
-            Column column = getColumn(columns[i]);
-            mappedValues[i] = column != null ? GSimpleStateTableView.convertFromJSUndefValue(column.property, newValues[i]) : null; // unknown column is skipped in changeProperties below
-        }
-        changeProperties(columns, objects, mappedValues);
-    }
-
-    protected void changeProperty(String column, JavaScriptObject object, PValue newValue) {
-        changeProperties(new String[]{column}, new JavaScriptObject[]{object}, new PValue[]{newValue});
-    }
-
-    protected void changeProperties(String[] columns, JavaScriptObject[] objects, PValue[] newValues) {
-        List<GPropertyDraw> properties = new ArrayList<>();
-        List<GGroupObjectValue> fullKeys = new ArrayList<>();
-        List<PValue> values = new ArrayList<>();
-
-        for (int i = 0; i < columns.length; i++) {
-            Column column = getColumn(columns[i]);
-            if(column == null) // unknown property key passed from the (external) JS API
-                continue;
-            GGroupObjectValue objectsKey;
-            if(GwtClientUtils.isUndefinedOrNull(objects[i]))
-                objectsKey = getSelectedKey(); // null / omitted object -> the current object
-            else {
-                objectsKey = getObjects(objects[i]); // a data row or a raw objects handle
-                // an EXPLICIT object that is neither a row nor a handle: reject loudly (mirror a
-                if(objectsKey == null) {
-                    // controller batch's refusal, GReactFormData.ContainerState.changeProperties) instead of feeding
-                    // null into getFullKey -> NPE
-                    GwtClientUtils.consoleError("changeProperty('" + columns[i] + "'): the object argument is not a data row or an objects handle; pass one of those");
-                    continue;
-                }
-            }
-            properties.add(column.property);
-            fullKeys.add(GGroupObjectValue.getFullKey(objectsKey, column.columnKey));
-            values.add(newValues[i]);
-        }
-
-        GPropertyDraw[] propertiesArray = properties.toArray(new GPropertyDraw[0]);
-        GGroupObjectValue[] fullKeysArray = fullKeys.toArray(new GGroupObjectValue[0]);
-        PValue[] valuesArray = values.toArray(new PValue[0]);
-
-        form.executePropertyEventAction(propertiesArray, fullKeysArray, valuesArray, changeRequestIndex -> {
-            for (int i = 0; i < propertiesArray.length; i++) {
-                GPropertyDraw property = propertiesArray[i];
-                if(valuesArray[i] != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
-                    GGroupObjectValue fullKey = fullKeysArray[i];
-                    form.pendingChangeProperty(property, fullKey, valuesArray[i], getValue(property, fullKey), changeRequestIndex);
-                }
-            }
+        batch(() -> {
+            for (int i = 0; i < columns.length; i++)
+                changeJSProperty(columns[i], objects[i], newValues[i]);
         });
+    }
+
+    // a change of one cell: the column's property on the object - the current one, when none is given
+    protected void changeProperty(String column, JavaScriptObject object, PValue newValue) {
+        Column gridColumn = getColumn(column);
+        if(gridColumn == null) // unknown property key passed from the (external) JS API
+            return;
+        GGroupObjectValue objectsKey;
+        if(GwtClientUtils.isUndefinedOrNull(object))
+            objectsKey = getSelectedKey(); // null / omitted object -> the current object
+        else {
+            objectsKey = getObjects(object); // a data row or a raw objects handle
+            // an EXPLICIT object that is neither a row nor a handle: reject loudly instead of feeding null into
+            // getFullKey -> NPE
+            if(objectsKey == null) {
+                GwtClientUtils.consoleError("changeProperty('" + column + "'): the object argument is not a data row or an objects handle; pass one of those");
+                return;
+            }
+        }
+        GPropertyDraw property = gridColumn.property;
+        GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(objectsKey, gridColumn.columnKey);
+        form.executePropertyEventAction(property, fullKey, newValue, changeRequestIndex -> {
+            if(newValue != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) // or use the old value instead of the new value in that case
+                form.pendingChangeProperty(property, fullKey, newValue, getValue(property, fullKey), changeRequestIndex);
+        });
+    }
+
+    // the view's batch: the changes made in run shown at once and sent together, in one request, when it ends
+    // (GFormController.batch)
+    protected void batch(Runnable run) {
+        form.batch(run);
+    }
+    protected void batchJS(JavaScriptObject run) {
+        batch(() -> GReactFormData.runBatchFunction(GReactFormData.controllerPrefix("batch()"), run));
     }
 
     protected String getCaption(String property) {
@@ -883,8 +873,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeDateProperty: function (property, object, year, month, day) {
                 return changeProperty(property, object, new Date(year, month - 1, day))
             },
+            //todo deprecated. use batch with changeProperty instead
             changeProperties: function (properties, objects, newValues) {
                 return thisObj.@GSimpleStateTableView::changeJSProperties(*)(properties, objects, newValues);
+            },
+            batch: function (run) {
+                return thisObj.@GSimpleStateTableView::batchJS(*)(run);
             },
             isCurrent: function (object) {
                 return thisObj.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
