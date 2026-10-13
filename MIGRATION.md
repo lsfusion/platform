@@ -2,6 +2,26 @@
 
 ## 7.0
 
+### The external API is disabled by default
+
+`enableAPI` now defaults to `0` (it was `1`). In 6.x every authenticated user could call any action
+through `/exec` and run any script through `/eval` and `/eval/action`; at `0` such a call fails
+with `Api is disabled. It can be enabled by using setting enableAPI > 0.` What stays allowed at `0`:
+
+- an action annotated `@@api` - for an authenticated user, as `1` used to allow it;
+- an action annotated `@@noauth`, and a request with a valid signature, as before;
+- any call of a user who has access to the `System.interpreter` navigator form, since that user can
+  already execute any code through the interpreter.
+
+What an upgrading application can notice: an external system that calls actions over HTTP gets the
+error above for every action without `@@api`. The fix is to annotate the actions the external
+systems are meant to call with `@@api`; or to give `enableAPI=1` to the role of the user they
+authenticate as, through the per-role settings (`Administration > System > Settings > Parameters`).
+The quickest way back is `settings.enableAPI=1` globally (in `lsfusion.properties`,
+`conf/settings.properties` or `-Dsettings.enableAPI=1`), which restores the 6.x behaviour - and with
+it the arbitrary code execution over HTTP for every authenticated user, see
+[Authentication](docs/paradigm/en/Access_from_an_external_system.md#authentication).
+
 ### The execution order of global events follows from the logic
 
 The order in which global events run is built at startup from the dependencies between them, and
@@ -111,32 +131,6 @@ What an upgrading application can notice: plans change for aggregations of this 
 column that has an index, read while the session holds unsaved changes of that column. There is no
 dedicated setting; `settings.noOrderTopSplit=true` disables the order splitting itself and with it
 this estimate, restoring the previous behaviour.
-
-### A window's `CUSTOM` accepts more, a `DESIGN` container's is checked, and the client must match
-
-A React component can now draw the window the forms open in and the window the messages
-appear in, and a `DESIGN` container's `custom` is read by the same rules a window's has
-always been read by. Three things an upgrading application can notice:
-
-- **the client and the server must be upgraded together**. The API version went to 392
-  because every window now carries what draws it, so a client of the previous version
-  refuses to connect. There is no setting for this : deploy the pair;
-- **a form the server used to build can now be refused**, with the message naming the
-  container. Three combinations are checked when the form is built : a `custom` literal
-  that is neither a React component name nor markup (a misspelled component name, which
-  the browser used to draw as its own text), `tabbed` together with `custom` (the client
-  drew one of the two and ignored the other, and with a `custom` property it failed in
-  the browser), and a React component paired with a `custom` property. The fix is to
-  write what was meant : a component name, markup, or one of `tabbed` / `custom`;
-- **`WINDOW ... CUSTOM 'literal' CUSTOM property()` written in ONE statement keeps both
-  halves**. It used to drop the literal, so a window drawn from a template started empty
-  until the property computed its first value ; it now shows the literal from the start,
-  as two statements always did. A window written this way with a COMPONENT literal beside
-  a property is refused at load, because a component draws the window itself.
-
-A template a property computes now reports a place that names nothing, in the place and
-in the browser console. That changes what such a window or container shows - a message
-where there used to be a blank spot - but not whether the application starts.
 
 ### A window's `CUSTOM` accepts more, a `DESIGN` container's is checked, and the client must match
 

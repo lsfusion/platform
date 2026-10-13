@@ -851,5 +851,6 @@ module.exports = {
       ]
     },
     'how-to/Online_demo',
+    'paradigm/Whats_new',
   ]
 };
