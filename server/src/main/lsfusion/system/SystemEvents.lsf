@@ -53,6 +53,13 @@ onFinallyStartedApply() {
     APPLY;
 }
 
+// executed on a graceful server stop (SIGTERM, service stop, etc.), before lifecycle listeners (RMI, scheduler, daemons) are stopped
+onStopping ABSTRACT LIST ( );
+onStoppingApply() {
+    onStopping();
+    APPLY;
+}
+
 onClientStartedApply() {
     onClientStarted();
     APPLY;

@@ -15,13 +15,14 @@ These abstract action lists are the [launch-event](Launch_events.md) handlers �
 | `onStarted[]`                    | application-server start, before the server accepts client connections                         |
 | `onFirstStarted[]`               | the very first application-server start only (when `firstStart[]` holds)                        |
 | `onFinallyStarted[]`             | after `onStarted[]` and the [`Reflection`](System_Reflection.md) metadata synchronization stage, at the end of the start sequence                                          |
+| `onStopping[]`                   | a graceful application-server stop, before RMI, the scheduler and other services are stopped   |
 | `onClientStarted[]`              | a client connecting; dispatches to the desktop or web handler by client type                  |
 | `onDesktopClientStarted[]`       | a desktop client connecting                                                                    |
 | `onWebClientStarted[]`           | a web client connecting                                                                        |
 | `onWebClientInit[STRING]`        | per-resource list keyed by a CSS / JS resource path, run when the web client initializes       |
 | `onLoginInit[STRING]`            | per-resource list run on the login page                                                        |
 
-`notFirstStart[]` is the stored flag that the server has started before, and `firstStart[]` is its negation and selects the first start. Each handler has an `…Apply` wrapper (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onClientStartedApply[]`) that runs the list and commits with `APPLY`. `onStartedApply[]` additionally runs `onFirstStarted[]` on the first start and sets `notFirstStart[]`.
+`notFirstStart[]` is the stored flag that the server has started before, and `firstStart[]` is its negation and selects the first start. Each handler has an `…Apply` wrapper (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onStoppingApply[]`, `onClientStartedApply[]`) that runs the list and commits with `APPLY`. `onStartedApply[]` additionally runs `onFirstStarted[]` on the first start and sets `notFirstStart[]`.
 
 ### Version info
 

@@ -15,13 +15,14 @@ title: 'SystemEvents'
 | `onStarted[]`                    | запуск сервера приложений, до приёма подключений клиентов                                       |
 | `onFirstStarted[]`               | только самый первый запуск сервера приложений (когда выполняется `firstStart[]`)                |
 | `onFinallyStarted[]`             | после `onStarted[]` и этапа синхронизации метаданных [`Reflection`](System_Reflection.md), в конце последовательности запуска                                        |
+| `onStopping[]`                   | штатная остановка сервера приложений, до остановки RMI, планировщика и других служб             |
 | `onClientStarted[]`              | подключение клиента; диспетчеризует на десктоп- или веб-обработчик по типу клиента             |
 | `onDesktopClientStarted[]`       | подключение десктоп-клиента                                                                    |
 | `onWebClientStarted[]`           | подключение веб-клиента                                                                        |
 | `onWebClientInit[STRING]`        | список по ресурсу с ключом-путём к CSS / JS-ресурсу, выполняется при инициализации веб-клиента  |
 | `onLoginInit[STRING]`            | список по ресурсу, выполняется на странице входа                                               |
 
-`notFirstStart[]` — хранимый признак того, что сервер уже запускался, а `firstStart[]` — его отрицание, выбирающее первый запуск. У каждого обработчика есть обёртка `…Apply` (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onClientStartedApply[]`), которая выполняет список и фиксирует изменения через `APPLY`. `onStartedApply[]` дополнительно запускает `onFirstStarted[]` на первом запуске и устанавливает `notFirstStart[]`.
+`notFirstStart[]` — хранимый признак того, что сервер уже запускался, а `firstStart[]` — его отрицание, выбирающее первый запуск. У каждого обработчика есть обёртка `…Apply` (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onStoppingApply[]`, `onClientStartedApply[]`), которая выполняет список и фиксирует изменения через `APPLY`. `onStartedApply[]` дополнительно запускает `onFirstStarted[]` на первом запуске и устанавливает `notFirstStart[]`.
 
 ### Версии
 

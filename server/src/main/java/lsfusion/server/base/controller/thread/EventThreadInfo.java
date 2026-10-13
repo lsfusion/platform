@@ -39,6 +39,9 @@ public class EventThreadInfo implements ThreadInfo {
     public static EventThreadInfo START() {
         return new EventThreadInfo("START");
     }
+    public static EventThreadInfo STOP() {
+        return new EventThreadInfo("STOP");
+    }
     public static EventThreadInfo TIMER(ContextAwarePendingRemoteObject object) {
         return create(object, "TIMER");
     }
