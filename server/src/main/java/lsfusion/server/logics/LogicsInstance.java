@@ -10,6 +10,7 @@ import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.EventThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.physics.admin.Settings;
@@ -26,6 +27,7 @@ import org.springframework.util.Assert;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.server.physics.admin.log.ServerLoggers.runWithStartLog;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public class LogicsInstance implements InitializingBean {
@@ -56,6 +58,8 @@ public class LogicsInstance implements InitializingBean {
     private Settings settings;
 
     private Map<Class, Object> customObjects;
+
+    private boolean started;
 
     public LogicsInstance() {
         context = new LogicsInstanceContext(this);
@@ -228,6 +232,8 @@ public class LogicsInstance implements InitializingBean {
                 businessLogics.cleanCaches();
 
                 reflectionManager.onFinallyStarted();
+
+                started = true; // onStopping is executed only after a complete start
             } finally {
                 afterAspect.run();
             }
@@ -251,8 +257,27 @@ public class LogicsInstance implements InitializingBean {
 
     public void stop() {
         startLog("Logics instance is stopping...");
+        if (started) // not after a failed start or a dry run
+            executeOnStopping();
         lifecycle.fireStopping();
         lifecycle.fireStopped();
         startLog("Logics instance has stopped...");
+    }
+
+    // executed before the lifecycle listeners are stopped, so the database, RMI and daemons are still available
+    private void executeOnStopping() {
+        ThreadInfo threadInfo = EventThreadInfo.STOP();
+        ThreadLocalContext.aspectBeforeLifecycle(this, threadInfo);
+        try {
+            runWithStartLog(() -> {
+                try (DataSession session = dbManager.createSession()) {
+                    businessLogics.systemEventsLM.onStopping.execute(session, ThreadLocalContext.getStack());
+                }
+            }, "Executing onStopping");
+        } catch (Throwable t) { // the stop should continue anyway
+            ServerLoggers.startLogger.error("Exception while executing onStopping", t);
+        } finally {
+            ThreadLocalContext.aspectAfterLifecycle(threadInfo);
+        }
     }
 }

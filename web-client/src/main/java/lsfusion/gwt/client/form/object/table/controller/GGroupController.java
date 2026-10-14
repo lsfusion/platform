@@ -10,8 +10,8 @@ import lsfusion.gwt.client.form.property.PValue;
 import java.util.ArrayList;
 
 // THE FORM'S CONTROLLER OF A GROUP, settled once where the design says who draws its rows
-// (GFormController.groupControllers): the platform's grid or tree, or the node React draws the rows on - all the form
-// sends for the group goes to it, its user orders only where the platform draws the rows and its user filters only
+// (GFormController.groupControllers): the platform's grid or tree, or the rows' part where React draws them - all the
+// form sends for the group goes to it, its user orders only where the platform draws the rows and its user filters only
 // where no view draws the group's FILTERS box (GFormController.ordersControllers, filtersControllers). What shows its
 // user orders and its user filters is said apart (GUserOrdersController, GUserFiltersController)
 public interface GGroupController extends GUserOrdersController, GUserFiltersController {

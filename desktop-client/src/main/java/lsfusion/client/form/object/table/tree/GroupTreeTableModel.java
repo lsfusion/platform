@@ -18,6 +18,11 @@ import java.util.*;
 
 public class GroupTreeTableModel extends DefaultTreeTableModel {
     private final Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<>();
+    // the rows each group last got, by the node they hang under, and their numbers of children: a node that comes after
+    // the rows of the group below it hangs them from here - the rows of a group are not sent again while they stay, when
+    // a node of the group above comes back or moves, say (as the web client's GTreeTableTree)
+    private final Map<ClientGroupObject, Map<ClientGroupObjectValue, List<ClientGroupObjectValue>>> groupTrees = new HashMap<>();
+    private final Map<ClientGroupObject, Map<ClientGroupObjectValue, Integer>> groupExpandables = new HashMap<>();
     public final List<ClientPropertyDraw> properties = new ArrayList<>();
     public final List<ClientPropertyDraw> columnProperties = new ArrayList<>();
     public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<>();
@@ -225,6 +230,8 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
         }
 
         Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> childTree = BaseUtils.groupList(parentTree);
+        groupTrees.put(group, childTree);
+        groupExpandables.put(group, expandables);
         synchronize = true;
         for (TreeGroupNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
             synchronize(groupNode, group, childTree, expandables);
@@ -275,6 +282,11 @@ public class GroupTreeTableModel extends DefaultTreeTableModel {
                 parent.addChild(child);
 
                 getGroupNodes(syncGroup).add(child);
+
+                // the rows the group below got under this node before the node came
+                ClientGroupObject downGroup = syncGroup.getDownGroup();
+                if (downGroup != null && groupTrees.containsKey(downGroup))
+                    synchronize(child, downGroup, groupTrees.get(downGroup), groupExpandables.get(downGroup));
             }
 
             boolean expandable = false;

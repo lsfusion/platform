@@ -1,0 +1,48 @@
+MODULE ChangeValues;
+
+REQUIRE TestUtils;
+
+// the values a client is offered for a change of a property while the user types into it - what a custom view's
+// getValues 'change' reads. A property that cannot be changed, or is changed by an action that inputs nothing or
+// inputs a value from no list, has no such list, and the client is answered with none (CANCELED), as for any lookup
+// that has no list
+
+cvName 'Name' = DATA STRING ();
+
+FORM cvForm 'Change values'
+    PROPERTIES() cvReadOnly = cvName READONLY, cvMessage = cvName ON CHANGE { MESSAGE 'changed'; },
+                 cvInput = cvName ON CHANGE { INPUT s = STRING DO cvName() <- s; }, cvPlain = cvName
+;
+
+cvValues = DATA LOCAL STRING ();
+cvReadChangeValues INTERNAL 'lsfusion.tests.ReadChangeValuesAction' (STRING, STRING);
+
+testChangeValuesOfReadOnly 'A property that cannot be changed is offered no values for a change' () {
+    SHOW cvForm NOWAIT {
+        cvReadChangeValues('cvReadOnly', 'a');
+        assertEquals(cvValues(), 'CANCELED', 'the values for a change of a READONLY property were ' + cvValues());
+    };
+}
+
+testChangeValuesOfActionWithNoInput 'A property changed by an action that inputs nothing is offered no values for a change' () {
+    SHOW cvForm NOWAIT {
+        cvReadChangeValues('cvMessage', 'a');
+        assertEquals(cvValues(), 'CANCELED', 'the values for a change by an action that inputs nothing were ' + cvValues());
+    };
+}
+
+testChangeValuesOfInputWithNoList 'A property changed by an input with no list is offered no values for a change' () {
+    SHOW cvForm NOWAIT {
+        cvReadChangeValues('cvInput', 'a');
+        assertEquals(cvValues(), 'CANCELED', 'the values for a change by an input with no list were ' + cvValues());
+    };
+}
+
+testChangeValuesOfPlain 'A property changed by its own input is offered its values' () {
+    cvName() <- 'abc';
+    APPLY; // the values come from the database: a change the session has not applied is not among them
+    SHOW cvForm NOWAIT {
+        cvReadChangeValues('cvPlain', 'a');
+        assertEquals(cvValues(), 'abc', 'the values for a change of a plain property were ' + cvValues());
+    };
+}

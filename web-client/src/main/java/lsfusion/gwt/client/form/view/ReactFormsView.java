@@ -98,8 +98,8 @@ public class ReactFormsView implements FormsView {
             }
 
             @Override
-            public boolean marksHosts() {
-                return true; // a form's host holds the form's view, which the layout fills it with by its marks
+            public ReactRoot.Host getHost() {
+                return new ReactRoot.MarkedHost(); // a form's host holds the form's view, which the layout fills it with by its marks
             }
         });
         // no form is open yet, and that is a state the component draws - a start page, say - so the window starts

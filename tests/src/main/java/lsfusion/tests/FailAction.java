@@ -17,6 +17,7 @@ public class FailAction extends InternalAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
-        throw new RuntimeException((String) context.getKeyValue(messageInterface).getValue());
+        String message = (String) context.getKeyValue(messageInterface).getValue();
+        throw new RuntimeException(message != null ? message : "an assertion failed, and its message is NULL - it names a NULL value");
     }
 }

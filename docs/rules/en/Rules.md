@@ -139,6 +139,10 @@ the name in the first column.
    code. A dry run or a server start checks them as well.
    Collapse the usage (`hide`) before committing.
 
+   Run the diagnostics before the edit as well and compare the
+   two results: a large module can carry problems that are not
+   caused by the edit.
+
 ## Rules for using lsFusion tools
 
 GENERAL QUERY SCOPE

@@ -3,8 +3,9 @@ MODULE FormsWithoutClient;
 REQUIRE TestUtils;
 
 // a test is called through /exec, which has no client to show a form to. The runner starts the server with
-// openFormsWithoutClient, so that SHOW ... NOWAIT opens the form all the same: the form runs its ON INIT and is closed
-// right away. A SHOW that waits for the form to be closed fails, and before the form is opened
+// openFormsWithoutClient, so that SHOW ... NOWAIT opens the form all the same: the form runs its ON INIT, is read once,
+// as a client gets its first changes - the events of that reading run -, and is closed right away. A SHOW that waits
+// for the form to be closed fails, and before the form is opened
 
 CLASS FwcItem 'Item';
 
@@ -30,4 +31,23 @@ testShowWaitFails 'A SHOW that waits for the form fails before the form is opene
     }
     assertNotNull(messageCaughtException(), 'SHOW ... WAIT did not fail');
     assertNull(fwcInitItem(), 'ON INIT ran for a SHOW that failed');
+}
+
+fwcName 'Name' = DATA STRING[20] (FwcItem);
+fwcOrderEvents = DATA LOCAL INTEGER ();
+fwcFilterEvents = DATA LOCAL INTEGER ();
+
+FORM fwcRead 'Items read'
+    OBJECTS i = FwcItem
+    PROPERTIES(i) READONLY name = fwcName
+    ORDERS name
+    EVENTS
+        ON ORDER i { fwcOrderEvents() <- fwcOrderEvents() (+) 1; },
+        ON FILTER i { fwcFilterEvents() <- fwcFilterEvents() (+) 1; }
+;
+
+testShowReadsTheFormOnce 'SHOW ... NOWAIT reads the form once, with the events of the reading' () {
+    SHOW fwcRead NOWAIT;
+    assertEquals(fwcOrderEvents(), 1, 'ON ORDER fired ' + fwcOrderEvents() + ' times');
+    assertEquals(fwcFilterEvents(), 1, 'ON FILTER fired ' + fwcFilterEvents() + ' times');
 }

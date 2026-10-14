@@ -1,9 +1,8 @@
 package lsfusion.client.form.order.user;
 
-import lsfusion.base.Pair;
-import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.grid.view.GridTable;
-import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.order.user.Order;
 
 import javax.swing.*;
@@ -12,11 +11,12 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
-public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
+// what a header shows of the sortings and what a click on it asks for. The form keeps the orders of each group, and the
+// header reads them as it draws a column - a property in one of its columns -, which its property's group is sorted by:
+// a tree's header has the columns of several groups. true - ascending
+public abstract class TableSortableHeaderManager extends MouseAdapter {
 
     private final JTable table;
     private final boolean ignoreFirstColumn;
@@ -50,7 +50,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
             if (width > 0) {
                 columnModel.getColumn(column).setPreferredWidth(width + 5);
                 if (table instanceof GridTable) {
-                    ((GridTable) table).setUserWidth(getColumnProperty(column), width + 5);
+                    ((GridTable) table).setUserWidth(getColumn(column).property, width + 5);
                 }
             }
             int totalPreferredWidth = 0;
@@ -65,7 +65,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
                     columnModel.getColumn(c).setPreferredWidth(newWidth);
                     columnModel.getColumn(column).setPreferredWidth(width + 5);
                     if (table instanceof GridTable) {
-                        ((GridTable) table).setUserWidth(getColumnProperty(c), newWidth);
+                        ((GridTable) table).setUserWidth(getColumn(c).property, newWidth);
                     }
                 }
             }
@@ -73,12 +73,11 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         } else {
 
             if (column != -1 && !(ignoreFirstColumn && column == 0)) {
-                T columnKey = getColumnKey(column);
-                Boolean sortDir = orderDirections.get(columnKey);
+                Column columnKey = getColumn(column);
                 if (me.isShiftDown()) {
                     changeOrder(columnKey, Order.REMOVE);
                 } else if (me.isControlDown()) {
-                    if (sortDir == null) {
+                    if (getSortDirection(columnKey) == null) {
                         changeOrder(columnKey, Order.ADD);
                     } else {
                         changeOrder(columnKey, Order.DIR);
@@ -90,72 +89,47 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         }
     }
 
-    private final Map<T, Boolean> orderDirections = new OrderedMap<>();
-
-    public Map<T, Boolean> getOrderDirections() {
-        return orderDirections;
-    }
-
     public final Boolean getSortDirection(int column) {
-        if (column < 0 || column >= table.getColumnCount()) {
-            return null;
-        }
-
-        return orderDirections.get(getColumnKey(column));
+        return getSortDirection(getColumn(column));
     }
 
-    // a click asks for the orders shown changed by it, which are shown when the form has them (updateOrders)
-    public final void changeOrder(T columnKey, Order modiType) {
-        LinkedHashMap<T, Boolean> orders = new LinkedHashMap<>(orderDirections);
-        if (changeOrderDirection(orders, columnKey, modiType))
-            ordersChanged(columnKey, orders);
+    private Boolean getSortDirection(Column column) {
+        return column != null ? getOrders(column.property.groupObject).get(column) : null;
     }
 
-    private boolean changeOrderDirection(Map<T, Boolean> orders, T columnKey, Order modiType) {
-        if (columnKey == null || noSort(columnKey)) {
-            return false;
-        }
+    // a click asks for the orders of the column's group changed by it, which are shown once the form has them - on a
+    // column the design says not to sort by (noSort) nothing is asked; null is a tree's expand column
+    public final void changeOrder(Column column, Order modiType) {
+        if (column == null || column.property.noSort)
+            return;
 
+        ClientGroupObject group = column.property.groupObject;
+        LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>(getOrders(group));
         switch (modiType) {
             case REPLACE:
-                boolean direction = orders.getOrDefault(columnKey, false);
+                boolean direction = orders.getOrDefault(column, false);
                 orders.clear();
-                orders.put(columnKey, !direction);
+                orders.put(column, !direction);
                 break;
             case ADD:
-                orders.put(columnKey, true);
+                orders.put(column, true);
                 break;
             case DIR:
-                orders.put(columnKey, !orders.get(columnKey));
+                orders.put(column, !orders.get(column));
                 break;
             case REMOVE:
-                orders.remove(columnKey);
+                orders.remove(column);
                 break;
         }
-
-        return true;
+        changeOrders(group, orders);
     }
 
-    // the orders the form has, in their priority order - on a column the user may not sort by (noSort) as well: shown,
-    // nothing is sent; true - ascending. The same columns in another order are other orders
-    public final boolean updateOrders(LinkedHashMap<T, Boolean> orders) {
-        if(!new ArrayList<>(orderDirections.entrySet()).equals(new ArrayList<>(orders.entrySet()))) {
-            orderDirections.clear();
-            orderDirections.putAll(orders);
-            return true;
-        }
-        return false;
-    }
+    // the orders the form has for a group, in their priority order - on a column the user may not sort by (noSort) too
+    protected abstract LinkedHashMap<Column, Boolean> getOrders(ClientGroupObject group);
 
-    private boolean noSort (T columnKey) {
-        return columnKey instanceof Pair && ((Pair) columnKey).first instanceof ClientPropertyDraw && ((ClientPropertyDraw) ((Pair) columnKey).first).noSort;
-    }
+    // the orders a click asks for, all of the group's
+    protected abstract void changeOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders);
 
-    // the orders a click on a column asks for - of all the columns of the header, a tree's of several groups; true -
-    // ascending
-    protected abstract void ordersChanged(T columnKey, LinkedHashMap<T, Boolean> orders);
-
-    protected abstract T getColumnKey(int column);
-
-    protected abstract ClientPropertyDraw getColumnProperty(int column);
+    // the column the header shows at an index, null for none
+    protected abstract Column getColumn(int column);
 }

@@ -152,20 +152,20 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
 
     private static ClientPropertyFilter createNewCondition(TableController logicsSupplier, ClientFilter filter, ClientGroupObjectValue columnKey) {
-        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = logicsSupplier.getFilterColumn(filter != null ? filter.property: null, columnKey);
+        Column column = logicsSupplier.getFilterColumn(filter != null ? filter.property: null, columnKey);
 
-        if (column.first == null) {
+        if (column.property == null) {
             return null;
         }
 
         if (filter == null) {
-            filter = new ClientFilter(column.first);
+            filter = new ClientFilter(column.property);
         } else if (filter.property == null) {
-            filter.property = column.first;
+            filter.property = column.property;
         }
 
         // a condition is of the group of its property, as the server takes it, a tree's selected group or not
-        return new ClientPropertyFilter(filter, column.first.groupObject, column.second, null);
+        return new ClientPropertyFilter(filter, column.property.groupObject, column.columnKey, null);
     }
 
     public boolean addCondition() {
@@ -247,10 +247,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
     
     private FilterConditionView findExistingFilter(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = logicsSupplier.getFilterColumn(propertyDraw, columnKey);
+        Column column = logicsSupplier.getFilterColumn(propertyDraw, columnKey);
 
         for (ClientPropertyFilter filter : conditionViews.keySet()) {
-            if (filter.columnEquals(column)) {
+            if (filter.column.equals(column)) {
                 return conditionViews.get(filter);
             }
         }
@@ -279,7 +279,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             for (ClientPropertyFilter filter : filters) {
                 boolean filterExists = false;
                 for (ClientPropertyFilter fixedFilter : fixedFilters) {
-                    if (filter.columnEquals(fixedFilter)) {
+                    if (filter.column.equals(fixedFilter.column)) {
                         fixedFilter.override(filter);
                         FilterConditionView conditionView = conditionViews.get(fixedFilter);
                         conditionView.applyCondition(filter);

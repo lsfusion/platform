@@ -30,8 +30,8 @@ import java.util.Map;
 public final class GGridPanelController extends GAbstractPanelController {
 
     private final GGroupObject group;
-    // the rows its renderers follow: the node React draws them on - an lsf list property is only where React draws its
-    // group's rows (FormView.checkLsfListView)
+    // the rows its renderers follow: the rows' part where React draws them - an lsf list property is only where React
+    // draws its group's rows (FormView.checkLsfListView)
     private final GReactFormData.Rows rows;
 
     // the element React gave for each (row, property), and where that property's renderer for that row is put. The
@@ -237,9 +237,9 @@ public final class GGridPanelController extends GAbstractPanelController {
 
     // ---- data ----
 
-    // the rows this group is showing, straight from the node React draws them on, which already tracks them - including
+    // the rows this group is showing, straight from the part React draws them as, which already tracks them - including
     // an optimistic add or delete, which a copy taken from the server's changes would not see until the server
-    // confirmed it. The current object is read the same way, and for the same reason. The node's own list, not a copy:
+    // confirmed it. The current object is read the same way, and for the same reason. The part's own list, not a copy:
     // it puts a new list in place whenever the rows change and never changes one (GReactFormData.Rows), so the
     // controllers may keep the one they are given to compare the next set against.
     private ArrayList<GGroupObjectValue> getRendererKeys() {

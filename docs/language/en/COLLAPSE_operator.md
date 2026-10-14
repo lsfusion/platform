@@ -49,11 +49,11 @@ The form with the `CONTAINER` keyword creates an action that collapses a contain
 
 - `objName1 ... objNameN`
 
-    Names of objects on the form. The objects must belong to the specified object group. The object name is specified by a [simple ID](IDs.md#id).
+    Names of objects on the form: all the objects of the specified object group and of the groups above it in the object tree. The object name is specified by a [simple ID](IDs.md#id).
 
 - `expr1 ... exprN`
 
-    [Expressions](Expression.md) whose values are the target values of the corresponding objects in the specified object group.
+    [Expressions](Expression.md) whose values are the target values of the corresponding objects.
 
 - `formName`
 

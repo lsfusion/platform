@@ -10,8 +10,8 @@ import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.remote.BatchRequest;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.rmi.RemoteException;
@@ -99,13 +99,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value, ChangeSelection changeSelection) throws RemoteException {
-        logRemoteMethodStartCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, value, changeSelection);
-        logRemoteMethodEndVoidCall("changeGroupObject");
-        return result;
-    }
-
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGroupObject");
         ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType, changeSelection);
@@ -151,25 +144,17 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    @Override
-    public ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException {
-        logRemoteMethodStartVoidCall("setPropertyOrders");
-        ServerResponse result = target.setPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObjectID, propertyList, columnKeyList, orderList);
-        logRemoteMethodEndCall("setPropertyOrders", result);
-        return result;
-    }
-
-    public ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, Map<Integer, byte[][]> filters) throws RemoteException {
-        logRemoteMethodStartVoidCall("setUserFilters");
-        ServerResponse result = target.setUserFilters(requestIndex, lastReceivedRequestIndex, filters);
-        logRemoteMethodEndCall("setUserFilters", result);
-        return result;
-    }
-
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException {
         logRemoteMethodStartVoidCall("setRegularFilter");
         ServerResponse result = target.setRegularFilter(requestIndex, lastReceivedRequestIndex, groupID, filterID);
         logRemoteMethodEndCall("setRegularFilter", result);
+        return result;
+    }
+
+    public ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException {
+        logRemoteMethodStartVoidCall("executeBatch");
+        ServerResponse result = target.executeBatch(requestIndex, lastReceivedRequestIndex, requests);
+        logRemoteMethodEndCall("executeBatch", result);
         return result;
     }
 
@@ -236,44 +221,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException {
         logRemoteMethodStartCall("executeEventAction");
         ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, formEvent, pushAsyncResult);
-        logRemoteMethodEndCall("executeEventAction", result);
-        return result;
-    }
-
-    @Override
-    public ServerResponse expandGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, int groupId, boolean current) throws RemoteException {
-        logRemoteMethodStartVoidCall("expandTreeNodeRecursive");
-        ServerResponse result = target.expandGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, groupId, current);
-        logRemoteMethodEndVoidCall("expandTreeNodeRecursive");
-        return result;
-    }
-
-    public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] treePath) throws RemoteException {
-        logRemoteMethodStartVoidCall("expandTreeNode");
-        ServerResponse result = target.expandGroupObject(requestIndex, lastReceivedRequestIndex, groupId, treePath);
-        logRemoteMethodEndVoidCall("expandTreeNode");
-        return result;
-    }
-
-    @Override
-    public ServerResponse collapseGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, int groupId, boolean current) throws RemoteException {
-        logRemoteMethodStartVoidCall("collapseTreeNodeRecursive");
-        ServerResponse result = target.collapseGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, groupId, current);
-        logRemoteMethodEndVoidCall("collapseTreeNodeRecursive");
-        return result;
-    }
-
-    public ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException {
-        logRemoteMethodStartVoidCall("collapseTreeNode");
-        ServerResponse result = target.collapseGroupObject(requestIndex, lastReceivedRequestIndex, groupId, bytes);
-        logRemoteMethodEndVoidCall("collapseTreeNode");
-        return result;
-    }
-
-    @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, EventSource[] eventSources, byte[][] pushAsyncResults) throws RemoteException {
-        logRemoteMethodStartCall("executeEventAction");
-        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, eventSources, pushAsyncResults);
         logRemoteMethodEndCall("executeEventAction", result);
         return result;
     }

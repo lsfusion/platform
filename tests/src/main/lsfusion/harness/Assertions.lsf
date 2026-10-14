@@ -1,0 +1,28 @@
+MODULE Assertions;
+
+REQUIRE TestUtils;
+
+// an assertion's message names the values it compared, so it is NULL when one of them is - which is when a value the
+// test expects is missing. fail skipped a NULL message, as an INTERNAL action skips a call with a NULL argument, and the
+// test passed: fail takes NULL now, so an assertion on a NULL value fails
+
+asNullValue = DATA LOCAL INTEGER ();
+asCaught = DATA LOCAL BOOLEAN ();
+
+testFailWithANullMessage 'fail fails with a NULL message too' () {
+    TRY {
+        fail('the value was ' + asNullValue());
+    } CATCH {
+        asCaught() <- TRUE;
+    }
+    assertTrue(asCaught(), 'fail with a NULL message did not fail');
+}
+
+testAssertOnANullValue 'An assertion on a NULL value fails, though its message names the value' () {
+    TRY {
+        assertEquals(asNullValue(), 1, 'the value was ' + asNullValue());
+    } CATCH {
+        asCaught() <- TRUE;
+    }
+    assertTrue(asCaught(), 'assertEquals passed a NULL value');
+}

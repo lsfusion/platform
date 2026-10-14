@@ -258,7 +258,6 @@ To access design components, you can use their names or address property compone
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`visible`|Specifying the visibility of the component|Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showGroup`|Show the view buttons<br/>**deprecated since version 6, use `showViews`**|Extended Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showViews`|Show the view buttons|Extended Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showFilters`|Show the filters setting button|Extended Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showSettings`|Show the table setting button|Extended Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|

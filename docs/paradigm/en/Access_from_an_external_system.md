@@ -58,7 +58,7 @@ The built-in HTTP server serves its requests from a pool of `externalHttpServerT
 
 ##### Parameters {#url}
 
-Parameters can be passed both in the request string (by appending constructs like `&p=<parameter value>` to the end of the string), as well as in the request body (BODY). It is assumed that URL parameters are substituted (in the order of their appearance in the request) for the executed action before BODY parameters.
+Parameters can be passed both in the request string (by appending constructs like `&p=<parameter value>` to the end of the string), as well as in the request body (BODY). It is assumed that URL parameters are substituted (in the order of their appearance in the request) for the executed action before BODY parameters. A value in the query string or in an `application/x-www-form-urlencoded` body must be URL-encoded: an unencoded `+` is read as a space (so a base64 string containing one arrives damaged), and an unencoded `&` separates parameters. A large or binary value is better passed as a BODY parameter with another content type.
 
 If the called action has named interface parameters (for example, `run(INTEGER no, DATE date)`), a request parameter whose name matches an action parameter name is bound to it by name. The positional substitution above then fills any remaining slots only from unused `p=` parameters (URL or `application/x-www-form-urlencoded` body) and non-urlencoded BODY parameters (multipart parts or a single body). Other named URL/urlencoded parameters that did not match an interface name are ignored.
 

@@ -995,11 +995,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImSet<RegularFilterGroupInstance> updatedRegularFilterGroups = SetFact.EMPTY();
 
     // the filter selected in a filter group, null for none - as a client, FILTERGROUP or the form's default selects it;
-    // the filter selected already changes nothing
-    public void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
+    // the filter selected already changes nothing. Returns whether the selection changed
+    public boolean setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
         RegularFilterInstance prevFilter = regularFilterValues.get(filterGroup);
         if (filter == prevFilter)
-            return;
+            return false;
 
         if (prevFilter != null)
             prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
@@ -1012,6 +1012,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         updatedRegularFilterGroups = updatedRegularFilterGroups.merge(filterGroup);
+        return true;
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //

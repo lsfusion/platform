@@ -1,22 +1,19 @@
 package lsfusion.gwt.client.form.filter.user;
 
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
 
 public class GPropertyFilter {
     public GFilter filter;
     public GGroupObject groupObject;
-    public GPropertyDraw property;
+    // the property in one of its columns; no column key - the column of the current objects of the column groups
+    public Column column;
     public GDataFilterValue value;
-
-    public GGroupObjectValue columnKey;
 
     public boolean negation;
     public GCompare compare;
@@ -28,9 +25,8 @@ public class GPropertyFilter {
     public GPropertyFilter(GFilter filter, GGroupObject groupObject, GGroupObjectValue columnKey, PValue value, Boolean negation, GCompare compare, Boolean junction) {
         this.filter = filter;
         this.groupObject = groupObject;
-        this.property = filter.property;
+        this.column = new Column(filter.property, columnKey);
         this.value = new GDataFilterValue(value);
-        this.columnKey = columnKey;
         if (negation != null) {
             this.negation = negation;
         }
@@ -43,8 +39,8 @@ public class GPropertyFilter {
     public GPropertyFilterDTO getFilterDTO() {
         GPropertyFilterDTO filterDTO = new GPropertyFilterDTO();
 
-        filterDTO.propertyID = property.ID;
-        filterDTO.columnKey = columnKey;
+        filterDTO.propertyID = column.property.ID;
+        filterDTO.columnKey = column.columnKey;
         filterDTO.filterValue = value.getDTO();
         filterDTO.negation = negation;
         filterDTO.compareByte = compare.serialize();
@@ -70,14 +66,6 @@ public class GPropertyFilter {
 
     public boolean isFixed() {
         return filter.fixed;
-    }
-
-    public boolean columnEquals(GPropertyFilter obj) {
-        return property.equals(obj.property) && GwtSharedUtils.nullEquals(columnKey, obj.columnKey);
-    }
-
-    public boolean columnEquals(Pair<GPropertyDraw, GGroupObjectValue> column) {
-        return property.equals(column.first) && GwtSharedUtils.nullEquals(columnKey, column.second);
     }
 
     public void override(GPropertyFilter filter) {

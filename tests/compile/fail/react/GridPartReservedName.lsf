@@ -1,0 +1,17 @@
+MODULE GridPartReservedName;
+
+REQUIRE System;
+
+// where a CUSTOM REACT container draws a group's rows, the group's node carries `list`, `byKey`, `keys` and `options`
+// beside its properties' entries, so a property drawn there may not take one of those names: it would shadow `keys`
+CLASS GridPartItem;
+gridPartName = DATA STRING[50] (GridPartItem);
+
+FORM gridPartReservedName
+    OBJECTS i = GridPartItem
+    PROPERTIES(i) gridPartName EXTID 'keys'
+;
+
+DESIGN gridPartReservedName {
+    BOX(i) { custom = 'ItemGrid'; }
+}

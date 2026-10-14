@@ -142,6 +142,13 @@ public class GGroupObject implements Serializable, HasNativeSID {
             return null;
     }
 
+    public GGroupObject getDownGroup() {
+        int ind = parent.groups.indexOf(this);
+        return ind == parent.groups.size() - 1
+               ? null
+               : parent.groups.get(ind + 1);
+    }
+
     public List<GGroupObject> getUpTreeGroups() {
         ArrayList<GGroupObject> result = new ArrayList<>(upTreeGroups);
         result.add(this);

@@ -53,14 +53,23 @@ onFinallyStartedApply() {
     APPLY;
 }
 
+// executed on a graceful server stop (SIGTERM, service stop, etc.), before lifecycle listeners (RMI, scheduler, daemons) are stopped
+onStopping ABSTRACT LIST ( );
+onStoppingApply() {
+    onStopping();
+    APPLY;
+}
+
 onClientStartedApply() {
     onClientStarted();
     APPLY;
 }
 
 platformVersion = DATA TEXT();
+platformBuildNumber = DATA INTEGER();
 apiVersion = DATA INTEGER();
 revisionVersion = DATA INTEGER();
+fullVersion() = CONCAT ' ', platformVersion(), '(' + (IF platformBuildNumber() THEN 'build ' + apiVersion() + '.' + platformBuildNumber() ELSE '' + apiVersion()) + ')', revisionVersion();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();
 
 resetConnections() ABSTRACT();
@@ -88,7 +97,7 @@ logo() = defaultLogo();
 //logo() = OVERRIDE logicsLogo(), defaultLogo();
 
 logoAction() {
-    MESSAGE CONCAT '\n', (CONCAT ' ', 'Current Version:', platformVersion(), '(' + apiVersion() + ')', revisionVersion()),
+    MESSAGE CONCAT '\n', (CONCAT ' ', 'Current Version:', fullVersion()),
         (CONCAT ' ', 'Current User:', currentUserLogin());
 }
 logoActionClass = ABSTRACT VALUE STRING();
@@ -563,7 +572,7 @@ onStarted() + {
     NEW launch = Launch {
         computer(launch) <- currentComputer();
         time(launch) <- currentDateTime();
-        revision(launch) <- CONCAT ' ', platformVersion(), '(' + apiVersion() + ')', revisionVersion();
+        revision(launch) <- fullVersion();
         currentLaunch() <- launch;
     }
 

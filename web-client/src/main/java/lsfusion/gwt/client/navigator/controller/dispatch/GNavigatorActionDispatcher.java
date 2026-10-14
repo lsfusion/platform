@@ -138,9 +138,12 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         GNavigatorElement element = navigatorController.getElement(canonicalName);
         if (element == null)
             return "Navigator element '" + canonicalName + "' not found";
-        // SHOWIF is not a security boundary, but activating by name must not reach past what the navigator shows
-        if (element.hide)
-            return "Navigator element '" + canonicalName + "' is hidden";
+        // SHOWIF is not a security boundary, but activating by name must not reach past what the navigator shows - and it
+        // shows no element that is hidden, or that is in a hidden folder (GAbstractNavigatorView.forEachDrawn)
+        for (GNavigatorElement up = element; up != null; up = up.parent)
+            if (up.hide)
+                return "Navigator element '" + canonicalName + "' is hidden"
+                        + (up != element ? ", as its folder '" + up.canonicalName + "' is" : "");
 
         navigatorController.activate(element, event);
         return null;

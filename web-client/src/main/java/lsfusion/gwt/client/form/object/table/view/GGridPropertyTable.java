@@ -703,7 +703,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         PValue oldValue = column.getValue(property, rowRecord);
 
         setLoadingAt(cell);
-        setValueAt(cell, value);
+        if(value != PValue.UNDEFINED) // none to show - an action's run, a value the server decides -: its own, loading
+            setValueAt(cell, value);
 
         column.updateDom(cell, getElement(cell));
 

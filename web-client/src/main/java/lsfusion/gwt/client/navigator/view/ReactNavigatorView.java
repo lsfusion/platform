@@ -36,8 +36,8 @@ public class ReactNavigatorView extends ParkedNavigatorView {
             }
 
             @Override
-            public boolean marksHosts() {
-                return false; // the node a button goes into is left as the component rendered it
+            public ReactRoot.Host getHost() {
+                return new ReactRoot.PlainHost(); // the node a button goes into is left as the component rendered it
             }
         });
         // nothing is pushed here: what the window draws is a bucket the navigator works out, and it has worked out none

@@ -2,8 +2,9 @@ MODULE TestUtils;
 
 REQUIRE System;
 
-// the only way to make a test action fail : the message ends up in the http response the runner reports
-fail 'Fail' (STRING message) INTERNAL 'lsfusion.tests.FailAction' (STRING);
+// the only way to make a test action fail : the message ends up in the http response the runner reports. NULL: a message
+// names the values an assertion compared, so it is NULL when one of them is, and an INTERNAL action skips a NULL argument
+fail 'Fail' (STRING message) INTERNAL 'lsfusion.tests.FailAction' (STRING) NULL;
 
 assertTrue (BOOLEAN value, STRING message) {
     IF NOT value THEN
@@ -29,3 +30,19 @@ assertEquals (a, b, STRING message) {
     IF NOT (a = b) THEN
         fail(message);
 }
+
+// whether a group of the open form the action runs in has an object in one of its rows, as of the last readShown(): the
+// rows the form sends its client, read the way the form reads them before it answers it - which a form with no client
+// never does. A level of a tree gets its rows under every open row of the level above, whether that one is shown or not
+shownInForm = DATA LOCAL BOOLEAN (Object);
+readShownRows INTERNAL 'lsfusion.tests.ReadShownAction' ();
+readShown () {
+    shownInForm(Object o) <- NULL;
+    readShownRows();
+}
+
+// which of the server's walks of a form's design reach a component - the words of those that do: `found` (by its id),
+// `read` (its readers), `sent` (its visibility), and `hidable` where a client hides it by naming it so - failing unless
+// they are `walks`
+assertWalked (STRING form, STRING component, STRING walks)
+    INTERNAL 'lsfusion.tests.DesignWalksAction' (STRING, STRING, STRING);

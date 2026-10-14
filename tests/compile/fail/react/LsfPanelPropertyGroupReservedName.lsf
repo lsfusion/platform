@@ -1,0 +1,20 @@
+MODULE LsfPanelPropertyGroupReservedName;
+
+REQUIRE System;
+
+// an lsf panel property brings its group's node to the react container that places it - data.<group> - so the group's
+// name is claimed at that container's top level as any projected group's is: here a name the controller owns there
+CLASS LsfExecItem;
+lsfExecNote = DATA STRING[50] (LsfExecItem);
+
+FORM lsfPanelGroupReserved
+    OBJECTS exec = LsfExecItem PANEL
+    PROPERTIES(exec) lsfExecNote
+;
+
+DESIGN lsfPanelGroupReserved {
+    NEW board {
+        custom = 'LsfExecBoard';
+        MOVE PROPERTY(lsfExecNote(exec)) { lsf = TRUE; }
+    }
+}

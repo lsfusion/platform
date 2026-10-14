@@ -653,7 +653,7 @@ public class GGridController extends GAbstractTableController {
     @Override
     public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         if (isList())
-            table.updateOrders(orders);
+            table.updateOrders();
     }
 
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns() {

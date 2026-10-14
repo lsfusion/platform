@@ -9,7 +9,11 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GActionType;
+import lsfusion.gwt.client.classes.data.GCSVType;
+import lsfusion.gwt.client.classes.data.GColorType;
+import lsfusion.gwt.client.classes.data.GDateIntervalType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -31,6 +35,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GCaptionReader;
+import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GBackgroundReader;
 import lsfusion.gwt.client.form.property.GCommentReader;
 import lsfusion.gwt.client.form.property.GComponentLabelReader;
@@ -53,6 +58,7 @@ import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GValueElementClassReader;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.io.Serializable;
@@ -89,7 +95,10 @@ public class GReactFormDataTest extends GWTTestCase {
         GGroupObject outer; // a group GWT draws the rows of, with one panel property in b - only in Fixture.withOuter()
         GPropertyDraw outerPanel, outerName; // ... and a list property, which GWT draws with the rows
         GPropertyDraw note; // a panel property of the group in a, beside its rows - only in Fixture.withNote()
-        GPropertyDraw twin; // a panel property of the group in b named like the column `price` - only in withTwin()
+        GPropertyDraw remark; // a second panel property of the group in b - only in withRemark()
+        // properties of the group the platform draws - one named `platform`, one with no name, one grouped in columns
+        // named `columns` - only in withPlatformDrawn()
+        GPropertyDraw platformDrawn, platformUnnamed, platformInColumns;
         LinkedHashMap<Column, Boolean> sorted; // the sortings a group's orders.change() handed the form
         GGroupObject sortedGroup; // ... for which group
         int sortedCalls; // ... and how many times
@@ -105,6 +114,8 @@ public class GReactFormDataTest extends GWTTestCase {
         }
         GGroupObjectValue chosen, changed; // what a member handed the form: the row its group's change(row) chose, and
                                            // the cell a property member changed
+        final ArrayList<String> edits = new ArrayList<>(); // ... and every edit it was handed, in order
+        PValue changedTo; // ... and the value it changed that cell to
         final ArrayList<String> filtersCalls = new ArrayList<>(); // ... and the calls a filters member made, in order
         ArrayList<GPropertyFilter> stated; // ... and the last list of conditions it stated
 
@@ -118,7 +129,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 scope.container = form.mainContainer;
                 form.mainContainer.children.add(scope);
             }
-            group.ID = 10; group.nativeSID = "g10"; group.sID = "items";
+            group.ID = 10; group.nativeSID = "g10"; group.sID = "items"; group.viewType = GClassViewType.LIST;
             group.grid = new GGrid(); group.grid.ID = 11; group.grid.sID = "grid"; group.grid.container = a;
             a.children.add(group.grid);
             group.objects.add(new GObject(group, "item", 10, "item", GIntegerType.instance));
@@ -146,15 +157,44 @@ public class GReactFormDataTest extends GWTTestCase {
                 placements++;
                 return component.getReactPlace();
             }, new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
-                public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; }
-                public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { changed = keys[keys.length - 1]; }
+                public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); }
+                public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
+                    changed = key;
+                    changedTo = value;
+                    edits.add("cell " + property.integrationSID + "@" + key.toKeyString());
+                }
                 public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
                 public void expandNode(GGroupObject group, GGroupObjectValue key) { }
                 public void collapseNode(GGroupObject group, GGroupObjectValue key) { }
                 public void expandAll(GGroupObject group) { }
                 public void collapseAll(GGroupObject group) { }
-                public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { sortedGroup = group; sortedCalls++; sorted = orders; }
-                public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { filtersCalls.add("changeFilters " + group.sID + describe(conditions)); stated = conditions; return 0; }
+                // ... and the sortings and the filters it is handed told to what shows them, as the form does
+                public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+                    sortedGroup = group; sortedCalls++; sorted = orders;
+                    controllers.orders.get(group).changeOrders(group, orders);
+                }
+                public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) {
+                    filtersCalls.add("changeFilters " + group.sID + describe(conditions)); stated = conditions;
+                    controllers.filters.get(group).changeFilters(group, dtos(conditions));
+                    return 0;
+                }
+                // ... and a batch: what it is handed while the batch runs comes between the batch and its sending - a
+                // batch begun inside it a part of it, as the form's is
+                boolean batching;
+                public void batch(Runnable run) {
+                    if (batching) {
+                        run.run();
+                        return;
+                    }
+                    edits.add("batch");
+                    batching = true;
+                    try {
+                        run.run();
+                    } finally {
+                        batching = false;
+                        edits.add("sent");
+                    }
+                }
             });
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
@@ -173,11 +213,20 @@ public class GReactFormDataTest extends GWTTestCase {
         // the additions a test asks for
         static Fixture withOuter() { return new Fixture(Fixture::addOuter); }
         static Fixture withNote() { return new Fixture(f -> f.note = f.property(25, "note", f.group, false, f.a)); }
-        static Fixture withTwin() { return new Fixture(f -> f.twin = f.property(26, "price", f.group, false, f.b)); }
+        static Fixture withRemark() { return new Fixture(f -> f.remark = f.property(26, "remark", f.group, false, f.b)); }
+        static Fixture withPlatformDrawn() { return new Fixture(Fixture::addPlatformDrawn); }
+        // properties of the group in the main container, which the platform draws
+        void addPlatformDrawn() {
+            platformDrawn = property(37, "platform", group, false, form.mainContainer);
+            platformUnnamed = property(38, "nameless", group, false, form.mainContainer);
+            platformUnnamed.integrationSID = null;
+            platformInColumns = property(39, "columns", group, false, form.mainContainer);
+            platformInColumns.columnGroupObjects = new ArrayList<>(Arrays.asList(group));
+        }
         // a group GWT draws the rows of, its grid in the main container, with one panel property in b
         void addOuter() {
             outer = new GGroupObject();
-            outer.ID = 50; outer.nativeSID = "g50"; outer.sID = "outer";
+            outer.ID = 50; outer.nativeSID = "g50"; outer.sID = "outer"; outer.viewType = GClassViewType.LIST;
             outer.grid = new GGrid(); outer.grid.ID = 51; outer.grid.sID = "outerGrid";
             outer.grid.container = form.mainContainer;
             form.mainContainer.children.add(outer.grid);
@@ -197,6 +246,7 @@ public class GReactFormDataTest extends GWTTestCase {
             ((GComponent) property).ID = id; ((GComponent) property).sID = name;
             property.groupObject = group; property.isList = list; property.container = scope;
             property.valueType = GIntegerType.instance;
+            property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1);
             form.propertyDraws.add(property); scope.children.add(property);
             return property;
         }
@@ -222,7 +272,7 @@ public class GReactFormDataTest extends GWTTestCase {
             changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
             projection.flush();
         }
-        // the form's controller of a group (GFormController.groupControllers): the node React draws the rows on - for
+        // the form's controller of a group (GFormController.groupControllers): the part React draws the rows as - for
         // any other group, the platform's grid, not built here - and of a property
         GGroupController controller(GGroupObject group) {
             return controllers.groups.get(group);
@@ -261,30 +311,57 @@ public class GReactFormDataTest extends GWTTestCase {
         long requestIndex;
 
         public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { asked.add("current " + group.getSID() + " " + key.toKeyString()); }
-        public void changeProperties(GPropertyDraw[] properties, GGroupObjectValue[] keys, PValue[] values) { }
+        public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) { }
         public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
         // as the form does: the request numbered and sent, the group's controller told of it, the projection published
         public void expandNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
-            projection.flush();
+            publish();
         }
         public void collapseNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, false, ask("collapse " + group.getSID() + " " + key.toKeyString()));
-            projection.flush();
+            publish();
         }
         public void expandAll(GGroupObject group) {
             controllers.groups.get(group).changeExpandedAll(true, ask("expand all " + group.getSID()));
-            projection.flush();
+            publish();
         }
         public void collapseAll(GGroupObject group) {
             controllers.groups.get(group).changeExpandedAll(false, ask("collapse all " + group.getSID()));
-            projection.flush();
+            publish();
         }
         public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { }
-        public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { return 0; }
+        final ArrayList<String> filtered = new ArrayList<>(); // what a group's filters member handed the form, in order
+        public long changeFilters(GGroupObject group, ArrayList<GPropertyFilter> conditions) { filtered.add(group.getSID() + describe(conditions)); return 0; }
         long ask(String request) {
             asked.add(request);
-            return ++requestIndex;
+            return batching ? requestIndex + 1 : ++requestIndex;
+        }
+        // ... and a batch, as the form runs one: what is asked in it under the index of its one request - none when
+        // nothing is asked -, and the projection published once, when the batch ends - a batch begun inside it a part
+        // of it
+        boolean batching;
+        public void batch(Runnable run) {
+            if (batching) {
+                run.run();
+                return;
+            }
+            asked.add("batch");
+            int begun = asked.size();
+            batching = true;
+            try {
+                run.run();
+            } finally {
+                batching = false;
+                if (asked.size() > begun)
+                    requestIndex++;
+                asked.add("sent");
+                projection.flush();
+            }
+        }
+        void publish() {
+            if (!batching)
+                projection.flush();
         }
     }
     private static final class TreeFixture {
@@ -330,7 +407,7 @@ public class GReactFormDataTest extends GWTTestCase {
             verbs.controllers = controllers;
         }
         void group(GGroupObject group, int id, String sid) {
-            group.ID = id; group.nativeSID = "g" + id; group.sID = sid;
+            group.ID = id; group.nativeSID = "g" + id; group.sID = sid; group.viewType = GClassViewType.LIST;
             group.parent = tree;
             tree.groups.add(group);
             group.objects.add(new GObject(group, sid, id, sid, GIntegerType.instance));
@@ -379,7 +456,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // surface, which the projection never asks of it, does nothing
     private static final class RecordingTableController extends GAbstractTableController {
         final ArrayList<GPropertyReader> updated = new ArrayList<>();
-        final ArrayList<GPropertyDraw> dropped = new ArrayList<>(), focused = new ArrayList<>();
+        final ArrayList<GPropertyDraw> dropped = new ArrayList<>(), focused = new ArrayList<>(), loading = new ArrayList<>();
 
         RecordingTableController() {
             super(null, null, false);
@@ -391,7 +468,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public void dropProperty(GPropertyDraw property) { dropped.add(property); }
         public boolean isPropertyShown(GPropertyDraw property) { return true; }
         public void focusProperty(GPropertyDraw property) { focused.add(property); }
-        public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) { return null; }
+        public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) { loading.add(property); return null; }
         public GGroupObjectValue getSelectedKey() { return null; }
         public int getSelectedRow() { return -1; }
         public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) { }
@@ -430,7 +507,8 @@ public class GReactFormDataTest extends GWTTestCase {
         public void removeProperty(GPropertyDraw property) { }
         protected void configureToolbar() { }
         public List<GFilter> getFilters() { return null; }
-        protected long changeFilter(ArrayList<GPropertyFilter> conditions) { return -1; }
+        final ArrayList<String> changedFilters = new ArrayList<>(); // the lists it handed the form, in order
+        protected long changeFilter(ArrayList<GPropertyFilter> conditions) { changedFilters.add(describe(conditions)); return -1; }
         public boolean focusFirstWidget(FocusUtils.Reason reason) { return false; }
         public GGridProperty getGridComponent() { return null; }
         public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) { }
@@ -443,7 +521,8 @@ public class GReactFormDataTest extends GWTTestCase {
         public GGroupObjectValue getSelectedColumnKey() { return null; }
         public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) { return null; }
         public List<Pair<Column, String>> getFilterColumns() { return null; }
-        public GContainer getFiltersContainer() { return null; }
+        GContainer filtersContainer; // the group's FILTERS box, when a test gives it one
+        public GContainer getFiltersContainer() { return filtersContainer; }
         public GFilterControls getFilterControls() { return null; }
     }
     // ... and the platform's controller of the components, the layout: what reaches it is recorded in the same log
@@ -520,7 +599,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static void put(GFormChanges changes, GPropertyReader reader, GGroupObjectValue key, Object value) {
         NativeHashMap<GGroupObjectValue, PValue> values = changes.properties.get(reader);
         if (values == null) { values = new NativeHashMap<>(); changes.properties.put(reader, values); }
-        values.put(key, value == null ? null : value instanceof Boolean ? PValue.getPValue((Boolean) value)
+        values.put(key, value == null ? null : value instanceof PValue ? (PValue) value : value instanceof Boolean ? PValue.getPValue((Boolean) value)
                 : value instanceof String ? PValue.getPValue((String) value) : PValue.getPValue((Integer) value));
     }
     private static GFormChanges drop(GPropertyDraw... properties) {
@@ -545,7 +624,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static String describe(ArrayList<GPropertyFilter> conditions) {
         StringBuilder text = new StringBuilder();
         for (GPropertyFilter condition : conditions)
-            text.append(" ").append(condition.property.integrationSID).append(condition.compare)
+            text.append(" ").append(condition.column.property.integrationSID).append(condition.compare)
                     .append(condition.negation ? " not" : "").append(condition.junction ? "" : " or");
         return text.toString();
     }
@@ -560,8 +639,13 @@ public class GReactFormDataTest extends GWTTestCase {
         member.change({property: 'price', value: 5, negation: true});
         member.change({property: 'price', value: ''});
     }-*/;
-    private static native String refusedFilters(JavaScriptObject member, JavaScriptObject conditions) /*-{
-        try { member.change(conditions); return null; } catch (e) { return e.message; }
+    // what a call through a state member is refused with, null where it is made
+    private static native String refusedChange(JavaScriptObject member, JavaScriptObject argument) /*-{
+        try { member.change(argument); return null; } catch (e) { return e.message; }
+    }-*/;
+    // a member's change(value, row) with a value as a view writes it, and the reason it is refused, if it is
+    private static native String refusedChange(JavaScriptObject member, String value, JavaScriptObject row) /*-{
+        try { member.change(value, row); return null; } catch (e) { return e.message; }
     }-*/;
     // a member of a view's controller, at a group (null: the empty group, the controller itself)
     private static JavaScriptObject member(GReactFormData.ContainerState state, String group, String name) {
@@ -572,26 +656,47 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native void callChange(JavaScriptObject member, JavaScriptObject argument) /*-{ member.change(argument); }-*/;
     private static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
     private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
-    private static native void changeBatch(JavaScriptObject controller, JavaScriptObject member, int value) /*-{ controller.properties.change({property: member, value: value}); }-*/;
+    // a batch, as a view begins one: run is what its function does
+    private static native void batch(JavaScriptObject controller, Runnable run) /*-{
+        controller.batch(function () { run.@java.lang.Runnable::run()(); });
+    }-*/;
     private static boolean refuses(JavaScriptObject member, int value) {
         return refusesAt(member, value, null);
     }
     private static boolean refusesAt(JavaScriptObject member, int value, JavaScriptObject row) {
         try { changeAt(member, value, row); return false; } catch (RuntimeException e) { return true; }
     }
-    private static boolean refusesBatch(JavaScriptObject controller, JavaScriptObject member, int value) {
-        try { changeBatch(controller, member, value); return false; } catch (RuntimeException e) { return true; }
+    private static boolean refusesBatch(JavaScriptObject controller, Runnable run) {
+        try { batch(controller, run); return false; } catch (RuntimeException e) { return true; }
     }
-    // the property a member of a view's controller stands for, at a group (null: the empty group, the controller
-    // itself)
-    private static GPropertyDraw memberProperty(GReactFormData.ContainerState state, String group, String name) {
+    // whether a view's controller has a property's member under the name, at a group (null: the empty group, the
+    // controller itself): an object of the verbs a property member answers to. The name says which property - the one
+    // the view's node of the group carries under it
+    private static boolean hasMember(GReactFormData.ContainerState state, String group, String name) {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
-        return owner == null ? null : GReactFormData.getMemberProperty(field(owner, name));
+        return owner != null && own(owner, name) && "function".equals(typeOf(field(owner, name), "exec"));
     }
     private static native double number(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
     private static native boolean has(JavaScriptObject object, String name) /*-{ return name in object; }-*/;
     private static native boolean sameField(JavaScriptObject a, String aName, JavaScriptObject b, String bName) /*-{ return a[aName] === b[bName]; }-*/;
     private static native boolean isFalse(JavaScriptObject object, String name) /*-{ return object[name] === false; }-*/;
+
+    // a group in PANEL view is sent no rows - only its current object, which nothing chooses among rows -, so no view
+    // has a node of its rows, wherever its grid is: the platform's controller has the group (it builds no table for a
+    // panel), and a panel property of it is on a plain node, with no rows and no change(row)
+    public void testAGroupInPanelViewHasNoRows() {
+        Fixture f = new Fixture(fixture -> fixture.group.viewType = GClassViewType.PANEL);
+        assertSame(f.lsf, f.controller(f.group));
+        assertSame(f.lsf, f.ordersController());
+        assertNull(field(f.data(), "items")); // a, where its grid is, carries none of its panel properties: no node
+        JavaScriptObject items = field(f.snapshots[1], "items"); // b carries one of them
+        assertNotNull(field(items, "panel"));
+        assertFalse(own(items, "list"));
+        assertFalse(own(items, "keys"));
+        assertFalse(own(items, "orders"));
+        assertNull(field(field(f.sb.controller, "items"), "change"));
+        assertNotNull(field(field(f.sb.controller, "items"), "panel"));
+    }
 
     public void testCellUpdateIsIsolatedAndKeepsOldSnapshots() {
         Fixture f = new Fixture();
@@ -638,7 +743,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.projection.flush();
         assertFalse(flag(f.row("1"), "isCurrent"));
         assertSame(panel, field(field(f.snapshots[1], "items"), "panel")); // ... and a panel property stays, value and
-        assertSame(f.panel, memberProperty(f.sb, "items", "panel"));          // member: the server reads it for the
+        assertTrue(hasMember(f.sb, "items", "panel"));                     // member: the server reads it for the
         assertEquals(1, f.publications[1]);                                // current object itself
         assertEquals(1, f.publications[2]);
         f.controller(f.group).changeCurrentKey(f.two);
@@ -663,7 +768,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(hasValue(field(f.row("1"), "price")));
         assertEquals(10.0, value(oldRow, "price"), 0.0);
         assertEquals("price,quantity", join(field(f.node(), "properties"))); // the index is the design's, shown or not
-        assertSame(f.price, memberProperty(f.sa, "items", "price")); // ... and so is the member
+        assertTrue(hasMember(f.sa, "items", "price")); // ... and so is the member
         assertFalse(f.controller(f.price).isPropertyShown(f.price));
         assertTrue(refuses(member(f.sa, "items", "price"), 1)); // which refuses a call while it is hidden
         GFormChanges restore = new GFormChanges(); put(restore, f.price, f.one, 12); put(restore, f.price, f.two, 22);
@@ -682,7 +787,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(note, "hidden"));
         assertFalse(hasValue(note));
         assertFalse(f.controller(f.note).isPropertyShown(f.note));
-        assertSame(f.note, memberProperty(f.sa, "items", "note"));
+        assertTrue(hasMember(f.sa, "items", "note"));
         GFormChanges delta = new GFormChanges(); put(delta, f.note, GGroupObjectValue.EMPTY, 7); f.apply(delta);
         assertFalse(flag(field(f.node(), "note"), "hidden"));
         assertEquals(7.0, value(f.node(), "note"), 0.0);
@@ -793,21 +898,19 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // the form level is the EMPTY group, and its node is the container's top level: it carries the empty group's
-    // entries - an lsf property's among them, by its integration name, with no member - and lists no `properties` (the
-    // controller's batch at that level), and carries the components' descriptors too
+    // entries - an lsf property's among them, by its integration name, with no member - and lists no `properties`, a
+    // name a property of the empty group may take there, and carries the components' descriptors too
     public void testTheTopLevelIsTheEmptyGroupsNode() {
         Fixture f = new Fixture();
         assertNotNull(field(f.data(), "single"));
         assertFalse(own(f.data(), "properties"));
-        assertSame(f.single, memberProperty(f.sa, null, "single"));
-        assertSame(f.single, f.sa.getGroupProperty(null, "single"));
-        assertNull(f.sb.getGroupProperty(null, "single"));
-        assertSame(f.nativeProperty, f.sb.getGroupProperty(null, "native")); // an lsf one is carried by name too...
-        assertNull(memberProperty(f.sb, null, "native")); // ... with no member: its value is the platform's
+        assertTrue(hasMember(f.sa, null, "single"));
+        assertFalse(hasMember(f.sb, null, "single"));
+        assertNotNull(field(f.snapshots[1], "native")); // an lsf one is carried by name too...
+        assertFalse(hasMember(f.sb, null, "native")); // ... with no member: its value is the platform's
         f.apply(drop(f.single));
         assertTrue(flag(field(f.data(), "single"), "hidden"));
-        assertSame(f.single, f.sa.getGroupProperty(null, "single"));
-        assertSame(f.single, memberProperty(f.sa, null, "single"));
+        assertTrue(hasMember(f.sa, null, "single"));
         assertFalse(f.controller(f.single).isPropertyShown(f.single));
     }
 
@@ -830,10 +933,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(own(data, "PROPERTY(note)"));
         assertFalse(own(data, "PROPERTY(memo)"));
         assertEquals("panel,note", join(field(node, "properties")));
-        assertSame(placed[0], f.sb.getGroupProperty(f.group, "note"));
-        assertSame(placed[1], f.sb.getGroupProperty(null, "memo"));
-        assertNull(memberProperty(f.sb, "items", "note"));
-        assertNull(memberProperty(f.sb, null, "memo"));
+        assertFalse(hasMember(f.sb, "items", "note"));
+        assertFalse(hasMember(f.sb, null, "memo"));
         assertSame(note, f.sb.entryOf(data, placed[0]));
         assertSame(memo, f.sb.entryOf(data, placed[1]));
         assertEquals("items.note", GReactFormData.getName(placed[0])); // the path of its entry, not PROPERTY(note)
@@ -862,7 +963,7 @@ public class GReactFormDataTest extends GWTTestCase {
         final GGroupObject[] others = new GGroupObject[1];
         Fixture f = new Fixture(fixture -> {
             GGroupObject other = others[0] = new GGroupObject();
-            other.ID = 50; other.nativeSID = "g50"; other.sID = "others";
+            other.ID = 50; other.nativeSID = "g50"; other.sID = "others"; other.viewType = GClassViewType.LIST;
             other.grid = new GGrid(); other.grid.ID = 51; other.grid.sID = "otherGrid"; other.grid.container = fixture.a;
             fixture.a.children.add(other.grid);
             other.objects.add(new GObject(other, "other", 50, "other", GIntegerType.instance));
@@ -886,8 +987,9 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(GGroupObjectValue.resolveObject(keyOf("1"))); // a key string is no row
     }
 
-    // ... and where nothing else of its group is drawn, it brings the group's node: its entry is carried there - while
-    // an lsf panel ACTION, which has no entry, brings nothing. What labels it, and whether the form shows it, are read
+    // ... and where nothing else of its group is drawn, it brings the group's node: its entry is carried there, an lsf
+    // panel ACTION's too, which says only whether the form shows it, its caption being its button's face - and the
+    // group's member is there, with nothing on it. What labels it, and whether the form shows it, are read
     // through the container's answer for the property, from the snapshot handed in
     public void testAnLsfPanelPropertyBringsItsGroupsNode() {
         final GPropertyDraw[] placed = new GPropertyDraw[1];
@@ -896,7 +998,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.projection.flush();
         assertEquals("note", join(field(field(f.snapshots[2], "items"), "properties")));
         assertTrue(own(f.sc.controller, "items"));
-        assertNull(memberProperty(f.sc, "items", "note"));
+        assertFalse(hasMember(f.sc, "items", "note"));
         NativeHashMap<GGroupObjectValue, PValue> caption = new NativeHashMap<>();
         caption.put(GGroupObjectValue.EMPTY, PValue.getPValue("Remark"));
         assertFalse(reachesLsf(f.lsf, f.controllers, note.captionReader, caption)); // React's
@@ -909,12 +1011,17 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(drop(note));
         assertTrue(flag(f.sc.entryOf(f.snapshots[2], note), "hidden"));
 
+        // ... and so does an lsf action, whose caption is its button's face: its entry only says whether it is shown
         final GPropertyDraw[] action = new GPropertyDraw[1];
         Fixture g = new Fixture(fixture -> (action[0] = fixture.lsfPanel(43, "go", fixture.group, fixture.c)).valueType = GActionType.instance);
         g.projection.flush();
-        assertFalse(own(g.snapshots[2], "items"));
-        assertFalse(own(g.sc.controller, "items"));
-        assertNull(g.sc.entryOf(g.snapshots[2], action[0]));
+        assertEquals("go", join(field(field(g.snapshots[2], "items"), "properties")));
+        assertTrue(own(g.sc.controller, "items")); // the group's member, as data has its node ...
+        assertFalse(hasMember(g.sc, "items", "go")); // ... with nothing on it: the platform's button runs the action
+        assertTrue(reachesLsf(g.lsf, g.controllers, action[0].captionReader, caption)); // the platform's
+        g.projection.flush();
+        assertFalse(own(g.sc.entryOf(g.snapshots[2], action[0]), "caption"));
+        assertTrue(flag(g.sc.entryOf(g.snapshots[2], action[0]), "hidden"));
     }
 
     // the controller is the state's, and its members mirror the entries, made once with them: a group's member wherever
@@ -924,18 +1031,18 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         assertTrue(own(field(f.sa.controller, "items"), "change"));  // the rows are drawn here...
         assertFalse(own(field(f.sb.controller, "items"), "change")); // ... and not here, where only a panel property is
-        assertSame(f.price, memberProperty(f.sa, "items", "price"));
-        assertSame(f.panel, memberProperty(f.sb, "items", "panel"));
-        assertNull(memberProperty(f.sa, "items", "panel"));
-        assertSame(f.single, memberProperty(f.sa, null, "single")); // the empty group's, on the controller itself
-        assertNull(memberProperty(f.sb, null, "native"));
+        assertTrue(hasMember(f.sa, "items", "price"));
+        assertTrue(hasMember(f.sb, "items", "panel"));
+        assertFalse(hasMember(f.sa, "items", "panel"));
+        assertTrue(hasMember(f.sa, null, "single")); // the empty group's, on the controller itself
+        assertFalse(hasMember(f.sb, null, "native"));
         JavaScriptObject price = field(field(f.sa.controller, "items"), "price");
         f.apply(drop(f.price));
         assertSame(price, field(field(f.sa.controller, "items"), "price"));
     }
 
     // the form's controllers of what React draws are what React has of it: a group's rows, its current object, the
-    // client's own add or remove go to the node the rows are drawn on; a property's optimistic value, and whether the
+    // client's own add or remove go to the part the rows are drawn as; a property's optimistic value, and whether the
     // form shows it, to what React has of the property - whatever group it is of, one whose rows React draws or one
     // whose rows GWT draws - and one React carries by no name has none: nothing is sent for it. Which controller the
     // form takes is GFormController.initializeOwnerControllers', not built here
@@ -970,15 +1077,30 @@ public class GReactFormDataTest extends GWTTestCase {
         f.controller(f.nativeProperty).focusProperty(f.nativeProperty);
         assertTrue(f.lsf.focused.contains(f.nativeProperty));  // it is edited: its controller is the platform's own
         assertSame(f.lsf, f.controller(f.plain)); // ... and one React has nothing of is the platform's alone
-        // as a component, a property is the platform's where the platform draws it - an lsf one too, React labelling it
-        // - and has no controller where React draws its content: nothing is sent for it (createComponentController)
+        // as a component, a property is the platform's whatever draws it - an lsf one, React labelling it, and one React
+        // draws the content of, too (createComponentController)
         assertSame(f.layout, f.controllers.components.get(f.plain));
         assertSame(f.layout, f.controllers.components.get(f.nativeProperty));
-        assertNull(f.controllers.components.get(f.price));
+        assertSame(f.layout, f.controllers.components.get(f.price));
+        assertSame(f.layout, f.controllers.components.get(f.panel));
+    }
+
+    // what is sent for a property React draws AS A COMPONENT - its class, where the design gives it a dynamic one; a
+    // design showIf on a property is the property's own SHOWIF, never the component's - is the platform's, which has
+    // no view of it to apply it to (GFormLayout skips a component it built none for): React's entry is not touched
+    public void testAPropertyReactDrawsIsThePlatformsAsAComponent() {
+        Fixture f = new Fixture();
+        JavaScriptObject before = f.data();
+        NativeHashMap<GGroupObjectValue, PValue> highlighted = new NativeHashMap<>();
+        highlighted.put(GGroupObjectValue.EMPTY, PValue.getPValue("highlighted"));
+        assertTrue(reachesLsf(f.lsf, f.controllers, f.price.elementClassReader, highlighted));
+        assertTrue(reachesLsf(f.lsf, f.controllers, f.panel.elementClassReader, highlighted));
+        f.projection.flush();
+        assertSame(before, f.data());
     }
 
     // a member holds the state it stands for and reads what a call through it names from that state - the row, the
-    // value - handing the form the edit (Verbs); the batch takes only a member of its own view's controller
+    // value - handing the form the edit (Verbs)
     public void testAMemberHandsTheFormWhatItNames() {
         Fixture f = new Fixture();
         JavaScriptObject price = member(f.sa, "items", "price");
@@ -987,11 +1109,139 @@ public class GReactFormDataTest extends GWTTestCase {
         changeAt(price, 5, null);
         assertEquals(GGroupObjectValue.EMPTY, f.changed); // no row: the current object
         assertTrue(refusesAt(member(f.sb, "items", "panel"), 1, keyOf("1"))); // a panel entry names no row
-        f.changed = null;
-        assertTrue(refusesBatch(f.sb.controller, price, 1)); // a member of another view's controller
-        assertNull(f.changed);
-        assertFalse(refusesBatch(f.sa.controller, price, 1));
-        assertEquals(GGroupObjectValue.EMPTY, f.changed);
+    }
+
+    // an lsf ACTION is a part of its group as an lsf property is - its group's node, its entry -, but what labels it is
+    // its button's face, the platform's: its entry says only whether the form shows it - an <Lsf> hides its host by
+    // that -, a column's what the action is too. Like an lsf property, it has no member: the platform's button runs it
+    public void testAnLsfActionHasAnEntryAndNoMember() {
+        final GPropertyDraw[] lsf = new GPropertyDraw[2];
+        Fixture f = new Fixture(fixture -> {
+            (lsf[0] = fixture.lsfPanel(46, "go", fixture.group, fixture.c)).valueType = GActionType.instance;
+            GPropertyDraw approve = lsf[1] = fixture.property(47, "approve", fixture.group, true, fixture.a);
+            approve.lsf = true;
+            approve.valueType = GActionType.instance;
+            approve.captionReader = new GCaptionReader(47, 10);
+        });
+        GPropertyDraw go = lsf[0], approve = lsf[1];
+        assertEquals("go", join(field(field(f.snapshots[2], "items"), "properties"))); // c has the group's node for it
+        NativeHashMap<GGroupObjectValue, PValue> caption = new NativeHashMap<>();
+        caption.put(GGroupObjectValue.EMPTY, PValue.getPValue("Go"));
+        assertTrue(reachesLsf(f.lsf, f.controllers, go.captionReader, caption)); // the face of its button
+        assertTrue(reachesLsf(f.lsf, f.controllers, approve.captionReader, caption)); // ... of each of its buttons
+        f.projection.flush();
+        JavaScriptObject goEntry = f.sc.entryOf(f.snapshots[2], go), approveEntry = field(f.node(), "approve");
+        assertFalse(own(goEntry, "caption"));
+        assertTrue(flag(goEntry, "hidden")); // the platform does not show it yet
+        assertFalse(own(approveEntry, "caption"));
+        assertTrue(own(approveEntry, "type")); // what the action is
+        assertTrue(flag(approveEntry, "hidden"));
+        assertTrue(own(f.sc.controller, "items")); // c has the group's member, as it has data.items ...
+        assertFalse(hasMember(f.sc, "items", "go")); // ... and nothing on it: the platform's button runs the action
+        assertFalse(hasMember(f.sa, "items", "approve")); // ... nor is there one in a, where the rows are
+        GFormChanges shown = new GFormChanges();
+        put(shown, go, GGroupObjectValue.EMPTY, true);
+        put(shown, approve, f.one, true);
+        put(shown, approve, f.two, true);
+        f.apply(shown);
+        assertFalse(flag(f.sc.entryOf(f.snapshots[2], go), "hidden"));
+        assertFalse(flag(field(f.node(), "approve"), "hidden"));
+        f.apply(drop(go));
+        assertTrue(flag(f.sc.entryOf(f.snapshots[2], go), "hidden"));
+    }
+
+    // a call made in a batch reaches the form at once, as outside one - read, checked and handed over in the order it
+    // was made, an edit of its own -, the form showing it at once and sending it when the batch ends
+    // (GFormController.batch)
+    public void testABatchHandsTheFormItsCallsAtOnce() {
+        Fixture f = new Fixture();
+        JavaScriptObject items = field(f.sa.controller, "items");
+        JavaScriptObject price = member(f.sa, "items", "price"), quantity = member(f.sa, "items", "quantity");
+        f.edits.clear();
+        batch(f.sa.controller, () -> {
+            changeAt(price, 5, keyOf("2"));
+            assertEquals(Arrays.asList("batch", "cell price@2"), f.edits); // at once
+            changeAt(quantity, 6, null);
+            callChange(items, keyOf("2"));
+        });
+        assertEquals(Arrays.asList("batch", "cell price@2", "cell quantity@", "current 2", "sent"), f.edits);
+    }
+
+    // a call is made when it is made, so a batch that throws - a call refused, or the view's own throw - ends with what
+    // was made before the throw handed to the form, which sends it as the batch ends (GFormController.batch), as calls
+    // made one after the other would have gone; the throw reaches the view, and a call made after it goes at once again
+    public void testABatchThatThrowsKeepsWhatItMade() {
+        Fixture f = new Fixture();
+        JavaScriptObject price = member(f.sa, "items", "price"), single = member(f.sa, null, "single");
+        f.edits.clear();
+        assertTrue(refusesBatch(f.sa.controller, () -> {
+            changeAt(price, 5, keyOf("2"));
+            changeAt(single, 1, keyOf("1")); // a property of no group names no row: refused
+        }));
+        assertTrue(refusesBatch(f.sa.controller, () -> {
+            changeAt(price, 6, keyOf("1"));
+            throw new IllegalStateException("the view's own");
+        }));
+        changeAt(price, 7, keyOf("2")); // no batch now: at once
+        assertEquals(Arrays.asList("batch", "cell price@2", "sent", "batch", "cell price@1", "sent", "cell price@2"), f.edits);
+    }
+
+    // a batch begun inside another is a part of it: what it makes is sent when the outer one ends - and if it throws,
+    // what it made is sent too, as what a batch makes before a throw is
+    public void testABatchInsideABatchIsAPartOfIt() {
+        Fixture f = new Fixture();
+        JavaScriptObject price = member(f.sa, "items", "price");
+        f.edits.clear();
+        batch(f.sa.controller, () -> {
+            changeAt(price, 1, keyOf("1"));
+            batch(f.sa.controller, () -> changeAt(price, 2, keyOf("2")));
+            assertTrue(refusesBatch(f.sa.controller, () -> { // the outer function catches what the inner one threw
+                changeAt(price, 3, keyOf("1"));
+                throw new IllegalStateException("the view's own");
+            }));
+            changeAt(price, 4, keyOf("2"));
+        });
+        assertEquals(Arrays.asList("batch", "cell price@1", "cell price@2", "cell price@1", "cell price@2", "sent"), f.edits);
+    }
+
+    // a batch is sent when its function returns, so a function returning a Promise - an async one, whose calls after
+    // an await would come when the batch is over - is refused, what it made before sent; and no function at all is
+    // refused before a batch is begun
+    public void testABatchRefusesWhatItCannotMakeAtOnce() {
+        Fixture f = new Fixture();
+        f.edits.clear();
+        String refused = refusedThenable(f.sa.controller, member(f.sa, "items", "price"));
+        assertTrue(refused, refused.contains("controller.batch(): ") && refused.contains("Promise"));
+        assertEquals(Arrays.asList("batch", "cell price@", "sent"), f.edits);
+        refused = refusedBatchOf(f.sa.controller, parse("{\"property\": \"price\"}"));
+        assertTrue(refused, refused.contains("takes a function"));
+        assertEquals(3, f.edits.size());
+    }
+    private static native String refusedThenable(JavaScriptObject controller, JavaScriptObject member) /*-{
+        try {
+            controller.batch(function () { member.change(1); return {then: function () {}}; });
+            return null;
+        } catch (e) { return e.message; }
+    }-*/;
+    private static native String refusedBatchOf(JavaScriptObject controller, JavaScriptObject run) /*-{
+        try { controller.batch(run); return null; } catch (e) { return e.message; }
+    }-*/;
+
+    // a call in a batch reads the state as the calls before it left it - the form shows each at once -: two sortings
+    // stated one at a time in one batch go on from each other, as two calls one after the other do, and so do two
+    // conditions
+    public void testChangesInABatchGoOnFromEachOther() {
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
+        JavaScriptObject items = field(f.sa.controller, "items");
+        batch(f.sa.controller, () -> {
+            callChange(field(items, "orders"), parse("{\"property\": \"price\", \"desc\": true}"));
+            callChange(field(items, "orders"), parse("{\"property\": \"quantity\", \"desc\": false}"));
+            callChange(field(items, "filters"), parse("{\"property\": \"price\", \"compare\": \">\", \"value\": 1}"));
+            callChange(field(items, "filters"), parse("{\"property\": \"quantity\", \"value\": 2}"));
+        });
+        assertEquals(2, f.sortedCalls);
+        assertEquals(columns(f.price, f.quantity), new ArrayList<>(f.sorted.keySet())); // the second on the first
+        assertEquals(Arrays.asList("changeFilters items price>", "changeFilters items price> quantity="), f.filtersCalls);
     }
 
     // a react container nothing places draws no caption of its own: the platform draws it around the container, so its
@@ -1024,7 +1274,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNotNull(grid);
         assertFalse(own(grid, "hidden"));
         assertFalse(own(grid, "caption")); // a grid has no caption: its descriptor says only whether it is shown
-        assertNull(f.sa.getGroupProperty(null, "grid")); // ... and it is data only, no member
+        assertFalse(own(f.sa.controller, "grid")); // ... and it is data only, no member
         GFormChanges hide = new GFormChanges(); put(hide, f.group.grid.showIfReader, GGroupObjectValue.EMPTY, true); f.apply(hide);
         assertTrue(flag(field(f.data(), "grid"), "hidden"));
         assertEquals(2, length(field(f.node(), "list")));
@@ -1098,8 +1348,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(flag(column, "hidden"));
         assertFalse(own(field(field(node, "byKey"), "1"), "editor"));
         assertTrue(join(field(node, "properties")).contains("editor"));
-        assertNull(memberProperty(sa, "items", "editor"));
-        assertSame(editor, sa.getGroupProperty(f.group, "editor")); // a condition or a sorting may name it
+        assertFalse(hasMember(sa, "items", "editor"));
     }
 
     public void testValueBeforeItsRowIsRetainedWithoutPublication() {
@@ -1190,13 +1439,63 @@ public class GReactFormDataTest extends GWTTestCase {
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, null);
         assertFalse(reachesLsf(f.lsf, f.controllers, f.box.elementClassReader, values));
-        assertFalse(reachesLsf(f.lsf, f.controllers, new GLoadingReader(20, 10), values));
         assertTrue(reachesLsf(f.lsf, f.controllers, f.a.showIfReader, values));
         assertTrue(reachesLsf(f.lsf, f.controllers, f.a.captionReader, values));
         assertTrue(reachesLsf(f.lsf, f.controllers, f.form.mainContainer.showIfReader, values));
         f.projection.flush();
         assertSame(before, f.data());
         assertEquals(1, f.publications[0]);
+    }
+
+    // a change a view sent of a cell: the cell says `loading` until the answer to it. The form marks it through the
+    // property's controller (setLoadingValueAt: with the value it shows, or with its own for UNDEFINED) and takes it
+    // off with the loading reader - null for the cells the answer is to, the others' kept. What React draws it marks;
+    // what the platform draws, the platform's own controller
+    public void testACellSaysItIsLoadingUntilItsChangeIsAnswered() {
+        Fixture f = new Fixture();
+        assertFalse(own(field(f.row("1"), "price"), "loading"));
+        // nothing to show: the cell, keyed as the answer keys it, and its value before
+        Pair<GGroupObjectValue, PValue> cell = f.controller(f.price).setLoadingValueAt(f.price, f.one, PValue.UNDEFINED);
+        assertEquals(f.one, cell.first);
+        assertEquals(PValue.getPValue(10), cell.second);
+        assertEquals(f.two, f.controller(f.price).setLoadingValueAt(f.price, f.two, PValue.UNDEFINED).first);
+        f.projection.flush();
+        assertTrue(flag(field(f.row("1"), "price"), "loading"));
+        assertEquals(10.0, value(f.row("1"), "price"), 0.0); // its own value, kept
+        assertTrue(flag(field(f.row("2"), "price"), "loading"));
+        assertFalse(own(field(f.row("1"), "quantity"), "loading"));
+        assertFalse(own(field(f.node(), "price"), "loading")); // a cell's, not the column's
+        GFormChanges answer = new GFormChanges(); // the answer to the first: as the form makes it
+        put(answer, f.price.loadingReader, f.one, null);
+        answer.updateProperties.add(f.price.loadingReader);
+        NativeHashMap<GGroupObjectValue, PValue> answered = answer.properties.get(f.price.loadingReader);
+        f.apply(answer);
+        assertFalse(own(field(f.row("1"), "price"), "loading"));
+        assertTrue(flag(field(f.row("2"), "price"), "loading"));
+        assertFalse(reachesLsf(f.lsf, f.controllers, f.price.loadingReader, answered)); // React's alone
+        // ... and one with a value to show says it with the value
+        f.setValue(f.quantity, f.one, 7);
+        f.projection.flush();
+        assertEquals(7.0, value(f.row("1"), "quantity"), 0.0);
+        assertTrue(flag(field(f.row("1"), "quantity"), "loading"));
+
+        // a panel entry is its one cell: an action's says so while it runs
+        assertEquals(GGroupObjectValue.EMPTY, f.controller(f.panel).setLoadingValueAt(f.panel, GGroupObjectValue.EMPTY, PValue.UNDEFINED).first);
+        f.projection.flush();
+        assertTrue(flag(field(field(f.snapshots[1], "items"), "panel"), "loading"));
+        // dropped, its loading goes with its values - no answer takes it off then - so it does not come back with it
+        f.apply(drop(f.panel));
+        GFormChanges back = new GFormChanges();
+        put(back, f.panel, GGroupObjectValue.EMPTY, 30);
+        f.apply(back);
+        assertFalse(own(field(field(f.snapshots[1], "items"), "panel"), "loading"));
+
+        // the platform's: its own controller marks it - an lsf property's included, React handing it over -, and it is
+        // handed the answer
+        f.controller(f.nativeProperty).setLoadingValueAt(f.nativeProperty, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
+        f.controller(f.plain).setLoadingValueAt(f.plain, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
+        assertEquals(Arrays.asList(f.nativeProperty, f.plain), f.lsf.loading);
+        assertTrue(reachesLsf(f.lsf, f.controllers, f.nativeProperty.loadingReader, answered));
     }
 
     public void testDroppedPropertyComesBackWithItsValues() {
@@ -1312,10 +1611,10 @@ public class GReactFormDataTest extends GWTTestCase {
 
     // a reader goes to ONE place: what React has of its owner - the property, the group, the component it is of - told
     // what kind of reader it is, or the platform, where React takes nothing of it. An lsf column's values and drop go
-    // through its entry to the platform (an unnamed one is refused when the form is built); an lsf ACTION has no entry,
-    // its caption being its button's face, the platform's; an lsf container React places has its caption drawn by
-    // React - its caption's class goes on to the platform, named or not, which has no caption widget to put it on - and
-    // its SHOWIF is React's alone: a view hides its host (useLsf)
+    // through its entry to the platform (an unnamed one is refused when the form is built); an lsf ACTION's caption is
+    // its button's face, the platform's, its entry saying only whether it is shown; an lsf container React places has
+    // its caption drawn by React - its caption's class goes on to the platform, named or not, which has no caption
+    // widget to put it on - and its SHOWIF is React's alone: a view hides its host (useLsf)
     public void testAReaderGoesToWhatReactHasOfItsOwner() {
         Fixture f = new Fixture();
         GPropertyDraw column = f.property(32, "column", f.group, true, f.a);
@@ -1352,7 +1651,8 @@ public class GReactFormDataTest extends GWTTestCase {
         hidden.put(GGroupObjectValue.EMPTY, PValue.getPValue(true));
         assertFalse(reachesLsf(lsf, controllers, placed.showIfReader, hidden)); // React's alone
         projection.flush();
-        assertFalse(own(published[0], "button")); // an lsf ACTION has no entry
+        assertFalse(own(field(published[0], "button"), "caption")); // an lsf ACTION's entry says only whether the form
+        assertTrue(flag(field(published[0], "button"), "hidden"));   // shows it
         assertEquals("Go", text(field(published[0], "c34"), "caption"));
         assertTrue(flag(field(published[0], "c34"), "hidden"));
     }
@@ -1388,7 +1688,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(delta);
         assertEquals(7.0, value(f.node(), "note"), 0.0); // one node: the rows and the panel entry side by side
         assertEquals(2, length(field(f.node(), "list")));
-        assertSame(f.note, memberProperty(f.sa, "items", "note"));
+        assertTrue(hasMember(f.sa, "items", "note"));
         JavaScriptObject note = field(f.node(), "note");
         f.controller(f.group).changeCurrentKey(f.two);
         f.projection.flush();
@@ -1396,12 +1696,17 @@ public class GReactFormDataTest extends GWTTestCase {
         assertSame(note, field(f.node(), "note")); // the selection moved in the rows, and the panel entry stayed
     }
 
-    public void testANameMeansThePropertyThisContainerCarries() {
-        Fixture f = Fixture.withTwin(); // `price`: a column where the rows are, and a panel property in b
-        assertSame(f.price, f.sa.getGroupProperty(f.group, "price"));
-        assertSame(f.twin, f.sb.getGroupProperty(f.group, "price"));
-        assertNull(f.sb.getGroupProperty(f.group, "quantity")); // b does not carry the column
-        assertNull(f.sc.getGroupProperty(f.group, "price"));    // nor does a container with no node of it
+    // a container carries an entry for what it draws or places, and a member for what it draws, and for no other
+    // property of the group - one carried in another container is not on its node -, while a state names the group's
+    // property wherever that is drawn (testASortingNamesThePropertyOfItsGroupWhereverItIsDrawn)
+    public void testAContainerCarriesWhatItDraws() {
+        Fixture f = new Fixture(); // `price`: a column where the rows are, in a; `panel`: a panel property in b
+        assertTrue(hasMember(f.sa, "items", "price"));
+        assertTrue(hasMember(f.sb, "items", "panel"));
+        assertFalse(own(f.node(), "panel")); // a does not carry the panel property
+        assertFalse(hasMember(f.sa, "items", "panel"));
+        assertFalse(hasMember(f.sb, "items", "price")); // ... nor b the column
+        assertFalse(own(f.sc.controller, "items")); // nor has a container with no node of it a member of the group
         assertNotNull(field(f.node(), "list")); // a draws the rows ...
         assertNull(field(field(f.snapshots[1], "items"), "list")); // ... b only a panel property of the group
     }
@@ -1445,12 +1750,12 @@ public class GReactFormDataTest extends GWTTestCase {
     // a subscriber may flush from inside a publication (a member call does): what it changed goes out then, with what
     // the outer flush had committed for it, and the outer flush does not give that container out again
     public void testANestedFlushPublishesWhatChangedOnce() {
-        Fixture f = Fixture.withTwin(); // two properties in b: the outer batch changes one, the nested flush the other
-        GFormChanges first = new GFormChanges(); put(first, f.twin, GGroupObjectValue.EMPTY, 7); f.apply(first);
+        Fixture f = Fixture.withRemark(); // b's two properties: the outer batch changes one, the nested flush the other
+        GFormChanges first = new GFormChanges(); put(first, f.remark, GGroupObjectValue.EMPTY, 7); f.apply(first);
         final int[] callbacks = {0};
         f.onPublish = () -> {
             if (callbacks[0]++ == 0) { // during a's publication: b, still in the outer batch, is changed and flushed
-                f.setValue(f.twin, GGroupObjectValue.EMPTY, 13);
+                f.setValue(f.remark, GGroupObjectValue.EMPTY, 13);
                 f.projection.flush();
             }
         };
@@ -1458,9 +1763,9 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(3.0, value(f.row("1"), "quantity"), 0.0);
         // the nested flush gave b out, with both changes: the outer batch's and its own
         assertEquals(31.0, value(field(f.snapshots[1], "items"), "panel"), 0.0);
-        assertEquals(13.0, value(field(f.snapshots[1], "items"), "price"), 0.0);
+        assertEquals(13.0, value(field(f.snapshots[1], "items"), "remark"), 0.0);
         assertEquals(2, f.publications[0]); // the fixture's own, the delta's
-        // the fixture's own, the twin's first value, the nested flush's: the outer flush did not give b out again
+        // the fixture's own, remark's first value, the nested flush's: the outer flush did not give b out again
         assertEquals(3, f.publications[1]);
     }
 
@@ -1637,10 +1942,13 @@ public class GReactFormDataTest extends GWTTestCase {
         int publications = f.publications;
         callNode(cat, "expand", f.row(f.cat, f.c2));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once, published, before its children
+        assertTrue(flag(f.row(f.cat, f.c2), "loading")); // ... and says it waits for the answer
         assertEquals(publications + 1, f.publications);
         assertSame(c1, f.row(f.cat, f.c1)); // the other node kept its object
+        assertFalse(own(c1, "loading"));
         f.answer(new GFormChanges(), 0); // an answer to a request before it changes nothing
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertTrue(flag(f.row(f.cat, f.c2), "loading"));
         GFormChanges gone = new GFormChanges(); // ... nor does one that takes the node away and brings it back: a row
         gone.gridObjects.put(f.cat, rows(f.c1)); // made anew is given what was asked of it
         f.answer(gone, 0);
@@ -1651,14 +1959,35 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         f.answer(openPage(f), 1); // its answer: the children, and 2 open as the rows say
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertFalse(own(f.row(f.cat, f.c2), "loading"));
         assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
         callNode(cat, "collapse", f.row(f.cat, f.c2));
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // closed at once, while its child is still loaded
         assertNotNull(f.row(f.item, f.i27));
+        assertFalse(own(f.row(f.cat, f.c2), "loading")); // closing a node loads nothing
         f.answer(new GFormChanges(), 2); // an answer with no keys - a failed one - leaves it as asked, as the platform's
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // tree does
         f.answer(openPage(f), 2); // ... and keys that still hold its child: the server did not close it
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+        assertFalse(own(f.row(f.cat, f.c2), "loading"));
+    }
+    // ... and so do two toggles of a node made in one batch: the second reads what the first asked, and the projection
+    // is published when the batch ends - the view never sees the node opened in between. Both are asked under the one
+    // index the batch's request is sent with, so its answer settles both
+    public void testTwoTogglesInABatchOpenAndCloseANode() {
+        TreeFixture f = new TreeFixture();
+        f.apply(closedPage(f));
+        JavaScriptObject cat = field(f.sa.controller, "cat"), c2 = f.row(f.cat, f.c2);
+        int publications = f.publications;
+        batch(f.sa.controller, () -> {
+            callNode(cat, "toggle", c2);
+            callNode(cat, "toggle", c2);
+        });
+        assertEquals(Arrays.asList("batch", "expand cat 2", "collapse cat 2", "sent"), f.verbs.asked);
+        assertEquals(publications, f.publications); // nothing to publish: the second toggle undid the first
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
+        f.answer(openPage(f), (int) f.verbs.requestIndex); // the batch's answer: keys still holding its child - the
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));   // server did not close it, and nothing asked waits any more
     }
     public void testTwoTogglesBeforeTheAnswerOpenAndCloseANode() {
         TreeFixture f = new TreeFixture();
@@ -1684,7 +2013,7 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject c2 = f.row(f.cat, f.c2);
         int publications = f.publications;
         callNode(field(f.sa.controller, "cat"), "expand", c2);
-        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // asked, but there is nothing to open
+        assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // asked, but there is nothing to open - nor to load
         assertSame(c2, f.row(f.cat, f.c2)); // so nothing is rewritten, nothing published
         assertEquals(publications, f.publications);
         assertEquals(Arrays.asList("expand cat 2"), f.verbs.asked); // the server is asked all the same
@@ -1854,7 +2183,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("price", text(at(sorted, 1), "property"));
         assertFalse(flag(at(sorted, 1), "desc"));
         assertSame(list, field(f.node(), "list")); // the rows for the new order come from the server, separately
-        assertNotSame(f.controller(f.group), f.ordersController()); // their part shows them, not the rows' node
+        assertNotSame(f.controller(f.group), f.ordersController()); // their part shows them, not the rows' part
         orders.clear(); // the caller's map, changed after: the part keeps a map of its own
         f.setValue(f.price, f.one, 11); // a value changes, the sortings do not: the same array
         f.projection.flush();
@@ -1867,18 +2196,41 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(at(field(f.node(), "orders"), 0), "desc"));
     }
 
-    // the twin of `price` in b: inside one container a name means one property, so a sorting on the twin is not this
-    // node's `price` - it is left out (and reported) rather than misnamed
-    public void testASortingIsNamedOnlyAsTheNodeNamesIt() {
-        Fixture f = Fixture.withTwin();
+    // a sorting is named by the group's name of its property, wherever that is drawn - the panel property in b, one the
+    // platform draws -, as a condition is; one on a property no sorting can name - one with no name, one grouped in
+    // columns - is left out (and reported) rather than named by a name that says nothing
+    public void testASortingIsNamedByTheGroupsName() {
+        Fixture f = Fixture.withPlatformDrawn();
         LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
-        orders.put(column(f.twin), true);
+        orders.put(column(f.panel), true);
+        orders.put(column(f.platformDrawn), false);
+        orders.put(column(f.platformUnnamed), true);
+        orders.put(new Column(f.platformInColumns, f.one), true);
         orders.put(column(f.quantity), false);
         f.ordersController().updateOrders(f.group, orders);
         f.projection.flush();
         JavaScriptObject sorted = field(f.node(), "orders");
-        assertEquals(1, length(sorted));
-        assertEquals("quantity", text(at(sorted, 0), "property"));
+        assertEquals(3, length(sorted));
+        assertEquals("panel", text(at(sorted, 0), "property"));
+        assertEquals("platform", text(at(sorted, 1), "property"));
+        assertTrue(flag(at(sorted, 1), "desc"));
+        assertEquals("quantity", text(at(sorted, 2), "property"));
+    }
+
+    // ... and a view names one the same way: the group's property of that name, wherever it is drawn - the panel
+    // property in b, one the platform draws -, with what it can be sorted by checked as for any other; a name the group
+    // does not carry is refused, and so is a property grouped in columns, a sorting naming no column
+    public void testASortingNamesThePropertyOfItsGroupWhereverItIsDrawn() {
+        Fixture f = Fixture.withPlatformDrawn();
+        JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
+        callChange(orders, parse("[{\"property\": \"panel\", \"desc\": true}, {\"property\": \"platform\", \"desc\": false}]"));
+        assertEquals(columns(f.panel, f.platformDrawn), new ArrayList<>(f.sorted.keySet()));
+        assertEquals(Boolean.FALSE, f.sorted.get(column(f.panel)));
+        String refused = refusedChange(orders, parse("{\"property\": \"nosuch\", \"desc\": true}"));
+        assertTrue(refused, refused.contains("controller.items.orders.change(): unknown property 'nosuch' of object group 'items'"));
+        refused = refusedChange(orders, parse("{\"property\": \"columns\", \"desc\": true}"));
+        assertTrue(refused, refused.contains("'columns' cannot be sorted by here: it is grouped in columns, and a sorting names no column"));
+        assertEquals(1, f.sortedCalls);
     }
     // a sorting names a property, never a column of it: a property React draws is never in columns
     private static Column column(GPropertyDraw property) {
@@ -1904,8 +2256,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("undefined", typeOf(field(f.sb.controller, "items"), "orders")); // b holds a panel property only
     }
 
-    // a call through the member is read on the node and handed to the form as the list it makes: a property by the
-    // name this view carries, `desc` turned into the client's ascending, the priority as given
+    // a call through the member is read where the rows are and handed to the form as the list it makes: a property by
+    // its group's name of it, `desc` turned into the client's ascending, the priority as given
     public void testSortingsAreChangedThroughTheMember() {
         Fixture f = new Fixture();
         JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
@@ -1964,17 +2316,17 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(0, f.sorted.size());
     }
 
-    // one order never touches the sortings it does not name, those the projection leaves out included (the twin's);
-    // the array states the whole list
+    // one order never touches the sortings it does not name, those the projection leaves out included (one on a
+    // property with no name); the array states the whole list
     public void testOneSortingKeepsWhatItDoesNotName() {
-        Fixture f = Fixture.withTwin();
+        Fixture f = Fixture.withPlatformDrawn();
         LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
-        held.put(column(f.twin), true);
+        held.put(column(f.platformUnnamed), true);
         held.put(column(f.price), true);
         f.ordersController().updateOrders(f.group, held);
         JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
         callChange(orders, parse("{\"property\": \"price\", \"desc\": true}"));
-        assertEquals(columns(f.twin, f.price), new ArrayList<>(f.sorted.keySet()));
+        assertEquals(columns(f.platformUnnamed, f.price), new ArrayList<>(f.sorted.keySet()));
         callChange(orders, parse("[{\"property\": \"price\", \"desc\": true}]"));
         assertEquals(columns(f.price), new ArrayList<>(f.sorted.keySet()));
     }
@@ -2033,7 +2385,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertSame(list, field(f.node(), "list")); // the rows they leave come from the server, separately
         // b holds a panel property of the group, no filters
         assertNull(field(field(f.snapshots[1], "items"), "filters"));
-        assertNotSame(f.controller(f.group), f.filtersController()); // their part shows them, not the rows' node
+        assertNotSame(f.controller(f.group), f.filtersController()); // their part shows them, not the rows' part
         assertNotNull(field(field(f.sa.controller, "items"), "filters")); // the member, where the part is
         assertNull(field(field(f.sb.controller, "items"), "filters"));
         f.controller(f.group).updateCurrentKey(f.two); // an unrelated change: the node is new, the array is not
@@ -2075,23 +2427,23 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(field(field(f.sa.controller, "items"), "filters"));
         callFilters(field(field(f.sc.controller, "items"), "filters")); // the member hands the form its group's edit
         // ... read where the member is and handed over as the list it makes: a condition with no value is dropped from
-        // a list, and on its own takes its property's conditions off (the recorder hands nothing back, so each call
-        // merges into the empty list the part was given)
+        // a list, and on its own takes its property's conditions off (each call merges into the list the one before it
+        // handed over, the form telling the part of it)
         assertEquals(Arrays.asList("changeFilters items price< or", "changeFilters items price= not", "changeFilters items"),
                 f.filtersCalls);
         JavaScriptObject member = field(field(f.sc.controller, "items"), "filters"); // every mistake is refused there,
-        String refused = refusedFilters(member, parse("{\"property\": \"nosuch\", \"value\": 1}")); // with the call
+        String refused = refusedChange(member, parse("{\"property\": \"nosuch\", \"value\": 1}")); // with the call
         assertTrue(refused, refused.contains("controller.items.filters.change(): ") && refused.contains("nosuch"));
-        refused = refusedFilters(member, parse("[{\"property\": \"price\", \"value\": 1, \"or\": \"yes\"}]"));
+        refused = refusedChange(member, parse("[{\"property\": \"price\", \"value\": 1, \"or\": \"yes\"}]"));
         assertTrue(refused, refused.contains("condition 0: ") && refused.contains("'or' must be true or false"));
-        refused = refusedFilters(member, parse("{\"property\": \"price\", \"compare\": \"IN ARRAY\", \"value\": 1}"));
+        refused = refusedChange(member, parse("{\"property\": \"price\", \"compare\": \"IN ARRAY\", \"value\": 1}"));
         assertTrue(refused, refused.contains("'IN ARRAY' is no comparison of a filter condition"));
         assertEquals(3, f.filtersCalls.size()); // ... and the form is handed nothing
         assertNull(field(f.node(), "filters")); // not a part of the rows
         assertEquals(0, length(field(field(f.snapshots[2], "items"), "filters")));
         // c carries no column: a condition names the group's property
         callChange(member, parse("{\"property\": \"price\", \"value\": 4}"));
-        assertSame(f.price, f.stated.get(0).property);
+        assertSame(f.price, f.stated.get(0).column.property);
         ArrayList<GPropertyFilter> conditions = new ArrayList<>();
         conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(3), GCompare.LESS));
         f.filtersController().updateFilters(f.group, dtos(conditions));
@@ -2115,14 +2467,14 @@ public class GReactFormDataTest extends GWTTestCase {
         callChange(member, parse("{\"property\": \"price\", \"compare\": \">=\", \"value\": 3}"));
         // the FIRST on price, in place, and the other bound kept as it was
         assertEquals("changeFilters items price>= price< quantity=", f.filtersCalls.get(0));
+        // (each merged into the list the part holds, which the form changes: the one the call before it handed over)
         callChange(member, parse("{\"property\": \"panel\", \"value\": 7}")); // a property with none: appended
-        assertEquals("changeFilters items price> price< quantity= panel=", f.filtersCalls.get(1));
+        assertEquals("changeFilters items price>= price< quantity= panel=", f.filtersCalls.get(1));
         callChange(member, parse("{\"property\": \"price\"}")); // no value: every condition on price goes
-        assertEquals("changeFilters items quantity=", f.filtersCalls.get(2));
-        // (each merged into the list the part holds, which only the form changes - and the recorder hands none back)
+        assertEquals("changeFilters items quantity= panel=", f.filtersCalls.get(2));
         callChange(member, valueReadOnce()); // a value read a second time would be none: it is read once
-        assertEquals("changeFilters items price= price< quantity=", f.filtersCalls.get(3));
-        assertFalse(f.stated.get(0).nullValue());
+        assertEquals("changeFilters items quantity= panel= price=", f.filtersCalls.get(3));
+        assertFalse(f.stated.get(2).nullValue());
     }
 
     // the form tells what shows a group's filters of every list it sends, before the answer (GFormController
@@ -2131,11 +2483,260 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testAChangeMergesIntoTheListTheFormLastSent() {
         Fixture f = new Fixture(Fixture::filtersBesideRows);
         JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        // the double tells the part, as the form does once it has sent the list
         callChange(member, parse("{\"property\": \"price\", \"compare\": \">\", \"value\": 1}"));
-        f.filtersController().changeFilters(f.group, dtos(f.stated)); // as the form does, once it has sent the list
         f.projection.flush();
         assertEquals("price", text(at(field(f.node(), "filters"), 0), "property")); // shown at once
         callChange(member, parse("{\"property\": \"quantity\", \"value\": 2}"));
         assertEquals("changeFilters items price> quantity=", f.filtersCalls.get(1));
+    }
+
+    // ===== the projection's non-obvious behaviour, each pinned (React: common's QA, 2026-10-07)
+
+    // a condition set elsewhere that compares with no value - the platform's panel can state one - is listed with a
+    // null `value`, so a view that hands the list back takes it off; on a LOGICAL property the filter type's JS value
+    // of nothing is `false`, so there it is listed as false
+    public void testAConditionWithNoValueIsListedAsNullAndOnALogicalPropertyAsFalse() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(74, "active", fixture.group, true, fixture.a).valueType = GLogicalType.instance;
+        });
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "active")), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        JavaScriptObject filters = field(f.node(), "filters");
+        assertEquals(2, length(filters));
+        assertEquals("price", text(at(filters, 0), "property"));
+        assertTrue(isNullField(at(filters, 0), "value"));
+        assertEquals("active", text(at(filters, 1), "property"));
+        assertTrue(isFalseField(at(filters, 1), "value"));
+    }
+
+    // a condition set elsewhere on what no condition the projection names can be on - an action, a property grouped in
+    // columns, a property with no integration SID - is left out of `filters`, the rest listed in their order, and the
+    // console says which and why, once per property however many times the list comes
+    public void testAConditionTheProjectionCannotNameIsLeftOutAndSaidOnce() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(75, "approve", fixture.group, true, fixture.a).valueType = GActionType.instance;
+            fixture.property(76, "perColumn", fixture.group, true, fixture.a).columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
+            fixture.property(77, "hidden", fixture.group, true, fixture.a).integrationSID = null;
+        });
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "approve")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.GREATER));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "perColumn")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "hidden")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.EQUALS));
+        JavaScriptObject errors = spyConsoleErrors();
+        try {
+            f.filtersController().updateFilters(f.group, dtos(conditions));
+            f.projection.flush();
+            JavaScriptObject filters = field(f.node(), "filters");
+            assertEquals(1, length(filters));
+            assertEquals("price", text(at(filters, 0), "property"));
+            assertEquals(3, countMatching(errors, "data.items.filters"));
+            assertEquals(1, countMatching(errors, "an action"));
+            assertEquals(1, countMatching(errors, "grouped in columns"));
+            assertEquals(1, countMatching(errors, "no integration SID"));
+            f.filtersController().updateFilters(f.group, dtos(conditions)); // the same list again: nothing said twice
+            f.projection.flush();
+            assertEquals(3, countMatching(errors, "data.items.filters"));
+        } finally {
+            restoreConsole(errors);
+        }
+    }
+
+    // what the member refuses, the form is not handed at all - a condition on an action or on a property grouped in
+    // columns, an unknown field, an unknown compare, a `negation` that is no boolean - and the message quotes the call
+    public void testTheFiltersMemberRefusesWhatNoConditionCanBe() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(75, "approve", fixture.group, true, fixture.a).valueType = GActionType.instance;
+            fixture.property(76, "perColumn", fixture.group, true, fixture.a).columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
+        });
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        String refused = refusedChange(member, parse("{\"property\": \"approve\", \"value\": 1}"));
+        assertTrue(refused, refused != null && refused.contains("controller.items.filters.change(): ") && refused.contains("an action"));
+        refused = refusedChange(member, parse("{\"property\": \"perColumn\", \"value\": 1}"));
+        assertTrue(refused, refused != null && refused.contains("grouped in columns"));
+        refused = refusedChange(member, parse("{\"property\": \"price\", \"value\": 1, \"vaule\": 2}"));
+        assertTrue(refused, refused != null && refused.contains("unknown field 'vaule'"));
+        refused = refusedChange(member, parse("{\"property\": \"price\", \"compare\": \"~\", \"value\": 1}"));
+        assertTrue(refused, refused != null && refused.contains("unknown compare '~'"));
+        refused = refusedChange(member, parse("{\"property\": \"price\", \"value\": 1, \"negation\": \"yes\"}"));
+        assertTrue(refused, refused != null && refused.contains("'negation' must be true or false"));
+        refused = refusedChange(member, parse("[{\"property\": \"price\", \"value\": 1}, {\"property\": \"approve\", \"value\": 1}]"));
+        assertTrue(refused, refused != null && refused.contains("condition 1: ")); // one wrong entry refuses the whole list
+        assertEquals(0, f.filtersCalls.size());
+    }
+
+    // a sorting set elsewhere on a property with no integration SID is left out of `orders`, and said once; a sorting a
+    // view asks for by a name its group does not carry is refused, and the form handed nothing
+    public void testASortingTheProjectionCannotNameIsLeftOutAndAnUnknownOneRefused() {
+        Fixture f = new Fixture(fixture -> fixture.property(77, "hidden", fixture.group, true, fixture.a).integrationSID = null);
+        LinkedHashMap<Column, Boolean> held = new LinkedHashMap<>();
+        held.put(column(byName(f.form, "hidden")), true);
+        held.put(column(f.price), false);
+        JavaScriptObject errors = spyConsoleErrors();
+        try {
+            f.ordersController().updateOrders(f.group, held);
+            f.projection.flush();
+            JavaScriptObject sorted = field(f.node(), "orders");
+            assertEquals(1, length(sorted));
+            assertEquals("price", text(at(sorted, 0), "property"));
+            assertEquals(1, countMatching(errors, "data.items.orders"));
+            f.ordersController().updateOrders(f.group, held);
+            f.projection.flush();
+            assertEquals(1, countMatching(errors, "data.items.orders"));
+        } finally {
+            restoreConsole(errors);
+        }
+        assertTrue(refusesChange(field(field(f.sa.controller, "items"), "orders"), parse("{\"property\": \"nosuch\", \"desc\": true}")));
+        assertEquals(0, f.sortedCalls);
+    }
+
+    // a tree's groups share one FILTERS box, and each is filtered by its own name: a group's list goes to that group's
+    // node only, and a change through a group's member states that group's conditions - the tree's other group keeps
+    // its own
+    public void testATreeGroupIsFilteredByItsOwnName() {
+        TreeFixture f = new TreeFixture(fixture -> {
+            GContainer filters = container(5); filters.react = false; filters.custom = null;
+            filters.container = fixture.a; fixture.a.children.add(filters);
+            fixture.tree.filtersContainer = filters;
+            GPropertyDraw price = new GPropertyDraw();
+            price.ID = 63; price.nativeSID = "p63"; price.sID = "price"; price.integrationSID = "price";
+            ((GComponent) price).ID = 63; ((GComponent) price).sID = "price";
+            price.groupObject = fixture.item; price.isList = true; price.container = fixture.a;
+            price.valueType = GIntegerType.instance;
+            fixture.form.propertyDraws.add(price); fixture.a.children.add(price);
+        });
+        f.apply(f.page());
+        assertEquals(0, length(field(field(f.data, "cat"), "filters")));
+        assertEquals(0, length(field(field(f.data, "item"), "filters")));
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "price")), f.item, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.GREATER));
+        f.controllers.filters.get(f.item).updateFilters(f.item, dtos(conditions));
+        f.projection.flush();
+        assertEquals(1, length(field(field(f.data, "item"), "filters")));
+        assertEquals("price", text(at(field(field(f.data, "item"), "filters"), 0), "property"));
+        assertEquals(0, length(field(field(f.data, "cat"), "filters"))); // the other group of the tree: none
+        callChange(field(field(f.sa.controller, "item"), "filters"), parse("{\"property\": \"price\", \"compare\": \"<\", \"value\": 9}"));
+        assertEquals(Arrays.asList("item price<"), f.verbs.filtered); // the item group's own list, merged into its own
+        callChange(field(field(f.sa.controller, "cat"), "filters"), parse("[]"));
+        assertEquals(Arrays.asList("item price<", "cat"), f.verbs.filtered); // the cat group's, empty: nothing of item's
+    }
+
+    // where React draws what the group's FILTERS box holds, the platform builds no filter panel (initFilters): the keys
+    // that would add, replace or reset a condition find no panel and change nothing, while a pivot's drill-down states
+    // its conditions through the form (replaceFilterConditions -> changeFilter), whose list the view's FILTERS is shown
+    public void testNoFilterPanelWhereReactDrawsTheFilters() {
+        GContainer main = container(0); main.react = false; main.custom = null; main.main = true;
+        GContainer filters = container(5); // react: a view draws what it holds
+        filters.container = main; main.children.add(filters);
+        RecordingTableController table = new RecordingTableController();
+        table.filtersContainer = filters;
+        table.initFilters();
+        assertNull(table.filter); // no panel: no toolbar button, no controls, no condition rows
+        table.addFilter(null); table.replaceFilter(null); table.quickEditFilter(null, null, null); // F3, Alt+F3, typing
+        table.resetFilters(); // Shift+F3, Escape, the controls' reset
+        assertEquals(0, table.changedFilters.size()); // ... change nothing
+        GGroupObject group = new GGroupObject();
+        GPropertyDraw name = new GPropertyDraw();
+        name.ID = 81; name.sID = "name"; name.integrationSID = "name"; name.groupObject = group;
+        name.valueType = new GStringType(GExtInt.UNLIMITED, false, false);
+        ArrayList<GPropertyFilter> drillDown = new ArrayList<>();
+        drillDown.add(new GPropertyFilter(new GFilter(name), group, GGroupObjectValue.EMPTY, PValue.getPValue("Apple"), GCompare.EQUALS));
+        table.replaceFilterConditions(drillDown); // a pivot cell's drill-down
+        assertEquals(Arrays.asList(" name="), table.changedFilters); // the group's list, sent through the form
+    }
+
+    // the row a per-row <Lsf> is given has to be a row of the property's group, read as a group's change(row) reads it
+    // (GGroupObject.getRowKey): a tree's row of a group below passes, narrowed to the path down to the group, while a
+    // row of a group above names no row of the one below
+    public void testATreeRowNarrowsUpToAGroupButNotDown() {
+        TreeFixture f = new TreeFixture();
+        assertEquals(f.c1, f.cat.getRowKey(f.i15)); // an item under category 1: category 1's row
+        assertEquals(f.i15, f.item.getRowKey(f.i15)); // the item's own
+        assertNull(f.item.getRowKey(f.c1)); // a category's row is no item's
+    }
+
+    private static GPropertyDraw byName(GForm form, String sID) {
+        for (GPropertyDraw property : form.propertyDraws)
+            if (sID.equals(property.sID))
+                return property;
+        throw new IllegalArgumentException(sID);
+    }
+    private static native boolean isNullField(JavaScriptObject object, String name) /*-{ return object[name] === null; }-*/;
+    private static native boolean isFalseField(JavaScriptObject object, String name) /*-{ return object[name] === false; }-*/;
+    // the errors the console is told while the spy is on, the console's own error put back by restoreConsole
+    private static native JavaScriptObject spyConsoleErrors() /*-{
+        var log = [], original = $wnd.console.error;
+        $wnd.console.error = function () { log.push(Array.prototype.join.call(arguments, ' ')); };
+        log.restore = function () { $wnd.console.error = original; };
+        return log;
+    }-*/;
+    private static native void restoreConsole(JavaScriptObject log) /*-{ log.restore(); }-*/;
+    private static native int countMatching(JavaScriptObject log, String part) /*-{
+        return log.filter(function (message) { return message.indexOf(part) >= 0; }).length;
+    }-*/;
+
+    // a color and an interval go out as strings of their own, and come back as what they are: a condition `filters`
+    // lists, handed back as it is, is the condition it was, and a member given a value in that shape changes the cell
+    // to it - one in another shape is refused, not sent as a string the server takes for neither. A file's condition
+    // says a link to the file, which is not the file: it can be taken off, not stated
+    public void testAValueComesBackAsItWentOut() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            GPropertyDraw tint = fixture.property(74, "tint", fixture.group, true, fixture.a);
+            tint.valueType = tint.externalChangeType = GColorType.instance;
+            GPropertyDraw period = fixture.property(75, "period", fixture.group, true, fixture.a);
+            period.valueType = period.externalChangeType = GDateIntervalType.instance;
+            fixture.property(76, "scan", fixture.group, true, fixture.a).valueType = new GCSVType();
+        });
+        GPropertyDraw tint = f.form.getPropertyDraw(f.group, "tint"), period = f.form.getPropertyDraw(f.group, "period");
+        PValue red = PValue.getPValue(new ColorDTO("ff0000")), year = PValue.getPValue(1000L, 2000L);
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(tint), f.group, GGroupObjectValue.EMPTY, red, GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(period), f.group, GGroupObjectValue.EMPTY, year, GCompare.EQUALS));
+        f.filtersController().updateFilters(f.group, dtos(conditions));
+        f.projection.flush();
+        JavaScriptObject filters = field(f.node(), "filters");
+        assertEquals("#ff0000", text(at(filters, 0), "value"));
+        assertEquals("1000.2000", text(at(filters, 1), "value"));
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, filters); // handed back as it is
+        assertEquals(red, f.stated.get(0).value.value);
+        assertEquals(year, f.stated.get(1).value.value);
+        String refused = refusedChange(member, parse("{\"property\": \"tint\", \"value\": \"red\"}"));
+        assertTrue(refused, refused != null && refused.contains("is not a color"));
+        refused = refusedChange(member, parse("{\"property\": \"period\", \"value\": \"1000-2000\"}"));
+        assertTrue(refused, refused != null && refused.contains("is not an interval"));
+
+        // a cell: the value its member is given in the shape it is projected in
+        GFormChanges shown = new GFormChanges();
+        put(shown, tint, f.one, red);
+        put(shown, period, f.one, year);
+        f.apply(shown);
+        JavaScriptObject items = field(f.sa.controller, "items");
+        assertNull(refusedChange(field(items, "tint"), "#00FF00", f.row("1")));
+        assertEquals(PValue.getPValue(new ColorDTO("00FF00")), f.changedTo);
+        assertNull(refusedChange(field(items, "period"), "-5.3000", f.row("1"))); // a bound before 1970
+        assertEquals(PValue.getPValue(-5L, 3000L), f.changedTo);
+        refused = refusedChange(field(items, "tint"), "#0f0", f.row("1"));
+        assertTrue(refused, refused != null && refused.contains("is not a color"));
+
+        // a file's condition: what `filters` would say of its value is a link to the file (a link this test has no
+        // page to build), which is not the file - so a condition on it is not stated, alone or in a list
+        int calls = f.filtersCalls.size();
+        refused = refusedChange(member, parse("{\"property\": \"scan\", \"value\": \"files/scan.csv\"}"));
+        assertTrue(refused, refused != null && refused.contains("'scan' is a file"));
+        refused = refusedChange(member, parse("[{\"property\": \"tint\", \"value\": \"#ff0000\"},"
+                + " {\"property\": \"scan\", \"value\": \"files/scan.csv\"}]"));
+        assertTrue(refused, refused != null && refused.contains("condition 1: ") && refused.contains("'scan' is a file"));
+        assertEquals(calls, f.filtersCalls.size());
+        callChange(member, parse("{\"property\": \"scan\"}")); // ... and taken off, as any other property's is
+        assertEquals("changeFilters items tint= period=", f.filtersCalls.get(calls));
     }
 }

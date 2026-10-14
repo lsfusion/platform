@@ -207,7 +207,8 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `isCurrent(object)` | whether the object is the group's current one |
 | `changeObject(object[, rendered])` | set the group's current object (see above) |
 | `changeProperty(property[, object][, value])` | set a property value, or exec an action — on the current object or a given one (see above) |
-| `changeProperties(properties, objects, values)` | several `changeProperty` calls in one request from parallel arrays |
+| `batch(fn)` | run `fn`, the `changeProperty` calls made in it sent together, in one request |
+| `changeProperties(properties, objects, values)` | deprecated: `changeProperty` calls from parallel arrays, in a `batch` |
 | `getValue(property, object)` | the current property value for the object |
 | `getCaption(property)` | the property caption |
 | `isPropertyReadOnly(property, object)` | whether the property can be edited: `null` — editable, `false` — read-only |
@@ -224,11 +225,16 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 
-`changeProperty` reads its arguments by their count, and a single argument by that argument alone: with none it runs the property's change event (for an action, the action) on the current object; with one, the argument is the row, and the change event runs on it, when it is a data row or an `objects` handle, or when the property is an action drawn in an object group; anything else is the value, set for the current object; with two, the first is the row and the second the value. The value formats are the same as in the [form controller](How-to_Custom_view_controller.md)'s `<group>.<property>.change`. A property that is not one of this group's columns is passed by `changeProperty` to the form, which resolves it by its name alone, the way a view names a property everywhere: `<group>.<property>` is a property of that group, an unqualified name one of the form level (the empty group) — a property of an object group is named with its group, a row passed or not, and a row passed with an unqualified name is a mistake. `changeProperties` applies several changes in one request — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
+`changeProperty` reads its arguments by their count, and a single argument by that argument alone: with none it runs the property's change event (for an action, the action) on the current object; with one, the argument is the row, and the change event runs on it, when it is a data row or an `objects` handle, or when the property is an action drawn in an object group; anything else is the value, set for the current object; with two, the first is the row and the second the value. The value formats are the same as in the [form controller](How-to_Custom_view_controller.md)'s `<group>.<property>.change`. A property that is not one of this group's columns is passed by `changeProperty` to the form, which resolves it by its name alone, the way a view names a property everywhere: `<group>.<property>` is a property of that group, an unqualified name one of the form level (the empty group) — a property of an object group is named with its group, a row passed or not, and a row passed with an unqualified name is a mistake. `batch(fn)` makes several changes together: each `changeProperty` call in `fn` is made at once, and they are all sent in one request when `fn` returns — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
 
 ```js
-controller.changeProperties(['start', 'end'], [task, task], [newStart, newEnd]);
+controller.batch(() => {
+    controller.changeProperty('start', task, newStart);
+    controller.changeProperty('end', task, newEnd);
+});
 ```
+
+A batch carries changes only: inside `fn`, `getPropertyValues` is refused — its failure callback called, the reason said on the console —, and so is a server call on the form's controller (`controller.form.exec`, `eval`, `evalAction`, `change`), its promise rejected; make them before the batch or after it; and changes only through `changeProperty` — moving the focus or changing the DOM inside `fn` makes the platform send requests of its own, which a batch is not made for. A function returning a Promise is refused, as in the [form controller](How-to_Custom_view_controller.md)'s `batch`. `changeProperties`, which took the changes as parallel arrays, is deprecated: it makes them in a `batch`.
 
 `getPropertyValues` uses the same `mode` values and result format as the form controller's `<group>.<property>.getValues`, but the property is resolved among this group's columns, and the lookup runs for its current object:
 

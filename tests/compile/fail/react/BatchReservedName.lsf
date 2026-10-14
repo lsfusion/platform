@@ -1,0 +1,17 @@
+MODULE BatchReservedName;
+
+REQUIRE System;
+
+// a property of the empty group named like the batch every react view's controller carries: its member would shadow it
+batchNote = DATA STRING[50] ();
+
+FORM batchName
+    PROPERTIES() batchNote EXTID 'batch'
+;
+
+DESIGN batchName {
+    NEW board {
+        custom = 'BatchBoard';
+        MOVE PROPERTY(batchNote());
+    }
+}

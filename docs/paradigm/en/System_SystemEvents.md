@@ -15,22 +15,25 @@ These abstract action lists are the [launch-event](Launch_events.md) handlers �
 | `onStarted[]`                    | application-server start, before the server accepts client connections                         |
 | `onFirstStarted[]`               | the very first application-server start only (when `firstStart[]` holds)                        |
 | `onFinallyStarted[]`             | after `onStarted[]` and the [`Reflection`](System_Reflection.md) metadata synchronization stage, at the end of the start sequence                                          |
+| `onStopping[]`                   | a graceful application-server stop, before RMI, the scheduler and other services are stopped   |
 | `onClientStarted[]`              | a client connecting; dispatches to the desktop or web handler by client type                  |
 | `onDesktopClientStarted[]`       | a desktop client connecting                                                                    |
 | `onWebClientStarted[]`           | a web client connecting                                                                        |
 | `onWebClientInit[STRING]`        | per-resource list keyed by a CSS / JS resource path, run when the web client initializes       |
 | `onLoginInit[STRING]`            | per-resource list run on the login page                                                        |
 
-`notFirstStart[]` is the stored flag that the server has started before, and `firstStart[]` is its negation and selects the first start. Each handler has an `…Apply` wrapper (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onClientStartedApply[]`) that runs the list and commits with `APPLY`. `onStartedApply[]` additionally runs `onFirstStarted[]` on the first start and sets `notFirstStart[]`.
+`notFirstStart[]` is the stored flag that the server has started before, and `firstStart[]` is its negation and selects the first start. Each handler has an `…Apply` wrapper (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onStoppingApply[]`, `onClientStartedApply[]`) that runs the list and commits with `APPLY`. `onStartedApply[]` additionally runs `onFirstStarted[]` on the first start and sets `notFirstStart[]`.
 
 ### Version info
 
 | Property                  | What it holds                                                                 |
 |---------------------------|-------------------------------------------------------------------------------|
 | `platformVersion[]`       | platform version as `TEXT`                                                     |
+| `platformBuildNumber[]`   | platform build number as `INTEGER`: the number of commits in the branch the platform was built from (`NULL` if it was not built from a git repository) |
 | `apiVersion[]`            | API version as `INTEGER`                                                       |
 | `revisionVersion[]`       | source revision as `INTEGER`                                                   |
-| `synchronizeVersions[]`   | reads the running platform / API / revision values into the properties above; run from `onInit[]` |
+| `fullVersion[]`           | the platform version, the API version with the build number, and the revision in one string, for example `7.0-SNAPSHOT (build 399.24289) 80348`; without the build number the API version alone is shown in parentheses: `7.0-SNAPSHOT (399) 80348` |
+| `synchronizeVersions[]`   | reads the running platform / build number / API / revision values into the properties above; run from `onInit[]` |
 
 ### Appearance
 
@@ -118,7 +121,7 @@ The `Launch` class records each application-server start.
 |-----------------------|----------------------------------------------------------------|
 | `computer[Launch]`    | the server computer; `hostname[Launch]` is its host name       |
 | `time[Launch]`        | the start moment as `DATETIME`; `date[Launch]` is its `DATE`   |
-| `revision[Launch]`    | the platform version, API version, and revision of the start   |
+| `revision[Launch]`    | the version of the start, as `fullVersion[]` gives it          |
 
 `currentLaunch[]` holds the launch object of the running server. `onStarted[]` creates a new `Launch` filled from the current computer, time, and version, and sets `currentLaunch[]`. Launches are logged through `@defineLog` and shown on the `launches` form.
 

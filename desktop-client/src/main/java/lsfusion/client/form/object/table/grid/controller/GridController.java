@@ -523,7 +523,7 @@ public class GridController extends AbstractTableController {
     @Override
     public void updateOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         if (isList())
-            table.updateOrders(orders);
+            table.updateOrders();
     }
     
     public GroupObjectUserPreferences getUserGridPreferences() {

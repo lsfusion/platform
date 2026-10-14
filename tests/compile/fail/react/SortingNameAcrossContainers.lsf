@@ -1,9 +1,10 @@
-MODULE LsfListPanelScopes;
+MODULE SortingNameAcrossContainers;
 
 REQUIRE System;
 
-// a grid property and an lsf panel property of one group may share an integration name when React carries them in
-// different containers: the grid's where its rows are drawn, the panel one's where it is placed
+// a grid property and an lsf panel property of one group under one integration name, React carrying them in different
+// containers - the grid's where its rows are drawn, the panel one's where it is placed: no node carries both, but a
+// sorting names a property of the GROUP by that name, wherever it is drawn, so it would name neither
 CLASS LsfScopesItem;
 lsfScopesList = DATA STRING[50] (LsfScopesItem);
 lsfScopesPanel = DATA STRING[50] (LsfScopesItem);

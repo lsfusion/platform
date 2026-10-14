@@ -102,7 +102,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         rightPanel = new FlexPanel();
         GwtClientUtils.addClassName(rightPanel, "btn-toolbar");
 
-        Column currentColumn = new Column(condition.property, condition.columnKey != null ? condition.columnKey : GGroupObjectValue.EMPTY);
+        Column currentColumn = getCaptionColumn();
         String currentCaption = columnsProvider.getColumns().get(currentColumn);
         
         propertyLabel = new Label(currentCaption);
@@ -113,8 +113,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         propertyView = new GFilterOptionSelector<Column>(uiHandler) {
             @Override
             public void valueChanged(Column column) {
-                condition.property = column.property;
-                condition.columnKey = column.columnKey;
+                condition.column = column;
                 // the group of its property, as the server takes it
                 condition.groupObject = column.property.groupObject;
 
@@ -139,7 +138,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         compareLabel.setVisible(isFixed() && !controlsVisible);
         leftPanel.addCentered(compareLabel);
 
-        GCompare[] filterCompares = condition.property.getFilterCompares();
+        GCompare[] filterCompares = condition.column.property.getFilterCompares();
         List<String> conditionsFullStrings = new ArrayList<>();
         for (GCompare filterCompare : filterCompares) {
             conditionsFullStrings.add(filterCompare.getFullString());
@@ -316,12 +315,12 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.changeProperty(condition, true);
 
         GCompare oldCompare = condition.compare;
-        GCompare[] filterCompares = condition.property.getFilterCompares();
+        GCompare[] filterCompares = condition.column.property.getFilterCompares();
         compareView.set(filterCompares);
         if (Arrays.asList(filterCompares).contains(oldCompare)) {
             compareView.setSelectedValue(oldCompare);
         } else {
-            GCompare defaultCompare = condition.property.getDefaultCompare();
+            GCompare defaultCompare = condition.column.property.getDefaultCompare();
             compareView.setSelectedValue(defaultCompare);
             condition.compare = defaultCompare;
 
@@ -332,13 +331,13 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
 
     public void applyCondition(GPropertyFilter condition) {
-        setCompare(condition.compare != null ? condition.compare : condition.property.getDefaultCompare());
+        setCompare(condition.compare != null ? condition.compare : condition.column.property.getDefaultCompare());
         setNegation(condition.negation);
         setValue(condition.value);
     }
 
     public void setCompare(GCompare value) {
-        compareView.setSelectedValue(value != null ? value : condition.property.getDefaultCompare());
+        compareView.setSelectedValue(value != null ? value : condition.column.property.getDefaultCompare());
     }
 
     public void setNegation(boolean negation) {
@@ -359,7 +358,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
 
     public void putSelectedValue() {
-        if (!condition.property.differentValue) {
+        if (!condition.column.property.differentValue) {
             valueView.putSelectedValue(condition);
         }
     }
@@ -404,12 +403,17 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.setApplied(applied);
     }
 
+    // the column the captions are by: one with no column key is the column of the current objects of the column groups
+    private Column getCaptionColumn() {
+        return condition.column.columnKey != null ? condition.column : new Column(condition.column.property, GGroupObjectValue.EMPTY);
+    }
+
     @Override
     public void setVisible(boolean nVisible) {
         super.setVisible(nVisible);
 
         if (nVisible) {
-            String columnCaption = columnsProvider.getColumns().get(new Column(condition.property, condition.columnKey != null ? condition.columnKey : GGroupObjectValue.EMPTY));
+            String columnCaption = columnsProvider.getColumns().get(getCaptionColumn());
             propertyLabel.setText(columnCaption);
             propertyLabel.setTitle(columnCaption);
         }

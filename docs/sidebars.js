@@ -361,6 +361,7 @@ module.exports = {
                         'paradigm/System_Utils',
                         'paradigm/Utils_Numerator',
                         'paradigm/Utils_Hierarchy',
+                        'paradigm/Utils_Messengers',
                       ]
                     },
                     'paradigm/Projects',
@@ -850,5 +851,6 @@ module.exports = {
       ]
     },
     'how-to/Online_demo',
+    'paradigm/Whats_new',
   ]
 };

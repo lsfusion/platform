@@ -50,7 +50,7 @@ eventActionId(param1, ..., paramK)
 
 The event block allows to define handlers for form events that occur as the result of certain user actions. Each block can have an arbitrary number of comma-separated event handlers. If several handlers are defined for an event, they are guaranteed to be executed in the order they are defined. 
 
-The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filtering: `FILTERGROUPS` — when the user changes the active filter in the specified filter group; `FILTERS PROPERTY` — when the user sets or changes a user filter on the specified form property.
+The `FILTERGROUPS` and `FILTERS PROPERTY` events occur during interactive filtering: `FILTERGROUPS` — when the user changes the active filter in the specified filter group; `FILTERS PROPERTY` — when the user sets or changes a user filter on the specified form property. Like the `FILTERS` and `ORDERS` events, they occur only when the user's action changes something: applying the same filters again does not trigger them.
 
 The `SELECT PROPERTY` event occurs when the [selection](../paradigm/Selection_SELECT.md) of the columns of the specified form property changes - when the user selects a column or unselects it, including by moving the cursor into it or out of it. If the property is drawn by several columns, the event occurs when any of them changes. Each of the two selection events follows its own property: `SELECT` follows the row selection of an object group, `SELECT PROPERTY` follows the selection of the columns of a form property.
 

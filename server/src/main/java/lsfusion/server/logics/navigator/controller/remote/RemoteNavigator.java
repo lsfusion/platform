@@ -432,6 +432,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());
             this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
             this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;
+            // the connection context is created in the constructor, before the client reports its type
+            if (remoteContext.isNative != isNative)
+                remoteContext = new ConnectionContext(remoteContext.useBootstrap, remoteContext.contentWordWrap, remoteContext.highlightDuplicateValue, isNative);
 
             String result = session.applyMessage(businessLogics, getStack());
             if (result != null)
@@ -741,7 +744,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new NavigatorChanges(changes);
     }
 
-    private final ConnectionContext remoteContext;
+    private volatile ConnectionContext remoteContext;
     public ConnectionContext getRemoteContext() {
         return remoteContext;
     }

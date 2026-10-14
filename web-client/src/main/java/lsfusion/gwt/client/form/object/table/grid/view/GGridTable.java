@@ -126,30 +126,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         setRowChangedHandler((row, prevRow, reason, event) -> updateRowColumn(prevRow, -2, reason, event));
         setColumnChangedHandler((col, prevCol, reason, event) -> updateRowColumn(-2, prevCol, reason, event));
 
-        sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
+        sortableHeaderManager = new GGridSortableHeaderManager(false) {
             @Override
-            protected void ordersChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, LinkedHashMap<Map<GPropertyDraw, GGroupObjectValue>, Boolean> orders) {
-                LinkedHashMap<Column, Boolean> columnOrders = new LinkedHashMap<>();
-                for (Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> order : orders.entrySet()) {
-                    Map.Entry<GPropertyDraw, GGroupObjectValue> column = order.getKey().entrySet().iterator().next();
-                    columnOrders.put(new Column(column.getKey(), column.getValue()), order.getValue());
-                }
-                form.changeOrders(groupObject, columnOrders);
+            protected LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
+                return form.getOrders(group);
             }
 
             @Override
-            protected Map<GPropertyDraw, GGroupObjectValue> getColumnKey(int column) {
-                HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-                key.put(getProperty(column), GGridTable.this.getColumnKey(column));
-                return key;
+            protected void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+                form.changeOrders(group, orders);
             }
 
             @Override
-            protected boolean noSort(Map<GPropertyDraw, GGroupObjectValue> columnKey) { // the column's property, mapped
-                for (GPropertyDraw property : columnKey.keySet())
-                    if (property.noSort)
-                        return true;
-                return false;
+            protected Column getColumn(int column) {
+                return column >= 0 && column < getColumnCount() ? new Column(getProperty(column), getColumnKey(column)) : null;
             }
         };
     }
@@ -1034,15 +1024,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void updateOrders(LinkedHashMap<Column, Boolean> orders) {
-        LinkedHashMap<Map<GPropertyDraw, GGroupObjectValue>, Boolean> setOrders = new LinkedHashMap<>();
-        for (Map.Entry<Column, Boolean> entry : orders.entrySet()) {
-            HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
-            key.put(entry.getKey().property, entry.getKey().columnKey);
-            setOrders.put(key, entry.getValue());
-        }
-        if (sortableHeaderManager.updateOrders(setOrders))
-            headersChanged();
+    public void updateOrders() {
+        headersChanged();
     }
 
     @Override
@@ -1256,12 +1239,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             lastQuickSearchPrefix = (lastQuickSearchTime + QUICK_SEARCH_MAX_DELAY < currentTime) ? valueOf(ch) : (lastQuickSearchPrefix + ch);
 
             int searchColumn = 0;
-            if (!sortableHeaderManager.getOrderDirections().isEmpty()) {
-                for (int i = 0; i < getColumnCount(); ++i) {
-                    if (sortableHeaderManager.getSortDirection(i) != null) {
-                        searchColumn = i;
-                        break;
-                    }
+            for (int i = 0; i < getColumnCount(); ++i) {
+                if (sortableHeaderManager.getSortDirection(i) != null) {
+                    searchColumn = i;
+                    break;
                 }
             }
 
@@ -1319,8 +1300,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         loadingMap.put(getRowKey(cell), PValue.getPValue(true));
     }
 
-    public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {
-        return sortableHeaderManager.getOrderDirections();
+    public LinkedHashMap<Column, Boolean> getOrders() {
+        return form.getOrders(groupObject);
     }
 
     public boolean userPreferencesSaved() {

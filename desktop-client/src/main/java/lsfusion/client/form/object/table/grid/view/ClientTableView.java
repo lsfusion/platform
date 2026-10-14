@@ -6,7 +6,6 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ public interface ClientTableView {
     // SETTERS
     void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> irowKeys, ClientGroupObjectValue newCurrentObject);
     void removeProperty(ClientPropertyDraw property);
-    void updateOrders(LinkedHashMap<Column, Boolean> orders); // the orders the form has, shown
+    void updateOrders(); // the orders the form has for the group changed - a view that shows them reads them there
     void addProperty(ClientPropertyDraw newProperty);
 
     // EXTRA SETTERS

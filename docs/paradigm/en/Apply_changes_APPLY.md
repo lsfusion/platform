@@ -10,7 +10,7 @@ For this operator you can also define an *applied* action — it runs before eve
 If the session is not [nested](New_session_NEWSESSION_NESTEDSESSION.md#nested), the apply is performed in the following order:
 
 1.  Before the transaction starts, the remaining local [event](Events.md) handlers of the session are executed.
-2.  Inside the transaction, the applied action (if defined) runs first, followed — in the order of dependencies between them — by the handlers of synchronous global events, [constraint](Constraints.md) checks, and [materialization](Materializations.md) updates, after which the changes are written to the database tables.
+2.  Inside the transaction, the applied action (if defined) runs first, followed — in the order of dependencies between them — by the handlers of synchronous global events, [constraint](Constraints.md) checks, and [materialization](Materializations.md) updates, after which the changes are written to the database tables (subject to the [deferred execution of actions](New_session_NEWSESSION_NESTEDSESSION.md)).
 3.  When all the handlers have run and the changes have been written, the transaction is committed.
 
 When a [form](Form_events.md) session is saved, the handlers of the form `APPLY` event are executed as applied actions, while the `APPLY BEFORE` and `APPLY AFTER` form events are executed outside the transaction — before it starts and after it successfully ends, respectively.

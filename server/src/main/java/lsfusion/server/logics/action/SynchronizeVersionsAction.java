@@ -24,6 +24,7 @@ public class SynchronizeVersionsAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             findProperty("platformVersion[]").change(BaseUtils.getPlatformVersion(), context);
+            findProperty("platformBuildNumber[]").change(BaseUtils.getPlatformBuildNumber(), context);
             findProperty("apiVersion[]").change(BaseUtils.getApiVersion(), context);
             findProperty("revisionVersion[]").change(BaseUtils.parseInt(getRevision(SystemProperties.inDevMode)), context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {

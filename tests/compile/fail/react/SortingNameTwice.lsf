@@ -1,0 +1,23 @@
+MODULE SortingNameTwice;
+
+REQUIRE System;
+
+// two properties of a group under one integration name, where a React view draws the group's rows: a sorting names a
+// property of the GROUP by that name, wherever it is drawn, so it would name neither. Only the column is projected -
+// the platform draws the panel property beside the box - so no node carries both, and only the sortings refuse it
+CLASS SortingTwiceItem;
+sortingTwiceName = DATA STRING[20] (SortingTwiceItem);
+sortingTwiceNote = DATA STRING[20] (SortingTwiceItem);
+
+FORM sortingTwice
+    OBJECTS i = SortingTwiceItem
+    PROPERTIES(i) sortingTwiceName EXTID 'title'
+    PROPERTIES(i) PANEL sortingTwiceNote EXTID 'title'
+;
+
+DESIGN sortingTwice {
+    NEW rows {
+        custom = 'SortingRows';
+        MOVE GRID(i);
+    }
+}

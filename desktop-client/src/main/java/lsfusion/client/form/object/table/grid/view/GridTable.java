@@ -106,7 +106,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     private int selectIndex = -1;
     private boolean scrollToOldObject = true; // не скроллить при ctrl+home/ctrl+end (синхронный запрос)
 
-    private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
+    private TableSortableHeaderManager sortableHeaderManager;
 
     //для вдавливаемости кнопок
     private int pressedCellRow = -1;
@@ -196,26 +196,21 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         setAutoCreateColumnsFromModel(false);
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
-        sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
-            protected void ordersChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        GridTable.this.ordersChanged(orders);
-                    }
-                });
+        sortableHeaderManager = new TableSortableHeaderManager(this) {
+            @Override
+            protected LinkedHashMap<Column, Boolean> getOrders(ClientGroupObject group) {
+                return form.getOrders(group);
             }
 
             @Override
-            protected Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnKey(int column) {
-                return new Pair<>(model.getColumnProperty(column), model.getColumnKey(column));
+            protected void changeOrders(ClientGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+                RmiQueue.runAction(() -> form.changeOrders(group, orders));
             }
 
             @Override
-            protected ClientPropertyDraw getColumnProperty(int column) {
-                return model.getColumnProperty(column);
+            protected Column getColumn(int column) {
+                return column >= 0 && column < model.getColumnCount() ? new Column(model.getColumnProperty(column), model.getColumnKey(column)) : null;
             }
-
         };
 
         if (hasHeader) {
@@ -370,12 +365,6 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         return changeOnSingleClick != null && changeOnSingleClick;
     }
 
-    private void ordersChanged(LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
-        LinkedHashMap<Column, Boolean> columnOrders = new LinkedHashMap<>();
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> order : orders.entrySet())
-            columnOrders.put(new Column(order.getKey().first, order.getKey().second), order.getValue());
-        form.changeOrders(groupObject, columnOrders);
-    }
 
     private Action tabAction = new GoToNextCellAction(true);
     private Action shiftTabAction = new GoToNextCellAction(false);
@@ -778,11 +767,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     @Override
-    public void updateOrders(LinkedHashMap<Column, Boolean> orders) {
-        LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> setOrders = new LinkedHashMap<>();
-        for (Map.Entry<Column, Boolean> entry : orders.entrySet())
-            setOrders.put(Pair.create(entry.getKey().property, entry.getKey().columnKey), entry.getValue());
-        if (sortableHeaderManager.updateOrders(setOrders) && hasHeader) {
+    public void updateOrders() {
+        if (hasHeader) {
             tableHeader.resizeAndRepaint();
             tableHeader.repaint();
         }
@@ -1088,12 +1074,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             lastQuickSearchPrefix = (lastQuickSearchTime + QUICK_SEARCH_MAX_DELAY < currentTime) ? valueOf(ch) : (lastQuickSearchPrefix + ch);
 
             int searchColumn = 0;
-            if (!sortableHeaderManager.getOrderDirections().isEmpty()) {
-                for (int i = 0; i < getColumnCount(); ++i) {
-                    if (sortableHeaderManager.getSortDirection(i) != null) {
-                        searchColumn = i;
-                        break;
-                    }
+            for (int i = 0; i < getColumnCount(); ++i) {
+                if (sortableHeaderManager.getSortDirection(i) != null) {
+                    searchColumn = i;
+                    break;
                 }
             }
 
@@ -1951,8 +1935,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         }
     }
 
-    public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> getOrderDirections() {
-        return sortableHeaderManager.getOrderDirections();
+    public LinkedHashMap<Column, Boolean> getOrders() {
+        return form.getOrders(groupObject);
     }
 
     public FontInfo getDesignFont() {

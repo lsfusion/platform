@@ -14,6 +14,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -102,13 +103,21 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
             converter = needObjects ? values -> rMapObjects.result.crossJoin(values) : null;
             valuesMode = strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES;
         } else {
+            // nothing to offer where the property cannot be changed, or its change inputs no value, or none from a list -
+            // a custom view's getValues asks this of any property
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getCheckedEventAction(actionSID, context);
-
-            AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.isOptimisticAsync());
+            if(eventAction == null)
+                return null;
+            AsyncMapEventExec<P> eventExec = eventAction.property.getAsyncEventExec(this.entity.isOptimisticAsync());
+            if(!(eventExec instanceof AsyncMapValue))
+                return null;
+            AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventExec;
             ImRevMap<P, PropertyObjectInterfaceInstance> outerMapping = BaseUtils.immutableCast(formInstance.instanceFactory.getInstanceMap(eventAction.mapping));
 
             Pair<InputContextListEntity<Z, P>, AsyncDataConverter<Z>> asyncValueList = asyncExec.getAsyncValueList(value);
             InputContextListEntity<Z, P> listEntity = asyncValueList.first;
+            if(listEntity == null)
+                return null;
             list = (InputValueList<X>) listEntity.map(outerMapping, valuesGetter);
             converter = (AsyncDataConverter<X>) asyncValueList.second; // here we assert that Z = X, because in the not null branch we use InputContextListEntity with no filter / orders constructor
             newSession = listEntity.isNewSession();

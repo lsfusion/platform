@@ -130,14 +130,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    //deprecated
-    @SuppressWarnings("unused")
-    public void setChangeKeyPriority(int priority) {
-        InputBindingEvent changeKey = target.getNFChangeKey(getVersion());
-        if(changeKey != null)
-            changeKey.priority = priority;
-    }
-
     @SuppressWarnings("unused")
     public void setShowChangeKey(boolean showChangeKey) {
         target.setShowChangeKey(showChangeKey,  getVersion());
@@ -155,14 +147,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             }
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) changeMouse, PropertyDrawExtraType.CHANGEMOUSE, version);
         }
-    }
-
-    //deprecated
-    @SuppressWarnings("unused")
-    public void setChangeMousePriority(int priority) {
-        InputBindingEvent changeMouse = target.getNFChangeMouse(getVersion());
-        if (changeMouse != null)
-            changeMouse.priority = priority;
     }
 
     @SuppressWarnings("unused")

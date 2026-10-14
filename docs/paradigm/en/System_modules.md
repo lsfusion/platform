@@ -45,7 +45,7 @@ System modules live under `server/src/main/lsfusion/` in the platform repository
 | `Geo`             | Geographic data and operations                                             |
 | `Printer` / `QZTray` / `Sound` / `Com` | Access to client-side hardware                                |
 | `ProcessMonitor` / `Profiler` | Server management and monitoring                               |
-| `RabbitMQ` / `WebSocket` / `messengers` | External transports                                       |
+| `RabbitMQ` / `WebSocket` / [`Messenger`](Utils_Messengers.md) | External transports: message queues, web sockets and the messenger modules                                                     |
 | `SQLUtils`        | Database service operations                                                |
 | `DefaultData`     | Initial demo data                                                          |
 | `Schedule`        | Calendars and working intervals                                            |

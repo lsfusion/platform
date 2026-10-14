@@ -29,11 +29,15 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.form.remote.BatchRequest;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
+import lsfusion.server.base.controller.stack.ParamMessage;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -127,7 +131,7 @@ import java.util.function.Supplier;
 import static lsfusion.base.BaseUtils.deserializeObject;
 
 // фасад для работы с клиентом
-public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface {
+public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface, BatchRequest.Requests<ExecutionStack> {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
     public final F form;
@@ -319,91 +323,86 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return mvKeys.immutableValue();
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value, ChangeSelection changeSelection) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+    @Override
+    public void changeGroupObject(ExecutionStack stack, BatchRequest.ChangeGroupObject request) throws IOException, SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupID);
 
-            ImMap<ObjectInstance, ? extends ObjectValue> valueToSet = deserializeKeysValues(value);
-            if(valueToSet == null)
-                return;
+        ImMap<ObjectInstance, ? extends ObjectValue> valueToSet = deserializeKeysValues(request.value);
+        if(valueToSet == null)
+            return;
 
-            groupObject.change(valueToSet, form, stack, changeSelection);
+        groupObject.change(valueToSet, form, stack, request.changeSelection);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
-                if (logger.isTraceEnabled()) {
-                    logger.trace("   keys: ");
-                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
-                    }
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
+            if (logger.isTraceEnabled()) {
+                logger.trace("   keys: ");
+                for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                    logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                 }
             }
-        });
+        }
     }
 
-    public ServerResponse expandGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, final int groupId, boolean current) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+    @Override
+    public void expandGroupObjectRecursive(ExecutionStack stack, BatchRequest.ExpandGroupObjectRecursive request) throws SQLException, SQLHandledException {
+        GroupObjectInstance group = form.getGroupObjectInstance(request.groupID);
 
-            if (logger.isDebugEnabled())
-                logger.debug(String.format("expandGroupObjectRecursive: [ID: %1$d]", group.getID()));
+        if (logger.isDebugEnabled())
+            logger.debug(String.format("expandGroupObjectRecursive: [ID: %1$d]", group.getID()));
 
-            group.expandCollapseAll(form, current, true);
-        });
+        group.expandCollapseAll(form, request.current, true);
     }
 
-    public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            ImMap<ObjectInstance, DataObject> valueToSet = deserializeDataKeysValues(groupValues);
-            if(valueToSet == null)
-                return;
+    @Override
+    public void expandGroupObject(ExecutionStack stack, BatchRequest.ExpandGroupObject request) throws IOException, SQLException, SQLHandledException {
+        GroupObjectInstance group = form.getGroupObjectInstance(request.groupID);
+        ImMap<ObjectInstance, DataObject> valueToSet = deserializeDataKeysValues(request.value);
+        if(valueToSet == null)
+            return;
 
-            if (logger.isDebugEnabled()) {
-                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.debug(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
-                if (logger.isTraceEnabled()) {
-                    logger.trace("   keys: ");
-                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
-                    }
+        if (logger.isDebugEnabled()) {
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupID);
+            logger.debug(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
+            if (logger.isTraceEnabled()) {
+                logger.trace("   keys: ");
+                for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                    logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                 }
             }
-            group.expandCollapseDown(form, valueToSet, true);
-        });
+        }
+        group.expandCollapseDown(form, valueToSet, true);
     }
 
-    public ServerResponse collapseGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, final int groupId, boolean current) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+    @Override
+    public void collapseGroupObjectRecursive(ExecutionStack stack, BatchRequest.CollapseGroupObjectRecursive request) throws SQLException, SQLHandledException {
+        GroupObjectInstance group = form.getGroupObjectInstance(request.groupID);
 
-            if (logger.isDebugEnabled()) {
-                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.debug(String.format("collapseGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
-            }
-            group.expandCollapseAll(form, current, false);
-        });
+        if (logger.isDebugEnabled()) {
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupID);
+            logger.debug(String.format("collapseGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
+        }
+        group.expandCollapseAll(form, request.current, false);
     }
 
-    public ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            ImMap<ObjectInstance, DataObject> valueToSet = deserializeDataKeysValues(groupValues);
-            if(valueToSet == null)
-                return;
+    @Override
+    public void collapseGroupObject(ExecutionStack stack, BatchRequest.CollapseGroupObject request) throws IOException, SQLException, SQLHandledException {
+        GroupObjectInstance group = form.getGroupObjectInstance(request.groupID);
+        ImMap<ObjectInstance, DataObject> valueToSet = deserializeDataKeysValues(request.value);
+        if(valueToSet == null)
+            return;
 
-            if (logger.isDebugEnabled()) {
-                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.debug(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
-                if (logger.isTraceEnabled()) {
-                    logger.trace("   keys: ");
-                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
-                    }
+        if (logger.isDebugEnabled()) {
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupID);
+            logger.debug(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
+            if (logger.isTraceEnabled()) {
+                logger.trace("   keys: ");
+                for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                    logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                 }
             }
-            group.collapse(form.session, valueToSet);
-        });
+        }
+        group.collapse(form.session, valueToSet);
     }
 
     public ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, final int parentGroupId, final byte[] parentKey, final int childGroupId, final byte[] childKey, final int index) throws RemoteException {
@@ -550,26 +549,23 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse setPropertyOrders(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID,
-                                            List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+    @Override
+    public void setPropertyOrders(ExecutionStack stack, BatchRequest.SetPropertyOrders request) throws IOException, SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupObjectID);
 
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
+        }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
-            }
-
-            MOrderExclMap<PropertyColumn, Boolean> mOrders = MapFact.mOrderExclMap();
-            for(int i = 0; i < propertyList.size(); i++) {
-                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyList.get(i));
-                if(propertyDraw != null) // a property the security policy hides is not on the form
-                    mOrders.exclAdd(new PropertyColumn(propertyDraw, deserializeDataKeysValues(columnKeyList.get(i))), !orderList.get(i));
-            }
-            groupObject.setUserOrders(mOrders.immutableOrder());
-
+        MOrderExclMap<PropertyColumn, Boolean> mOrders = MapFact.mOrderExclMap();
+        for(int i = 0; i < request.propertyList.size(); i++) {
+            PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(request.propertyList.get(i));
+            if(propertyDraw != null) // a property the security policy hides is not on the form
+                mOrders.exclAdd(new PropertyColumn(propertyDraw, deserializeDataKeysValues(request.columnKeyList.get(i))), !request.orderList.get(i));
+        }
+        // a user event is for what the user changes: a request that changes nothing fires none
+        if (groupObject.setUserOrders(mOrders.immutableOrder()))
             form.fireOnUserActivity(stack, groupObject, UserEventObject.Type.ORDER);
-        });
     }
 
     public long countRecords(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID) throws RemoteException {
@@ -671,18 +667,19 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, Map<Integer, byte[][]> filters) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            for (Integer gid : filters.keySet()) {
-                GroupObjectInstance goi = form.getGroupObjectInstance(gid);
+    @Override
+    public void setUserFilters(ExecutionStack stack, BatchRequest.SetUserFilters request) throws IOException, SQLException, SQLHandledException {
+        for (Integer gid : request.filters.keySet()) {
+            GroupObjectInstance goi = form.getGroupObjectInstance(gid);
 
-                MList<UserFilterInstance> mUserFilters = ListFact.mList();
-                for (byte[] state : filters.get(gid))
-                    mUserFilters.add(UserFilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form));
-                ImList<UserFilterInstance> userFilters = mUserFilters.immutableList();
+            MList<UserFilterInstance> mUserFilters = ListFact.mList();
+            for (byte[] state : request.filters.get(gid))
+                mUserFilters.add(UserFilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form));
+            ImList<UserFilterInstance> userFilters = mUserFilters.immutableList();
 
-                goi.setUserFilters(userFilters);
-
+            // a user event is for what the user changes: a group whose filters stay as they are - a tree sends all its
+            // groups - fires none
+            if (goi.setUserFilters(userFilters)) {
                 for (UserFilterInstance userFilter : userFilters) {
                     form.fireFilterPropertyChanged(userFilter.column.property.getSID(), stack);
 
@@ -694,14 +691,35 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 form.fireOnUserActivity(stack, goi, UserEventObject.Type.FILTER);
             }
+        }
+    }
+
+    // the requests a BatchRequest kind holds, one or several - every client sends them so -, made in their order: one
+    // processing, one answer - a request that fails stops the rest, and what those before it changed stays in the
+    // session. Each is made by its body, a method of BatchRequest.Requests taking the stack it runs on: not a remote
+    // method, which would be a request of its own, wrapped by the remote aspects
+    @Override
+    public ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            for (BatchRequest request : requests)
+                makeBatchRequest(stack, request.getClass().getSimpleName(), request);
         });
+    }
+
+    // the remote call is the batch's, whatever requests it carries, so each of them is measured on its own: the
+    // profiler takes it by its kind, as it takes a remote call by its method, and the stack shows its arguments
+    @StackMessage("Batch request")
+    @ThisMessage
+    private void makeBatchRequest(ExecutionStack stack, @ParamMessage String kind, @ParamMessage(profile = false) BatchRequest request) throws Exception {
+        request.make(this, stack);
     }
 
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-            form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID));
-            form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
+            // a user event is for what the user changes: the filter selected already fires none
+            if (form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID)))
+                form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
                 logger.debug(String.format("filter ID: %s", filterID));
@@ -836,35 +854,34 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, EventSource[] eventSources, byte[][] pushAsyncResults) throws RemoteException {
-        return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
-            for (int j = 0; j < propertyIDs.length; j++) {
-                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
-                ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKeys[j]);
+    public void executeEventAction(ExecutionStack stack, BatchRequest.ExecuteEventAction request) throws IOException, SQLException, SQLHandledException {
+        FormInstanceContext context = getRemoteContext();
+        for (int j = 0; j < request.propertyIDs.length; j++) {
+            PropertyDrawInstance propertyDraw = form.getPropertyDraw(request.propertyIDs[j]);
+            ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(request.fullKeys[j]);
 
-                Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
-                byte[] pushAsyncResult = pushAsyncResults[j];
-                if(pushAsyncResult != null) // a value the client supplies itself (a custom view's change) is pushed whatever the prediction is, and the server may have none
-                    asyncResult = asyncEventExec -> asyncEventExec != null ? asyncEventExec.deserializePush(pushAsyncResult) : null;
+            Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
+            byte[] pushAsyncResult = request.pushAsyncResults[j];
+            if(pushAsyncResult != null) // a value the client supplies itself (a custom view's change) is pushed whatever the prediction is, and the server may have none
+                asyncResult = asyncEventExec -> asyncEventExec != null ? asyncEventExec.deserializePush(pushAsyncResult) : null;
 
-                logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                form.executeEventAction(propertyDraw, actionSID, keys, eventSources[j], asyncResult, stack, context);
-                logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+            logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+            form.executeEventAction(propertyDraw, request.actionSID, keys, request.eventSources[j], asyncResult, stack, context);
+            logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
 
-                if (logger.isTraceEnabled()) {
-                    if (keys.size() > 0) {
-                        logger.trace("   columnKeys: ");
-                        for (int i = 0, size = keys.size(); i < size; i++) {
-                            logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
-                        }
-                    }
-                    logger.trace("   current object's values: ");
-                    for (ObjectInstance obj : form.getObjects()) {
-                        logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+            if (logger.isTraceEnabled()) {
+                if (keys.size() > 0) {
+                    logger.trace("   columnKeys: ");
+                    for (int i = 0, size = keys.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
                     }
                 }
+                logger.trace("   current object's values: ");
+                for (ObjectInstance obj : form.getObjects()) {
+                    logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                }
             }
-        });
+        }
     }
 
     @Override

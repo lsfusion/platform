@@ -1,17 +1,12 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.gwt.client.controller.remote.action.form.ChangeGroupObject;
-import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.remote.RemoteFormInterface;
-import net.customware.gwt.dispatch.server.ExecutionContext;
+import lsfusion.gwt.server.form.BatchRequestHandler;
+import lsfusion.interop.form.remote.BatchRequest;
 
-import java.rmi.RemoteException;
-
-public class ChangeGroupObjectHandler extends FormServerResponseActionHandler<ChangeGroupObject> {
+public class ChangeGroupObjectHandler extends BatchRequestHandler<ChangeGroupObject> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public ChangeGroupObjectHandler(MainDispatchServlet servlet) {
@@ -19,12 +14,8 @@ public class ChangeGroupObjectHandler extends FormServerResponseActionHandler<Ch
     }
 
     @Override
-    public ServerResponseResult executeEx(final ChangeGroupObject action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                byte[] keyValues = gwtConverter.convertOrCast(action.keyValues);
-                return remoteForm.changeGroupObject(action.requestIndex, action.lastReceivedRequestIndex, action.groupId, keyValues, gwtConverter.convertOrCast(action.changeSelection));
-            }
-        });
+    public BatchRequest getBatchRequest(ChangeGroupObject action) {
+        byte[] keyValues = gwtConverter.convertOrCast(action.keyValues);
+        return new BatchRequest.ChangeGroupObject(action.groupId, keyValues, gwtConverter.convertOrCast(action.changeSelection));
     }
 }

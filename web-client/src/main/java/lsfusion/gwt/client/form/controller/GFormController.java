@@ -103,6 +103,7 @@ import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtSharedUtils.getFromDoubleMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.form.design.view.GReactFormData.controllerPrefix;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
@@ -414,6 +415,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         protected boolean isClosed() {
             return dispatcher.isFormClosed();
         }
+        // ... and, while a batch runs, a server call: refused as a rejected promise (refusesLookup)
+        @Override
+        protected String getRefusal(String surface) {
+            return dispatcher.isBatching() ? getBatchRefusal(surface) : super.getRefusal(surface);
+        }
         @Override
         protected GwtActionDispatcher getControllerDispatcher() {
             return actionDispatcher;
@@ -435,7 +441,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     //   controller.<group>.orders.change(...)                         its sortings
     //   controller.<group>.filters.change(...)                        its user filters
     //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
-    //   controller.properties.change([{property, object, value}])     the one batch — it belongs to no single member
+    //   controller.batch(() => { ... })                               the members' changes, sent together
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
     // group is known here, so the key can be looked up). Mutations go through the SAME classic interactive path as a
     // normal edit (optimistic reconciliation + async exec); there is no return value, state flows back as the
@@ -443,9 +449,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // the FORM's controller: what the classic surfaces are handed - a custom object group, a custom cell editor,
     // an INTERNAL CLIENT action - and what `controller.form` is. Just what every controller of the form carries
     // (extendController): the form-level verbs, which take lsf names and code, and the editing a view declares. The
-    // rest of this surface - the members and the batch that is a shortcut for them - belongs to a PROJECTION and
-    // exists only on one: a member says that `data.<group>.<property>` is there, and an object with no data beside it
-    // has nothing to say that about.
+    // rest of this surface - the members, and the batch their changes are sent together in - belongs to a PROJECTION
+    // and exists only on one: a member says that `data.<group>.<property>` is there, and an object with no data beside
+    // it has nothing to say that about.
     public final JavaScriptObject controller = extendController(GwtClientUtils.newObject());
     // ... so the members live on a PROJECTION: each react container's state carries its own controller beside its own
     // `props.data`, naming exactly what that data carries (GReactFormData.ContainerState.controller). A view that
@@ -514,19 +520,66 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         };
     }-*/;
 
+    // ===== A REACT VIEW'S BATCH (batch): not the form's usual course, but a side branch it takes in a few places while
+    // a batch runs (dispatcher.isBatching()). An edit made in a batch is made at once and shown - only its request
+    // waits: the dispatcher holds the counted requests the form makes meanwhile and sends them in ONE request
+    // (ExecuteBatch) when it ends, under the index each was told at once (FormDispatchAsync.executeQueue). fn calls
+    // members only (the docs' contract), whose edits are requests a batch carries; what a view asks the server is
+    // refused (refusesLookup). The projection is published once, when the batch ends
+
+    // a view's batch - a React view's (GReactFormData.Verbs.batch), a custom grid view's (GSimpleStateTableView.batch):
+    // run, and the requests the form made while it ran sent when it ends - what was made before a throw too. A batch
+    // begun inside another is a part of it
+    @Override
+    public void batch(Runnable run) {
+        if (dispatcher.isBatching()) {
+            run.run();
+            return;
+        }
+        // a selection the platform's grid still holds back goes first, in a request of its own, as every edit sends it
+        // first - a part of the batch that fails does not take it along
+        for (GGroupObject group : form.groupObjects)
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        dispatcher.startBatch();
+        try {
+            run.run();
+        } finally {
+            dispatcher.sendBatch(getEventActionCallback(null, null));
+            refreshReactOptimistic();
+        }
+    }
+    // what is asked of the server while a batch runs - a lookup, a server call on a controller - is refused: a batch
+    // carries changes, and a call that makes none goes before the batch or after it. Refused as the call fails - a
+    // lookup's failure callback called, the reason said on the console; a server call's promise rejected
+    // (gController.getRefusal) -, not thrown: the code that makes it may run while fn does, re-entered - a custom grid
+    // view's update, a CUSTOM cell renderer's, a custom cell editor, an INTERNAL CLIENT action -, and is not to be
+    // broken off by it. Every lookup comes here (getAsyncValues): a member's, a custom grid view's, a renderer's, an
+    // editor's
+    private boolean refusesLookup(GPropertyDraw property, AsyncCallback<GAsyncResult> callback) {
+        if (!dispatcher.isBatching())
+            return false;
+        String refusal = getBatchRefusal((property.groupObject != null ? property.groupObject.getSID() + "." : "") + property.integrationSID + ".getValues()");
+        GwtClientUtils.consoleError(refusal);
+        callback.onFailure(new RuntimeException(refusal));
+        return true;
+    }
+    private static String getBatchRefusal(String surface) {
+        return controllerPrefix(surface) + "a batch is running, which carries changes only: make this call before the batch or after it";
+    }
+
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): a member holds the
-    // state of what it changes and reads what a call names from it (GReactFormData), the batch is handed the members
-    // themselves, and only the classic grid's changeProperty still resolves "integrationSID" /
-    // "groupSID.integrationSID" by itself; rows/handles resolve via GGroupObjectValue.resolveObject (the row-carried
-    // `objects` handle + raw-GGV accept). Dispatch through the SAME classic path as a normal edit
-    // (executePropertyEventAction / changeGroupObject + setLoadingValueAt) ===== a group member's change(row), once it
-    // has read the row (GReactFormData.RowsGroupNode.change): the group's current object
+    // state of what it changes and reads what a call names from it (GReactFormData), handing the edit over at once -
+    // inside a batch too, which holds back only its request (batch) -, and only the classic grid's changeProperty
+    // still resolves "integrationSID" / "groupSID.integrationSID" by itself; rows/handles resolve via
+    // GGroupObjectValue.resolveObject (the row-carried `objects` handle + raw-GGV accept). Dispatch through the SAME
+    // classic path as a normal edit (executePropertyEventAction / changeGroupObject + setLoadingValueAt) ===== a group
+    // member's change(row), once it has read the row (GReactFormData.RowsPart.change): the group's current object
     @Override
     public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
         changeGroupObject(group, key, null, null);
     }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
-    // (TreeRowsGroupNode): the platform's own request, which takes the state asked for - and the group's controller
+    // (TreeRowsPart): the platform's own request, which takes the state asked for - and the group's controller
     // told of it, to show it at once until the keys of the answer come with the request's index, as changeGroupObject
     // tells it of a current object
     @Override
@@ -582,7 +635,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // name alone says the group, and neither the row passed nor the rest of the form is asked. Every author mistake
     // throws: an unknown group, a name drawn twice on its group, a missing property - a bare name an object group
     // draws is told to take its group. A react view's controller reads no name this way: its members hold their
-    // states, and its batch is handed the members themselves (GReactFormData.ContainerState.changeProperties).
+    // states, and a call through one hands the form what it read (GReactFormData.Verbs).
     private GPropertyDraw resolveClassicProperty(String surface, String name) {
         String errorPrefix = controllerPrefix(surface);
         // a qualified name splits at its LAST dot. A property's integration SID never carries one, so everything
@@ -677,22 +730,22 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void classicChangeProperty(String surface, String name, JavaScriptObject objectOrKey, JavaScriptObject value) {
         GPropertyDraw property = resolveClassicProperty(surface, name); // throws on an unknown or ambiguous name
         GGroupObjectValue objectKey = resolveClassicObject(surface, name, objectOrKey);
-        changeProperties(new GPropertyDraw[]{property}, new GGroupObjectValue[]{getControllerColumnKey(objectKey)},
-                new PValue[]{GSimpleStateTableView.convertFromJSUndefValue(property, value)});
+        changeProperty(property, getControllerColumnKey(objectKey), GSimpleStateTableView.convertFromJSUndefValue(property, value));
     }
-    // the typed core: resolved properties/keys/values -> the same classic batch edit dispatch as a normal user edit - a
-    // member's, once it has read what it names (GReactFormData), and the classic changeProperty's
+    // the typed core: a resolved property, key and value -> the same classic edit dispatch as a normal user edit - a
+    // member's, once it has read what it names (GReactFormData), and the classic changeProperty's. Its cell says it
+    // waits for the answer, whatever draws it and whoever sent it: with the value it shows, or with its own
     @Override
-    public void changeProperties(GPropertyDraw[] pa, GGroupObjectValue[] ka, PValue[] va) {
-        executePropertyEventAction(pa, ka, va, requestIndex -> {
-            for (int i = 0; i < pa.length; i++)
-                // WYSIWYG guard (like GSimpleStateTableView.changeProperties): only overlay the optimistic value when the
-                // input writes the displayed property value; a non-WYSIWYG change (custom action / unbound input) must wait for the server
-                if (va[i] != PValue.UNDEFINED && pa[i].hasExternalChangeActionForRendering(RendererType.SIMPLE))
-                    // optimistic overlay (+ optimistic react through the property's controller,
-                    // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
-                    setLoadingValueAt(pa[i], ka[i], va[i], requestIndex);
-            refreshReactOptimistic(); // once, for the whole batch
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
+        executePropertyEventAction(property, key, value, requestIndex -> {
+            // WYSIWYG guard (like GSimpleStateTableView.changeProperties): only overlay the optimistic value when the
+            // input writes the displayed property value; a non-WYSIWYG change (custom action / unbound input) must wait
+            // for the server, the cell loading with the value it has - as one with no value does (UNDEFINED already).
+            // Optimistic overlay (+ optimistic react through the property's controller,
+            // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
+            PValue shownValue = property.hasExternalChangeActionForRendering(RendererType.SIMPLE) ? value : PValue.UNDEFINED;
+            setLoadingValueAt(property, key, shownValue, requestIndex);
+            refreshReactOptimistic();
         });
     }
     // maps the public getPropertyValues `mode` to the server async actionSID (the strings coincide). null/'objects' => OBJECTS
@@ -772,10 +825,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // the form's controller of each group, property and component, taken once, from the questions the platform's
     // controllers were made by: the platform's controller of it, or what React has of it, made here by the projection
     // from the platform's (GReactFormData.createGroupController / createPropertyController / createComponentController)
-    // - a group's rows node where React draws the rows, a property's entry where React draws or labels it, a
-    // component's descriptor. The groups first, whose rows nodes a list property's column is on, then the grid panel
-    // controllers, which draw over those rows, then the properties, in the form's order, which is the order of the
-    // names a node carries, then the components; then the projection
+    // - a group's rows' part where React draws the rows, a property's entry where React draws or labels it, a
+    // component's descriptor. The groups first, whose rows' parts a list property's column goes with, then the grid
+    // panel controllers, which draw over those rows, then the properties, in the form's order, which is the order of
+    // the names a node carries, then the components; then the projection
     // sets out what it has. A property is ONE owner: all that is sent for it goes to its controller, what labels it
     // included; as a component only its class is sent, which is the platform's to apply (createComponentController).
     // These controllers are design data, like the platform's: made once, they live as long as the form.
@@ -1068,8 +1121,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         formLayout.update(requestIndex);
 
-        reactData.flush();
-        updateRowRenderers(); // after the projection: the per-row renderers follow the rows it now holds
+        // the projection published - once a React view's batch ends, for an answer applied while it runs (a platform's
+        // editor that finishes when the view's fn moves the focus away lets a held answer in)
+        refreshReactOptimistic();
     }
 
     public void applyKeyChanges(GFormChanges fc, int requestIndex) {
@@ -1334,6 +1388,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                     if (propertyLoadings == null) {
                         propertyLoadings = new NativeHashMap<>();
                         fc.properties.put(property.loadingReader, propertyLoadings);
+                        // the cells whose requests are answered, the others' loading kept: what React keeps of the
+                        // reader merges it (the platform's views merge every loading they are given)
+                        fc.updateProperties.add(property.loadingReader);
                     }
                     propertyLoadings.put(keys, null);
                 }
@@ -1692,29 +1749,24 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         executePropertyEventAction(handler, editContext, editContext, actionSID, eventSource, requestIndex -> setLoading(editContext, requestIndex));
     }
 
-    public void executePropertyEventAction(GPropertyDraw[] properties, GGroupObjectValue[] fullKeys, PValue[] newValues, Consumer<Long> onExec) {
-        int length = properties.length;
-        GEventSource[] eventSources = new GEventSource[length];
-        GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
+    // a custom view's change of one cell - a React member's, a custom grid view's: the value pushed, the property's
+    // change event taking it instead of the user's input, or, with PValue.UNDEFINED, its change event run with none.
+    // Several cells are changed in a batch (batch), each by its own change
+    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, PValue newValue, Consumer<Long> onExec) {
+        GPushAsyncResult pushAsyncResult = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(GUserInputResult.singleValue(newValue));
         // the guard GPropertyDraw states for the same mistake, in the terms this path has: a property that is not a
         // list has no group to change, and a call that CARRIES a value carries the value its caller wrote, which is
         // not the cell gesture a group change is for. Without it a change made while the user happens to hold Shift -
         // typing a capital letter into a view's own input does exactly that - became a GROUP change and the value was
         // dropped. A call with no value is left alone: that is a view forwarding a click, where a held modifier still
         // means what it means anywhere else. GPropertyDraw says it as changeOrGroupChange(isCharAddKeyEvent(editEvent))
-        boolean noGroupChange = false;
-        for (int i = 0; i < length; i++) {
-            eventSources[i] = GEventSource.CUSTOM;
-            PValue newValue = newValues[i];
-            pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(GUserInputResult.singleValue(newValue));
-
-            noGroupChange = noGroupChange || !properties[i].isList || pushAsyncResults[i] != null;
-        }
-        String actionSID = GEditBindingMap.changeOrGroupChange(noGroupChange);
-        if(length == 1 && pushAsyncResults[0] == null) // execute action / event
-            executePropertyEventAction(properties[0], fullKeys[0], actionSID, eventSources[0], onExec);
-        else // change properties with value
-            onExec.accept(asyncExecutePropertyEventAction(actionSID, null, null, properties, eventSources, fullKeys, pushAsyncResults));
+        String actionSID = GEditBindingMap.changeOrGroupChange(!property.isList || pushAsyncResult != null);
+        // an action / event run goes as the click it is - in a batch as its plain request, which the batch's request
+        // carries: a click's predictions are keyed by its request's index, which all the parts of a batch share
+        if(pushAsyncResult == null && !dispatcher.isBatching()) // execute action / event
+            executePropertyEventAction(property, fullKey, actionSID, GEventSource.CUSTOM, onExec);
+        else // change the property with the value
+            onExec.accept(asyncExecutePropertyEventAction(actionSID, null, null, property, GEventSource.CUSTOM, fullKey, pushAsyncResult));
     }
 
     public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
@@ -1744,7 +1796,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, EventHandler handler, GPushAsyncResult pushAsyncResult, GEventSource eventSource, Consumer<Long> onRequestExec, Consumer<Long> onExec) {
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, handler, new GPropertyDraw[]{execContext.getProperty()}, new GEventSource[]{eventSource}, new GGroupObjectValue[]{execContext.getFullKey()}, new GPushAsyncResult[]{pushAsyncResult});
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, handler, execContext.getProperty(), eventSource, execContext.getFullKey(), pushAsyncResult);
 
         onExec.accept(requestIndex);
 
@@ -1753,27 +1805,28 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public void syncExecutePropertyEventAction(EditContext editContext, EventHandler handler, GPropertyDraw property, GGroupObjectValue fullKey, GPushAsyncInput pushAsyncResult, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
-        long requestIndex = executePropertyEventAction(actionSID, true, editContext, handler, new GPropertyDraw[]{property}, new GEventSource[]{eventSource}, new GGroupObjectValue[]{fullKey}, new GPushAsyncResult[] {pushAsyncResult});
+        long requestIndex = executePropertyEventAction(actionSID, true, editContext, handler, property, eventSource, fullKey, pushAsyncResult);
 
         onExec.accept(requestIndex);
     }
 
-    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, EventHandler handler, GPropertyDraw[] properties, GEventSource[] eventSources, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
-        return executePropertyEventAction(actionSID, false, editContext, handler, properties, eventSources, fullKeys, pushAsyncResults);
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, EventHandler handler, GPropertyDraw property, GEventSource eventSource, GGroupObjectValue fullKey, GPushAsyncResult pushAsyncResult) {
+        return executePropertyEventAction(actionSID, false, editContext, handler, property, eventSource, fullKey, pushAsyncResult);
     }
 
-    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, EventHandler handler, GPropertyDraw[] properties, GEventSource[] eventSources, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
-        int length = properties.length;
-        int[] IDs = new int[length];
-        GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
-        for (int i = 0; i < length; i++) {
-            GPropertyDraw property = properties[i];
-            IDs[i] = property.ID;
-            fullCurrentKeys[i] = getFullCurrentKey(property, fullKeys[i]);
-        }
-
-        ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, eventSources, pushAsyncResults);
-        ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
+    // the request of an event action of one cell - its arrays, which the server takes for several, hold one
+    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, EventHandler handler, GPropertyDraw property, GEventSource eventSource, GGroupObjectValue fullKey, GPushAsyncResult pushAsyncResult) {
+        ExecuteEventAction executeEventAction = new ExecuteEventAction(new int[]{property.ID}, new GGroupObjectValue[]{getFullCurrentKey(property, fullKey)},
+                actionSID, new GEventSource[]{eventSource}, new GPushAsyncResult[]{pushAsyncResult});
+        ServerResponseCallback serverResponseCallback = getEventActionCallback(editContext, handler);
+        if(sync)
+            return syncDispatch(executeEventAction, serverResponseCallback);
+        else
+            return asyncDispatch(executeEventAction, serverResponseCallback);
+    }
+    // the answer to an event action, dispatched in the edit it was made in - and to a React view's batch, in none
+    private ServerResponseCallback getEventActionCallback(EditContext editContext, EventHandler handler) {
+        return new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
                 return () -> {
@@ -1795,11 +1848,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 super.onFailure(exceptionResult);
             }
         };
-
-        if(sync)
-            return syncDispatch(executeEventAction, serverResponseCallback);
-        else
-            return asyncDispatch(executeEventAction, serverResponseCallback);
     }
 
     public long asyncResponseDispatch(final FormRequestCountingAction<ServerResponseResult> action) {
@@ -1998,7 +2046,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public void pendingChangeProperty(GPropertyDraw property, GGroupObjectValue fullKey, PValue value, PValue oldValue, long changeRequestIndex) {
-        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue));
+        putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, getPendingOldValue(property, fullKey, oldValue, changeRequestIndex)));
+    }
+    // a cell changed again under the same request - twice in a React batch, which is one request; by an editor and by
+    // the prediction of its change (asyncExecutePropertyEventAction: onExec, then onRequestExec) - goes back, if the
+    // request fails, to its value before the first change, not to the first change's: the server may have made neither
+    private PValue getPendingOldValue(GPropertyDraw property, GGroupObjectValue fullKey, PValue oldValue, long requestIndex) {
+        Change pending = getFromDoubleMap(pendingChangePropertyRequests, property, fullKey);
+        return pending != null && pending.requestIndex == requestIndex ? pending.oldValue : oldValue;
     }
 
     public void asyncNoWait(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncNoWaitExec asyncNoWait, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
@@ -2175,7 +2230,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private static ArrayList<GPropertyFilterDTO> getFilterDTOs(List<GPropertyFilter> filters) {
         ArrayList<GPropertyFilterDTO> filterDTOs = new ArrayList<>();
         for (GPropertyFilter filter : filters) {
-            if (filter.property.canBeFiltered()) {
+            if (filter.column.property.canBeFiltered()) {
                 filterDTOs.add(filter.getFilterDTO());
             }
         }
@@ -2221,17 +2276,23 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         Pair<GGroupObjectValue, PValue> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
 
         if(propertyCell != null) {
-            pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
+            if(value != PValue.UNDEFINED) // the value shown is taken back if the request fails
+                pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
             pendingLoadingProperty(property, propertyCell.first, requestIndex);
         }
     }
     // publish the projection once an optimistic operation is done - a change of the current object, a batch of property
     // changes, a row added or removed - whatever of it went into the drafts; a controller writes and never publishes.
-    // The server's response is reconciled through the same controllers and published by applyRemoteChanges' own flush
+    // The server's response is reconciled through the same controllers and published here too (applyRemoteChanges)
     private void refreshReactOptimistic() {
+        if (dispatcher.isBatching()) // a React view's batch: once, when it ends
+            return;
+
         reactData.flush();
 
-        updateRowRenderers(); // an optimistically added row gets its editors now, not when the server confirms it
+        // after the projection: the per-row renderers follow the rows it now holds - an optimistically added row gets
+        // its editors now, not when the server confirms it
+        updateRowRenderers();
     }
 
     private void updateRowRenderers() {
@@ -2469,7 +2530,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
 
         // because when recreating, there should not be tooltip in the caption (it will break the assertion)
-        TooltipManager.removeTooltip(getCaptionWidget().first);
+        // an embedded / popup form (EditingForm) has no caption, see also GFormLayout.addContainers
+        Widget captionWidget = getCaptionWidget().first;
+        if(captionWidget != null)
+            TooltipManager.removeTooltip(captionWidget);
 
         formHidden = true;
 
@@ -3057,6 +3121,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
     }
     public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<GAsyncResult> callback, int increaseValuesNeededCount) {
+        if (refusesLookup(property, callback))
+            return;
         int editIndex = editAsyncIndex++;
         AsyncCallback<GAsyncResult> fCallback = checkLast(editIndex, callback);
 

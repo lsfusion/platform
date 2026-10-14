@@ -70,7 +70,7 @@ public class BaseUtils {
     }
 
     public static Integer getApiVersion() {
-        return 399;
+        return 400;
     }
 
     public static String getPlatformVersion() {
@@ -78,6 +78,18 @@ public class BaseUtils {
             return org.apache.commons.io.IOUtils.toString(BaseUtils.class.getResourceAsStream("/lsfusion.version"));
         } catch (IOException e) {
             systemLogger.error("Error reading platform version", e);
+            return null;
+        }
+    }
+
+    public static Integer getPlatformBuildNumber() {
+        try (InputStream stream = BaseUtils.class.getResourceAsStream("/lsfusion.build.number")) {
+            if (stream == null)
+                return null;
+            Integer buildNumber = parseInt(org.apache.commons.io.IOUtils.toString(stream).trim());
+            return buildNumber != null && buildNumber > 0 ? buildNumber : null;
+        } catch (IOException e) {
+            systemLogger.error("Error reading platform build number", e);
             return null;
         }
     }

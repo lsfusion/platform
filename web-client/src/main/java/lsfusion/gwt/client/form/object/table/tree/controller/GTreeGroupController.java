@@ -31,7 +31,6 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
@@ -316,11 +315,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
-        // a tree has no columns of a property
-        LinkedHashMap<GPropertyDraw, Boolean> propertyOrders = new LinkedHashMap<>();
-        for (Map.Entry<Column, Boolean> entry : orders.entrySet())
-            propertyOrders.put(entry.getKey().property, entry.getValue());
-        tree.updateOrders(group, propertyOrders);
+        tree.updateOrders();
     }
 
     // used in filters and user preferences

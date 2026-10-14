@@ -53,6 +53,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onInit;
     public LA<?> onStarted;
     public LA<?> onFinallyStarted;
+    public LA<?> onStopping;
 
     public LA<?> shareAction;
 
@@ -182,6 +183,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onInit = findAction("onInitApply[]");
         onStarted = findAction("onStartedApply[]");
         onFinallyStarted = findAction("onFinallyStartedApply[]");
+        onStopping = findAction("onStoppingApply[]");
 
         shareAction = findAction("shareAction[STRING]");
 

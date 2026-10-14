@@ -92,7 +92,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         leftPanel = new FlexPanel();
         rightPanel = new FlexPanel();
 
-        Column currentColumn = new Column(condition.property, condition.columnKey != null ? condition.columnKey : EMPTY);
+        Column currentColumn = getCaptionColumn();
         String currentCaption = columnsProvider.getColumns().get(currentColumn);
 
         Border labelBorder = BorderFactory.createEmptyBorder(0,
@@ -107,8 +107,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         propertyView = new FilterOptionSelector<Column>(logicsSupplier) {
             @Override
             public void valueChanged(Column value) {
-                condition.property = value.property;
-                condition.columnKey = value.columnKey;
+                condition.column = value;
                 // the group of its property, as the server takes it
                 condition.groupObject = value.property.groupObject;
 
@@ -131,7 +130,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         compareLabel.setVisible(isFixed() && !controlsVisible);
         leftPanel.addCentered(compareLabel);
 
-        Compare[] filterCompares = condition.property.getFilterCompares();
+        Compare[] filterCompares = condition.column.property.getFilterCompares();
         List<String> conditionsFullStrings = new ArrayList<>();
         for (Compare filterCompare : filterCompares) {
             conditionsFullStrings.add(filterCompare.getFullString());
@@ -271,7 +270,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         if (captionContainer == null) {
             addCentered(leftPanel);
         } else {
-            captionContainer.put(leftPanel, new Pair<>(null, null), DataPanelView.setBaseSize(valueView.valueTable, true, condition.property), FlexAlignment.CENTER);
+            captionContainer.put(leftPanel, new Pair<>(null, null), DataPanelView.setBaseSize(valueView.valueTable, true, condition.column.property), FlexAlignment.CENTER);
         }
 
         addCentered(rightPanel);
@@ -325,12 +324,12 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         valueView.changeProperty(condition);
 
         Compare oldCompare = condition.compare;
-        List<Compare> filterCompares = Arrays.asList(condition.property.getFilterCompares());
+        List<Compare> filterCompares = Arrays.asList(condition.column.property.getFilterCompares());
         compareView.set(filterCompares);
         if (filterCompares.contains(oldCompare)) {
             compareView.setSelectedValue(oldCompare);
         } else {
-            Compare defaultCompare = condition.property.getDefaultCompare();
+            Compare defaultCompare = condition.column.property.getDefaultCompare();
             compareView.setSelectedValue(defaultCompare);
             condition.compare = defaultCompare;
 
@@ -343,13 +342,13 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     }
     
     public void applyCondition(ClientPropertyFilter condition) {
-        setCompare(condition.compare != null ? condition.compare : condition.property.getDefaultCompare());
+        setCompare(condition.compare != null ? condition.compare : condition.column.property.getDefaultCompare());
         setNegation(condition.negation);
         setValue(condition.value);
     }
     
     public void setCompare(Compare value) {
-        compareView.setSelectedValue(value != null ? value : condition.property.getDefaultCompare());
+        compareView.setSelectedValue(value != null ? value : condition.column.property.getDefaultCompare());
     }
     
     public void setNegation(boolean negation) {
@@ -405,12 +404,17 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         return FlexAlignment.END;
     }
 
+    // the column the captions are by: one with no column key is the column of the current objects of the column groups
+    private Column getCaptionColumn() {
+        return condition.column.columnKey != null ? condition.column : new Column(condition.column.property, EMPTY);
+    }
+
     @Override
     public void setVisible(boolean isVisible) {
         super.setVisible(isVisible);
         
         if (isVisible) {
-            propertyLabel.setText(columnsProvider.getColumns().get(new Column(condition.property, condition.columnKey != null ? condition.columnKey : EMPTY)));
+            propertyLabel.setText(columnsProvider.getColumns().get(getCaptionColumn()));
         }
     }
     

@@ -57,26 +57,33 @@ public abstract class GController {
     }-*/;
 
     public JavaScriptObject controllerExec(String action, JavaScriptObject params) {
-        if (isClosed()) // reject BEFORE dispatch: a dispatched action on a closed context enqueues but never executes, leaking the queue entry / busy state
-            return rejectedControllerPromise();
+        String refusal = getRefusal("exec()");
+        if (refusal != null) // reject BEFORE dispatch: a dispatched action on a closed context enqueues but never executes, leaking the queue entry / busy state
+            return rejectedControllerPromise(refusal);
         ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
         return createControllerPromise(dispatchExec(action, encoded, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerEval(String script, boolean evalAction, JavaScriptObject params) {
-        if (isClosed())
-            return rejectedControllerPromise();
+        String refusal = getRefusal(evalAction ? "evalAction()" : "eval()");
+        if (refusal != null)
+            return rejectedControllerPromise(refusal);
         ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
         return createControllerPromise(dispatchEval(script, evalAction, encoded, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerChange(String property, JavaScriptObject keyParams, JavaScriptObject value) {
-        if (isClosed())
-            return rejectedControllerPromise();
+        String refusal = getRefusal("change()");
+        if (refusal != null)
+            return rejectedControllerPromise(refusal);
         ArrayList<Serializable> encodedKeys = GSimpleStateTableView.encodeUnknownJSValues(keyParams);
         Serializable encodedValue = GSimpleStateTableView.encodeUnknownJSValue(value);
         return createControllerPromise(dispatchChange(property, encodedKeys, encodedValue, new ControllerServerResponseCallback()));
     }
-    private native JavaScriptObject rejectedControllerPromise() /*-{
-        return $wnd.Promise.reject(new $wnd.Error("Form is closed"));
+    // why the context refuses a call now, or null: a closed one refuses every call
+    protected String getRefusal(String surface) {
+        return isClosed() ? "Form is closed" : null;
+    }
+    private native JavaScriptObject rejectedControllerPromise(String message) /*-{
+        return $wnd.Promise.reject(new $wnd.Error(message));
     }-*/;
 
     // context-specific transport: build the request action and dispatch it; returns the assigned requestIndex (the promise key)

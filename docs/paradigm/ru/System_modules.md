@@ -45,7 +45,7 @@ title: 'Системные модули'
 | `Geo`             | Гео-данные и операции                                                       |
 | `Printer` / `QZTray` / `Sound` / `Com` | Доступ к клиентскому оборудованию                              |
 | `ProcessMonitor` / `Profiler` | Управление и мониторинг сервера                                |
-| `RabbitMQ` / `WebSocket` / `messengers` | Внешние транспорты                                       |
+| `RabbitMQ` / `WebSocket` / [`Messenger`](Utils_Messengers.md) | Внешние транспорты: очереди сообщений, веб-сокеты и модули мессенджеров                                           |
 | `SQLUtils`        | Сервисные операции над БД                                                   |
 | `DefaultData`     | Начальные демо-данные                                                       |
 | `Schedule`        | Календарь и рабочие интервалы                                               |

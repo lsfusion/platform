@@ -586,9 +586,11 @@ title: 'Rules: domain logic'
    `WHEN <condition> DO <target> <- <expr>`. The calculated
    event form `<target> <- <expr> WHEN <condition>` behaves
    differently: its change is calculated when the target
-   property is accessed, and an explicit change of that
-   property in the session takes priority over the event's
-   change.
+   property is accessed in a session that has changed a
+   property its condition depends on (changes only to the
+   event's value sources are insufficient to trigger
+   recalculation), and an explicit change of that property
+   in the session takes priority over the event's change.
 
    So to default a value while yielding to an explicit
    change, the calculated event form alone is enough —
@@ -617,6 +619,18 @@ title: 'Rules: domain logic'
    Where the condition can fire on the way to `NULL`, and the
    handler must not act on a deletion or on an object leaving
    the class, it MUST be narrowed with `<object> IS <Class>`.
+
+6. The platform does not wrap a condition containing `PREV`
+   in `SET`: the event occurs only through the change operators
+   used in it (in the condition or the handler, directly or
+   through another property), and `PREV` itself does not
+   trigger it. So if a `WHEN`, `WHEN LOCAL` or
+   `CONSTRAINT` condition uses `PREV`, the assistant SHOULD
+   include a change operator in the condition for the property
+   whose changes should trigger it:
+   `CONSTRAINT q(i) > PREV(m(i))` is never checked, while
+   `CONSTRAINT CHANGED(q(i)) AND q(i) > PREV(m(i))` is checked
+   when `q` changes.
 
 ### Where local events actually run
 
@@ -694,6 +708,10 @@ title: 'Rules: domain logic'
    is created at all, the inner action is deferred and runs in
    the current session, inside the same transaction. The
    assistant MUST NOT expect an independent commit there.
+   The deferred action runs only after the constraint checks
+   of that pass, so the changes needed to keep a constraint of
+   the same apply from being violated MUST be made by the handler
+   directly, without deferring them through `NEWSESSION`.
    - isolated independent unit -> `NEWSESSION`
    - isolated unit that must also see selected local properties
      from the upper session -> `NEWSESSION NESTED (...)`

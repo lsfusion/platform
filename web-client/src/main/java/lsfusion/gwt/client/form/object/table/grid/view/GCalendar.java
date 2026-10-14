@@ -230,8 +230,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                     currentEventEnd.setDate(currentEventEnd.getDate() - 1);
 
                 var object = info.event.extendedProps.object;
-                controller.changeProperties(currentEventEnd != null ? [startFieldName, endFieldName] : [startFieldName], currentEventEnd != null ? [object, object] : [object],
-                    currentEventEnd != null ? [currentEventStart, currentEventEnd] : [currentEventStart]);
+                controller.batch(function () {
+                    controller.changeProperty(startFieldName, object, currentEventStart);
+                    if (currentEventEnd != null)
+                        controller.changeProperty(endFieldName, object, currentEventEnd);
+                });
             }
         }
 

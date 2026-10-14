@@ -26,7 +26,6 @@ import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -372,7 +371,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void updateOrders(LinkedHashMap<Column, Boolean> orders) {
+    public void updateOrders() {
     }
 
     @Override
