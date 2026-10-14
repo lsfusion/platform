@@ -1,0 +1,20 @@
+MODULE ShowFiltersOnFormObjects;
+
+REQUIRE System;
+
+CLASS Task 'Task';
+opened 'Opened' = DATA BOOLEAN (Task);
+priority 'Priority' = DATA INTEGER (Task);
+
+FORM tasks 'Tasks'
+    OBJECTS t = Task
+    PROPERTIES(t) opened, priority
+;
+
+// a filter on the form's objects alone, none of them passed in OBJECTS, gives the action the condition TRUE, so two
+// of them gave it twice, and with assertions on the logic failed to parse (fixed for #1879)
+showUrgent 'Urgent tasks' () { SHOW tasks FILTERS opened(t), priority(t) > 5; }
+
+// the same in an implementation, whose parameters the filters do not use
+openTasks ABSTRACT CASE (INTEGER);
+openTasks(INTEGER i) + WHEN i = 1 THEN { SHOW tasks FILTERS opened(t), priority(t) > 5; }

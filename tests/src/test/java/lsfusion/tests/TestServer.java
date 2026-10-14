@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 // starts the platform's bootstrap in a jvm of its own, with the command line production uses and the jvm options a
-// runner adds
+// runner adds - and the platform's assertions on, as in a developer's run, so a broken internal contract fails a test
+// and not only the IDE
 class TestServer {
     static final Path BASE = Paths.get("").toAbsolutePath();
 
@@ -34,6 +35,7 @@ class TestServer {
         List<String> command = new ArrayList<>(Arrays.asList(
                 Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
                 "-cp", classPath,
+                "-ea:lsfusion...",
                 "--add-opens=java.base/java.util=ALL-UNNAMED",
                 "--add-opens=java.base/java.lang=ALL-UNNAMED"));
         command.addAll(jvmOptions);
