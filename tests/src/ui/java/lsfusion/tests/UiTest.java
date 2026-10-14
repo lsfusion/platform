@@ -90,7 +90,7 @@ public abstract class UiTest {
         }));
         long started = System.nanoTime();
 
-        int[] ports = TestServer.freePorts(5);
+        int[] ports = TestServer.freePorts(6); // the server's four, jetty's and docker's browser's: taken at once, none comes twice
         httpPort = ports[0];
         webPort = ports[4];
         Path serverLog = UI.resolve("server.log");
@@ -114,7 +114,7 @@ public abstract class UiTest {
             // playwright's image of the client's version serves a browser over a websocket, on the host's network, so
             // that it reaches the jetty on localhost
             String version = System.getProperty("ui.playwrightVersion");
-            int port = TestServer.freePorts(1)[0];
+            int port = ports[5];
             container = "lsfusion-ui-browser-" + ProcessHandle.current().pid();
             Process run = new ProcessBuilder("docker", "run", "-d", "--rm", "--init", "--ipc=host", "--network", "host", "--name", container,
                     "--user", "pwuser", "--workdir", "/home/pwuser", "mcr.microsoft.com/playwright:v" + version,
@@ -128,8 +128,10 @@ public abstract class UiTest {
                 try {
                     browser = playwright.chromium().connect("ws://127.0.0.1:" + port + "/", new BrowserType.ConnectOptions().setTimeout(30_000));
                 } catch (PlaywrightException e) { // npx is still fetching playwright, or its server is still starting
-                    if (System.currentTimeMillis() > deadline)
-                        throw e;
+                    if (System.currentTimeMillis() > deadline) { // what npx or the server said: the hook removes the container only at the jvm's exit
+                        Process logs = new ProcessBuilder("docker", "logs", container).redirectErrorStream(true).start();
+                        throw new IllegalStateException("no browser in " + container + "\n" + new String(logs.getInputStream().readAllBytes(), StandardCharsets.UTF_8), e);
+                    }
                     Thread.sleep(500);
                 }
         } else

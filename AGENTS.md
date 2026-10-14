@@ -134,17 +134,20 @@ server test that is a new server on a new database. `tests/quarantine.txt` names
 `<theme>/<Module>.<action>` (a server test) or `<Class>.<method>` (a browser one): they still run, but a failure is
 reported as skipped rather than failing the build.
 
-The browser tests run only with `-Pui`, and `-Dit.test='Ui*IT'` runs them without the server behaviour tests.
-They take the web client's war from `web-client/target` rather than building it, so build it first and again
-after every change to the client: `mvn -pl web-client -am package -P-sign-desktop-jar`, plus, on a JDK without
-`pack200` (14 and later), `-Dmaven.antrun.skip=true -Dbuildhelper.skipAttach=true -Dmdep.skip=true`.
+The browser tests run only with `-Pui`. To run them alone, `-Dit.test='Ui*IT'` leaves out the server behaviour
+tests and `-Dtest=none -Dsurefire.failIfNoSpecifiedTests=false` the compile corpus. They take the web client's war
+from `web-client/target` rather than building it, so build it first and again after every change to the client:
+`mvn -pl web-client -am package -P-sign-desktop-jar`, plus, on a JDK without `pack200` (14 and later),
+`-Dmaven.antrun.skip=true -Dbuildhelper.skipAttach=true -Dmdep.skip=true`. `-Pgwt-dev` builds it about twice as
+fast, compiling only the permutation Chrome and Edge take, in English and in draft mode.
 `-Dui.browser` is a Playwright channel of an installed browser, `chrome` by default or `msedge`, or `docker`,
 Playwright's image: Jenkins runs that one, and it needs Docker on Linux, where its container on the host's
 network reaches the jetty on `localhost`. After `tests/pom.xml` moves to another Playwright version, remove the
 old one's image from the Jenkins box by hand (2.5 GB, `docker rmi mcr.microsoft.com/playwright:v<old version>`).
 `-Dui.headless=false` shows the browser. The server's and jetty's logs are in `tests/target/ui`, and a failed test
 leaves a screenshot, the page and a Playwright trace in `tests/target/ui/failures/<Class>.<method>.png|html|zip`,
-its message listing the errors the page logged (the two of the Push API come with every load).
+its message listing the errors the page logged (the two of the Push API come with every load). The trace steps
+through the test action by action: drop the zip onto https://trace.playwright.dev, which opens it in the browser.
 
 The web client under Playwright has habits of its own, which the helpers of `UiTest` keep to. A locator looks
 inside the form's root, `[lsfusion-form=<Module.form>]`: a hidden tab keeps its DOM, with the same names in it. A
