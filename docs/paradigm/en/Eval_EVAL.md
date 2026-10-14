@@ -32,6 +32,7 @@ The executable code is meant to add new local elements and call existing ones. I
 -   [materialization](Materializations.md), explicit table placement, and not-null constraints on properties
 -   declaring a [group](Groups_of_properties_and_actions.md) with a parent group from another module, or attaching a property or action to a group from another module
 -   adding base events to existing actions
+-   [abstract](Property_extension.md) properties and actions: adding an implementation to one declared outside the code, as well as declaring one in the code and using it
 
 [Data properties](Data_properties_DATA.md) declared inside eval code are forced to the session scope. Persistent data declarations are not allowed.
 

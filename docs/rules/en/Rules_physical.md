@@ -35,9 +35,9 @@ The mechanism itself is described in [materializations](../paradigm/Materializat
 
 4. A property that depends on frequently changing data and is read rarely SHOULD NOT be materialized — its stored values would be updated on every change.
 
-5. After a materialized property's definition changes, or after a direct data fix in the database, the stored values SHOULD be recomputed with the [`RECALCULATE` operator](../language/RECALCULATE_operator.md).
+5. After a materialized property's definition changes — a changed or added `+=` implementation of a materialized abstract property included — or after a direct data fix in the database, the stored values MUST be recomputed with the [`RECALCULATE` operator](../language/RECALCULATE_operator.md). A server restart does not do it for a changed definition alone: until the recalculation the stored values stay inconsistent with it, and a change of the data does not necessarily repair even the values it touches (see [materializations](../paradigm/Materializations.md)).
 
-6. When an aggregation over another aggregated property fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)). The `HINT` / `NOHINT` options do not split such a query.
+6. When an aggregation over another aggregated property fails with the `TOO LONG QUERY` error, or the resulting query gets a bad execution plan, the inner property SHOULD be materialized (if it does not have too many values) or, where that is possible, read beforehand into a local property: otherwise its definition is included as a subquery in the text of the outer query (see [materializations](../paradigm/Materializations.md)). The `HINT` / `NOHINT` options do not split such a query. The same applies to the update of a materialized grouping when the definitions of the properties it reads, its grouping keys included, make the query too long — a smaller batch does not necessarily help.
 
 ### Indexes
 

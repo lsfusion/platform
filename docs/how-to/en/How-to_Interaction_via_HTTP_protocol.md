@@ -458,3 +458,53 @@ getOrderAttachment (LONG id) {
 }
 ```
 The query will return a file with _Content-Type_ corresponding to the extension of the _file_ property.
+
+## Example 9
+
+### Task
+
+Similar to [**Example 1**](#example-1).
+
+During development we need to run a fragment of lsFusion code on a running server — for example, to count the cities of each country — without adding it to a module and restarting the server.
+
+### Solution
+
+The code is sent in the body of a `POST` request to the `/eval` or `/eval/action` endpoint of the [HTTP API](../paradigm/Access_from_an_external_system.md#http), with a content type other than `application/x-www-form-urlencoded`:
+
+```
+curl -X POST -H "Content-Type: text/plain; charset=utf-8" --data-binary @script.lsf http://localhost:7651/eval
+```
+
+The server wraps the received text into a module of its own that depends on every loaded module, so the text has no `MODULE` or `REQUIRE` header, and the elements of the project are referred to by name. The shape of the text depends on the endpoint:
+
+-   `/eval` — a sequence of module statements, one of which declares an action named `run`. The other statements may declare properties that it uses:
+
+    ```lsf
+    cityCount (Country c) = GROUP SUM 1 IF country(City ct) = c;
+
+    run() {
+        EXPORT JSON FROM name = name(Country c), cities = cityCount(c);
+    }
+    ```
+
+-   `/eval/action` — the body of that action alone: action statements, local property declarations included. An action declaration or a module header in this text does not parse (`no viable alternative at input '{'`, `missing EOF at 'MODULE'`):
+
+    ```lsf
+    LOCAL count = INTEGER ();
+    count() <- GROUP SUM 1 IF c IS City;
+    RETURN count();
+    ```
+
+The response carries the value of `RETURN` or, without it, the file written by `EXPORT` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block included. The result of `EXPORT` is the local property `exportFile[]` of the session the operator ran in: an `EXPORT` inside `NEWSESSION` stays in the new session, and the response comes back empty without an error. So the export is done in the action's own session — after the block, with the values it needs carried over in [nested local properties](../paradigm/Session_management.md#nested) — or `exportFile[]` is listed as nested on the operator, which copies it back:
+
+```lsf
+run() {
+    NEWSESSION NESTED (exportFile) {
+        NEW ct = City {
+            name(ct) <- 'Springfield';
+        }
+        APPLY;
+        EXPORT JSON FROM cities = GROUP SUM 1 IF c IS City;
+    }
+}
+```

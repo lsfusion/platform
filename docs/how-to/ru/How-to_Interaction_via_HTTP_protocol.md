@@ -453,4 +453,54 @@ getOrderAttachment (LONG id) {
         exportFile() <- file(a); 
 }
 ```
-Запрос вернет файл с _Content-Type_ соответствующим расширению свойства _file_. 
+Запрос вернет файл с _Content-Type_ соответствующим расширению свойства _file_.
+
+## Пример 9
+
+### Условие
+
+Аналогично [**Примеру 1**](#пример-1).
+
+При разработке нужно выполнить фрагмент кода на lsFusion на работающем сервере — например, посчитать города каждой страны, — не добавляя его в модуль и не перезапуская сервер.
+
+### Решение
+
+Код передаётся в теле `POST`-запроса по адресу `/eval` или `/eval/action` [HTTP API](../paradigm/Access_from_an_external_system.md#http) с типом содержимого, отличным от `application/x-www-form-urlencoded`:
+
+```
+curl -X POST -H "Content-Type: text/plain; charset=utf-8" --data-binary @script.lsf http://localhost:7651/eval
+```
+
+Сервер оборачивает полученный текст в собственный модуль, зависящий от всех загруженных модулей, поэтому заголовка `MODULE` и `REQUIRE` в тексте нет, а к элементам проекта обращаются по имени. Форма текста зависит от адреса:
+
+-   `/eval` — последовательность инструкций модуля, одна из которых объявляет действие с именем `run`. Остальные инструкции могут объявлять свойства, которые оно использует:
+
+    ```lsf
+    cityCount (Country c) = GROUP SUM 1 IF country(City ct) = c;
+
+    run() {
+        EXPORT JSON FROM name = name(Country c), cities = cityCount(c);
+    }
+    ```
+
+-   `/eval/action` — только тело этого действия: инструкции действия, включая объявления локальных свойств. Объявление действия или заголовок модуля в таком тексте не разбираются (`no viable alternative at input '{'`, `missing EOF at 'MODULE'`):
+
+    ```lsf
+    LOCAL count = INTEGER ();
+    count() <- GROUP SUM 1 IF c IS City;
+    RETURN count();
+    ```
+
+В ответе возвращается значение `RETURN`, а без него — файл, записанный оператором `EXPORT` (см. [результаты](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` возвращает значение из любого места действия, в том числе из блока `NEWSESSION`. Результат `EXPORT` — локальное свойство `exportFile[]` той сессии, в которой выполнен оператор: `EXPORT` внутри `NEWSESSION` остаётся в новой сессии, и ответ приходит пустым, без ошибки. Поэтому выгрузку выполняют в собственной сессии действия — после блока, перенеся нужные ей значения во [вложенных локальных свойствах](../paradigm/Session_management.md#nested), — либо указывают `exportFile[]` вложенным в операторе, и оно копируется обратно:
+
+```lsf
+run() {
+    NEWSESSION NESTED (exportFile) {
+        NEW ct = City {
+            name(ct) <- 'Springfield';
+        }
+        APPLY;
+        EXPORT JSON FROM cities = GROUP SUM 1 IF c IS City;
+    }
+}
+```

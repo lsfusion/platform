@@ -12,7 +12,7 @@ title: 'Arithmetic operators (+, -, *, ...)'
 |`*`     |Multiplication|Accepts two input operands and returns their product|`3 * 5`|`15`|
 |`/`     |Ratio         |Takes two input operands and returns their ratio|`15 / 3`|`5`|
 
-All of these operators return `NULL` if one of the operands is `NULL` . Division by zero also returns `NULL`. It is also possible to use a special form of summation and difference operators with brackets, in which case `NULL` will be equivalent to `0`. The reverse is also true for these type of operators: if the result of an operator in such form is `0`, then `NULL` is returned (e. g., `5 (-) 5 = NULL`):
+All of these operators return `NULL` if one of the operands is `NULL`. Division by zero also returns `NULL`: a divisor whose absolute value is less than `0.000005` is treated as zero, whatever the classes of the operands, so the ratio of two values of that order of magnitude (`0.000006 / 0.000003`) is `NULL` as well, while the ratio of the same values multiplied by one and the same factor (`6 / 3`) is not. It is also possible to use a special form of summation and difference operators with brackets, in which case `NULL` will be equivalent to `0`. The reverse is also true for these type of operators: if the result of an operator in such form is `0`, then `NULL` is returned (e. g., `5 (-) 5 = NULL`):
 
 |Operator|Name|Description|Example|Result|
 |--------|----------|---|---|---|

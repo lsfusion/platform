@@ -131,6 +131,13 @@ the name in the first column.
    necessarily a user cancel: repeat it after a pause before
    falling back.
 
+   A diagnostics call cut off by the client's own time limit
+   (the inspections of a large project can outlast it, whatever
+   timeout the call asks for) means the file was NOT checked, not
+   that it is clean: repeat it after indexing settles, and if it
+   still does not return, check the file by a dry run or a server
+   start before presenting the result.
+
    If the IDE cannot resolve an element declared by a metacode
    usage, expand that usage in its file — the file where the
    metacode is applied, possibly in a required module —
