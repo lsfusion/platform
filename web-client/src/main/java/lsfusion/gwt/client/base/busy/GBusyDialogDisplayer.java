@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
@@ -111,6 +112,12 @@ public class GBusyDialogDisplayer {
         public BlockingPanel() {
             setModal(true);
             getElement().getStyle().setOpacity(0);
+            // the modal preview drops the input, but the panel covers nothing, so a browser driver clicks into the block
+            // and the click is lost; a glass makes the driver wait. Not for people: it would take the hover and the cursor
+            if (GwtClientUtils.isAutomated()) {
+                setGlassEnabled(true);
+                setGlassStyleName("lsf-blocking");
+            }
         }
     }
 }
