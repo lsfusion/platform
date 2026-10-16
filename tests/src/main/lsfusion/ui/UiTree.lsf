@@ -1,0 +1,37 @@
+MODULE UiTree;
+
+REQUIRE System;
+
+// the tree UiTreeIT unfolds in the browser, and the action it seeds a node with
+
+CLASS UiTreeCategory 'Category';
+uiTreeCategoryName 'Category' = DATA STRING[50] (UiTreeCategory);
+
+CLASS UiTreeItem 'Item';
+uiTreeItemName 'Name' = DATA STRING[50] (UiTreeItem);
+uiTreeCategory = DATA UiTreeCategory (UiTreeItem);
+
+FORM uiTreeItems 'Items by category'
+    TREE categories c = UiTreeCategory, i = UiTreeItem
+    PROPERTIES(c) READONLY uiTreeCategoryName
+    PROPERTIES(i) READONLY uiTreeItemName
+    FILTERS uiTreeCategory(i) = c
+;
+
+NAVIGATOR {
+    NEW FOLDER uiTree 'UI tree' WINDOW toolbar {
+        NEW uiTreeItems;
+    }
+}
+
+// a category with an item in it
+uiTreeSeed (STRING[50] category, STRING[50] item) {
+    NEW c = UiTreeCategory {
+        uiTreeCategoryName(c) <- category;
+        NEW i = UiTreeItem {
+            uiTreeItemName(i) <- item;
+            uiTreeCategory(i) <- c;
+        }
+    }
+    APPLY;
+}

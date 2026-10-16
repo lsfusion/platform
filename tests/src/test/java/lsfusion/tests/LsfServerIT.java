@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -17,13 +16,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -32,7 +27,6 @@ import java.util.stream.Stream;
 
 import static lsfusion.tests.TestServer.BASE;
 import static lsfusion.tests.TestServer.read;
-import static lsfusion.tests.TestServer.excerpt;
 
 /** The behaviour tests. One server and one database for the whole run. Every action named test* is called through
  *  the external http /exec, which runs it in a session of its own and, since a test action does not apply, throws
@@ -48,9 +42,6 @@ public class LsfServerIT {
     private static final Pattern TEST = Pattern.compile("^(test\\w*)\\b", Pattern.MULTILINE);
 
     private static final String DATABASE = "lsfusion_test_" + ProcessHandle.current().pid();
-    private static final String DB_SERVER = System.getProperty("db.server", "localhost");
-    private static final String DB_USER = System.getProperty("db.user", "postgres");
-    private static final String DB_PASSWORD = System.getProperty("db.password", "");
 
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
@@ -71,7 +62,7 @@ public class LsfServerIT {
     public static Collection<Object[]> tests() throws IOException {
         String filter = System.getProperty("lsf.tests");
         Pattern pattern = glob(filter != null ? filter : "*");
-        Set<String> quarantine = quarantine();
+        Set<String> quarantine = TestServer.quarantine();
 
         List<Object[]> tests = new ArrayList<>();
         try (Stream<Path> modules = Files.walk(LSF)) {
@@ -97,14 +88,6 @@ public class LsfServerIT {
         return tests;
     }
 
-    private static Set<String> quarantine() throws IOException {
-        Set<String> quarantined = new HashSet<>();
-        for (String line : Files.readAllLines(BASE.resolve("quarantine.txt")))
-            if (!line.trim().isEmpty() && !line.trim().startsWith("#"))
-                quarantined.add(line.trim());
-        return quarantined;
-    }
-
     private static Pattern glob(String pattern) {
         StringBuilder regex = new StringBuilder();
         for (String part : pattern.split("\\*", -1))
@@ -114,52 +97,20 @@ public class LsfServerIT {
 
     @BeforeClass
     public static void startServer() throws Exception {
-        int[] ports = freePorts(4);
-        httpPort = ports[0]; // not the default 7651 : whoever runs this usually has a server of their own up
+        int[] ports = TestServer.freePorts(4);
+        httpPort = ports[0];
         Path log = BASE.resolve("target/server.log");
-        server = TestServer.start(TestServer.classPath("target/classes"), log,
-                "db.name=" + DATABASE, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
-                "http.port=" + httpPort, "rmi.port=" + ports[1], "webSocket.port=" + ports[2], "debugger.port=" + ports[3],
+        server = TestServer.start(DATABASE, ports, log,
                 "settings.enableAPI=2", // anonymous, so a test action needs no user
                 "settings.openFormsWithoutClient=true"); // so that a test can SHOW a form, see above
         System.out.println("lsFusion test server: database " + DATABASE + ", http port " + httpPort + ", log " + log);
-
-        long deadline = System.currentTimeMillis() + Duration.ofMinutes(10).toMillis();
-        while (!read(log).contains("Server has successfully started")) {
-            if (!server.isAlive() || System.currentTimeMillis() > deadline)
-                throw new IllegalStateException("the test server did not start\n" + excerpt(read(log)));
-            Thread.sleep(1000);
-        }
+        TestServer.waitStarted(server, log);
     }
 
     @AfterClass
     public static void stopServer() throws Exception {
-        if (server == null)
-            return;
-        server.destroyForcibly(); // not destroy() : a server a test left deadlocked would never finish an orderly shutdown
-        server.waitFor();
-
-        if (Boolean.getBoolean("lsf.keepDb")) {
-            System.out.println("kept the test database " + DATABASE);
-            return;
-        }
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://" + DB_SERVER + "/postgres", DB_USER, DB_PASSWORD);
-             Statement statement = connection.createStatement()) {
-            statement.execute("DROP DATABASE IF EXISTS " + DATABASE + " WITH (FORCE)");
-        }
-    }
-
-    // all open at once : taken one by one, each closed before the next is opened, two of them could get the same port
-    private static int[] freePorts(int count) throws IOException {
-        List<ServerSocket> sockets = new ArrayList<>();
-        try {
-            for (int i = 0; i < count; i++)
-                sockets.add(new ServerSocket(0));
-            return sockets.stream().mapToInt(ServerSocket::getLocalPort).toArray();
-        } finally {
-            for (ServerSocket socket : sockets)
-                socket.close();
-        }
+        if (server != null)
+            TestServer.stop(server, DATABASE);
     }
 
     @Test

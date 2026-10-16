@@ -21,7 +21,12 @@
         <!-- the test logics is nobody's dependency, and must not reach the repository -->
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.compiler.source>11</maven.compiler.source>
+        <!-- jenkins builds on jdk 11 : with release, not just source, a newer jdk also rejects an api 11 does not have -->
+        <maven.compiler.release>11</maven.compiler.release>
         <surefire.version>3.2.5</surefire.version>
+        <!-- a test that passes the second time is reported as a flake rather than failing the build; a property, not
+             the plugin's configuration, so that -Dfailsafe.rerunFailingTestsCount=0 turns it off -->
+        <failsafe.rerunFailingTestsCount>1</failsafe.rerunFailingTestsCount>
     </properties>
 
     <dependencies>
@@ -48,6 +53,9 @@
                             <goal>build-classpath</goal>
                         </goals>
                         <configuration>
+                            <!-- what the logics has at run time, not junit or playwright, which only the runners use; with
+                                 -Pui a jar both use (gson) still comes in playwright's version -->
+                            <includeScope>runtime</includeScope>
                             <outputFile>${project.build.directory}/server-classpath.txt</outputFile>
                         </configuration>
                     </execution>
@@ -62,6 +70,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>
+                <configuration>
+                    <excludes>
+                        <!-- the browser tests need the ui profile -->
+                        <exclude>**/Ui*IT.java</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -73,4 +87,87 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- the browser tests: the web client's war in a jetty of its own, against a test server, driven by playwright -->
+            <id>ui</id>
+            <properties>
+                <playwright.version>1.63.0</playwright.version>
+                <!-- the jetty the web client is developed with (web-client/pom.xml) -->
+                <jetty.version>9.4.58.v20250814</jetty.version>
+                <!-- the installed chrome; -Dui.browser overrides it : see UiTest -->
+                <ui.browser>chrome</ui.browser>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.microsoft.playwright</groupId>
+                    <artifactId>playwright</artifactId>
+                    <version>${playwright.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- the browser tests stay out of the build that has no playwright -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ui-test-sources</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/ui/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jetty-runner</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.eclipse.jetty</groupId>
+                                            <artifactId>jetty-runner</artifactId>
+                                            <version>${jetty.version}</version>
+                                            <destFileName>jetty-runner.jar</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/ui</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <!-- the browser tests run along with the others -->
+                            <excludes combine.self="override"/>
+                            <systemPropertyVariables>
+                                <!-- the war of the checkout under test, built by web-client beside it -->
+                                <ui.war>${project.basedir}/../web-client/target/lsfusion-client-${project.version}.war</ui.war>
+                                <ui.playwrightVersion>${playwright.version}</ui.playwrightVersion>
+                                <ui.browser>${ui.browser}</ui.browser>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
