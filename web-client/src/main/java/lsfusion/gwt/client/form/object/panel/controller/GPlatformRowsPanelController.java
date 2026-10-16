@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 // a panel controller whose keys are ROWS: it draws a group's LSF GRID properties once per row of that group - the
-// form's GPanelController draws the PANEL ones -, and the group's CUSTOM REACT view places each renderer into the
-// element it rendered for that row.
+// form's GPlatformFormPanelController draws the PANEL ones -, and the group's CUSTOM REACT view places each renderer
+// into the element it rendered for that row.
 //
 // Not to be confused with the GRID's `record` container, which is an ordinary panel container whose content follows the
 // group's CURRENT object (the map and calendar popups). Nothing here is cloned from a design container.
@@ -27,7 +27,7 @@ import java.util.Map;
 // It is a panel controller because such a renderer IS a panel renderer - same widget, same readers, same edit path - so
 // the reader forwarding comes from the shared base unchanged; what differs is only how a key is read and where the
 // widget goes, which is what the base leaves to each kind of panel.
-public final class GGridPanelController extends GAbstractPanelController {
+public final class GPlatformRowsPanelController extends GPlatformPanelController {
 
     private final GGroupObject group;
     // the rows its renderers follow: the rows' part where React draws them - an lsf list property is only where React
@@ -40,7 +40,7 @@ public final class GGridPanelController extends GAbstractPanelController {
     // anything. The mirror of the form panel's columnPanels: keyed by the axis this controller draws on.
     private final NativeHashMap<GGroupObjectValue, Map<String, Element>> rowHosts = new NativeHashMap<>();
 
-    public GGridPanelController(GFormController formController, GGroupObject group, GReactFormData.Rows rows) {
+    public GPlatformRowsPanelController(GFormController formController, GGroupObject group, GReactFormData.Rows rows) {
         super(formController);
 
         this.group = group;

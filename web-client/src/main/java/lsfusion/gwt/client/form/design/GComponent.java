@@ -256,7 +256,7 @@ public class GComponent implements Serializable {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setShowIfVisible(GComponent.this, !PValue.getBooleanValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
@@ -287,7 +287,7 @@ public class GComponent implements Serializable {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 

@@ -18,5 +18,5 @@ public interface GComponentReader extends GPropertyReader {
         controller.updateOther(this, values, partial);
     }
     // where the platform draws the component: the form's own update of it
-    void updateLsf(GFormController form, NativeHashMap<GGroupObjectValue, PValue> values);
+    void updatePlatform(GFormController form, NativeHashMap<GGroupObjectValue, PValue> values);
 }

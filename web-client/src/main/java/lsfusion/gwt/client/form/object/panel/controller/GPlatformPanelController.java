@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
@@ -20,11 +20,11 @@ import static java.lang.Boolean.TRUE;
 // a set of property draws shown as panel renderers. What differs between the kinds of panel is not HOW the readers
 // are forwarded - that is all here - but what a renderer's key means and where its widget goes, which each subclass
 // answers with the placement methods below.
-public abstract class GAbstractPanelController extends GLsfPropertyController {
+public abstract class GPlatformPanelController extends GPlatformPropertyController {
 
     protected final NativeSIDMap<GPropertyDraw, GPropertyPanelController> propertyControllers = new NativeSIDMap<>();
 
-    protected GAbstractPanelController(GFormController formController) {
+    protected GPlatformPanelController(GFormController formController) {
         super(formController);
     }
 

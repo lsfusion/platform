@@ -306,7 +306,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerCaption(GContainer.this, PValue.getCaptionStringValue(values.firstValue()));
         }
@@ -339,7 +339,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerImage(GContainer.this, PValue.getImageValue(values.firstValue()));
         }
@@ -374,7 +374,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setCaptionClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
@@ -420,7 +420,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setValueClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
@@ -446,7 +446,7 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerCustom(GContainer.this, PValue.getCustomStringValue(values.firstValue()));
         }

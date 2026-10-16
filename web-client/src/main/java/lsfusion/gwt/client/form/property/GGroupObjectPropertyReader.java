@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 
 // a presentation reader bound to a GROUP OBJECT (not a single property draw): delivered through the group's table
 // controller, keyed by GGroupObjectValue. Most are per-row (background/foreground/select -> direct row fields); options is
@@ -28,7 +28,7 @@ public abstract class GGroupObjectPropertyReader implements GPropertyReader {
 
 
     // where the platform draws the group's rows: its grid's or tree's own update for this reader
-    public abstract void updateLsf(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
+    public abstract void updatePlatform(GPlatformTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
 
     @Override
     public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {

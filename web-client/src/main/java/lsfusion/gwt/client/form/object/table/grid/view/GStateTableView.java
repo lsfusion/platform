@@ -16,7 +16,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -34,7 +34,7 @@ import java.util.Objects;
 public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected final GFormController form;
-    protected final GGridController grid;
+    protected final GPlatformGridController grid;
 
     protected GFont font;
 
@@ -86,7 +86,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     private final TableContainer tableContainer;
 
-    public GStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
+    public GStateTableView(GFormController form, GPlatformGridController grid, TableContainer tableContainer) {
         super(true);
 
         this.form = form;
@@ -161,7 +161,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
-        setCurrentKey(currentKey, false); // server-driven (GGridController.updateCurrentKey): the component hasn't rendered it -> re-render
+        setCurrentKey(currentKey, false); // server-driven (GPlatformGridController.updateCurrentKey): the component hasn't rendered it -> re-render
     }
 
     private void setCurrentKey(GGroupObjectValue currentKey, boolean rendered) {

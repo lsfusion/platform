@@ -50,7 +50,7 @@ public abstract class GGridProperty extends GComponent {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setValueClass(GGridProperty.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 

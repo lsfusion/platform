@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -22,7 +22,7 @@ import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
 
-    public GMap(GFormController form, GGridController grid, TableContainer tableContainer) {
+    public GMap(GFormController form, GPlatformGridController grid, TableContainer tableContainer) {
         super(form, grid, tableContainer);
     }
 

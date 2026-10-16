@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -34,7 +34,7 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
-public class GTreeGroupController extends GAbstractTableController {
+public class GPlatformTreeController extends GPlatformTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     private final GTreeGroup treeGroup;
@@ -44,7 +44,7 @@ public class GTreeGroupController extends GAbstractTableController {
     private GExpandTreeButton expandTreeButton;
     private GExpandTreeButton expandTreeCurrentButton;
 
-    public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
+    public GPlatformTreeController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
         super(iFormController, iTreeGroup.toolbar, true);
         treeGroup = iTreeGroup;
 

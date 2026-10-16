@@ -67,7 +67,7 @@ public class GTreeGroup extends GGridProperty {
         }
 
         @Override
-        public void updateLsf(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+        public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setHierarchicalCaption(GTreeGroup.this, PValue.getStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 

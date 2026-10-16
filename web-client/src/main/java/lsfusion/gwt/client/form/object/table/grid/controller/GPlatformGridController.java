@@ -20,7 +20,7 @@ import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class GGridController extends GAbstractTableController {
+public class GPlatformGridController extends GPlatformTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     public GGroupObject groupObject;
@@ -78,7 +78,7 @@ public class GGridController extends GAbstractTableController {
         return groupObject.mapTileProvider;
     }
 
-    public GGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
+    public GPlatformGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences) {
         super(iformController, groupObject.toolbar, isList(groupObject));
         this.groupObject = groupObject;
 
@@ -738,7 +738,7 @@ public class GGridController extends GAbstractTableController {
     public void changeSettings() {
         if(table instanceof GGridTable) {
             GGridTable gridTable = (GGridTable) table;
-            GUserPreferencesDialog dialog = new GUserPreferencesDialog(gridTable, this, formController.panelController, formController.hasCanonicalName()) {
+            GUserPreferencesDialog dialog = new GUserPreferencesDialog(gridTable, this, formController.platformFormPanelController, formController.hasCanonicalName()) {
                 @Override
                 public void preferencesChanged() {
                     updateSettingsButton();

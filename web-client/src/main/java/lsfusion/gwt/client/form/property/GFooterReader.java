@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
 
 public class GFooterReader extends GExtraLabelReader {
     public GFooterReader(){}
@@ -11,7 +11,7 @@ public class GFooterReader extends GExtraLabelReader {
         super(readerID, groupObjectID, "FOOTER");
     }
 
-    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePlatform(GPlatformPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateFooterValues(this, values);
     }
 

@@ -240,7 +240,7 @@ public class ReactContainerView extends ParkedContainerView {
             scheduleReconcile();
         }
     }
-    // ... a renderer per row: the row says which goes in the host, and the grid panel controller of the rows holds
+    // ... a renderer per row: the row says which goes in the host, and the rows panel controller of the rows holds
     // them. A row React unmounts - scrolled out, say - sends its renderer back to waiting, it is NOT dropped
     private final class LsfRowPlacement extends LsfPlacement {
         final String name;
@@ -256,13 +256,13 @@ public class ReactContainerView extends ParkedContainerView {
         @Override
         void mount(Element host) {
             // the property, not the name JSX used: the ledger of who holds which row is the property's own
-            if (formController.getGridPanelController(property).place(rowKey, property, host) != null)
+            if (formController.getRowsPanelController(property).place(rowKey, property, host) != null)
                 PlacedViews.reportDuplicate(name, host); // another <Lsf> already placed this property for this row
         }
 
         @Override
         void unmount(Element host) {
-            formController.getGridPanelController(property).unplace(rowKey, property, host);
+            formController.getRowsPanelController(property).unplace(rowKey, property, host);
         }
     }
     // ... and one that can never work: its mistake is shown in the host, which holds it until the host goes

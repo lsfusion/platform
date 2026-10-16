@@ -6,14 +6,14 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 
 // state view with tippy as a popup
 public abstract class GTippySimpleStateTableView extends GSimpleStateTableView<Element> {
 
     private JavaScriptObject initTippy;
 
-    public GTippySimpleStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
+    public GTippySimpleStateTableView(GFormController form, GPlatformGridController grid, TableContainer tableContainer) {
         super(form, grid, tableContainer);
 
 //        if(grid.recordView != null)

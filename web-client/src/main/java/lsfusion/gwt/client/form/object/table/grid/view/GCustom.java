@@ -9,14 +9,14 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 
 public class GCustom extends GTippySimpleStateTableView {
     private final JavaScriptObject renderFunction;
     private final boolean renderFunctionWithoutArguments; //backward compatibility
 
-    public GCustom(GFormController form, GGridController grid, TableContainer tableContainer, String renderFunction) {
+    public GCustom(GFormController form, GPlatformGridController grid, TableContainer tableContainer, String renderFunction) {
         super(form, grid, tableContainer);
         this.renderFunction = GwtClientUtils.getGlobalField(renderFunction);
         this.renderFunctionWithoutArguments = !GwtClientUtils.isFunctionContainsArguments(this.renderFunction);

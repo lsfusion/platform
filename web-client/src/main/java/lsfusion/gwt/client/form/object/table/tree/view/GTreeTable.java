@@ -23,10 +23,10 @@ import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
-import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
+import lsfusion.gwt.client.form.object.table.tree.controller.GPlatformTreeController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
@@ -53,7 +53,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private TreeTableSelectionHandler treeSelectionHandler;
 
-    private GTreeGroupController treeGroupController;
+    private GPlatformTreeController treeGroupController;
 
     public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
     public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> loadings = new NativeSIDMap<>();
@@ -63,7 +63,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GSize hierarchicalWidth;
 
-    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, TableContainer tableContainer) {
+    public GTreeTable(GFormController iformController, GForm iform, GPlatformTreeController treeGroupController, GTreeGroup treeGroup, TableContainer tableContainer) {
         super(iformController, lastGroupObject(treeGroup), tableContainer, treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
@@ -1067,7 +1067,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GAbstractTableController getGroupController() {
+    public GPlatformTableController getGroupController() {
         return treeGroupController;
     }
 

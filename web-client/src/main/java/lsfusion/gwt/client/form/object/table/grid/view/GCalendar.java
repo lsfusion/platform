@@ -13,7 +13,7 @@ import lsfusion.gwt.client.classes.data.GDateTimeType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -32,7 +32,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     private JavaScriptObject calendar;
     private JsArray<JavaScriptObject> currentList;
 
-    public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, List<GPropertyDraw> calendarDateProps) {
+    public GCalendar(GFormController form, GPlatformGridController grid, TableContainer tableContainer, List<GPropertyDraw> calendarDateProps) {
         super(form, grid, tableContainer);
         this.calendarDateProps = calendarDateProps;
         this.currentDateProp = calendarDateProps.get(0);

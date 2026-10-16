@@ -7,10 +7,10 @@ import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.PValue;
 
 // THE FORM'S CONTROLLER OF A COMPONENT, settled once where the design places it (GFormController.componentControllers):
-// the platform's, which draws it (GLayoutController), or what React has of one it draws or places - a container,
-// a grid, a tree, a toolbar: what each reader of the component is goes to it. A property is no owner here beyond its
-// class, the platform's to apply (GReactFormData.createComponentController): all React has of a property is its
-// property controller's (GPropertyController)
+// the platform's, which draws it (GPlatformComponentController), or what React has of one it draws or places - a
+// container, a grid, a tree, a toolbar: what each reader of the component is goes to it. A property is no owner here
+// beyond its class, the platform's to apply (GReactFormData.createComponentController): all React has of a property is
+// its property controller's (GPropertyController)
 public interface GComponentController {
     // what labels it: a container's caption, its image
     void updateLabel(GComponentLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial);

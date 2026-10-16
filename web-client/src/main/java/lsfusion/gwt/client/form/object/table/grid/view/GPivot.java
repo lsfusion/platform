@@ -29,7 +29,7 @@ import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValueType;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
@@ -72,7 +72,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private GPropertyDraw selectedProperty;
 
-    public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty, TableContainer tableContainer) {
+    public GPivot(GFormController formController, GPlatformGridController gridController, GPropertyDraw selectedProperty, TableContainer tableContainer) {
         super(formController, gridController, tableContainer);
         this.selectedProperty = selectedProperty;
 
@@ -286,12 +286,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage(), clusterize); // we need to updateRendererState after it is painted
     }
 
-    public void initDefaultSettings(GGridController gridController) {
+    public void initDefaultSettings(GPlatformGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         settings = pivotOptions == null || pivotOptions.isShowSettings();
     }
 
-    private void initDefaultConfig(GGridController gridController) {
+    private void initDefaultConfig(GPlatformGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
         String aggregatorName = pivotOptions != null ? getAggregatorName(pivotOptions.getAggregation()) : null;

@@ -35,7 +35,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     // what a renderer key means for this property and where its renderers go: columns of the property's own panel, or
     // rows of a grid a CUSTOM REACT view draws - and it is the panel controller that owns this one which says which,
     // because the placement state (a column panel, a row's host) is its own
-    private final GAbstractPanelController panelController;
+    private final GPlatformPanelController panelController;
 
     private ArrayList<GGroupObjectValue> rendererKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
@@ -48,7 +48,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     // that rule here - the value itself, its loading flag and showIf stay apart above: they are not attributes.
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> attributeValues = new NativeSIDMap<>();
 
-    public GPropertyPanelController(GPropertyDraw property, GFormController form, GAbstractPanelController panelController) {
+    public GPropertyPanelController(GPropertyDraw property, GFormController form, GPlatformPanelController panelController) {
         this.property = property;
         this.form = form;
         this.panelController = panelController;

@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 
 // what labels a property - its caption, image, comment, footer: the property's, as all of it is, so it goes to the
 // property's controller (GPropertyController.updateLabel): React's entry of it where React draws or labels the
-// property, else the platform's, which hands it to the reader's own update of its view (updateLsf)
+// property, else the platform's, which hands it to the reader's own update of its view (updatePlatform)
 public abstract class GExtraLabelReader extends GExtraAttributeReader {
     public GExtraLabelReader() {
     }

@@ -27,9 +27,9 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -78,7 +78,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GGroupObject groupObject;
 
-    private GGridController groupObjectController;
+    private GPlatformGridController groupObjectController;
     
     private GGridUserPreferences generalGridPreferences;
     private GGridUserPreferences userGridPreferences;
@@ -104,7 +104,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return selectedRows.result;
     }
 
-    public GGridTable(GFormController iform, GGridController igroupController, TableContainer tableContainer, GGridUserPreferences[] iuserPreferences) {
+    public GGridTable(GFormController iform, GPlatformGridController igroupController, TableContainer tableContainer, GGridUserPreferences[] iuserPreferences) {
         super(iform, igroupController.groupObject, tableContainer, null);
 
         this.groupObjectController = igroupController;
@@ -707,7 +707,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public GAbstractTableController getGroupController() {
+    public GPlatformTableController getGroupController() {
         return groupObjectController;
     }
 

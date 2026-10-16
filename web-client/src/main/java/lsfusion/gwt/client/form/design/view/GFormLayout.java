@@ -354,7 +354,7 @@ public class GFormLayout extends SizedFlexPanel {
     // it `lsf = TRUE` is what the author means, and then the view names it in an <Lsf>. A component the view cannot
     // name - a user filter's, which has no SID, though the design reaches it through its property, FILTER(name) - is
     // placed with the named container that holds it. A group's filter box moved in is not such a child: the platform
-    // builds no panel for it (GAbstractTableController.initFilters), and its conditions are the view's
+    // builds no panel for it (GPlatformTableController.initFilters), and its conditions are the view's
     private void reportUnplaceable(GComponent key, GAbstractContainerView containerView) {
         if (!(containerView instanceof ReactContainerView) || key.isLsfView() || !unplaceable.add(key))
             return;

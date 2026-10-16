@@ -50,27 +50,27 @@ import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
-import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.panel.controller.GPlatformFormPanelController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
-import lsfusion.gwt.client.form.object.table.controller.GLayoutController;
-import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformComponentController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
-import lsfusion.gwt.client.form.object.panel.controller.GGridPanelController;
+import lsfusion.gwt.client.form.object.panel.controller.GPlatformRowsPanelController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
-import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
+import lsfusion.gwt.client.form.object.table.tree.controller.GPlatformTreeController;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.*;
@@ -146,8 +146,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // the server reported them
     private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilterDTO>> currentFilters = new NativeSIDMap<>();
 
-    private final LinkedHashMap<GGroupObject, GGridController> gridControllers = new LinkedHashMap<>();
-    private final LinkedHashMap<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GGroupObject, GPlatformGridController> gridControllers = new LinkedHashMap<>();
+    private final LinkedHashMap<GTreeGroup, GPlatformTreeController> treeControllers = new LinkedHashMap<>();
     // THE FORM'S CONTROLLER OF EACH GROUP, PROPERTY AND COMPONENT - where all it sends for one goes: a group's rows and
     // current object, a property's values and drop, what every reader brings. Settled once by
     // initializeOwnerControllers: who draws what is design data, so one asked for per delta re-derived what the
@@ -160,10 +160,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private final LinkedHashMap<GPropertyDraw, GPropertyController> propertyControllers = new LinkedHashMap<>();
     private final LinkedHashMap<GComponent, GComponentController> componentControllers = new LinkedHashMap<>();
     // groups with LSF properties
-    private final LinkedHashMap<GGroupObject, GGridPanelController> gridPanelControllers = new LinkedHashMap<>();
-    public GPanelController panelController;
+    private final LinkedHashMap<GGroupObject, GPlatformRowsPanelController> platformRowsPanelControllers = new LinkedHashMap<>();
+    public GPlatformFormPanelController platformFormPanelController;
     // the platform's controller of the components it draws, one for the form: a component reader names its component
-    private final GLayoutController layoutController = new GLayoutController(this);
+    private final GPlatformComponentController platformComponentController = new GPlatformComponentController(this);
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
 
@@ -814,9 +814,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 initializeGroupController(group);
         }
 
-        // kept even for React: getLsfPropertyController/update rely on it; it stays empty when only react-owned
+        // kept even for React: getPlatformPropertyController/update rely on it; it stays empty when only react-owned
         // property readers are skipped, so no panel views are built
-        panelController = new GPanelController(this);
+        platformFormPanelController = new GPlatformFormPanelController(this);
 
         // ... and now that every controller exists, where each thing's changes go is settled
         initializeOwnerControllers();
@@ -841,15 +841,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
         // a group can have both: React draws its rows from the projection, and the platform draws its LSF properties
         // into each of those rows - the only rows such a property is drawn in (FormView.checkLsfListView), so its
-        // controller is made over them, before the properties, whose controller it is (getLsfPropertyController)
+        // controller is made over them, before the properties, whose controller it is (getPlatformPropertyController)
         for (GGroupObject group : form.groupObjects)
             for (GPropertyDraw draw : form.propertyDraws)
                 if (draw.groupObject == group && draw.isLsfViewPerRow()) {
-                    gridPanelControllers.put(group, new GGridPanelController(this, group, reactData.getRows(group)));
+                    platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
                     break;
                 }
         for (GPropertyDraw property : form.propertyDraws) {
-            GPropertyController controller = reactData.createPropertyController(property, getLsfPropertyController(property));
+            GPropertyController controller = reactData.createPropertyController(property, getPlatformPropertyController(property));
             if (controller != null) // none: React keeps nothing of it (getPropertyController)
                 propertyControllers.put(property, controller);
         }
@@ -859,7 +859,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // ... every component, down the design - a grid's record is inside its grid, and so is what it holds -, a property
     // too, as a component (createComponentController)
     private void initializeComponentControllers(GComponent component) {
-        GComponentController controller = reactData.createComponentController(component, layoutController);
+        GComponentController controller = reactData.createComponentController(component, platformComponentController);
         if (controller != null) // none: React keeps nothing of it (getComponentController)
             componentControllers.put(component, controller);
         for (GComponent child : component.getChildren())
@@ -895,12 +895,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     private void initializeGroupController(GGroupObject group) {
-        GGridController controller = new GGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
+        GPlatformGridController controller = new GPlatformGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
         gridControllers.put(group, controller);
     }
 
     private void initializeTreeController(GTreeGroup treeGroup) {
-        GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form);
+        GPlatformTreeController treeController = new GPlatformTreeController(treeGroup, this, form);
         treeControllers.put(treeGroup, treeController);
     }
 
@@ -1183,16 +1183,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         });
     }
     public void update(GFormChanges fc, int requestIndex) {
-        for (GGridController controller : gridControllers.values())
+        for (GPlatformGridController controller : gridControllers.values())
             controller.update(requestIndex, fc);
 
-        for (GTreeGroupController treeController : treeControllers.values())
+        for (GPlatformTreeController treeController : treeControllers.values())
             treeController.update();
 
-        for (GGridPanelController gridPanelController : gridPanelControllers.values())
-            gridPanelController.update();
+        for (GPlatformRowsPanelController rowsPanelController : platformRowsPanelControllers.values())
+            rowsPanelController.update();
 
-        panelController.update();
+        platformFormPanelController.update();
     }
 
     // the tabs the server has made active are the ones it has, before the layout selects a tab where none is selected
@@ -1410,8 +1410,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         });
     }
 
-    public GAbstractTableController getTableController(GGroupObject group) {
-        GGridController groupObjectController = gridControllers.get(group);
+    public GPlatformTableController getTableController(GGroupObject group) {
+        GPlatformGridController groupObjectController = gridControllers.get(group);
         if (groupObjectController != null) {
             return groupObjectController;
         }
@@ -1419,22 +1419,22 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return treeControllers.get(group.parent);
     }
 
-    public GLsfPropertyController getLsfPropertyController(GPropertyDraw property) {
+    public GPlatformPropertyController getPlatformPropertyController(GPropertyDraw property) {
         // an LSF property is a grid property, so without this it would be routed to its group's controller - which
         // for a group React draws is a set of deliberate no-ops, and its values would be dropped on the way
         if (property.isLsfViewPerRow()) {
             // initializeControllers makes one for every group holding such a property, by this very predicate, so a
             // miss is a broken invariant rather than a case to fall through - falling through would route the property
             // to its group's controller and drop its values there in silence
-            GGridPanelController gridPanelController = gridPanelControllers.get(property.groupObject);
-            assert gridPanelController != null;
-            return gridPanelController;
+            GPlatformRowsPanelController rowsPanelController = platformRowsPanelControllers.get(property.groupObject);
+            assert rowsPanelController != null;
+            return rowsPanelController;
         }
 
         if(property.isList) {
             return getTableController(property.groupObject);
         } else
-            return panelController;
+            return platformFormPanelController;
     }
 
     // the form's controller of an owner: where all it sends for the owner goes (initializeOwnerControllers). One React
@@ -1457,8 +1457,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     // the controller drawing this LSF property, for whoever is placing one of its per-row renderers
-    public GGridPanelController getGridPanelController(GPropertyDraw property) {
-        return gridPanelControllers.get(property.groupObject);
+    public GPlatformRowsPanelController getRowsPanelController(GPropertyDraw property) {
+        return platformRowsPanelControllers.get(property.groupObject);
     }
 
     public FormDockable getFormDockableContainer(boolean isDockedModal) {
@@ -2296,8 +2296,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     private void updateRowRenderers() {
-        for (GGridPanelController gridPanelController : gridPanelControllers.values())
-            gridPanelController.updateRowRenderers();
+        for (GPlatformRowsPanelController rowsPanelController : platformRowsPanelControllers.values())
+            rowsPanelController.updateRowRenderers();
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -2356,7 +2356,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         asyncDispatch(new CountRecords(groupObject.ID), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                GGridController controller = gridControllers.get(groupObject);
+                GPlatformGridController controller = gridControllers.get(groupObject);
                 if (controller != null)
                     controller.showRecordQuantity((Long) result.value);
             }
@@ -2368,7 +2368,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                GGridController controller = gridControllers.get(groupObject);
+                GPlatformGridController controller = gridControllers.get(groupObject);
                 if (controller != null)
                     controller.showSum(result.value, propertyDraw);
             }
@@ -2397,7 +2397,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public GFormUserPreferences getUserPreferences() {
         List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
-        for (GGridController controller : gridControllers.values()) {
+        for (GPlatformGridController controller : gridControllers.values()) {
             if (controller.isList()) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
                 groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
@@ -2548,15 +2548,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // every panel renderer registers in MainFrame's static color-theme listener list, and nothing on a closing
         // form unregisters it - each one would stay reachable for the life of the page: the form panel's, and the
         // per-row ones multiplied by the size of the key window
-        panelController.destroy();
-        for (GGridPanelController gridPanelController : gridPanelControllers.values())
-            gridPanelController.destroy();
+        platformFormPanelController.destroy();
+        for (GPlatformRowsPanelController rowsPanelController : platformRowsPanelControllers.values())
+            rowsPanelController.destroy();
 
         // the same for the table views (grid / pivot / calendar / custom / map and the tree table) - each of them
         // registers in that list too, and each of them holds this form controller
-        for (GGridController controller : gridControllers.values())
+        for (GPlatformGridController controller : gridControllers.values())
             controller.destroy();
-        for (GTreeGroupController treeController : treeControllers.values())
+        for (GPlatformTreeController treeController : treeControllers.values())
             treeController.destroy();
 
         FormDispatchAsync closeDispatcher = dispatcher;

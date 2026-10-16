@@ -9,11 +9,11 @@ import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
 
-public abstract class GLsfPropertyController implements GPropertyController {
+public abstract class GPlatformPropertyController implements GPropertyController {
 
     protected final GFormController formController;
 
-    public GLsfPropertyController(GFormController formController) {
+    public GPlatformPropertyController(GFormController formController) {
         this.formController = formController;
     }
 
@@ -64,10 +64,10 @@ public abstract class GLsfPropertyController implements GPropertyController {
         updateProperty(property, GPropertyDraw.getColumnKeys(property, formController.getCurrentGridObjects()), partial, values);
     }
     public void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-        reader.updateLsf(this, values);
+        reader.updatePlatform(this, values);
     }
     public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-        reader.updateLsf(this, values);
+        reader.updatePlatform(this, values);
     }
     public void dropProperty(GPropertyDraw property) {
         if (isPropertyShown(property))

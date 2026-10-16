@@ -4,7 +4,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
-import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.*;
 
@@ -20,7 +20,7 @@ public class GExtraPropReader extends GExtraPropertyReader {
         this.readerType = readerType;
     }
 
-    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePlatform(GPlatformPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         if(readerType == CELL_FONT) {
             controller.updateCellFontValues(this, values);
         } else if (readerType == COMMENTELEMENTCLASS) {

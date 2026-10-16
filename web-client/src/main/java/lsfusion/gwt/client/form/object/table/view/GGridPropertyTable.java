@@ -22,7 +22,7 @@ import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -181,7 +181,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 removeFilters);
         addFilterBinding(nativeEvent -> {
                     if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
-                        GAbstractTableController goController = getGroupController();
+                        GPlatformTableController goController = getGroupController();
                         return goController.filter != null && goController.filter.hasConditionsToReset();
                     }
                     return false;
@@ -450,7 +450,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract GGridProperty getGrid();
 
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
-    public abstract GAbstractTableController getGroupController();
+    public abstract GPlatformTableController getGroupController();
 
     public void runGroupReport() {
         form.runGroupReport(groupObject.ID);

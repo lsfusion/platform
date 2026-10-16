@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public abstract class GAbstractTableController extends GLsfPropertyController implements GTableController, GGroupController {
+public abstract class GPlatformTableController extends GPlatformPropertyController implements GTableController, GGroupController {
     protected final GToolbarView toolbarView;
     public GFilterController filter;
 
@@ -68,7 +68,7 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
         gridView.updateElementClass(getGridComponent());
     }
 
-    public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
+    public GPlatformTableController(GFormController formController, GToolbar toolbar, boolean isList) {
         super(formController);
 
         if (toolbar == null || !toolbar.visible || !isList) {
@@ -248,6 +248,6 @@ public abstract class GAbstractTableController extends GLsfPropertyController im
     public void changeExpandedAll(boolean open, long requestIndex) {
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-        reader.updateLsf(this, values, partial);
+        reader.updatePlatform(this, values, partial);
     }
 }

@@ -1052,8 +1052,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     + " there is none above it, or an lsf container on the way, which the platform draws whole");
 
         // a PANEL property needs no permission from its GROUP: it is a base component of its own, drawn by the form's
-        // panel controller (GFormController.getLsfPropertyController routes every non-list property there), not by its
-        // group's. Whether React draws that group's ROWS is a question about another base component, and asking it
+        // panel controller (GFormController.getPlatformPropertyController routes every non-list property there), not by
+        // its group's. Whether React draws that group's ROWS is a question about another base component, and asking it
         // here decided one base component by another's answer - it refused the arrangement most plainly right:
         // React draws the rows, the platform draws one panel property of the same group, and React places it.
     }

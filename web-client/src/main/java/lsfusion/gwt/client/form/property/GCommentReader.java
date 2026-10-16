@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
 
 // what comments a property: a label of it, as its caption is
 public class GCommentReader extends GExtraLabelReader {
@@ -15,7 +15,7 @@ public class GCommentReader extends GExtraLabelReader {
         super(readerID, groupObjectID, "COMMENT");
     }
 
-    public void updateLsf(GLsfPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePlatform(GPlatformPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updatePropertyComments(this, values);
     }
 

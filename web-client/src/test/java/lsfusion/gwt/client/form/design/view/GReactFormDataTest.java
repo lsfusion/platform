@@ -25,7 +25,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
@@ -88,9 +88,9 @@ public class GReactFormDataTest extends GWTTestCase {
         final int[] publications = new int[3];
         Runnable onPublish;
         // the platform's controller of a group and of a property, as far as the form hands it on
-        final RecordingTableController lsf = new RecordingTableController();
-        // ... and of the components, recording into lsf's log
-        final RecordingLayoutController layout = new RecordingLayoutController(lsf);
+        final RecordingTableController platform = new RecordingTableController();
+        // ... and of the components, recording into the platform's log
+        final RecordingComponentController platformComponents = new RecordingComponentController(platform);
         int placements;
         GGroupObject outer; // a group GWT draws the rows of, with one panel property in b - only in Fixture.withOuter()
         GPropertyDraw outerPanel, outerName; // ... and a list property, which GWT draws with the rows
@@ -199,7 +199,7 @@ public class GReactFormDataTest extends GWTTestCase {
             sa = projection.addContainer(a, data -> publish(0, data));
             sb = projection.addContainer(b, data -> publish(1, data));
             sc = projection.addContainer(c, data -> publish(2, data));
-            controllers = new Controllers(projection, form, lsf, layout);
+            controllers = new Controllers(projection, form, platform, platformComponents);
             GFormChanges initial = new GFormChanges();
             initial.objects.put(group, one);
             initial.gridObjects.put(group, rows(one, two));
@@ -375,9 +375,9 @@ public class GReactFormDataTest extends GWTTestCase {
         final GReactFormData.ContainerState sa; // the container the tree is drawn in: its controller
         final Controllers controllers;
         // the platform's controller of a group and of a property, as far as the form hands it on
-        final RecordingTableController lsf = new RecordingTableController();
-        // ... and of the components, recording into lsf's log
-        final RecordingLayoutController layout = new RecordingLayoutController(lsf);
+        final RecordingTableController platform = new RecordingTableController();
+        // ... and of the components, recording into the platform's log
+        final RecordingComponentController platformComponents = new RecordingComponentController(platform);
         final TreeVerbs verbs = new TreeVerbs();
         JavaScriptObject data;
         int publications;
@@ -403,7 +403,7 @@ public class GReactFormDataTest extends GWTTestCase {
             projection = new GReactFormData(form, GComponent::getReactPlace, verbs);
             verbs.projection = projection;
             sa = projection.addContainer(a, d -> { data = d; publications++; });
-            controllers = new Controllers(projection, form, lsf, layout);
+            controllers = new Controllers(projection, form, platform, platformComponents);
             verbs.controllers = controllers;
         }
         void group(GGroupObject group, int id, String sid) {
@@ -454,7 +454,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // the platform's controller of a group and of a property, as far as the form hands it on - a table controller,
     // which a property's view controller is too, with no form: what reaches it is recorded, and the rest of its
     // surface, which the projection never asks of it, does nothing
-    private static final class RecordingTableController extends GAbstractTableController {
+    private static final class RecordingTableController extends GPlatformTableController {
         final ArrayList<GPropertyReader> updated = new ArrayList<>();
         final ArrayList<GPropertyDraw> dropped = new ArrayList<>(), focused = new ArrayList<>(), loading = new ArrayList<>();
 
@@ -525,11 +525,11 @@ public class GReactFormDataTest extends GWTTestCase {
         public GContainer getFiltersContainer() { return filtersContainer; }
         public GFilterControls getFilterControls() { return null; }
     }
-    // ... and the platform's controller of the components, the layout: what reaches it is recorded in the same log
-    private static final class RecordingLayoutController implements GComponentController {
+    // ... and the platform's controller of the components: what reaches it is recorded in the same log
+    private static final class RecordingComponentController implements GComponentController {
         final RecordingTableController reached;
 
-        RecordingLayoutController(RecordingTableController reached) {
+        RecordingComponentController(RecordingTableController reached) {
             this.reached = reached;
         }
         public void updateLabel(GComponentLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) { reached.updated.add(reader); }
@@ -546,27 +546,27 @@ public class GReactFormDataTest extends GWTTestCase {
         final LinkedHashMap<GPropertyDraw, GPropertyController> properties = new LinkedHashMap<>();
         final LinkedHashMap<GComponent, GComponentController> components = new LinkedHashMap<>();
 
-        Controllers(GReactFormData projection, GForm form, RecordingTableController lsf, RecordingLayoutController layout) {
+        Controllers(GReactFormData projection, GForm form, RecordingTableController platform, RecordingComponentController platformComponents) {
             this.form = form;
             for (GGroupObject group : form.groupObjects) {
-                groups.put(group, projection.createGroupController(group, lsf));
+                groups.put(group, projection.createGroupController(group, platform));
                 orders.put(group, projection.createOrdersController(group, groups.get(group))); // as the form does
                 filters.put(group, projection.createFiltersController(group, groups.get(group)));
             }
             for (GPropertyDraw property : form.propertyDraws) {
-                GPropertyController controller = projection.createPropertyController(property, lsf);
+                GPropertyController controller = projection.createPropertyController(property, platform);
                 if (controller != null) // none, as the form keeps it: React keeps nothing of it
                     properties.put(property, controller);
             }
-            addComponent(projection, form.mainContainer, layout);
+            addComponent(projection, form.mainContainer, platformComponents);
             projection.initialize();
         }
-        void addComponent(GReactFormData projection, GComponent component, RecordingLayoutController layout) {
-            GComponentController controller = projection.createComponentController(component, layout);
+        void addComponent(GReactFormData projection, GComponent component, RecordingComponentController platformComponents) {
+            GComponentController controller = projection.createComponentController(component, platformComponents);
             if (controller != null)
                 components.put(component, controller);
             for (GComponent child : component.getChildren())
-                addComponent(projection, child, layout);
+                addComponent(projection, child, platformComponents);
         }
         void update(GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
             if (reader instanceof GPropertyDraw)
@@ -585,16 +585,16 @@ public class GReactFormDataTest extends GWTTestCase {
         }
     }
     // whether what a delta brings for a reader reaches the platform - the form hands it what React takes nothing of
-    private static boolean reachesLsf(RecordingTableController lsf, Controllers controllers, GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        lsf.updated.clear();
+    private static boolean reachesPlatform(RecordingTableController platform, Controllers controllers, GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        platform.updated.clear();
         controllers.update(reader, values, false);
-        return lsf.updated.contains(reader);
+        return platform.updated.contains(reader);
     }
     // ... and whether a property's drop does
-    private static boolean dropReachesLsf(RecordingTableController lsf, Controllers controllers, GPropertyDraw property) {
-        lsf.dropped.clear();
+    private static boolean dropReachesPlatform(RecordingTableController platform, Controllers controllers, GPropertyDraw property) {
+        platform.dropped.clear();
         controllers.drop(property);
-        return lsf.dropped.contains(property);
+        return platform.dropped.contains(property);
     }
     private static void put(GFormChanges changes, GPropertyReader reader, GGroupObjectValue key, Object value) {
         NativeHashMap<GGroupObjectValue, PValue> values = changes.properties.get(reader);
@@ -686,8 +686,8 @@ public class GReactFormDataTest extends GWTTestCase {
     // panel), and a panel property of it is on a plain node, with no rows and no change(row)
     public void testAGroupInPanelViewHasNoRows() {
         Fixture f = new Fixture(fixture -> fixture.group.viewType = GClassViewType.PANEL);
-        assertSame(f.lsf, f.controller(f.group));
-        assertSame(f.lsf, f.ordersController());
+        assertSame(f.platform, f.controller(f.group));
+        assertSame(f.platform, f.ordersController());
         assertNull(field(f.data(), "items")); // a, where its grid is, carries none of its panel properties: no node
         JavaScriptObject items = field(f.snapshots[1], "items"); // b carries one of them
         assertNotNull(field(items, "panel"));
@@ -1001,7 +1001,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(hasMember(f.sc, "items", "note"));
         NativeHashMap<GGroupObjectValue, PValue> caption = new NativeHashMap<>();
         caption.put(GGroupObjectValue.EMPTY, PValue.getPValue("Remark"));
-        assertFalse(reachesLsf(f.lsf, f.controllers, note.captionReader, caption)); // React's
+        assertFalse(reachesPlatform(f.platform, f.controllers, note.captionReader, caption)); // React's
         f.projection.flush();
         assertEquals("Remark", text(f.sc.entryOf(f.snapshots[2], note), "caption"));
         GFormChanges show = new GFormChanges();
@@ -1018,7 +1018,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("go", join(field(field(g.snapshots[2], "items"), "properties")));
         assertTrue(own(g.sc.controller, "items")); // the group's member, as data has its node ...
         assertFalse(hasMember(g.sc, "items", "go")); // ... with nothing on it: the platform's button runs the action
-        assertTrue(reachesLsf(g.lsf, g.controllers, action[0].captionReader, caption)); // the platform's
+        assertTrue(reachesPlatform(g.platform, g.controllers, action[0].captionReader, caption)); // the platform's
         g.projection.flush();
         assertFalse(own(g.sc.entryOf(g.snapshots[2], action[0]), "caption"));
         assertTrue(flag(g.sc.entryOf(g.snapshots[2], action[0]), "hidden"));
@@ -1075,14 +1075,14 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(f.controller(f.unnamed));
         // an lsf property's value is the platform's, and so is where
         f.controller(f.nativeProperty).focusProperty(f.nativeProperty);
-        assertTrue(f.lsf.focused.contains(f.nativeProperty));  // it is edited: its controller is the platform's own
-        assertSame(f.lsf, f.controller(f.plain)); // ... and one React has nothing of is the platform's alone
+        assertTrue(f.platform.focused.contains(f.nativeProperty));  // it is edited: its controller is the platform's own
+        assertSame(f.platform, f.controller(f.plain)); // ... and one React has nothing of is the platform's alone
         // as a component, a property is the platform's whatever draws it - an lsf one, React labelling it, and one React
         // draws the content of, too (createComponentController)
-        assertSame(f.layout, f.controllers.components.get(f.plain));
-        assertSame(f.layout, f.controllers.components.get(f.nativeProperty));
-        assertSame(f.layout, f.controllers.components.get(f.price));
-        assertSame(f.layout, f.controllers.components.get(f.panel));
+        assertSame(f.platformComponents, f.controllers.components.get(f.plain));
+        assertSame(f.platformComponents, f.controllers.components.get(f.nativeProperty));
+        assertSame(f.platformComponents, f.controllers.components.get(f.price));
+        assertSame(f.platformComponents, f.controllers.components.get(f.panel));
     }
 
     // what is sent for a property React draws AS A COMPONENT - its class, where the design gives it a dynamic one; a
@@ -1093,8 +1093,8 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject before = f.data();
         NativeHashMap<GGroupObjectValue, PValue> highlighted = new NativeHashMap<>();
         highlighted.put(GGroupObjectValue.EMPTY, PValue.getPValue("highlighted"));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.price.elementClassReader, highlighted));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.panel.elementClassReader, highlighted));
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.price.elementClassReader, highlighted));
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.panel.elementClassReader, highlighted));
         f.projection.flush();
         assertSame(before, f.data());
     }
@@ -1127,8 +1127,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("go", join(field(field(f.snapshots[2], "items"), "properties"))); // c has the group's node for it
         NativeHashMap<GGroupObjectValue, PValue> caption = new NativeHashMap<>();
         caption.put(GGroupObjectValue.EMPTY, PValue.getPValue("Go"));
-        assertTrue(reachesLsf(f.lsf, f.controllers, go.captionReader, caption)); // the face of its button
-        assertTrue(reachesLsf(f.lsf, f.controllers, approve.captionReader, caption)); // ... of each of its buttons
+        assertTrue(reachesPlatform(f.platform, f.controllers, go.captionReader, caption)); // the face of its button
+        assertTrue(reachesPlatform(f.platform, f.controllers, approve.captionReader, caption)); // ... of each of its buttons
         f.projection.flush();
         JavaScriptObject goEntry = f.sc.entryOf(f.snapshots[2], go), approveEntry = field(f.node(), "approve");
         assertFalse(own(goEntry, "caption"));
@@ -1301,17 +1301,17 @@ public class GReactFormDataTest extends GWTTestCase {
         GContainer box = container(63);
         box.react = false; box.custom = null; box.caption = "In record";
         box.container = details; details.children.add(box);
-        RecordingTableController lsf = new RecordingTableController();
+        RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addContainer(f.a, data -> { });
         projection.addContainer(f.b, data -> { });
         projection.addContainer(f.c, data -> { });
         projection.addContainer(details, data -> published[0] = data); // GFormLayout builds the record's containers too
-        Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
+        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue(5));
-        assertFalse(reachesLsf(lsf, controllers, note, values));
+        assertFalse(reachesPlatform(platform, controllers, note, values));
         projection.flush();
         assertEquals(5.0, value(field(published[0], "outer"), "recordNote"), 0.0);
         assertEquals("In record", text(field(published[0], "c63"), "caption"));
@@ -1326,13 +1326,13 @@ public class GReactFormDataTest extends GWTTestCase {
         editor.lsf = true;
         editor.caption = "Editor";
         editor.captionReader = new GCaptionReader(27, 10); // every property has one: the static caption is its fallback
-        RecordingTableController lsf = new RecordingTableController();
+        RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         GReactFormData.ContainerState sa = projection.addContainer(f.a, data -> published[0] = data);
         projection.addContainer(f.b, data -> { });
         projection.addContainer(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
+        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         controllers.groups.get(f.group).updateKeys(f.group, rows(f.one), null, 0);
         projection.flush();
         // hidden until the platform shows it:
@@ -1340,7 +1340,7 @@ public class GReactFormDataTest extends GWTTestCase {
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(f.one, PValue.getPValue(5));
         // its whole delivery, handed on to the platform's editors, which draw the value, theirs alone
-        assertTrue(reachesLsf(lsf, controllers, editor, values));
+        assertTrue(reachesPlatform(platform, controllers, editor, values));
         projection.flush();
         JavaScriptObject node = field(published[0], "items");
         JavaScriptObject column = field(node, "editor");
@@ -1408,10 +1408,10 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue(17));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.nativeProperty, values));
-        assertTrue(reachesLsf(f.lsf, f.controllers, new GBackgroundReader(24, -1), values));
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.nativeProperty, values));
+        assertTrue(reachesPlatform(f.platform, f.controllers, new GBackgroundReader(24, -1), values));
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue("Caption"));
-        assertFalse(reachesLsf(f.lsf, f.controllers, f.nativeProperty.captionReader, values));
+        assertFalse(reachesPlatform(f.platform, f.controllers, f.nativeProperty.captionReader, values));
         f.projection.flush();
         assertEquals("Caption", text(field(f.snapshots[1], "native"), "caption"));
         assertFalse(hasValue(field(f.snapshots[1], "native"))); // its value is the platform's: its descriptor has none
@@ -1423,9 +1423,9 @@ public class GReactFormDataTest extends GWTTestCase {
     // hides with the drop, which comes through its entry on its way to the platform
     public void testADropGoesWhereTheValuesGo() {
         Fixture f = new Fixture();
-        assertFalse(dropReachesLsf(f.lsf, f.controllers, f.panel));
-        assertTrue(dropReachesLsf(f.lsf, f.controllers, f.nativeProperty));
-        assertTrue(dropReachesLsf(f.lsf, f.controllers, f.plain));
+        assertFalse(dropReachesPlatform(f.platform, f.controllers, f.panel));
+        assertTrue(dropReachesPlatform(f.platform, f.controllers, f.nativeProperty));
+        assertTrue(dropReachesPlatform(f.platform, f.controllers, f.plain));
         f.projection.flush();
         assertTrue(flag(field(field(f.snapshots[1], "items"), "panel"), "hidden"));
         assertTrue(flag(field(f.snapshots[1], "native"), "hidden"));
@@ -1438,10 +1438,10 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject before = f.data();
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, null);
-        assertFalse(reachesLsf(f.lsf, f.controllers, f.box.elementClassReader, values));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.a.showIfReader, values));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.a.captionReader, values));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.form.mainContainer.showIfReader, values));
+        assertFalse(reachesPlatform(f.platform, f.controllers, f.box.elementClassReader, values));
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.a.showIfReader, values));
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.a.captionReader, values));
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.form.mainContainer.showIfReader, values));
         f.projection.flush();
         assertSame(before, f.data());
         assertEquals(1, f.publications[0]);
@@ -1472,7 +1472,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(answer);
         assertFalse(own(field(f.row("1"), "price"), "loading"));
         assertTrue(flag(field(f.row("2"), "price"), "loading"));
-        assertFalse(reachesLsf(f.lsf, f.controllers, f.price.loadingReader, answered)); // React's alone
+        assertFalse(reachesPlatform(f.platform, f.controllers, f.price.loadingReader, answered)); // React's alone
         // ... and one with a value to show says it with the value
         f.setValue(f.quantity, f.one, 7);
         f.projection.flush();
@@ -1494,8 +1494,8 @@ public class GReactFormDataTest extends GWTTestCase {
         // handed the answer
         f.controller(f.nativeProperty).setLoadingValueAt(f.nativeProperty, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
         f.controller(f.plain).setLoadingValueAt(f.plain, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
-        assertEquals(Arrays.asList(f.nativeProperty, f.plain), f.lsf.loading);
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.nativeProperty.loadingReader, answered));
+        assertEquals(Arrays.asList(f.nativeProperty, f.plain), f.platform.loading);
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.nativeProperty.loadingReader, answered));
     }
 
     public void testDroppedPropertyComesBackWithItsValues() {
@@ -1552,21 +1552,21 @@ public class GReactFormDataTest extends GWTTestCase {
         put(delta, f.outerPanel, GGroupObjectValue.EMPTY, 5);
         f.apply(delta);
         // GWT draws these rows and holds their selection: its rows, its add and remove, go to the platform's grid
-        assertSame(f.lsf, f.controller(f.outer));
+        assertSame(f.platform, f.controller(f.outer));
         assertEquals(5.0, value(field(f.snapshots[1], "outer"), "outerPanel"), 0.0); // ... and the panel in b is shown
         // no row is chosen there: the group's current object is the platform grid's
         assertNull(field(field(f.snapshots[1], "outer"), "list"));
         NativeHashMap<GGroupObjectValue, PValue> names = new NativeHashMap<>();
         names.put(seven, PValue.getPValue(1));
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.outerName, names)); // a column of those rows is GWT's too
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.outerName, names)); // a column of those rows is GWT's too
     }
 
-    // the rows a group's per-row renderers follow (GGridPanelController): handed out once, while the form is built,
-    // they are the node's own list - the server's rows and a view's own add or remove alike -, and reading them asks no
-    // placement
+    // the rows a group's per-row renderers follow (GPlatformRowsPanelController): handed out once, while the form is
+    // built, they are the node's own list - the server's rows and a view's own add or remove alike -, and reading them
+    // asks no placement
     public void testTheRowsRenderersFollowAreTheNodesOwn() {
         Fixture f = new Fixture(); // its form, drawn again by a projection of its own, no row delivered yet
-        RecordingTableController lsf = new RecordingTableController();
+        RecordingTableController platform = new RecordingTableController();
         int[] placements = new int[1];
         GReactFormData projection = new GReactFormData(f.form, component -> {
             placements[0]++;
@@ -1575,7 +1575,7 @@ public class GReactFormDataTest extends GWTTestCase {
         projection.addContainer(f.a, data -> { });
         projection.addContainer(f.b, data -> { });
         projection.addContainer(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
+        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         GReactFormData.Rows rows = projection.getRows(f.group); // bound once, while the form is built
         int placed = placements[0];
         ArrayList<GGroupObjectValue> none = rows.getRows();
@@ -1604,8 +1604,8 @@ public class GReactFormDataTest extends GWTTestCase {
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue(1));
         int placed = f.placements;
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.plain, values)); // React has nothing of it
-        assertTrue(reachesLsf(f.lsf, f.controllers, f.plain.captionReader, values)); // ... nor of any reader of it
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.plain, values)); // React has nothing of it
+        assertTrue(reachesPlatform(f.platform, f.controllers, f.plain.captionReader, values)); // ... nor of any reader of it
         assertEquals(placed, f.placements);
     }
 
@@ -1629,27 +1629,27 @@ public class GReactFormDataTest extends GWTTestCase {
             lsf.container = f.b; f.b.children.add(lsf);
         }
         unnamed.sID = null;
-        RecordingTableController lsf = new RecordingTableController();
+        RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addContainer(f.a, data -> { });
         projection.addContainer(f.b, data -> published[0] = data);
         projection.addContainer(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
+        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue("Go"));
-        assertTrue(reachesLsf(lsf, controllers, column, values)); // an lsf column's values go through its entry...
-        assertTrue(dropReachesLsf(lsf, controllers, column));     // ... and so does its drop, to the platform
+        assertTrue(reachesPlatform(platform, controllers, column, values)); // an lsf column's values go through its entry...
+        assertTrue(dropReachesPlatform(platform, controllers, column));     // ... and so does its drop, to the platform
         // the platform's alone: its button's face
-        assertTrue(reachesLsf(lsf, controllers, button.captionReader, values));
-        assertFalse(reachesLsf(lsf, controllers, placed.captionReader, values));
-        assertTrue(reachesLsf(lsf, controllers, placed.captionClassReader, values));
-        assertTrue(reachesLsf(lsf, controllers, placed.valueClassReader, values));
-        assertTrue(reachesLsf(lsf, controllers, unnamed.captionClassReader, values));
-        assertTrue(reachesLsf(lsf, controllers, unnamed.captionReader, values));
+        assertTrue(reachesPlatform(platform, controllers, button.captionReader, values));
+        assertFalse(reachesPlatform(platform, controllers, placed.captionReader, values));
+        assertTrue(reachesPlatform(platform, controllers, placed.captionClassReader, values));
+        assertTrue(reachesPlatform(platform, controllers, placed.valueClassReader, values));
+        assertTrue(reachesPlatform(platform, controllers, unnamed.captionClassReader, values));
+        assertTrue(reachesPlatform(platform, controllers, unnamed.captionReader, values));
         NativeHashMap<GGroupObjectValue, PValue> hidden = new NativeHashMap<>();
         hidden.put(GGroupObjectValue.EMPTY, PValue.getPValue(true));
-        assertFalse(reachesLsf(lsf, controllers, placed.showIfReader, hidden)); // React's alone
+        assertFalse(reachesPlatform(platform, controllers, placed.showIfReader, hidden)); // React's alone
         projection.flush();
         assertFalse(own(field(published[0], "button"), "caption")); // an lsf ACTION's entry says only whether the form
         assertTrue(flag(field(published[0], "button"), "hidden"));   // shows it
@@ -1663,21 +1663,21 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testAProjectionWithNoReactContainerTakesNothing() {
         Fixture f = new Fixture(); // its form, and this time no react container's state
         int[] placements = new int[1];
-        RecordingTableController lsf = new RecordingTableController();
+        RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, component -> {
             placements[0]++;
             return component.getReactPlace();
         }, null);
-        Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
+        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(f.one, PValue.getPValue(5));
-        assertTrue(reachesLsf(lsf, controllers, f.price, values));
-        assertTrue(reachesLsf(lsf, controllers, f.box.elementClassReader, values));
-        assertTrue(reachesLsf(lsf, controllers, f.group.rowSelectReader, values));
-        assertSame(lsf, controllers.groups.get(f.group)); // its rows go to the platform's grid
-        assertTrue(dropReachesLsf(lsf, controllers, f.price));
+        assertTrue(reachesPlatform(platform, controllers, f.price, values));
+        assertTrue(reachesPlatform(platform, controllers, f.box.elementClassReader, values));
+        assertTrue(reachesPlatform(platform, controllers, f.group.rowSelectReader, values));
+        assertSame(platform, controllers.groups.get(f.group)); // its rows go to the platform's grid
+        assertTrue(dropReachesPlatform(platform, controllers, f.price));
         projection.flush();
-        assertSame(lsf, controllers.properties.get(f.price)); // its values go to the platform too
+        assertSame(platform, controllers.properties.get(f.price)); // its values go to the platform too
         assertEquals(0, placements[0]); // nothing is walked: there is nowhere to be placed
     }
 
@@ -1716,13 +1716,13 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testAGroupNamedLikeAnObjectPrototypeMemberHasItsOwnNode() {
         Fixture f = new Fixture();
         f.group.sID = "constructor";
-        RecordingTableController lsf = new RecordingTableController();
+        RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addContainer(f.a, data -> published[0] = data);
         projection.addContainer(f.b, data -> { });
         projection.addContainer(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, lsf, new RecordingLayoutController(lsf));
+        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         controllers.groups.get(f.group).updateKeys(f.group, rows(f.one, f.two), null, 0);
         projection.flush();
         JavaScriptObject node = field(published[0], "constructor");

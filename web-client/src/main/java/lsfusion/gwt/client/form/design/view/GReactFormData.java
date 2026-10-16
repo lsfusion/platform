@@ -23,12 +23,12 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
-import lsfusion.gwt.client.form.object.table.controller.GLsfPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -142,9 +142,9 @@ public class GReactFormData {
     // parts of each - its rows', a list property's column going with them - then the properties, in the form's order,
     // the order of the names a node carries, then the components
     // ... of a group: its rows' part, on its node where React draws them; else the platform's
-    public GGroupController createGroupController(GGroupObject group, GAbstractTableController lsf) {
+    public GGroupController createGroupController(GGroupObject group, GPlatformTableController platform) {
         GContainer rows = rowsScope(group);
-        return rows != null ? containers.get(rows).createRowsPart(group) : lsf;
+        return rows != null ? containers.get(rows).createRowsPart(group) : platform;
     }
     // ... and what shows its USER ORDERS: their part, a part of the group of their own, on its node where its rows are
     // drawn - a sorting being the order they are drawn in, and a group's design having no box of its sortings to place
@@ -171,24 +171,24 @@ public class GReactFormData {
     // keyed the same way, where the platform draws it and React places it - a panel property React places, the column
     // of the rows React draws -, which keeps what labels the property and hands the rest on, an action's labels too,
     // its button's face; else the platform's
-    public GPropertyController createPropertyController(GPropertyDraw property, GLsfPropertyController lsf) {
+    public GPropertyController createPropertyController(GPropertyDraw property, GPlatformPropertyController platform) {
         GContainer scope = nameScope(property);
         if (scope == null)
-            return lsf;
+            return platform;
         if (!hasEntry(property)) // ... and where it has no entry, it brings no node either
-            return noEntry(property, lsf);
+            return noEntry(property, platform);
         ContainerState state = containers.get(scope);
         if (property.isList) { // its content is its column, with its group's rows, on their node
             RowsPart rows = state.rowsParts.get(property.groupObject);
             if (!property.isLsfView())
                 return new ReactColumnPropertyEntry(rows, property);
-            return property.isAction() ? new LsfColumnActionEntry(rows, property, lsf) : new LsfColumnPropertyEntry(rows, property, lsf);
+            return property.isAction() ? new LsfColumnActionEntry(rows, property, platform) : new LsfColumnPropertyEntry(rows, property, platform);
         }
         // a panel property is a part of its group: on the group's node here, the empty group's on the top level
         Node node = property.groupObject == null ? state.top : state.getOrCreateGroupNode(property.groupObject);
         if (!property.isLsfView())
             return new ReactPanelPropertyEntry(node, property);
-        return property.isAction() ? new LsfPanelActionEntry(node, property, lsf) : new LsfPanelPropertyEntry(node, property, lsf);
+        return property.isAction() ? new LsfPanelActionEntry(node, property, platform) : new LsfPanelPropertyEntry(node, property, platform);
     }
     // whether a property a view names has an entry there: one it carries by a name - an lsf ACTION too, whose entry
     // says whether the form shows it -, not the one React draws by none, the group's own COUNT. Any other has a name,
@@ -199,8 +199,8 @@ public class GReactFormData {
     }
     // ... and what the COUNT has instead: nothing, React keeping nothing of it - the platform's controller, where the
     // platform draws it
-    private static GPropertyController noEntry(GPropertyDraw property, GLsfPropertyController lsf) {
-        return property.isLsfView() ? lsf : null;
+    private static GPropertyController noEntry(GPropertyDraw property, GPlatformPropertyController platform) {
+        return property.isLsfView() ? platform : null;
     }
     // ... of a component: none of what React keeps nothing of (reactKeepsNothing). A property's is the platform's,
     // whatever draws the property - a property is no owner as a component, all of it being its property controller's
@@ -208,15 +208,15 @@ public class GReactFormData {
     // property's SHOWIF), is the platform's to apply to the view it draws the property in: none where React draws it.
     // Of any other: of one React draws, all that is sent for it; of an lsf one React places, its descriptor - its labels
     // and its SHOWIF - where the design names the component, over the platform's; of one it places by no name,
-    // nothing: all of it is the platform's. `lsf` is the platform's controller of the component: the layout
-    public GComponentController createComponentController(GComponent component, GComponentController lsf) {
+    // nothing: all of it is the platform's. `platform` is the platform's controller of the component: the layout
+    public GComponentController createComponentController(GComponent component, GComponentController platform) {
         if (reactKeepsNothing(component))
             return null;
         GContainer scope = component instanceof GPropertyDraw ? null : nameScope(component);
         if (scope == null)
-            return lsf;
+            return platform;
         ContainerState state = containers.get(scope);
-        return component.isLsfView() ? new LsfComponentEntry(state, component, lsf) : new ReactComponentEntry(state, component);
+        return component.isLsfView() ? new LsfComponentEntry(state, component, platform) : new ReactComponentEntry(state, component);
     }
     // ... and WHAT REACT KEEPS NOTHING OF as a component, so nothing is sent for it as one (mirrors
     // FormView.reactKeepsNothing): a component React draws that the design does not name - no descriptor, no entry to
@@ -224,8 +224,9 @@ public class GReactFormData {
     private boolean reactKeepsNothing(GComponent component) {
         return component.sID == null && !component.isLsfView() && placed(component) != null;
     }
-    // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GGridPanelController): a group's lsf list properties are drawn per
-    // row only where React draws the group's rows (FormView.checkLsfListView), so what they follow is the rows' part
+    // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GPlatformRowsPanelController): a group's lsf list properties are
+    // drawn per row only where React draws the group's rows (FormView.checkLsfListView), so what they follow is the
+    // rows' part
     public interface Rows {
         // its rows as the view has them, its own add or remove included - the part's own list, which it replaces and
         // never changes: a list handed out keeps saying what it said
@@ -504,15 +505,15 @@ public class GReactFormData {
     // ... of an lsf one React places: the platform draws it and React labels it, from this entry; the rest is the
     // platform's
     private final class LsfComponentEntry extends ComponentEntry {
-        final GComponentController lsf; // the platform's controller of the component: the layout, which draws it
+        final GComponentController platform; // the platform's controller of the component: the layout, which draws it
 
-        LsfComponentEntry(ContainerState state, GComponent component, GComponentController lsf) {
+        LsfComponentEntry(ContainerState state, GComponent component, GComponentController platform) {
             super(state, component);
-            this.lsf = lsf;
+            this.platform = platform;
         }
         // the rest of it is the platform's, which draws it
         public void updateOther(GComponentReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-            lsf.updateOther(reader, values, partial);
+            platform.updateOther(reader, values, partial);
         }
     }
 
@@ -1598,51 +1599,51 @@ public class GReactFormData {
         }
     }
     // a property the platform draws and React places - an lsf one: the form's controller of it is this entry, over the
-    // platform's (lsf), which draws it. Its values, its drop, focus, the client's own value, any other attribute or
-    // reader are the platform's, handed on with the property; what labels it is its kind's - React's for a property,
+    // platform's (`platform`), which draws it. Its values, its drop, focus, the client's own value, any other attribute
+    // or reader are the platform's, handed on with the property; what labels it is its kind's - React's for a property,
     // the platform's for an ACTION, whose caption and image are its button's face. No member: what the platform draws,
     // the platform changes. There from the start, and `hidden` whenever the platform does not show the property - it
     // shows it from its first whole delivery until its drop, both of which come through here
     private abstract class LsfPropertyEntry extends PropertyEntry {
-        final GLsfPropertyController lsf; // the platform's controller of the property: the view it is drawn in
+        final GPlatformPropertyController platform; // the view it is drawn in
 
-        LsfPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
+        LsfPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
             super(node, property);
-            this.lsf = lsf;
+            this.platform = platform;
         }
         // its values - the platform shows the property from its first whole delivery - and its drop, focus, the
         // client's own value, any other attribute or reader: the platform's
         public void updateValue(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-            lsf.updateValue(property, values, partial);
+            platform.updateValue(property, values, partial);
             if (!partial)
                 setShown(true);
         }
         public void dropProperty(GPropertyDraw property) {
-            lsf.dropProperty(property);
+            platform.dropProperty(property);
             setShown(false);
         }
         public boolean isPropertyShown(GPropertyDraw property) {
-            return lsf.isPropertyShown(property);
+            return platform.isPropertyShown(property);
         }
         public void focusProperty(GPropertyDraw property) {
-            lsf.focusProperty(property);
+            platform.focusProperty(property);
         }
         public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
-            return lsf.setLoadingValueAt(property, fullCurrentKey, value);
+            return platform.setLoadingValueAt(property, fullCurrentKey, value);
         }
         public void updateAttribute(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-            lsf.updateAttribute(reader, values, partial);
+            platform.updateAttribute(reader, values, partial);
         }
         public void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
-            lsf.updateOther(reader, values, partial);
+            platform.updateOther(reader, values, partial);
         }
     }
     // ... a panel or empty-group one's: keyed by its integration name on its group's node, where a panel property React
     // draws is, and carried by name with them. An <Lsf> places it by the same name (getName), and hides its host by
     // this entry (ContainerState.entryOf): it says whether the form shows it - all that an action's says
     private abstract class LsfPanelEntry extends LsfPropertyEntry {
-        LsfPanelEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(node, property, lsf);
+        LsfPanelEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+            super(node, property, platform);
         }
         void emit(JavaScriptObject entry) {
         }
@@ -1651,8 +1652,8 @@ public class GReactFormData {
     private final class LsfPanelPropertyEntry extends LsfPanelEntry {
         final GPropertyReader[] labelReaders; // its caption, image and comment
 
-        LsfPanelPropertyEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(node, property, lsf);
+        LsfPanelPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+            super(node, property, platform);
             labelReaders = present(property.captionReader, property.getImageReader(), property.commentReader);
             updateEntry(); // there from the start, hidden until the platform shows the property
         }
@@ -1667,21 +1668,21 @@ public class GReactFormData {
     // ... an ACTION's: its caption and image are its button's face, which the platform draws, so what labels it is
     // handed on. The platform's button runs it
     private final class LsfPanelActionEntry extends LsfPanelEntry {
-        LsfPanelActionEntry(Node node, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(node, property, lsf);
+        LsfPanelActionEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+            super(node, property, platform);
             updateEntry(); // there from the start, hidden until the platform shows the action
         }
         // what labels it: the platform's, its button's face
         public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
-            lsf.updateLabel(reader, delivered, partial);
+            platform.updateLabel(reader, delivered, partial);
         }
     }
     // ... a list one's column, whose cells or buttons the platform draws in the rows React draws, carried by name on
     // the node the rows are on: React draws the column from this entry, which says what the property is - an LSF column
     // is filtered and sorted like any other, and the platform drawing its VALUE says nothing about what the value is
     private abstract class LsfColumnEntry extends LsfPropertyEntry {
-        LsfColumnEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(rowsPart.node, property, lsf);
+        LsfColumnEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+            super(rowsPart.node, property, platform);
         }
         void emit(JavaScriptObject entry) {
             emitPropertyFacts(entry, property);
@@ -1691,8 +1692,8 @@ public class GReactFormData {
     private final class LsfColumnPropertyEntry extends LsfColumnEntry {
         final GPropertyReader[] labelReaders; // its caption, image, footer and comment
 
-        LsfColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(rowsPart, property, lsf);
+        LsfColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+            super(rowsPart, property, platform);
             labelReaders = present(property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
             updateEntry(); // there from the start, hidden until the platform shows the property
         }
@@ -1707,13 +1708,13 @@ public class GReactFormData {
     }
     // ... an ACTION's: what labels it is its buttons' face, handed on - an action's image is a button's, row by row
     private final class LsfColumnActionEntry extends LsfColumnEntry {
-        LsfColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, GLsfPropertyController lsf) {
-            super(rowsPart, property, lsf);
+        LsfColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+            super(rowsPart, property, platform);
             updateEntry(); // there from the start, hidden until the platform shows the action
         }
         // what labels it: the platform's, its buttons' face
         public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {
-            lsf.updateLabel(reader, delivered, partial);
+            platform.updateLabel(reader, delivered, partial);
         }
     }
 

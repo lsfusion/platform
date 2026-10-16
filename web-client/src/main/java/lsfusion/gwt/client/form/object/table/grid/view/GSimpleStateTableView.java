@@ -23,7 +23,7 @@ import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
@@ -46,7 +46,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
 
-    public GSimpleStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
+    public GSimpleStateTableView(GFormController form, GPlatformGridController grid, TableContainer tableContainer) {
         super(form, grid, tableContainer);
 
         Element drawElement = getDrawElement();

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 
 public class GCustomOptionsReader extends GGroupObjectPropertyReader {
 
@@ -11,7 +11,7 @@ public class GCustomOptionsReader extends GGroupObjectPropertyReader {
     public GCustomOptionsReader(int readerID) {
         super(readerID, "CUSTOM_OPTIONS");
     }
-    public void updateLsf(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    public void updatePlatform(GPlatformTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateCustomOptionsValues(values);
     }
 

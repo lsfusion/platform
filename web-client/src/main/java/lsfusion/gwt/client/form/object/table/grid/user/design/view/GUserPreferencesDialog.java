@@ -10,8 +10,8 @@ import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.panel.controller.GPlatformFormPanelController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
@@ -27,9 +27,9 @@ import static lsfusion.gwt.client.view.MainFrame.v5;
 public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    private GGridController groupController;
+    private GPlatformGridController groupController;
     private GGridTable grid;
-    private GPanelController panelController;
+    private GPlatformFormPanelController formPanelController;
 
     private FocusPanel focusPanel;
 
@@ -43,14 +43,14 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private TextBox columnCaptionBox;
     private TextBox columnPatternBox;
 
-    public GUserPreferencesDialog(GGridTable grid, GGridController groupController, GPanelController panelController, boolean canBeSaved) {
+    public GUserPreferencesDialog(GGridTable grid, GPlatformGridController groupController, GPlatformFormPanelController formPanelController, boolean canBeSaved) {
         super(messages.formGridPreferences(), true, ModalWindowSize.LARGE);
 
         this.groupController = groupController;
 
         this.grid = grid;
 
-        this.panelController = panelController;
+        this.formPanelController = formPanelController;
 
         FlexPanel filterPanel = new FlexPanel();
         filterPanel.addCentered(createLabel(messages.formGridPreferencesFilter()));
@@ -323,7 +323,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private Boolean getPropertyState(GPropertyDraw property) {
         if (groupController.isPropertyInGrid(property)) {
             return true;
-        } else if (panelController.containsProperty(property)) {
+        } else if (formPanelController.containsProperty(property)) {
             return false;
         }
         return null;
