@@ -511,7 +511,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             run.run();
         } finally {
             dispatcher.sendBatch(getEventActionCallback(null, null));
-            refreshReactOptimistic();
         }
     }
     // what is asked of the server while a batch runs - a lookup, a server call on a controller - is refused: a batch
@@ -562,13 +561,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void expandNode(GGroupObject group, GGroupObjectValue key) {
         long requestIndex = expandGroupObject(group, key, true);
         getGroupController(group).changeExpanded(key, true, requestIndex);
-        refreshReactOptimistic();
     }
     @Override
     public void collapseNode(GGroupObject group, GGroupObjectValue key) {
         long requestIndex = expandGroupObject(group, key, false);
         getGroupController(group).changeExpanded(key, false, requestIndex);
-        refreshReactOptimistic();
     }
     // ... and its expandAll / collapseAll: the server starts at the group it is given - its nodes under the open nodes
     // of the group above, all of them for the top group - and goes down
@@ -576,13 +573,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void expandAll(GGroupObject group) {
         long requestIndex = expandGroupObjectRecursive(group, false, true); // false: the whole group, not the current object
         getGroupController(group).changeExpandedAll(true, requestIndex);
-        refreshReactOptimistic();
     }
     @Override
     public void collapseAll(GGroupObject group) {
         long requestIndex = expandGroupObjectRecursive(group, false, false);
         getGroupController(group).changeExpandedAll(false, requestIndex);
-        refreshReactOptimistic();
     }
     // ... and the tree's own "expand current", where React draws its rows (GReactFormData.TreeTablePart): the server
     // opens the group's current node - the one the projection names - and every node under it
@@ -590,7 +585,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void expandCurrent(GGroupObject group, GGroupObjectValue key) {
         long requestIndex = expandGroupObjectRecursive(group, true, true);
         getGroupController(group).changeExpandedUnder(key, requestIndex);
-        refreshReactOptimistic();
     }
 
     // a property of a group, by a CLASSIC name: the group's one property of that name - a name the group draws twice
@@ -729,7 +723,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
             PValue shownValue = property.hasExternalChangeActionForRendering(RendererType.SIMPLE) ? value : PValue.UNDEFINED;
             setLoadingValueAt(property, key, shownValue, requestIndex);
-            refreshReactOptimistic();
         });
     }
     // maps the public getPropertyValues `mode` to the server async actionSID (the strings coincide). null/'objects' => OBJECTS
@@ -1098,7 +1091,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         applyRemoteChanges(GFormChanges.remap(form, changesDTO), changesDTO.requestIndex);
     }
 
+    // a server's delta - the client's own answers to it merged in - is a change of what React draws: published once it
+    // is applied whole (GReactFormData.change), a form's first one before its window is measured
     public void applyRemoteChanges(GFormChanges fc, int requestIndex) {
+        reactData.change(() -> applyChanges(fc, requestIndex));
+    }
+
+    private void applyChanges(GFormChanges fc, int requestIndex) {
         if (hasColumnGroupObjects) // optimization
             fc.gridObjects.foreachEntry((key, value) -> currentGridObjects.put(key, value));
 
@@ -1142,10 +1141,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         setActiveTabs(fc);
 
         formLayout.update(requestIndex);
-
-        // the projection published - once a React view's batch ends, for an answer applied while it runs (a platform's
-        // editor that finishes when the view's fn moves the focus away lets a held answer in)
-        refreshReactOptimistic();
     }
 
     public void applyKeyChanges(GFormChanges fc, int requestIndex) {
@@ -1511,9 +1506,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public long changeGroupObject(final GGroupObject group, GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
         long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key, changeSelection));
         pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
-        // optimistic: the new current where React draws the rows, now (reconciled later by fc.objects)
+        // optimistic: the new current where React draws the rows (reconciled later by fc.objects)
         getGroupController(group).changeCurrentKey(key);
-        refreshReactOptimistic();
         return requestIndex;
     }
 
@@ -2079,7 +2073,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
                 setLoadingValueAt(getProperty(propertyID), execContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
-            refreshReactOptimistic();
         }, onExec);
     }
 
@@ -2121,7 +2114,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             pendingModifyObjectRequests.add(new ModifyObject(requestIndex, object, add, value, position));
 
             getGroupController(object.groupObject).modifyGroupObject(value, add, -1);
-            refreshReactOptimistic();
         }, onExec);
     }
 
@@ -2193,7 +2185,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         long requestIndex = asyncResponseDispatch(new SetRegularFilter(filterGroup.ID, filter == null ? -1 : filter.ID));
         pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
         filterGroupControllers.get(filterGroup).showFilter(filter);
-        refreshReactOptimistic();
     }
 
     // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
@@ -2215,9 +2206,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
         long requestIndex = asyncResponseDispatch(new SetPropertyOrders(group.ID, propertyList, columnKeyList, orderList));
         pendingChangeOrdersRequests.put(group, requestIndex);
-        // what changeOrders wrote where React draws the rows, published once the request is queued, as
-        // changeGroupObject publishes its current object
-        refreshReactOptimistic();
     }
 
     // ... and the user orders of a TABLE's groups as a client states them - a grid's group's, or a tree's, one list for
@@ -2283,9 +2271,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             // ... and what shows them told of them, before the answer (GUserFiltersController.changeFilters)
             userFiltersControllers.get(group).changeFilters(group, currentFilters.get(group));
         }
-        // what that wrote where React draws the filters, published once the request is queued, as changeOrders
-        // publishes its orders
-        refreshReactOptimistic();
         return requestIndex;
     }
 
@@ -2308,31 +2293,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             pendingLoadingProperty(property, propertyCell.first, requestIndex);
         }
     }
-    // publish the projection once an optimistic operation is done - a change of the current object, a batch of property
-    // changes, a row added or removed - whatever of it went into the drafts; a controller writes and never publishes.
-    // The server's response is reconciled through the same controllers and published here too (applyRemoteChanges)
-    private void refreshReactOptimistic() {
-        if (dispatcher.isBatching()) // a React view's batch: once, when it ends
-            return;
-
-        reactData.flush();
-
-        // after the projection: the per-row renderers follow the rows it now holds - an optimistically added row gets
-        // its editors now, not when the server confirms it
-        updateRowRenderers();
-    }
-    // ... and once the event is over, what of it the client alone changed - a view's toolbar showing the filter
-    // controls -, with whatever else that event changed: at once, a delta being applied would be published half-way
-    private boolean refreshReactScheduled;
+    // once the projection is published, the per-row editors follow the rows it holds - an optimistically added row gets its
+    // editors now, not when the server confirms it -, unless the form is gone: made again, they would register in the
+    // theme's listeners its destroy has cleared
     @Override
-    public void refreshReactLater() {
-        if (refreshReactScheduled)
-            return;
-        refreshReactScheduled = true;
-        Scheduler.get().scheduleFinally(() -> {
-            refreshReactScheduled = false;
-            refreshReactOptimistic();
-        });
+    public void published() {
+        if (!formDestroyed)
+            updateRowRenderers();
     }
 
     private void updateRowRenderers() {

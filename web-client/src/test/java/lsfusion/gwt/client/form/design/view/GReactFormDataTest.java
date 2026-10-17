@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.GForm;
@@ -227,7 +228,7 @@ public class GReactFormDataTest extends GWTTestCase {
         final ArrayList<String> toolbarCalls = new ArrayList<>(); // ... and what a toolbar member asked, in order
         final HashMap<GGroupObject, Boolean> manualUpdates = new HashMap<>(); // ... and each group's update mode it set
         java.util.function.Consumer<Number> answered; // ... the last answer it waits for
-        int refreshes; // ... and how many times a part asked to be published once the event is over
+        GReactFormData.Verbs verbs; // ... all of it, the form as far as the projection asks it
         // ... and the filters' keys it bound, each while the container it names is shown and its part says the form
         // shows the filter group
         final ArrayList<GFormController.BindingExec> filterKeys = new ArrayList<>();
@@ -276,7 +277,7 @@ public class GReactFormDataTest extends GWTTestCase {
             projection = new GReactFormData(form, component -> {
                 placements++;
                 return component.getReactPlace();
-            }, new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
+            }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); }
                 public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
                     changed = key;
@@ -304,7 +305,7 @@ public class GReactFormDataTest extends GWTTestCase {
                     return manual != null ? manual : group.enableManualUpdate;
                 }
                 public void expandCurrent(GGroupObject group, GGroupObjectValue key) { }
-                public void refreshReactLater() { refreshes++; }
+                public void published() { }
                 public void expandNode(GGroupObject group, GGroupObjectValue key) { }
                 public void collapseNode(GGroupObject group, GGroupObjectValue key) { }
                 public void expandAll(GGroupObject group) { }
@@ -456,13 +457,14 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject node() { return field(data(), "items"); }
         JavaScriptObject row(String key) { return field(field(node(), "byKey"), key); }
         // a delta, as the form hands it over: a group's rows and current object, a drop and a reader to the controller
-        // of the owner
+        // of the owner - a change, published once it is applied (GFormController.applyRemoteChanges)
         void apply(GFormChanges changes) {
-            changes.gridObjects.foreachEntry((group, rows) -> controller(group).updateKeys(group, rows, changes, 0));
-            changes.objects.foreachEntry((group, key) -> controller(group).updateCurrentKey(key));
-            changes.dropProperties.forEach(controllers::drop);
-            changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
-            projection.flush();
+            projection.change(() -> {
+                changes.gridObjects.foreachEntry((group, rows) -> controller(group).updateKeys(group, rows, changes, 0));
+                changes.objects.foreachEntry((group, key) -> controller(group).updateCurrentKey(key));
+                changes.dropProperties.forEach(controllers::drop);
+                changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
+            });
         }
         // the form's controller of a group (GFormController.groupControllers): the part React draws the rows as - for
         // any other group, the platform's grid, not built here - and of a property
@@ -515,12 +517,11 @@ public class GReactFormDataTest extends GWTTestCase {
             filters = new FormFilters(form);
         }
 
-        // as the form does: the request numbered and sent, the group's controller told of the current object at once,
-        // the projection published (GFormController.changeGroupObject)
+        // as the form does: the request numbered and sent, the group's controller told of the current object at once
+        // (GFormController.changeGroupObject) - published by the member's call that asked it
         public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
-            publish();
         }
         public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) { }
         public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
@@ -532,29 +533,23 @@ public class GReactFormDataTest extends GWTTestCase {
         public void changeUpdateMode(GGroupObject group, GUpdateMode updateMode) { }
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
         public String getRefusal(String surface) { return batching ? batchRefusal(surface) : null; }
-        public void refreshReactLater() { }
         public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { }
         public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GContainer scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) { return -1; }
-        // as the form does: the request numbered and sent, the group's controller told of it, the projection published
+        // as the form does: the request numbered and sent, the group's controller told of it
         public void expandNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
-            publish();
         }
         public void collapseNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, false, ask("collapse " + group.getSID() + " " + key.toKeyString()));
-            publish();
         }
         public void expandAll(GGroupObject group) {
             controllers.groups.get(group).changeExpandedAll(true, ask("expand all " + group.getSID()));
-            publish();
         }
         public void collapseAll(GGroupObject group) {
             controllers.groups.get(group).changeExpandedAll(false, ask("collapse all " + group.getSID()));
-            publish();
         }
         public void expandCurrent(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpandedUnder(key, ask("expand current " + group.getSID() + " " + key.toKeyString()));
-            publish();
         }
         final ArrayList<String> sorted = new ArrayList<>(); // what an orders member handed the form, in order
         // ... each group's the form's now, as the form has them
@@ -582,8 +577,7 @@ public class GReactFormDataTest extends GWTTestCase {
             return batching ? requestIndex + 1 : ++requestIndex;
         }
         // ... and a batch, as the form runs one: what is asked in it under the index of its one request - none when
-        // nothing is asked -, and the projection published once, when the batch ends - a batch begun inside it a part
-        // of it
+        // nothing is asked -, a batch begun inside it a part of it. Published by the member's call that runs it
         boolean batching;
         public void batch(Runnable run) {
             if (batching) {
@@ -600,13 +594,9 @@ public class GReactFormDataTest extends GWTTestCase {
                 if (asked.size() > begun)
                     requestIndex++;
                 asked.add("sent");
-                projection.flush();
             }
         }
-        void publish() {
-            if (!batching)
-                projection.flush();
-        }
+        public void published() { }
     }
     private static final class TreeFixture {
         final GForm form = new GForm();
@@ -724,13 +714,15 @@ public class GReactFormDataTest extends GWTTestCase {
         void apply(GFormChanges changes) {
             answer(changes, 0);
         }
-        // ... the answer to a request: its keys come with its index, as the form hands them on
+        // ... the answer to a request: its keys come with its index, as the form hands them on - a change, published once
+        // it is applied
         void answer(GFormChanges changes, int requestIndex) {
-            changes.gridObjects.foreachEntry((group, rows) -> controllers.groups.get(group).updateKeys(group, rows, changes, requestIndex));
-            changes.objects.foreachEntry((group, key) -> controllers.groups.get(group).updateCurrentKey(key));
-            changes.dropProperties.forEach(controllers::drop);
-            changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
-            projection.flush();
+            projection.change(() -> {
+                changes.gridObjects.foreachEntry((group, rows) -> controllers.groups.get(group).updateKeys(group, rows, changes, requestIndex));
+                changes.objects.foreachEntry((group, key) -> controllers.groups.get(group).updateCurrentKey(key));
+                changes.dropProperties.forEach(controllers::drop);
+                changes.properties.foreachEntry((reader, values) -> controllers.update(reader, values, changes.updateProperties.contains(reader)));
+            });
         }
         // the server reporting a group's user filters, as the form takes them (FormFilters.report)
         void report(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
@@ -1866,7 +1858,7 @@ public class GReactFormDataTest extends GWTTestCase {
         box.react = false; box.custom = null; box.caption = "In record";
         box.container = details; details.children.add(box);
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addContainer(f.a, data -> { });
         projection.addContainer(f.b, data -> { });
@@ -1891,7 +1883,7 @@ public class GReactFormDataTest extends GWTTestCase {
         editor.caption = "Editor";
         editor.captionReader = new GCaptionReader(27, 10); // every property has one: the static caption is its fallback
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         GReactFormData.ContainerState sa = projection.addContainer(f.a, data -> published[0] = data);
         projection.addContainer(f.b, data -> { });
@@ -2163,7 +2155,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GReactFormData projection = new GReactFormData(f.form, component -> {
             placements[0]++;
             return component.getReactPlace();
-        }, null);
+        }, f.verbs);
         projection.addContainer(f.a, data -> { });
         projection.addContainer(f.b, data -> { });
         projection.addContainer(f.c, data -> { });
@@ -2223,7 +2215,7 @@ public class GReactFormDataTest extends GWTTestCase {
         }
         unnamed.sID = null;
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addContainer(f.a, data -> { });
         projection.addContainer(f.b, data -> published[0] = data);
@@ -2261,7 +2253,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GReactFormData projection = new GReactFormData(f.form, component -> {
             placements[0]++;
             return component.getReactPlace();
-        }, null);
+        }, f.verbs);
         Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(f.one, PValue.getPValue(5));
@@ -2311,7 +2303,7 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         f.group.sID = "constructor";
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, null);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addContainer(f.a, data -> published[0] = data);
         projection.addContainer(f.b, data -> { });
@@ -2582,6 +2574,57 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
         f.answer(openPage(f), (int) f.verbs.requestIndex); // the batch's answer: keys still holding its child - the
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));   // server did not close it, and nothing asked waits any more
+    }
+    // WHEN IT IS PUBLISHED (GReactFormData.change): what a member's call writes is published before the call returns
+    // - a view calls it from its event handler, and React puts a controlled input back to what the store says once the
+    // handler is done -, the form asked for no publication of its own
+    public void testAMembersCallIsPublishedBeforeItReturns() {
+        TreeFixture f = new TreeFixture();
+        f.apply(closedPage(f));
+        JavaScriptObject cat = field(f.sa.controller, "cat");
+        int publications = f.publications;
+        callNode(cat, "expand", f.row(f.cat, f.c2));
+        assertEquals(publications + 1, f.publications);
+        assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+    }
+    // ... what is written outside a change - by an event of the platform's -: not at once, but when the GWT entry it is
+    // written in exits, the writes of the event together (Scheduler.scheduleFinally)
+    public void testWhatIsWrittenOutsideAChangeIsPublishedWhenItsEntryExits() {
+        TreeFixture f = new TreeFixture();
+        f.apply(closedPage(f));
+        int publications = f.publications;
+        delayTestFinish(5000);
+        inATaskOfItsOwn(() -> { // no GWT entry on the stack, as an event of the platform's comes
+            enter(() -> { // the event's entry
+                f.controllers.groups.get(f.cat).changeExpanded(f.c2, true, 1); // as the platform's toolbar writes it
+                f.controllers.groups.get(f.cat).changeCurrentKey(f.c2);
+                assertEquals(publications, f.publications);
+            });
+            assertEquals(publications + 1, f.publications); // its exit published them
+            assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
+            finishTest();
+        });
+    }
+    private static native void inATaskOfItsOwn(Runnable run) /*-{
+        $wnd.setTimeout(function () {
+            run.@java.lang.Runnable::run()();
+        }, 0);
+    }-*/;
+    private static native void enter(Runnable run) /*-{
+        $entry(function () {
+            run.@java.lang.Runnable::run()();
+        })();
+    }-*/;
+    // ... and what the form is set out with - its nodes, written outside a change - waits, and goes out with its
+    // first changes, applied in the same task: the form's publication then finds nothing left (ReactRoot draws a form's
+    // view from its first changes)
+    public void testWhatTheFormIsSetOutWithGoesOutWithItsFirstChanges() {
+        TreeFixture f = new TreeFixture(); // set out: its nodes written, nothing applied
+        assertEquals(0, f.publications);
+        f.apply(closedPage(f));
+        assertEquals(1, f.publications);
+        f.projection.publish(); // the projection's own, once the code running now is done
+        assertEquals(1, f.publications);
     }
     public void testTwoTogglesBeforeTheAnswerOpenAndCloseANode() {
         TreeFixture f = new TreeFixture();
@@ -3605,13 +3648,15 @@ public class GReactFormDataTest extends GWTTestCase {
         tree.expandTree(); // no node current yet
         assertEquals(0, f.verbs.asked.size());
         f.controllers.groups.get(f.cat).updateCurrentKey(f.c1);
-        tree.expandCurrent();
+        tree.expandCurrent(); // the platform's button: published once its event is over
         assertEquals(Arrays.asList("expand current cat 1"), f.verbs.asked);
-        assertTrue(flag(f.row(f.cat, c4), "expanded")); // at once, under it all the way down
+        f.projection.publish(); // as the projection's own, then
+        assertTrue(flag(f.row(f.cat, c4), "expanded")); // under it all the way down
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // ... and nothing else
 
         tree.expandTree();
         assertEquals(Arrays.asList("expand current cat 1", "expand all cat"), f.verbs.asked);
+        f.projection.publish();
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         f.controllers.groups.get(f.item).updateCurrentKey(f.i15); // the current node an item: from its group down
         tree.expandTree();
@@ -4219,17 +4264,14 @@ public class GReactFormDataTest extends GWTTestCase {
         callChange(field(member, "manual"), true);
         assertEquals("updateMode items MANUAL", f.toolbarCalls.get(0));
         assertTrue(f.manualUpdates.get(f.group)); // the form keeps it
-        assertEquals(1, f.refreshes); // the client's own change: published once the event is over
-        f.projection.flush();
-        assertTrue(flag(field(f.snapshots[2], "items"), "manual"));
+        assertTrue(flag(field(f.snapshots[2], "items"), "manual")); // a member's call: published before it returns
 
-        toolbar.updateState(true);
-        f.projection.flush();
+        f.projection.change(() -> toolbar.updateState(true)); // the server's delta: published once it is applied
         assertTrue(flag(field(f.snapshots[2], "items"), "updatePending"));
-        assertEquals(1, f.refreshes); // the server's delta is published once applied
-        toolbar.updateState(null); // ... which says nothing new: the state stays
-        f.projection.flush();
+        int publications = f.publications[2];
+        f.projection.change(() -> toolbar.updateState(null)); // ... one which says nothing new: the state stays
         assertTrue(flag(field(f.snapshots[2], "items"), "updatePending"));
+        assertEquals(publications, f.publications[2]); // nothing written, nothing published
         callAll(member, "update");
         assertEquals("updateMode items FORCE", f.toolbarCalls.get(1));
 
@@ -4332,12 +4374,23 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(isFalse(field(f.snapshots[2], "items"), "filterControlsVisible"));
         callChange(field(member, "filterControlsVisible"), true);
         assertTrue(f.filter.shown);
-        assertEquals(1, f.refreshes);
-        f.projection.flush();
-        assertTrue(flag(field(f.snapshots[2], "items"), "filterControlsVisible"));
+        assertTrue(flag(field(f.snapshots[2], "items"), "filterControlsVisible")); // published before the call returns
         callChange(field(member, "filterControlsVisible"), true); // shown already
         assertTrue(f.filter.shown);
         assertRefusal("controller.items.filterControlsVisible.change(): takes true or false", refusedChange(field(member, "filterControlsVisible"), 1.0));
+    }
+
+    // a member's call that throws - refused - is over all the same: the next one is published before it returns again
+    public void testACallThatThrowsIsOverAllTheSame() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.toolbarIn(fixture.c);
+            fixture.group.grid.toolbar.showFilters = true;
+            fixture.filter = new PanelDouble();
+        });
+        JavaScriptObject member = field(f.sc.controller, "items");
+        assertRefusal("controller.items.filterControlsVisible.change(): takes true or false", refusedChange(field(member, "filterControlsVisible"), 1.0));
+        callChange(field(member, "filterControlsVisible"), true);
+        assertTrue(flag(field(f.snapshots[2], "items"), "filterControlsVisible"));
     }
 
     // ... and its buttons there with nothing of the platform's to work refuse, saying why: the filter button has no
@@ -4348,7 +4401,6 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(isFalse(node, "filterControlsVisible"));
         assertRefusal("controller.items.filterControlsVisible.change(): has no filter controls of the platform's to show",
                 refusedChange(field(member, "filterControlsVisible"), true));
-        assertEquals(0, f.refreshes);
         assertTrue(isNullField(node, "listView"));
         assertEquals(0, length(field(node, "listViews")));
         assertRefusal("controller.items.listView.change(): has no view to switch to: no table of the platform's draws the rows",
@@ -4369,7 +4421,6 @@ public class GReactFormDataTest extends GWTTestCase {
         f.controllers.filterControls.get(f.group.grid).setTableVisible(false);
         f.controllers.toolbars.get(f.group).setVisible(true);
         f.controllers.filterControls.get(f.group.grid).setTableVisible(true);
-        assertEquals(0, f.refreshes);
         f.projection.flush();
         assertSame(node, field(f.snapshots[2], "items"));
         assertEquals(publications, f.publications[2]);
@@ -4398,7 +4449,6 @@ public class GReactFormDataTest extends GWTTestCase {
         for (String verb : Arrays.asList("addFilter", "applyFilters", "resetFilters"))
             assertRefusal("controller.items." + verb + "(): has nothing to give its commands to",
                     refusedWith(member, verb, null));
-        assertEquals(0, f.refreshes);
     }
 
     // ... and their members give the filter input controller's commands, as the platform's buttons do: the add where
@@ -4422,7 +4472,6 @@ public class GReactFormDataTest extends GWTTestCase {
 
         handler.manual = true;
         controls.setVisible(true); // the toolbar shows them, and the manual apply mode asks for the apply button
-        assertEquals(1, f.refreshes);
         f.projection.flush();
         assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
         assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
@@ -4633,17 +4682,13 @@ public class GReactFormDataTest extends GWTTestCase {
             fixture.views = new ListViewDouble();
         });
         assertEquals(0, f.platform.buttonsAsked); // the part takes the table's views alone, none of its buttons
-        // the view the table shows, told while the form is built: written once the toolbar is set out, not published
-        assertEquals(0, f.refreshes);
         JavaScriptObject node = field(f.snapshots[2], "items");
         assertEquals("grid", text(node, "listView"));
         assertEquals("grid,pivot", join(field(node, "listViews")));
         JavaScriptObject member = field(f.sc.controller, "items");
         callChange(field(member, "listView"), "pivot");
         assertEquals(Arrays.asList(GListViewType.PIVOT), f.views.changed);
-        assertEquals(1, f.refreshes);
-        f.projection.flush();
-        assertEquals("pivot", text(field(f.snapshots[2], "items"), "listView"));
+        assertEquals("pivot", text(field(f.snapshots[2], "items"), "listView")); // published before the call returns
         callChange(field(member, "listView"), "pivot"); // shown already
         assertEquals(1, f.views.changed.size());
         callAll(member, "export"); // the server's report of the rows, whatever view the platform's table shows

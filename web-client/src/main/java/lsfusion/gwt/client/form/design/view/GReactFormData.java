@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Event;
 
 import java.util.ArrayList;
@@ -106,6 +107,15 @@ public class GReactFormData {
     private final NativeSIDMap<GContainer, ContainerState> containers = new NativeSIDMap<>();
     private NativeSIDMap<GContainer, ContainerState> pending = new NativeSIDMap<>();
 
+    // WHEN WHAT IS WRITTEN IS PUBLISHED: a controller writes and never publishes; what is written is pending. What a
+    // CHANGE writes - a call of a view's member, a server's delta applied (change) - is published once the outermost
+    // one is over, at once: before the view's event handler returns, as React puts a controlled input back to what the
+    // store says once the handler is done, and before a window measured when it is shown measures the form's first
+    // changes (ReactRoot.mount). What is written outside a change - by an event of the platform's - is published when
+    // the GWT entry it is written in exits (Scheduler.scheduleFinally), as the platform's own views defer what they
+    // draw (DataGrid's DOM, the forms window)
+    private int changing; // the changes under way
+
     public GReactFormData(GForm form, Function<GComponent, GContainer> place, Verbs verbs) {
         this.form = form;
         this.place = place;
@@ -174,9 +184,9 @@ public class GReactFormData {
         // ===== the form's own: why it refuses a request now, null where it does not - a batch runs, which carries
         // changes only, or the form is closed -: the reason the call fails with, as a server call on a controller does
         String getRefusal(String surface);
-        // ... a part's state the client alone changed - no server's delta, which is published once applied, and no
-        // optimistic operation, published once done -: published once the event that changed it is over
-        void refreshReactLater();
+        // ... and published: what the form draws by what it holds follows it - the per-row editors of an lsf column
+        // follow the rows
+        void published();
         // ... and a view's batch: run, the edits made in it shown at once and sent together, in one request, when it
         // ends - when it throws too -, a call being made when it is made. A batch begun inside it is a part of it; a
         // server call on a controller, or a lookup, is refused while it runs
@@ -204,7 +214,7 @@ public class GReactFormData {
     public ContainerState addContainer(GContainer scope, Consumer<JavaScriptObject> publish) {
         ContainerState state = new ContainerState(scope, publish);
         containers.put(scope, state);
-        pending.put(scope, state); // the first server delta also publishes empty / static-only containers
+        state.enlist(); // published with what the form is set out with - empty / static-only containers too
         return state;
     }
 
@@ -411,18 +421,43 @@ public class GReactFormData {
         }
     }
 
-    // Commit every draft before notifying subscribers. Detach the batch first so edits made by a subscriber get their
-    // own draft and remain pending for the next publication.
+    // a CHANGE of what the projection holds, published once the outermost one is over - when it throws too
+    public void change(Runnable change) {
+        changing++;
+        try {
+            change.run();
+        } finally {
+            changed();
+        }
+    }
+    // ... a member's call, a change as a view makes it (makeCalls): entered, and over
+    private void call() {
+        changing++;
+    }
+    private void changed() {
+        if (--changing == 0)
+            publish();
+    }
+    // what is pending, published - nothing where nothing is
+    public void publish() {
+        if (!pending.isEmpty())
+            flush();
+    }
+
+    // Commit every draft, then notify subscribers: what a commit writes - the rows of its tables placed
+    // (TablePart.place) - is in this publication, its container pending already. The batch is detached before the
+    // notifications, so that edits made by a subscriber get their own draft and remain pending for the next one.
     public void flush() {
+        pending.foreachValue(ContainerState::commit);
         NativeSIDMap<GContainer, ContainerState> batch = pending;
         pending = new NativeSIDMap<>();
-        batch.foreachValue(ContainerState::commit);
         batch.foreachValue(state -> {
             if (state.data != state.lastPublished) { // a nested flush may have given it out already
                 state.lastPublished = state.data;
                 state.publish.accept(state.data);
             }
         });
+        verbs.published();
     }
 
     // what React writes into a snapshot for a property or a component - its entry, under its name on its node: the
@@ -500,9 +535,14 @@ public class GReactFormData {
             }
             return draft;
         }
-        // ... or only its commit, which may write or not: in the batch, nothing copied yet (TreeTablePart.touch)
+        // ... or only its commit, which may write or not: in the batch, nothing copied yet (TreeTablePart.touch). The
+        // first of what is written outside a change has it published when the GWT entry it is written in exits - or,
+        // written from plain JS, the next one -, once it is pending
         void enlist() {
+            boolean first = pending.isEmpty() && changing == 0;
             pending.put(scope, this);
+            if (first)
+                Scheduler.get().scheduleFinally(GReactFormData.this::publish);
         }
         // the draft becomes the data - what the rows of each table drawn here state about one another placed in it
         // first, from the completed batch (TablePart.place)
@@ -575,6 +615,7 @@ public class GReactFormData {
         void initialize() {
             nodes.foreachValue(OwnerNode::initialize);
             top.fillController();
+            makeCalls(GReactFormData.this, controller);
         }
 
         // the lsf list property whose per-row renderers an <Lsf> places, named as a panel property is - its group, then
@@ -861,7 +902,6 @@ public class GReactFormData {
             if (!initialized)
                 return;
             writeState();
-            verbs.refreshReactLater();
         }
     }
     // ... whose state is a LIST, under its name on the node (field) - a table's sortings (OrdersPart), its user
@@ -1624,8 +1664,8 @@ public class GReactFormData {
         }
 
         // ===== the group's controller (GFormController.groupControllers): its rows and its current object as the
-        // server sends them, and a view's own add or remove - into the drafts only: the form publishes once the
-        // operation is done (GFormController.refreshReactOptimistic)
+        // server sends them, and a view's own add or remove - into the drafts only, published once the change that
+        // wrote them is over (change)
         public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
             setRows(keys);
         }
@@ -2413,8 +2453,8 @@ public class GReactFormData {
         // ===== its controller (GFormController.propertyControllers): whether the form shows it now - a dropped one is
         // not, so a reconciliation does not make an old value up for it
         // (GFormController.modifyFormChangesWithChangePropertyAsyncs) - where focus goes: nowhere, React draws it - and
-        // the client's own value for a cell, an optimistic change, into the draft only: the form publishes once the
-        // operation is done (GFormController.refreshReactOptimistic)
+        // the client's own value for a cell, an optimistic change, into the draft only, published once the change
+        // that wrote it is over (change)
         public boolean isPropertyShown(GPropertyDraw property) {
             return shown;
         }
@@ -2835,6 +2875,29 @@ public class GReactFormData {
     // arguments come in a fixed order, the value first, then the row. FormView refused a name that would take a
     // controller verb, a group's own member or `__proto__` when it built the form (claimProjectionName), so none of
     // them is taken here.
+
+    // every function on a controller - a member's, the controller's own, those every controller carries (extendController)
+    // - is a member's call, a change of what the projection holds (change): made so once the controller is filled, the
+    // members being design data. Objects are members, or the states' members on them, filled in place. What a view can
+    // call is only this controller (ReactRoot's context writes nothing here): a way of writing from a view's handler
+    // that is not on it - a function added later, a bridge of its own - would be published outside a change, after the
+    // handler, which a controlled input bound to what it wrote does not survive
+    private static native void makeCalls(GReactFormData projection, JavaScriptObject object) /*-{
+        Object.keys(object).forEach(function (name) {
+            var value = object[name];
+            if (typeof value === 'function')
+                object[name] = function () {
+                    projection.@lsfusion.gwt.client.form.design.view.GReactFormData::call()();
+                    try {
+                        return value.apply(this, arguments);
+                    } finally {
+                        projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changed()();
+                    }
+                };
+            else if (value !== null && typeof value === 'object')
+                @lsfusion.gwt.client.form.design.view.GReactFormData::makeCalls(*)(projection, value);
+        });
+    }-*/;
 
     // a controller, with what no single member can own: the batch its members' changes are sent together in, as many as
     // the function makes, of whatever groups and properties - no change of its own, each named by the member that makes
