@@ -33,9 +33,8 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 // filters (GUserFiltersController) and what takes their input (GFilterInputController) - the conditions it draws in the
 // FILTERS box show the list as the server reports it, and the input works on them: added with an editor, applied as its
 // rows, reset. Its editors of them are what the controls and the toolbar's button show and apply (GFilterEditors)
-public final class GPlatformFiltersController implements GFilterInputController, GUserFiltersController, GFilterConditionView.UIHandler, GFilterEditors {
+public final class GPlatformFiltersController extends GFilterInputController implements GUserFiltersController, GFilterConditionView.UIHandler, GFilterEditors {
     private final GFormController form;
-    private final GTableController rows;
     private final GContainer filtersContainer;
     private Map<Column, String> columns = new HashMap<>();
     
@@ -45,25 +44,14 @@ public final class GPlatformFiltersController implements GFilterInputController,
 
     private List<GFilter> initialFilters;
 
-    // the controls and the toolbar's button, which show and hide the conditions' editors with them
-    private final GFilterControlsToggle toggle;
-    
     public GPlatformFiltersController(GFormController form, GTableController rows, GContainer filtersContainer, List<GFilter> filters, GFilterControlsToggle toggle) {
+        super(rows, toggle);
         this.form = form;
-        this.rows = rows;
         this.filtersContainer = filtersContainer;
         this.initialFilters = filters;
         this.hasFiltersContainer = form.formLayout.getContainerView(filtersContainer) != null;
 
-        this.toggle = toggle;
-        toggle.bind(this, this); // its commands, and its editors
-    }
-
-    public boolean isControlsVisible() {
-        return toggle.isVisible();
-    }
-    public void setControlsVisible(boolean visible) {
-        toggle.setVisible(visible);
+        toggle.bind(this, this); // its commands, and its editors - once what its controls ask of them is set
     }
 
     private void processBinding(NativeEvent event, Runnable action) {
@@ -81,7 +69,7 @@ public final class GPlatformFiltersController implements GFilterInputController,
 
     @Override
     public void toggleControlsVisible() {
-        setControlsVisible(!toggle.isVisible());
+        super.toggleControlsVisible();
 
         if (toggle.isVisible() && !hasNotFixedConditions() && hasFiltersContainer()) {
             addCondition();
@@ -438,7 +426,7 @@ public final class GPlatformFiltersController implements GFilterInputController,
     public void setVisible(boolean visible) {
         for(GFilterConditionView conditionView : conditionViews.values())
             GwtClientUtils.setGridVisible(conditionView, visible);
-        toggle.setTableVisible(visible);
+        super.setVisible(visible);
     }
     
     public boolean hasConditions() {

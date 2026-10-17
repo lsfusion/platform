@@ -765,8 +765,11 @@ public class GReactFormDataTest extends GWTTestCase {
     // and the toggle, which tells the toolbar, as the panel does; how many times it was told that what draws the rows
     // has changed; what it was asked, in order, the FILTERS box and the mode it answers with; and what its editors'
     // controls were told to show, in order
-    private static final class PanelDouble implements GFilterInputController, GFilterEditors {
+    private static final class PanelDouble extends GFilterInputController implements GFilterEditors {
         GToolbarController<?> toolbar;
+        PanelDouble() {
+            super(null, null);
+        }
         int destroyed; // how many times it was let go of
         public void destroy() { destroyed++; }
         boolean shown;

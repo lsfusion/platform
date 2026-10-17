@@ -1149,19 +1149,13 @@ public class GReactFormData {
     // (GTableController.changeFilter), the box's part showing it (FiltersPart). A new condition is made at once - there
     // is no editor here, the view edits its value -, so nothing waits to be applied, and the controls and the toolbar's
     // button get no editors
-    private final class ReactFilterInputController implements GFilterInputController {
+    private final class ReactFilterInputController extends GFilterInputController {
         // the groups whose conditions they are, in their order: the group, or the tree's, top down
         final List<GGroupObject> groups;
-        // what draws the rows - the cell a new condition starts on, and what a list is stated through
-        final GTableController rows;
-        // what shows the controls and the toolbar's button, the platform's, which show and hide only those: there is no
-        // editor of the platform's here
-        final GFilterControlsToggle toggle;
 
         ReactFilterInputController(List<GGroupObject> groups, GTableController rows, GFilterControlsToggle toggle) {
+            super(rows, toggle);
             this.groups = groups;
-            this.rows = rows;
-            this.toggle = toggle;
             toggle.bind(this, null); // as the panel binds them: its controls give its commands - with no editors
         }
 
@@ -1197,20 +1191,7 @@ public class GReactFormData {
         public boolean hasFiltersContainer() {
             return true;
         }
-        // the controls, and the table shown or hidden: the platform's controls with it
-        public boolean isControlsVisible() {
-            return toggle.isVisible();
-        }
-        public void toggleControlsVisible() {
-            setControlsVisible(!toggle.isVisible());
-        }
-        public void setControlsVisible(boolean visible) {
-            toggle.setVisible(visible);
-        }
-        public void setVisible(boolean visible) {
-            toggle.setTableVisible(visible);
-        }
-        // ... and what draws the rows changed: nothing to read anew - the view's part reads the form's list
+        // what draws the rows changed: nothing to read anew - the view's part reads the form's list
         public void update() {
         }
     }
