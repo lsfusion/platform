@@ -134,47 +134,47 @@
                                                      dangerouslySetInnerHTML: { __html: value } });
             return React.createElement('span', { className: props.className, style: props.style }, value);
         };
-        // the crossing BACK to the platform. <Lsf name/> marks where a DESIGN child with `lsf = TRUE` goes:
+        // the crossing BACK to the platform. <Platform name/> marks where a DESIGN child with `lsf = TRUE` goes:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
         // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
         // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
-        // useLsf(name[, { row, className }]) -> the props of a host, to spread onto an element the component ALREADY
-        // renders, so no placeholder node exists at all: the ref that mounts the lsf child into it, what the root dresses
-        // a host in, and, while the child's entry says so, `hidden`.
-        // `name` is whatever the root it is mounted under names the thing being placed: for a form container, a
-        // component's DESIGN identifier, or a property's name as the view has it - o.note, the path of its entry -; the
-        // canonical name of an element for a navigator window.
-        // pass `row` for an LSF grid property: the name is the property's, as a panel one's is - o.qty - and the row says
-        // which of its per-row renderers, so the same name legitimately has one host per row. Pass the row object out of
-        // the projected data (or its `objects`) - a key string cannot be resolved back to a row.
-        // What a host is dressed in is the root's (its view's `host`, ReactRoot.Host): a form container's and the forms
-        // window's are marked as holding one of the platform's views - the lsf-view class the layout styles a host by,
-        // and data-lsf-sid a stylesheet addresses it by -, merged with the className the component gives it; the
-        // navigator's and the log's are left as the component rendered them. Props of the host's OWN, not something
-        // written into the DOM behind React's back: a className is React's, and the render that changes it rewrites the
-        // whole class attribute, which took every mark written there with it. So the component hands its class HERE,
-        // not to the element after the spread, where it would replace the merged one
-        // While the entry the name keys in the root's data says `hidden` - an lsf child's entry: its SHOWIF, or a
-        // container's above it - the host is `hidden` too, and stays: a child no host places is not read, SHOWIF and
-        // all, so it would never come back. The root's view says which entry a name keys: a component's descriptor under
-        // that name; a form container's lsf panel property's under its integration name, on its group's node. Not a
-        // row's host: what hides a per-row renderer is its column
+        // usePlatform(name[, { row, className }]) -> the props of a host, to spread onto an element the component
+        // ALREADY renders, so no placeholder node exists at all: the ref that mounts the platform-drawn child into it,
+        // what the root dresses a host in, and, while the child's entry says so, `hidden`. `name` is whatever the root
+        // it is mounted under names the thing being placed: for a form container, a component's DESIGN identifier, or a
+        // property's name as the view has it - o.note, the path of its entry -; the canonical name of an element for a
+        // navigator window. pass `row` for a platform-drawn grid property: the name is the property's, as a panel one's
+        // is - o.qty - and the row says which of its per-row renderers, so the same name legitimately has one host per
+        // row. Pass the row object out of the projected data (or its `objects`) - a key string cannot be resolved back
+        // to a row. What a host is dressed in is the root's (its view's `host`, ReactRoot.Host): a form container's and
+        // the forms window's are marked as holding one of the platform's views - the lsf-platform class the layout
+        // styles a host by, and data-lsf-sid a stylesheet addresses it by -, merged with the className the component
+        // gives it; the navigator's and the log's are left as the component rendered them. Props of the host's OWN, not
+        // something written into the DOM behind React's back: a className is React's, and the render that changes it
+        // rewrites the whole class attribute, which took every mark written there with it. So the component hands its
+        // class HERE, not to the element after the spread, where it would replace the merged one While the entry the
+        // name keys in the root's data says `hidden` - a platform-drawn child's entry: its SHOWIF, or a container's
+        // above it - the host is `hidden` too, and stays: a child no host places is not read, SHOWIF and all, so it
+        // would never come back. The root's view says which entry a name keys: a component's descriptor under that
+        // name; a form container's platform-drawn panel property's under its integration name, on its group's node. Not
+        // a row's host: what hides a per-row renderer is its column
         var unsubscribed = function () { return function () {}; }; // a root with no store: nothing is ever hidden
-        ns.useLsf = function (name, options) {
+        ns.usePlatform = function (name, options) {
             var context = React.useContext(Ctx);
-            // an <Lsf> only means anything under the root the platform mounted: a component rendering one into a React
-            // root of its own has no way to reach the platform, and used to find that out as a TypeError on `view`
+            // a <Platform> only means anything under the root the platform mounted: a component rendering one into a
+            // React root of its own has no way to reach the platform, and used to find that out as a TypeError on
+            // `view`
             var view = context ? context.view : null;
             var store = context ? context.store : null;
             var row = options ? options.row : undefined;
             var className = options ? options.className : undefined;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
-            // a name is what an <Lsf> IS, and the platform has the same words for a template place without one -
+            // a name is what a <Platform> IS, and the platform has the same words for a template place without one -
             // without this the name arrives as the string "undefined" and is reported as something that is not a form.
             // Said from INSIDE the callback, and after the hooks above, because the count of hooks a component calls
-            // may not change between renders: an <Lsf> whose name arrives later would otherwise break the component
+            // may not change between renders: a <Platform> whose name arrives later would otherwise break the component
             var nameless = name === undefined || name === null || name === '';
             // a name is a name whatever it was written as: the platform keeps its views in a Map, whose keys are
             // type-strict, and `name={8}` for the form the projection calls "8" would otherwise find nothing
@@ -187,11 +187,11 @@
             });
             var ref = React.useCallback(function (host) {
                 if (!view) {
-                    if (host) window.console.error("lsFusion custom view: an <Lsf> is outside the view the platform draws, so nothing can be placed in it");
+                    if (host) window.console.error("lsFusion custom view: a <Platform> is outside the view the platform draws, so nothing can be placed in it");
                     return;
                 }
                 if (nameless) {
-                    if (host) window.console.error("lsFusion custom view: an <Lsf> has no name, so nothing will ever be placed in it");
+                    if (host) window.console.error("lsFusion custom view: a <Platform> has no name, so nothing will ever be placed in it");
                     return;
                 }
                 if (held.current) { view.unmount(named, held.current, heldRow.current); held.current = null; heldRow.current = null; }
@@ -220,19 +220,19 @@
                 host.hidden = true;
             return host;
         };
-        // <Lsf name row className style/> is useLsf on a <div> of its own: the same props, the same dress
-        ns.Lsf = function (props) {
-            var host = ns.useLsf(props.name, props);
+        // <Platform name row className style/> is usePlatform on a <div> of its own: the same props, the same dress
+        ns.Platform = function (props) {
+            var host = ns.usePlatform(props.name, props);
             host.style = props.style;
             return React.createElement('div', host);
         };
         // useShown(name, shown): whether the view shows a container it draws itself - a page of a tab strip it draws,
         // a section it folds. The server reads what is inside a container the view draws as long as the view says
-        // nothing, as it reads a shown one; told it is not shown, it reads nothing inside it - an lsf child placed
-        // there included, host or no host -, as it reads nothing of a tab page that is not active. So it is called
-        // where it stays mounted while the container comes and goes - the strip, not the page -, and unmounted it
-        // leaves the container shown again, the server's default. `shown` left out is true. Its SHOWIF is the form's,
-        // and the container's entry says only that (`hidden`)
+        // nothing, as it reads a shown one; told it is not shown, it reads nothing inside it - a platform-drawn child
+        // placed there included, host or no host -, as it reads nothing of a tab page that is not active. So it is
+        // called where it stays mounted while the container comes and goes - the strip, not the page -, and unmounted
+        // it leaves the container shown again, the server's default. `shown` left out is true. Its SHOWIF is the
+        // form's, and the container's entry says only that (`hidden`)
         ns.useShown = function (name, shown) {
             var context = React.useContext(Ctx);
             var view = context ? context.view : null;
@@ -251,12 +251,12 @@
                 return function () { view.show(named, true); };
             }, [view, named, showing]);
         };
-        // A lsf child's caption / image is NOT drawn by the platform - it is handed to React in its own entry, under the
+        // A platform-drawn child's caption / image is NOT the platform's to draw - it is handed to React in its own entry, under the
         // name the child is placed by: a container's or any other component's is data[componentSID], a property's -
         // panel or table - is data.<group>[integrationSID] (data[integrationSID] for the empty group), where its value
         // would be if React drew it; an ACTION has none, its caption and image being its buttons' face. The component names each child
-        // it wants and draws that caption itself; a container is not iterated for you, so a child no Lsf mentions is
-        // not shown.
+        // it wants and draws that caption itself; a container is not iterated for you, so a child no <Platform>
+        // mentions is not shown.
 
         // one row of a <List>, read out of the root's own store by the group's name and the row's key, so that a change
         // of one row's values redraws that row alone
@@ -317,7 +317,8 @@
         // (DataGrid.checkSelectedRowVisible), ported to a custom card view: while the CURRENT row is on screen,
         // scrolling seeks NOTHING; when it leaves, it is reseated on the visible edge it left through - first visible
         // when it left above, last visible when it left below. Since the key window is a contiguous stretch of one
-        // linear order, moving current is also what pulls the next page, so the rows (and their <Lsf> editors) follow.
+        // linear order, moving current is also what pulls the next page, so the rows (and their <Platform> editors)
+        // follow.
         //   const seekRef = useSeekOnScroll(controller.b, { enabled: follow });
         //   <div key={row.key} ref={seekRef(row)} ...>
         // The other half of the pact, also the grid's: on a window shift the JUST-SEEKED row holds its on-screen

@@ -315,8 +315,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return component.getSID() == null && component.isReactDrawn();
     }
 
-    // where a COMPONENT is drawn: the react container that draws it, null when the platform does - an lsf one too,
-    // whose content is the platform's wherever React places it (mirrors GReactFormData.componentScope)
+    // where a COMPONENT is drawn: the react container that draws it, null when the platform does - a platform-drawn one
+    // too, whose content is the platform's wherever React places it (mirrors GReactFormData.componentScope)
     private ContainerView componentScope(ComponentView component) {
         // a LIST property has no place of its own: it is parked in its group's generated box, which says nothing about
         // where its column is drawn, so asking THAT container answers about the wrong component - its placement is
@@ -325,16 +325,16 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // forgets it is answered about the box. isList says there is a group to ask.
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity))
             return rowsScope(((PropertyDrawView) component).entity.getToDraw(entity));
-        return component.isLsfView() ? null : component.getReactPlace(); // an lsf component's content is the platform's
+        return component.isPlatformDrawn() ? null : component.getReactPlace(); // a platform-drawn component's content is the platform's
     }
 
     // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component's name is claimed in, and
     // where its entry is. A property is named by its integration name on its group's node, where React draws its
-    // content - a list property's column, lsf or not, where the rows are - or, for an lsf panel one, where React places
-    // it, its entry labelling what the platform draws (an ACTION's saying only whether the form shows it: its caption
-    // and image are its button's face). Any other component is named by its design identifier at the top level, where
-    // React draws or places it - one the design does not name, a user filter's, nowhere; nor a react container nothing
-    // places, whose caption the platform draws around it (mirrors GReactFormData.nameScope)
+    // content - a list property's column, platform-drawn or not, where the rows are - or, for a platform-drawn panel
+    // one, where React places it, its entry labelling what the platform draws (an ACTION's saying only whether the form
+    // shows it: its caption and image are its button's face). Any other component is named by its design identifier at
+    // the top level, where React draws or places it - one the design does not name, a user filter's, nowhere; nor a
+    // react container nothing places, whose caption the platform draws around it (mirrors GReactFormData.nameScope)
     private ContainerView nameScope(ComponentView component) {
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) // its column
             return rowsScope(((PropertyDrawView) component).entity.getToDraw(entity));
@@ -356,14 +356,14 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // the scopes a group's node appears in - every container that draws a part of it: its rows; each panel property
-    // with an entry, one React draws or one it places (lsf); each filter group of the group, FILTERGROUP(fg), whose
-    // part is the filter selected in it; and, of a list's group, the parts of its TABLE, its grid (addTableScopes). The
-    // twin of GReactFormData's createGridController and createTreeController, createPropertyController,
-    // createFilterGroupController and the factories of a table's parts, which make the nodes, each kind asked here by
-    // the scope its factory asks - rowsScope, nameScope, filterGroupScope and a table's, the twins of the client's -: a
-    // branch that gives a component a part adds it to BOTH in one commit, or the two sides answer differently. What is
-    // deliberately absent is the group's calculations (CalculationsView), which React draws nothing of yet, and a
-    // tree's table, one for all its groups, whose parts are on the tree's node (getTreeScopes)
+    // with an entry, one React draws or one it places (platform-drawn); each filter group of the group,
+    // FILTERGROUP(fg), whose part is the filter selected in it; and, of a list's group, the parts of its TABLE, its
+    // grid (addTableScopes). The twin of GReactFormData's createGridController and createTreeController,
+    // createPropertyController, createFilterGroupController and the factories of a table's parts, which make the nodes,
+    // each kind asked here by the scope its factory asks - rowsScope, nameScope, filterGroupScope and a table's, the
+    // twins of the client's -: a branch that gives a component a part adds it to BOTH in one commit, or the two sides
+    // answer differently. What is deliberately absent is the group's calculations (CalculationsView), which React draws
+    // nothing of yet, and a tree's table, one for all its groups, whose parts are on the tree's node (getTreeScopes)
     private List<ContainerView> getGroupScopes(GroupObjectEntity group) {
         List<ContainerView> scopes = new ArrayList<>();
         addScope(scopes, rowsScope(group));
@@ -402,9 +402,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (scope != null && !scopes.contains(scope))
             scopes.add(scope);
     }
-    // whether a property the view names has an entry there: one it carries by a name - an lsf ACTION too, whose entry
-    // says whether the form shows it -, not the one React draws by none, the group's own COUNT. A part of a group is a
-    // property with an entry (mirrors GReactFormData.hasEntry)
+    // whether a property the view names has an entry there: one it carries by a name - a platform-drawn ACTION too,
+    // whose entry says whether the form shows it -, not the one React draws by none, the group's own COUNT. A part of a
+    // group is a property with an entry (mirrors GReactFormData.hasEntry)
     private boolean hasEntry(PropertyDrawView property) {
         return property.entity.getIntegrationSID() != null;
     }
@@ -750,7 +750,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         checkCustomTemplatePlaces();
         checkReactRowsListView();
 
-        checkLsfViews();
+        checkPlatformViews();
         checkReactProjectionNames();
     }
 
@@ -823,10 +823,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             }
     }
 
-    // a react container that is itself a non-lsf child of a react container is SWALLOWED: GFormLayout.addContainers
-    // skips the whole projected subtree, so no view is built for it, its `custom` is never read, and the outer
-    // component is left to draw it from `data`. Its component is therefore drawn by nobody, silently - and so is any
-    // lsf child it would have placed, which is why checkLsfView does not ask this again
+    // a react container that is itself a non-platform-drawn child of a react container is SWALLOWED:
+    // GFormLayout.addContainers skips the whole projected subtree, so no view is built for it, its `custom` is never
+    // read, and the outer component is left to draw it from `data`. Its component is therefore drawn by nobody,
+    // silently - and so is any platform-drawn child it would have placed, which is why checkPlatformView does not ask
+    // this again
     private void checkCustomReactSwallowed() {
         for (ComponentView component : getComponents())
             if (component instanceof ContainerView) {
@@ -838,7 +839,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                             + " component '" + container.getCustom() + "', but it is itself drawn by the React component '"
                             + drawer.getCustom() + "', which draws its children from data - so nothing would ever build it;"
                             + " set lsf = TRUE on '" + container.getSID() + "' to give it a view of its own and place it"
-                            + " with <Lsf name=\"" + container.getSID() + "\"/>");
+                            + " with <Platform name=\"" + container.getSID() + "\"/>");
             }
     }
 
@@ -850,7 +851,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return name.equals(sid) || name.startsWith(sid + ".");
     }
 
-    // A container drawn by an HTML template gives each child it shows a <Lsf:sID> place. A place naming nothing the form
+    // A container drawn by an HTML template gives each child it shows a <Platform:sID> place. A place naming nothing the form
     // has at all would never be filled and nothing would say so, so the form is rejected here instead - once, when it is
     // built, with the rest of the design checks. A name the form HAS but this container no longer holds is left alone: an
     // extending module may move a child out, and an unfilled place is what the client does with that anyway.
@@ -932,8 +933,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         for (PropertyDrawView property : getPropertiesIt()) {
             GroupObjectEntity group = property.entity.getToDraw(entity); // null: the form level
             // a name is claimed WHERE THE VIEW NAMES THE PROPERTY, which is one container: each property asks its own
-            // nameScope, which for a list property answers with the grid's part, and for an lsf panel property with
-            // where React places it. The name of a property nothing projects lands nowhere
+            // nameScope, which for a list property answers with the grid's part, and for a platform-drawn panel
+            // property with where React places it. The name of a property nothing projects lands nowhere
             ContainerView scope = nameScope(property);
             // ... and a property the projection carries AT ALL is asked its shape as THE PROPERTY: not because another
             // part of its group happens to be projected, and whether it has a name or not
@@ -941,15 +942,15 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 checkProjectedColumns(property, group);
             String integrationSID = property.entity.getIntegrationSID();
             // ... and a property a react container draws or places has to have a name: a view reaches it by that name
-            // alone - its value, its entry, its member, the <Lsf> that places it. The platform's own COUNT of a list
-            // group, the pivot's, is the one it carries by none; an author's NOEXTID there leaves a property nothing
-            // could reach, so it is refused
+            // alone - its value, its entry, its member, the <Platform> that places it. The platform's own COUNT of a
+            // list group, the pivot's, is the one it carries by none; an author's NOEXTID there leaves a property
+            // nothing could reach, so it is refused
             boolean groupCount = group != null && group.count == property.entity;
             if (scope != null && integrationSID == null && !groupCount)
                 throw new IllegalStateException(formErrorPrefix() + "cannot project property '"
                         + property.entity.getSID() + "': the react container '" + scope.getSID() + "' "
-                        + (property.isLsfView() ? "places" : "draws") + " it, and a view reaches a property only by its"
-                        + " name, which NOEXTID takes away. Give it an EXTID");
+                        + (property.isPlatformDrawn() ? "places" : "draws") + " it, and a view reaches a property only"
+                        + " by its name, which NOEXTID takes away. Give it an EXTID");
             if (scope == null || integrationSID == null) // nothing names it
                 continue;
             String source = (group == null ? "form property '" : "property '") + getName(property) + "'";
@@ -958,8 +959,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             // container holding one panel property of the group has no `list` for a property called `list` to take,
             // while a panel property MOVEd in beside the grid does meet it
             claimProjectionName(inScope(nodeNames, scope), group, integrationSID, source, getReservedNodeNames(group, scope));
-            // an LSF list property has no per-row cell, only its column
-            if (property.entity.isList(entity) && !property.isLsfView())
+            // a platform-drawn list property has no per-row cell, only its column
+            if (property.entity.isList(entity) && !property.isPlatformDrawn())
                 claimProjectionName(inScope(rowNames, scope), group, integrationSID, source,
                         getReservedRowNames(group));
         }
@@ -1078,14 +1079,14 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         }
     }
 
-    // a projected name is a path a view WRITES - data.<group>.<name>, controller.<group>.<name>, <Lsf name="o.note"/> -
-    // and what reads one qualified - an <Lsf> given a row, the classic changeProperty - splits `<groupSID>.
-    // <integrationSID>` at the LAST dot (a state verb's `property` is a name the view's own group carries). A group SID
-    // never carries one (checkProjectedGroupSID refuses an unnamed group of several objects), so the split is
-    // unambiguous only while the PROPERTY half carries none either - and an EXTID is an arbitrary string, so a dot in
-    // one would be read as a group prefix and the name would ask for a group that does not exist. Nor may an EXTID be
-    // empty: an <Lsf> with no name places nothing, so a property of the empty group would be one no view can place.
-    // Asked where the name lands, and only there
+    // a projected name is a path a view WRITES - data.<group>.<name>, controller.<group>.<name>,
+    // <Platform name="o.note"/> - and what reads one qualified - a <Platform> given a row, the classic changeProperty -
+    // splits `<groupSID>.<integrationSID>` at the LAST dot (a state verb's `property` is a name the view's own group
+    // carries). A group SID never carries one (checkProjectedGroupSID refuses an unnamed group of several objects), so
+    // the split is unambiguous only while the PROPERTY half carries none either - and an EXTID is an arbitrary string,
+    // so a dot in one would be read as a group prefix and the name would ask for a group that does not exist. Nor may
+    // an EXTID be empty: a <Platform> with no name places nothing, so a property of the empty group would be one no
+    // view can place. Asked where the name lands, and only there
     private void checkProjectedName(String integrationSID, String source) {
         if (integrationSID.isEmpty())
             throw new IllegalStateException(formErrorPrefix() + "cannot project " + source + ": its integration name is"
@@ -1098,9 +1099,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a property GROUPED IN COLUMNS is one cell per row AND column, and everything a react view has of a property means
     // one ROW: its name, in `data` and on the controller, its descriptor, read at one key while the platform's own
-    // renderer gives its caption up to it, and an LSF one's per-row renderer, keyed by the row - under a row-and-column
-    // key a value would be written under one key and read under the other, every edit lost without a word. Where the
-    // projection CARRIES the property, that is not a runtime surprise to
+    // renderer gives its caption up to it, and a platform-drawn one's per-row renderer, keyed by the row - under a
+    // row-and-column key a value would be written under one key and read under the other, every edit lost without a
+    // word. Where the projection CARRIES the property, that is not a runtime surprise to
     // report but a form that cannot mean what it says, so it is refused here. Only there: a columns property nothing
     // projects is nobody's business, and the classic surface that still names it (its own stringly-typed
     // changeProperty, #1655) refuses it when the call is made. What this DOES settle is what the projection itself
@@ -1130,22 +1131,22 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // the design is complete here, so `lsf` can finally be checked against the container tree
-    private void checkLsfViews() {
+    private void checkPlatformViews() {
         for (ComponentView component : getComponents()) // the property draws are components too, so this covers them
-            checkLsfView(component);
+            checkPlatformView(component);
     }
 
-    private void checkLsfView(ComponentView component) {
-        if (!component.isLsfView())
+    private void checkPlatformView(ComponentView component) {
+        if (!component.isPlatformDrawn())
             return;
 
-        // a GRID property is the one lsf component whose place is not where it stands: its placement is DERIVED from
-        // its group's - the view that draws the rows places its renderers - so it is asked that, not to have a react
-        // container above it, wherever its own component is: a list property is parked in its group's box, and a
-        // REMOVEd box says nothing about where the rows are drawn. The client takes the flag as checked here
-        // (GComponent.isLsfView)
+        // a GRID property is the one platform-drawn component whose place is not where it stands: its placement is
+        // DERIVED from its group's - the view that draws the rows places its renderers - so it is asked that, not to
+        // have a react container above it, wherever its own component is: a list property is parked in its group's box,
+        // and a REMOVEd box says nothing about where the rows are drawn. The client takes the flag as checked here
+        // (GComponent.isPlatformDrawn)
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) {
-            checkLsfListView((PropertyDrawView) component);
+            checkPlatformListView((PropertyDrawView) component);
             return;
         }
 
@@ -1153,7 +1154,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             return;
 
         // placed by the react container above it, however deep under the containers that one draws itself
-        // (getReactPlace); under an lsf container there is nothing to place - the platform draws that container whole
+        // (getReactPlace); under a platform-drawn container there is nothing to place - the platform draws that
+        // container whole
         if (component.getReactPlace() == null)
             throw new IllegalStateException("lsf is set for '" + component.getSID() + "', which no CUSTOM REACT container places:"
                     + " there is none above it, or an lsf container on the way, which the platform draws whole");
@@ -1165,7 +1167,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // React draws the rows, the platform draws one panel property of the same group, and React places it.
     }
 
-    private void checkLsfListView(PropertyDrawView view) {
+    private void checkPlatformListView(PropertyDrawView view) {
         PropertyDrawEntity<?, ?> property = view.entity;
         // the no-arg form is unset when the group comes from the property context
         GroupObjectEntity toDraw = property.getToDraw(entity);

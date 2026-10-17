@@ -270,22 +270,22 @@
 .dropdown-partner {
     z-index: 2 !important;
 }
-/* CUSTOM REACT: a host a React view places one of the platform's views in carries the lsf-view mark - rendered by the
-   registry as the host's own class, so a render of the host's class keeps it - and is filled from it the way the
+/* CUSTOM REACT: a host a React view places one of the platform's views in carries the lsf-platform mark - rendered by
+   the registry as the host's own class, so a render of the host's class keeps it - and is filled from it the way the
    platform's fill-parent-flex(-cont) pair fills a child: the host is a flex column (here), the view stretches in it
    (fill-parent-flex, given to the view alone). Nothing is written into the host: a class written into a node React
    renders is lost the moment the component's class for it changes. The min-size reset those classes omit (min-size is
    content-specific, normally FlexPanel.addFill's, which a React-created host lacks) is added here too: a virtualized
    grid then scrolls instead of overflowing the host. */
-.lsf-view {
+.lsf-platform {
     display: flex !important; /* as fill-parent-flex-cont: form-control for example sets display:block */
     flex-direction: column;
 }
-.lsf-view, .lsf-view > * {
+.lsf-platform, .lsf-platform > * {
     min-width: 0;
     min-height: 0;
 }
-/* ... and a host a React view hides while its child's entry says `hidden` (useLsf) stays, taking no room: the mark
+/* ... and a host a React view hides while its child's entry says `hidden` (usePlatform) stays, taking no room: the mark
    forces its display, so `hidden` has to force it back - asked of the host's data-lsf-sid, its own prop too */
 [data-lsf-sid][hidden] {
     display: none !important;

@@ -2,7 +2,7 @@ MODULE LsfActionNameTwice;
 
 REQUIRE System;
 
-// an lsf action's entry is under its name on its group's node, as an <Lsf> places it by that name, so nothing else may
+// a platform-drawn action's entry is under its name on its group's node, as a <Platform> places it by that name, so nothing else may
 // take it there
 CLASS LsfActionItem;
 lsfActionNote = DATA STRING[50] (LsfActionItem);

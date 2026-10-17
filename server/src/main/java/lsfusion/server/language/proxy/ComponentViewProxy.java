@@ -32,7 +32,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
 
     @SuppressWarnings("unused")
     public void setLsf(boolean lsf) {
-        target.setLsfView(lsf, getVersion());
+        target.setPlatformDrawn(lsf, getVersion());
     }
 
     /* ========= constraints properties ========= */

@@ -88,7 +88,7 @@ public class SizedWidget {
         public void replace(ResizableComplexPanel panel, String sID) {
             Element panelElement = panel.getElement();
 
-            Element panelChild = GwtClientUtils.getLsfPlace(panelElement, sID);
+            Element panelChild = GwtClientUtils.getPlatformPlace(panelElement, sID);
 
             if (panelChild != null) {
                 panelChild.getParentElement().replaceChild(widget.getElement(), panelChild);

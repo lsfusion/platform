@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-// what a `custom` value is, and what the <Lsf:name> places in it name. The single point of determination, shared by
-// everything a `custom` can draw - a DESIGN container, a navigator window - which do not accept the same vocabulary:
+// what a `custom` value is, and what the <Platform:name> places in it name. The single point of determination, shared
+// by everything a `custom` can draw - a DESIGN container, a navigator window - which do not accept the same vocabulary:
 // a container takes '' (lay the children out in order), a component name, or markup; a window takes a component name
 // or markup only, since it has no children of its own to lay out
 public class Custom {
@@ -23,19 +23,19 @@ public class Custom {
 
     private static final Pattern HTML_TEMPLATE = Pattern.compile(".*<[A-Za-z/!].*", Pattern.DOTALL);
 
-    // the client half of this prefix is GwtClientUtils.getLsfPlace / unwrapLsfPlaces - one protocol, two ends
-    private static final String PLACE = "<Lsf:";
-    private static final String CLOSING_PLACE = "</Lsf:";
+    // the client half of this prefix is GwtClientUtils.getPlatformPlace / unwrapPlatformPlaces - one protocol, two ends
+    private static final String PLACE = "<Platform:";
+    private static final String CLOSING_PLACE = "</Platform:";
 
-    // walks the <Lsf:name> places of a template, handing each name to the caller and putting back what it returns.
+    // walks the <Platform:name> places of a template, handing each name to the caller and putting back what it returns.
     // A place is recognized by its prefix alone, so nothing else in the markup is read, let alone rewritten. The
     // markup is HTML, where the case of a tag means nothing, so the prefix is matched either way - but on the string
     // itself: lowercasing a copy and indexing the original with its offsets breaks on any character whose lower case
     // is longer than it is.
     //
-    // A place is written open, and only open. An HTML parser leaves it that way and unwrapLsfPlaces hands back what it
-    // swallowed, so a closing tag would be a second way to write the same thing - and one that can be closed with the
-    // wrong name. Both other ways of writing it are rejected here, where the template is read.
+    // A place is written open, and only open. An HTML parser leaves it that way and unwrapPlatformPlaces hands back
+    // what it swallowed, so a closing tag would be a second way to write the same thing - and one that can be closed
+    // with the wrong name. Both other ways of writing it are rejected here, where the template is read.
     public static String mapPlaces(String custom, PlaceMapper mapper) throws PlaceError {
         StringBuilder result = new StringBuilder();
         Set<String> placed = new HashSet<>();

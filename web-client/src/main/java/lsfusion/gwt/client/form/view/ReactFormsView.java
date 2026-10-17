@@ -21,7 +21,7 @@ import java.util.List;
 
 // WINDOW forms CUSTOM 'FormsView': a React component draws the forms window - its own tabs, a breadcrumb, or nothing but
 // the current form. It never draws a FORM: it renders a host per form it wants shown, and the platform moves that
-// form's own view in, the same crossing <Lsf name/> makes for a design child and a navigator element.
+// form's own view in, the same crossing <Platform name/> makes for a design child and a navigator element.
 //
 // A form the component places nowhere stays OPEN and hidden in the park, which is what a background tab already is -
 // the tab strip only flips setVisible. Closing is the application's call, through controller.close(name).
@@ -199,7 +199,7 @@ public class ReactFormsView implements FormsView {
         FormDockable dockable = byName.get(name);
         if (dockable == null) { // a name no open form has - a typo, or one kept after the form closed. Without this the
             // index would be -1, and making "no form" current would blur the one the user is in and leave nothing current
-            GwtClientUtils.logLsfViewError("'" + name + "' is not an open form, so it cannot be made the current one");
+            GwtClientUtils.logCustomViewError("'" + name + "' is not an open form, so it cannot be made the current one");
             return;
         }
 
@@ -212,7 +212,7 @@ public class ReactFormsView implements FormsView {
     public void closeForm(String name) {
         FormDockable dockable = byName.get(name);
         if (dockable == null) { // the same answer select gives: a name no open form has is the component's mistake
-            GwtClientUtils.logLsfViewError("'" + name + "' is not an open form, so it cannot be closed");
+            GwtClientUtils.logCustomViewError("'" + name + "' is not an open form, so it cannot be closed");
             return;
         }
 
@@ -220,7 +220,7 @@ public class ReactFormsView implements FormsView {
         // close button, and the projection says it with `blocked`. Only the button is guarded there, though, and this
         // goes straight to the form, so without this the contract would hold only for a component that reads the flag
         if (dockable.hasBlockingForm()) {
-            GwtClientUtils.logLsfViewError("form '" + name + "' is blocked by a form opened from it and cannot be closed"
+            GwtClientUtils.logCustomViewError("form '" + name + "' is blocked by a form opened from it and cannot be closed"
                     + "; the entry's `blocked` says so before it is tried");
             return;
         }
@@ -235,7 +235,7 @@ public class ReactFormsView implements FormsView {
                 return;
             }
 
-        GwtClientUtils.logLsfViewError("'" + mode + "' is not an edit mode; `editModes` in the projection has the ones there are");
+        GwtClientUtils.logCustomViewError("'" + mode + "' is not an edit mode; `editModes` in the projection has the ones there are");
     }
 
     public void toggleFullScreen() {
@@ -291,7 +291,7 @@ public class ReactFormsView implements FormsView {
     }-*/;
 
     // `name` is on the entry itself, so an entry passed around alone still knows which form it is - `open` is an array
-    // of names, and a name is what <Lsf name/> takes. `loading` says the form has not arrived yet: its caption is the one the open request carried, and there is
+    // of names, and a name is what <Platform name/> takes. `loading` says the form has not arrived yet: its caption is the one the open request carried, and there is
     // nothing else to read from it
     private native void addEntry(JavaScriptObject data, String name, String canonicalName, String caption, String image,
                                  boolean selected, boolean loading, boolean blocked)/*-{

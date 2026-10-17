@@ -302,19 +302,20 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
 
     public boolean isReact() {
         // React is INFERRED from the custom value (not stored): a bare component identifier (UpperCamel) names a React
-        // component; '', an HTML template ('<div><Lsf:child></div>'), or a lower-case/path string is a plain custom design
+        // component; '', an HTML template ('<div><Platform:child></div>'), or a lower-case/path string is a plain custom design
         return Custom.isReactComponent(getCustom());
     }
-    // ... a container the view draws too, lsf or not: one it draws itself - a page of a tab strip it draws - it shows
-    // or hides itself (useShown), and what is inside it is read only while it shows it
+    // ... a container the view draws too, platform-drawn or not: one it draws itself - a page of a tab strip it draws -
+    // it shows or hides itself (useShown), and what is inside it is read only while it shows it
     @Override
     public boolean isReactHidable() {
         return getReactPlace() != null;
     }
 
     // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (ComponentView.getReactPlace) - the container itself
-    // when it is a react one, whose component draws its children, else where the container is, unless it is an lsf
-    // one. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors GContainer.getChildrenReactPlace)
+    // when it is a react one, whose component draws its children, else where the container is, unless it is a
+    // platform-drawn one. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors
+    // GContainer.getChildrenReactPlace)
     public ContainerView getChildrenReactPlace() {
         return getReactPlaceFrom(this);
     }
@@ -513,8 +514,9 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     public boolean isCollapsible() {
-        // nothing with a React place has a GWT collapse toggle: an lsf container's visibility is owned by React, and a
-        // container React draws has no header at all - this keeps a component in at most one of the user-hidden roles
+        // nothing with a React place has a GWT collapse toggle: a platform-drawn container's visibility is owned by
+        // React, and a container React draws has no header at all - this keeps a component in at most one of the
+        // user-hidden roles
         if(getReactPlace() != null)
             return false;
 

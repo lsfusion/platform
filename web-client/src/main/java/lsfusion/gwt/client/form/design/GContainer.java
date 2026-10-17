@@ -196,7 +196,7 @@ public class GContainer extends GComponent {
     }
     public boolean isAlignCaptions() {
         // a react container has no line grid to align captions across (React owns its layout), and an aligned caption
-        // becomes a SEPARATE CaptionWidget, which no <Lsf> placeholder claims — an lsf child would lose
+        // becomes a SEPARATE CaptionWidget, which no <Platform> placeholder claims — a platform-drawn child would lose
         // its caption. Keeping captions inside the child's own widget is the only meaningful option here.
         if (isReact())
             return false;
@@ -262,8 +262,9 @@ public class GContainer extends GComponent {
         return react; // custom holds the React component name
     }
     // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (GComponent.getReactPlace) - the container itself when
-    // it is a react one, whose component draws its children, else where the container is, unless it is an lsf one.
-    // FILTERS(g) is asked it: what it holds is the group's user filters (mirrors ContainerView.getChildrenReactPlace)
+    // it is a react one, whose component draws its children, else where the container is, unless it is a platform-drawn
+    // one. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors
+    // ContainerView.getChildrenReactPlace)
     public GContainer getChildrenReactPlace() {
         return getReactPlaceFrom(this);
     }

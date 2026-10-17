@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// the bookkeeping behind <Lsf name/>: a component renders a host node, and the platform moves its own view into it.
-// Four owners do this - a form container's lsf children, a navigator window's buttons, the forms window's forms and the
-// log window's messages - and they differ only in what a name means and what moving costs. Everything else is the same every time, and getting it
-// slightly different in each copy is what this exists to stop:
+// the bookkeeping behind <Platform name/>: a component renders a host node, and the platform moves its own view into
+// it. Four owners do this - a form container's platform-drawn children, a navigator window's buttons, the forms
+// window's forms and the log window's messages - and they differ only in what a name means and what moving costs.
+// Everything else is the same every time, and getting it slightly different in each copy is what this exists to stop:
 //
 //   - a host asked for a view that does not exist YET is remembered, not refused: React renders a host once and never
 //     offers the same ref again, so giving up would leave the place empty for good
@@ -35,8 +35,8 @@ public class PlacedViews {
 
         // said in the host and in the console
         public void show(Element host) {
-            GwtClientUtils.showLsfViewError(host, shown);
-            GwtClientUtils.logLsfViewError(logged);
+            GwtClientUtils.showCustomViewError(host, shown);
+            GwtClientUtils.logCustomViewError(logged);
         }
     }
 
@@ -56,7 +56,7 @@ public class PlacedViews {
 
     private final NativeStringMap<Element> hosts = new NativeStringMap<>();  // where a view was asked for, moved or not
     private final NativeStringMap<Element> filled = new NativeStringMap<>(); // where one actually sits
-    // the hosts that asked for a name another host already had. React renders the same <Lsf> until its own props
+    // the hosts that asked for a name another host already had. React renders the same <Platform> until its own props
     // change, so a host refused here is never offered again - and a component that stops rendering the one that WON
     // would leave the view parked with a place for it still on the screen. Kept in order: the eldest asks first
     private final Map<String, List<Element>> refused = new HashMap<>();
@@ -98,7 +98,7 @@ public class PlacedViews {
             filled.remove(name);
             views.park(name);
         } else
-            GwtClientUtils.clearLsfViewError(host); // a host that never got a view may be holding the diagnostic instead
+            GwtClientUtils.clearCustomViewError(host); // a host that never got a view may be holding the diagnostic instead
 
         // the view is back in the park by now, so a host that was refused while this one held the name can take it -
         // and takes it whether or not this host ever got the view, since either way the name is free
@@ -119,7 +119,7 @@ public class PlacedViews {
         while (!asked.isEmpty()) {
             Element next = asked.remove(0);
             if (GwtClientUtils.isInDocument(next)) {
-                GwtClientUtils.clearLsfViewError(next); // it has been holding "already placed by another <Lsf>"
+                GwtClientUtils.clearCustomViewError(next); // it has been holding "already placed by another <Platform>"
                 mount(name, next);
                 break;
             }
@@ -139,8 +139,8 @@ public class PlacedViews {
     // said in one place, because the row path of a form container reports the same thing without going through the
     // bookkeeping here: a per-row renderer has one host per ROW, which is not the one-view / one-host ledger below
     public static void reportDuplicate(String name, Element host) {
-        GwtClientUtils.showLsfViewError(host, "'" + name + "' is already placed by another <Lsf>");
-        GwtClientUtils.logLsfViewError("'" + name + "' is placed by more than one <Lsf>; the first one keeps it");
+        GwtClientUtils.showCustomViewError(host, "'" + name + "' is already placed by another <Platform>");
+        GwtClientUtils.logCustomViewError("'" + name + "' is placed by more than one <Platform>; the first keeps it");
     }
 
     // whether a host holds this name - with the view in it, or waiting for it: what the owner tells the server is
@@ -154,9 +154,9 @@ public class PlacedViews {
         hosts.foreachEntry(this::tryPlace);
     }
 
-    // the template form: the view REPLACED the <Lsf:name> element instead of being put inside a host, so there is no
-    // host to remember and no cleanup to run - the place is consumed and only comes back when the template is redrawn.
-    // It is recorded here all the same, so that parkAll below sees every placement, however it was made
+    // the template form: the view REPLACED the <Platform:name> element instead of being put inside a host, so there is
+    // no host to remember and no cleanup to run - the place is consumed and only comes back when the template is
+    // redrawn. It is recorded here all the same, so that parkAll below sees every placement, however it was made
     public boolean consumePlace(String name) {
         if (filled.get(name) != null) // already placed, by either protocol - the first one keeps it
             return false;

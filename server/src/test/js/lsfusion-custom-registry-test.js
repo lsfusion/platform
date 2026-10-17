@@ -191,8 +191,9 @@ console.log('error boundary');
         JSON.stringify(w.__errors));
 }
 
-// ---- <Lsf> and the crossing back to the platform ----------------------------------------------------------------
-console.log('Lsf');
+// ---- <Platform> and the crossing back to the platform
+// ----------------------------------------------------------------
+console.log('Platform');
 {
     const w = load();
     // the context every hook reads; the double returns it from useContext
@@ -202,8 +203,8 @@ console.log('Lsf');
         unmount: (name, host, row) => crossed.push(['unmount', name, row]),
     } };
 
-    const ref = w.lsfusion.useLsf('o.note').ref;
-    check('useLsf hands back the props of a host, a ref callback among them', typeof ref === 'function');
+    const ref = w.lsfusion.usePlatform('o.note').ref;
+    check('usePlatform hands back the props of a host, a ref callback among them', typeof ref === 'function');
     ref({ tag: 'host' });
     check('a host crosses to the platform', crossed.length === 1 && crossed[0][0] === 'mount'
         && crossed[0][1] === 'o.note', JSON.stringify(crossed));
@@ -215,11 +216,11 @@ console.log('Lsf');
     // string "undefined" and be blamed on whatever the window holds
     for (const missing of [undefined, null, '']) {
         const w2 = load();
-        makeReact.__ctxValue = { view: { entryOf, host, mount: () => check('nothing crosses for a nameless <Lsf>', false),
+        makeReact.__ctxValue = { view: { entryOf, host, mount: () => check('nothing crosses for a nameless <Platform>', false),
                                          unmount: () => {} } };
-        const noRef = w2.lsfusion.useLsf(missing).ref;
+        const noRef = w2.lsfusion.usePlatform(missing).ref;
         noRef({ tag: 'host' });
-        check('a nameless <Lsf> says so: ' + JSON.stringify(missing),
+        check('a nameless <Platform> says so: ' + JSON.stringify(missing),
             w2.__errors.length === 1 && w2.__errors[0].indexOf('has no name') > 0, JSON.stringify(w2.__errors));
     }
 
@@ -230,7 +231,7 @@ console.log('Lsf');
     makeReact.__ctxValue = { view: { entryOf, host, mount: (n, h, r) => seen.push(['mount', n, r && r.key]),
                                      unmount: (n, h, r) => seen.push(['unmount', n, r && r.key]) } };
     const rowA = { key: 'r1', qty: 1 };
-    const rowRef = w4.lsfusion.useLsf('o.qty', { row: rowA }).ref;
+    const rowRef = w4.lsfusion.usePlatform('o.qty', { row: rowA }).ref;
     rowRef({ tag: 'rowHost' });
     check('a row host crosses with its row', seen.length === 1 && seen[0][2] === 'r1', JSON.stringify(seen));
     rowRef(null);
@@ -243,15 +244,15 @@ console.log('Lsf');
     makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
     const hostOf = { cursor: 0, slots: [] };
     const handleA = { group: 'a' }, handleB = { group: 'b' };
-    const refA = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA } }).ref);
-    const refA2 = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA, qty: 2 } }).ref);
-    const refB = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleB } }).ref);
+    const refA = render(hostOf, () => w4b.lsfusion.usePlatform('o.qty', { row: { key: '1', objects: handleA } }).ref);
+    const refA2 = render(hostOf, () => w4b.lsfusion.usePlatform('o.qty', { row: { key: '1', objects: handleA, qty: 2 } }).ref);
+    const refB = render(hostOf, () => w4b.lsfusion.usePlatform('o.qty', { row: { key: '1', objects: handleB } }).ref);
     check('the same row rebuilt keeps its host placed', refA === refA2);
     check("another group's row with the same key is placed again", refA2 !== refB);
     // ... and the row's `objects` handle names the host the row itself does: `row={row.objects}` is placed as
     // `row={row}` is, the hook keying on the handle either way
-    const refC = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: { key: '1', objects: handleA } }).ref);
-    const refH = render(hostOf, () => w4b.lsfusion.useLsf('o.qty', { row: handleA }).ref);
+    const refC = render(hostOf, () => w4b.lsfusion.usePlatform('o.qty', { row: { key: '1', objects: handleA } }).ref);
+    const refH = render(hostOf, () => w4b.lsfusion.usePlatform('o.qty', { row: handleA }).ref);
     check('row={row.objects} keeps the host row={row} placed', refC === refH);
 
     // a second host for the same name while the first still holds it: the hook itself does not judge that - it hands
@@ -259,8 +260,8 @@ console.log('Lsf');
     const w5 = load();
     const both = [];
     makeReact.__ctxValue = { view: { entryOf, host, mount: (n, h) => both.push(h.tag), unmount: () => {} } };
-    w5.lsfusion.useLsf('a').ref({ tag: 'h1' });
-    w5.lsfusion.useLsf('a').ref({ tag: 'h2' });
+    w5.lsfusion.usePlatform('a').ref({ tag: 'h1' });
+    w5.lsfusion.usePlatform('a').ref({ tag: 'h2' });
     check('two hosts for one name both reach the platform', both.join(',') === 'h1,h2', both.join(','));
 
     // a name is a name however it was written: the platform keeps its views in a Map, and `name={8}` for the form the
@@ -268,15 +269,15 @@ console.log('Lsf');
     const w6 = load();
     const asked = [];
     makeReact.__ctxValue = { view: { entryOf, host, mount: (n) => asked.push([n, typeof n]), unmount: () => {} } };
-    w6.lsfusion.useLsf(8).ref({ tag: 'h' });
+    w6.lsfusion.usePlatform(8).ref({ tag: 'h' });
     check('a number name reaches the platform as its string', asked.length === 1 && asked[0][0] === '8'
         && asked[0][1] === 'string', JSON.stringify(asked));
 
-    // an <Lsf> outside the root the platform mounted has no way to reach it, and says so instead of throwing
+    // a <Platform> outside the root the platform mounted has no way to reach it, and says so instead of throwing
     const w7 = load();
     makeReact.__ctxValue = null; // no Provider above it
-    const orphan = w7.lsfusion.useLsf('a', { className: 'c' });
-    check('an <Lsf> outside the platform root does not throw', typeof orphan.ref === 'function');
+    const orphan = w7.lsfusion.usePlatform('a', { className: 'c' });
+    check('a <Platform> outside the platform root does not throw', typeof orphan.ref === 'function');
     check('...and is dressed as holding nothing, having nothing to hold', orphan.className === 'c' && !('dressed' in orphan),
         JSON.stringify(orphan));
     orphan.ref({ tag: 'h' });
@@ -286,8 +287,8 @@ console.log('Lsf');
     // the host never renders React children of its own - the platform owns what goes inside it
     const w3 = load();
     makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
-    const element = w3.lsfusion.Lsf({ name: 'a', className: 'c', style: { height: 1 }, children: 'IGNORED' });
-    check('Lsf renders a div', element.type === 'div');
+    const element = w3.lsfusion.Platform({ name: 'a', className: 'c', style: { height: 1 }, children: 'IGNORED' });
+    check('Platform renders a div', element.type === 'div');
     check('...dressed as the root dresses a host, given its name and class', element.props.dressed === 'a|c',
         element.props.dressed);
     check('...holding the ref that places the child', typeof element.props.ref === 'function');
@@ -299,19 +300,20 @@ console.log('Lsf');
     // dressed anew, as React rewrites the whole class attribute from the className prop
     const w8 = load();
     makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
-    const first = w8.lsfusion.Lsf({ name: 'BOX(o)', className: 'panel' });
-    const second = w8.lsfusion.Lsf({ name: 'BOX(o)', className: 'panel panel-wide' });
+    const first = w8.lsfusion.Platform({ name: 'BOX(o)', className: 'panel' });
+    const second = w8.lsfusion.Platform({ name: 'BOX(o)', className: 'panel panel-wide' });
     check('a changed class is dressed anew', first.props.dressed === 'BOX(o)|panel'
         && second.props.dressed === 'BOX(o)|panel panel-wide', first.props.dressed + ' / ' + second.props.dressed);
 
-    // useLsf dresses the component's own element the same way, with the class it is given
-    const own = w8.lsfusion.useLsf('BOX(o)', { className: 'board-panel' });
-    check('useLsf dresses the element with the class it is given', own.dressed === 'BOX(o)|board-panel', own.dressed);
+    // usePlatform dresses the component's own element the same way, with the class it is given
+    const own = w8.lsfusion.usePlatform('BOX(o)', { className: 'board-panel' });
+    check('usePlatform dresses the element with the class it is given', own.dressed === 'BOX(o)|board-panel',
+        own.dressed);
     check('...and adds the ref', typeof own.ref === 'function');
-    check('a number name is dressed as its string', w8.lsfusion.useLsf(8).dressed === '8|undefined');
+    check('a number name is dressed as its string', w8.lsfusion.usePlatform(8).dressed === '8|undefined');
 
     // a host that names nothing places nothing, so it is dressed as holding nothing: the component's class alone
-    const nameless = w8.lsfusion.Lsf({ className: 'c' });
+    const nameless = w8.lsfusion.Platform({ className: 'c' });
     check('a nameless host is not dressed', nameless.props.className === 'c' && !('dressed' in nameless.props),
         JSON.stringify(nameless.props));
 
@@ -321,22 +323,22 @@ console.log('Lsf');
     const snapshot = { 'BOX(o)': { caption: 'Orders', hidden: true }, 'BOX(i)': { caption: 'Items' } };
     makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} },
                              store: { subscribe: () => () => {}, getSnapshot: () => snapshot } };
-    check('a host whose entry says hidden is hidden', w10.lsfusion.useLsf('BOX(o)').hidden === true);
-    check('a host whose entry does not say so is not', w10.lsfusion.useLsf('BOX(i)').hidden === undefined);
-    check("a row's host is not hidden by a top-level entry", w10.lsfusion.useLsf('BOX(o)', { row: { key: 'r1' } }).hidden === undefined);
-    const hiddenDiv = w10.lsfusion.Lsf({ name: 'BOX(o)', className: 'c', style: { width: 2 } });
-    check('<Lsf> hides its div the same way, with its class and style', hiddenDiv.props.hidden === true
+    check('a host whose entry says hidden is hidden', w10.lsfusion.usePlatform('BOX(o)').hidden === true);
+    check('a host whose entry does not say so is not', w10.lsfusion.usePlatform('BOX(i)').hidden === undefined);
+    check("a row's host is not hidden by a top-level entry", w10.lsfusion.usePlatform('BOX(o)', { row: { key: 'r1' } }).hidden === undefined);
+    const hiddenDiv = w10.lsfusion.Platform({ name: 'BOX(o)', className: 'c', style: { width: 2 } });
+    check('<Platform> hides its div the same way, with its class and style', hiddenDiv.props.hidden === true
         && hiddenDiv.props.style.width === 2 && hiddenDiv.props.className.indexOf('c') >= 0, JSON.stringify(hiddenDiv.props));
-    // the root's view says which entry a name keys: a form container keys an lsf panel property's by its integration
-    // name on its group's node, and places the property by that same path, o.note
+    // the root's view says which entry a name keys: a form container keys a platform-drawn panel property's by its
+    // integration name on its group's node, and places the property by that same path, o.note
     const keyed = { 'BOX(o)': { caption: 'Orders' }, o: { note: { caption: 'Note', hidden: true } } };
     makeReact.__ctxValue = { view: { host, mount: () => {}, unmount: () => {},
                                      entryOf: (data, name) => name === 'o.note' ? data.o.note : data[name] },
                              store: { subscribe: () => () => {}, getSnapshot: () => keyed } };
-    check("a host is hidden by the entry the root's view says its name keys", w10.lsfusion.useLsf('o.note').hidden === true);
-    check('...and a name the view keys as itself is read as itself', w10.lsfusion.useLsf('BOX(o)').hidden === undefined);
+    check("a host is hidden by the entry the root's view says its name keys", w10.lsfusion.usePlatform('o.note').hidden === true);
+    check('...and a name the view keys as itself is read as itself', w10.lsfusion.usePlatform('BOX(o)').hidden === undefined);
     makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } }; // a root with no store
-    check('a root with no store hides nothing', w10.lsfusion.useLsf('BOX(o)').hidden === undefined);
+    check('a root with no store hides nothing', w10.lsfusion.usePlatform('BOX(o)').hidden === undefined);
 }
 
 // ---- the hooks an application calls ------------------------------------------------------------------------------
@@ -666,13 +668,13 @@ console.log('hooks');
     check('the context survives a second install', w.lsfusion.__context === ctx);
     check('useData and useController are there', typeof w.lsfusion.useData === 'function'
         && typeof w.lsfusion.useController === 'function');
-    check('Lsf is there', typeof w.lsfusion.Lsf === 'function');
+    check('Platform is there', typeof w.lsfusion.Platform === 'function');
 }
 
 // ---- the client half of the place protocol ----------------------------------------------------------------------
-// GwtClientUtils.getLsfPlaceNames reads the names a template asks for. It is JSNI - a string the Java compiler never
-// checks - and it has to find exactly what the server's Custom.mapPlaces finds, or the two ends of one protocol drift.
-// The expectations below are the same cases CustomTest states on the server side.
+// GwtClientUtils.getPlatformPlaceNames reads the names a template asks for. It is JSNI - a string the Java compiler
+// never checks - and it has to find exactly what the server's Custom.mapPlaces finds, or the two ends of one protocol
+// drift. The expectations below are the same cases CustomTest states on the server side.
 console.log('place names (the real regex, read out of the JSNI)');
 {
     const clientSrc = fs.readFileSync(REPO + '/web-client/src/main/java/lsfusion/gwt/client/base/GwtClientUtils.java', 'utf8');
@@ -680,8 +682,8 @@ console.log('place names (the real regex, read out of the JSNI)');
     const patterns = clientSrc.match(/new \$wnd\.RegExp\("<" \+ place \+ "([^"]+)", "gi"\)/g) || [];
     check('the place-name expression is found exactly once', patterns.length === 1, patterns.length);
     const pattern = clientSrc.match(/new \$wnd\.RegExp\("<" \+ place \+ "([^"]+)", "gi"\)/)[1].replace(/\\\\/g, '\\');
-    const prefixes = clientSrc.match(/String LSF_PLACE = "([^"]+)"/) || [];
-    check('the prefix is read from the source too, not assumed', prefixes[1] === 'lsf:', prefixes[1]);
+    const prefixes = clientSrc.match(/String PLATFORM_PLACE = "([^"]+)"/) || [];
+    check('the prefix is read from the source too, not assumed', prefixes[1] === 'platform:', prefixes[1]);
     const names = (template) => {
         const found = new RegExp('<' + prefixes[1] + pattern, 'gi');
         const out = []; let m;
@@ -690,23 +692,38 @@ console.log('place names (the real regex, read out of the JSNI)');
     };
 
     const cases = [
-        ['<div><Lsf:orders></div>', ['orders']],
-        ['<Lsf:a>|<Lsf:b>|<Lsf:c>', ['a', 'b', 'c']],
-        ['<lsf:orders>', ['orders']],                       // the prefix is matched either way
-        ['<LSF:Orders>', ['Orders']],                       // ...and the name is not
-        ['<Lsf:a class="x">', ['a']],                       // an attribute ends the name
-        ['<Lsf:a >', ['a']],
-        ['<Lsf:a\n>', ['a']],
-        ['<Lsf:PROPERTY(note).caption>', ['PROPERTY(note).caption']],
-        ['<Lsf:a/>', ['a']],                                // a wrong spelling still NAMES something
-        ['<Lsf:🙂зайка>', ['🙂зайка']],
+        ['<div><Platform:orders></div>', ['orders']],
+        ['<Platform:a>|<Platform:b>|<Platform:c>', ['a', 'b', 'c']],
+        ['<platform:orders>', ['orders']],                  // the prefix is matched either way
+        ['<PLATFORM:Orders>', ['Orders']],                  // ...and the name is not
+        ['<Platform:a class="x">', ['a']],                  // an attribute ends the name
+        ['<Platform:a >', ['a']],
+        ['<Platform:a\n>', ['a']],
+        ['<Platform:PROPERTY(note).caption>', ['PROPERTY(note).caption']],
+        ['<Platform:a/>', ['a']],                           // a wrong spelling still NAMES something
+        ['<Platform:🙂зайка>', ['🙂зайка']],
         ['plain markup with no places', []],
-        ['<lsfoo><lsf-place>', []],                         // only the prefix makes a place
-        ['<Lsf:>', []],                                     // no name at all
+        ['<platformfoo><platform-place>', []],              // only the prefix makes a place
+        ['<Platform:>', []],                                // no name at all
     ];
     for (const [template, expected] of cases)
         check('names of ' + JSON.stringify(template), JSON.stringify(names(template)) === JSON.stringify(expected),
             JSON.stringify(names(template)));
+}
+
+// ---- the docs' examples ---------------------------------------------------------------------------------------
+// what the how-to binds out of window.lsfusion before its examples has to be there: a name the registry renamed and a
+// destructuring left behind leaves every example after it undefined
+console.log("the docs' examples");
+{
+    const exported = load().lsfusion;
+    for (const lang of ['en', 'ru'])
+        for (const file of fs.readdirSync(REPO + '/docs/how-to/' + lang).filter(f => f.endsWith('.md'))) {
+            const text = fs.readFileSync(REPO + '/docs/how-to/' + lang + '/' + file, 'utf8');
+            for (const binding of text.matchAll(/const \{([^}]*)\} = window\.lsfusion/g))
+                for (const name of binding[1].split(',').map(n => n.split(':')[0].trim()).filter(n => n))
+                    check(lang + '/' + file + ' binds ' + name + ' out of window.lsfusion', name in exported);
+        }
 }
 
 console.log('\n' + passes + ' passed, ' + failures + ' failed');

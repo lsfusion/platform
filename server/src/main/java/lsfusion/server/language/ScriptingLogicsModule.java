@@ -6019,7 +6019,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
         setNavigatorElementShowIf(element, options.showIfProperty != null ? options.showIfProperty.getLP().property : null);
         if (options.lsf)
-            element.lsf = true;
+            element.platformDrawn = true;
         setNavigatorElementChangeKey(element, options.changeKey, options.showChangeKey);
         setNavigatorElementChangeMouse(element, options.changeMouse, options.showChangeMouse);
 

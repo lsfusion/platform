@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-// WINDOW ... CUSTOM '<nav><Lsf:orders></nav>': the window's markup is the application's, and the platform's own
-// buttons are put into the <Lsf:name> places in it - the same template shape a DESIGN container uses. An element the
-// template gives no place is not drawn.
+// WINDOW ... CUSTOM '<nav><Platform:orders></nav>': the window's markup is the application's, and the platform's own
+// buttons are put into the <Platform:name> places in it - the same template shape a DESIGN container uses. An element
+// the template gives no place is not drawn.
 public class TemplateNavigatorView extends ParkedNavigatorView {
 
     // what the panel currently holds; null until it has been rendered at all. The template is one of the two, since a
@@ -42,7 +42,7 @@ public class TemplateNavigatorView extends ParkedNavigatorView {
         GwtClientUtils.reportComponentName(window.custom, window.canonicalName);
 
         buttons.parkAll();
-        GwtClientUtils.setLsfTemplate(panel.getElement(), window.custom);
+        GwtClientUtils.setPlatformTemplate(panel.getElement(), window.custom);
 
         for (String canonicalName : buttons.getDrawnNames())
             buttons.replacePlace(canonicalName, panel.getElement());
@@ -50,7 +50,7 @@ public class TemplateNavigatorView extends ParkedNavigatorView {
         // and whatever the template asked for that nothing filled. A literal is read when the module is read and a
         // name that is not an element is refused there; a template a property computes is read by nobody, so this is
         // where its mistakes are found - which is the path where a typo lives longest
-        JsArrayString placeNames = GwtClientUtils.getLsfPlaceNames(window.custom);
+        JsArrayString placeNames = GwtClientUtils.getPlatformPlaceNames(window.custom);
         for (int i = 0; i < placeNames.length(); i++)
             buttons.reportPlace(placeNames.get(i), panel.getElement());
     }

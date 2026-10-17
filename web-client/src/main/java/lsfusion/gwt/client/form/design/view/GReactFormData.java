@@ -88,17 +88,17 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 // its component is - the rows where the grid (or the tree) is, a panel property where the property is. The form level
 // is the empty group: its node is each container's top level. Every other component React draws or places has a
 // descriptor - its entry at that top level, keyed by its SID, where a property carried by name is keyed by that name -
-// an lsf one included, which the platform draws and React places: an lsf ACTION's says only whether the form shows it,
-// its caption and image being its buttons' face, which the platform draws.
-// What an entry says is what the server sent, as the platform keeps it for its own components: nothing here decides
-// that something is hidden or empties it. A property the form does not show is dropped by the server, and its entry has
-// no value; a component the form does not show has its SHOWIF, and its descriptor says so - the rows of a hidden grid
-// stay as the server last sent them, as the platform's own grid keeps them. Like any attribute, `hidden` is there only
-// while it has a value: while the form does not show the entry's component.
-// The model, top down: a container's state (ContainerState) and its nodes - its top level (TopNode), and an owner's
-// node, a group's or a tree's (GroupNode, TreeNode) -; on an owner's node, one part for each of the owner's components
-// the container draws (Part), and on a node the entries of the properties and components it carries (Entry); the
-// members that mirror them (THE MEMBERS); and what a view's author wrote, read by one rule (WHAT A STATE MEMBER READS).
+// one the platform draws included, which React places: a platform-drawn ACTION's says only whether the form
+// shows it, its caption and image being its buttons' face, which the platform draws. What an entry says is what the
+// server sent, as the platform keeps it for its own components: nothing here decides that something is hidden or
+// empties it. A property the form does not show is dropped by the server, and its entry has no value; a component the
+// form does not show has its SHOWIF, and its descriptor says so - the rows of a hidden grid stay as the server last
+// sent them, as the platform's own grid keeps them. Like any attribute, `hidden` is there only while it has a value:
+// while the form does not show the entry's component. The model, top down: a container's state (ContainerState) and its
+// nodes - its top level (TopNode), and an owner's node, a group's or a tree's (GroupNode, TreeNode) -; on an owner's
+// node, one part for each of the owner's components the container draws (Part), and on a node the entries of the
+// properties and components it carries (Entry); the members that mirror them (THE MEMBERS); and what a view's author
+// wrote, read by one rule (WHAT A STATE MEMBER READS).
 public class GReactFormData {
     private final GForm form;
     // GComponent.getReactPlace - handed in, so a test sees who asks it
@@ -184,8 +184,8 @@ public class GReactFormData {
         // ===== the form's own: why it refuses a request now, null where it does not - a batch runs, which carries
         // changes only, or the form is closed -: the reason the call fails with, as a server call on a controller does
         String getRefusal(String surface);
-        // ... and published: what the form draws by what it holds follows it - the per-row editors of an lsf column
-        // follow the rows
+        // ... and published: what the form draws by what it holds follows it - the per-row editors of a platform-drawn
+        // column follow the rows
         void published();
         // ... and a view's batch: run, the edits made in it shown at once and sent together, in one request, when it
         // ends - when it throws too -, a call being made when it is made. A batch begun inside it is a part of it; a
@@ -238,46 +238,46 @@ public class GReactFormData {
         ContainerState state = containers.get(scope);
         if (property.isList) { // its content is its column, with its group's rows, on their node
             RowsPart rows = state.getRowsPart(property.groupObject);
-            if (!property.isLsfView())
+            if (!property.isPlatformDrawn())
                 return new ReactColumnPropertyEntry(rows, property);
-            return property.isAction() ? new LsfColumnActionEntry(rows, property, platform) : new LsfColumnPropertyEntry(rows, property, platform);
+            return property.isAction() ? new PlatformColumnActionEntry(rows, property, platform) : new PlatformColumnPropertyEntry(rows, property, platform);
         }
         // a panel property is a part of its group: on the group's node here, the empty group's on the top level
         Node node = property.groupObject == null ? state.top : state.getOrCreateGroupNode(property.groupObject);
-        if (!property.isLsfView())
+        if (!property.isPlatformDrawn())
             return new ReactPanelPropertyEntry(node, property);
-        return property.isAction() ? new LsfPanelActionEntry(node, property, platform) : new LsfPanelPropertyEntry(node, property, platform);
+        return property.isAction() ? new PlatformPanelActionEntry(node, property, platform) : new PlatformPanelPropertyEntry(node, property, platform);
     }
-    // whether a property a view names has an entry there: one it carries by a name - an lsf ACTION too, whose entry
-    // says whether the form shows it -, not the one React draws by none, the group's own COUNT. Any other has a name,
-    // the form being refused without one (FormView.checkReactProjectionNames). A group's node is where an entry of it
-    // is (mirrors FormView.hasEntry)
+    // whether a property a view names has an entry there: one it carries by a name - a platform-drawn ACTION too, whose
+    // entry says whether the form shows it -, not the one React draws by none, the group's own COUNT. Any other has a
+    // name, the form being refused without one (FormView.checkReactProjectionNames). A group's node is where an entry
+    // of it is (mirrors FormView.hasEntry)
     private static boolean hasEntry(GPropertyDraw property) {
         return property.integrationSID != null;
     }
     // ... and what the COUNT has instead: nothing, React keeping nothing of it - the platform's controller, where the
     // platform draws it
     private static GPropertyController noEntry(GPropertyDraw property, GPlatformPropertyController platform) {
-        return property.isLsfView() ? platform : null;
+        return property.isPlatformDrawn() ? platform : null;
     }
     // ... of a component: none of what React keeps nothing of (reactKeepsNothing). A property's is the platform's,
     // whatever draws the property - a property is no owner as a component, all of it being its property controller's
     // (above), and the one thing sent for it as a component, its class (a design showIf on a property is the
     // property's SHOWIF), is the platform's to apply to the view it draws the property in: none where React draws it.
-    // Of any other: of one React draws, all that is sent for it; of an lsf one React places, its descriptor - its labels
-    // and its SHOWIF - where the design names the component, over the platform's; of one it places by no name,
-    // nothing: all of it is the platform's. `platform` is the platform's controller of the component: the layout
+    // Of any other: of one React draws, all that is sent for it; of a platform-drawn one React places, its descriptor -
+    // its labels and its SHOWIF - where the design names the component, over the platform's; of one it places by no
+    // name, nothing: all of it is the platform's. `platform` is the platform's controller of the component: the layout
     public GComponentController createComponentController(GComponent component, GComponentController platform) {
         if (reactKeepsNothing(component))
             return null;
         GContainer scope = component instanceof GPropertyDraw ? null : nameScope(component);
-        return reactOrPlatform(scope, state -> component.isLsfView() ? new LsfComponentEntry(state, component, platform) : new ReactComponentEntry(state, component), () -> platform);
+        return reactOrPlatform(scope, state -> component.isPlatformDrawn() ? new PlatformComponentEntry(state, component, platform) : new ReactComponentEntry(state, component), () -> platform);
     }
     // ... and WHAT REACT KEEPS NOTHING OF as a component, so nothing is sent for it as one (mirrors
     // FormView.reactKeepsNothing): a component React draws that the design does not name - no descriptor, no entry to
     // go to
     private boolean reactKeepsNothing(GComponent component) {
-        return component.sID == null && !component.isLsfView() && placed(component) != null;
+        return component.sID == null && !component.isPlatformDrawn() && placed(component) != null;
     }
     // ... and the controller of a FILTER GROUP of a group: none of one with no filters, which has no view of either
     // kind; its part, a part of the group, on its node where FILTERGROUP(fg) is drawn (filterGroupScope), else the
@@ -348,9 +348,9 @@ public class GReactFormData {
     private <C> C reactOrPlatform(GContainer scope, Function<ContainerState, C> react, Supplier<C> platform) {
         return scope != null ? react.apply(containers.get(scope)) : platform.get();
     }
-    // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GPlatformRowsPanelController): a group's lsf list properties are
-    // drawn per row only where React draws the group's rows (FormView.checkLsfListView), so what they follow is the
-    // rows' part
+    // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GPlatformRowsPanelController): a group's platform-drawn list
+    // properties are drawn per row only where React draws the group's rows (FormView.checkPlatformListView), so what
+    // they follow is the rows' part
     public interface Rows {
         // its rows as the view has them, its own add or remove included - the part's own list, which it replaces and
         // never changes: a list handed out keeps saying what it said
@@ -510,7 +510,8 @@ public class GReactFormData {
         final NativeStringMap<OwnerNode> nodes = new NativeStringMap<>();
         // ... and the TABLES whose rows are drawn here, each a part on the table's node with the rows' parts of its
         // groups (createGridTablePart, createTreeTablePart): what a list property's column goes with, what answers for
-        // an lsf property drawn per row (getRowsPart), and what places what its rows state about one another (commit)
+        // a platform-drawn property drawn per row (getRowsPart), and what places what its rows state about one another
+        // (commit)
         final NativeSIDMap<GGridProperty, TablePart<?, ?>> tableParts = new NativeSIDMap<>();
         final TopNode top; // the empty group's node: the container's top level, the descriptors' as well
         JavaScriptObject data = newObject();
@@ -555,7 +556,7 @@ public class GReactFormData {
         }
 
         // a property's entry in a snapshot of this container's data, where its name says it is - null where it has
-        // none here: what hides the host of an lsf panel property while it says `hidden` (useLsf)
+        // none here: what hides the host of a platform-drawn panel property while it says `hidden` (usePlatform)
         public JavaScriptObject entryOf(JavaScriptObject snapshot, GPropertyDraw property) {
             Node node = nodeOf(property.groupObject);
             JavaScriptObject nodeData = node != null ? node.in(snapshot) : null;
@@ -618,17 +619,18 @@ public class GReactFormData {
             makeCalls(GReactFormData.this, controller);
         }
 
-        // the lsf list property whose per-row renderers an <Lsf> places, named as a panel property is - its group, then
-        // its integration name, o.qty, the path of its column entry -, of a group whose rows this container draws:
-        // asked of the rows' parts, not of the container's children, such a property being no child of it
-        // (FormView.checkLsfListView). The row an <Lsf> gives says which renderer, and has to be a row of that group
-        public GPropertyDraw getRowLsfProperty(String name) {
+        // the platform-drawn list property whose per-row renderers a <Platform> places, named as a panel property is -
+        // its group, then its integration name, o.qty, the path of its column entry -, of a group whose rows this
+        // container draws: asked of the rows' parts, not of the container's children, such a property being no child of
+        // it (FormView.checkPlatformListView). The row a <Platform> gives says which renderer, and has to be a row of
+        // that group
+        public GPropertyDraw getRowPlatformProperty(String name) {
             int dot = name.lastIndexOf('.');
             if (dot < 0) // a grid property always has a group
                 return null;
             GGroupObject group = form.getGroupObject(name.substring(0, dot));
             RowsPart rows = group != null ? getRowsPart(group) : null;
-            return rows != null ? rows.getRowLsfProperty(name.substring(dot + 1)) : null;
+            return rows != null ? rows.getRowPlatformProperty(name.substring(dot + 1)) : null;
         }
 
         // controller.batch(fn): fn run in the form's batch (Verbs.batch), which sends what it makes when it returns -
@@ -644,7 +646,7 @@ public class GReactFormData {
     // the DESCRIPTOR of a component React draws or places: its entry at its container's top level, keyed by its SID -
     // its labels, its caption and image, and whether the form shows the component now: its SHOWIF, as the server sends
     // it for a component a react view is told about (true: hidden) - React's alone, as its labels are: a placed one's
-    // host is hidden by the view that places it (useLsf), which the platform does not do for what React places
+    // host is hidden by the view that places it (usePlatform), which the platform does not do for what React places
     private abstract class ComponentEntry extends Entry implements GComponentController {
         final GComponent component;
         final GPropertyReader[] labelReaders; // its caption and image
@@ -680,12 +682,12 @@ public class GReactFormData {
         public void updateOther(GComponentReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         }
     }
-    // ... of an lsf one React places: the platform draws it and React labels it, from this entry; the rest is the
-    // platform's
-    private final class LsfComponentEntry extends ComponentEntry {
+    // ... of a platform-drawn one React places: the platform draws it and React labels it, from this entry; the rest is
+    // the platform's
+    private final class PlatformComponentEntry extends ComponentEntry {
         final GComponentController platform; // the platform's controller of the component: the layout, which draws it
 
-        LsfComponentEntry(ContainerState state, GComponent component, GComponentController platform) {
+        PlatformComponentEntry(ContainerState state, GComponent component, GComponentController platform) {
             super(state, component);
             this.platform = platform;
         }
@@ -797,7 +799,7 @@ public class GReactFormData {
             String key = field + ":" + name;
             if (unnameable.get(key) == null) {
                 unnameable.put(key, Boolean.TRUE);
-                GwtClientUtils.logLsfViewError("data." + this.name + "." + field + ": " + describe() + " is " + what + " by '"
+                GwtClientUtils.logCustomViewError("data." + this.name + "." + field + ": " + describe() + " is " + what + " by '"
                         + name + "', which the projection does not name here (" + why + "), so that one is not listed");
             }
         }
@@ -847,8 +849,8 @@ public class GReactFormData {
         String describe() {
             return "the tree";
         }
-        // a property of a group of the tree, by its group's name and its integration name, c.name, as an <Lsf> names a
-        // property of a group - each of the group of its property, in the tree's order of the groups, as the
+        // a property of a group of the tree, by its group's name and its integration name, c.name, as a <Platform>
+        // names a property of a group - each of the group of its property, in the tree's order of the groups, as the
         // platform's panel shows them and a list a view states is sent, each group's its own
         String getPropertyName(GPropertyDraw property) {
             return getName(property);
@@ -1650,10 +1652,10 @@ public class GReactFormData {
         void putMember(JavaScriptObject groupMember) {
             addRowsVerbs(this, groupMember, node.name);
         }
-        // the lsf list property whose per-row renderers go into the rows drawn here, by its integration name
-        GPropertyDraw getRowLsfProperty(String integrationSID) {
+        // the platform-drawn list property whose per-row renderers go into the rows drawn here, by its integration name
+        GPropertyDraw getRowPlatformProperty(String integrationSID) {
             for (GPropertyDraw property : form.propertyDraws)
-                if (property.groupObject == node.group && property.isLsfViewPerRow() && integrationSID.equals(property.integrationSID))
+                if (property.groupObject == node.group && property.isPlatformDrawnPerRow() && integrationSID.equals(property.integrationSID))
                     return property;
             return null;
         }
@@ -1714,7 +1716,8 @@ public class GReactFormData {
                     return propertyEntry.property;
             return null;
         }
-        // an lsf column's too: the platform's, which draws its cells - an edit's before the server answers, as a grid's
+        // a platform-drawn column's too: the platform's, which draws its cells - an edit's before the server answers,
+        // as a grid's
         PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
             for (PropertyEntry propertyEntry : node.properties)
                 if (propertyEntry.property == property)
@@ -1799,7 +1802,7 @@ public class GReactFormData {
                     row = newObject();
                     GGroupObjectValue.registerRow(row, key);
                     fillRowAttributes(row, key);
-                    // the node holds panel properties and lsf columns too
+                    // the node holds panel properties and platform-drawn columns too
                     for (PropertyEntry propertyEntry : node.properties)
                         propertyEntry.fillRow(row, key);
                 }
@@ -1943,7 +1946,7 @@ public class GReactFormData {
                     keyed.put(rows.get(i), node.group.getParentRowKey(rows.get(i), parents.get(i)));
             } else {
                 // parallel by construction; if they ever are not, no row states a parent
-                GwtClientUtils.logLsfViewError("data." + node.name + ": " + parents.size()
+                GwtClientUtils.logCustomViewError("data." + node.name + ": " + parents.size()
                         + " parents came for " + rows.size() + " rows; the hierarchy is dropped");
             }
             if (keyed.equals(this.parents)) // a hierarchy sent again unchanged touches nothing
@@ -2369,7 +2372,7 @@ public class GReactFormData {
     // start. It is the form's controller of the property, all of it: its values and what labels it alike
     private abstract class PropertyEntry extends Entry implements GPropertyController {
         final GPropertyDraw property;
-        // whether the form shows the property now: delivered whole, and not dropped since - an lsf one's values and its
+        // whether the form shows the property now: delivered whole, and not dropped since - a platform-drawn one's values and its
         // drop come through its entry on their way to the platform - kept here, as no value says it
         boolean shown;
 
@@ -2392,12 +2395,12 @@ public class GReactFormData {
         void shownChanged() {
             updateEntry();
         }
-        // what a new row carries of it: a column's cell; nothing of a panel entry or of an lsf property's, whose cells
+        // what a new row carries of it: a column's cell; nothing of a panel entry or of a platform-drawn property's, whose cells
         // the platform draws
         void fillRow(JavaScriptObject row, GGroupObjectValue key) {
         }
-        // its member, on its node's member as its entry is on its node: none for an lsf property, whose values the
-        // platform draws and edits, nor for an lsf action, which the platform's button runs
+        // its member, on its node's member as its entry is on its node: none for a platform-drawn property, whose
+        // values the platform draws and edits, nor for a platform-drawn action, which the platform's button runs
         void putMember(JavaScriptObject owner) {
         }
         // its value in a cell - a row's, for a column -, as the client has it now, null for none: what the rows answer
@@ -2636,16 +2639,16 @@ public class GReactFormData {
             return objectKey;
         }
     }
-    // a property the platform draws and React places - an lsf one: the form's controller of it is this entry, over the
-    // platform's (`platform`), which draws it. Its values, its drop, focus, the client's own value, any other attribute
-    // or reader are the platform's, handed on with the property; what labels it is its kind's - React's for a property,
-    // the platform's for an ACTION, whose caption and image are its button's face. No member: what the platform draws,
-    // the platform changes. There from the start, and `hidden` whenever the platform does not show the property - it
-    // shows it from its first whole delivery until its drop, both of which come through here
-    private abstract class LsfPropertyEntry extends PropertyEntry {
+    // a property the platform draws and React places: the form's controller of it is this entry, over
+    // the platform's (`platform`), which draws it. Its values, its drop, focus, the client's own value, any other
+    // attribute or reader are the platform's, handed on with the property; what labels it is its kind's - React's for a
+    // property, the platform's for an ACTION, whose caption and image are its button's face. No member: what the
+    // platform draws, the platform changes. There from the start, and `hidden` whenever the platform does not show the
+    // property - it shows it from its first whole delivery until its drop, both of which come through here
+    private abstract class PlatformPropertyEntry extends PropertyEntry {
         final GPlatformPropertyController platform; // the view it is drawn in
 
-        LsfPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
             super(node, property);
             this.platform = platform;
         }
@@ -2681,20 +2684,20 @@ public class GReactFormData {
         }
     }
     // ... a panel or empty-group one's: keyed by its integration name on its group's node, where a panel property React
-    // draws is, and carried by name with them. An <Lsf> places it by the same name (getName), and hides its host by
+    // draws is, and carried by name with them. A <Platform> places it by the same name (getName), and hides its host by
     // this entry (ContainerState.entryOf): it says whether the form shows it - all that an action's says
-    private abstract class LsfPanelEntry extends LsfPropertyEntry {
-        LsfPanelEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+    private abstract class PlatformPanelEntry extends PlatformPropertyEntry {
+        PlatformPanelEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
             super(node, property, platform);
         }
         void emit(JavaScriptObject entry) {
         }
     }
     // ... a property's: its labels too - caption, image and comment, the platform drawing none of them
-    private final class LsfPanelPropertyEntry extends LsfPanelEntry {
+    private final class PlatformPanelPropertyEntry extends PlatformPanelEntry {
         final GPropertyReader[] labelReaders; // its caption, image and comment
 
-        LsfPanelPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformPanelPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
             super(node, property, platform);
             labelReaders = present(property.captionReader, property.getImageReader(), property.commentReader);
             updateEntry(); // there from the start, hidden until the platform shows the property
@@ -2709,8 +2712,8 @@ public class GReactFormData {
     }
     // ... an ACTION's: its caption and image are its button's face, which the platform draws, so what labels it is
     // handed on. The platform's button runs it
-    private final class LsfPanelActionEntry extends LsfPanelEntry {
-        LsfPanelActionEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+    private final class PlatformPanelActionEntry extends PlatformPanelEntry {
+        PlatformPanelActionEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
             super(node, property, platform);
             updateEntry(); // there from the start, hidden until the platform shows the action
         }
@@ -2720,10 +2723,11 @@ public class GReactFormData {
         }
     }
     // ... a list one's column, whose cells or buttons the platform draws in the rows React draws, carried by name on
-    // the node the rows are on: React draws the column from this entry, which says what the property is - an LSF column
-    // is filtered and sorted like any other, and the platform drawing its VALUE says nothing about what the value is
-    private abstract class LsfColumnEntry extends LsfPropertyEntry {
-        LsfColumnEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+    // the node the rows are on: React draws the column from this entry, which says what the property is - a
+    // platform-drawn column is filtered and sorted like any other, and the platform drawing its VALUE says nothing
+    // about what the value is
+    private abstract class PlatformColumnEntry extends PlatformPropertyEntry {
+        PlatformColumnEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
             super(rowsPart.node, property, platform);
         }
         void emit(JavaScriptObject entry) {
@@ -2731,10 +2735,10 @@ public class GReactFormData {
         }
     }
     // ... a property's: its labels too - caption, image, footer and comment
-    private final class LsfColumnPropertyEntry extends LsfColumnEntry {
+    private final class PlatformColumnPropertyEntry extends PlatformColumnEntry {
         final GPropertyReader[] labelReaders; // its caption, image, footer and comment
 
-        LsfColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
             super(rowsPart, property, platform);
             labelReaders = present(property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
             updateEntry(); // there from the start, hidden until the platform shows the property
@@ -2749,8 +2753,8 @@ public class GReactFormData {
         }
     }
     // ... an ACTION's: what labels it is its buttons' face, handed on - an action's image is a button's, row by row
-    private final class LsfColumnActionEntry extends LsfColumnEntry {
-        LsfColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+    private final class PlatformColumnActionEntry extends PlatformColumnEntry {
+        PlatformColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
             super(rowsPart, property, platform);
             updateEntry(); // there from the start, hidden until the platform shows the action
         }
@@ -2760,8 +2764,8 @@ public class GReactFormData {
         }
     }
 
-    // the name a view has for a component - in `data`, on the controller and in an <Lsf> alike, null for one with none:
-    // a property's is its integration name, after its group's, as its entry is data.o.note - alone for the empty
+    // the name a view has for a component - in `data`, on the controller and in a <Platform> alike, null for one with
+    // none: a property's is its integration name, after its group's, as its entry is data.o.note - alone for the empty
     // group's, data.note; any other component's is its design identifier, BOX(o)
     public static String getName(GComponent component) {
         if (!(component instanceof GPropertyDraw))
@@ -2779,17 +2783,17 @@ public class GReactFormData {
     private GContainer rowsScope(GGroupObject group) {
         return !group.viewType.isList() ? null : componentScope(group.getDrawComponent());
     }
-    // where a COMPONENT is drawn: the react container that draws it, null when the platform does - an lsf one too,
-    // whose content is the platform's wherever React places it. A list property has no place of its own: it is drawn
-    // as its column, where the rows are, lsf or not (mirrors FormView.componentScope)
+    // where a COMPONENT is drawn: the react container that draws it, null when the platform does - a platform-drawn one
+    // too, whose content is the platform's wherever React places it. A list property has no place of its own: it is
+    // drawn as its column, where the rows are, platform-drawn or not (mirrors FormView.componentScope)
     private GContainer componentScope(GComponent component) {
         if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList)
             return rowsScope(((GPropertyDraw) component).groupObject);
-        return component.isLsfView() ? null : placed(component);
+        return component.isPlatformDrawn() ? null : placed(component);
     }
     // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component is named in (getName), and
     // where its entry is. A property is named on its group's node, where React draws its content - a list property's
-    // column, lsf or not, where the rows are - or, for an lsf panel one, where React places it, its entry labelling what
+    // column, platform-drawn or not, where the rows are - or, for a platform-drawn panel one, where React places it, its entry labelling what
     // the platform draws (an ACTION's saying only whether the form shows it: its caption and image are its button's
     // face). Any other component is named at the top level, where React draws or places it - one the design does not
     // name, a user filter's, nowhere (mirrors FormView.nameScope)

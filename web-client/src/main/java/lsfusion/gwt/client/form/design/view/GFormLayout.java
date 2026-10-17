@@ -140,9 +140,9 @@ public class GFormLayout extends SizedFlexPanel {
     public static Widget createContainerCaptionWidget(GFormController form, GContainer parentContainer, boolean isPopup, boolean hasBorder) {
         // when the parent view draws its children's captions itself, the child gets no caption widget of its own: a
         // tabbed parent draws it in the tab strip, a react parent's component draws it from the child's descriptor in
-        // `data` (only an lsf child reaches here under a react parent — see addContainers). This is also why an lsf
-        // child never gets a CollapsiblePanel: that is built for a LayoutContainerView's flex children, and neither the
-        // tab strip nor the parked react subtree is one.
+        // `data` (only a platform-drawn child reaches here under a react parent — see addContainers). This is also why
+        // a platform-drawn child never gets a CollapsiblePanel: that is built for a LayoutContainerView's flex
+        // children, and neither the tab strip nor the parked react subtree is one.
         if (parentContainer != null && parentContainer.tabbed) {
             return createTabCaptionWidget();
         } else if (parentContainer != null && parentContainer.isReact()) {
@@ -183,9 +183,9 @@ public class GFormLayout extends SizedFlexPanel {
             captionWidget = formCaptionWidgetAsync.first;
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
-            // none for an lsf container a React view places, however deep: its caption is drawn by that component from
-            // its entry in data, exactly as a tabbed parent draws a child's caption in the strip
-            captionWidget = container.isLsfView() && container.getReactPlace() != null ? null : createContainerCaptionWidget(form, container.container,
+            // none for a platform-drawn container a React view places, however deep: its caption is drawn by that
+            // component from its entry in data, exactly as a tabbed parent draws a child's caption in the strip
+            captionWidget = container.isPlatformDrawn() && container.getReactPlace() != null ? null : createContainerCaptionWidget(form, container.container,
                     container.popup, container.caption != null || container.collapsible);
 
         if (captionWidget != null) {
@@ -215,8 +215,8 @@ public class GFormLayout extends SizedFlexPanel {
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
 
         for (GComponent child : container.children) {
-            if (child.isReactDrawn()) { // React draws this child (from data): no GWT view of it - only of the lsf
-                addPlacedContainers(child);  // containers inside it, which this react container places
+            if (child.isReactDrawn()) { // React draws this child (from data): no GWT view of it - only of the
+                addPlacedContainers(child);  // platform-drawn containers inside it, which this react container places
                 continue;
             }
             if(child instanceof GGrid)
@@ -226,16 +226,17 @@ public class GFormLayout extends SizedFlexPanel {
             }
         }
     }
-    // inside a component React draws itself - a container's children, a grid's record (it is where its grid is): an lsf
-    // container gets its view - its parent has none, so add hands the view to the react container that places it - and
-    // is built on as any other, as is an lsf grid's record; anything else is walked for more of them. An lsf base
-    // component's view comes from its controller, and reaches that react container the same way
+    // inside a component React draws itself - a container's children, a grid's record (it is where its grid is): a
+    // platform-drawn container gets its view - its parent has none, so add hands the view to the react container that
+    // places it - and is built on as any other, as is a platform-drawn grid's record; anything else is walked for more
+    // of them. A platform-drawn base component's view comes from its controller, and reaches that react container the
+    // same way
     private void addPlacedContainers(GComponent drawn) {
         for (GComponent child : drawn.getChildren())
             addPlacedContainer(child);
     }
     private void addPlacedContainer(GComponent component) {
-        if (!component.isLsfView())
+        if (!component.isPlatformDrawn())
             addPlacedContainers(component);
         else {
             if (component instanceof GGrid)
@@ -295,8 +296,8 @@ public class GFormLayout extends SizedFlexPanel {
 
     public void setCaptionClass(GContainer component, String elementClass) {
         component.captionClass = elementClass;
-        // on the caption widget the container was given - none for an lsf container a React view places, whose caption
-        // React draws from its entry; the main container's caption is the form's
+        // on the caption widget the container was given - none for a platform-drawn container a React view places,
+        // whose caption React draws from its entry; the main container's caption is the form's
         Widget caption = component.container != null ? getContainerCaption(component) : null;
         if (caption != null)
             updateComponentClass(elementClass, caption, "caption");
@@ -348,26 +349,26 @@ public class GFormLayout extends SizedFlexPanel {
     }
 
     // the single funnel every built view goes through, and the one place that sees BOTH that a view was built and where
-    // it landed. A react container draws its children from `data` and parks everything else until an <Lsf> places it; a
-    // child with no `lsf = TRUE` that nevertheless has a view of its own - a filter group of no object moved in, say -
-    // is drawn by nobody: React has at most what labels it, and the park is not a place. Marking it `lsf = TRUE` is
-    // what the author means, and then the view names it in an <Lsf>. A component the view cannot name - a user
+    // it landed. A react container draws its children from `data` and parks everything else until a <Platform> places
+    // it; a child with no `lsf = TRUE` that nevertheless has a view of its own - a filter group of no object moved in,
+    // say - is drawn by nobody: React has at most what labels it, and the park is not a place. Marking it `lsf = TRUE`
+    // is what the author means, and then the view names it in a <Platform>. A component the view cannot name - a user
     // filter's, which has no SID, though the design reaches it through its property, FILTER(name) - is placed with the
     // named container that holds it. A group's filter box moved in is not such a child: the platform builds no panel
     // for it (GReactFormData.createFiltersControllers), and its conditions are the view's; nor is anything else the
     // view draws as a part of a group or of a tree moved in - a toolbar, filter controls, a filter group
     // (GReactFormData's create*Controller factories)
     private void reportUnplaceable(GComponent key, GAbstractContainerView containerView) {
-        if (!(containerView instanceof ReactContainerView) || key.isLsfView() || !unplaceable.add(key))
+        if (!(containerView instanceof ReactContainerView) || key.isPlatformDrawn() || !unplaceable.add(key))
             return;
         String container = ((ReactContainerView) containerView).getContainer().sID;
-        GwtClientUtils.logLsfViewError(key.sID != null
+        GwtClientUtils.logCustomViewError(key.sID != null
                 ? "'" + key.sID + "' has a view of its own inside the react container '" + container + "', which draws"
                   + " its children from `data` and has nothing there to draw it with, so it is shown by nobody; mark it"
-                  + " `lsf = TRUE` and place it with <Lsf name=\"" + key.sID + "\"/>"
+                  + " `lsf = TRUE` and place it with <Platform name=\"" + key.sID + "\"/>"
                 : "a component the view cannot name here - a user filter's, say - has a view of its own inside the"
                   + " react container '" + container + "' and is shown by nobody; mark the named container that holds"
-                  + " it `lsf = TRUE` and place that with <Lsf name/>");
+                  + " it `lsf = TRUE` and place that with <Platform name/>");
     }
     private final Set<GComponent> unplaceable = new HashSet<>(); // said once per component
 

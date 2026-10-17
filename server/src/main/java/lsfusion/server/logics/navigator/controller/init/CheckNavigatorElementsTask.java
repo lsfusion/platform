@@ -18,7 +18,7 @@ public class CheckNavigatorElementsTask extends GroupNavigatorElementsTask {
         // only a React component both draws elements itself and can place a standard drawing; anywhere else the
         // platform draws every element anyway, so an LSF that reached such a window is a mistake, as it is on a form.
         // Checked here and not while the module is read: EXTEND WINDOW may give the window its component later
-        if (ne.lsf && !isReactWindow(ne)) {
+        if (ne.platformDrawn && !isReactWindow(ne)) {
             throw new RuntimeException("LSF is set for navigator element " + ne + ", whose window is not drawn by a CUSTOM React component");
         }
 

@@ -116,18 +116,18 @@ testActivateTabNestedReactDrawsIsRefused 'ACTIVATE TAB on a tab a nested lsf CUS
     assertTrue(messageCaughtException() LIKE '%ACTIVATE TAB%rrNestedSecond%CUSTOM REACT%', 'ACTIVATE TAB failed with ' + messageCaughtException());
 }
 
-testActivateTabInLsfContainerGoesThrough 'ACTIVATE TAB on a tab inside an lsf container React places is activated' () {
+testActivateTabInPlacedContainerGoesThrough 'ACTIVATE TAB on a tab inside an lsf container React places is activated' () {
     rrShow('activate island tab');
     assertNull(messageCaughtException(), 'ACTIVATE TAB inside an lsf container failed with ' + messageCaughtException());
     assertTrue(ACTIVE TAB rrBoard.rrIslandSecond, 'ACTIVATE TAB inside an lsf container did not activate the tab');
 }
 
-testCollapseInLsfContainerGoesThrough 'COLLAPSE on a container inside an lsf container React places goes through' () {
+testCollapseInPlacedContainerGoesThrough 'COLLAPSE on a container inside an lsf container React places goes through' () {
     rrShow('collapse island pane');
     assertNull(messageCaughtException(), 'COLLAPSE inside an lsf container failed with ' + messageCaughtException());
 }
 
-testActivateTabLsfTabbedGoesThrough 'ACTIVATE TAB on a page of an lsf tabbed container React places is activated' () {
+testActivateTabPlacedTabbedGoesThrough 'ACTIVATE TAB on a page of an lsf tabbed container React places is activated' () {
     rrShow('activate lsf tab');
     assertNull(messageCaughtException(), 'ACTIVATE TAB on a page of an lsf tabbed container failed with ' + messageCaughtException());
     assertTrue(ACTIVE TAB rrBoard.rrLsfSecond, 'ACTIVATE TAB on a page of an lsf tabbed container did not activate it');

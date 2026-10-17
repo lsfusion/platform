@@ -52,7 +52,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip, String defaultValue, PValue propertyCustomOption) {
-        if(property.hasDynamicImage() && !property.isAction() && label != null) { // an lsf property has no label (its caption/image go to React)
+        if(property.hasDynamicImage() && !property.isAction() && label != null) { // a platform-drawn property has no label (its caption/image go to React)
             BaseImage.updateImage(image, label);
             image = null;
         }
@@ -63,13 +63,13 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
-        // an lsf property's caption is projected into its entry (like a tab hands its caption up to the tab
+        // a platform-drawn property's caption is projected into its entry (like a tab hands its caption up to the tab
         // strip); the React component draws it, so GWT renders the bare value with no label of its own
-        boolean lsfView = property.isLsfView();
-        boolean hasCaption = property.caption != null && !lsfView;
+        boolean platformDrawn = property.isPlatformDrawn();
+        boolean hasCaption = property.caption != null && !platformDrawn;
         String staticComment = getStaticComment();
         // if there is no (empty) static caption and no dynamic caption
-        if(!hasCaption && staticComment == null && (property.appImage == null || lsfView))
+        if(!hasCaption && staticComment == null && (property.appImage == null || platformDrawn))
             return valuePanel.view;
 
         // id and for we need to support editing when clicking on the label
@@ -125,10 +125,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
         boolean commentFirst = property.isPanelCommentFirst();
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
-        // an lsf property is mounted into a React host as ONE self-contained view (like every lsf child), so it
-        // is wrapped in a panel that keeps its own value/comment layout, not laid out inline as value/comment siblings
-        // directly in the host (which isInCustom() defaults to for a CUSTOM container child)
-        boolean inline = !isAlignCaption && property.isInline() && !lsfView;
+        // a platform-drawn property is mounted into a React host as ONE self-contained view (like every platform-drawn
+        // child), so it is wrapped in a panel that keeps its own value/comment layout, not laid out inline as
+        // value/comment siblings directly in the host (which isInCustom() defaults to for a CUSTOM container child)
+        boolean inline = !isAlignCaption && property.isInline() && !platformDrawn;
         boolean verticalDiffers = hasCaption && staticComment != null && !inline && property.captionVertical != property.panelCommentVertical;
         boolean panelVertical = hasCaption ? property.captionVertical : property.panelCommentVertical;
 
@@ -234,12 +234,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
         BaseImage.updateClasses(label, classes);
     }
 
-    // an LSF property's comment is React's to draw, like its caption: a panel property's in its descriptor, and an LSF
-    // grid property's once, in its column entry - its editor is drawn in every row of a column React draws - so the
-    // editor has none, neither its widget nor its text
+    // a platform-drawn property's comment is React's to draw, like its caption: a panel property's in its descriptor,
+    // and a platform-drawn grid property's once, in its column entry - its editor is drawn in every row of a column
+    // React draws - so the editor has none, neither its widget nor its text
     @Override
     protected String getStaticComment() {
-        return property.isLsfView() ? null : property.comment;
+        return property.isPlatformDrawn() ? null : property.comment;
     }
 
     protected void setCommentText(String text) {

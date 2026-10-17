@@ -16,26 +16,26 @@ import java.util.*;
 // CUSTOM REACT 'fn': a React component (window[fn], fn = the container's custom) draws this container's subtree
 // from the form's projection - its props { data, controller } (GReactFormData), which the window.lsfusion hooks read
 // too - except the `lsf = TRUE` components it places: those keep their GWT view, and the component places each with
-// <Lsf name/>, an LSF grid property with <Lsf name row/>, one renderer per row
+// <Platform name/>, a platform-drawn grid property with <Platform name row/>, one renderer per row
 public class ReactContainerView extends ParkedContainerView {
 
     private final ReactRoot root;
     // this container's state in the form's projection: what its `props.data` is built from, and its `props.controller`
     private final GReactFormData.ContainerState state;
 
-    // the components this view places, by the name an <Lsf> gives them (getName): those it is the React place of (GComponent.getReactPlace, the rule the
-    // layout and the projection ask too) - its children and what is inside the containers it draws itself. What an
-    // <Lsf> name means is looked up here
+    // the components this view places, by the name a <Platform> gives them (getName): those it is the React place of (GComponent.getReactPlace, the rule the
+    // layout and the projection ask too) - its children and what is inside the containers it draws itself. What a
+    // <Platform> name means is looked up here
     private final Map<String, GComponent> placeable = new HashMap<>();
-    // ... and of them the lsf ones, placed whole, one view each, named or not: what the server is told of
+    // ... and of them the platform-drawn ones, placed whole, one view each, named or not: what the server is told of
     // (reconcilePlaced)
-    private final List<GComponent> lsfViews = new ArrayList<>();
+    private final List<GComponent> platformViews = new ArrayList<>();
     // ... and the containers it draws itself, named, each with whether the component shows it (useShown): the server
     // is told of them too - a container is shown until the component says otherwise
     private final Map<GComponent, Boolean> drawnShown = new LinkedHashMap<>();
 
     // name -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
-    // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfLsfView(sid) >= 0
+    // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfPlatformView(sid) >= 0
     private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
         @Override
         public PlacedViews.Problem problem(String sid) {
@@ -43,16 +43,16 @@ public class ReactContainerView extends ParkedContainerView {
             if (component == null)
                 return new PlacedViews.Problem("'" + sid + "' is not inside '" + container.sID + "'",
                         "component '" + sid + "' is not inside container '" + container.sID + "', nor in a container it draws itself");
-            if (!component.isLsfView()) // inside the container, but without lsf = TRUE, so React draws it itself
+            if (!component.isPlatformDrawn()) // inside the container, but without lsf = TRUE, so React draws it itself
                 return new PlacedViews.Problem("'" + sid + "' has no lsf = TRUE",
                         "'" + sid + "' inside container '" + container.sID + "' has no `lsf = TRUE`, and only a"
-                                + " component marked so is placed: mark it `lsf = TRUE` to place it with <Lsf>");
+                                + " component marked so is placed: mark it `lsf = TRUE` to place it with <Platform>");
             return null;
         }
 
         @Override
         public boolean place(String sid, Element host) {
-            int index = indexOfLsfView(sid);
+            int index = indexOfPlatformView(sid);
             if (index < 0) // the view does not exist yet - a SHOWIF dropped it, or it is not built - so the host waits
                 return false;
 
@@ -62,14 +62,14 @@ public class ReactContainerView extends ParkedContainerView {
 
         @Override
         public void park(String sid) {
-            int index = indexOfLsfView(sid);
+            int index = indexOfPlatformView(sid);
             if (index >= 0) // if a SHOWIF already dropped the view there is nothing to park
                 parkChild(index);
         }
     });
-    // what the server has been told about the lsf children: the SET this view places now, not the events that led to it
-    // (reconcilePlaced). The children it was told are hidden - a child the server was told nothing about is shown, the
-    // server's default
+    // what the server has been told about the platform-drawn children: the SET this view places now, not the events
+    // that led to it (reconcilePlaced). The children it was told are hidden - a child the server was told nothing about
+    // is shown, the server's default
     private final Set<GComponent> reportedHidden = new HashSet<>();
     // a pending reconcile of an older generation is dropped: the root was unmounted since
     private int reconcileGeneration;
@@ -111,8 +111,9 @@ public class ReactContainerView extends ParkedContainerView {
             public void show(String name, boolean shown) {
                 GComponent component = placeable.get(name);
                 if (!drawnShown.containsKey(component)) {
-                    GwtClientUtils.logLsfViewError("useShown('" + name + "'): '" + name + "' is not a container '"
-                            + container.sID + "' draws itself - an lsf one is shown by placing it with <Lsf>");
+                    GwtClientUtils.logCustomViewError("useShown('" + name + "'): '" + name + "' is not a container '"
+                            + container.sID + "' draws itself - one the platform draws is shown by placing it with"
+                            + " <Platform>");
                     return;
                 }
                 if (drawnShown.put(component, shown) != shown)
@@ -131,17 +132,18 @@ public class ReactContainerView extends ParkedContainerView {
     }
 
     // what is under the container whose React place it is: the design is fixed, so this is taken once. Not a grid
-    // property: it is no view of its own here - an LSF one's renderers are placed per row by the view that draws its
-    // group's rows (getPlacement), any other's cells are drawn there - and it is parked in its group's box, which says
-    // nothing about where its rows are, so its name would claim a place a panel property of the same name has
+    // property: it is no view of its own here - a platform-drawn one's renderers are placed per row by the view that
+    // draws its group's rows (getPlacement), any other's cells are drawn there - and it is parked in its group's box,
+    // which says nothing about where its rows are, so its name would claim a place a panel property of the same name
+    // has
     private void addPlaceable(GComponent component) {
         for (GComponent child : component.getChildren()) {
             if (child.getReactPlace() == container && !(child instanceof GPropertyDraw && ((GPropertyDraw) child).isList)) {
                 String name = GReactFormData.getName(child);
-                if (name != null) // what an <Lsf> name can mean
+                if (name != null) // what a <Platform> name can mean
                     placeable.put(name, child);
-                if (child.isLsfView())
-                    lsfViews.add(child);
+                if (child.isPlatformDrawn())
+                    platformViews.add(child);
                 else if (child instanceof GContainer && name != null)
                     drawnShown.put(child, true);
             }
@@ -149,8 +151,8 @@ public class ReactContainerView extends ParkedContainerView {
         }
     }
 
-    // React puts each view where an <Lsf> names it, so the order the views are held in means nothing: a new one goes
-    // last. This view holds the views of what it places at any depth, not only of its container's own children
+    // React puts each view where a <Platform> names it, so the order the views are held in means nothing: a new one
+    // goes last. This view holds the views of what it places at any depth, not only of its container's own children
     @Override
     protected int getInsertIndex(GComponent child) {
         return children.size();
@@ -158,7 +160,7 @@ public class ReactContainerView extends ParkedContainerView {
 
     @Override
     protected void addImpl(int index) {
-        // React owns the subtree, so only an lsf child gets a GWT view here
+        // React owns the subtree, so only a platform-drawn child gets a GWT view here
         super.addImpl(index);
 
         // the view is built by its controller, and a property hidden with `remove` is dropped and built again as it
@@ -176,55 +178,57 @@ public class ReactContainerView extends ParkedContainerView {
         super.removeImpl(index);
     }
 
-    // HOW an <Lsf name> places what it names, decided here, once per mount and unmount, into one kind: what the name
-    // names here - a component by its design identifier, a property by the name the view has for it, o.qty -, one view
-    // of it, or, for an LSF grid property of a group this view draws, its renderer for the row given, which has to be a
-    // row of that group (a tree's row of a group below passes, narrowed to the path down to it, as a group's
-    // change(row) takes it); and a placement that can never work, its mistake shown in the host - an LSF grid property
-    // with no row, a row that is no row or not the group's, a row for what has one view. Mount and unmount are called
-    // back by the host's ref, the cleanup the exact inverse (F1): both are given the same name and row, so both get
-    // the same kind. React runs every ref detach of a commit before any attach, so a mount can never race an unmount
-    // of the same child: a second live host for one name is always a duplicate, never a legitimate move
-    private LsfPlacement getPlacement(String name, JavaScriptObject row) {
-        GPropertyDraw property = state.getRowLsfProperty(name);
+    // HOW a <Platform name> places what it names, decided here, once per mount and unmount, into one kind: what the
+    // name names here - a component by its design identifier, a property by the name the view has for it, o.qty -, one
+    // view of it, or, for a platform-drawn grid property of a group this view draws, its renderer for the row given,
+    // which has to be a row of that group (a tree's row of a group below passes, narrowed to the path down to it, as a
+    // group's change(row) takes it); and a placement that can never work, its mistake shown in the host - a
+    // platform-drawn grid property with no row, a row that is no row or not the group's, a row for what has one view.
+    // Mount and unmount are called back by the host's ref, the cleanup the exact inverse (F1): both are given the same
+    // name and row, so both get the same kind. React runs every ref detach of a commit before any attach, so a mount
+    // can never race an unmount of the same child: a second live host for one name is always a duplicate, never a
+    // legitimate move
+    private PlatformPlacement getPlacement(String name, JavaScriptObject row) {
+        GPropertyDraw property = state.getRowPlatformProperty(name);
         if (row == null) {
             if (property == null)
-                return new LsfViewPlacement(name);
+                return new PlatformViewPlacement(name);
             // without the row the host would wait for a single view that is never built - silently, for good
-            return new FailedLsfPlacement(new PlacedViews.Problem(
-                    "'" + name + "' is drawn per row, so its <Lsf> needs a row",
-                    "'" + name + "' is an LSF property drawn per row: its <Lsf> is given the row it belongs to - <Lsf"
-                            + " name=\"" + name + "\" row={row}/> -, since each row has a renderer of its own"));
+            return new FailedPlatformPlacement(new PlacedViews.Problem(
+                    "'" + name + "' is drawn per row, so its <Platform> needs a row",
+                    "'" + name + "' is an LSF property drawn per row: its <Platform> is given the row it belongs to"
+                            + " - <Platform name=\"" + name + "\" row={row}/> -, since each row has a renderer of its"
+                            + " own"));
         }
         GGroupObjectValue key = GGroupObjectValue.resolveObject(row);
         if (key == null)
-            return new FailedLsfPlacement(new PlacedViews.Problem(
+            return new FailedPlatformPlacement(new PlacedViews.Problem(
                     "the `row` given to '" + name + "' is not a row",
                     "the `row` passed to '" + name + "' does not identify a row: pass the row object from the projected"
                             + " data, not its key"));
         if (property == null)
-            return new FailedLsfPlacement(new PlacedViews.Problem(
+            return new FailedPlatformPlacement(new PlacedViews.Problem(
                     "'" + name + "' is not an LSF grid property of this view",
                     "'" + name + "' is given a row, but it names no grid property marked LSF of a group container '"
                             + container.sID + "' draws - group, then integration name, as its column entry is keyed -,"
                             + " so nothing is drawn per row for it here"));
         GGroupObjectValue rowKey = property.groupObject.getRowKey(key);
         if (rowKey == null)
-            return new FailedLsfPlacement(new PlacedViews.Problem(
+            return new FailedPlatformPlacement(new PlacedViews.Problem(
                     "the `row` given to '" + name + "' is not a row of '" + property.groupObject.getSID() + "'",
                     "the `row` passed to '" + name + "' is a row of another group: '" + name + "' is drawn per row of '"
                             + property.groupObject.getSID() + "'"));
-        return new LsfRowPlacement(name, property, rowKey);
+        return new PlatformRowPlacement(name, property, rowKey);
     }
-    private abstract static class LsfPlacement {
+    private abstract static class PlatformPlacement {
         abstract void mount(Element host);
         abstract void unmount(Element host);
     }
     // ... one view, mounted in the host claimed for it (`placed`)
-    private final class LsfViewPlacement extends LsfPlacement {
+    private final class PlatformViewPlacement extends PlatformPlacement {
         final String name;
 
-        LsfViewPlacement(String name) {
+        PlatformViewPlacement(String name) {
             this.name = name;
         }
 
@@ -242,12 +246,12 @@ public class ReactContainerView extends ParkedContainerView {
     }
     // ... a renderer per row: the row says which goes in the host, and the rows panel controller of the rows holds
     // them. A row React unmounts - scrolled out, say - sends its renderer back to waiting, it is NOT dropped
-    private final class LsfRowPlacement extends LsfPlacement {
+    private final class PlatformRowPlacement extends PlatformPlacement {
         final String name;
         final GPropertyDraw property;
         final GGroupObjectValue rowKey;
 
-        LsfRowPlacement(String name, GPropertyDraw property, GGroupObjectValue rowKey) {
+        PlatformRowPlacement(String name, GPropertyDraw property, GGroupObjectValue rowKey) {
             this.name = name;
             this.property = property;
             this.rowKey = rowKey;
@@ -257,7 +261,7 @@ public class ReactContainerView extends ParkedContainerView {
         void mount(Element host) {
             // the property, not the name JSX used: the ledger of who holds which row is the property's own
             if (formController.getRowsPanelController(property).place(rowKey, property, host) != null)
-                PlacedViews.reportDuplicate(name, host); // another <Lsf> already placed this property for this row
+                PlacedViews.reportDuplicate(name, host); // another <Platform> already placed this property for this row
         }
 
         @Override
@@ -266,10 +270,10 @@ public class ReactContainerView extends ParkedContainerView {
         }
     }
     // ... and one that can never work: its mistake is shown in the host, which holds it until the host goes
-    private static final class FailedLsfPlacement extends LsfPlacement {
+    private static final class FailedPlatformPlacement extends PlatformPlacement {
         final PlacedViews.Problem problem;
 
-        FailedLsfPlacement(PlacedViews.Problem problem) {
+        FailedPlatformPlacement(PlacedViews.Problem problem) {
             this.problem = problem;
         }
 
@@ -280,18 +284,18 @@ public class ReactContainerView extends ParkedContainerView {
 
         @Override
         void unmount(Element host) {
-            GwtClientUtils.clearLsfViewError(host);
+            GwtClientUtils.clearCustomViewError(host);
         }
     }
 
-    // Tell the server which lsf children this view places, so the data of one it does not place is not read - the way
-    // a tab strip tells it which page is active, and a collapse header whether it is collapsed. What is sent is the
-    // STATE, worked out from the placements as they stand, never from the mount / unmount that changed them: a child
-    // handed to a waiting host is placed however it got there, and a child no <Lsf> ever named is not. A child with a
-    // host - holding its view, or waiting for it - is placed; only a change is sent. And which containers it draws
-    // itself it shows (useShown), the same way. Settled once the commit that changed the placements is over, after
-    // every publication and after a mount that draws, so the first draw settles it too even when it renders no <Lsf>
-    // at all
+    // Tell the server which platform-drawn children this view places, so the data of one it does not place is not read
+    // - the way a tab strip tells it which page is active, and a collapse header whether it is collapsed. What is sent
+    // is the STATE, worked out from the placements as they stand, never from the mount / unmount that changed them: a
+    // child handed to a waiting host is placed however it got there, and a child no <Platform> ever named is not. A
+    // child with a host - holding its view, or waiting for it - is placed; only a change is sent. And which containers
+    // it draws itself it shows (useShown), the same way. Settled once the commit that changed the placements is over,
+    // after every publication and after a mount that draws, so the first draw settles it too even when it renders no
+    // <Platform> at all
     private void scheduleReconcile() {
         if (reconcilePending)
             return;
@@ -305,9 +309,9 @@ public class ReactContainerView extends ParkedContainerView {
         });
     }
     private void reconcilePlaced() {
-        for (GComponent child : lsfViews) {
+        for (GComponent child : platformViews) {
             String name = GReactFormData.getName(child);
-            report(child, name == null || !placed.isHeld(name)); // no <Lsf> names one with no name
+            report(child, name == null || !placed.isHeld(name)); // no <Platform> names one with no name
         }
         for (Map.Entry<GComponent, Boolean> drawn : drawnShown.entrySet())
             report(drawn.getKey(), !drawn.getValue());
@@ -320,27 +324,27 @@ public class ReactContainerView extends ParkedContainerView {
     private void attachView(int index, Element host) {
         ComponentViewWidget childView = getChildView(index);
         childView.appendTo(host);
-        // an lsf child is one self-contained view (a property is forced non-inline in PropertyPanelRenderer, so it is
-        // a single widget, not inline value/comment siblings) — getSingleWidget is that view. It fills the host as a
-        // native SizedFlexPanel child does: fill-parent-flex on the view, and on the host the flex column its lsf-view
-        // mark gives it (layout.css) - not fill-parent-flex-cont, which would be written into a node React renders and
-        // be lost the moment the component's class for it changes
+        // a platform-drawn child is one self-contained view (a property is forced non-inline in PropertyPanelRenderer,
+        // so it is a single widget, not inline value/comment siblings) — getSingleWidget is that view. It fills the
+        // host as a native SizedFlexPanel child does: fill-parent-flex on the view, and on the host the flex column its
+        // lsf-platform mark gives it (layout.css) - not fill-parent-flex-cont, which would be written into a node React
+        // renders and be lost the moment the component's class for it changes
         GwtClientUtils.addClassName(childView.getSingleWidget().widget.getElement(), "fill-parent-flex");
         resizeChildren(); // the child moved out of the display:none park into a laid-out place
     }
 
-    // the index of a placed lsf component's view among the views this one holds, -1 while it has none
-    private int indexOfLsfView(String sid) {
+    // the index of a placed platform-drawn component's view among the views this one holds, -1 while it has none
+    private int indexOfPlatformView(String sid) {
         GComponent component = placeable.get(sid);
-        return component != null && component.isLsfView() ? children.indexOf(component) : -1;
+        return component != null && component.isPlatformDrawn() ? children.indexOf(component) : -1;
     }
 
     public GContainer getContainer() {
         return container;
     }
 
-    // GReactFormData publishes this container's snapshot after applying a remote or optimistic batch.
-    // Lsf captions and images are entries in the same snapshot and follow the same notification.
+    // GReactFormData publishes this container's snapshot after applying a remote or optimistic batch. The captions and
+    // images of platform-drawn children are entries in the same snapshot and follow the same notification.
     public void updateData(JavaScriptObject data) {
         root.updateData(data);
         scheduleReconcile(); // what the view places may change with what it is given

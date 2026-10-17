@@ -80,10 +80,10 @@ public class ReactRootTest extends GWTTestCase {
     public void testAHostAViewGoesIntoIsMarked() {
         ReactRoot.Host host = new ReactRoot.MarkedHost();
         JavaScriptObject panel = host.props("BOX(o)", "panel"), wide = host.props("BOX(o)", "panel panel-wide");
-        assertEquals("lsf-view panel", text(panel, "className"));
-        assertEquals("lsf-view panel panel-wide", text(wide, "className"));
+        assertEquals("lsf-platform panel", text(panel, "className"));
+        assertEquals("lsf-platform panel panel-wide", text(wide, "className"));
         assertEquals("BOX(o)", text(wide, "data-lsf-sid"));
-        assertEquals("lsf-view", text(host.props("x", null), "className")); // no class of its own: still marked
+        assertEquals("lsf-platform", text(host.props("x", null), "className")); // no class of its own: still marked
     }
 
     // ... and one a component lays out itself is left as it rendered it: its own class, and no name

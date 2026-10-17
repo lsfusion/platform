@@ -1971,86 +1971,87 @@ public class GwtClientUtils {
         return !!host && !!host.isConnected;
     }-*/;
 
-    // a placement that cannot work says so in the host itself, not only in the console: an <Lsf> that names nothing
+    // a placement that cannot work says so in the host itself, not only in the console: a <Platform> that names nothing
     // must not read as an empty spot.
     // Written into a node of the platform's OWN, and taken away by removing that node - not by emptying the host. A
-    // host is not supposed to have children of its own, but useLsf can make a host of any element, and emptying
+    // host is not supposed to have children of its own, but usePlatform can make a host of any element, and emptying
     // one took away what the application had drawn there, silently and for good: React does not draw a subtree again
     // that nothing told it changed.
     // And marked on that node alone, never on the host: a host is a node React renders, and the render that changes the
     // class the component gives it rewrites the whole class attribute, taking any class written there with it. So
     // `lsf-view-error` is the class of the message itself - the class a component that failed to draw gives the message
     // it draws in its own place, too
-    public static void showLsfViewError(Element host, String message) {
-        clearLsfViewError(host);
+    public static void showCustomViewError(Element host, String message) {
+        clearCustomViewError(host);
 
         Element shown = Document.get().createSpanElement();
-        addClassName(shown, LSF_VIEW_ERROR);
+        addClassName(shown, CUSTOM_VIEW_ERROR);
         shown.setInnerText("lsFusion: " + message);
         host.appendChild(shown);
-        keepLsfViewErrorMessage(host, shown);
+        keepCustomViewErrorMessage(host, shown);
     }
 
-    public static void clearLsfViewError(Element host) {
-        Element shown = takeLsfViewErrorMessage(host);
+    public static void clearCustomViewError(Element host) {
+        Element shown = takeCustomViewErrorMessage(host);
         if (shown != null)
             shown.removeFromParent();
     }
 
-    private static final String LSF_VIEW_ERROR = "lsf-view-error";
+    private static final String CUSTOM_VIEW_ERROR = "lsf-view-error";
 
     // the node itself and not one found by its class: a class is something an application can carry too, and looking
     // one up would take away a child of its own that happens to be marked the same way
-    private static native void keepLsfViewErrorMessage(Element host, Element shown)/*-{
+    private static native void keepCustomViewErrorMessage(Element host, Element shown)/*-{
         host.__lsfViewError = shown;
     }-*/;
 
-    private static native Element takeLsfViewErrorMessage(Element host)/*-{
+    private static native Element takeCustomViewErrorMessage(Element host)/*-{
         var shown = host.__lsfViewError || null;
         host.__lsfViewError = null;
         return shown;
     }-*/;
 
     // one prefix for every custom view, so a form container and a navigator window do not sound like two features
-    public static native void logLsfViewError(String message)/*-{
+    public static native void logCustomViewError(String message)/*-{
         $wnd.console.error("lsFusion custom view: " + message);
     }-*/;
 
-    // <Lsf:name> in an HTML template is where a view the platform draws itself is put - a child of a form container,
-    // an element of a navigator window. The prefix is what makes it a place rather than markup: no HTML element and no
-    // custom element may carry a colon, so nothing an author writes for the browser can be mistaken for one.
-    public static Element getLsfPlace(Element root, String name) {
-        return root.getElementsByTagName(LSF_PLACE + name).getItem(0);
+    // <Platform:name> in an HTML template is where a view the platform draws itself is put - a child of a form
+    // container, an element of a navigator window. The prefix is what makes it a place rather than markup: no HTML
+    // element and no custom element may carry a colon, so nothing an author writes for the browser can be mistaken for
+    // one.
+    public static Element getPlatformPlace(Element root, String name) {
+        return root.getElementsByTagName(PLATFORM_PLACE + name).getItem(0);
     }
 
     // the prefix's case is the author's to choose - an HTML parser lowercases a tag name, and both ends match either
     // way. The NAME is not: the server matches it against a component sID or resolves it as written
-    private static final String LSF_PLACE = "lsf:";
+    private static final String PLATFORM_PLACE = "platform:";
 
     // rendering a template is these two steps and never one: setInnerHTML alone leaves everything written after an
     // unclosed place nested INSIDE it, which is not what the author wrote
-    public static void setLsfTemplate(Element root, String template) {
-        checkLsfPlaceSpelling(template);
+    public static void setPlatformTemplate(Element root, String template) {
+        checkPlatformPlaceSpelling(template);
         root.setInnerHTML(template);
-        unwrapLsfPlaces(root);
+        unwrapPlatformPlaces(root);
     }
 
     // the two spellings the parser erases: a closing tag becomes nothing at all and a self-closed place becomes an
     // ordinary empty element, so both have to be read off the TEXT. The server reads a literal and refuses these when
     // the module or the form is read (Custom.mapPlaces), which leaves the template a property computed - checked here,
     // by the same rules, and reported rather than refused, since the value arrives while the application runs
-    private static native void checkLsfPlaceSpelling(String template)/*-{
-        var place = @lsfusion.gwt.client.base.GwtClientUtils::LSF_PLACE;
+    private static native void checkPlatformPlaceSpelling(String template)/*-{
+        var place = @lsfusion.gwt.client.base.GwtClientUtils::PLATFORM_PLACE;
         var closing = new $wnd.RegExp("</" + place + "([^>/\\s]*)", "i");
         var closed = new $wnd.RegExp("<" + place + "([^>/\\s]*)[^>]*[/]>", "i"); // [/] and not / - "*" then "/" would close this JSNI block
 
         var found = closing.exec(template);
         if (found)
-            @lsfusion.gwt.client.base.GwtClientUtils::logLsfViewError(Ljava/lang/String;)("a place is written without a closing tag, so '" + found[1] + "' has none to close");
+            @lsfusion.gwt.client.base.GwtClientUtils::logCustomViewError(Ljava/lang/String;)("a place is written without a closing tag, so '" + found[1] + "' has none to close");
 
         found = closed.exec(template);
         if (found)
-            @lsfusion.gwt.client.base.GwtClientUtils::logLsfViewError(Ljava/lang/String;)("a place is written open, so '" + found[1] + "' does not close itself");
+            @lsfusion.gwt.client.base.GwtClientUtils::logCustomViewError(Ljava/lang/String;)("a place is written open, so '" + found[1] + "' does not close itself");
     }-*/;
 
 
@@ -2068,14 +2069,14 @@ public class GwtClientUtils {
     // the markup and is a mistake in the property, and nothing used to say which
     public static void reportComponentName(String custom, String what) {
         if (isReactComponentName(custom))
-            logLsfViewError("'" + custom + "' is drawn as text in '" + what + "': what draws it was chosen from the value"
+            logCustomViewError("'" + custom + "' is drawn as text in '" + what + "': what draws it was chosen from the value"
                     + " written beside the property, and a computed one cannot make it a component");
     }
 
     // the names a template asks for, in the order it writes them and with the case the author wrote - which the DOM
     // does not keep, since it lowercases a tag name while the name after the prefix is matched exactly
-    public static native JsArrayString getLsfPlaceNames(String template)/*-{
-        var place = @lsfusion.gwt.client.base.GwtClientUtils::LSF_PLACE;
+    public static native JsArrayString getPlatformPlaceNames(String template)/*-{
+        var place = @lsfusion.gwt.client.base.GwtClientUtils::PLATFORM_PLACE;
         var found = new $wnd.RegExp("<" + place + "([^>/\\s]+)", "gi");
         var names = [], match;
         while ((match = found.exec(template)) !== null)
@@ -2086,11 +2087,11 @@ public class GwtClientUtils {
     // a place the template cannot be drawn from says so where it stands, the way a placement mistake does. The server
     // reads a template LITERAL and rejects these when the module or the form is read, so what is left here is the
     // template a property computed - the one thing nothing else ever looks at
-    private static native void unwrapLsfPlaces(Element root)/*-{
+    private static native void unwrapPlatformPlaces(Element root)/*-{
         var all = root.getElementsByTagName('*');
         var places = [];
         for (var i = 0; i < all.length; i++)
-            if (all[i].tagName.toLowerCase().indexOf(@lsfusion.gwt.client.base.GwtClientUtils::LSF_PLACE) === 0)
+            if (all[i].tagName.toLowerCase().indexOf(@lsfusion.gwt.client.base.GwtClientUtils::PLATFORM_PLACE) === 0)
                 places.push(all[i]);
 
         var taken = $wnd.Object.create(null);
@@ -2099,13 +2100,13 @@ public class GwtClientUtils {
             while (place.firstChild)
                 place.parentNode.insertBefore(place.firstChild, ref);
 
-            var name = place.tagName.toLowerCase().substring(@lsfusion.gwt.client.base.GwtClientUtils::LSF_PLACE.length);
+            var name = place.tagName.toLowerCase().substring(@lsfusion.gwt.client.base.GwtClientUtils::PLATFORM_PLACE.length);
             if (!name) {
-                @lsfusion.gwt.client.base.GwtClientUtils::showLsfViewError(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(place, "a place with no name");
-                @lsfusion.gwt.client.base.GwtClientUtils::logLsfViewError(Ljava/lang/String;)("the template has a place with no name after '<lsf:', so nothing can ever be placed there");
+                @lsfusion.gwt.client.base.GwtClientUtils::showCustomViewError(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(place, "a place with no name");
+                @lsfusion.gwt.client.base.GwtClientUtils::logCustomViewError(Ljava/lang/String;)("the template has a place with no name after '<platform:', so nothing can ever be placed there");
             } else if (taken[name]) { // the view goes into the first one, and the second would stay empty in silence
-                @lsfusion.gwt.client.base.GwtClientUtils::showLsfViewError(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(place, "'" + name + "' is already a place in this template");
-                @lsfusion.gwt.client.base.GwtClientUtils::logLsfViewError(Ljava/lang/String;)("the template gives '" + name + "' more than one place; the first one keeps it");
+                @lsfusion.gwt.client.base.GwtClientUtils::showCustomViewError(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;)(place, "'" + name + "' is already a place in this template");
+                @lsfusion.gwt.client.base.GwtClientUtils::logCustomViewError(Ljava/lang/String;)("the template gives '" + name + "' more than one place; the first one keeps it");
             } else
                 taken[name] = true;
         }

@@ -184,9 +184,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     // THE PLATFORM'S OWN, which React's parts need nothing like: its panels, which the form redraws once per delta
     // (update) and lets go of when it closes (destroyForm) - the per-row panels of each group whose rows React draws
-    // with LSF properties in each row, and its panel of the form -, and its controller of the components it draws, one
-    // for the form: the platform's kind of a component's controller (createComponentController), a component reader
-    // naming its component
+    // with platform-drawn properties in each row, and its panel of the form -, and its controller of the components it
+    // draws, one for the form: the platform's kind of a component's controller (createComponentController), a component
+    // reader naming its component
     private final NativeSIDMap<GGroupObject, GPlatformRowsPanelController> platformRowsPanelControllers = new NativeSIDMap<>();
     public GPlatformFormPanelController platformFormPanelController;
     private final GPlatformComponentController platformComponentController = new GPlatformComponentController(this);
@@ -441,8 +441,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // - ENTER to the next component, ESCAPE to close a modal - step aside for this element too. Declare on a wrapper
     // and everything inside it is covered.
     // It says the state, it does not open an edit, and it cannot: an edit is a property's, with a value to commit or
-    // cancel and only one live at a time. To edit a property from a React view, place the property - <Lsf name/> - and
-    // the form brings its own editor, with nothing to declare.
+    // cancel and only one live at a time. To edit a property from a React view, place the property - <Platform name/> -
+    // and the form brings its own editor, with nothing to declare.
     // The element is the caller's to name, from a ref: the form cannot tell which of a view's elements was meant, and
     // guessing would be wrong exactly where this is used
     private native void addEditingVerbs(JavaScriptObject controller)/*-{
@@ -905,15 +905,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // rows gives it - its rows' part where React draws them, else the platform's table (GTableController
     // .getGroupController) -, a panel group's in PANEL view; what shows its user orders and its user filters, settled
     // by its table (userOrders, userFilters) - a list's group's, a tree's for all its groups -, none in PANEL view; and
-    // where React draws the rows and the platform its LSF properties into each of them - the only rows such a property
-    // is drawn in (FormView.checkLsfListView) -, the controller of those, made before the properties, whose controller
-    // it is (getPlatformPropertyController)
+    // where React draws the rows and the platform its platform-drawn properties into each of them - the only rows such
+    // a property is drawn in (FormView.checkPlatformListView) -, the controller of those, made before the properties,
+    // whose controller it is (getPlatformPropertyController)
     private void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController userOrders, GUserFiltersController userFilters) {
         groupControllers.put(group, controller);
         userOrdersControllers.put(group, userOrders);
         userFiltersControllers.put(group, userFilters);
         for (GPropertyDraw draw : form.propertyDraws)
-            if (draw.groupObject == group && draw.isLsfViewPerRow()) {
+            if (draw.groupObject == group && draw.isPlatformDrawnPerRow()) {
                 platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
                 break;
             }
@@ -1430,9 +1430,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public GPlatformPropertyController getPlatformPropertyController(GPropertyDraw property) {
-        // an LSF property is a grid property, so without this it would be routed to its group's controller - which
-        // for a group React draws is a set of deliberate no-ops, and its values would be dropped on the way
-        if (property.isLsfViewPerRow()) {
+        // a platform-drawn property is a grid property, so without this it would be routed to its group's controller -
+        // which for a group React draws is a set of deliberate no-ops, and its values would be dropped on the way
+        if (property.isPlatformDrawnPerRow()) {
             // initializeControllers makes one for every group holding such a property, by this very predicate, so a
             // miss is a broken invariant rather than a case to fall through - falling through would route the property
             // to its group's controller and drop its values there in silence
@@ -1466,7 +1466,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return controller;
     }
 
-    // the controller drawing this LSF property, for whoever is placing one of its per-row renderers
+    // the controller drawing this platform-drawn property, for whoever is placing one of its per-row renderers
     public GPlatformRowsPanelController getRowsPanelController(GPropertyDraw property) {
         return platformRowsPanelControllers.get(property.groupObject);
     }
@@ -2168,7 +2168,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     // one RPC for every user-driven hide: a collapsed container (above), or a CUSTOM REACT component showing / hiding a
-    // lsf child so its data is not read while React does not show it
+    // platform-drawn child so its data is not read while React does not show it
     public void setUserHidden(GComponent component, boolean hidden) {
         asyncResponseDispatch(new SetUserHidden(component.ID, hidden));
     }
@@ -2637,12 +2637,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     public void setContainerCaption(GContainer container, String caption) {
         container.caption = caption;
-        updateCaption(container); // an lsf container's caption is drawn by React: its reader is react-owned (rerouted into its entry), so this runs only for GWT containers
+        updateCaption(container); // a platform-drawn container's caption is drawn by React: its reader is react-owned (rerouted into its entry), so this runs only for GWT containers
     }
 
     public void setContainerImage(GContainer container, AppBaseImage image) {
         container.image = image;
-        updateImage(container); // an lsf container's image goes to React (its entry); its reader never reaches here
+        updateImage(container); // a platform-drawn container's image goes to React (its entry); its reader never reaches here
     }
 
     private Widget getCaptionWidget(GContainer container) {

@@ -88,8 +88,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean isList;
 
-    public boolean isLsfViewPerRow() {
-        return isLsfView() && isList;
+    public boolean isPlatformDrawnPerRow() {
+        return isPlatformDrawn() && isList;
     }
 
     public GType getCellType() {

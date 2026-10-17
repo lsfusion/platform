@@ -5,7 +5,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 // the React root drawing an application component, with the store its descendants subscribe to. `host` is NOT this:
-// a host is the node <Lsf name/> renders and the platform moves a view into, which is why this is a root. Everything here is about
+// a host is the node <Platform name/> renders and the platform moves a view into, which is why this is a root. Everything here is about
 // React and nothing about what is being drawn, so every window and container that a component draws shares it, and they
 // differ only in the controller and the placement they hand it and the data they push.
 public class ReactRoot {
@@ -35,23 +35,23 @@ public class ReactRoot {
         this.context = createContext(store, controller, placement, placement.getHost(), this);
     }
 
-    // where a placed view goes and where it is taken back from: <Lsf name/> renders the node, the owner moves its own
-    // view into it and takes it back out. `row` names WHICH host of a per-row renderer, and is null wherever there is
-    // only one. One interface with both halves rather than two of one method each, so that a call site cannot read as
-    // "the placer does something" without saying which way it goes
+    // where a placed view goes and where it is taken back from: <Platform name/> renders the node, the owner moves its
+    // own view into it and takes it back out. `row` names WHICH host of a per-row renderer, and is null wherever there
+    // is only one. One interface with both halves rather than two of one method each, so that a call site cannot read
+    // as "the placer does something" without saying which way it goes
     public interface Placement {
         void mount(String name, Element host, JavaScriptObject row);
         void unmount(String name, Element host, JavaScriptObject row);
 
-        // what its hosts are dressed in, besides the ref and `hidden` the hook gives each (useLsf): the kind of host
-        // it places into - a form container and the forms window put a view into theirs, which the layout fills them
-        // with by their marks (MarkedHost); the navigator and the log windows leave theirs as the component rendered
-        // them (PlainHost)
+        // what its hosts are dressed in, besides the ref and `hidden` the hook gives each (usePlatform): the kind of
+        // host it places into - a form container and the forms window put a view into theirs, which the layout fills
+        // them with by their marks (MarkedHost); the navigator and the log windows leave theirs as the component
+        // rendered them (PlainHost)
         Host getHost();
 
-        // the entry a placed name keys in the owner's `data` - what hides its host while it says `hidden` (useLsf): the
-        // field of that name, unless the owner keys what it places otherwise - a form container keys an lsf panel
-        // property's entry by its integration name on its group's node
+        // the entry a placed name keys in the owner's `data` - what hides its host while it says `hidden`
+        // (usePlatform): the field of that name, unless the owner keys what it places otherwise - a form container keys
+        // a platform-drawn panel property's entry by its integration name on its group's node
         default JavaScriptObject entryOf(JavaScriptObject data, String name) {
             return GwtClientUtils.getOwnField(data, name);
         }
@@ -59,24 +59,24 @@ public class ReactRoot {
         // whether the component shows a container it draws itself (useShown): only a form container's view draws any -
         // the server reads what is inside one only while it is shown -, any other owner has none to show or hide
         default void show(String name, boolean shown) {
-            GwtClientUtils.logLsfViewError("useShown('" + name + "') does nothing here: only the view of a form's"
+            GwtClientUtils.logCustomViewError("useShown('" + name + "') does nothing here: only the view of a form's"
                     + " container draws containers of its own to show or hide");
         }
     }
 
-    // A HOST's props besides its ref and `hidden`, which the hook adds (useLsf): the class the component gives it, and
-    // what the kind of host adds to it. Props of the host's own, rendered by <Lsf> / useLsf, rather than anything
-    // written into the node behind React's back: a class written into a node React renders is lost the moment the
-    // component's own class for it changes
+    // A HOST's props besides its ref and `hidden`, which the hook adds (usePlatform): the class the component gives it,
+    // and what the kind of host adds to it. Props of the host's own, rendered by <Platform> / usePlatform, rather than
+    // anything written into the node behind React's back: a class written into a node React renders is lost the moment
+    // the component's own class for it changes
     public abstract static class Host {
         public abstract JavaScriptObject props(String name, String className);
     }
-    // ... one a view of the platform's is put into: marked so - the lsf-view class, which the layout fills the host by
-    // (a flex column, with the min-size reset a moved view needs), merged with the component's own, and data-lsf-sid,
-    // which a stylesheet addresses the host by
+    // ... one a view of the platform's is put into: marked so - the lsf-platform class, which the layout fills the host
+    // by (a flex column, with the min-size reset a moved view needs), merged with the component's own, and
+    // data-lsf-sid, which a stylesheet addresses the host by
     public static final class MarkedHost extends Host {
         public native JavaScriptObject props(String name, String className) /*-{
-            return { className: className ? 'lsf-view ' + className : 'lsf-view', 'data-lsf-sid': name };
+            return { className: className ? 'lsf-platform ' + className : 'lsf-platform', 'data-lsf-sid': name };
         }-*/;
     }
     // ... one left as the component rendered it: the class it gives it alone, none where it gives none
@@ -122,7 +122,7 @@ public class ReactRoot {
         if (GwtClientUtils.isInDocument(host))
             return;
 
-        GwtClientUtils.logLsfViewError("'" + name + "' was placed in an <Lsf> that is not in the page, so nothing put"
+        GwtClientUtils.logCustomViewError("'" + name + "' was placed in a <Platform> that is not in the page, so nothing put"
                 + " there would be seen; the place is given up and the view goes back to waiting");
         placement.unmount(name, host, row);
     }
@@ -145,8 +145,8 @@ public class ReactRoot {
     // in the console - the same rule a placement mistake follows. Without it a whole window goes blank with nothing on
     // the page saying why, and for the forms window that is the whole application: every open form sits in the park
     private void cannotDraw(Element element, String shown, String logged) {
-        GwtClientUtils.showLsfViewError(element, shown);
-        GwtClientUtils.logLsfViewError(logged);
+        GwtClientUtils.showCustomViewError(element, shown);
+        GwtClientUtils.logCustomViewError(logged);
     }
 
     // ONE push for the whole update. props.data reaches the component through the platform's own root, which reads this
@@ -253,8 +253,8 @@ public class ReactRoot {
                 controller: context.controller
             }));
         // commit the initial render before the window measures its content. It is legal here because a root is mounted
-        // from a GWT attach handler, never from inside another root's render or effect (placing an lsf child is a DOM
-        // move, not an attach) - React would otherwise warn and silently fall back to an asynchronous commit
+        // from a GWT attach handler, never from inside another root's render or effect (placing a platform-drawn child
+        // is a DOM move, not an attach) - React would otherwise warn and silently fall back to an asynchronous commit
         if (sync && $wnd.ReactDOM.flushSync)
             $wnd.ReactDOM.flushSync(function() { root.render(element); });
         else

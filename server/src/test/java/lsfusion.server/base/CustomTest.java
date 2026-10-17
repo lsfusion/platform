@@ -4,9 +4,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// what a `custom` value is, and what its <Lsf:name> places name. Custom is the single point of determination for
+// what a `custom` value is, and what its <Platform:name> places name. Custom is the single point of determination for
 // every surface CUSTOM draws - a navigator window, the forms and log windows, a DESIGN container - and the client
-// half of the place protocol (GwtClientUtils.getLsfPlace / unwrapLsfPlaces) is written against exactly these rules.
+// half of the place protocol (GwtClientUtils.getPlatformPlace / unwrapPlatformPlaces) is written against exactly these
+// rules.
 public class CustomTest {
 
     // the mapper the walker is given; here it just marks what it was handed, so the walk itself is what is tested
@@ -64,7 +65,7 @@ public class CustomTest {
         assertTrue(Custom.isHtmlTemplate("text before <b>x</b> and after"));
         assertTrue(Custom.isHtmlTemplate("</div>"));           // a tag is a tag, even a closing one
         assertTrue(Custom.isHtmlTemplate("<!-- a comment -->"));
-        assertTrue(Custom.isHtmlTemplate("<Lsf:orders>"));
+        assertTrue(Custom.isHtmlTemplate("<Platform:orders>"));
         assertTrue(Custom.isHtmlTemplate("line\nline\n<div>")); // DOTALL: markup on any line counts
         assertTrue(Custom.isHtmlTemplate(Custom.EMPTY_TEMPLATE));
     }
@@ -83,7 +84,7 @@ public class CustomTest {
     // the two vocabularies never overlap, which is what lets a value be classified by them alone
     @Test
     public void componentAndTemplateAreDisjoint() {
-        for (String value : new String[] {"Board", "<div>", "", "board", "<Lsf:x>", Custom.EMPTY_TEMPLATE})
+        for (String value : new String[] {"Board", "<div>", "", "board", "<Platform:x>", Custom.EMPTY_TEMPLATE})
             assertFalse(value + " is both", Custom.isReactComponent(value) && Custom.isHtmlTemplate(value));
     }
 
@@ -98,71 +99,71 @@ public class CustomTest {
 
     @Test
     public void placeNameIsMapped() throws Custom.PlaceError {
-        assertEquals("<div><Lsf:[orders]></div>", walk("<div><Lsf:orders></div>"));
+        assertEquals("<div><Platform:[orders]></div>", walk("<div><Platform:orders></div>"));
     }
 
     @Test
     public void severalPlacesAreMappedInOrder() throws Custom.PlaceError {
-        assertEquals("<Lsf:[a]>|<Lsf:[b]>|<Lsf:[c]>", walk("<Lsf:a>|<Lsf:b>|<Lsf:c>"));
+        assertEquals("<Platform:[a]>|<Platform:[b]>|<Platform:[c]>", walk("<Platform:a>|<Platform:b>|<Platform:c>"));
     }
 
     // the markup is HTML, where a tag's case means nothing, so the prefix is matched either way - and the NAME is not
     @Test
     public void prefixIsCaseInsensitiveAndTheNameIsNot() throws Custom.PlaceError {
-        assertEquals("<lsf:[orders]>", walk("<lsf:orders>"));
-        assertEquals("<LSF:[orders]>", walk("<LSF:orders>"));
-        assertEquals("<LsF:[Orders]>", walk("<LsF:Orders>"));
+        assertEquals("<platform:[orders]>", walk("<platform:orders>"));
+        assertEquals("<PLATFORM:[orders]>", walk("<PLATFORM:orders>"));
+        assertEquals("<PlAtFoRm:[Orders]>", walk("<PlAtFoRm:Orders>"));
     }
 
     // the name ends where the tag or an attribute begins
     @Test
     public void nameEndsAtTheTagOrAnAttribute() throws Custom.PlaceError {
-        assertEquals("<Lsf:[a]>", walk("<Lsf:a>"));
-        assertEquals("<Lsf:[a] >", walk("<Lsf:a >"));
-        assertEquals("<Lsf:[a]\n>", walk("<Lsf:a\n>"));
-        assertEquals("<Lsf:[a] class=\"x\">", walk("<Lsf:a class=\"x\">"));
-        assertEquals("<Lsf:[PROPERTY(note).caption]>", walk("<Lsf:PROPERTY(note).caption>"));
+        assertEquals("<Platform:[a]>", walk("<Platform:a>"));
+        assertEquals("<Platform:[a] >", walk("<Platform:a >"));
+        assertEquals("<Platform:[a]\n>", walk("<Platform:a\n>"));
+        assertEquals("<Platform:[a] class=\"x\">", walk("<Platform:a class=\"x\">"));
+        assertEquals("<Platform:[PROPERTY(note).caption]>", walk("<Platform:PROPERTY(note).caption>"));
     }
 
     // a place is written open, and only open
     @Test
     public void bothOtherSpellingsAreRefused() {
-        placeError("<Lsf:a/>", "a place is written open, so 'a' does not close itself");
-        placeError("<Lsf:a />", "a place is written open, so 'a' does not close itself");
-        placeError("<Lsf:a\n  />", "a place is written open, so 'a' does not close itself");
-        placeError("</Lsf:a>", "a place is written without a closing tag, so 'a' has none to close");
-        placeError("<Lsf:a></Lsf:a>", "a place is written without a closing tag, so 'a' has none to close");
-        placeError("</lsf:a>", "a place is written without a closing tag, so 'a' has none to close");
+        placeError("<Platform:a/>", "a place is written open, so 'a' does not close itself");
+        placeError("<Platform:a />", "a place is written open, so 'a' does not close itself");
+        placeError("<Platform:a\n  />", "a place is written open, so 'a' does not close itself");
+        placeError("</Platform:a>", "a place is written without a closing tag, so 'a' has none to close");
+        placeError("<Platform:a></Platform:a>", "a place is written without a closing tag, so 'a' has none to close");
+        placeError("</platform:a>", "a place is written without a closing tag, so 'a' has none to close");
     }
 
     // a slash INSIDE an attribute is not the tag closing itself - the check looks only past whitespace
     @Test
     public void aSlashInAnAttributeIsNotSelfClosing() throws Custom.PlaceError {
-        assertEquals("<Lsf:[a] class=\"x/y\">", walk("<Lsf:a class=\"x/y\">"));
-        assertEquals("<Lsf:[a] data-href=\"/orders\">", walk("<Lsf:a data-href=\"/orders\">"));
+        assertEquals("<Platform:[a] class=\"x/y\">", walk("<Platform:a class=\"x/y\">"));
+        assertEquals("<Platform:[a] data-href=\"/orders\">", walk("<Platform:a data-href=\"/orders\">"));
     }
 
     @Test
     public void aPlaceWithoutANameIsRefused() {
-        placeError("<Lsf:>", "a place has no name");
-        placeError("<Lsf: >", "a place has no name");
-        placeError("<div><Lsf:></div>", "a place has no name");
-        placeError("<Lsf:", "a place has no name");      // the template ends right after the prefix
-        placeError("<Lsf:/>", "a place has no name");    // the empty name is read before the spelling
+        placeError("<Platform:>", "a place has no name");
+        placeError("<Platform: >", "a place has no name");
+        placeError("<div><Platform:></div>", "a place has no name");
+        placeError("<Platform:", "a place has no name");      // the template ends right after the prefix
+        placeError("<Platform:/>", "a place has no name");    // the empty name is read before the spelling
     }
 
     // one view, one place: the client fills the first element of the tag it finds, so a second would stay empty
     @Test
     public void aNamePlacedTwiceIsRefused() {
-        placeError("<Lsf:a><Lsf:a>", "'a' is placed more than once");
+        placeError("<Platform:a><Platform:a>", "'a' is placed more than once");
     }
 
     // the duplicate is judged on what the mapper RETURNS, so two spellings of one thing collide - which is how a
-    // window's template catches `<Lsf:orders>` beside `<Lsf:Sale.orders>`
+    // window's template catches `<Platform:orders>` beside `<Platform:Sale.orders>`
     @Test
     public void twoNamesMappingToOneThingCollide() {
         try {
-            Custom.mapPlaces("<Lsf:orders><Lsf:Sale.orders>", name -> "Sale.orders");
+            Custom.mapPlaces("<Platform:orders><Platform:Sale.orders>", name -> "Sale.orders");
             fail("expected a PlaceError");
         } catch (Custom.PlaceError e) {
             assertEquals("'Sale.orders' is placed more than once", e.getMessage());
@@ -173,7 +174,7 @@ public class CustomTest {
     @Test
     public void collisionIsCaseInsensitive() {
         try {
-            Custom.mapPlaces("<Lsf:a><Lsf:b>", name -> name.equals("a") ? "Sale.Orders" : "sale.orders");
+            Custom.mapPlaces("<Platform:a><Platform:b>", name -> name.equals("a") ? "Sale.Orders" : "sale.orders");
             fail("expected a PlaceError");
         } catch (Custom.PlaceError e) {
             assertEquals("'b' is placed more than once", e.getMessage());
@@ -184,7 +185,7 @@ public class CustomTest {
     @Test
     public void theMappersErrorIsRaisedAsItIs() {
         try {
-            Custom.mapPlaces("<Lsf:nowhere>", name -> {
+            Custom.mapPlaces("<Platform:nowhere>", name -> {
                 throw new Custom.PlaceError("'" + name + "' is not a navigator element");
             });
             fail("expected a PlaceError");
@@ -198,49 +199,49 @@ public class CustomTest {
     // only the prefix makes a place, so nothing else in the markup is read, let alone rewritten
     @Test
     public void nothingButThePrefixMakesAPlace() throws Custom.PlaceError {
-        assertEquals("<lsfoo>", walk("<lsfoo>"));
-        assertEquals("<lsf-place>", walk("<lsf-place>"));
-        assertEquals("< Lsf:a>", walk("< Lsf:a>"));
-        assertEquals("&lt;Lsf:a&gt;", walk("&lt;Lsf:a&gt;"));
+        assertEquals("<platformfoo>", walk("<platformfoo>"));
+        assertEquals("<platform-place>", walk("<platform-place>"));
+        assertEquals("< Platform:a>", walk("< Platform:a>"));
+        assertEquals("&lt;Platform:a&gt;", walk("&lt;Platform:a&gt;"));
     }
 
     // the template is not parsed as HTML, so a place inside a comment is still a place. Stated here because it is
     // surprising, and because the client half behaves the same way - both ends read the string, not a document
     @Test
     public void aPlaceInsideACommentIsStillAPlace() throws Custom.PlaceError {
-        assertEquals("<!-- <Lsf:[a]> -->", walk("<!-- <Lsf:a> -->"));
+        assertEquals("<!-- <Platform:[a]> -->", walk("<!-- <Platform:a> -->"));
     }
 
     // a place the markup never closes is left as the author wrote it: the client's unwrap makes it work, and this
     // walker's job is the NAME, not the well-formedness of the markup around it
     @Test
     public void anUnclosedTagKeepsItsName() throws Custom.PlaceError {
-        assertEquals("<div><Lsf:[a]", walk("<div><Lsf:a"));
+        assertEquals("<div><Platform:[a]", walk("<div><Platform:a"));
     }
 
     // what the mapper puts back is NOT walked again, so a canonical name that happens to contain the prefix cannot
     // turn into a second place - the walk moves past what it wrote
     @Test
     public void whatTheMapperReturnsIsNotWalkedAgain() throws Custom.PlaceError {
-        assertEquals("<Lsf:<Lsf:x>>", Custom.mapPlaces("<Lsf:a>", name -> "<Lsf:x>"));
+        assertEquals("<Platform:<Platform:x>>", Custom.mapPlaces("<Platform:a>", name -> "<Platform:x>"));
     }
 
     // every whitespace an HTML author can write between the name and the tag
     @Test
     public void everyWhitespaceEndsTheName() throws Custom.PlaceError {
-        assertEquals("<Lsf:[a]\t>", walk("<Lsf:a\t>"));
-        assertEquals("<Lsf:[a]\r\n>", walk("<Lsf:a\r\n>"));
-        assertEquals("<Lsf:[a]\f>", walk("<Lsf:a\f>"));
-        placeError("<Lsf:a\t/>", "a place is written open, so 'a' does not close itself");
+        assertEquals("<Platform:[a]\t>", walk("<Platform:a\t>"));
+        assertEquals("<Platform:[a]\r\n>", walk("<Platform:a\r\n>"));
+        assertEquals("<Platform:[a]\f>", walk("<Platform:a\f>"));
+        placeError("<Platform:a\t/>", "a place is written open, so 'a' does not close itself");
     }
 
     // nothing but '>', '/' and whitespace ends a name, so a name is taken as written - including characters no
     // element sID has. The mapper is what decides whether it names anything
     @Test
     public void anythingElseIsPartOfTheName() throws Custom.PlaceError {
-        assertEquals("<Lsf:[a<b]>", walk("<Lsf:a<b>"));
-        assertEquals("<Lsf:[a=\"b\"]>", walk("<Lsf:a=\"b\">"));
-        assertEquals("<Lsf:[Ёлка]>", walk("<Lsf:Ёлка>"));
+        assertEquals("<Platform:[a<b]>", walk("<Platform:a<b>"));
+        assertEquals("<Platform:[a=\"b\"]>", walk("<Platform:a=\"b\">"));
+        assertEquals("<Platform:[Ёлка]>", walk("<Platform:Ёлка>"));
     }
 
     // the walk is linear and the template can be as long as an application's markup
@@ -248,19 +249,19 @@ public class CustomTest {
     public void manyPlacesAreAllMapped() throws Custom.PlaceError {
         StringBuilder template = new StringBuilder();
         for (int i = 0; i < 200; i++)
-            template.append("<div><Lsf:c").append(i).append("></div>");
+            template.append("<div><Platform:c").append(i).append("></div>");
 
         String walked = walk(template.toString());
         assertEquals(200, walked.split("\\[c", -1).length - 1);
-        assertTrue(walked.contains("<Lsf:[c0]>"));
-        assertTrue(walked.contains("<Lsf:[c199]>"));
+        assertTrue(walked.contains("<Platform:[c0]>"));
+        assertTrue(walked.contains("<Platform:[c199]>"));
     }
 
     // the closing-tag check runs over the whole template, not only where a place is expected - so a stray one after
     // every place is still refused, and its name is read for the message
     @Test
     public void aClosingTagIsFoundWhereverItIs() {
-        placeError("<div><Lsf:a></div></Lsf:b>", "a place is written without a closing tag, so 'b' has none to close");
-        placeError("</Lsf:>", "a place is written without a closing tag, so '' has none to close");
+        placeError("<div><Platform:a></div></Platform:b>", "a place is written without a closing tag, so 'b' has none to close");
+        placeError("</Platform:>", "a place is written without a closing tag, so '' has none to close");
     }
 }

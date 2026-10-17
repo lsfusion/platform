@@ -109,7 +109,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<Boolean> askConfirm = NFFact.property();
     // renders this grid property once per ROW as a component a CUSTOM REACT view places, instead of projecting
     // its value into that view's data. Nullable, so a view can tell "unset" from an explicit FALSE.
-    private final NFProperty<Boolean> lsf = NFFact.property();
+    private final NFProperty<Boolean> platformDrawn = NFFact.property();
     private final NFProperty<String> askConfirmMessage = NFFact.property();
 
     private final NFProperty<ClassViewType> viewType = NFFact.property(); // assert not null, after initialization
@@ -244,12 +244,12 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.attr.set(attr, version);
     }
 
-    public Boolean getLsfView() {
-        return lsf.get();
+    public Boolean getPlatformDrawn() {
+        return platformDrawn.get();
     }
 
-    public void setLsfView(Boolean lsf, Version version) {
-        this.lsf.set(lsf, version);
+    public void setPlatformDrawn(Boolean platformDrawn, Version version) {
+        this.platformDrawn.set(platformDrawn, version);
     }
 
     public boolean isExtNull() {
@@ -1459,7 +1459,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         mapping.sets(group, src.group);
         mapping.sets(attr, src.attr);
-        mapping.sets(lsf, src.lsf);
+        mapping.sets(platformDrawn, src.platformDrawn);
         mapping.sets(extNull, src.extNull);
 
         mapping.sets(formula, src.formula);

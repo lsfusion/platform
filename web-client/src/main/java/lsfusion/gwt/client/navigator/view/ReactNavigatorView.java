@@ -54,7 +54,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
 
     @Override
     public void refresh(LinkedHashSet<GNavigatorElement> elements, GNavigatorElement selected) {
-        buttons.refresh(elements, selected); // so that <Lsf name/> has a standard button to place
+        buttons.refresh(elements, selected); // so that <Platform name/> has a standard button to place
         root.updateData(buildData(elements, selected));
     }
 
@@ -64,8 +64,9 @@ public class ReactNavigatorView extends ParkedNavigatorView {
         JavaScriptObject data = createData();
         for (GNavigatorElement element : elements) {
             String image = element.image != null ? element.image.createImageHTML() : null;
-            JavaScriptObject entry = createEntry(data, element.canonicalName, element.caption, image, element.lsf,
-                    element.elementClass, element.hide, element.isFolder(), element.equals(selected));
+            JavaScriptObject entry = createEntry(data, element.canonicalName, element.caption, image,
+                    element.platformDrawn, element.elementClass, element.hide, element.isFolder(),
+                    element.equals(selected));
             for (GNavigatorElement child : element.children)
                 if (elements.contains(child))
                     addChild(entry, child.canonicalName);
@@ -124,11 +125,11 @@ public class ReactNavigatorView extends ParkedNavigatorView {
     // `name` is on the entry itself, so an entry passed around alone still knows what it is called - `root` and
     // `children` are arrays of names, and without it every consumer had to carry the key beside the entry.
     // An LSF element is DRAWN by the platform, so what it draws is not on the entry at all: it carries only what the
-    // component may still want around the button it places, the same reduction an lsf form child gets
+    // component may still want around the button it places, the same reduction a platform-drawn form child gets
     private native JavaScriptObject createEntry(JavaScriptObject data, String canonicalName, String caption, String image,
-                                                boolean lsf, String elementClass, boolean hidden, boolean folder, boolean selected)/*-{
-        var entry = lsf
-                ? { name: canonicalName, caption: caption, image: image, lsf: true, children: [] }
+                                                boolean platformDrawn, String elementClass, boolean hidden, boolean folder, boolean selected)/*-{
+        var entry = platformDrawn
+                ? { name: canonicalName, caption: caption, image: image, platformDrawn: true, children: [] }
                 : { name: canonicalName, caption: caption, image: image, elementClass: elementClass,
                     hidden: hidden, folder: folder, selected: selected, children: [] };
         data.byName[canonicalName] = entry;

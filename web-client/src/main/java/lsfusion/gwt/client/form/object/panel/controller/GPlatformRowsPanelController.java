@@ -17,9 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// a panel controller whose keys are ROWS: it draws a group's LSF GRID properties once per row of that group - the
-// form's GPlatformFormPanelController draws the PANEL ones -, and the group's CUSTOM REACT view places each renderer
-// into the element it rendered for that row.
+// a panel controller whose keys are ROWS: it draws a group's platform-drawn GRID properties once per row of that group
+// - the form's GPlatformFormPanelController draws the PANEL ones -, and the group's CUSTOM REACT view places each
+// renderer into the element it rendered for that row.
 //
 // Not to be confused with the GRID's `record` container, which is an ordinary panel container whose content follows the
 // group's CURRENT object (the map and calendar popups). Nothing here is cloned from a design container.
@@ -30,8 +30,8 @@ import java.util.Map;
 public final class GPlatformRowsPanelController extends GPlatformPanelController {
 
     private final GGroupObject group;
-    // the rows its renderers follow: the rows' part where React draws them - an lsf list property is only where React
-    // draws its group's rows (FormView.checkLsfListView)
+    // the rows its renderers follow: the rows' part where React draws them - a platform-drawn list property is only
+    // where React draws its group's rows (FormView.checkPlatformListView)
     private final GReactFormData.Rows rows;
 
     // the element React gave for each (row, property), and where that property's renderer for that row is put. The
@@ -85,13 +85,13 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     @Override
     public void addRenderer(GGroupObjectValue rendererKey, GPropertyDraw property, ComponentViewWidget view, int index) {
         // a logical child of the form's (invisible) attach container, so GWT attaches it and it has events and sizing,
-        // while its element waits there until React shows the row - the same park the lsf children use
+        // while its element waits there until React shows the row - the same park the platform-drawn children use
         view.attachTo(formController.getFormLayout().attachContainer, getParkElement());
 
         Element host = getHost(rendererKey, property.sID);
         if (host != null) {
             view.appendTo(host);
-            GwtClientUtils.clearLsfViewError(host); // a host that was told its row is gone, and whose row came back
+            GwtClientUtils.clearCustomViewError(host); // a host that was told its row is gone, and whose row came back
         }
     }
 
@@ -141,7 +141,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     // ---- hosts, registered by the react view as it renders rows ----
 
     // returns the host that already had this renderer, if any: a second live host for one property AND one row is an
-    // author error (two <Lsf> naming the same pair), never a legitimate move, so the FIRST one keeps it - and the
+    // author error (two <Platform> naming the same pair), never a legitimate move, so the FIRST one keeps it - and the
     // second is remembered, since a component that later stops rendering the first would otherwise leave the editor
     // waiting with a place for it still on the screen
     public Element place(GGroupObjectValue rowKey, GPropertyDraw property, Element host) {
@@ -155,8 +155,8 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         // the group's rows decide, and not whether a renderer happens to still exist: React renders before the
         // renderers are reconciled, so a row already gone can still have the one that is about to be destroyed
         if (!getRendererKeys().contains(rowKey)) {
-            GwtClientUtils.showLsfViewError(host, "the row given to '" + property.sID + "' is not in the group any more");
-            GwtClientUtils.logLsfViewError("the row given to '" + property.sID + "' is not one of the group's rows any"
+            GwtClientUtils.showCustomViewError(host, "the row given to '" + property.sID + "' is not in the group any more");
+            GwtClientUtils.logCustomViewError("the row given to '" + property.sID + "' is not one of the group's rows any"
                     + " more, so nothing will ever be placed there");
             return null;
         }
@@ -166,7 +166,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         ComponentViewWidget view = getView(rowKey, property);
         if (view != null) { // otherwise the host waits: the renderer arrives with the next update
             view.appendTo(host);
-            GwtClientUtils.clearLsfViewError(host);
+            GwtClientUtils.clearCustomViewError(host);
         }
         return null;
     }
@@ -190,7 +190,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     }
 
     // the hosts that asked for a renderer another host already had, in the order they asked. React renders the same
-    // <Lsf> until its own props change, so a host refused here is never offered again on its own
+    // <Platform> until its own props change, so a host refused here is never offered again on its own
     private final NativeHashMap<GGroupObjectValue, Map<String, List<Element>>> refusedHosts = new NativeHashMap<>();
 
     private List<Element> refused(GGroupObjectValue rowKey, GPropertyDraw property) {
@@ -223,7 +223,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         while (!asked.isEmpty()) {
             Element next = asked.remove(0);
             if (GwtClientUtils.isInDocument(next)) {
-                GwtClientUtils.clearLsfViewError(next); // it has been holding "already placed by another <Lsf>"
+                GwtClientUtils.clearCustomViewError(next); // it has been holding "already placed by another <Platform>"
                 place(rowKey, property, next);
                 break;
             }

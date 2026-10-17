@@ -2,8 +2,9 @@ MODULE LsfPanelPropertyEmptyExtId;
 
 REQUIRE System;
 
-// an lsf panel property a CUSTOM REACT container places is named by its integration name - its entry, and the <Lsf>
-// that places it -: an empty EXTID is no name, and the empty group's property would be one no <Lsf> can place
+// an lsf panel property a CUSTOM REACT container places is named by its integration name - its entry, and the
+// <Platform> that places it -: an empty EXTID is no name, and the empty group's property would be one no <Platform> can
+// place
 lsfEmptyNote = DATA STRING[50] ();
 
 FORM lsfEmptyName

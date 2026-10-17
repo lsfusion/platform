@@ -56,9 +56,10 @@ public abstract class NavigatorElement {
     public Property headerProperty;
     public Property showIfProperty;
 
-    // LSF: the platform draws this element, and a custom React window places that drawing with <Lsf name/> instead of
-    // drawing the element itself - so the element is not projected, the same way an lsf child of a form container is not
-    public boolean lsf;
+    // LSF: the platform draws this element, and a custom React window places that drawing with <Platform name/> instead
+    // of drawing the element itself - so the element is not projected, the same way a platform-drawn child of a form
+    // container is not
+    public boolean platformDrawn;
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
@@ -340,7 +341,7 @@ public abstract class NavigatorElement {
         BaseUtils.writeObject(outStream, changeMouse);
         outStream.writeBoolean(nvl(showChangeMouse, true));
 
-        outStream.writeBoolean(lsf);
+        outStream.writeBoolean(platformDrawn);
 
         AppServerImage.serialize(getImage(context), outStream);
 

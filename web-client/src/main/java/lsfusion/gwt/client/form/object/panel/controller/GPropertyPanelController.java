@@ -178,7 +178,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     // one attribute of one renderer. WHICH KEY finds it is the reader's own answer: the server reads a column attribute
     // over the column axis, so it arrives once per column even for a property drawn per row, while the rest arrive per
     // renderer. Asking the reader is what keeps this half in step with the projection (GReactFormData splits a list
-    // property's column and cell entries by the same isColumnAttribute), so an lsf property - drawn HERE and
+    // property's column and cell entries by the same isColumnAttribute), so a platform-drawn property - drawn HERE and
     // captioned THERE - cannot end up reading one attribute at two different keys.
     private PValue readAttribute(GPropertyReader reader, GGroupObjectValue rendererKey) {
         NativeHashMap<GGroupObjectValue, PValue> values = attribute(reader);

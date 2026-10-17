@@ -26,7 +26,7 @@ public final class GLog {
         // never be seen, and the messages it collects would be unreachable. Said once, because an application that
         // hides the window and gives it a component has asked for two things that cancel each other out
         if (window.react && !window.visible)
-            GwtClientUtils.logLsfViewError("'" + window.custom + "' is not drawn: the window '" + window.canonicalName
+            GwtClientUtils.logCustomViewError("'" + window.custom + "' is not drawn: the window '" + window.canonicalName
                     + "' is hidden, so nothing it draws would be seen");
 
         logPanel = window.react && window.visible && !MainFrame.mobile ? new ReactLogPanel(window.custom, togglePinMode) : new GLogPanel(togglePinMode);

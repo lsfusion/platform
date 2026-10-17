@@ -2,8 +2,8 @@ MODULE LsfListPropertyInColumns;
 
 REQUIRE System;
 
-// an LSF grid property grouped in COLUMNS: its renderers are placed per ROW (<Lsf name row/>), while its cells are one
-// per row AND column - a value would be written under one key and read under the other
+// an LSF grid property grouped in COLUMNS: its renderers are placed per ROW (<Platform name row/>), while its cells are
+// one per row AND column - a value would be written under one key and read under the other
 CLASS LsfColItem;
 CLASS LsfColKind;
 lsfColQty = DATA INTEGER (LsfColItem, LsfColKind);

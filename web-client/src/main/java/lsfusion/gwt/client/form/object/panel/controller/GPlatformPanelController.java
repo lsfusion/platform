@@ -49,8 +49,8 @@ public abstract class GPlatformPanelController extends GPlatformPropertyControll
     // goes, whether the key order is a layout order, which renderers should exist at all, and which one focus goes to.
     //
     // The FORM's panel keys them by COLUMN - one renderer per column group value, all of them in the property's own
-    // panel, in key order. A group's ROWS key them by row - the property is LSF on a grid that a CUSTOM REACT
-    // view draws, so there is one renderer per row and React decides where each of them appears.
+    // panel, in key order. A group's ROWS key them by row - the property is platform-drawn on a grid that a CUSTOM
+    // REACT view draws, so there is one renderer per row and React decides where each of them appears.
 
     // which part of a full key identifies the renderer. Getting this wrong is silent: the lookup simply misses, so the
     // caller records no optimistic value, no loading state and no request to reconcile, and a lost edit reads as a slow

@@ -16,7 +16,7 @@ import lsfusion.gwt.client.view.MainFrame;
 // WINDOW log CUSTOM 'MessageLog': a React component draws the window the messages to the user appear in - its own list,
 // a counter, the last message only, a toast strip. It never draws a MESSAGE: a message is markup the platform built -
 // the text with its icon, or the table an action reported beside it - so the component renders a host per message it
-// wants shown, and the platform moves that markup in, the same crossing <Lsf name/> makes for a design child, a
+// wants shown, and the platform moves that markup in, the same crossing <Platform name/> makes for a design child, a
 // navigator element and an open form.
 //
 // A message the component places nowhere is still logged and still in the projection: nothing here ever drops one,
@@ -61,8 +61,8 @@ public class ReactLogPanel extends LogPanel {
         }
     });
 
-    // the name a component addresses a message by - the one it writes in <Lsf name/>. It is the platform's, not the
-    // message's: two messages can carry the same text, caption and second, so nothing about a message identifies it
+    // the name a component addresses a message by - the one it writes in <Platform name/>. It is the platform's, not
+    // the message's: two messages can carry the same text, caption and second, so nothing about a message identifies it
     private static int messageCounter;
 
     // the projection, kept between messages because it is built by adding to the previous one - see addMessage

@@ -33,16 +33,18 @@ public class NavigatorButtons {
     private final Element park = Document.get().createDivElement();
 
     private final NativeStringMap<NavigatorImageButton> buttons = new NativeStringMap<>();
-    // what is wrong with a name, if anything. `requireLsf` is the difference between the two surfaces: a component's
-    // <Lsf> may only place an element declared LSF - anything else it is expected to draw from the projection - while
-    // a template places the window's ordinary buttons, and LSF is refused outside a React window in the first place
-    // (CheckNavigatorElementsTask), so asking for it there would call every element of every template a mistake
-    private PlacedViews.Problem problem(String canonicalName, boolean requireLsf) {
+    // what is wrong with a name, if anything. `requirePlatformDrawn` is the difference between the two surfaces: a
+    // component's <Platform> may only place an element declared LSF - anything else it is expected to draw from the
+    // projection - while a template places the window's ordinary buttons, and LSF is refused outside a React window in
+    // the first place (CheckNavigatorElementsTask), so asking for it there would call every element of every template a
+    // mistake
+    private PlacedViews.Problem problem(String canonicalName, boolean requirePlatformDrawn) {
         GNavigatorElement element = navigatorController.getElement(canonicalName);
         if (element == null) // a name no element has will never be drawn
             return new PlacedViews.Problem("'" + canonicalName + "' is not a navigator element",
                     "'" + canonicalName + "' is not a navigator element, so nothing will ever be placed here");
-        if (requireLsf && !element.lsf) // declared, but the component owns it: there is no drawing to place
+        // declared, but the component owns it: there is no drawing to place
+        if (requirePlatformDrawn && !element.platformDrawn)
             return new PlacedViews.Problem("'" + canonicalName + "' has no LSF",
                     "'" + canonicalName + "' has no LSF, so the component draws it from the projection instead of placing it");
         // whether the window draws it RIGHT NOW depends on the selection and is nobody's mistake, but which window
@@ -131,10 +133,10 @@ public class NavigatorButtons {
         return element.getDrawWindow() != null ? element.getDrawWindow().canonicalName : "none";
     }
 
-    // the template form: the button takes the place of the <Lsf:name> element, which is consumed. Every name here
+    // the template form: the button takes the place of the <Platform:name> element, which is consumed. Every name here
     // comes from the bucket the window just drew, so there is nothing to report
     public void replacePlace(String canonicalName, Element root) {
-        Element place = GwtClientUtils.getLsfPlace(root, canonicalName);
+        Element place = GwtClientUtils.getPlatformPlace(root, canonicalName);
         if (place == null) // this window's template gives the element no place, so it is not drawn
             return;
 
@@ -146,9 +148,9 @@ public class NavigatorButtons {
 
     // a place the template wrote and nothing filled. A name this window simply does not draw RIGHT NOW is not a
     // mistake and stays silent; a name that is not an element, has no LSF or belongs to another window is the same
-    // mistake a component's <Lsf> makes, and says so in the place itself - the only path that used to say nothing
+    // mistake a component's <Platform> makes, and says so in the place itself - the only path that used to say nothing
     public void reportPlace(String canonicalName, Element root) {
-        Element place = GwtClientUtils.getLsfPlace(root, canonicalName);
+        Element place = GwtClientUtils.getPlatformPlace(root, canonicalName);
         if (place == null) // the place was filled, so it is gone from the document
             return;
 
@@ -156,8 +158,8 @@ public class NavigatorButtons {
         if (problem == null) // the element is this window's and simply not drawn right now, which is not a mistake
             return;
 
-        GwtClientUtils.showLsfViewError(place, problem.shown);
-        GwtClientUtils.logLsfViewError(problem.logged);
+        GwtClientUtils.showCustomViewError(place, problem.shown);
+        GwtClientUtils.logCustomViewError(problem.logged);
     }
 
     // everything goes back to the park, so the next render starts from a clean panel without losing a single button

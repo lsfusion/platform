@@ -41,12 +41,12 @@ public abstract class FormContainer {
     }
 
     private static int formNameCounter = 0;
-    // the name a custom forms view addresses this open form by - the one it writes in <Lsf name/>, and the one the
+    // the name a custom forms view addresses this open form by - the one it writes in <Platform name/>, and the one the
     // projection carries. Allocated HERE, not on GFormController, because an async open shows a placeholder container
     // long before the form itself arrives, and the view must be able to name it meanwhile; GFormController.globalID is
     // the same counter one level down, and keeps its own uses
     // prefixed, and not a bare number: the log window names its messages the same way, and two names from two
-    // windows would otherwise match by accident - an <Lsf> given the wrong window's name would quietly place the
+    // windows would otherwise match by accident - a <Platform> given the wrong window's name would quietly place the
     // wrong thing instead of saying it is not an open form
     public final String formName = "form" + (formNameCounter++);
 

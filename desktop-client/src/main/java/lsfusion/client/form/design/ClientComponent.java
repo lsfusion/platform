@@ -55,7 +55,7 @@ public abstract class ClientComponent extends ClientIdentityObject {
 
     public boolean defaultComponent;
 
-    public boolean lsf; // keeps its lsFusion view inside a CUSTOM REACT container
+    public boolean platformDrawn; // keeps its lsFusion view inside a CUSTOM REACT container, which places it
 
     public ClientComponent() {
     }
@@ -115,7 +115,7 @@ public abstract class ClientComponent extends ClientIdentityObject {
 
         defaultComponent = inStream.readBoolean();
 
-        lsf = inStream.readBoolean();
+        platformDrawn = inStream.readBoolean();
 
         sID = pool.readString(inStream);
     }

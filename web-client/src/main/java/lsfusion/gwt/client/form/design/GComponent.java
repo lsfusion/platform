@@ -33,9 +33,9 @@ public class GComponent implements Serializable, HasNativeSID {
     public GContainer container;
     public boolean defaultComponent;
 
-    // meaningful only inside a CUSTOM REACT container, under the containers it draws itself (see isLsfView); ignored on
-    // any other component
-    public boolean lsf;
+    // meaningful only inside a CUSTOM REACT container, under the containers it draws itself (see isPlatformDrawn);
+    // ignored on any other component
+    public boolean platformDrawn;
 
     public String elementClass;
 
@@ -116,22 +116,22 @@ public class GComponent implements Serializable, HasNativeSID {
 
     // the platform draws this component and a CUSTOM REACT view places it: its real (server-built) lsFusion view is
     // mounted into a placeholder instead of being drawn from `data`. The flag as the server sends it, which has checked
-    // where every lsf component is (FormView.checkLsfViews) - a container or a panel property is placed by the CUSTOM
-    // REACT container above it, however deep under the containers that one draws itself (one REMOVEd from the design is
-    // placed by nothing), and a GRID property, which has no place of its own, belongs to a group such a container
-    // draws, wherever its own component is (the renderers of its rows are placed by the view that draws them) - so the
-    // flag is the answer
-    public boolean isLsfView() {
-        return lsf;
+    // where every platform-drawn component is (FormView.checkPlatformViews) - a container or a panel property is placed
+    // by the CUSTOM REACT container above it, however deep under the containers that one draws itself (one REMOVEd from
+    // the design is placed by nothing), and a GRID property, which has no place of its own, belongs to a group such a
+    // container draws, wherever its own component is (the renderers of its rows are placed by the view that draws them)
+    // - so the flag is the answer
+    public boolean isPlatformDrawn() {
+        return platformDrawn;
     }
 
     // WHERE THIS COMPONENT IS: the react container that draws or places it, null when the platform draws it where it
     // stands - pure design data, no controller, no projection. Walked from the component's CONTAINER - a grid's record,
-    // which has none, is in its grid (getHiddenContainer): a react container answers, an lsf component ends the walk -
-    // the platform draws everything under it. The component's own `lsf` says only which entry it has there, its
-    // content or its descriptor, never where the entry goes. A react container inside what another one draws is refused
-    // when the form is built (FormView.checkCustomReactSwallowed), so the first one reached is the only one there is
-    // (mirrors ComponentView.getReactPlace)
+    // which has none, is in its grid (getHiddenContainer): a react container answers, a platform-drawn component ends
+    // the walk - the platform draws everything under it. The component's own `lsf` says only which entry it has there,
+    // its content or its descriptor, never where the entry goes. A react container inside what another one draws is
+    // refused when the form is built (FormView.checkCustomReactSwallowed), so the first one reached is the only one
+    // there is (mirrors ComponentView.getReactPlace)
     public GContainer getReactPlace() {
         return getReactPlaceFrom(getHiddenContainer());
     }
@@ -142,7 +142,7 @@ public class GComponent implements Serializable, HasNativeSID {
             // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
             if (parent instanceof GContainer && ((GContainer) parent).isReact())
                 return parent.isInForm() ? (GContainer) parent : null;
-            if (parent.lsf)
+            if (parent.platformDrawn)
                 return null;
         }
         return null;
@@ -166,11 +166,12 @@ public class GComponent implements Serializable, HasNativeSID {
         return Collections.emptyList();
     }
 
-    // React draws this component from data, so GWT builds no view of it - below it, only of the lsf components the
-    // react container places (GFormLayout.addPlacedContainers): it has a React place and is not lsf - the other half of
-    // what has one, an lsf component there, React places (mirrors ComponentView.isReactDrawn)
+    // React draws this component from data, so GWT builds no view of it - below it, only of the platform-drawn
+    // components the react container places (GFormLayout.addPlacedContainers): it has a React place and is not
+    // platform-drawn - the other half of what has one, a platform-drawn component there, React places (mirrors
+    // ComponentView.isReactDrawn)
     public boolean isReactDrawn() {
-        return !isLsfView() && getReactPlace() != null;
+        return !isPlatformDrawn() && getReactPlace() != null;
     }
 
     // a component's labels (caption / image) — their dynamic readers and static design values — exposed uniformly.

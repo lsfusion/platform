@@ -512,7 +512,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (component instanceof ContainerView) {
             ContainerView<?> container = (ContainerView) component;
             
-            // `collapsed` on what has no collapse header - an lsf child, one React draws - hides nothing
+            // `collapsed` on what has no collapse header - a platform-drawn child, one React draws - hides nothing
             if (container.isCollapsed() && container.isCollapsible()) {
                 collapseContainer(container);
             }
@@ -1988,9 +1988,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return true;
 
         // its caption follows where it is drawn (ComponentView.getLabelPlace): a tab / collapsible / react-placed
-        // lsf-view container's is drawn by its parent, so it must keep updating even while the component's own body is
-        // hidden. The body / data is gated separately (isHidden(group), and a child property's own dynamic-hidable
-        // container which resolves to this one)
+        // platform-drawn container's is drawn by its parent, so it must keep updating even while the component's own
+        // body is hidden. The body / data is gated separately (isHidden(group), and a child property's own
+        // dynamic-hidable container which resolves to this one)
         ComponentView dynamicHidableContainer = component.getLabelPlace().getDynamicHidableContainer();
 
         return dynamicHidableContainer != null && isDynamicHidden(dynamicHidableContainer);
@@ -2058,7 +2058,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 active = siblings.get(0);
             if (!userHidableContainer.equals(active))
                 return true;
-        } else { // isolated: collapsed captioned container or react-hidden lsf child, both plain membership
+        } else { // isolated: collapsed captioned container or react-hidden platform-drawn child, both plain membership
             if(userHidden.contains(userHidableContainer))
                 return true;
         }
@@ -2068,8 +2068,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     protected Map<ContainerView, ComponentView> activeTabs = new HashMap<>();
     protected PropertyDrawEntity activeProperty = null;
-    // components the client isolatedly hid: a collapsed captioned container, or an lsf child a CUSTOM REACT
-    // component is not showing. A component is in at most one user-hidable role (an lsf-view container is not collapsible)
+    // components the client isolatedly hid: a collapsed captioned container, or a platform-drawn child a CUSTOM REACT
+    // component is not showing. A component is in at most one user-hidable role (a platform-drawn container is not collapsible)
     protected Set<ComponentView> userHidden = new HashSet<>();
 
     public void setTabActive(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
@@ -2098,8 +2098,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             changeSelection(changeSelectionColumns, stack);
     }
     
-    // a user hid a component: a collapsed container, or a CUSTOM REACT component hiding an lsf child. A non-user-
-    // hidable id just adds ignored membership (isUserHidden only tests contains() on a resolved user-hidable ancestor).
+    // a user hid a component: a collapsed container, or a CUSTOM REACT component hiding a platform-drawn child. A
+    // non-user-hidable id just adds ignored membership (isUserHidden only tests contains() on a resolved user-hidable
+    // ancestor).
     public void setUserHidden(ComponentView component, boolean hidden) {
         if (hidden) {
             userHidden.add(component);
@@ -2737,9 +2738,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean hidden = isUserHidden(drawProperty);
                 // ... and its label follows where it is drawn (getLabelPlace): a tab strip keeps showing the title of
                 // a page it does not show - the caption with its change key and mouse, the caption's class, the image,
-                // the tooltip -, a React view the caption, image and comment of an lsf child it does not place. Not an
-                // action's, whose caption is its button's face, nor a list property's, whose caption heads its column
-                // in the grid
+                // the tooltip -, a React view the caption, image and comment of a platform-drawn child it does not
+                // place. Not an action's, whose caption is its button's face, nor a list property's, whose caption
+                // heads its column in the grid
                 boolean labelHidden = isList || !drawProperty.isProperty(context) ? hidden
                         : isUserHidden(getDrawComponent(drawProperty).getLabelPlace());
 
