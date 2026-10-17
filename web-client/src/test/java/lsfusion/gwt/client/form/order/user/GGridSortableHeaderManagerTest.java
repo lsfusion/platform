@@ -38,7 +38,7 @@ public class GGridSortableHeaderManagerTest extends GWTTestCase {
         columns = Arrays.asList(price, name, sku, line);
         formOrders = new HashMap<>();
         askedGroup = null; asked = null;
-        manager = new GGridSortableHeaderManager(false) {
+        manager = new GGridSortableHeaderManager(null, false) {
             protected LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
                 LinkedHashMap<Column, Boolean> orders = formOrders.get(group);
                 return orders != null ? orders : new LinkedHashMap<>();

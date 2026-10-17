@@ -18,7 +18,7 @@ import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController
 import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GListViewController;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController;
-import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferencesDialog;
@@ -32,17 +32,12 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class GPlatformGridController extends GPlatformTableController implements GGridController, GListViewController {
+public final class GPlatformGridController extends GPlatformTableController<GGrid, GListView, GGridToolbarController> implements GGridController, GListViewController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     public GGroupObject groupObject;
 
-    private GListView table;
-
     public Widget recordView;
-
-    // the group's toolbar, of whichever kind it is, which the table gives itself to as it is made
-    private final GGridToolbarController toolbar;
 
     // the export, which a pivot disables while it fills its table - on the platform's toolbar only, where the design
     // shows it (addToolbarButtons)
@@ -57,9 +52,8 @@ public final class GPlatformGridController extends GPlatformTableController impl
     }
 
     public GPlatformGridController(GFormController iformController, GGroupObject groupObject, GGridUserPreferences[] userPreferences, GGridToolbarController toolbar) {
-        super(iformController);
+        super(iformController, groupObject.grid, toolbar);
         this.groupObject = groupObject;
-        this.toolbar = toolbar;
 
         initGridView();
         // the table given to its toolbar - the platform's takes its buttons, a view's part its views -, before the
@@ -69,11 +63,11 @@ public final class GPlatformGridController extends GPlatformTableController impl
         toolbar.addRows(this);
 
         // proceeding recordView
-        GContainer record = groupObject.grid.record;
+        GContainer record = table.record;
         if(record != null) {
             GFormLayout formLayout = getFormLayout();
             GAbstractContainerView recordView = formLayout.getContainerView(record);
-            recordView.addUpdateLayoutListener(requestIndex -> table.updateRecordLayout(requestIndex));
+            recordView.addUpdateLayoutListener(requestIndex -> view.updateRecordLayout(requestIndex));
             this.recordView = recordView.getView();
 
             // we need to add recordview somewhere, to attach it (events, listeners, etc.)
@@ -86,11 +80,11 @@ public final class GPlatformGridController extends GPlatformTableController impl
         // we don't have to do changeListViewType, since it's a first start and it should be set on server
         setListView(groupObject.listViewType);
         if (groupObject.listViewType == GListViewType.PIVOT) {
-            ((GPivot)table).initDefaultSettings(this);
+            ((GPivot)view).initDefaultSettings(this);
             if(!groupObject.asyncInit)
-                ((GPivot)table).setDefaultChangesApplied();
+                ((GPivot)view).setDefaultChangesApplied();
         }
-        table.setSetRequestIndex(-1);
+        view.setSetRequestIndex(-1);
         updateSettingsButton();
     }
 
@@ -122,57 +116,48 @@ public final class GPlatformGridController extends GPlatformTableController impl
         return listView;
     }
 
-    public void changeListView(GListViewType view) {
-        setListView(view);
+    public void changeListView(GListViewType type) {
+        setListView(type);
         // a pivot makes a call to get the columns, to init its default config
-        table.setSetRequestIndex(formController.changeListViewType(groupObject, table.getPageSize(), view, view == GListViewType.PIVOT ? GUpdateMode.MANUAL : null));
+        view.setSetRequestIndex(formController.changeListViewType(groupObject, view.getPageSize(), type, type == GListViewType.PIVOT ? GUpdateMode.MANUAL : null));
         updateSettingsButton();
     }
 
-    // ... and the table of each: the rows shown as one of those views, at first or when the switch asks
-    private void setListView(GListViewType view) {
-        GListView table;
-        switch (view) {
+    // ... and the view of each: the rows shown as one of those views, at first or when the switch asks
+    private void setListView(GListViewType type) {
+        GListView view;
+        switch (type) {
             case PIVOT:
-                table = new GPivot(formController, this, getSelectedProperty(), gridView);
+                view = new GPivot(formController, this, getSelectedProperty(), gridView);
                 break;
             case CUSTOM:
-                table = new GCustom(formController, this, gridView, groupObject.customRenderFunction);
+                view = new GCustom(formController, this, gridView, groupObject.customRenderFunction);
                 break;
             case MAP:
-                table = new GMap(formController, this, gridView);
+                view = new GMap(formController, this, gridView);
                 break;
             case CALENDAR:
-                table = new GCalendar(formController, this, gridView, getCalendarDateProps());
+                view = new GCalendar(formController, this, gridView, getCalendarDateProps());
                 break;
             default:
-                table = new GGridTable(formController, this, gridView, userPreferences);
+                view = new GGridTable(formController, this, gridView, userPreferences);
         }
-        changeTableView(table);
-        listView = view;
-        toolbar.showView(view);
+        changeTableView(view);
+        listView = type;
+        toolbar.showView(type);
     }
 
-    private void changeTableView(GListView table) {
-        if (this.table != null) {
-            this.table.onClear();
-            this.table.destroy(); // the replaced view is dropped, and it is registered in the global color-theme listener list
+    private void changeTableView(GListView view) {
+        if (this.view != null) {
+            this.view.onClear();
+            // the replaced view is dropped, and it is registered in the global color-theme listener list
+            this.view.destroy();
         }
 
-        changeGridView(table);
-        table.onRender(formController.popEditEvent());
-        this.table = table;
+        changeGridView(view);
+        view.onRender(formController.popEditEvent());
+        this.view = view;
         updateSettingsButton();
-    }
-
-    @Override
-    protected GListView getView() {
-        return table;
-    }
-
-    @Override
-    protected GGridToolbarController getToolbar() {
-        return toolbar;
     }
 
     // the settings, on the platform's toolbar only, where the design shows them (addToolbarButtons)
@@ -181,10 +166,10 @@ public final class GPlatformGridController extends GPlatformTableController impl
     // the table's buttons on the platform's toolbar, in their order (GGridController), its view switch first - the
     // filter controller's button goes after it (GPlatformGridToolbarController.getFilterToggleIndex)
     public void addToolbarButtons(GPlatformGridToolbarController platformToolbar) {
-        if (groupObject.grid.toolbar.showViews)
+        if (table.toolbar.showViews)
             platformToolbar.addViewSwitch(this);
 
-        if (groupObject.grid.toolbar.showSettings) {
+        if (table.toolbar.showSettings) {
             GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
 
             settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
@@ -200,15 +185,15 @@ public final class GPlatformGridController extends GPlatformTableController impl
             platformToolbar.add(settingsButtonGroup);
         }
 
-        if(groupObject.grid.toolbar.showCountQuantity || groupObject.grid.toolbar.showCalculateSum) {
+        if(table.toolbar.showCountQuantity || table.toolbar.showCalculateSum) {
 
             GToolbarButtonGroup calculateButtonGroup = new GToolbarButtonGroup();
 
-            if (groupObject.grid.toolbar.showCountQuantity) {
+            if (table.toolbar.showCountQuantity) {
                 calculateButtonGroup.add(platformToolbar.createCountButton());
             }
 
-            if (groupObject.grid.toolbar.showCalculateSum) {
+            if (table.toolbar.showCalculateSum) {
                 calculateButtonGroup.add(new GCalculateSumButton() {
                     @Override
                     public ClickHandler getClickHandler() {
@@ -216,7 +201,7 @@ public final class GPlatformGridController extends GPlatformTableController impl
                             GPropertyDraw property = getSelectedProperty();
                             if (property != null) {
                                 if (property.getValueType() instanceof GIntegralType)
-                                    formController.calculateSum(groupObject, property, table.getCurrentColumnKey(), sum -> showPopup(sum, property), error -> { });
+                                    formController.calculateSum(groupObject, property, view.getCurrentColumnKey(), sum -> showPopup(sum, property), error -> { });
                                 else
                                     showPopup(null, property);
                             }
@@ -228,8 +213,8 @@ public final class GPlatformGridController extends GPlatformTableController impl
             platformToolbar.add(calculateButtonGroup);
         }
 
-        if(groupObject.grid.toolbar.showPrintGroupXls) {
-            exportToExcelButton = platformToolbar.addExport(() -> table.runGroupReport());
+        if(table.toolbar.showPrintGroupXls) {
+            exportToExcelButton = platformToolbar.addExport(() -> view.runGroupReport());
         }
     }
     // ... and its views, which a view's part of the toolbar switches: the table's own (GListViewController)
@@ -238,14 +223,14 @@ public final class GPlatformGridController extends GPlatformTableController impl
     }
 
     public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
-        table.setKeys(keys);
+        view.setKeys(keys);
     }
 
     // hidden with no columns once the answer to the request that set the view has come - before it, it has none yet
     @Override
     protected boolean updateView(long requestIndex, GFormChanges fc) {
-        table.update(fc.updateStateObjects.get(groupObject));
-        return !(table.isNoColumns() && requestIndex >= table.getSetRequestIndex());
+        view.update(fc.updateStateObjects.get(groupObject));
+        return !(view.isNoColumns() && requestIndex >= view.getSetRequestIndex());
     }
 
     @Override
@@ -264,7 +249,7 @@ public final class GPlatformGridController extends GPlatformTableController impl
     }
 
     public GPropertyDraw getSelectedProperty() {
-        return table != null ? table.getCurrentProperty() : null;
+        return view != null ? view.getCurrentProperty() : null;
     }
 
     @Override
@@ -274,17 +259,17 @@ public final class GPlatformGridController extends GPlatformTableController impl
 
     @Override
     public GGroupObjectValue getSelectedColumnKey() {
-        return table.getCurrentColumnKey();
+        return view.getCurrentColumnKey();
     }
 
     @Override
     public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return table.getSelectedValue(property, columnKey);
+        return view.getSelectedValue(property, columnKey);
     }
 
     @Override
     public List<Pair<Column, String>> getFilterColumns() {
-        return table.getFilterColumns();
+        return view.getFilterColumns();
     }
 
     public ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> getPivotColumns() {
@@ -300,11 +285,11 @@ public final class GPlatformGridController extends GPlatformTableController impl
     }
 
     public GGroupObjectUserPreferences getUserGridPreferences() {
-        return table.getCurrentUserGridPreferences();
+        return view.getCurrentUserGridPreferences();
     }
 
     public GGroupObjectUserPreferences getGeneralGridPreferences() {
-        return table.getGeneralGridPreferences();
+        return view.getGeneralGridPreferences();
     }
 
     // its views' user preferences, the form's to save and a report's to read (GPlatformTableController)
@@ -312,11 +297,6 @@ public final class GPlatformGridController extends GPlatformTableController impl
     public void addUserPreferences(List<GGroupObjectUserPreferences> user, List<GGroupObjectUserPreferences> general) {
         user.add(getUserGridPreferences());
         general.add(getGeneralGridPreferences());
-    }
-
-    @Override
-    public GGridProperty getGridComponent() {
-        return groupObject.grid;
     }
 
     public void changeGroups(List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, int aggrProps, boolean restoreUpdateMode, GPropertyGroupType aggrType) {
@@ -327,8 +307,8 @@ public final class GPlatformGridController extends GPlatformTableController impl
     }
 
     public void changeSettings() {
-        if(table instanceof GGridTable) {
-            GGridTable gridTable = (GGridTable) table;
+        if(view instanceof GGridTable) {
+            GGridTable gridTable = (GGridTable) view;
             GUserPreferencesDialog dialog = new GUserPreferencesDialog(gridTable, this, formController.platformFormPanelController, formController.hasCanonicalName()) {
                 @Override
                 public void preferencesChanged() {
@@ -337,8 +317,8 @@ public final class GPlatformGridController extends GPlatformTableController impl
             };
             dialog.showDialog();
         } else {
-            if(table instanceof GPivot) {
-                GPivot pivotTable = (GPivot) table;
+            if(view instanceof GPivot) {
+                GPivot pivotTable = (GPivot) view;
                 pivotTable.switchSettings();
                 updateSettingsButton();
             }
@@ -347,11 +327,11 @@ public final class GPlatformGridController extends GPlatformTableController impl
 
     private void updateSettingsButton() {
         if(settingsButton != null) {
-            if (table instanceof GGridTable) {
-                GGridTable gridTable = (GGridTable) table;
+            if (view instanceof GGridTable) {
+                GGridTable gridTable = (GGridTable) view;
                 settingsButton.showBackground(gridTable.hasUserPreferences() || gridTable.generalPreferencesSaved() || gridTable.userPreferencesSaved());
-            } else if (table instanceof GPivot) {
-                GPivot pivotTable = (GPivot) table;
+            } else if (view instanceof GPivot) {
+                GPivot pivotTable = (GPivot) view;
                 settingsButton.showBackground(pivotTable.isSettings());
             }
         }

@@ -29,14 +29,6 @@ public final class GPlatformPanelGroupController implements GGroupController {
     }
     public void updateCurrentKey(GGroupObjectValue currentKey) {
     }
-    public void changeCurrentKey(GGroupObjectValue currentKey) {
-    }
-    public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
-    }
-    public void changeExpandedAll(boolean open, long requestIndex) {
-    }
-    public void changeExpandedUnder(GGroupObjectValue key, long requestIndex) {
-    }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
     }
 }

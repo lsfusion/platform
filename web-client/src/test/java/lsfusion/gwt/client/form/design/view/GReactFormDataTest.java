@@ -836,12 +836,12 @@ public class GReactFormDataTest extends GWTTestCase {
     // the platform's controller of a group and of a property, as far as the form hands it on - a table controller,
     // which a property's view controller is too, with no form: what reaches it is recorded, and the rest of its
     // surface, which the projection never asks of it, does nothing
-    private static final class RecordingTableController extends GPlatformTableController implements GGridController {
+    private static final class RecordingTableController extends GPlatformTableController<GGridProperty, GTableView, GToolbarController<?>> implements GGridController {
         final ArrayList<GPropertyReader> updated = new ArrayList<>();
         final ArrayList<GPropertyDraw> dropped = new ArrayList<>(), focused = new ArrayList<>(), loading = new ArrayList<>();
 
         RecordingTableController() {
-            super(null);
+            super(null, null, null);
         }
         public void updateValue(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) { updated.add(property); cells.put(property, values); }
         public void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) { updated.add(reader); }
@@ -861,14 +861,11 @@ public class GReactFormDataTest extends GWTTestCase {
         public int getSelectedRow() { return selectedRow; }
         public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) { }
         public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) { }
-        protected GTableView getView() { return null; }
-        protected GToolbarController<?> getToolbar() { return null; }
         protected boolean updateView(long requestIndex, GFormChanges fc) { return false; }
         public void update(long requestIndex, GFormChanges fc) { }
         public void destroy() { }
         public void addUserPreferences(List<GGroupObjectUserPreferences> user, List<GGroupObjectUserPreferences> general) { }
         public void updateCurrentKey(GGroupObjectValue currentKey) { }
-        public void changeCurrentKey(GGroupObjectValue currentKey) { }
         public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) { }
 
         public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) { }
@@ -903,7 +900,6 @@ public class GReactFormDataTest extends GWTTestCase {
         final ArrayList<String> filtered = new ArrayList<>();
         public long changeFilter(ArrayList<GPropertyFilter> conditions) { filtered.add(describe(conditions)); return -1; }
         public boolean focusFirstWidget(FocusUtils.Reason reason) { return false; }
-        public GGridProperty getGridComponent() { return null; }
         public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) { }
         public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) { }
         public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) { }

@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 
-// THE VIEW the platform draws a TABLE's rows in (GPlatformTableController.getView): a grid's - the list view it shows
+// THE VIEW the platform draws a TABLE's rows in (GPlatformTableController.view): a grid's - the list view it shows
 // (GListView) -, or a tree (GTreeTable). What the form sends for the table's rows and properties goes to it, a
 // property's attribute with the property; what a view does not draw it leaves (the defaults)
 public interface GTableView extends TableComponent {

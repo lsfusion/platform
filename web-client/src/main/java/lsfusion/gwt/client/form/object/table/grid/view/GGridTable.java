@@ -27,8 +27,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
-import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -49,7 +48,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.String.valueOf;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
-public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GListView {
+public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatformGridController> implements GListView {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
@@ -61,10 +60,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
 
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<>();
 
-    private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> showIfs = new NativeSIDMap<>();
-    private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> readOnlyValues = new NativeSIDMap<>();
-    private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> loadings = new NativeSIDMap<>();
 
     protected NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = new NativeHashMap<>();
 
@@ -74,12 +70,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
 
     private boolean rowsUpdated = false;
     private boolean selectRowsUpdated = false;
-    private boolean dataUpdated = false;
 
-    private GGroupObject groupObject;
-
-    private GPlatformGridController groupObjectController;
-    
     private GGridUserPreferences generalGridPreferences;
     private GGridUserPreferences userGridPreferences;
     private GGridUserPreferences currentGridPreferences;
@@ -105,10 +96,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
     }
 
     public GGridTable(GFormController iform, GPlatformGridController igroupController, TableContainer tableContainer, GGridUserPreferences[] iuserPreferences) {
-        super(iform, igroupController.groupObject, tableContainer, null);
-
-        this.groupObjectController = igroupController;
-        this.groupObject = igroupController.groupObject;
+        super(iform, igroupController.groupObject.grid, igroupController, igroupController.groupObject, tableContainer, null);
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GGridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GGridUserPreferences(groupObject);
@@ -118,7 +106,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
             font = currentGridPreferences.font;
         }
         if (font == null) {
-            font = groupObject.grid.font;
+            font = grid.font;
         }
 
         setSelectionHandler(new GridTableSelectionHandler(this));
@@ -126,17 +114,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
         setRowChangedHandler((row, prevRow, reason, event) -> updateRowColumn(prevRow, -2, reason, event));
         setColumnChangedHandler((col, prevCol, reason, event) -> updateRowColumn(-2, prevCol, reason, event));
 
-        sortableHeaderManager = new GGridSortableHeaderManager(false) {
-            @Override
-            protected LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
-                return form.getOrders(group);
-            }
-
-            @Override
-            protected void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
-                form.changeOrders(group, orders);
-            }
-
+        sortableHeaderManager = new GGridSortableHeaderManager(form, false) {
             @Override
             protected Column getColumn(int column) {
                 return column >= 0 && column < getColumnCount() ? new Column(getProperty(column), getColumnKey(column)) : null;
@@ -566,7 +544,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
     }
 
     public GFont getDesignFont() {
-        return groupObject.grid.font;
+        return grid.font;
     }
 
     public static void putToColumnsMap(NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column, GridColumn value) {
@@ -701,19 +679,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
         removeColumn(column);
     }
 
-    @Override
-    public GPlatformTableController getGroupController() {
-        return groupObjectController;
-    }
-
-    public GGroupObject getGroupObject() {
-        return groupObject;
-    }
-
-    public GGridProperty getGrid() {
-        return groupObject.grid;
-    }
-    
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 0) {
@@ -833,10 +798,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
         readOnlyValues.put(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
-    }
-
-    @Override
-    public void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
@@ -1210,12 +1171,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
 
     @Override
     protected boolean useQuickSearchInsteadOfQuickFilter() {
-        return groupObject.grid.quickSearch;
-    }
-
-    @Override
-    public void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
-        groupObjectController.quickEditFilter(event, filterProperty, columnKey);
+        return grid.quickSearch;
     }
 
     @Override
@@ -1252,11 +1208,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
 
     public void focusProperty(GPropertyDraw propertyDraw) {
         activateColumn(getGridColumnIndex(propertyDraw, null));
-    }
-
-    @Override
-    public void focus(FocusUtils.Reason reason) {
-        GListView.super.focus(reason);
     }
 
     // editing set value (in EditContext), changes model and value itself
@@ -1497,34 +1448,18 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GL
     private class GridColumn extends GridPropertyColumn {
         private final String columnSID;
 
-        public final GPropertyDraw property;
         public final GGroupObjectValue columnKey;
 
         public GridColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+            super(property);
             this.columnSID = "" + (nextColumnID++);
 
-            this.property = property;
             this.columnKey = columnKey;
         }
 
         @Override
         public String getNativeSID() {
             return columnSID;
-        }
-
-        @Override
-        public boolean isCustomRenderer(RendererType rendererType) {
-            return property.getCellRenderer(rendererType).isCustomRenderer();
-        }
-
-        @Override
-        public boolean isFocusable() {
-            return GGridTable.this.isFocusable(property);
-        }
-
-        @Override
-        public boolean isSticky() {
-            return property.sticky;
         }
 
         public void setValue(GridDataRecord record, PValue value) {

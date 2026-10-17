@@ -12,7 +12,7 @@ public class GRowBackgroundReader extends GGroupObjectPropertyReader {
         super(readerID, "BACKGROUND");
     }
 
-    public void updatePlatform(GPlatformTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    public void updatePlatform(GPlatformTableController<?, ?, ?> controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateRowBackgroundValues(values);
     }
 

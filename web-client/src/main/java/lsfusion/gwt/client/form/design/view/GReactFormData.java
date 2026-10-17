@@ -1823,19 +1823,12 @@ public class GReactFormData {
         }
     }
 
-    // ... of the group of a GRID - a list's group not in a tree -: its rows alone; what the grid's toolbar and filter
-    // input controller ask of the grid as a whole is its table's (GridTablePart)
+    // ... of the group of a GRID - a list's group not in a tree -: its rows alone, none of them a node to open
+    // (GGroupController's defaults); what the grid's toolbar and filter input controller ask of the grid as a whole is
+    // its table's (GridTablePart)
     private final class GridRowsPart extends RowsPart {
         GridRowsPart(GroupNode node) {
             super(node);
-        }
-
-        // ===== the group's controller (GGroupController), of a grid: none of its rows is a node to open
-        public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
-        }
-        public void changeExpandedAll(boolean open, long requestIndex) {
-        }
-        public void changeExpandedUnder(GGroupObjectValue key, long requestIndex) {
         }
     }
     // ... of a group of a TREE: its rows say where they hang in it, from the hierarchy sent beside them. A node's

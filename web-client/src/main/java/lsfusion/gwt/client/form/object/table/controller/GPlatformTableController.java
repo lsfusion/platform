@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
@@ -24,7 +23,17 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public abstract class GPlatformTableController extends GPlatformPropertyController implements GTableController, GGroupController, GUserOrdersController {
+public abstract class GPlatformTableController<P extends GGridProperty, V extends GTableView, B extends GToolbarController<?>> extends GPlatformPropertyController implements GTableController, GGroupController, GUserOrdersController {
+    // the TABLE it draws, as its toolbar has it (GPlatformToolbarController.table): a list group's grid, or a tree, one
+    // for all its groups
+    protected final P table;
+    // the view it draws the table's rows in - the list view a grid shows now, replaced as its switch asks, or the tree:
+    // what the form sends for the table's rows and properties goes to it, each property's attribute with the property
+    // (GTableView)
+    protected V view;
+    // ... and the table's toolbar, of whichever kind it is, which the table gives itself to as it is made, shown and
+    // hidden with the rows (update)
+    protected final B toolbar;
     // the controller of the FILTERS box of the table's groups - the grid's group, or the tree's, one box for all of
     // them - the platform wires up, made over the table once it is made and bound to it then, once (bindFilter): what
     // the keys of the table, a pivot's drill-down and the table shown or hidden reach, and what the table tells that it
@@ -40,17 +49,18 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
         // plus we need this panel to change views
         this.gridView = new TableContainer(formController);
 
-        getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
+        getFormLayout().addBaseComponent(table, this.gridView, getDefaultFocusReceiver());
     }
 
     public void changeGridView(GTableView view) {
-        GGridProperty table = getGridComponent();
         gridView.changeTableComponent(view, table.isBoxed(view));
         gridView.updateElementClass(table);
     }
 
-    public GPlatformTableController(GFormController formController) {
+    public GPlatformTableController(GFormController formController, P table, B toolbar) {
         super(formController);
+        this.table = table;
+        this.toolbar = toolbar;
     }
 
     protected DefaultFocusReceiver getDefaultFocusReceiver() {
@@ -85,7 +95,7 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
         updateOrders(group, orders);
     }
     public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
-        getView().updateOrders();
+        view.updateOrders();
     }
 
     public void quickEditFilter(Event editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
@@ -128,12 +138,11 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
 
     // the conditions sent for the table's groups - the grid's group, or the tree's, one list for all of them
     public long changeFilter(ArrayList<GPropertyFilter> conditions) {
-        return formController.changeFilters(getGridComponent().getGroups(), conditions);
+        return formController.changeFilters(table.getGroups(), conditions);
     }
 
     // eventually is called either on form opening / form tab selection / filter dialog close
     public boolean focusFirstWidget(FocusUtils.Reason reason) {
-        GTableView view = getView();
         if (view != null && GwtClientUtils.isShowing(view.getWidget())) {
             view.focus(reason);
             return true;
@@ -141,12 +150,6 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
 
         return false;
     }
-    public abstract GGridProperty getGridComponent();
-    // the view it draws the table's rows in - the list view a grid shows now, or the tree: what the form sends for
-    // the table's rows and properties goes to it, each property's attribute with the property (GTableView)
-    protected abstract GTableView getView();
-    // ... and the table's toolbar, of whichever kind it is, shown and hidden with the rows (update)
-    protected abstract GToolbarController<?> getToolbar();
 
     // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла
     // (если грид заключён в скролл и не влезает по высоте) до первого ряда таблицы, скрывая заголовок (видимо вызывается scrollIntoView(), 
@@ -154,10 +157,7 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
     // поэтому крутим все скроллы-предки вверх при открытии формы.
     // неоднозначное решение, т.к. вовсе необязательно фокусный компонент находится вверху скролла, но пока должно хватать. 
     public void scrollToTop() {
-        GComponent gridComponent = getGridComponent();
-        if (gridComponent != null) {
-            scrollToTop(gridComponent.container);
-        }
+        scrollToTop(table.container);
     }
 
     private void scrollToTop(GContainer container) {
@@ -179,9 +179,9 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
 
         GwtClientUtils.setGridVisible(gridView, visible);
 
-        getToolbar().setVisible(visible);
+        toolbar.setVisible(visible);
 
-        for (GGroupObject group : getGridComponent().getGroups())
+        for (GGroupObject group : table.getGroups())
             formController.setFiltersVisible(group, visible);
 
         if (filter != null) {
@@ -198,7 +198,6 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
     // application never got the call at all. Before the platform's own teardown, so what it sees is the state the view
     // switch shows it
     public void destroy() {
-        GTableView view = getView();
         view.onClear();
         view.destroy();
         if (filter != null) // ... and the filter input controller given to it, let go of with it
@@ -212,137 +211,137 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
     // into the view, a reader's values with its property
     @Override
     public boolean isPropertyShown(GPropertyDraw property) {
-        return getView().containsProperty(property);
+        return view.containsProperty(property);
     }
 
     @Override
     public void focusProperty(GPropertyDraw propertyDraw) {
-        getView().focusProperty(propertyDraw);
+        view.focusProperty(propertyDraw);
     }
 
     @Override
     public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateProperty(property, columnKeys, updateKeys, values);
+        view.updateProperty(property, columnKeys, updateKeys, values);
     }
 
     @Override
     public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
-        return getView().setLoadingValueAt(property, fullCurrentKey, value);
+        return view.setLoadingValueAt(property, fullCurrentKey, value);
     }
 
     @Override
     public void removeProperty(GPropertyDraw property) {
-        getView().removeProperty(property);
+        view.removeProperty(property);
     }
 
     @Override
     public void updateCellGridElementClasses(GGridElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCellGridElementClasses(formController.getProperty(reader.propertyID), values);
+        view.updateCellGridElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
+        view.updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellFontValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCellFontValues(formController.getProperty(reader.propertyID), values);
+        view.updateCellFontValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
+        view.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCellForegroundValues(formController.getProperty(reader.propertyID), values);
+        view.updateCellForegroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updatePlaceholderValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updatePlaceholderValues(formController.getProperty(reader.propertyID), values);
+        view.updatePlaceholderValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updatePatternValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updatePatternValues(formController.getProperty(reader.propertyID), values);
+        view.updatePatternValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateRegexpValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateRegexpValues(formController.getProperty(reader.propertyID), values);
+        view.updateRegexpValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateRegexpMessageValues(formController.getProperty(reader.propertyID), values);
+        view.updateRegexpMessageValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateTooltipValues(formController.getProperty(reader.propertyID), values);
+        view.updateTooltipValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
+        view.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updatePropertyCustomOptionsValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updatePropertyCustomOptionsValues(formController.getProperty(reader.propertyID), values);
+        view.updatePropertyCustomOptionsValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateChangeKeyValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateChangeKeyValues(formController.getProperty(reader.propertyID), values);
+        view.updateChangeKeyValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateChangeMouseValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateChangeMouseValues(formController.getProperty(reader.propertyID), values);
+        view.updateChangeMouseValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateImageValues(formController.getProperty(reader.propertyID), values);
+        view.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
+        view.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellCaptionElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCaptionElementClasses(formController.getProperty(reader.propertyID), values);
+        view.updateCaptionElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateCellFooterElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateFooterElementClasses(formController.getProperty(reader.propertyID), values);
+        view.updateFooterElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateLoadings(formController.getProperty(reader.propertyID), values);
+        view.updateLoadings(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateShowIfValues(formController.getProperty(reader.propertyID), values);
+        view.updateShowIfValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updatePropertyFooters(formController.getProperty(reader.propertyID), values);
+        view.updatePropertyFooters(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
+        view.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -359,52 +358,44 @@ public abstract class GPlatformTableController extends GPlatformPropertyControll
 
     @Override
     public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateLastValues(formController.getProperty(reader.propertyID), reader.index, values);
+        view.updateLastValues(formController.getProperty(reader.propertyID), reader.index, values);
     }
 
     // ... and of the table's rows, a reader of its groups' (GGroupObjectPropertyReader)
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateRowBackgroundValues(values);
+        view.updateRowBackgroundValues(values);
     }
 
     public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
-        getView().updateRowSelectValues(values, updateKeys);
+        view.updateRowSelectValues(values, updateKeys);
     }
 
     public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateRowForegroundValues(values);
+        view.updateRowForegroundValues(values);
     }
 
     public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        getView().updateCustomOptionsValues(values);
+        view.updateCustomOptionsValues(values);
     }
 
     // ===== the platform's side of the form's controller of a group whose rows it draws (GGroupController, of the grid
     // and the tree): its keys, which each kind lays out its own way, its current one and the rows added and removed into
-    // the view, the selected one asked of it - none, a view's null, the empty key, as the form reads them alike -; a
-    // current object the view chose itself and a node the tree opened itself; and a reader of the group by that
-    // reader's own update of this controller
+    // the view, the selected one asked of it - none, a view's null, the empty key, as the form reads them alike -; and
+    // a reader of the group by that reader's own update of this controller. A current object the view chose and a node
+    // the tree opened it has shown itself (GGroupController's defaults)
     public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
     public void updateCurrentKey(GGroupObjectValue currentKey) {
-        getView().setCurrentKey(currentKey);
+        view.setCurrentKey(currentKey);
     }
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
-        getView().modifyGroupObject(key, add, position);
+        view.modifyGroupObject(key, add, position);
     }
     public GGroupObjectValue getSelectedKey() {
-        GGroupObjectValue result = getView().getSelectedKey();
+        GGroupObjectValue result = view.getSelectedKey();
         return result == null ? GGroupObjectValue.EMPTY : result;
     }
     public int getSelectedRow() {
-        return getView().getSelectedRow();
-    }
-    public void changeCurrentKey(GGroupObjectValue currentKey) {
-    }
-    public void changeExpanded(GGroupObjectValue key, boolean open, long requestIndex) {
-    }
-    public void changeExpandedAll(boolean open, long requestIndex) {
-    }
-    public void changeExpandedUnder(GGroupObjectValue key, long requestIndex) {
+        return view.getSelectedRow();
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updatePlatform(this, values, partial);

@@ -5,7 +5,6 @@ import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
@@ -17,13 +16,10 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 // rows and its manual update, which need no table, and those of whoever draws them, which give them as they are made
 // (addRows) - a table's, in their order, its view switch among them, or what the rows React draws have, which needs no
 // table -, the filter button after the view switch; and the state of the group's update, which the form tells it of
-public final class GPlatformGridToolbarController extends GPlatformToolbarController<GGridController> implements GGridToolbarController {
-
-    private final GGroupObject group;
+public final class GPlatformGridToolbarController extends GPlatformToolbarController<GGridController, GGrid> implements GGridToolbarController {
 
     public GPlatformGridToolbarController(GFormController form, GGrid grid) {
         super(form, grid);
-        this.group = grid.groupObject;
     }
 
     // ===== what draws the rows puts on it, as it is made: its buttons, in their order - asked for them here ... -,
@@ -99,7 +95,7 @@ public final class GPlatformGridToolbarController extends GPlatformToolbarContro
         return new GCountQuantityButton() {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> form.countRecords(group, quantity -> showPopup(quantity.longValue()), error -> { });
+                return event -> form.countRecords(table.groupObject, quantity -> showPopup(quantity.longValue()), error -> { });
             }
         };
     }
@@ -117,8 +113,8 @@ public final class GPlatformGridToolbarController extends GPlatformToolbarContro
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
-                    boolean manual = !form.isManualUpdate(group);
-                    form.changeUpdateMode(group, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
+                    boolean manual = !form.isManualUpdate(table.groupObject);
+                    form.changeUpdateMode(table.groupObject, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
                     setUpdateMode(manual);
                 };
             }
@@ -128,14 +124,14 @@ public final class GPlatformGridToolbarController extends GPlatformToolbarContro
         forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> form.changeUpdateMode(group, GUpdateMode.FORCE);
+                return event -> form.changeUpdateMode(table.groupObject, GUpdateMode.FORCE);
             }
         };
         updateButtonGroup.add(forceUpdateTableButton);
 
         add(updateButtonGroup);
 
-        setUpdateMode(form.isManualUpdate(group));
+        setUpdateMode(form.isManualUpdate(table.groupObject));
     }
 
     private void setUpdateMode(boolean manual) {

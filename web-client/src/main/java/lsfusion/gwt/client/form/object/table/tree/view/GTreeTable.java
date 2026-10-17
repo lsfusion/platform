@@ -23,14 +23,11 @@ import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
-import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GPlatformTreeController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
-import lsfusion.gwt.client.form.object.table.view.GTableView;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -45,30 +42,17 @@ import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
-public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements GTableView {
+public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, GPlatformTreeController> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
-    private boolean dataUpdated;
-
     private GTreeTableTree tree;
 
     private TreeTableSelectionHandler treeSelectionHandler;
 
-    private GPlatformTreeController treeGroupController;
-
-    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
-    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> loadings = new NativeSIDMap<>();
-    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> readOnly = new NativeSIDMap<>();
-
-    private GTreeGroup treeGroup;
-
     private GSize hierarchicalWidth;
 
     public GTreeTable(GFormController iformController, GForm iform, GPlatformTreeController treeGroupController, GTreeGroup treeGroup, TableContainer tableContainer) {
-        super(iformController, lastGroupObject(treeGroup), tableContainer, treeGroup.font);
-
-        this.treeGroupController = treeGroupController;
-        this.treeGroup = treeGroup;
+        super(iformController, treeGroup, treeGroupController, lastGroupObject(treeGroup), tableContainer, treeGroup.font);
 
         tree = new GTreeTableTree(iform);
 
@@ -89,17 +73,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
         });
 
         // a tree has no columns of a property: a column is its property's, of the group the property is of
-        sortableHeaderManager = new GGridSortableHeaderManager(true) {
-            @Override
-            protected LinkedHashMap<lsfusion.gwt.client.form.view.Column, Boolean> getOrders(GGroupObject group) {
-                return form.getOrders(group);
-            }
-
-            @Override
-            protected void changeOrders(GGroupObject group, LinkedHashMap<lsfusion.gwt.client.form.view.Column, Boolean> orders) {
-                form.changeOrders(group, orders);
-            }
-
+        sortableHeaderManager = new GGridSortableHeaderManager(form, true) {
             @Override
             protected lsfusion.gwt.client.form.view.Column getColumn(int column) {
                 GPropertyDraw property = column >= 0 && column < getColumnCount() ? getTreeGridColumn(column).getColumnProperty() : null;
@@ -447,25 +421,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
 
     private class GridColumn extends GridPropertyColumn implements TreeGridColumn {
 
-        private final GPropertyDraw columnProperty;
-
         @Override
         public String getNativeSID() {
-            return columnProperty.getNativeSID();
-        }
-
-        @Override
-        public boolean isFocusable() {
-            return GTreeTable.this.isFocusable(columnProperty);
-        }
-
-        @Override
-        public boolean isSticky() {
-            return columnProperty.sticky;
+            return property.getNativeSID();
         }
 
         public GridColumn(GPropertyDraw columnProperty) {
-            this.columnProperty = columnProperty;
+            super(columnProperty);
         }
 
         @Override
@@ -578,12 +540,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
 
         @Override
         public GPropertyDraw getColumnProperty() {
-            return columnProperty;
-        }
-
-        @Override
-        public boolean isCustomRenderer(RendererType rendererType) {
-            return columnProperty.getCellRenderer(rendererType).isCustomRenderer();
+            return property;
         }
     }
 
@@ -606,7 +563,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
     }
 
     public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> readOnlyValues) {
-        GwtSharedUtils.putUpdate(readOnly, property, readOnlyValues, false);
+        GwtSharedUtils.putUpdate(this.readOnlyValues, property, readOnlyValues, false);
 
         dataUpdated = true;
     }
@@ -1042,18 +999,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
         return tree.getExpandNodeByRecord(getSelectedRowValue());
     }
 
-    public GGroupObject getGroupObject() {
-        return null;
-    }
-    public GGridProperty getGrid() {
-        return treeGroup;
-    }
-
-    @Override
-    public GPlatformTableController getGroupController() {
-        return treeGroupController;
-    }
-
     @Override
     protected boolean isRowSelect(GTreeGridRecord row) {
         return false;
@@ -1106,7 +1051,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
     public Boolean isReadOnly(Cell cell) {
         GPropertyDraw property = getProperty(cell);
         if (property != null && property.isReadOnly() == null) {
-            NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnly.get(property);
+            NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnlyValues.get(property);
             return propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(getRowKey(cell)));
         }
         return false;
@@ -1123,11 +1068,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
     }
 
     @Override
-    public void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
-        treeGroupController.quickEditFilter(event, filterProperty, columnKey);
-    }
-
-    @Override
     public void setValueAt(Cell cell, PValue value) {
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
@@ -1138,7 +1078,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements G
     }
 
     public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
-        return setLoadingValueAt(property, treeGroup.filterRowKeys(property.groupObject, fullCurrentKey), tree.getPropertyIndex(property), GGroupObjectValue.EMPTY, value);
+        return setLoadingValueAt(property, grid.filterRowKeys(property.groupObject, fullCurrentKey), tree.getPropertyIndex(property), GGroupObjectValue.EMPTY, value);
     }
 
     @Override

@@ -379,10 +379,6 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
         rowBackgroundValues = values;
     }
 
-    @Override
-    public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
-    }
-
     public String getRowBackgroundColor(GGroupObjectValue key) {
         return PValue.getColorStringValue(rowBackgroundValues.get(key));
     }
@@ -539,11 +535,6 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
     @Override
     public int getSelectedRow() {
         return -1;
-    }
-
-    @Override
-    public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
-
     }
 
     @Override

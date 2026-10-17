@@ -11,7 +11,7 @@ public class GCustomOptionsReader extends GGroupObjectPropertyReader {
     public GCustomOptionsReader(int readerID) {
         super(readerID, "CUSTOM_OPTIONS");
     }
-    public void updatePlatform(GPlatformTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    public void updatePlatform(GPlatformTableController<?, ?, ?> controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateCustomOptionsValues(values);
     }
 

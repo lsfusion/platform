@@ -12,7 +12,7 @@ public class GRowSelectReader extends GGroupObjectPropertyReader {
         super(readerID, "SELECT");
     }
 
-    public void updatePlatform(GPlatformTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    public void updatePlatform(GPlatformTableController<?, ?, ?> controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateRowSelectValues(values, updateKeys);
     }
 

@@ -49,7 +49,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GGroupObjectValue getSelectedColumnKey();
 
     public abstract GPropertyDraw getProperty(Cell cell);
-    public abstract GGridPropertyTable<T>.GridPropertyColumn getGridColumn(int column);
+    public abstract GGridPropertyTable<T, ?, ?>.GridPropertyColumn getGridColumn(int column);
 
     @Override
     public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged, Column column) {
@@ -88,13 +88,13 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    protected abstract RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
+    protected abstract RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column);
 
-    protected abstract UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
+    protected abstract UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column);
 
     public ExecuteEditContext getEditContext(Cell editCell, Element editRenderElement) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
-        GGridPropertyTable<T>.GridPropertyColumn gridColumn = getGridColumn(editCell.getColumnIndex());
+        GGridPropertyTable<T, ?, ?>.GridPropertyColumn gridColumn = getGridColumn(editCell.getColumnIndex());
         RenderContext renderContext = getRenderContext(editCell, editRenderElement, property, gridColumn);
         UpdateContext updateContext = getUpdateContext(editCell, editRenderElement, property, gridColumn);
         return new ExecuteEditContext() {

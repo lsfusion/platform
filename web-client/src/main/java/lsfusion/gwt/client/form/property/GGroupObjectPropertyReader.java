@@ -28,7 +28,7 @@ public abstract class GGroupObjectPropertyReader implements GPropertyReader {
 
 
     // where the platform draws the group's rows: its grid's or tree's own update for this reader
-    public abstract void updatePlatform(GPlatformTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
+    public abstract void updatePlatform(GPlatformTableController<?, ?, ?> controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
 
     @Override
     public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {

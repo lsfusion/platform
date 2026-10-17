@@ -44,10 +44,11 @@ import java.util.List;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
-public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
+public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGridProperty, C extends GPlatformTableController<?, ?, ?>> extends GPropertyTable<T> implements GTableView {
     protected boolean columnsUpdated = true; //could be no properties on init
     protected boolean captionsUpdated = false;
     protected boolean footersUpdated = false;
+    protected boolean dataUpdated = false;
 
     public static class RangeArrayList<T> extends ArrayList<T> {
         public void removeRange(int fromIndex, int toIndex) {
@@ -77,6 +78,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected ArrayList<T> getRows() {
         return rows;
     }
+
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> values = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> loadings = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> readOnlyValues = new NativeSIDMap<>();
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCaptions = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
@@ -161,9 +166,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     
     public GFont font;
 
-    public GGridPropertyTable(GFormController form, GGroupObject groupObject, TableContainer tableContainer, GFont font) {
+    // the TABLE whose rows it draws - a list group's grid, or a tree -, and the platform's controller of it, whose
+    // filter commands its keys give
+    protected final G grid;
+    protected final C groupController;
+
+    public GGridPropertyTable(GFormController form, G grid, C groupController, GGroupObject groupObject, TableContainer tableContainer, GFont font) {
         super(form, groupObject, tableContainer, !groupObject.hasHeaders, !groupObject.hasFooters);
-        
+
+        this.grid = grid;
+        this.groupController = groupController;
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
@@ -172,17 +184,17 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         // ADD FILTER
         addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
-                event -> getGroupController().addFilter(event));
+                event -> groupController.addFilter(event));
         // REPLACE FILTER
         addFilterBinding(new GKeyInputEvent(REPLACE_USER_FILTER_KEY_STROKE),
-                event -> getGroupController().replaceFilter(event));
+                event -> groupController.replaceFilter(event));
         // REMOVE FILTERS
-        GFormController.BindingExec removeFilters = event -> getGroupController().resetFilters();
+        GFormController.BindingExec removeFilters = event -> groupController.resetFilters();
         addFilterBinding(new GKeyInputEvent(REMOVE_USER_FILTERS_KEY_STROKE),
                 removeFilters);
         addFilterBinding(nativeEvent -> {
                     if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
-                        GFilterInputController filter = getGroupController().getFilter();
+                        GFilterInputController filter = groupController.getFilter();
                         return filter != null && filter.hasConditionsToReset();
                     }
                     return false;
@@ -204,7 +216,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                         }
                     }
 
-                    quickFilter(event, filterProperty, filterColumnKey);
+                    groupController.quickEditFilter(event, filterProperty, filterColumnKey);
                 }
             });
         GwtClientUtils.setZeroZIndex(getElement());
@@ -267,17 +279,17 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return font;
     }
 
-    public String getPattern(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+    public String getPattern(Cell cell, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column) {
         T row = (T) cell.getRow();
         return column.getPattern(property, row);
     }
 
-    public String getRegexp(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+    public String getRegexp(Cell cell, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column) {
         T row = (T) cell.getRow();
         return column.getRegexp(property, row);
     }
 
-    public String getRegexpMessage(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+    public String getRegexpMessage(Cell cell, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column) {
         T row = (T) cell.getRow();
         return column.getRegexpMessage(property, row);
     }
@@ -447,11 +459,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         //do nothing by default
     }
 
-    public abstract GGroupObject getGroupObject();
-    public abstract GGridProperty getGrid();
-
-    public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
-    public abstract GPlatformTableController getGroupController();
+    public G getGrid() {
+        return grid;
+    }
 
     // the orders the form has for a group changed: the header draws them as it reads them
     public void updateOrders() {
@@ -459,7 +469,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public void runGroupReport() {
-        form.runTableReport(getGrid());
+        form.runTableReport(grid);
     }
 
     public void selectNextCellInColumn(boolean forward, NativeEvent event) {
@@ -775,7 +785,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected Boolean isResizeOverflow() {
-        return getGrid().resizeOverflow;
+        return grid.resizeOverflow;
     }
 
     public GSize getUserHeaderHeight() {
@@ -883,6 +893,28 @@ protected Double getUserFlex(int i) {
     }
 
     public abstract class GridPropertyColumn extends Column<T, Object> {
+        // the property the column is of: a grid column's, the last group's in a tree's column - where a cell of
+        // another group draws that group's property in the column's place, or none (getProperty(cell))
+        public final GPropertyDraw property;
+
+        public GridPropertyColumn(GPropertyDraw property) {
+            this.property = property;
+        }
+
+        @Override
+        public boolean isCustomRenderer(RendererType rendererType) {
+            return property.getCellRenderer(rendererType).isCustomRenderer();
+        }
+
+        @Override
+        public boolean isFocusable() {
+            return GGridPropertyTable.this.isFocusable(property);
+        }
+
+        @Override
+        public boolean isSticky() {
+            return property.sticky;
+        }
 
         protected abstract PValue getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
@@ -963,7 +995,7 @@ protected Double getUserFlex(int i) {
     }
 
     @Override
-    protected RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
+    protected RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column) {
         return new RenderContext() {
             @Override
             public boolean globalCaptionIsDrawn() {
@@ -1021,7 +1053,7 @@ protected Double getUserFlex(int i) {
         return true;
     }
 
-    public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
+    public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
             public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback, int increaseValuesNeededCount) {

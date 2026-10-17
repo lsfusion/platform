@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
 
 // ... of a TREE - TOOLBARSYSTEM(TREE t), one for all its groups: the tree's buttons, whoever draws its rows, given to
 // it as what draws them is (addRows), the filter button before them
-public final class GPlatformTreeToolbarController extends GPlatformToolbarController<GTreeController> {
+public final class GPlatformTreeToolbarController extends GPlatformToolbarController<GTreeController, GTreeGroup> {
 
     public GPlatformTreeToolbarController(GFormController form, GTreeGroup tree) {
         super(form, tree);

@@ -8,7 +8,6 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
-import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
@@ -19,61 +18,42 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GPlatformTreeController extends GPlatformTableController implements GTreeController {
-    private final GTreeGroup treeGroup;
-
-    private final GTreeTable tree;
-
-    // the tree's toolbar, one for all its groups, of whichever kind it is, which the tree gives itself to as it is made
-    private final GToolbarController<GTreeController> toolbar;
-
+public final class GPlatformTreeController extends GPlatformTableController<GTreeGroup, GTreeTable, GToolbarController<GTreeController>> implements GTreeController {
     public GPlatformTreeController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm, GToolbarController<GTreeController> toolbar) {
-        super(iFormController);
-        treeGroup = iTreeGroup;
-        this.toolbar = toolbar;
+        super(iFormController, iTreeGroup, toolbar);
 
         initGridView();
         // the tree given to its toolbar - what opens it, the platform's buttons or a view's members -, as a table gives
         // itself to its own; the filter button, made once the tree is, goes before them all the same
         toolbar.addRows(this);
-        tree = new GTreeTable(iFormController, iForm, this, treeGroup, gridView);
+        view = new GTreeTable(iFormController, iForm, this, table, gridView);
 
-        changeGridView(tree);
-    }
-
-    @Override
-    protected GTreeTable getView() {
-        return tree;
-    }
-
-    @Override
-    protected GToolbarController<GTreeController> getToolbar() {
-        return toolbar;
+        changeGridView(view);
     }
 
     public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
-        tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group), requestIndex);
+        view.setKeys(group, keys, fc.parentObjects.get(group), fc.expandables.get(group), requestIndex);
     }
 
     // shown while it has a column besides its hierarchical one
     @Override
     protected boolean updateView(long requestIndex, GFormChanges fc) {
-        tree.update();
-        return tree.getColumnCount() > 1;
+        view.update();
+        return view.getColumnCount() > 1;
     }
 
     // used in filters and user preferences
     @Override
     public GGroupObject getSelectedGroupObject() {
-        GTreeGridRecord record = tree.getSelectedRowValue();
+        GTreeGridRecord record = view.getSelectedRowValue();
         return record != null
                 ? record.getGroup()
-                : treeGroup.groups.get(0);
+                : table.groups.get(0);
     }
 
     @Override
     public GPropertyDraw getSelectedFilterProperty() {
-        return tree.getSelectedFilterProperty();
+        return view.getSelectedFilterProperty();
     }
 
     @Override
@@ -83,17 +63,12 @@ public class GPlatformTreeController extends GPlatformTableController implements
 
     @Override
     public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return tree.getSelectedValue(property);
+        return view.getSelectedValue(property);
     }
 
     @Override
     public List<Pair<Column, String>> getFilterColumns() {
-        return tree.getFilterColumns(getSelectedGroupObject());
-    }
-
-    @Override
-    public GGridProperty getGridComponent() {
-        return treeGroup;
+        return view.getFilterColumns(getSelectedGroupObject());
     }
 
     // ===== what its toolbar asks of the tree (GTreeController): the selected node opened, and every node under it -
@@ -101,11 +76,11 @@ public class GPlatformTreeController extends GPlatformTableController implements
     // open above it, and of the groups below
     @Override
     public void expandCurrent() {
-        tree.fireExpandNodeRecursive(true);
+        view.fireExpandNodeRecursive(true);
     }
     @Override
     public void expandTree() {
-        tree.fireExpandNodeRecursive(false);
+        view.fireExpandNodeRecursive(false);
     }
     // ... and what a view's part of its toolbar opens through members of its own: the tree itself
     // (GTreeController.getOpenedByToolbarMembers)

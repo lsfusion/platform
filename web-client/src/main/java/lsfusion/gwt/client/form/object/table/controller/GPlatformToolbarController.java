@@ -18,15 +18,15 @@ import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 // its view, and the buttons on it - its table's, given to it as what draws the rows is (addRows), and the filter
 // controller's, put where its table has it, whenever the filter input controller is made (addFilterToggle). Here is
 // what both have: the table, the view, the filter button, and the export
-public abstract class GPlatformToolbarController<R extends GTableController> implements GToolbarController<R> {
+public abstract class GPlatformToolbarController<R extends GTableController, P extends GGridProperty> implements GToolbarController<R> {
     protected static final ClientMessages messages = ClientMessages.Instance.get();
 
     protected final GFormController form;
-    protected final GGridProperty table; // whose toolbar it is, and whose rows it exports
+    protected final P table; // whose toolbar it is, and whose rows it exports
     // none where the design does not show the toolbar: the buttons are made all the same, and go nowhere
     private final GToolbarView view;
 
-    protected GPlatformToolbarController(GFormController form, GGridProperty table) {
+    protected GPlatformToolbarController(GFormController form, P table) {
         this.form = form;
         this.table = table;
 
