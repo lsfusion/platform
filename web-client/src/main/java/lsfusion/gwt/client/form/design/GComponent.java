@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design;
 
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -17,9 +18,18 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-public class GComponent implements Serializable {
+public class GComponent implements Serializable, HasNativeSID {
     public int ID;
     public String sID;
+    // its key in the native maps (NativeSIDMap): "c" and its ID - the IDs of a form's components are one
+    // generator's, so no two are alike, of whatever kind
+    public String nativeSID;
+
+    @Override
+    public String getNativeSID() {
+        return nativeSID;
+    }
+
     public GContainer container;
     public boolean defaultComponent;
 
@@ -249,10 +259,9 @@ public class GComponent implements Serializable {
         return span;
     }
 
-    private class GShowIfReader implements GComponentReader {
-        private String sID;
-
+    private class GShowIfReader extends GComponentReader {
         public GShowIfReader() {
+            super(GComponent.this, "_COMPONENT_SHOWIFREADER");
         }
 
         @Override
@@ -264,44 +273,17 @@ public class GComponent implements Serializable {
         public void update(GComponentController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
             controller.updateShowIf(this, values, partial);
         }
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GComponent.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_COMPONENT_" + "SHOWIFREADER" + "_" + GComponent.this.sID;
-            }
-            return sID;
-        }
     }
     public final GPropertyReader showIfReader = new GShowIfReader();
 
-    private class GElementClassReader implements GComponentReader {
-        private String sID;
-
+    private class GElementClassReader extends GComponentReader {
         public GElementClassReader() {
+            super(GComponent.this, "_COMPONENT_ELEMENTCLASSREADER");
         }
 
         @Override
         public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
-        }
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GComponent.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_COMPONENT_" + "ELEMENTCLASSREADER" + "_" + GComponent.this.sID;
-            }
-            return sID;
         }
     }
     public final GPropertyReader elementClassReader = new GElementClassReader();

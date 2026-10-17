@@ -243,7 +243,6 @@ public class GReactFormDataTest extends GWTTestCase {
         GPropertyDraw property(int id, String name, GGroupObject group, boolean list, GContainer scope) {
             GPropertyDraw property = new GPropertyDraw();
             property.ID = id; property.nativeSID = "p" + id; property.sID = name; property.integrationSID = name;
-            ((GComponent) property).ID = id; ((GComponent) property).sID = name;
             property.groupObject = group; property.isList = list; property.container = scope;
             property.valueType = GIntegerType.instance;
             property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1);
@@ -255,7 +254,6 @@ public class GReactFormDataTest extends GWTTestCase {
             GPropertyDraw property = property(id, name, group, false, scope);
             property.lsf = true;
             property.sID = "PROPERTY(" + name + ")";
-            ((GComponent) property).sID = property.sID;
             property.caption = name.toUpperCase();
             property.captionReader = new GCaptionReader(id, -1);
             return property;

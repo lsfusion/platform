@@ -43,28 +43,14 @@ public abstract class GGridProperty extends GComponent {
 
     public String valueClass;
 
-    private class GValueElementClassReader implements GComponentReader {
-        private String sID;
-
+    private class GValueElementClassReader extends GComponentReader {
         public GValueElementClassReader() {
+            super(GGridProperty.this, "_GRID_VALUEELEMENTCLASSREADER");
         }
 
         @Override
         public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setValueClass(GGridProperty.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
-        }
-
-        @Override
-        public GGridProperty getReaderComponent() {
-            return GGridProperty.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_GRID_" + "VALUEELEMENTCLASSREADER" + "_" + GGridProperty.this.sID;
-            }
-            return sID;
         }
     }
     public final GPropertyReader valueElementClassReader = new GValueElementClassReader();

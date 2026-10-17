@@ -60,28 +60,14 @@ public class GTreeGroup extends GGridProperty {
         return fullCurrentKey.filter(groups.subList(0, groups.indexOf(groupObject) + 1));
     }
 
-    private class GHierarchicalCaptionReader implements GComponentReader {
-        private String sID;
-
+    private class GHierarchicalCaptionReader extends GComponentReader {
         public GHierarchicalCaptionReader() {
+            super(GTreeGroup.this, "_TREE_HIERARCHICALCAPTIONREADER");
         }
 
         @Override
         public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setHierarchicalCaption(GTreeGroup.this, PValue.getStringValue(values.get(GGroupObjectValue.EMPTY)));
-        }
-
-        @Override
-        public GTreeGroup getReaderComponent() {
-            return GTreeGroup.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_TREE_" + "HIERARCHICALCAPTIONREADER" + "_" + GTreeGroup.this.sID;
-            }
-            return sID;
         }
     }
     public final GPropertyReader hierarchicalCaptionReader = new GTreeGroup.GHierarchicalCaptionReader();

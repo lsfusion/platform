@@ -77,6 +77,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         cacheInstance(clientComponent, component);
 
         component.ID = clientComponent.ID;
+        component.nativeSID = "c" + clientComponent.ID;
         component.sID = clientComponent.getSID();
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
@@ -140,7 +141,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GContainer convertContainer(ClientContainer clientContainer) throws IOException {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
-        container.nativeSID = "c" + clientContainer.ID;
         container.caption = clientContainer.caption;
         container.name = clientContainer.name;
         container.image = createImage(clientContainer.image, false);
@@ -270,9 +270,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GPropertyDraw convertPropertyDraw(ClientPropertyDraw clientPropertyDraw) throws IOException {
         GPropertyDraw propertyDraw = initGwtComponent(clientPropertyDraw, new GPropertyDraw());
 
-        propertyDraw.ID = clientPropertyDraw.ID;
-        propertyDraw.nativeSID = "p" + clientPropertyDraw.ID;
-        propertyDraw.sID = clientPropertyDraw.getSID();
         propertyDraw.namespace = clientPropertyDraw.getNamespace();
         propertyDraw.caption = clientPropertyDraw.caption;
         propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();

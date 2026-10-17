@@ -171,7 +171,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeOrdersRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeFiltersRequests = new NativeSIDMap<>();
-    private final NativeHashMap<GRegularFilterGroup, Long> pendingChangeRegularFilterRequests = new NativeHashMap<>();
+    private final NativeSIDMap<GRegularFilterGroup, Long> pendingChangeRegularFilterRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GContainer, Long> pendingChangeTabRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list
     private final NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Long>> pendingLoadingPropertyRequests = new NativeSIDMap<>(); // assert that should contain columnKeys + list keys if property is in list

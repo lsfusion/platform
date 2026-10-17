@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.design;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -24,20 +23,13 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
-public class GContainer extends GComponent implements HasNativeSID {
+public class GContainer extends GComponent {
     public String caption;
     public String name;
     public BaseImage image;
 
     public String captionClass;
     public String valueClass;
-
-    public String nativeSID;
-
-    @Override
-    public String getNativeSID() {
-        return nativeSID;
-    }
 
     public boolean collapsible;
 
@@ -301,8 +293,9 @@ public class GContainer extends GComponent implements HasNativeSID {
         return getReactPlaceFrom(this);
     }
 
-    private class GCaptionReader implements GComponentLabelReader {
+    private class GCaptionReader extends GComponentLabelReader {
         public GCaptionReader() {
+            super(GContainer.this, "_CONTAINER_CAPTION");
         }
 
         @Override
@@ -317,25 +310,12 @@ public class GContainer extends GComponent implements HasNativeSID {
         public String getAttributeField() { return "caption"; }
         @Override
         public String getStaticAttribute(GComponent owner) { return owner.getStaticCaption(); }
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GContainer.this;
-        }
-
-        private String sID;
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_CONTAINER_" + "CAPTION" +  "_" + GContainer.this.sID;
-            }
-            return sID;
-        }
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
-    private class GImageReader implements GComponentLabelReader {
+    private class GImageReader extends GComponentLabelReader {
         public GImageReader() {
+            super(GContainer.this, "_CONTAINER_IMAGE");
         }
 
         @Override
@@ -350,27 +330,12 @@ public class GContainer extends GComponent implements HasNativeSID {
         public String getAttributeField() { return "image"; }
         @Override
         public String getStaticAttribute(GComponent owner) { return owner.getStaticImageHTML(); }
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GContainer.this;
-        }
-
-        private String sID;
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_CONTAINER_" + "IMAGE" +  "_" + GContainer.this.sID;
-            }
-            return sID;
-        }
     }
     public final GPropertyReader imageReader = new GImageReader();
 
-    private class GCaptionClassReader implements GComponentReader {
-        private String sID;
-
+    private class GCaptionClassReader extends GComponentReader {
         public GCaptionClassReader() {
+            super(GContainer.this, "_COMPONENT_CAPTIONCLASS");
         }
 
         @Override
@@ -380,19 +345,6 @@ public class GContainer extends GComponent implements HasNativeSID {
 
         @Override
         public GAttributeConverter getAttributeConverter() { return GAttributeConverter.CLASS; } // same conversion this reader's update uses (getClassStringValue), for the projection
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GContainer.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_COMPONENT_" + "CAPTIONCLASS" + "_" + GContainer.this.sID;
-            }
-            return sID;
-        }
     }
     public final GPropertyReader captionClassReader = new GCaptionClassReader();
 
@@ -413,55 +365,27 @@ public class GContainer extends GComponent implements HasNativeSID {
         return image;
     }
 
-    private class GValueClassReader implements GComponentReader {
-        private String sID;
-
+    private class GValueClassReader extends GComponentReader {
         public GValueClassReader() {
+            super(GContainer.this, "_CONTAINER_VALUECLASS");
         }
 
         @Override
         public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             controller.getFormLayout().setValueClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GContainer.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_CONTAINER_" + "VALUECLASS" + "_" + GContainer.this.sID;
-            }
-            return sID;
-        }
     }
     public final GPropertyReader valueClassReader = new GValueClassReader();
 
-    private class GCustomReader implements GComponentReader {
-        private String sID;
-
+    private class GCustomReader extends GComponentReader {
         public GCustomReader() {
+            super(GContainer.this, "_CONTAINER_CUSTOM_DESIGN");
         }
 
         @Override
         public void updatePlatform(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
             assert values.firstKey().isEmpty();
             controller.setContainerCustom(GContainer.this, PValue.getCustomStringValue(values.firstValue()));
-        }
-
-        @Override
-        public GComponent getReaderComponent() {
-            return GContainer.this;
-        }
-
-        @Override
-        public String getNativeSID() {
-            if(sID == null) {
-                sID = "_CONTAINER_" + "CUSTOM_DESIGN" + "_" + GContainer.this.sID;
-            }
-            return sID;
         }
     }
     public final GPropertyReader customReader = new GCustomReader();

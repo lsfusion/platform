@@ -41,9 +41,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, GPropertyDrawOrPivotColumn, Serializable {
-    public int ID;
-    public String nativeSID;
-    public String sID;
     public String namespace;
 
     public String caption;
@@ -809,11 +806,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GSize getImageHeight(GFont font) {
         assert isAction();
         return appImage != null ? appImage.getHeight(font) : null;
-    }
-
-    @Override
-    public String getNativeSID() {
-        return nativeSID;
     }
 
     public Boolean isReadOnly() {
