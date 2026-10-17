@@ -123,6 +123,9 @@ drops it afterwards (`-Dlsf.keepDb=true` keeps it), and takes free ports, so a s
 `tests/quarantine.txt` names tests as `<theme>/<Module>.<action>`: they still run, but a failure is reported as
 skipped rather than failing the build.
 
+A bug fix always comes with a test of that bug: one that fails on the code before the fix and passes after it, of
+whichever kind above reaches the code. Where none reaches it yet, the fix extends a harness until one does.
+
 A test written because of a fix says so in a comment, and names the issue rather than the commit: a backport
 gives one fix several hashes, and the issue is what the changelog already points at. Names of files and
 directories stay descriptive either way; with no issue behind it, the comment says what the test holds.
