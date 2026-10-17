@@ -99,7 +99,7 @@ Where each `binding` has the following syntax:
 
 The filter group block adds a set of filters to the form. A special UI component is then created for them, making it possible to apply one filter at a time. If the keyword `EXTEND` is specified, the component is not created, but used for extension. In one block, you can define a single group of filters consisting of an arbitrary number of filters that will be shown to the user in the order of listing.
 
-Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions you can use the names of the objects already declared on the form as parameters.
+Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions you can use the names of the objects already declared on the form as parameters. A filter is applied to the lowest object group among those its expression uses, so each filter of a group must use at least one object of the form; one that uses none is an error.
 
 ### Parameters
 

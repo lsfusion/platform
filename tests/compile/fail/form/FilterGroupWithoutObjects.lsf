@@ -1,0 +1,17 @@
+MODULE FilterGroupWithoutObjects;
+
+REQUIRE System;
+
+// a filter of a FILTERGROUP that uses no object of the form: a filter group's filter is applied to the lowest object
+// group among those it uses, so this one has none to be applied to - selecting it failed on the server. The filter
+// beside it, which uses the form's object, is fine
+CLASS FilterGroupItem;
+filterGroupArchived = DATA BOOLEAN (FilterGroupItem);
+filterGroupShowArchived = DATA BOOLEAN ();
+
+FORM filterGroupWithoutObjects
+    OBJECTS i = FilterGroupItem
+    FILTERGROUP archive
+        FILTER 'Archived' filterGroupArchived(i)
+        FILTER 'Show archived' filterGroupShowArchived()
+;

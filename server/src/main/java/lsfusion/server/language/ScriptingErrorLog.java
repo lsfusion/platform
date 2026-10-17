@@ -313,6 +313,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("unable to set property '%s'. Cause: %s", propertyName, cause));
     }
 
+    // a filter of a FILTERGROUP is applied to the lowest object group among those its expression uses: one using no
+    // object has no group to be applied to, and selecting it fails on the server
+    public void emitFilterWithoutObjectsError(ScriptParser parser, String filterGroup, String caption) throws SemanticErrorException {
+        emitSimpleError(parser, format("filter '%s' of filter group '%s' uses no object of the form: a filter group's filter" +
+                " is applied to the lowest object group among those it uses, so one using none has no group to be applied to",
+                caption, filterGroup));
+    }
+
     public void emitWrongKeyStrokeFormatError(ScriptParser parser, String ksLiteral) throws SemanticErrorException {
         emitSimpleError(parser, format("can't create keystroke from string '%s'", ksLiteral));
     }

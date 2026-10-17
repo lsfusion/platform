@@ -834,6 +834,8 @@ public class ScriptingFormEntity {
 
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
             checkPropertyParameters(info.property, mappingObjects);
+            if (mappingObjects.isEmpty())
+                LM.getErrLog().emitFilterWithoutObjectsError(LM.getParser(), filterGroup.getSID(), info.caption.toString());
             RegularFilterEntity filter = new RegularFilterEntity(form.genID, null,
                     new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
                     info.caption, keyInputEvent, info.showKey, mouseInputEvent, info.showMouse);

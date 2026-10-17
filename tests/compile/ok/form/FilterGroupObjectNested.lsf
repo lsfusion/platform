@@ -1,0 +1,15 @@
+MODULE FilterGroupObjectNested;
+
+REQUIRE System;
+
+// a filter of a FILTERGROUP that uses the form's object only inside a nested expression uses it all the same: it is
+// applied to that object's group (FilterGroupWithoutObjects is the one refused)
+CLASS NestedFilterItem;
+nestedFilterArchived = DATA BOOLEAN (NestedFilterItem);
+nestedFilterShowArchived = DATA BOOLEAN ();
+
+FORM filterGroupObjectNested
+    OBJECTS i = NestedFilterItem
+    FILTERGROUP archive
+        FILTER 'Archived unless shown' (IF nestedFilterShowArchived() THEN TRUE ELSE NOT nestedFilterArchived(i))
+;
