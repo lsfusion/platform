@@ -1,0 +1,18 @@
+MODULE PlatformPanelPropertyNoExtId;
+
+REQUIRE System;
+
+// a platform-drawn panel property a CUSTOM REACT container places is named by its integration name - its entry, and the
+// <Platform> that places it -: NOEXTID takes the name away
+platformNamelessNote = DATA STRING[50] ();
+
+FORM platformNameless
+    PROPERTIES() platformNamelessNote NOEXTID
+;
+
+DESIGN platformNameless {
+    NEW board {
+        custom = 'PlatformNamelessBoard';
+        MOVE PROPERTY(platformNamelessNote()) { custom = NULL; }
+    }
+}

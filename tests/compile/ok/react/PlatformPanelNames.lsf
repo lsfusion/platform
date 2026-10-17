@@ -1,0 +1,25 @@
+MODULE PlatformPanelNames;
+
+REQUIRE System;
+
+// a platform-drawn panel property's name is claimed on its group's node where React places it, per container: two
+// containers may each place one under the same name
+CLASS PlatformNamesItem;
+platformNamesNote = DATA STRING[50] (PlatformNamesItem);
+platformNamesRemark = DATA STRING[50] (PlatformNamesItem);
+
+FORM platformNames
+    OBJECTS i = PlatformNamesItem PANEL
+    PROPERTIES(i) platformNamesNote EXTID 'note', platformNamesRemark EXTID 'note'
+;
+
+DESIGN platformNames {
+    NEW left {
+        custom = 'PlatformNamesLeft';
+        MOVE PROPERTY(platformNamesNote(i)) { custom = NULL; }
+    }
+    NEW right {
+        custom = 'PlatformNamesRight';
+        MOVE PROPERTY(platformNamesRemark(i)) { custom = NULL; }
+    }
+}

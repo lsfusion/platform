@@ -1,0 +1,20 @@
+MODULE DeclaredRendererInReact;
+
+REQUIRE System;
+
+// a CUSTOM renderer the property DECLARES is its default and not the form's word: React still draws the property from
+// data, by its name, which NOEXTID takes away
+CLASS DeclaredItem;
+declaredQty = DATA INTEGER (DeclaredItem) CUSTOM 'declaredStars';
+
+FORM declaredInReact
+    OBJECTS i = DeclaredItem
+    PROPERTIES(i) declaredQty NOEXTID
+;
+
+DESIGN declaredInReact {
+    NEW board {
+        custom = 'DeclaredBoard';
+        MOVE BOX(i);
+    }
+}

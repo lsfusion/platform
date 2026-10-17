@@ -1,0 +1,19 @@
+MODULE PlatformPropertyNamedLikeContainer;
+
+REQUIRE System;
+
+// a <Platform> names a container by its design identifier and a property of the empty group by its integration name,
+// and both are top-level names of the view's data: one container cannot place two things under one name
+platformLikeNote = DATA STRING[50] ();
+
+FORM platformLikeContainer
+    PROPERTIES() platformLikeNote EXTID 'pages'
+;
+
+DESIGN platformLikeContainer {
+    NEW board {
+        custom = 'PlatformLikeBoard';
+        NEW pages { custom = NULL; }
+        MOVE PROPERTY(platformLikeNote()) { custom = NULL; }
+    }
+}

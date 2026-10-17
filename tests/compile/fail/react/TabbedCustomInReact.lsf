@@ -3,7 +3,7 @@ MODULE TabbedCustomInReact;
 REQUIRE System;
 
 // `custom` beside `tabbed` on one container is refused wherever the container is - inside what a React component draws
-// too, where both are ignored
+// too, where the custom is a view of its own that the component places
 tabbedNote = DATA STRING[50] ();
 
 FORM tabbedCustom

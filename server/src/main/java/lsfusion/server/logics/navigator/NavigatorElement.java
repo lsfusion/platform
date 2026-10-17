@@ -56,10 +56,11 @@ public abstract class NavigatorElement {
     public Property headerProperty;
     public Property showIfProperty;
 
-    // LSF: the platform draws this element, and a custom React window places that drawing with <Platform name/> instead
-    // of drawing the element itself - so the element is not projected, the same way a platform-drawn child of a form
-    // container is not
-    public boolean platformDrawn;
+    // what draws the element, null where it is not said: Custom.NOCUSTOM, the platform's standard button, not a custom
+    // view's drawing - so a window a React component draws places the button with <Platform name/> instead of drawing
+    // the element, which is then not projected, the same way a form's component with `custom = NULL` is not. In any
+    // other window the platform draws every element anyway
+    public String custom;
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
@@ -341,7 +342,7 @@ public abstract class NavigatorElement {
         BaseUtils.writeObject(outStream, changeMouse);
         outStream.writeBoolean(nvl(showChangeMouse, true));
 
-        outStream.writeBoolean(platformDrawn);
+        outStream.writeBoolean(custom != null);
 
         AppServerImage.serialize(getImage(context), outStream);
 

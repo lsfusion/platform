@@ -34,10 +34,9 @@ public class NavigatorButtons {
 
     private final NativeStringMap<NavigatorImageButton> buttons = new NativeStringMap<>();
     // what is wrong with a name, if anything. `requirePlatformDrawn` is the difference between the two surfaces: a
-    // component's <Platform> may only place an element declared LSF - anything else it is expected to draw from the
-    // projection - while a template places the window's ordinary buttons, and LSF is refused outside a React window in
-    // the first place (CheckNavigatorElementsTask), so asking for it there would call every element of every template a
-    // mistake
+    // component's <Platform> may only place an element declared NOCUSTOM - anything else it is expected to draw from
+    // the projection - while a template places the window's ordinary buttons, NOCUSTOM or not, so asking for it there
+    // would call every element of every template a mistake
     private PlacedViews.Problem problem(String canonicalName, boolean requirePlatformDrawn) {
         GNavigatorElement element = navigatorController.getElement(canonicalName);
         if (element == null) // a name no element has will never be drawn
@@ -45,8 +44,8 @@ public class NavigatorButtons {
                     "'" + canonicalName + "' is not a navigator element, so nothing will ever be placed here");
         // declared, but the component owns it: there is no drawing to place
         if (requirePlatformDrawn && !element.platformDrawn)
-            return new PlacedViews.Problem("'" + canonicalName + "' has no LSF",
-                    "'" + canonicalName + "' has no LSF, so the component draws it from the projection instead of placing it");
+            return new PlacedViews.Problem("'" + canonicalName + "' has no NOCUSTOM",
+                    "'" + canonicalName + "' has no NOCUSTOM, so the component draws it from the projection instead of placing it");
         // whether the window draws it RIGHT NOW depends on the selection and is nobody's mistake, but which window
         // draws it at all does not - waiting for a button another window owns would wait forever, in silence
         if (element.getDrawWindow() != window)
@@ -147,7 +146,7 @@ public class NavigatorButtons {
     }
 
     // a place the template wrote and nothing filled. A name this window simply does not draw RIGHT NOW is not a
-    // mistake and stays silent; a name that is not an element, has no LSF or belongs to another window is the same
+    // mistake and stays silent; a name that is not an element, has no NOCUSTOM or belongs to another window is the same
     // mistake a component's <Platform> makes, and says so in the place itself - the only path that used to say nothing
     public void reportPlace(String canonicalName, Element root) {
         Element place = GwtClientUtils.getPlatformPlace(root, canonicalName);

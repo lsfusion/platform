@@ -1,0 +1,20 @@
+MODULE CustomEditorInReact;
+
+REQUIRE System;
+
+// a custom EDITOR alone says how the platform edits a value, not who draws it: React still draws the property from
+// data, by its name, which NOEXTID takes away
+CLASS EditorItem;
+editorQty = DATA INTEGER (EditorItem);
+
+FORM editorInReact
+    OBJECTS i = EditorItem
+    PROPERTIES(i) editorQty CUSTOM CHANGE 'editorInput' NOEXTID
+;
+
+DESIGN editorInReact {
+    NEW board {
+        custom = 'EditorBoard';
+        MOVE BOX(i);
+    }
+}

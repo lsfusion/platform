@@ -172,8 +172,9 @@ title: 'Rules: custom views'
    display. If the link is shown to the user, its caption MUST
    be added as a separate entry — the caption composition of
    the `view` rules (`captionStatus 'Status' = caption(status(p))`).
-   A property marked `LSF` is drawn by the platform, and the
-   ban on showing identifiers applies to it as usual.
+   A property marked `NOCUSTOM`, or given a `CUSTOM` render
+   function in the `FORM`, is drawn by the platform, and the ban
+   on showing identifiers applies to it as usual.
 
 2. In a container with the `custom` attribute the component
    draws the values and decides itself what is edited: an edit
@@ -186,7 +187,8 @@ title: 'Rules: custom views'
    not performed. So there `READONLY` marks the properties the
    view does not change, and a property the view changes
    through the controller MUST NOT carry `READONLY`. A
-   property marked `LSF` is drawn by the platform with its own
+   property marked `NOCUSTOM`, or given a `CUSTOM` render
+   function in the `FORM`, is drawn by the platform with its own
    editor, and the `READONLY` rule of the `view` rules applies
    to it as usual.
 

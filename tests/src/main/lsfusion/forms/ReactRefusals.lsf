@@ -3,19 +3,19 @@ MODULE ReactRefusals;
 REQUIRE TestUtils;
 
 // what a CUSTOM REACT component draws or places has no tab strip and no collapse header of the platform's - the
-// component shows it or not -, so a scripted ACTIVATE TAB, COLLAPSE or EXPAND on it is refused at run time. An lsf
-// container the component places is placed, so refused as well, but what is inside it the platform draws again: a tab
-// or a collapsible container there is activated or collapsed as anywhere else - unless the lsf container is a nested
-// CUSTOM REACT one, which draws its insides itself
+// component shows it or not -, so a scripted ACTIVATE TAB, COLLAPSE or EXPAND on it is refused at run time. A
+// platform-drawn container the component places is placed, so refused as well, but what is inside it the platform draws
+// again: a tab or a collapsible container there is activated or collapsed as anywhere else - unless the platform-drawn
+// container is a nested CUSTOM REACT one, which draws its insides itself - a custom of its own makes it platform-drawn
 
 rrScript = DATA LOCAL STRING ();
 
 rrIslandNote = DATA LOCAL STRING ();
-rrLsfNote = DATA LOCAL STRING ();
+rrPlacedNote = DATA LOCAL STRING ();
 rrPlatformNote = DATA LOCAL STRING ();
 
 FORM rrBoard 'Board'
-    PROPERTIES() rrIslandNote, rrLsfNote, rrPlatformNote
+    PROPERTIES() rrIslandNote, rrPlacedNote, rrPlatformNote
 ;
 
 DESIGN rrBoard {
@@ -30,7 +30,7 @@ DESIGN rrBoard {
             collapsible = TRUE;
         }
         NEW rrIsland {
-            lsf = TRUE;
+            custom = NULL;
             NEW rrIslandPages {
                 tabbed = TRUE;
                 NEW rrIslandFirst;
@@ -40,15 +40,14 @@ DESIGN rrBoard {
                 collapsible = TRUE;
             }
         }
-        NEW rrLsfPages {
-            lsf = TRUE;
+        NEW rrPlacedPages {
+            custom = NULL;
             tabbed = TRUE;
-            NEW rrLsfFirst;
-            NEW rrLsfSecond { MOVE PROPERTY(rrLsfNote()); }
+            NEW rrPlacedFirst;
+            NEW rrPlacedSecond { MOVE PROPERTY(rrPlacedNote()); }
         }
         NEW rrNested {
             custom = 'RrNested';
-            lsf = TRUE;
             NEW rrNestedPages {
                 tabbed = TRUE;
                 NEW rrNestedFirst;
@@ -72,7 +71,7 @@ EXTEND FORM rrBoard
         IF rrScript() = 'activate nested tab' THEN ACTIVATE TAB rrBoard.rrNestedSecond;
         IF rrScript() = 'activate island tab' THEN ACTIVATE TAB rrBoard.rrIslandSecond;
         IF rrScript() = 'collapse island pane' THEN COLLAPSE CONTAINER rrBoard.rrIslandPane;
-        IF rrScript() = 'activate lsf tab' THEN ACTIVATE TAB rrBoard.rrLsfSecond;
+        IF rrScript() = 'activate placed tab' THEN ACTIVATE TAB rrBoard.rrPlacedSecond;
         IF rrScript() = 'activate platform tab' THEN ACTIVATE TAB rrBoard.rrPlatformSecond;
     }
 ;
@@ -104,33 +103,33 @@ testExpandReactDrawsIsRefused 'EXPAND on a container a React component draws is 
     assertTrue(messageCaughtException() LIKE '%COLLAPSE / EXPAND%rrPane%CUSTOM REACT%', 'EXPAND failed with ' + messageCaughtException());
 }
 
-testCollapseReactPlacesIsRefused 'COLLAPSE on an lsf container a React component places is refused' () {
+testCollapseReactPlacesIsRefused 'COLLAPSE on a platform-drawn container a React component places is refused' () {
     rrShow('collapse island');
-    assertNotNull(messageCaughtException(), 'COLLAPSE of an lsf container React places was not refused');
+    assertNotNull(messageCaughtException(), 'COLLAPSE of a platform-drawn container React places was not refused');
     assertTrue(messageCaughtException() LIKE '%COLLAPSE / EXPAND%rrIsland%CUSTOM REACT%', 'COLLAPSE failed with ' + messageCaughtException());
 }
 
-testActivateTabNestedReactDrawsIsRefused 'ACTIVATE TAB on a tab a nested lsf CUSTOM REACT container draws is refused' () {
+testActivateTabNestedReactDrawsIsRefused 'ACTIVATE TAB on a tab a nested CUSTOM REACT container draws is refused' () {
     rrShow('activate nested tab');
     assertNotNull(messageCaughtException(), 'ACTIVATE TAB on a tab a nested React container draws was not refused');
     assertTrue(messageCaughtException() LIKE '%ACTIVATE TAB%rrNestedSecond%CUSTOM REACT%', 'ACTIVATE TAB failed with ' + messageCaughtException());
 }
 
-testActivateTabInPlacedContainerGoesThrough 'ACTIVATE TAB on a tab inside an lsf container React places is activated' () {
+testActivateTabInPlacedContainerGoesThrough 'ACTIVATE TAB on a tab inside a platform-drawn container React places is activated' () {
     rrShow('activate island tab');
-    assertNull(messageCaughtException(), 'ACTIVATE TAB inside an lsf container failed with ' + messageCaughtException());
-    assertTrue(ACTIVE TAB rrBoard.rrIslandSecond, 'ACTIVATE TAB inside an lsf container did not activate the tab');
+    assertNull(messageCaughtException(), 'ACTIVATE TAB inside a platform-drawn container failed with ' + messageCaughtException());
+    assertTrue(ACTIVE TAB rrBoard.rrIslandSecond, 'ACTIVATE TAB inside a platform-drawn container did not activate the tab');
 }
 
-testCollapseInPlacedContainerGoesThrough 'COLLAPSE on a container inside an lsf container React places goes through' () {
+testCollapseInPlacedContainerGoesThrough 'COLLAPSE on a container inside a platform-drawn container React places goes through' () {
     rrShow('collapse island pane');
-    assertNull(messageCaughtException(), 'COLLAPSE inside an lsf container failed with ' + messageCaughtException());
+    assertNull(messageCaughtException(), 'COLLAPSE inside a platform-drawn container failed with ' + messageCaughtException());
 }
 
-testActivateTabPlacedTabbedGoesThrough 'ACTIVATE TAB on a page of an lsf tabbed container React places is activated' () {
-    rrShow('activate lsf tab');
-    assertNull(messageCaughtException(), 'ACTIVATE TAB on a page of an lsf tabbed container failed with ' + messageCaughtException());
-    assertTrue(ACTIVE TAB rrBoard.rrLsfSecond, 'ACTIVATE TAB on a page of an lsf tabbed container did not activate it');
+testActivateTabPlacedTabbedGoesThrough 'ACTIVATE TAB on a page of a platform-drawn tabbed container React places is activated' () {
+    rrShow('activate placed tab');
+    assertNull(messageCaughtException(), 'ACTIVATE TAB on a page of a platform-drawn tabbed container failed with ' + messageCaughtException());
+    assertTrue(ACTIVE TAB rrBoard.rrPlacedSecond, 'ACTIVATE TAB on a page of a platform-drawn tabbed container did not activate it');
 }
 
 testActivateTabPlatformDrawsGoesThrough 'ACTIVATE TAB on a tab the platform draws is activated' () {

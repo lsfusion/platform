@@ -68,7 +68,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     private NFProperty<Integer> lineSize = NFFact.property();
     private NFProperty<Integer> captionLineSize = NFFact.property();
     private NFProperty<Boolean> lineShrink = NFFact.property();
-    private NFProperty<String> custom = NFFact.property(); // CUSTOM 'fn': the component name (React) or design (HTML template / '' simple); react is INFERRED from it, see isReact()
 
     private NFProperty<PropertyObjectEntity> propertyCaption = NFFact.property();
     private NFProperty<PropertyObjectEntity> propertyCaptionClass = NFFact.property();
@@ -296,6 +295,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         return false;
     }
 
+    // a custom view of the container's own - a component, markup, '' or a property -, a view of its own as much as
+    // `custom = NULL` is: inside what a react container draws, the container is drawn by it and placed
     public boolean isCustom() {
         return getCustom() != null;
     }
@@ -313,9 +314,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (ComponentView.getReactPlace) - the container itself
-    // when it is a react one, whose component draws its children, else where the container is, unless it is a
-    // platform-drawn one. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors
-    // GContainer.getChildrenReactPlace)
+    // when it is a react one, whose component draws its children, else where the container is, unless it has a view of
+    // its own. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors GContainer.getChildrenReactPlace)
     public ContainerView getChildrenReactPlace() {
         return getReactPlaceFrom(this);
     }
@@ -673,11 +673,18 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         lineShrink.set(value, version);
     }
 
+    // the container's own custom view: the component name (React) or design (HTML template / '' simple), React being
+    // INFERRED from it (isReact) - none where the design gives the standard view
     public String getCustom() {
-        return custom.get();
+        String value = custom.get();
+        return Custom.NOCUSTOM.equals(value) ? null : value;
     }
+    // ... and the standard view drops the property that gave the custom view, too
+    @Override
     public void setCustom(String value, Version version) {
-        custom.set(value, version);
+        super.setCustom(value, version);
+        if (Custom.NOCUSTOM.equals(value))
+            propertyCustom.set(null, version);
     }
 
     public PropertyObjectEntity getPropertyCaption() {
@@ -716,8 +723,11 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
     public void setPropertyCustom(PropertyObjectEntity value, Version version) {
         propertyCustom.set(value, version);
-        if (custom.getNF(version) == null) // the view is chosen before the first value arrives, so SOMETHING has to be
-            setCustom(Custom.EMPTY_TEMPLATE, version); // there; '' would read as "simple", so it cannot be empty
+        String given = custom.getNF(version);
+        // the view is chosen before the first value arrives, so SOMETHING has to be there - a custom view, in place of
+        // the standard one too; '' would read as "simple", so it cannot be empty
+        if (given == null || Custom.NOCUSTOM.equals(given))
+            setCustom(Custom.EMPTY_TEMPLATE, version);
     }
 
     @Override
@@ -748,7 +758,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         lineSize.finalizeChanges();
         captionLineSize.finalizeChanges();
         lineShrink.finalizeChanges();
-        custom.finalizeChanges();
         propertyCaption.finalizeChanges();
         propertyCaptionClass.finalizeChanges();
         propertyValueClass.finalizeChanges();
@@ -829,7 +838,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         mapping.sets(lineSize, src.lineSize);
         mapping.sets(captionLineSize, src.captionLineSize);
         mapping.sets(lineShrink, src.lineShrink);
-        mapping.sets(custom, src.custom);
 
         mapping.set(propertyCaption, src.propertyCaption);
         mapping.set(propertyCaptionClass, src.propertyCaptionClass);

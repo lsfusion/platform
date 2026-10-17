@@ -1,0 +1,22 @@
+MODULE PlatformPanelPropertyNameTwice;
+
+REQUIRE System;
+
+// a platform-drawn panel property's entry is on its group's node under its integration name, beside the entries of the
+// panel properties React draws there: two under one name cannot both be carried
+CLASS PlatformTwiceItem;
+platformTwiceNote = DATA STRING[50] (PlatformTwiceItem);
+platformTwiceRemark = DATA STRING[50] (PlatformTwiceItem);
+
+FORM platformTwice
+    OBJECTS i = PlatformTwiceItem PANEL
+    PROPERTIES(i) platformTwiceNote EXTID 'note', platformTwiceRemark EXTID 'note'
+;
+
+DESIGN platformTwice {
+    NEW board {
+        custom = 'PlatformTwiceBoard';
+        MOVE PROPERTY(platformTwiceNote(i)) { custom = NULL; }
+        MOVE PROPERTY(platformTwiceRemark(i));
+    }
+}

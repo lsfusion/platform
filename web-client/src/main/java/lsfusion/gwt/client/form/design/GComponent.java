@@ -33,8 +33,7 @@ public class GComponent implements Serializable, HasNativeSID {
     public GContainer container;
     public boolean defaultComponent;
 
-    // meaningful only inside a CUSTOM REACT container, under the containers it draws itself (see isPlatformDrawn);
-    // ignored on any other component
+    // whether a CUSTOM REACT view places this component instead of drawing it (see isPlatformDrawn)
     public boolean platformDrawn;
 
     public String elementClass;
@@ -115,12 +114,13 @@ public class GComponent implements Serializable, HasNativeSID {
     }
 
     // the platform draws this component and a CUSTOM REACT view places it: its real (server-built) lsFusion view is
-    // mounted into a placeholder instead of being drawn from `data`. The flag as the server sends it, which has checked
-    // where every platform-drawn component is (FormView.checkPlatformViews) - a container or a panel property is placed
-    // by the CUSTOM REACT container above it, however deep under the containers that one draws itself (one REMOVEd from
-    // the design is placed by nothing), and a GRID property, which has no place of its own, belongs to a group such a
-    // container draws, wherever its own component is (the renderers of its rows are placed by the view that draws them)
-    // - so the flag is the answer
+    // mounted into a placeholder instead of being drawn from `data`. The flag as the server works it out
+    // (FormView.isPlatformDrawn) - a component with a view of its own, an explicit custom (`custom = NULL`, NOCUSTOM, a
+    // custom of its own), where a react view draws what it stands in: a container or a panel property under the
+    // CUSTOM REACT container above it, however deep under the containers that one draws itself (one REMOVEd from
+    // the design is placed by nothing), and a GRID property, which has no place of its own, of a group such a
+    // container draws, wherever its own component is (the renderers of its rows are placed by the view that draws
+    // them) - so the flag is the answer
     public boolean isPlatformDrawn() {
         return platformDrawn;
     }
@@ -128,10 +128,10 @@ public class GComponent implements Serializable, HasNativeSID {
     // WHERE THIS COMPONENT IS: the react container that draws or places it, null when the platform draws it where it
     // stands - pure design data, no controller, no projection. Walked from the component's CONTAINER - a grid's record,
     // which has none, is in its grid (getHiddenContainer): a react container answers, a platform-drawn component ends
-    // the walk - the platform draws everything under it. The component's own `lsf` says only which entry it has there,
-    // its content or its descriptor, never where the entry goes. A react container inside what another one draws is
-    // refused when the form is built (FormView.checkCustomReactSwallowed), so the first one reached is the only one
-    // there is (mirrors ComponentView.getReactPlace)
+    // the walk - the platform draws everything under it. Whether the component itself is platform-drawn says only which
+    // entry it has there, its content or its descriptor, never where the entry goes. A react container inside what
+    // another one draws is platform-drawn, so the first one reached is the only one there is (mirrors
+    // ComponentView.getReactPlace, which ends the walk at any view of its own - the same answer)
     public GContainer getReactPlace() {
         return getReactPlaceFrom(getHiddenContainer());
     }

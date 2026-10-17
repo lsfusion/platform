@@ -1,0 +1,21 @@
+MODULE PlatformPanelPropertyReservedName;
+
+REQUIRE System;
+
+// a platform-drawn panel property React places has its entry - what labels it - on its group's node under its
+// integration name, as a panel property React draws has, so it may not take a name the node owns: here the group's own
+// verb
+CLASS PlatformPanelItem;
+platformPanelNote = DATA STRING[50] (PlatformPanelItem);
+
+FORM platformPanelReserved
+    OBJECTS i = PlatformPanelItem PANEL
+    PROPERTIES(i) platformPanelNote EXTID 'change'
+;
+
+DESIGN platformPanelReserved {
+    NEW board {
+        custom = 'PlatformPanelBoard';
+        MOVE PROPERTY(platformPanelNote(i)) { custom = NULL; }
+    }
+}

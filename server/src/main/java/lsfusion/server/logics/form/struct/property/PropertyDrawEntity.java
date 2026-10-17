@@ -18,6 +18,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
@@ -107,9 +108,6 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<Boolean> optimisticAsync = NFFact.property();
 
     private final NFProperty<Boolean> askConfirm = NFFact.property();
-    // renders this grid property once per ROW as a component a CUSTOM REACT view places, instead of projecting
-    // its value into that view's data. Nullable, so a view can tell "unset" from an explicit FALSE.
-    private final NFProperty<Boolean> platformDrawn = NFFact.property();
     private final NFProperty<String> askConfirmMessage = NFFact.property();
 
     private final NFProperty<ClassViewType> viewType = NFFact.property(); // assert not null, after initialization
@@ -244,12 +242,29 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.attr.set(attr, version);
     }
 
-    public Boolean getPlatformDrawn() {
-        return platformDrawn.get();
+    // what the standard view - NOCUSTOM, `custom = NULL` in the design (PropertyDrawView.setCustom) - leaves of the
+    // CUSTOM functions: no renderer, not even the one the property declares, and no editor; SELECT / NOSELECT stay, the
+    // standard view being the property's VIEW, not a value of the render function they share. Given in one option
+    // list with CUSTOM, NOCUSTOM is applied after it (ScriptingFormEntity), so it wins there; across statements the
+    // last one does
+    public void dropCustomFunctions(Version version) {
+        String custom = customRenderFunction.getNF(version);
+        if (isCustomRenderFunction(custom != null ? custom : getInheritedProperty().getCustomRenderFunction()))
+            customRenderFunction.set(Custom.NOCUSTOM, version); // none, and not the one the property declares either
+        customChangeFunction.set(null, version);
     }
 
-    public void setPlatformDrawn(Boolean platformDrawn, Version version) {
-        this.platformDrawn.set(platformDrawn, version);
+    // whether the FORM gives the property a CUSTOM render function, a view of its own: a custom view above it then does
+    // not draw the property but places it (PropertyDrawView.hasExplicitCustom). A renderer the property declares is the
+    // property's default, not the form's word, and SELECT and an editor alone say nothing of who draws: neither counts
+    public boolean hasCustomRenderFunction() {
+        return isCustomRenderFunction(customRenderFunction.get());
+    }
+
+    // a render function of CUSTOM's, and not SELECT's, NOSELECT's or what NOCUSTOM leaves
+    private static boolean isCustomRenderFunction(String custom) {
+        return custom != null && !custom.equals(NOSELECT) && !custom.startsWith(SELECT)
+                && !custom.equals(Custom.NOCUSTOM);
     }
 
     public boolean isExtNull() {
@@ -1293,7 +1308,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private String getCustomRenderFunction() {
         String custom = customRenderFunction.get();
         if(custom != null)
-            return custom;
+            return custom.equals(Custom.NOCUSTOM) ? null : custom; // NOCUSTOM: none, and none inherited
         return getInheritedProperty().getCustomRenderFunction();
     }
 
@@ -1459,7 +1474,6 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         mapping.sets(group, src.group);
         mapping.sets(attr, src.attr);
-        mapping.sets(platformDrawn, src.platformDrawn);
         mapping.sets(extNull, src.extNull);
 
         mapping.sets(formula, src.formula);

@@ -13,6 +13,7 @@ import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -1633,13 +1634,19 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         notNull.set(value,version);
     }
 
-    // LSF is declared on the property in the FORM statement, but what reaches the client is the component flag:
-    // ComponentView.customSerialize already writes isPlatformDrawn() for every component, and a property draw is one,
-    // so this override is the whole of the wire change. The DESIGN option remains available as the fallback.
+    // a property's own view: the standard one the design or the FORM gives it - `custom = NULL`, NOCUSTOM:
+    // Custom.NOCUSTOM (ComponentView.custom) -, or a CUSTOM render function the FORM gives its draw
+    // (PropertyDrawEntity)
     @Override
-    public boolean isPlatformDrawn() {
-        Boolean entityPlatformDrawn = entity.getPlatformDrawn();
-        return entityPlatformDrawn != null ? entityPlatformDrawn : super.isPlatformDrawn();
+    public boolean hasExplicitCustom() {
+        return super.hasExplicitCustom() || entity.hasCustomRenderFunction();
+    }
+    // ... and the standard view, the one custom a property takes, drops the draw's CUSTOM renderer and editor too
+    @Override
+    public void setCustom(String value, Version version) {
+        assert Custom.NOCUSTOM.equals(value);
+        super.setCustom(value, version);
+        entity.dropCustomFunctions(version);
     }
 
     public boolean isSticky(FormInstanceContext context) {

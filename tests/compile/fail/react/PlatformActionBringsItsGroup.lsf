@@ -1,0 +1,23 @@
+MODULE PlatformActionBringsItsGroup;
+
+REQUIRE System;
+
+// a platform-drawn action is a part of its group as a platform-drawn property is: its entry, saying whether the form
+// shows it, is on its group's node where React places it - data.i, which a form-level property named 'i' would take
+CLASS PlatformActionGroupItem;
+platformActionGroupGo (PlatformActionGroupItem i) { MESSAGE 'go'; }
+platformActionGroupTotal = DATA INTEGER ();
+
+FORM platformActionBringsItsGroup
+    OBJECTS i = PlatformActionGroupItem PANEL
+    PROPERTIES(i) platformActionGroupGo EXTID 'go'
+    PROPERTIES() platformActionGroupTotal EXTID 'i'
+;
+
+DESIGN platformActionBringsItsGroup {
+    NEW board {
+        custom = 'PlatformActionGroupBoard';
+        MOVE PROPERTY(platformActionGroupGo(i)) { custom = NULL; }
+        MOVE PROPERTY(platformActionGroupTotal());
+    }
+}

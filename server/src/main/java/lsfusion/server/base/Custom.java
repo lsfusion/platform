@@ -17,6 +17,11 @@ public class Custom {
     // A container reads it as "not simple" and a window as "not the standard toolbar"
     public static final String EMPTY_TEMPLATE = "<div/>";
 
+    // `custom = NULL`, NOCUSTOM: the platform's standard view rather than a custom one - the custom of a component (any
+    // component takes it), of a navigator element and, in a property's render function, no renderer at all, not even
+    // the one the property declares. Inside what a React component draws, what is given it is placed, not drawn
+    public static final String NOCUSTOM = "<<nocustom>>";
+
     public static boolean isReactComponent(String custom) {
         return custom != null && REACT_COMPONENT_NAME.matcher(custom).matches();
     }

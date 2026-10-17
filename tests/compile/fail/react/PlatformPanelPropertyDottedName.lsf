@@ -1,0 +1,20 @@
+MODULE PlatformPanelPropertyDottedName;
+
+REQUIRE System;
+
+// a platform-drawn panel property is named by its integration name on its group's node, as any property is: a name is
+// read as '<group>.<property>', so it may carry no dot
+CLASS PlatformDottedItem;
+platformDottedNote = DATA STRING[50] (PlatformDottedItem);
+
+FORM platformDottedName
+    OBJECTS i = PlatformDottedItem PANEL
+    PROPERTIES(i) platformDottedNote EXTID 'a.b'
+;
+
+DESIGN platformDottedName {
+    NEW board {
+        custom = 'PlatformDottedBoard';
+        MOVE PROPERTY(platformDottedNote(i)) { custom = NULL; }
+    }
+}

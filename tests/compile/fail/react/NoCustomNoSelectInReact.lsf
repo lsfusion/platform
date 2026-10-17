@@ -1,0 +1,20 @@
+MODULE NoCustomNoSelectInReact;
+
+REQUIRE System;
+
+// NOCUSTOM is a word of its own, not a value SELECT / NOSELECT write over: given before NOSELECT it still makes the
+// platform draw the property, which the container then places by its name - and NOEXTID takes that away
+CLASS NoSelectItem;
+noSelectQty = DATA INTEGER (NoSelectItem);
+
+FORM noSelectInReact
+    OBJECTS i = NoSelectItem
+    PROPERTIES(i) noSelectQty NOCUSTOM NOSELECT NOEXTID
+;
+
+DESIGN noSelectInReact {
+    NEW board {
+        custom = 'NoSelectBoard';
+        MOVE BOX(i);
+    }
+}

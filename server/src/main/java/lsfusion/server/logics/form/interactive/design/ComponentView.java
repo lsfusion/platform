@@ -41,11 +41,12 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     protected NFProperty<Boolean> defaultComponent = NFFact.property();
     protected NFProperty<Boolean> activated = NFFact.property();
 
-    // meaningful only inside a CUSTOM REACT container, under the containers it draws itself: the component keeps its
-    // real (server-built) view and React mounts it into a placeholder instead of drawing it; refused anywhere else but
-    // on a REMOVEd component, which nothing draws - and a LIST property is asked where its group's rows are drawn,
-    // wherever its own component is (FormView.checkPlatformView)
-    protected NFProperty<Boolean> platformDrawn = NFFact.property();
+    // what the design says draws the component - its `custom`, null where it says nothing: Custom.NOCUSTOM, the
+    // platform's standard view (`custom = NULL`), or a container's own custom view (ContainerView). Inside what a
+    // CUSTOM REACT container draws, a component given one keeps its real (server-built) view, which React places
+    // instead of drawing the component (FormView.isPlatformDrawn); anywhere else the platform draws it with that view,
+    // as it would anyway
+    protected final NFProperty<String> custom = NFFact.property();
 
     protected NFProperty<Double> flex = NFFact.property();
     protected NFProperty<FlexAlignment> alignment = NFFact.property();
@@ -404,11 +405,12 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
     // WHERE THIS COMPONENT IS: the react container that draws or places it, null when the platform draws it where it
     // stands. Walked from the component's CONTAINER - a grid's record, which has none, is in its grid
-    // (getHiddenContainer): a react container answers, a platform-drawn component ends the walk - the platform draws
-    // everything under it. The component's own `lsf` says only which entry it has there, its content or
-    // its descriptor, never where the entry goes. A react container inside what another one draws is refused
-    // (FormView.checkCustomReactSwallowed), so the first one reached is the only one there is (mirrors
-    // GComponent.getReactPlace)
+    // (getHiddenContainer): a react container answers, a component with a view of its own (hasExplicitCustom) ends
+    // the walk - the platform draws everything under it. Whether the component itself has one says only which entry
+    // it has there, its content or its descriptor, never where the entry goes. A react container inside what another
+    // one draws has a view of its own, so the first one reached is the only one there is (mirrors
+    // GComponent.getReactPlace, which ends the walk at a platform-drawn component - the same answer: the topmost of
+    // these under a react container is platform-drawn, and one under none has no react place to find)
     public ContainerView getReactPlace() {
         return getReactPlaceFrom(getHiddenContainer());
     }
@@ -419,7 +421,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
             // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
             if (parent instanceof ContainerView && ((ContainerView) parent).isReact())
                 return parent.isInForm() ? (ContainerView) parent : null;
-            if (parent.isPlatformDrawn())
+            if (parent.hasExplicitCustom())
                 return null;
         }
         return null;
@@ -433,19 +435,20 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         return component.isMain();
     }
 
-    // React draws this component from data: it has a React place and is not platform-drawn - the other half of what has
-    // one, a platform-drawn component there, React places (isReactHidable) (mirrors GComponent.isReactDrawn)
+    // React draws this component from data: it has a React place and no view of its own - the other half of what has
+    // one, a component with a view of its own there, React places (isReactHidable) (mirrors GComponent.isReactDrawn)
     public boolean isReactDrawn() {
-        return !isPlatformDrawn() && getReactPlace() != null;
+        return !hasExplicitCustom() && getReactPlace() != null;
     }
 
     // a component a React view shows or not, telling the server which (ReactContainerView reports them, as a set): a
     // platform-drawn component it places - at any depth under the containers that view draws itself -, shown while
-    // placed. A platform-drawn LIST property is one too, which no view reports - its renderers are placed per row -,
-    // and it is not asked: a list property is as hidden as what draws its rows (FormEntity.getDrawComponent). And a
-    // container the view draws (ContainerView)
+    // placed. Never asked of a LIST property, which is as hidden as what draws its rows (FormEntity.getDrawComponent)
+    // and which no view reports - its renderers are placed per row: for one this walk starts at the box it is parked
+    // in, not at its rows as FormView.isPlatformDrawn does, and means nothing (asking its rows here would need the
+    // form, which a component does not know). And a container the view draws (ContainerView)
     public boolean isReactHidable() {
-        return isPlatformDrawn() && getReactPlace() != null;
+        return hasExplicitCustom() && getReactPlace() != null;
     }
 
     protected boolean hasPropertyComponent() {
@@ -511,7 +514,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
         outStream.writeBoolean(isDefaultComponent());
 
-        outStream.writeBoolean(isPlatformDrawn());
+        outStream.writeBoolean(pool.context.view.isPlatformDrawn(this)); // what the client is told is where it stands
 
         pool.writeString(outStream, getSID());
     }
@@ -571,11 +574,14 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         activated.set(value, version);
     }
 
-    public boolean isPlatformDrawn() {
-        return nvl(platformDrawn.get(), false);
+    // whether the component is drawn by a view of its own rather than by a custom view above it: the design gives it a
+    // custom - the standard view or one of its own (PropertyDrawView adds the FORM's CUSTOM renderer)
+    public boolean hasExplicitCustom() {
+        return custom.get() != null;
     }
-    public void setPlatformDrawn(Boolean value, Version version) {
-        platformDrawn.set(value, version);
+    // Custom.NOCUSTOM is the one value any component takes (ContainerView takes its own custom views too)
+    public void setCustom(String value, Version version) {
+        custom.set(value, version);
     }
 
     public Double getFlex() {
@@ -753,7 +759,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         span.finalizeChanges();
         defaultComponent.finalizeChanges();
         activated.finalizeChanges();
-        platformDrawn.finalizeChanges();
+        custom.finalizeChanges();
         flex.finalizeChanges();
         alignment.finalizeChanges();
         shrink.finalizeChanges();
@@ -807,7 +813,7 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
         mapping.sets(defaultComponent,src.defaultComponent);
         mapping.sets(activated, src.activated);
-        mapping.sets(platformDrawn, src.platformDrawn);
+        mapping.sets(custom, src.custom);
 
         mapping.sets(flex, src.flex);
         mapping.sets(alignment, src.alignment);

@@ -15,8 +15,9 @@ import java.util.*;
 
 // CUSTOM REACT 'fn': a React component (window[fn], fn = the container's custom) draws this container's subtree
 // from the form's projection - its props { data, controller } (GReactFormData), which the window.lsfusion hooks read
-// too - except the `lsf = TRUE` components it places: those keep their GWT view, and the component places each with
-// <Platform name/>, a platform-drawn grid property with <Platform name row/>, one renderer per row
+// too - except the platform-drawn components it places, the ones with a view of their own (`custom = NULL`, NOCUSTOM, a
+// custom of their own): those keep their GWT view, and the component places each with <Platform name/>, a
+// platform-drawn grid property with <Platform name row/>, one renderer per row
 public class ReactContainerView extends ParkedContainerView {
 
     private final ReactRoot root;
@@ -43,10 +44,10 @@ public class ReactContainerView extends ParkedContainerView {
             if (component == null)
                 return new PlacedViews.Problem("'" + sid + "' is not inside '" + container.sID + "'",
                         "component '" + sid + "' is not inside container '" + container.sID + "', nor in a container it draws itself");
-            if (!component.isPlatformDrawn()) // inside the container, but without lsf = TRUE, so React draws it itself
-                return new PlacedViews.Problem("'" + sid + "' has no lsf = TRUE",
-                        "'" + sid + "' inside container '" + container.sID + "' has no `lsf = TRUE`, and only a"
-                                + " component marked so is placed: mark it `lsf = TRUE` to place it with <Platform>");
+            if (!component.isPlatformDrawn()) // inside the container, with no view of its own: React draws it
+                return new PlacedViews.Problem("'" + sid + "' has no view of its own",
+                        "'" + sid + "' inside container '" + container.sID + "' has no view of its own, so the view draws"
+                                + " it from `data`: give it `custom = NULL` for the platform to draw it, and place it with <Platform>");
             return null;
         }
 
@@ -196,9 +197,9 @@ public class ReactContainerView extends ParkedContainerView {
             // without the row the host would wait for a single view that is never built - silently, for good
             return new FailedPlatformPlacement(new PlacedViews.Problem(
                     "'" + name + "' is drawn per row, so its <Platform> needs a row",
-                    "'" + name + "' is an LSF property drawn per row: its <Platform> is given the row it belongs to"
-                            + " - <Platform name=\"" + name + "\" row={row}/> -, since each row has a renderer of its"
-                            + " own"));
+                    "'" + name + "' is a property the platform draws per row: its <Platform> is given the row it"
+                            + " belongs to - <Platform name=\"" + name + "\" row={row}/> -, since each row has a"
+                            + " renderer of its own"));
         }
         GGroupObjectValue key = GGroupObjectValue.resolveObject(row);
         if (key == null)
@@ -208,8 +209,8 @@ public class ReactContainerView extends ParkedContainerView {
                             + " data, not its key"));
         if (property == null)
             return new FailedPlatformPlacement(new PlacedViews.Problem(
-                    "'" + name + "' is not an LSF grid property of this view",
-                    "'" + name + "' is given a row, but it names no grid property marked LSF of a group container '"
+                    "'" + name + "' is not a grid property this view places per row",
+                    "'" + name + "' is given a row, but it names no grid property the platform draws of a group container '"
                             + container.sID + "' draws - group, then integration name, as its column entry is keyed -,"
                             + " so nothing is drawn per row for it here"));
         GGroupObjectValue rowKey = property.groupObject.getRowKey(key);

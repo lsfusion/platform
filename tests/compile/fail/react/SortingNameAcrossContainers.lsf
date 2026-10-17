@@ -2,25 +2,25 @@ MODULE SortingNameAcrossContainers;
 
 REQUIRE System;
 
-// a grid property and an lsf panel property of one group under one integration name, React carrying them in different
-// containers - the grid's where its rows are drawn, the panel one's where it is placed: no node carries both, but a
-// sorting names a property of the GROUP by that name, wherever it is drawn, so it would name neither
-CLASS LsfScopesItem;
-lsfScopesList = DATA STRING[50] (LsfScopesItem);
-lsfScopesPanel = DATA STRING[50] (LsfScopesItem);
+// a grid property and a platform-drawn panel property of one group under one integration name, React carrying them in
+// different containers - the grid's where its rows are drawn, the panel one's where it is placed: no node carries both,
+// but a sorting names a property of the GROUP by that name, wherever it is drawn, so it would name neither
+CLASS PlatformScopesItem;
+platformScopesList = DATA STRING[50] (PlatformScopesItem);
+platformScopesPanel = DATA STRING[50] (PlatformScopesItem);
 
-FORM lsfListPanelScopes
-    OBJECTS i = LsfScopesItem
-    PROPERTIES(i) lsfScopesList EXTID 'note', lsfScopesPanel PANEL EXTID 'note'
+FORM platformListPanelScopes
+    OBJECTS i = PlatformScopesItem
+    PROPERTIES(i) platformScopesList EXTID 'note', platformScopesPanel PANEL EXTID 'note'
 ;
 
-DESIGN lsfListPanelScopes {
+DESIGN platformListPanelScopes {
     NEW rowsBoard {
-        custom = 'LsfScopesRows';
+        custom = 'PlatformScopesRows';
         MOVE GRID(i);
     }
     NEW panelBoard {
-        custom = 'LsfScopesPanel';
-        MOVE PROPERTY(lsfScopesPanel(i)) { lsf = TRUE; }
+        custom = 'PlatformScopesPanel';
+        MOVE PROPERTY(platformScopesPanel(i)) { custom = NULL; }
     }
 }

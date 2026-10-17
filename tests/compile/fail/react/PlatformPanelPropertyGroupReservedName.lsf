@@ -1,0 +1,21 @@
+MODULE PlatformPanelPropertyGroupReservedName;
+
+REQUIRE System;
+
+// a platform-drawn panel property brings its group's node to the react container that places it - data.<group> - so the
+// group's name is claimed at that container's top level as any projected group's is: here a name the controller owns
+// there
+CLASS PlatformExecItem;
+platformExecNote = DATA STRING[50] (PlatformExecItem);
+
+FORM platformPanelGroupReserved
+    OBJECTS exec = PlatformExecItem PANEL
+    PROPERTIES(exec) platformExecNote
+;
+
+DESIGN platformPanelGroupReserved {
+    NEW board {
+        custom = 'PlatformExecBoard';
+        MOVE PROPERTY(platformExecNote(exec)) { custom = NULL; }
+    }
+}

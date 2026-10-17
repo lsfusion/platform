@@ -1,0 +1,21 @@
+MODULE CustomNullOnGridPropertyInReact;
+
+REQUIRE System;
+
+// `custom = NULL` on a grid property in the design says what NOCUSTOM says: the platform draws it once per row, and the
+// container drawing the rows places each renderer by the property's name, which NOEXTID takes away
+CLASS GridNullItem;
+gridNullQty = DATA INTEGER (GridNullItem);
+
+FORM gridNullInReact
+    OBJECTS i = GridNullItem
+    PROPERTIES(i) gridNullQty NOEXTID
+;
+
+DESIGN gridNullInReact {
+    NEW board {
+        custom = 'GridNullBoard';
+        MOVE BOX(i);
+    }
+    PROPERTY(gridNullQty(i)) { custom = NULL; }
+}

@@ -349,8 +349,8 @@ public class GReactFormData {
         return scope != null ? react.apply(containers.get(scope)) : platform.get();
     }
     // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GPlatformRowsPanelController): a group's platform-drawn list
-    // properties are drawn per row only where React draws the group's rows (FormView.checkPlatformListView), so what
-    // they follow is the rows' part
+    // properties are drawn per row only where React draws the group's rows (FormView.isPlatformDrawn), so what they
+    // follow is the rows' part
     public interface Rows {
         // its rows as the view has them, its own add or remove included - the part's own list, which it replaces and
         // never changes: a list handed out keeps saying what it said
@@ -622,8 +622,8 @@ public class GReactFormData {
         // the platform-drawn list property whose per-row renderers a <Platform> places, named as a panel property is -
         // its group, then its integration name, o.qty, the path of its column entry -, of a group whose rows this
         // container draws: asked of the rows' parts, not of the container's children, such a property being no child of
-        // it (FormView.checkPlatformListView). The row a <Platform> gives says which renderer, and has to be a row of
-        // that group
+        // it (FormView.isPlatformDrawn). The row a <Platform> gives says which renderer, and has to be a row of that
+        // group
         public GPropertyDraw getRowPlatformProperty(String name) {
             int dot = name.lastIndexOf('.');
             if (dot < 0) // a grid property always has a group

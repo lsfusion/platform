@@ -1,1 +1,0 @@
-container 'innerBoard' is the React component 'InnerBoard', but it is itself drawn by the React component 'OuterBoard'

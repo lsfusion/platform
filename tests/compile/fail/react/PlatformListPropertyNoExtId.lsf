@@ -1,0 +1,20 @@
+MODULE PlatformListPropertyNoExtId;
+
+REQUIRE System;
+
+// a platform-drawn grid property's per-row renderers are placed by its integration name, the row saying the group:
+// NOEXTID takes the name away
+CLASS PlatformNamelessRow;
+platformNamelessQty = DATA INTEGER (PlatformNamelessRow);
+
+FORM platformNamelessRows
+    OBJECTS r = PlatformNamelessRow
+    PROPERTIES(r) platformNamelessQty NOCUSTOM NOEXTID
+;
+
+DESIGN platformNamelessRows {
+    NEW board {
+        custom = 'PlatformNamelessRowsBoard';
+        MOVE BOX(r);
+    }
+}

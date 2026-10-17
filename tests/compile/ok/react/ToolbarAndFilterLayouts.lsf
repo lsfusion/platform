@@ -3,7 +3,7 @@ MODULE ToolbarAndFilterLayouts;
 REQUIRE System;
 
 // a group's and a tree's toolbar, filters and filter groups, each drawn by a view or by the platform, whoever draws
-// the rows: where a React view draws the rows, the filter box placed back with lsf inside the custom box, its
+// the rows: where a React view draws the rows, the filter box placed back with custom = NULL inside the custom box, its
 // conditions alone placed back with the toolbar - the view draws the filter controls over the platform's panel -, its
 // controls alone placed back with the toolbar - the view draws the conditions -, and the grid alone moved into a react
 // container, which leaves the toolbar and the filters in the group's box; the toolbar alone a view draws, over the
@@ -25,7 +25,7 @@ FORM layoutFilterBoxPlaced
 DESIGN layoutFilterBoxPlaced {
     BOX(i) {
         custom = 'LayoutBoard';
-        FILTERBOX(i) { lsf = TRUE; }
+        FILTERBOX(i) { custom = NULL; }
     }
 }
 
@@ -37,8 +37,8 @@ FORM layoutFiltersPlaced
 DESIGN layoutFiltersPlaced {
     BOX(i) {
         custom = 'LayoutBoard';
-        FILTERS(i) { lsf = TRUE; }
-        TOOLBARSYSTEM(i) { lsf = TRUE; }
+        FILTERS(i) { custom = NULL; }
+        TOOLBARSYSTEM(i) { custom = NULL; }
     }
 }
 
@@ -50,8 +50,8 @@ FORM layoutControlsPlaced
 DESIGN layoutControlsPlaced {
     BOX(i) {
         custom = 'LayoutBoard';
-        FILTERCONTROLS(i) { lsf = TRUE; }
-        TOOLBARSYSTEM(i) { lsf = TRUE; }
+        FILTERCONTROLS(i) { custom = NULL; }
+        TOOLBARSYSTEM(i) { custom = NULL; }
     }
 }
 
@@ -100,7 +100,7 @@ FORM layoutFilterControlsNameFree
 DESIGN layoutFilterControlsNameFree {
     BOX(i) {
         custom = 'LayoutBoard';
-        FILTERCONTROLS(i) { lsf = TRUE; }
+        FILTERCONTROLS(i) { custom = NULL; }
     }
 }
 

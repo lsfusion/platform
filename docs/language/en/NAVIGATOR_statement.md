@@ -46,7 +46,7 @@ imageSetting
 CLASS classExpr
 HEADER headerExpr
 SHOWIF showIfExpr
-LSF
+NOCUSTOM
 CHANGEKEY key [showSetting]
 CHANGEMOUSE key [showSetting]
 ```
@@ -174,9 +174,9 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
         Expression whose value determines visibility of the navigator element.
 
-- `LSF`
+- `NOCUSTOM`
 
-    Keyword specifying that the element is drawn by the platform in a window drawn by a React component: the component places that drawing rather than drawing the element itself. The component chooses where the drawing goes, so an element it places nowhere is not shown. The keyword is valid only in such a window. Anywhere else the platform draws every element anyway, and the navigator is rejected at startup.
+    Keyword specifying that the element is drawn with the platform's standard button rather than by a custom view: in a window a React component draws, the component places that button with `<Platform name/>` rather than drawing the element itself. The component chooses where the button goes, so an element it places nowhere is not shown. In any other window the platform draws every element with its standard button anyway.
 
 - `CHANGEKEY key [showSetting]`
 

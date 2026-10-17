@@ -5906,7 +5906,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public ImageOption imageOption;
         public LPWithParams headerProperty;
         public LPWithParams showIfProperty;
-        public boolean lsf;
+        public String custom; // Custom.NOCUSTOM
 
         public LPWithParams elementClassProperty;
         public String elementClass;
@@ -6018,8 +6018,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementClass(element, options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null, options.elementClass);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
         setNavigatorElementShowIf(element, options.showIfProperty != null ? options.showIfProperty.getLP().property : null);
-        if (options.lsf)
-            element.platformDrawn = true;
+        if (options.custom != null)
+            element.custom = options.custom;
         setNavigatorElementChangeKey(element, options.changeKey, options.showChangeKey);
         setNavigatorElementChangeMouse(element, options.changeMouse, options.showChangeMouse);
 

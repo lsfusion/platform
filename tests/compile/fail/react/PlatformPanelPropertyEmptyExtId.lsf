@@ -1,0 +1,19 @@
+MODULE PlatformPanelPropertyEmptyExtId;
+
+REQUIRE System;
+
+// a platform-drawn panel property a CUSTOM REACT container places is named by its integration name - its entry, and the
+// <Platform> that places it -: an empty EXTID is no name, and the empty group's property would be one no <Platform> can
+// place
+platformEmptyNote = DATA STRING[50] ();
+
+FORM platformEmptyName
+    PROPERTIES() platformEmptyNote EXTID ''
+;
+
+DESIGN platformEmptyName {
+    NEW board {
+        custom = 'PlatformEmptyNameBoard';
+        MOVE PROPERTY(platformEmptyNote()) { custom = NULL; }
+    }
+}

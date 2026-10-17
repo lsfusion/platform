@@ -30,6 +30,7 @@ grammar LsfLogics;
     import lsfusion.interop.navigator.NavigatorScheduler;
     import lsfusion.server.base.version.Version;
     import lsfusion.server.base.AppServerImage;
+    import lsfusion.server.base.Custom;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
     import lsfusion.server.data.expr.query.PartitionType;
     import lsfusion.server.data.table.IndexType;
@@ -1137,6 +1138,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
 		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); }
+		|	'NOCUSTOM' { $options.setCustom(Custom.NOCUSTOM); }
 		|	'PIVOT' pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	'PIVOT' pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	'PIVOT' pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
@@ -1146,7 +1148,6 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($prop.action, $et.type, $et.before, $et.contextMenuCaption, $et.keyPress); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
-		|	'LSF' { $options.setLsf(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
 		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }
@@ -5636,7 +5637,7 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, null, false] { $options.headerProperty = $headerExpr.property; }
 	|   'SHOWIF' showIfExpr = propertyExpression[null, null, false] { $options.showIfProperty = $showIfExpr.property; }
-	|   'LSF' { $options.lsf = true; }
+	|   'NOCUSTOM' { $options.custom = Custom.NOCUSTOM; }
 	|   changeKey = changeKeyNavigatorElement { $options.setChangeKey($changeKey.changeKey, $changeKey.show); }
 	|   changeMouse = changeMouseNavigatorElement { $options.setChangeMouse($changeMouse.changeMouse, $changeMouse.show); }
 	)*

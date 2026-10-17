@@ -1,0 +1,20 @@
+MODULE SelectInReact;
+
+REQUIRE System;
+
+// SELECT is a pair of its own, not a custom view: React still draws the property from data, its options among the
+// rest, by its name, which NOEXTID takes away
+CLASS SelectItem;
+selectQty = DATA INTEGER (SelectItem);
+
+FORM selectInReact
+    OBJECTS i = SelectItem
+    PROPERTIES(i) selectQty SELECT 'dropdown' NOEXTID
+;
+
+DESIGN selectInReact {
+    NEW board {
+        custom = 'SelectBoard';
+        MOVE BOX(i);
+    }
+}

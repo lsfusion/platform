@@ -2,9 +2,10 @@ MODULE ReactLayouts;
 
 REQUIRE System;
 
-// what a CUSTOM REACT container accepts: an lsf component at any depth under the containers the component draws
-// itself, an LSF grid property of the rows the component draws, `tabbed` inside what it draws (ignored there), and a
-// nested CUSTOM REACT container marked lsf, which is placed like any other lsf component
+// what a CUSTOM REACT container accepts: a component with `custom = NULL` at any depth under the containers the
+// component draws itself, a NOCUSTOM grid property of the rows the component draws, `tabbed` inside what it draws
+// (ignored there), and a nested CUSTOM REACT container, which has a view of its own and so is placed like any other
+// component the platform draws
 CLASS ReactLayoutItem;
 reactLayoutName = DATA STRING[20] (ReactLayoutItem);
 reactLayoutQty = DATA INTEGER (ReactLayoutItem);
@@ -12,7 +13,7 @@ reactLayoutNote = DATA STRING[50] ();
 
 FORM reactLayouts
     OBJECTS i = ReactLayoutItem
-    PROPERTIES(i) reactLayoutName, reactLayoutQty LSF
+    PROPERTIES(i) reactLayoutName, reactLayoutQty NOCUSTOM
     PROPERTIES() reactLayoutNote
 ;
 
@@ -23,13 +24,12 @@ DESIGN reactLayouts {
         NEW deep {
             NEW pages {
                 tabbed = TRUE;
-                NEW firstPage { MOVE PROPERTY(reactLayoutNote()) { lsf = TRUE; } }
+                NEW firstPage { MOVE PROPERTY(reactLayoutNote()) { custom = NULL; } }
                 NEW secondPage;
             }
         }
         NEW island {
             custom = 'ReactLayoutIsland';
-            lsf = TRUE;
         }
     }
 }

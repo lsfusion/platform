@@ -13,6 +13,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
 public class ViewProxyUtil {
@@ -58,6 +59,8 @@ public class ViewProxyUtil {
 
                 try {
                     BeanUtils.setProperty(viewProxy, propertyName, propertyValue);
+                } catch (InvocationTargetException e) { // the setter refused the value: its reason, not reflection's
+                    throw new RuntimeException("property can't be set: " + e.getCause().getMessage());
                 } catch (Exception e) {
                     throw new RuntimeException("property can't be set: " + e.getMessage());
                 }

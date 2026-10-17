@@ -99,9 +99,9 @@ public class ScriptingFormView {
 
         // a grid property is drawn by the grid itself, so it has no place of its own in the design - not even a
         // platform-drawn one: there the platform builds a renderer per ROW and the react component drawing those rows
-        // places each, which is derived from the group's place (FormView.checkPlatformListView) and not something a
-        // MOVE could say. A MOVE of one used to be allowed and placed nothing at all, silently, since such a property
-        // has no layout widget.
+        // places each, which is derived from the group's place (FormView.isPlatformDrawn) and not something a MOVE
+        // could say. A MOVE of one used to be allowed and placed nothing at all, silently, since such a property has no
+        // layout widget.
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)) {
             errLog.emitIllegalGridPropertyMoveError(parser, component.getSID());
         }

@@ -600,7 +600,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     // a property grouped in COLUMNS is one cell per (row, column), and everything here names a ROW. The projection
     // does not carry such a property at all, so a call naming it would land on whatever column happens to be current -
-    // a different, real cell, and it would look like it worked. Refused with the reason, as `lsf` on one already is.
+    // a different, real cell, and it would look like it worked. Refused with the reason, as projecting one already is.
     private void checkAddressableProperty(String errorPrefix, GPropertyDraw property) {
         if (property.hasColumnGroupObjects())
             throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' is grouped in columns - it is one cell"
@@ -906,8 +906,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // .getGroupController) -, a panel group's in PANEL view; what shows its user orders and its user filters, settled
     // by its table (userOrders, userFilters) - a list's group's, a tree's for all its groups -, none in PANEL view; and
     // where React draws the rows and the platform its platform-drawn properties into each of them - the only rows such
-    // a property is drawn in (FormView.checkPlatformListView) -, the controller of those, made before the properties,
-    // whose controller it is (getPlatformPropertyController)
+    // a property is drawn in (FormView.isPlatformDrawn) -, the controller of those, made before the properties, whose
+    // controller it is (getPlatformPropertyController)
     private void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController userOrders, GUserFiltersController userFilters) {
         groupControllers.put(group, controller);
         userOrdersControllers.put(group, userOrders);
@@ -3083,7 +3083,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     // the element the user is editing in, whichever branch it is. The form's own editor wins while it is open, which
     // is all "one live input" needs here: a view's word is simply not consulted meanwhile, and is still there when
-    // the form's edit ends - which matters, since a view can declare on a wrapper that holds an `lsf = TRUE` child
+    // the form's edit ends - which matters, since a view can declare on a wrapper that holds a platform-drawn child
     // and the form opens its editor inside that. Stopping is the view's to say; a view that never says it holds its
     // form's ENTER and ESCAPE, and that is the view's bug to see
     private Element getEditingElement() {

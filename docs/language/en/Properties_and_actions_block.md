@@ -49,6 +49,7 @@ FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
 viewType
 customView
+NOCUSTOM
 OPTIONS propertyExpression
 sessionScopeType
 APPLY
@@ -266,6 +267,8 @@ In the current platform implementation, if the name and caption are not specifie
 
         Specifying the JavaScript functions responsible for displaying (`renderFunction`) and editing (`editFunction`) the property value. Each function is specified with a [string literal](Literals.md#strliteral) containing its name. If no function is specified after the `CHANGE` keyword, the default editing mechanism is used.
 
+        A render function given here makes the platform draw the value: inside a container a [React component](../how-to/How-to_Custom_React_views.md) draws, the property is then not drawn by that component from its data but placed by it with `<Platform name/>` — per row, for a property in the rows it draws. An editing function alone changes nothing there, and neither does a render function the property declares: the React component still draws the property.
+
     - `SELECT selectType`
 
         Specifying that the property value should be displayed and edited as a selection from the list of possible values. The select element type `selectType` is specified with a string literal (for example `'dropdown'`, `'buttonGroup'`).
@@ -277,6 +280,11 @@ In the current platform implementation, if the name and caption are not specifie
     - `NOSELECT`
 
         Keyword prohibiting the automatic selection of the view as a list of possible values.
+
+
+- `NOCUSTOM`
+
+    Keyword specifying the platform's standard view of the value: it drops the custom render and editing functions — the ones given in `CUSTOM`, and the ones the property itself declares —, while `SELECT` and `NOSELECT` stay as given. Inside a container a [React component](../how-to/How-to_Custom_React_views.md) draws, the platform then draws the property and the component places it with `<Platform name/>` — per row, for a property in the rows it draws — rather than drawing it from its data. Given together with `CUSTOM`, `NOCUSTOM` wins. The design attribute `custom = NULL` says the same.
 
 - `OPTIONS propertyExpression`
 

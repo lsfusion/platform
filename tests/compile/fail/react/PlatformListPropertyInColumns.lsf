@@ -1,0 +1,22 @@
+MODULE PlatformListPropertyInColumns;
+
+REQUIRE System;
+
+// a NOCUSTOM grid property grouped in COLUMNS: its renderers are placed per ROW (<Platform name row/>), while its cells
+// are one per row AND column - a value would be written under one key and read under the other
+CLASS PlatformColItem;
+CLASS PlatformColKind;
+platformColQty = DATA INTEGER (PlatformColItem, PlatformColKind);
+
+FORM platformListInColumns
+    OBJECTS k = PlatformColKind
+    OBJECTS i = PlatformColItem
+    PROPERTIES(i, k) platformColQty NOCUSTOM COLUMNS (k)
+;
+
+DESIGN platformListInColumns {
+    NEW board {
+        custom = 'PlatformColBoard';
+        MOVE BOX(i);
+    }
+}

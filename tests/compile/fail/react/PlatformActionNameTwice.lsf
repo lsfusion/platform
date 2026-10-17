@@ -1,0 +1,22 @@
+MODULE PlatformActionNameTwice;
+
+REQUIRE System;
+
+// a platform-drawn action's entry is under its name on its group's node, as a <Platform> places it by that name, so
+// nothing else may take it there
+CLASS PlatformActionItem;
+platformActionNote = DATA STRING[50] (PlatformActionItem);
+platformActionGo (PlatformActionItem i) { MESSAGE 'go'; }
+
+FORM platformActionTwice
+    OBJECTS i = PlatformActionItem PANEL
+    PROPERTIES(i) platformActionNote EXTID 'go', platformActionGo EXTID 'go'
+;
+
+DESIGN platformActionTwice {
+    NEW board {
+        custom = 'PlatformActionBoard';
+        MOVE PROPERTY(platformActionNote(i)) { custom = NULL; }
+        MOVE PROPERTY(platformActionGo(i)) { custom = NULL; }
+    }
+}

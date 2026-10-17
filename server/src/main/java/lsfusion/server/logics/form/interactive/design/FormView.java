@@ -280,7 +280,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a group rendered by a CUSTOM REACT container is drawn by React, not the standard grid, so the server must not
     // apply grid-only behavior to its properties (e.g. autoselect, which would turn a foreign-key column's value
-    // into a JSON candidate list). A box marked lsf keeps its standard grid, so its group is not React-owned
+    // into a JSON candidate list). A box with `custom = NULL` keeps its standard grid, so its group is not React-owned
     public boolean isReactContainerGroup(GroupObjectEntity group) {
         return rowsScope(group) != null;
     }
@@ -288,7 +288,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // the component that actually DRAWS a group: the tree it belongs to, or its own grid - what a list property's
     // visibility is (FormEntity.getDrawComponent). Asking the group's BOX instead does not work for a tree - one box
     // draws all of the tree's groups, so groupObjectBox names none of them - and it answers for the box rather than for
-    // what draws the group, which differ once a design MOVEs the grid out of its box or marks the grid lsf (mirrors
+    // what draws the group, which differ once a design MOVEs the grid out of its box or gives the grid `custom = NULL` (mirrors
     // GGroupObject.getDrawComponent)
     public GridPropertyView<?, ?> getDrawComponent(GroupObjectEntity group) {
         // a group in a tree has no grid of its own (GroupObjectView builds one only outside a tree)
@@ -325,7 +325,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // forgets it is answered about the box. isList says there is a group to ask.
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity))
             return rowsScope(((PropertyDrawView) component).entity.getToDraw(entity));
-        return component.isPlatformDrawn() ? null : component.getReactPlace(); // a platform-drawn component's content is the platform's
+        return component.hasExplicitCustom() ? null : component.getReactPlace(); // a view of its own is the platform's
+    }
+
+    // PLATFORM-DRAWN: a component the platform draws and a react view places - in a <Platform> - instead of drawing it:
+    // one with a view of its own (ComponentView.hasExplicitCustom) where a react view draws what it stands in - a list
+    // property where React draws its group's rows, any other component under a react container. What the client is told
+    // of a component (GComponent.isPlatformDrawn): anywhere else such a component is drawn where it stands, as usual
+    public boolean isPlatformDrawn(ComponentView component) {
+        if (!component.hasExplicitCustom())
+            return false;
+        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity))
+            return rowsScope(((PropertyDrawView) component).entity.getToDraw(entity)) != null;
+        return component.getReactPlace() != null;
     }
 
     // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component's name is claimed in, and
@@ -740,17 +752,15 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
         components.finalizeChanges();
 
-        // what draws a container comes first: every check below reads it - whether a child may carry `lsf`, whether a
-        // name is projected, what a place may name - so a container whose custom is not a renderer at all would fail
+        // what draws a container comes first: every check below reads it - whether a name is projected, what a place
+        // may name - so a container whose custom is not a renderer at all would fail
         // one of them instead, naming a consequence rather than the mistake
         checkCustomValue();
         checkCustomTabbed();
         checkCustomReactProperty();
-        checkCustomReactSwallowed();
         checkCustomTemplatePlaces();
         checkReactRowsListView();
 
-        checkPlatformViews();
         checkReactProjectionNames();
     }
 
@@ -778,8 +788,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a container draws its children ONE way, and tabbed is one of them: with both, whichever the client happens to
     // test for first wins and the other is silently ignored - and a tabbed container handed a custom PROPERTY has
-    // nowhere to put the recomputed template at all. Asked of what the design declares, so a container React draws,
-    // where both are ignored, is refused alike
+    // nowhere to put the recomputed template at all. Asked wherever the container is: inside what a React component
+    // draws the container's custom is a view of its own, which that component places
     private void checkCustomTabbed() {
         for (ComponentView component : getComponents())
             if (component instanceof ContainerView) {
@@ -804,8 +814,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 throw new IllegalStateException(formErrorPrefix() + "the rows of group '" + group.getSID() + "' are drawn by"
                         + " the React component of container '" + rows.getSID() + "', but the group is in "
                         + listViewType.name() + " view, which the platform draws; a React view draws the rows in the"
-                        + " default GRID view - drop the view type, or mark what draws the rows, the group's grid or its tree,"
-                        + " lsf for the platform to draw them");
+                        + " default GRID view - drop the view type, or give what draws the rows, the group's grid or its tree,"
+                        + " `custom = NULL` for the platform to draw them");
         }
     }
 
@@ -820,26 +830,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     throw new IllegalStateException(formErrorPrefix() + "custom of container '" + container.getSID()
                             + "' is both the React component '" + container.getCustom() + "' and a property; a component draws"
                             + " the container itself, so a computed template would never be drawn");
-            }
-    }
-
-    // a react container that is itself a non-platform-drawn child of a react container is SWALLOWED:
-    // GFormLayout.addContainers skips the whole projected subtree, so no view is built for it, its `custom` is never
-    // read, and the outer component is left to draw it from `data`. Its component is therefore drawn by nobody,
-    // silently - and so is any platform-drawn child it would have placed, which is why checkPlatformView does not ask
-    // this again
-    private void checkCustomReactSwallowed() {
-        for (ComponentView component : getComponents())
-            if (component instanceof ContainerView) {
-                ContainerView container = (ContainerView) component;
-                // climbs, so a plain box in between does not hide it
-                ContainerView drawer = container.isReact() ? componentScope(container) : null;
-                if (drawer != null) // drawn by another react container, not placed by it
-                    throw new IllegalStateException(formErrorPrefix() + "container '" + container.getSID() + "' is the React"
-                            + " component '" + container.getCustom() + "', but it is itself drawn by the React component '"
-                            + drawer.getCustom() + "', which draws its children from data - so nothing would ever build it;"
-                            + " set lsf = TRUE on '" + container.getSID() + "' to give it a view of its own and place it"
-                            + " with <Platform name=\"" + container.getSID() + "\"/>");
             }
     }
 
@@ -949,7 +939,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             if (scope != null && integrationSID == null && !groupCount)
                 throw new IllegalStateException(formErrorPrefix() + "cannot project property '"
                         + property.entity.getSID() + "': the react container '" + scope.getSID() + "' "
-                        + (property.isPlatformDrawn() ? "places" : "draws") + " it, and a view reaches a property only"
+                        + (isPlatformDrawn(property) ? "places" : "draws") + " it, and a view reaches a property only"
                         + " by its name, which NOEXTID takes away. Give it an EXTID");
             if (scope == null || integrationSID == null) // nothing names it
                 continue;
@@ -960,7 +950,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             // while a panel property MOVEd in beside the grid does meet it
             claimProjectionName(inScope(nodeNames, scope), group, integrationSID, source, getReservedNodeNames(group, scope));
             // a platform-drawn list property has no per-row cell, only its column
-            if (property.entity.isList(entity) && !property.isPlatformDrawn())
+            if (property.entity.isList(entity) && !isPlatformDrawn(property))
                 claimProjectionName(inScope(rowNames, scope), group, integrationSID, source,
                         getReservedRowNames(group));
         }
@@ -1128,54 +1118,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // this throws while the logics is being built, so the message is all the developer gets: name the form
     private String formErrorPrefix() {
         return entity.getCreationPath() + " form '" + entity.getSID() + "': ";
-    }
-
-    // the design is complete here, so `lsf` can finally be checked against the container tree
-    private void checkPlatformViews() {
-        for (ComponentView component : getComponents()) // the property draws are components too, so this covers them
-            checkPlatformView(component);
-    }
-
-    private void checkPlatformView(ComponentView component) {
-        if (!component.isPlatformDrawn())
-            return;
-
-        // a GRID property is the one platform-drawn component whose place is not where it stands: its placement is
-        // DERIVED from its group's - the view that draws the rows places its renderers - so it is asked that, not to
-        // have a react container above it, wherever its own component is: a list property is parked in its group's box,
-        // and a REMOVEd box says nothing about where the rows are drawn. The client takes the flag as checked here
-        // (GComponent.isPlatformDrawn)
-        if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) {
-            checkPlatformListView((PropertyDrawView) component);
-            return;
-        }
-
-        if (!component.isInForm()) // REMOVEd, or inside what was: nothing draws or places it
-            return;
-
-        // placed by the react container above it, however deep under the containers that one draws itself
-        // (getReactPlace); under a platform-drawn container there is nothing to place - the platform draws that
-        // container whole
-        if (component.getReactPlace() == null)
-            throw new IllegalStateException("lsf is set for '" + component.getSID() + "', which no CUSTOM REACT container places:"
-                    + " there is none above it, or an lsf container on the way, which the platform draws whole");
-
-        // a PANEL property needs no permission from its GROUP: it is a base component of its own, drawn by the form's
-        // panel controller (GFormController.getPlatformPropertyController routes every non-list property there), not by
-        // its group's. Whether React draws that group's ROWS is a question about another base component, and asking it
-        // here decided one base component by another's answer - it refused the arrangement most plainly right:
-        // React draws the rows, the platform draws one panel property of the same group, and React places it.
-    }
-
-    private void checkPlatformListView(PropertyDrawView view) {
-        PropertyDrawEntity<?, ?> property = view.entity;
-        // the no-arg form is unset when the group comes from the property context
-        GroupObjectEntity toDraw = property.getToDraw(entity);
-
-        if (!isReactContainerGroup(toDraw)) // a LIST property has a group to draw it (PropertyDrawEntity.isList)
-            throw new IllegalStateException("LSF is set for property '" + view.getSID()
-                    + "', whose object group is not rendered by a CUSTOM REACT container — nothing would place the per-row renderers");
-        // ... and one grouped in COLUMNS is refused with every property the projection carries (checkProjectedColumns)
     }
 
     public final ContainerFactory<ContainerView> containerFactory = debugPoint -> new ContainerView(genID(), debugPoint);

@@ -1,0 +1,20 @@
+MODULE CustomRendererInReact;
+
+REQUIRE System;
+
+// a CUSTOM renderer the FORM gives a property is a view of its own: where a CUSTOM REACT container draws the group's
+// rows, the platform draws the property per row and the container places it - by its name, which NOEXTID takes away
+CLASS RendererItem;
+rendererQty = DATA INTEGER (RendererItem);
+
+FORM rendererInReact
+    OBJECTS i = RendererItem
+    PROPERTIES(i) rendererQty CUSTOM 'rendererStars' NOEXTID
+;
+
+DESIGN rendererInReact {
+    NEW board {
+        custom = 'RendererBoard';
+        MOVE BOX(i);
+    }
+}

@@ -1,0 +1,21 @@
+MODULE PlatformPanelPropertyUnnamedGroup;
+
+REQUIRE System;
+
+// a platform-drawn panel property's entry is on its group's node, so a view names its group: a group of several objects
+// with no name of its own joins the objects' names with dots, and a React view names a group as one word
+CLASS PlatformPairLeft;
+CLASS PlatformPairRight;
+platformPairNote = DATA STRING[50] (PlatformPairLeft, PlatformPairRight);
+
+FORM platformUnnamedPair
+    OBJECTS (l = PlatformPairLeft, r = PlatformPairRight) PANEL
+    PROPERTIES(l, r) platformPairNote
+;
+
+DESIGN platformUnnamedPair {
+    NEW board {
+        custom = 'PlatformPairBoard';
+        MOVE PROPERTY(platformPairNote(l, r)) { custom = NULL; }
+    }
+}

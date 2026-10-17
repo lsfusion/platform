@@ -31,7 +31,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
 
     private final GGroupObject group;
     // the rows its renderers follow: the rows' part where React draws them - a platform-drawn list property is only
-    // where React draws its group's rows (FormView.checkPlatformListView)
+    // where React draws its group's rows (FormView.isPlatformDrawn)
     private final GReactFormData.Rows rows;
 
     // the element React gave for each (row, property), and where that property's renderer for that row is put. The

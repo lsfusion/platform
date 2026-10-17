@@ -2,6 +2,7 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.server.base.Custom;
 import lsfusion.server.language.ElementClassProxy;
 import lsfusion.server.language.converters.FontInfoConverter;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -30,9 +31,17 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         target.setActivated(activated, getVersion());
     }
 
+    // `custom = NULL`: the platform's standard view of the component rather than a custom one - the one value any
+    // component takes; a container takes a custom view of its own too (ContainerViewProxy)
     @SuppressWarnings("unused")
-    public void setLsf(boolean lsf) {
-        target.setPlatformDrawn(lsf, getVersion());
+    public void setCustom(Object custom) {
+        if (!isExplicitNull(custom))
+            throw new UnsupportedOperationException("custom of a component that is not a container can only be NULL, the standard view");
+        target.setCustom(Custom.NOCUSTOM, getVersion());
+    }
+
+    protected static boolean isExplicitNull(Object value) {
+        return value instanceof PropertyObjectEntity && ((PropertyObjectEntity<?>) value).property.isExplicitNull();
     }
 
     /* ========= constraints properties ========= */

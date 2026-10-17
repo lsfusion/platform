@@ -124,8 +124,8 @@ public class ReactNavigatorView extends ParkedNavigatorView {
 
     // `name` is on the entry itself, so an entry passed around alone still knows what it is called - `root` and
     // `children` are arrays of names, and without it every consumer had to carry the key beside the entry.
-    // An LSF element is DRAWN by the platform, so what it draws is not on the entry at all: it carries only what the
-    // component may still want around the button it places, the same reduction a platform-drawn form child gets
+    // A NOCUSTOM element is DRAWN by the platform, so what it draws is not on the entry at all: it carries only what
+    // the component may still want around the button it places, the same reduction a platform-drawn form child gets
     private native JavaScriptObject createEntry(JavaScriptObject data, String canonicalName, String caption, String image,
                                                 boolean platformDrawn, String elementClass, boolean hidden, boolean folder, boolean selected)/*-{
         var entry = platformDrawn

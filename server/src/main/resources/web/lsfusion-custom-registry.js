@@ -134,7 +134,8 @@
                                                      dangerouslySetInnerHTML: { __html: value } });
             return React.createElement('span', { className: props.className, style: props.style }, value);
         };
-        // the crossing BACK to the platform. <Platform name/> marks where a DESIGN child with `lsf = TRUE` goes:
+        // the crossing BACK to the platform. <Platform name/> marks where a DESIGN child with a view of its own goes -
+        // `custom = NULL`, NOCUSTOM, or a custom of its own:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
         // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
         // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack

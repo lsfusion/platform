@@ -1,0 +1,42 @@
+MODULE StandardViewAnywhere;
+
+REQUIRE System;
+
+// `custom = NULL` and NOCUSTOM say "the platform's standard view", which is true anywhere: outside a CUSTOM REACT
+// container, where the platform draws the component as usual; under a container with a view of its own, which the
+// platform draws whole; on a grid property whose rows the platform draws. A container with a custom of its own - a
+// component, markup, '' - inside what a React component draws is drawn by that view of its own and placed there. And
+// `custom = NULL` takes back a custom given before
+CLASS StandardViewItem;
+standardViewQty = DATA INTEGER (StandardViewItem);
+standardViewNote = DATA STRING[50] ();
+standardViewRemark = DATA STRING[50] ();
+standardViewTemplate = DATA HTMLTEXT ();
+
+FORM standardViews
+    OBJECTS i = StandardViewItem
+    PROPERTIES(i) standardViewQty CUSTOM 'standardViewStars' NOCUSTOM
+    PROPERTIES() standardViewNote, standardViewRemark
+;
+
+DESIGN standardViews {
+    NEW plain {
+        MOVE PROPERTY(standardViewNote()) { custom = NULL; }
+    }
+    NEW board {
+        custom = 'StandardViewBoard';
+        NEW frame {
+            custom = NULL;
+            MOVE PROPERTY(standardViewRemark()) { custom = NULL; }
+        }
+        NEW island { custom = 'StandardViewIsland'; }
+        NEW template { custom = '<div class="standard-view">static</div>'; }
+        NEW simple { custom = ''; }
+        NEW computed { custom = standardViewTemplate(); }
+    }
+    NEW cancelled { custom = 'StandardViewCancelled'; }
+}
+
+DESIGN standardViews {
+    cancelled { custom = NULL; tabbed = TRUE; } // the custom is gone, or this would be both tabbed and custom
+}

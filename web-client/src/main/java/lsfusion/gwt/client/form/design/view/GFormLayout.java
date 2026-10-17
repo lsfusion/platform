@@ -350,25 +350,25 @@ public class GFormLayout extends SizedFlexPanel {
 
     // the single funnel every built view goes through, and the one place that sees BOTH that a view was built and where
     // it landed. A react container draws its children from `data` and parks everything else until a <Platform> places
-    // it; a child with no `lsf = TRUE` that nevertheless has a view of its own - a filter group of no object moved in,
-    // say - is drawn by nobody: React has at most what labels it, and the park is not a place. Marking it `lsf = TRUE`
-    // is what the author means, and then the view names it in a <Platform>. A component the view cannot name - a user
-    // filter's, which has no SID, though the design reaches it through its property, FILTER(name) - is placed with the
-    // named container that holds it. A group's filter box moved in is not such a child: the platform builds no panel
-    // for it (GReactFormData.createFiltersControllers), and its conditions are the view's; nor is anything else the
-    // view draws as a part of a group or of a tree moved in - a toolbar, filter controls, a filter group
-    // (GReactFormData's create*Controller factories)
+    // it; a child that is not platform-drawn and nevertheless has a view of its own - a filter group of no object moved
+    // in, say - is drawn by nobody: React has at most what labels it, and the park is not a place. Giving it
+    // `custom = NULL` is what the author means, and then the view names it in a <Platform>. A component the view cannot
+    // name - a user filter's, which has no SID, though the design reaches it through its property, FILTER(name) - is
+    // placed with the named container that holds it. A group's filter box moved in is not such a child: the platform
+    // builds no panel for it (GReactFormData.createFiltersControllers), and its conditions are the view's; nor is
+    // anything else the view draws as a part of a group or of a tree moved in - a toolbar, filter controls, a filter
+    // group (GReactFormData's create*Controller factories)
     private void reportUnplaceable(GComponent key, GAbstractContainerView containerView) {
         if (!(containerView instanceof ReactContainerView) || key.isPlatformDrawn() || !unplaceable.add(key))
             return;
         String container = ((ReactContainerView) containerView).getContainer().sID;
         GwtClientUtils.logCustomViewError(key.sID != null
                 ? "'" + key.sID + "' has a view of its own inside the react container '" + container + "', which draws"
-                  + " its children from `data` and has nothing there to draw it with, so it is shown by nobody; mark it"
-                  + " `lsf = TRUE` and place it with <Platform name=\"" + key.sID + "\"/>"
+                  + " its children from `data` and has nothing there to draw it with, so it is shown by nobody; give it"
+                  + " `custom = NULL` and place it with <Platform name=\"" + key.sID + "\"/>"
                 : "a component the view cannot name here - a user filter's, say - has a view of its own inside the"
-                  + " react container '" + container + "' and is shown by nobody; mark the named container that holds"
-                  + " it `lsf = TRUE` and place that with <Platform name/>");
+                  + " react container '" + container + "' and is shown by nobody; give the named container that"
+                  + " holds it `custom = NULL` and place that with <Platform name/>");
     }
     private final Set<GComponent> unplaceable = new HashSet<>(); // said once per component
 

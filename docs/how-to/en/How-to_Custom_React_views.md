@@ -56,7 +56,7 @@ Every property, group and container the projection carries is an object in `data
 | Component | Part | Node |
 | --- | --- | --- |
 | The group's grid, `GRID(<group>)`, or its tree, `GRID(TREE <tree>)` | The rows and the current object, and — of a group not in a tree — the [sortings](#orders) | `data.<group>` |
-| A panel property — an `lsf` one where the view places it | The property — an `lsf` one as the [entry that labels it](#lsf-child) (an `lsf` action's entry only says whether the form shows it: its caption and image are its button's face) | `data.<group>`, or `data` itself for the empty group |
+| A panel property — one the platform draws where the view places it | The property — one the platform draws as the [entry that labels it](#placing) (the entry of an action the platform draws only says whether the form shows it: its caption and image are its button's face) | `data.<group>`, or `data` itself for the empty group |
 | What `FILTERS(<group>)` holds | The [user filters](#filters) | `data.<group>` |
 | `FILTERCONTROLS(<group>)` | The [filter controls](#filter-controls) | `data.<group>` |
 | `FILTERGROUP(<filterGroup>)` | A [filter group](#filter-groups) | `data.<group>` |
@@ -67,7 +67,7 @@ Every property, group and container the projection carries is an object in `data
 A group in `PANEL` view has only its panel properties and its filter groups: no rows, sortings, user filters,
 filter controls or toolbar — the platform shows none of them for it either.
 
-A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and an `lsf` container ends the walk, since the platform draws everything under it. The component's own `lsf` decides only which entry it has there — its content, or the [entry that labels it](#lsf-child) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them is `lsf`, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g` — a group of a tree has no `orders`: the [tree](#trees)'s sortings are its own node's —, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { lsf = TRUE; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#lsf-child) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An `lsf` action has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
+A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and a container with a view of its own — `custom = NULL`, or a custom of its own — ends the walk, since that view draws everything under it. Whether the component itself has one decides only which entry it has there — its content, or the [entry that labels it](#placing) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them has a view of its own, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g` — a group of a tree has no `orders`: the [tree](#trees)'s sortings are its own node's —, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { custom = NULL; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#placing) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An action the platform draws has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
 
 | Field | Meaning |
 | --- | --- |
@@ -79,7 +79,7 @@ A component's place is found by walking up from its container: a `CUSTOM REACT` 
 
 So a `MOVE` of a panel property is what decides which engine draws it: inside a custom container React draws it from `data`, outside one the platform draws it where it now stands and it leaves `data`.
 
-A `CUSTOM REACT` container inside what another one draws is refused when the form is built: the outer component draws that subtree from `data`, so nothing would build the inner one. One marked `lsf` is allowed — it is an island of its own, drawn by its own component, and the outer one places it like any other [`lsf` child](#lsf-child).
+A container with a `custom` of its own inside what a React component draws — another React component, an HTML template, `''` — is not drawn by that component: it is an island of its own, drawn by its own view, and the outer component places it like any other [child the platform draws](#placing).
 
 A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not carry one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property. Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](How-to_Custom_view_controller.md) carries what the projection carries, so what is not projected has no member. The same holds whenever a name does not single out one property — two properties of a projected group may share an integration name only when their entries land in different containers, and each view then means the one its own node carries. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws a part that names a property of the group ([Reserved names](#reserved-names)). Give one of them an explicit `EXTID`. Declare an ordinary property if the view has to read those values.
 
@@ -115,7 +115,7 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 {rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
 ```
 
-Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the rows on screen must stay the same before the view seeks — the wait starts over whenever a row comes on screen or leaves it, not on every scroll event —, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#lsf-child) alike — follows.
+Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the rows on screen must stay the same before the view seeks — the wait starts over whenever a row comes on screen or leaves it, not on every scroll event —, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#placing) alike — follows.
 
 The hook moves the scroll position of that box and switches off the browser's own scroll anchoring there, so it touches nothing outside the element the view is drawn in: everything there — a platform container, a box another view shares, the page, a portal's box — belongs to something else. Rows that scroll only in such an element leave the hook doing nothing at all — no seek, and no scroll into view of a current moved out of sight — and it says so once in the console. Give the rows a scrolling box of the view's own — a bounded height and `overflow: auto`.
 
@@ -162,7 +162,7 @@ The reservation follows what a row or a node carries:
 | A group's node where `FILTERGROUP(<filterGroup>)` is | The [filter group](#filter-groups)'s own name, as a property's |
 | The top level, where the node of the empty group is the controller itself as well | The names of the [controller](How-to_Custom_view_controller.md)'s own members: `exec`, `eval`, `evalAction`, `change`, `startEditing`, `stopEditing`, `isEditing`, `batch` |
 
-A tree's own `current` and `expandCurrent` and its sortings, where its rows are drawn, and its user filters, filter controls and toolbar write their names on [its node](#trees). A container carrying just a panel property of the group has none of the names of the other parts, so a property called `list` is refused there by nothing. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, carries one name on two properties anywhere, one drawn by the platform included: a [sorting](#orders), a [condition](#filters) or the [toolbar](#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Platform>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
+A tree's own `current` and `expandCurrent` and its sortings, where its rows are drawn, and its user filters, filter controls and toolbar write their names on [its node](#trees). A container carrying just a panel property of the group has none of the names of the other parts, so a property called `list` is refused there by nothing. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, carries one name on two properties anywhere, one drawn by the platform included: a [sorting](#orders), a [condition](#filters) or the [toolbar](#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Platform>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. A property or action the platform draws is named as any other, and all of this holds for it.
 
 ### Reading the projection {#reading}
 
@@ -188,12 +188,12 @@ The projection follows what an option describes — a whole column, one cell, or
 
 | Where | What it holds |
 | --- | --- |
-| `data.<g>.<integrationSID>` | For a property shown in the table — its column attributes, one entry for the whole column: `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue`, and `hidden` while the form hides it. For a panel property of the group — the property's `value` and its attributes, read for the current object, and `hidden` while the form hides it; while the group has no current object the `value` is empty and the entry stays, as in the platform's own panel. For an `lsf` one — [the entry that labels it](#lsf-child), with no `value` |
+| `data.<g>.<integrationSID>` | For a property shown in the table — its column attributes, one entry for the whole column: `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue`, and `hidden` while the form hides it. For a panel property of the group — the property's `value` and its attributes, read for the current object, and `hidden` while the form hides it; while the group has no current object the `value` is empty and the entry stays, as in the platform's own panel. For one the platform draws — [the entry that labels it](#placing), with no `value` |
 | `data.<g>.list[i].<integrationSID>` | One cell of a table property — its `value` for that row and the cell attributes computed for that row: `readOnly`, `disabled`, `background`, `foreground` and the rest |
 | `data.<g>.list[i]` | The row's own options, direct on the row: `background`, `foreground`, `selected` |
 | `data.<g>` | `options` — the group's custom options, where the view draws its rows; `properties` — the property entries this node carries, shown or not |
-| `data.<integrationSID>` | A property of the empty group — its `value`, its attributes, and `hidden` while the form hides it; an `lsf` one — the entry that labels it, with no `value` |
-| `data.<componentSID>` | The entry of every other component this view draws or places — a container, declared with `NEW` or generated like `PANEL(o)` or `TOOLBAR(o)`; a grid, like `GRID(o)`, or a tree, like `GRID(TREE t)`; a toolbar, like `TOOLBARSYSTEM(o)`; and any `lsf` component other than a property: its `caption` and `image` when it has them, and `hidden` while the form hides it, keyed by its design component identifier, always at the top level, whatever it is nested in. The entry is always there; a shown component with neither a caption nor an image has an empty one |
+| `data.<integrationSID>` | A property of the empty group — its `value`, its attributes, and `hidden` while the form hides it; one the platform draws — the entry that labels it, with no `value` |
+| `data.<componentSID>` | The entry of every other component this view draws or places — a container, declared with `NEW` or generated like `PANEL(o)` or `TOOLBAR(o)`; a grid, like `GRID(o)`, or a tree, like `GRID(TREE t)`; a toolbar, like `TOOLBARSYSTEM(o)`; and any component the platform draws other than a property: its `caption` and `image` when it has them, and `hidden` while the form hides it, keyed by its design component identifier, always at the top level, whatever it is nested in. The entry is always there; a shown component with neither a caption nor an image has an empty one |
 
 Each attribute is delivered at one point, already resolved: a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result are folded into a single effective value before the view sees it, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`, while its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
 
@@ -391,29 +391,29 @@ The regions are laid out by the standard containers: a horizontal parent, an ext
 
 ### Crossing back to lsFusion
 
-`custom` crosses from the platform to React; `lsf = TRUE` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child marked `lsf = TRUE` instead keeps its lsFusion view, and the component places that view with `<Platform name/>` rather than drawing it.
+`custom` crosses from the platform to React; `custom = NULL` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child given `custom = NULL` — the platform's standard view rather than a custom one — instead keeps its lsFusion view, and the component places that view with `<Platform name/>` rather than drawing it. So does a child with a custom view of its own: a container with its own `custom`, or a property the `FORM` gives a `CUSTOM` render function. `NOCUSTOM` is `custom = NULL` said in the `FORM`.
 
 ```lsf
 FORM orders 'Orders'
     OBJECTS o = Order
     PROPERTIES(o) READONLY number, date, sum
-    PROPERTIES() comment = orderComment      // marked `lsf` below; its entry is data.comment
+    PROPERTIES() comment = orderComment      // given `custom = NULL` below; its entry is data.comment
 ;
 
 DESIGN orders {
     NEW board {
         custom = 'Board';
-        MOVE BOX(o) { lsf = TRUE; }        // the standard grid, placed by the component
-        MOVE PROPERTY(comment) { lsf = TRUE; }
+        MOVE BOX(o) { custom = NULL; }        // the standard grid, placed by the component
+        MOVE PROPERTY(comment) { custom = NULL; }
     }
 }
 ```
 
-An `lsf` child is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image - and a property's comment - are the exception: they go to the component in `data` instead of the child's own view. An `lsf` property projects only `{ caption, image, comment, hidden }` — it has no `.value`, since the platform draws the value with the rest of the child's presentation. It projects that entry even with neither a caption, an image nor a comment — an empty one while the form shows the child. An `lsf` action projects only `{ hidden }`: its caption and image are its button's face, which the platform draws. An `lsf` container is projected the same way as any container the view draws: the component reads its `caption` and `image` from `data` and decides where the platform's view goes.
+A child the platform draws is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image - and a property's comment - are the exception: they go to the component in `data` instead of the child's own view. Such a property projects only `{ caption, image, comment, hidden }` — it has no `.value`, since the platform draws the value with the rest of the child's presentation. It projects that entry even with neither a caption, an image nor a comment — an empty one while the form shows the child. Such an action projects only `{ hidden }`: its caption and image are its button's face, which the platform draws. Such a container is projected the same way as any container the view draws: the component reads its `caption` and `image` from `data` and decides where the platform's view goes.
 
 The entry holds `caption`, `image` - a property's `comment` too - and, while the form hides the child, `hidden` (an action's holds only `hidden`) — a table property's is its whole column entry — and it sits at the same place in `data` the [display options](#display-options) use, under the same name the child's value is keyed by:
 
-| `lsf` child | Where its entry is | Key |
+| Child the platform draws | Where its entry is | Key |
 | --- | --- | --- |
 | A **table** property of an object group, [drawn per row](#live-editor) | `data.<g>.<integrationSID>`, an ordinary column entry alongside the group's other columns | The property's integration SID, `qty` |
 | A **panel** property, or a property of the empty group | `data.<g>.<integrationSID>`, on its group's node (`data.<integrationSID>` for the empty group), where its value would be if React drew it | The property's integration SID, `note` |
@@ -421,9 +421,9 @@ The entry holds `caption`, `image` - a property's `comment` too - and, while the
 
 A property is named by its integration SID, table or panel, its entry and its place alike. Its entry sits on its group's node, where the entry of a property React draws would be, and a `<Platform>` names a panel one the way that entry is reached: `<Platform name="o.note"/>` for `data.o.note`, `<Platform name="note"/>` for the empty group's `data.note`; it hides the host while that entry says `hidden`. A table one's per-row renderer is named the same way, `<Platform name="o.quantity" row={row}/>` for its column entry `data.o.quantity`, and the row says which renderer: it has to be a row of that group — a tree's row of a group below passes, narrowed to the path down to the group, as a group's `change(row)` takes it —, and the column entry does not hide the host. A container or any other component is named by its design identifier, `<Platform name="BOX(o)"/>` and `data['BOX(o)']`. So the name a component places a child by is the path it reads the child's entry by.
 
-Every component the view draws, other than a property it carries — a container, one declared with `NEW` and a generated one (`PANEL(o)`, `TOOLBAR(o)`, …) alike, a grid (`GRID(o)`) or a tree (`GRID(TREE t)`), a toolbar (`TOOLBARSYSTEM(o)`) — and every `lsf` component it places other than a property gets such an entry, `data['<component SID>'] = { caption, image, hidden }`, at the top level of this view's `data` — except what is inside an `lsf` container, which the platform draws whole and the component never looks into. The `CUSTOM REACT` container itself has no entry in its own `data`: nothing there draws its caption and image — the platform draws them around the container, or, for one placed with `lsf`, the view that places it does, from its entry there. An entry's `hidden` follows `SHOWIF` — the component's own, or a container's above it — and not whether the view shows the component: a tab the view does not show keeps its caption, and has no `hidden`. While an `lsf` component's entry has it, `<Platform>` and `usePlatform` hide the host that places it — the host gets `hidden`, and stays: the component is still placed, so it goes on being read and comes back with its `SHOWIF`. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
+Every component the view draws, other than a property it carries — a container, one declared with `NEW` and a generated one (`PANEL(o)`, `TOOLBAR(o)`, …) alike, a grid (`GRID(o)`) or a tree (`GRID(TREE t)`), a toolbar (`TOOLBARSYSTEM(o)`) — and every component the platform draws that it places, other than a property, gets such an entry, `data['<component SID>'] = { caption, image, hidden }`, at the top level of this view's `data` — except what is inside a container the platform draws, which it draws whole and the component never looks into. The `CUSTOM REACT` container itself has no entry in its own `data`: nothing there draws its caption and image — the platform draws them around the container, or, for one another React view places, that view does, from its entry there. An entry's `hidden` follows `SHOWIF` — the component's own, or a container's above it — and not whether the view shows the component: a tab the view does not show keeps its caption, and has no `hidden`. While a placed component's entry has it, `<Platform>` and `usePlatform` hide the host that places it — the host gets `hidden`, and stays: the component is still placed, so it goes on being read and comes back with its `SHOWIF`. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
 
-A `CUSTOM REACT` container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on an `lsf` child: its visibility is the view's.
+A `CUSTOM REACT` container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on a child the platform draws: its visibility is the view's.
 
 `Platform`, `usePlatform`, `useShown`, `Caption` and `Image` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Platform, usePlatform, useShown, Caption, Image } = window.lsfusion;`.
 
@@ -441,11 +441,11 @@ export function Board(props) {
 }
 ```
 
-### Placing an lsf child {#lsf-child}
+### Placing a child the platform draws {#placing}
 
-An `lsf` child need not be a direct child of the container: it may sit inside the containers the view draws itself, however deep, and the `CUSTOM REACT` container above it places it by its name all the same — so a design groups its `lsf` pieces the way the view draws them, a page or a section each. Inside an `lsf` container nothing is placed separately: the platform draws that container whole, and `lsf` on a component inside it is refused when the form is built — unless a `CUSTOM REACT` container inside it places that component, as it places its own.
+A child the platform draws need not be a direct child of the container: it may sit inside the containers the view draws itself, however deep, and the `CUSTOM REACT` container above it places it by its name all the same — so a design groups such pieces the way the view draws them, a page or a section each. Inside a container the platform draws nothing is placed separately: the platform draws that container whole, with whatever is inside it — unless a `CUSTOM REACT` container inside it places a component, as it places its own.
 
-An `lsf` child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
+Such a child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
 
 ```jsx
 // the platform creates the host — a <div> inside the section
@@ -463,7 +463,7 @@ Everything else is the same for both. The host carries the class `lsf-platform` 
 .board > .lsf-platform[data-lsf-sid="BOX(o)"] { height: 260px; }
 ```
 
-Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either — except an action's, which are its button's face: they are handed to the component in `data`, so a component that places children itself draws them where it wants them — nothing draws them otherwise:
+Sizing is the component's job, because a placed child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either — except an action's, which are its button's face: they are handed to the component in `data`, so a component that places children itself draws them where it wants them — nothing draws them otherwise:
 
 ```jsx
 <section className="board-panel">
@@ -474,31 +474,31 @@ Sizing is the component's job, because an `lsf` child's `width`, `height`, `fill
 
 Drawn with [`<Caption>`](#caption) and [`<Image>`](#image), for the reason those exist: a caption is not always plain text, and an image is either an address or a ready element.
 
-This is what makes a **tab strip** possible, and it is what the entry is for. A component that shows one `lsf` child at a time still has to name the ones it is not showing, and their captions are the only thing it has to name them with. Two things make that work: the entry does not follow the placement — every `lsf` child the container places has one from the start, and its `hidden` follows `SHOWIF`, not whether the view shows the child, so a closed tab has a label — and a caption goes on being read while its body is hidden, so a computed caption on a closed tab keeps up to date.
+This is what makes a **tab strip** possible, and it is what the entry is for. A component that shows one placed child at a time still has to name the ones it is not showing, and their captions are the only thing it has to name them with. Two things make that work: the entry does not follow the placement — every child the container places has one from the start, and its `hidden` follows `SHOWIF`, not whether the view shows the child, so a closed tab has a label — and a caption goes on being read while its body is hidden, so a computed caption on a closed tab keeps up to date.
 
 ```jsx
 const TABS = ['BOX(o)', 'BOX(i)'];
 
-export function LsfTabs(props) {
+export function PlacedTabs(props) {
     const [active, setActive] = React.useState(TABS[0]);
-    return <div className="lsf-tabs">
-        <div className="lsf-tabs-strip" role="tablist">
+    return <div className="placed-tabs">
+        <div className="placed-tabs-strip" role="tablist">
             {TABS.map(sid => <button key={sid} role="tab" aria-selected={sid === active}
                                      onClick={() => setActive(sid)}>
                 <Image value={props.data[sid].image}/><Caption value={props.data[sid].caption}/>
             </button>)}
         </div>
-        <Platform key={active} name={active} className="lsf-tabs-body"/>
+        <Platform key={active} name={active} className="placed-tabs-body"/>
     </div>;
 }
 ```
 
-Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [below](#lsf-child). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with no caption — it says only whether the form hides the grid.
+Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [below](#placing). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with no caption — it says only whether the form hides the grid.
 
 A tab strip over children of both kinds keeps one name per tab, the name it places the child by, and reads the child's entry by it — a design identifier at the top level, a property's name as its path:
 
 ```jsx
-const TABS = ['BOX(o)', 'o.note'];   // a container, and an lsf panel property of o
+const TABS = ['BOX(o)', 'o.note'];   // a container, and a panel property of o the platform draws
 const entryOf = (data, name) => {
     const dot = name.lastIndexOf('.');
     return name in data || dot < 0 ? data[name] : data[name.slice(0, dot)][name.slice(dot + 1)];
@@ -508,17 +508,17 @@ const entryOf = (data, name) => {
 
 These rules bound the placement:
 
-- Each lsf child is placed by at most one host. A child no host places is not shown. A duplicate host reports itself in the page and in the console, and the first one keeps the child.
-- A component inside the container that has a view of its own but no `lsf` — a [filter group](#filter-groups) that filters by no object, moved in — is shown by nobody, and the console says so once, with the fix. A component whose [part](#the-component) a view draws — a group's or a tree's filter box, filter controls or toolbar, or a group's filter group — is not such a component: the view gets that part.
+- Each child the platform draws is placed by at most one host. A child no host places is not shown. A duplicate host reports itself in the page and in the console, and the first one keeps the child.
+- A component inside the container that the platform builds a view of without its being given `custom = NULL` — a [filter group](#filter-groups) that filters by no object, moved in — is shown by nobody, and the console says so once, with the fix. A component whose [part](#the-component) a view draws — a group's or a tree's filter box, filter controls or toolbar, or a group's filter group — is not such a component: the view gets that part.
 - The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, a `<Platform>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
 - The node `<Platform>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
-- `lsf` may be set only on a component a `CUSTOM REACT` container places — inside it, and not inside an `lsf` container on the way. Anywhere else the form is rejected when it is built (a component removed from the design is not asked).
+- `custom = NULL` is the platform's standard view wherever it is given: outside a `CUSTOM REACT` container, or inside a container the platform draws whole, the component is drawn where it stands, with that view.
 
-A placement that cannot work says so in the host itself, not only in the console: a name that names nothing inside the container (nor in a container it draws itself), a component without `lsf`, a second host for the same child, a name given a `row` that names no `LSF` grid property of a group this view draws, a `row` of another group, and a `row` that is not a row each render their message into the host, in an element of the class `lsf-view-error`. The host's own class stays as the component gave it.
+A placement that cannot work says so in the host itself, not only in the console: a name that names nothing inside the container (nor in a container it draws itself), a component the view draws itself, a second host for the same child, a name given a `row` that names no grid property the platform draws per row of a group this view draws, a `row` of another group, and a `row` that is not a row each render their message into the host, in an element of the class `lsf-view-error`. The host's own class stays as the component gave it.
 
-The view tells the server which `lsf` children it places — the set of them, not the mounts and unmounts that changed it: it is worked out after every change of placement and once after the component first draws, and only what changed is sent. A child with a host — holding its view, or waiting for it — is placed. A child no `<Platform>` places is not read, the same gating an inactive tab or a collapsed container gets — except what labels it: its caption, image and comment go on being read, as an inactive tab's title is, so the component can still name it. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still placed as far as the server knows, and goes on being read. For the same reason the visibility of an lsf child belongs to the component alone — its `collapsible`, `collapsed` and `activated` attributes are ignored, and a scripted `COLLAPSE` / `EXPAND` or `ACTIVATE TAB` on it is an error.
+The view tells the server which of the children the platform draws it places — the set of them, not the mounts and unmounts that changed it: it is worked out after every change of placement and once after the component first draws, and only what changed is sent. A child with a host — holding its view, or waiting for it — is placed. A child no `<Platform>` places is not read, the same gating an inactive tab or a collapsed container gets — except what labels it: its caption, image and comment go on being read, as an inactive tab's title is, so the component can still name it. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still placed as far as the server knows, and goes on being read. For the same reason the visibility of a placed child belongs to the component alone — its `collapsible`, `collapsed` and `activated` attributes are ignored, and a scripted `COLLAPSE` / `EXPAND` or `ACTIVATE TAB` on it is an error.
 
-A container the view draws itself — a page of a tab strip the view lays out, a section it folds — the server reads as a shown one for as long as the view says nothing of it: it cannot see what the view shows. `useShown(name, shown)` says it. A container the view does not show is not read, and neither is anything inside it — an `lsf` child placed there included, host or no host —, the same gating an inactive tab gets, its caption and image going on being read as an inactive tab's title is: a property there that changes meanwhile reads as `null` until the container is shown again, as on an inactive tab. Call it where it stays mounted while the container comes and goes — in the strip, not in the page —, one hook per container, under the container's design name: unmounted, the hook leaves the container shown, which is what the server assumes of a container no hook names. `shown` left out is `true`. A name that is no container the view draws itself is reported in the console. The container's `SHOWIF` stays the form's, and its entry's `hidden` says only that.
+A container the view draws itself — a page of a tab strip the view lays out, a section it folds — the server reads as a shown one for as long as the view says nothing of it: it cannot see what the view shows. `useShown(name, shown)` says it. A container the view does not show is not read, and neither is anything inside it — a child the platform draws placed there included, host or no host —, the same gating an inactive tab gets, its caption and image going on being read as an inactive tab's title is: a property there that changes meanwhile reads as `null` until the container is shown again, as on an inactive tab. Call it where it stays mounted while the container comes and goes — in the strip, not in the page —, one hook per container, under the container's design name: unmounted, the hook leaves the container shown, which is what the server assumes of a container no hook names. `shown` left out is `true`. A name that is no container the view draws itself is reported in the console. The container's `SHOWIF` stays the form's, and its entry's `hidden` says only that.
 
 ```jsx
 // a tab of the strip: mounted for as long as the strip is, whichever page is shown
@@ -532,13 +532,13 @@ function Tab(props) {
 
 ### A live editor in every row {#live-editor}
 
-An lsf child is drawn once. A grid property marked `LSF` in the `FORM` is drawn once per **row**, so a component can put a real lsFusion editor into every row it renders, instead of showing the value and having to build editing itself:
+A placed child is drawn once. A grid property given `NOCUSTOM` in the `FORM` is drawn once per **row**, so a component can put a real lsFusion editor into every row it renders, instead of showing the value and having to build editing itself:
 
 ```lsf
 FORM orders 'Orders'
     OBJECTS o = Order
     PROPERTIES(o) number READONLY, date
-    PROPERTIES(o) quantity LSF, note LSF
+    PROPERTIES(o) quantity NOCUSTOM, note NOCUSTOM
 ;
 
 DESIGN orders {
@@ -549,7 +549,7 @@ DESIGN orders {
 }
 ```
 
-`LSF` says the property is a component rather than a value. Where it is placed is not said — and cannot be: a grid property has no place of its own in the design, and its renderers go into the rows, so the component drawing the rows is the one that places them. That is the component this `MOVE BOX(o)` gave the group to. A `MOVE` of a grid property is refused when the form is built, `LSF` or not. The component names the property as its column entry is keyed, with its group, and gives the row:
+`NOCUSTOM` says the platform draws the property, in its standard view: it is a component rather than a value. A `CUSTOM` render function says so too, the platform drawing the value by that function. Where it is placed is not said — and cannot be: a grid property has no place of its own in the design, and its renderers go into the rows, so the component drawing the rows is the one that places them. That is the component this `MOVE BOX(o)` gave the group to. A `MOVE` of a grid property is refused when the form is built, `NOCUSTOM` or not. The component names the property as its column entry is keyed, with its group, and gives the row:
 
 ```jsx
 {data.o.list.map(row => (
@@ -567,31 +567,31 @@ What the author gets and what stays theirs:
 
 - The editor is the platform's, with everything that implies: editing, `READONLYIF`, `BACKGROUND` and the other per-cell options, all read for **that row**.
 - The property leaves the rows: it is a component now, so `row.quantity` is not there, and the controller has no member for it — the platform draws and edits the values. Its column entry stays, an ordinary one at `data.o.quantity` — `caption`, `image`, `footer`, `comment`, `type`, `hidden` — and `properties` lists it. Its editors are placed by the same name, `o.quantity`, so it has to have one: a property declared `NOEXTID` is refused when the form is built. Declare a second, ordinary property if the value is also wanted as data.
-- The caption is not drawn in the row, and neither is the comment: the per-row editors draw none of their own. Like an lsf child's caption, both arrive in the group's column node — `data.o.quantity.caption`, `data.o.quantity.comment` — so the component puts them where they belong, usually once, in a header. An action's column entry has no caption and no image: they stay on its buttons, as their face.
+- The caption is not drawn in the row, and neither is the comment: the per-row editors draw none of their own. Like a placed child's caption, both arrive in the group's column node — `data.o.quantity.caption`, `data.o.quantity.comment` — so the component puts them where they belong, usually once, in a header. An action's column entry has no caption and no image: they stay on its buttons, as their face.
 - A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor. Only a row leaving that set loses it.
 
-The declaration is refused, with the property named, when it cannot work: on a grid property whose object group is not drawn by a `CUSTOM REACT` container (nothing would place the per-row editors), and on a grid property grouped in columns (a per-row editor cannot address a row-and-column cell).
+Where no `CUSTOM REACT` container draws the group's rows, `NOCUSTOM` is simply the standard view: the platform's grid draws the property, without a custom render or editing function. A grid property grouped in columns is refused, with the property named, where a React view draws its rows: a per-row editor cannot address a row-and-column cell.
 
-### Extending a container with lsf children
+### Extending a container with placed children
 
 Another module adds a child to the container from `DESIGN`:
 
 ```lsf
 EXTEND FORM orders PROPERTIES() rating;
 DESIGN orders {
-    board { MOVE PROPERTY(rating) { lsf = TRUE; } }
+    board { MOVE PROPERTY(rating) { custom = NULL; } }
 }
 ```
 
-The component does not pick it up on its own. Every lsf child is placed by a `<Platform>` that names it, so a child no `<Platform>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`. The children stay as declared.
+The component does not pick it up on its own. Every child the platform draws is placed by a `<Platform>` that names it, so a child no `<Platform>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`. The children stay as declared.
 
 ### Choosing between a React component and an HTML template
 
-A component that places lsf children and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `<Platform:name>` places, without a React runtime and without a host node per child. When every child of the container is `lsf`, `props.data` carries no group or property values, because an lsf child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
+A component that places children the platform draws and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `<Platform:name>` places, without a React runtime and without a host node per child. When the platform draws every child of the container, `props.data` carries no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
 
 A template is given no data at all. It places what the platform draws, by name, and everything else in it is written out: it cannot read the caption or the image of a child, or of the container itself. The captions it shows are drawn by the platform: a property child is drawn in parts (unless it is declared `inline = FALSE`) — its caption and its comment are places of their own, `<Platform:PROPERTY(qty).caption>` and `<Platform:PROPERTY(qty).comment>`, which the template can put inside markup of its own, a heading say —, any other child carries its caption inside its placed view, and the container's own caption and image are drawn by the platform beside the container rather than inside the template. So markup of your own that has to use a caption the application computes — as text of its own, or a container's caption — is the point at which a template stops being enough.
 
-Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useData`, or the markup comes from a component library — or when the markup has to show something the projection carries, which for a container or an lsf child is its `caption` and its `image`. A template string belongs to the module that declared it and can only be replaced whole.
+Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useData`, or the markup comes from a component library — or when the markup has to show something the projection carries, which for a container or a child the platform draws is its `caption` and its `image`. A template string belongs to the module that declared it and can only be replaced whole.
 
 ### Interactivity
 
@@ -675,7 +675,7 @@ and each element carries:
 | `selected` | Whether it is the selected element **of this window** |
 | `children` | The canonical names of its children that this window draws |
 
-An element declared [`LSF`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `children` and `platformDrawn: true`, and none of the rest.
+An element declared [`NOCUSTOM`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `children` and `platformDrawn: true`, and none of the rest.
 
 The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not. The component is drawn once the navigator has worked out the window's elements, and a window with none is drawn too, with `root` empty. `props.controller` is the navigator controller, whose [`activate`](How-to_Custom_view_controller.md#navigator-controller) does what clicking the element does: selects a folder, or runs an action.
 
@@ -699,15 +699,15 @@ function AppMenu({ data, controller }) {
 }
 ```
 
-The element must be declared `LSF` in the [`NAVIGATOR`](../language/NAVIGATOR_statement.md) — the crossing back is declared on the navigator side, the way `lsf = TRUE` declares it on a form:
+The element must be declared `NOCUSTOM` in the [`NAVIGATOR`](../language/NAVIGATOR_statement.md) — the crossing back is declared on the navigator side, the way `custom = NULL` declares it on a form:
 
 ```lsf
 NAVIGATOR {
-    Sale.sales LSF;
+    Sale.sales NOCUSTOM;
 }
 ```
 
-An `LSF` element no `<Platform>` names is not shown, as on a form. Four mistakes are reported in the page: a name no navigator element has, a name that is not `LSF`, which the component is expected to draw from the projection instead, a name of an element another window draws, and a name a second `<Platform>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place stays empty and waits, and is filled as soon as the window draws that element. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
+A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Four mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, and a name a second `<Platform>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place stays empty and waits, and is filled as soon as the window draws that element. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
 
 A menu that is mostly standard is written this way as one `<Platform>` for each element the platform draws, and markup only for the elements the component draws itself.
 
@@ -722,7 +722,7 @@ EXTEND WINDOW System.toolbar CUSTOM
 
 The element has to be declared before the template that gives it a place — a `NAVIGATOR` block that creates it goes above. A name that resolves to nothing is an error when the module is read, so a misspelled name stops the application instead of leaving the menu an item short.
 
-An element the template gives no place is not drawn, so it names everything it shows, and `LSF` is not needed on any of them — a template places nothing but the platform's own drawings.
+An element the template gives no place is not drawn, so it names everything it shows, and `NOCUSTOM` is not needed on any of them — a template places nothing but the platform's own drawings.
 
 The template may also be computed: given a property instead of a literal, it is recomputed as the property's value changes and the window is drawn again from the new markup, so a menu can rearrange itself without a component. Nothing resolves a computed template, so its places name their elements in full, by canonical name. A component is still what a menu needs when the markup depends on what the component itself reads.
 
@@ -752,7 +752,7 @@ function FormsBoard({ data, controller }) {
 }
 ```
 
-The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Platform name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](#lsf-child) and a [navigator element](#standard-button), and the same mistakes are reported in the page. Like a design child's host, the place carries the marks — the class `lsf-platform` and `data-lsf-sid` with the form's name — and the form's view fills it.
+The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Platform name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](#placing) and a [navigator element](#standard-button), and the same mistakes are reported in the page. Like a design child's host, the place carries the marks — the class `lsf-platform` and `data-lsf-sid` with the form's name — and the form's view fills it.
 
 `props.data` is the open forms and the state of the window itself. The component is drawn as soon as the window is, before any form opens — `open` is then empty — so what it shows while nothing is open is its own to draw:
 
@@ -938,7 +938,7 @@ function MessageLog({ data, controller }) {
 }
 ```
 
-The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Platform name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](#lsf-child), a [navigator element](#standard-button) and an [open form](#forms-window).
+The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Platform name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](#placing), a [navigator element](#standard-button) and an [open form](#forms-window).
 
 `props.data` is the logged messages, and the component is drawn before the first one arrives, with `messages` empty:
 
@@ -1310,7 +1310,7 @@ listed with a `null` `value` with them, while changing ONE condition never touch
 
 A tree has one filter box for all its groups, `FILTERS(TREE <tree>)`, and its user filters are on [the tree's
 node](#trees). `filters` there lists the conditions of all its groups, those of the upper groups first, and names each
-property by its group's name and its own, `c.name`, as an [`<Platform>`](#lsf-child) names a property of a group.
+property by its group's name and its own, `c.name`, as a [`<Platform>`](#placing) names a property of a group.
 `controller.<tree>.filters.change` takes a condition named the same way: the name is read up to its first dot, the
 group's — a group's name has none, and an `EXTID` with a dot, which a property the platform draws may carry, is taken
 back as `filters` gives it. A list it states is the tree's:
@@ -1358,7 +1358,7 @@ so it offers the `string` and `number` properties alone.
 ### Filter controls {#filter-controls}
 
 The filter controls a view draws are the same whoever draws the conditions — the view, which gets `filters`, or the
-platform's panel, `FILTERS(o)` placed back with `lsf` —, and each does what the platform's button does there:
+platform's panel, `FILTERS(o)` placed back with `custom = NULL` —, and each does what the platform's button does there:
 
 | on the node | member | over [conditions the view draws](#custom-filter-panel) | over the platform's panel |
 | --- | --- | --- | --- |
@@ -1489,7 +1489,7 @@ change one list, so they cannot disagree.
 `TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)` and `FILTERGROUP(f)` are not containers and do not take `custom`.
 
 Receiving a group's state does not make a component the only one drawing it. Which components are drawn is decided
-by the design and by `lsf` placement, not by what `data` contains — the state is the group's, whoever draws it. So
+by the design and by what is placed with `<Platform>`, not by what `data` contains — the state is the group's, whoever draws it. So
 there are two recipes, and they read differently in the design rather than in the projection:
 
 - **replace the filters** — `custom` on `FILTERS(o)`: the component *is* the filter area;
@@ -1558,11 +1558,11 @@ controls](#filter-controls). The view type switch switches the platform's table:
 `listViews` is empty, `listView` is `null`, and a change is refused. A group whose rows a view draws has the default
 `GRID` list view type: one the form gives another (`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is
 refused when the form is built, since the server starts such a group as the platform's view of that kind needs it —
-mark what draws the rows, the group's grid or its tree, `lsf` for the platform to draw them there.
+give what draws the rows, the group's grid or its tree, `custom = NULL` for the platform to draw them there.
 
 Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server are refused. The settings of
 the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with
-`lsf` keeps them.
+`custom = NULL` keeps them.
 
 ### A tree's toolbar and filter controls {#tree-toolbar}
 
@@ -1620,7 +1620,7 @@ The tree's filter controls are a part of the tree the same way, with the state a
 
 Where a view draws a group's rows, the platform still draws what the design leaves to it of the group's toolbar and
 filters — `TOOLBARSYSTEM(o)`, and what `FILTERS(o)` and `FILTERCONTROLS(o)` hold — when they are outside the view's
-containers, or placed back with `lsf`:
+containers, or placed back with `custom = NULL`:
 
 ```lsf
 DESIGN items {
