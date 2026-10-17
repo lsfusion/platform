@@ -13,6 +13,7 @@ import java.util.List;
 
 public class ClientRegularFilterGroup extends ClientComponent {
 
+    public String name; // the filter group's name in the form, FILTERGROUP fg's fg
     public List<ClientRegularFilter> filters = new ArrayList<>();
 
     public ClientGroupObject groupObject;
@@ -27,6 +28,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
+        name = pool.readString(inStream);
         filters = pool.deserializeList(inStream);
 
         groupObject = pool.deserializeObject(inStream);

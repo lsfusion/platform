@@ -64,10 +64,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : filters + orders
 
-    ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException;
-
     // the requests a BatchRequest kind holds - a group's current object, a property's event action, a tree's nodes,
-    // sortings, user filters -, one or several, made in their order: one processing, one answer
+    // sortings, user filters, a filter group's filter -, one or several, in their order: one processing, one answer
     ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException;
 
     ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters, int pageSize) throws RemoteException;

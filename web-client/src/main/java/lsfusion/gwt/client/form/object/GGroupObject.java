@@ -6,9 +6,6 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GFilterControls;
-import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
@@ -24,13 +21,8 @@ import static java.lang.Math.round;
 public class GGroupObject implements Serializable, HasNativeSID {
     public List<GObject> objects = new ArrayList<>();
 
-    public GContainer filtersContainer;
-    public GFilterControls filtersControls;
-    public List<GFilter> filters = new ArrayList<>();
-    
     // its grid - with what goes over its rows (GGridProperty) -, none of a group in a tree: its tree has them
     public GGrid grid;
-    public GToolbar toolbar;
 
     public int ID;
     public String nativeSID;
@@ -202,11 +194,6 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GGridProperty getDrawComponent() {
         // a group in a tree has no grid of its own: the tree draws it
         return parent != null ? parent : grid;
-    }
-    // ... and its FILTERS box: its own, or its tree's - one box for all the tree's groups (mirrors
-    // FormView.getFiltersContainer)
-    public GContainer getFiltersContainer() {
-        return parent != null ? parent.filtersContainer : filtersContainer;
     }
 
     // the key a ROW of this group is keyed by, taken out of a fuller one. A grid keys its rows by the group's own

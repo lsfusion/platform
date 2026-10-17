@@ -1,28 +1,26 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
-import lsfusion.gwt.client.form.filter.user.view.GFilterControlsView;
-import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
+import lsfusion.gwt.client.form.filter.user.view.GFilterEditors;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
@@ -31,45 +29,41 @@ import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-public abstract class GFilterController implements GFilterConditionView.UIHandler, GFiltersHandler {
-    private static final ClientMessages messages = ClientMessages.Instance.get();
-
-    private GTableController logicsSupplier;
+// the platform's FILTERS of a group, or of a tree for all its groups: its filter panel, both what shows the user
+// filters (GUserFiltersController) and what takes their input (GFilterInputController) - the conditions it draws in the
+// FILTERS box show the list as the server reports it, and the input works on them: added with an editor, applied as its
+// rows, reset. Its editors of them are what the controls and the toolbar's button show and apply (GFilterEditors)
+public final class GPlatformFiltersController implements GFilterInputController, GUserFiltersController, GFilterConditionView.UIHandler, GFilterEditors {
+    private final GFormController form;
+    private final GTableController rows;
+    private final GContainer filtersContainer;
     private Map<Column, String> columns = new HashMap<>();
     
-    private GToolbarButton toolbarButton;
-
     private boolean hasFiltersContainer;
 
     private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
     private List<GFilter> initialFilters;
+
+    // the controls and the toolbar's button, which show and hide the conditions' editors with them
+    private final GFilterControlsToggle toggle;
     
-    private boolean controlsVisible = false;
-    private GFilterControlsView controlsView;
-
-    public GFilterController(GTableController logicsSupplier, List<GFilter> filters, GFilterControls filterControls, boolean hasFiltersContainer) {
-        this.logicsSupplier = logicsSupplier;
+    public GPlatformFiltersController(GFormController form, GTableController rows, GContainer filtersContainer, List<GFilter> filters, GFilterControlsToggle toggle) {
+        this.form = form;
+        this.rows = rows;
+        this.filtersContainer = filtersContainer;
         this.initialFilters = filters;
-        this.hasFiltersContainer = hasFiltersContainer;
+        this.hasFiltersContainer = form.formLayout.getContainerView(filtersContainer) != null;
 
-        toolbarButton = new GToolbarButton(StaticImage.FILTER) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    toggleControlsVisible();
-                };
-            }
-        };
-        updateToolbarButton();
-
-        controlsView = new GFilterControlsView(this);
-        controlsView.setVisible(controlsVisible);
-        logicsSupplier.getForm().formLayout.addBaseComponent(filterControls, controlsView, null);
+        this.toggle = toggle;
+        toggle.bind(this, this); // its commands, and its editors
     }
 
-    public GToolbarButton getToolbarButton() {
-        return toolbarButton;
+    public boolean isControlsVisible() {
+        return toggle.isVisible();
+    }
+    public void setControlsVisible(boolean visible) {
+        toggle.setVisible(visible);
     }
 
     private void processBinding(NativeEvent event, Runnable action) {
@@ -79,16 +73,17 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     @Override
     public void addEnterBinding(Widget widget) {
-        addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
+        form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
                 new GBindingEnv(null, GBindingMode.ALL, null, null, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null),
                 event -> processBinding(event, () -> applyFilters()),
-                widget);
+                widget, rows.getSelectedGroupObject());
     }
 
+    @Override
     public void toggleControlsVisible() {
-        setControlsVisible(!controlsVisible);
+        setControlsVisible(!toggle.isVisible());
 
-        if (controlsVisible && !hasNotFixedConditions() && hasFiltersContainer()) {
+        if (toggle.isVisible() && !hasNotFixedConditions() && hasFiltersContainer()) {
             addCondition();
         }
     }
@@ -108,30 +103,15 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
     }
     
-    public void setControlsVisible(boolean visible) {
-        controlsVisible = visible;
-
+    // ... and the conditions' editors with them: their selectors and their delete buttons
+    public void setConditionsControlsVisible(boolean visible) {
         for (GFilterConditionView view : conditionViews.values()) {
-            view.setControlsVisible(controlsVisible);
+            view.setControlsVisible(visible);
         }
-
-        controlsView.setVisible(controlsVisible);
-        logicsSupplier.getForm().formLayout.update(-1);
-
-        updateToolbarButton();
     }
     
-    private void updateToolbarButton() {
-        toolbarButton.setTitle(controlsVisible ? messages.formFilterHideControls() : messages.formFilterShowControls());
-        toolbarButton.showBackground(controlsVisible);
-    }
-    
-    public GContainer getFiltersContainer() {
-        return logicsSupplier.getFiltersContainer();
-    }
-
-    private static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey) {
-        Column column = getActualColumn(logicsSupplier, filter != null ? filter.property: null, columnKey);
+    private static GPropertyFilter createNewCondition(GTableController rows, GFilter filter, GGroupObjectValue columnKey) {
+        Column column = getActualColumn(rows, filter != null ? filter.property: null, columnKey);
         
         if (column.property == null)
             return null;
@@ -146,14 +126,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return new GPropertyFilter(filter, column.property.groupObject, column.columnKey, null, null);
     }
 
-    private static Column getActualColumn(GTableController logicsSupplier, GPropertyDraw property, GGroupObjectValue columnKey) {
+    private static Column getActualColumn(GTableController rows, GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw actualProperty = property;
         GGroupObjectValue actualColumnKey = columnKey;
 
         if (actualProperty == null) {
-            actualProperty = logicsSupplier.getSelectedFilterProperty();
+            actualProperty = rows.getSelectedFilterProperty();
             if (actualProperty != null) {
-                actualColumnKey = logicsSupplier.getSelectedColumnKey();
+                actualColumnKey = rows.getSelectedColumnKey();
             }
         }
         // no column - a grid with no columns yet - is the column of the current objects of the column groups, as the
@@ -198,7 +178,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void addCondition(GFilter filter, GGroupObjectValue columnKey, Event keyEvent, boolean replace, boolean readSelectedValue) {
-        addCondition(createNewCondition(logicsSupplier, filter, columnKey), keyEvent, replace, readSelectedValue);
+        addCondition(createNewCondition(rows, filter, columnKey), keyEvent, replace, readSelectedValue);
     }
 
     public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue) {
@@ -211,40 +191,47 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
         if (condition != null) {
             if (condition.filter.container == null)
-                getFiltersContainer().add(condition.filter);
+                filtersContainer.add(condition.filter);
 
-            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, readSelectedValue);
+            GFilterConditionView conditionView = new GFilterConditionView(condition, form, rows, this, () -> columns, toggle.isVisible(), readSelectedValue);
 
-            logicsSupplier.getForm().getFormLayout().addBaseComponent(condition.filter, conditionView.initView(), null);
+            form.getFormLayout().addBaseComponent(condition.filter, conditionView.initView(), null);
             conditionViews.put(condition, conditionView);
 
             updateConditionsLastState();
 
-            logicsSupplier.getForm().getFormLayout().update(-1);
+            form.getFormLayout().update(-1);
 
-            conditionView.onAdd(focusOnValue);
-
-            if (keyEvent != null) {
+            if (keyEvent != null)
                 enableApplyButton();
-                conditionView.startEditing(keyEvent);
-            }
+
+            // its value takes the focus, and the key starts its editor, which takes it too - once the batch is sent,
+            // where a view's member added it in one: a focus sends a request of the platform's own, a property made
+            // active, which a batch does not carry
+            Scheduler.ScheduledCommand focus = () -> {
+                conditionView.onAdd(focusOnValue);
+                if (keyEvent != null)
+                    conditionView.startEditing(keyEvent);
+            };
+            if (form.isBatching())
+                Scheduler.get().scheduleDeferred(focus);
+            else
+                focus.execute();
         }
     }
 
-    public void addConditions(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent, boolean replace) {
-        if (replace) {
-            removeAllConditionsWithoutApply();
-        }
-        
+    public void replaceConditions(ArrayList<GPropertyFilter> conditions) {
+        removeAllConditionsWithoutApply();
+
         for (GPropertyFilter condition : conditions) {
             addCondition(condition, null, false, false);
         }
         
-        applyFilters(focusFirstComponent, null);
+        applyFilters(false, null);
     }
     
     private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        Column column = getActualColumn(logicsSupplier, propertyDraw, columnKey);
+        Column column = getActualColumn(rows, propertyDraw, columnKey);
 
         for (GPropertyFilter filter : conditionViews.keySet()) {
             if (filter.column.equals(column)) {
@@ -257,8 +244,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     // the filters the server reports for a group, which it has applied already, take the place of the group's
     // conditions; nothing is sent. A fixed condition allows NULL only where the server has it with no value
-    public void updateFilters(GGroupObject group, List<GPropertyFilter> filters) {
+    @Override
+    public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filterDTOs) {
         if (hasFiltersContainer()) {
+            ArrayList<GPropertyFilter> filters = GPropertyFilter.getConditions(form.getForm(), group, filterDTOs);
             Set<GPropertyFilter> fixedFilters = new LinkedHashSet<>();
             for (GPropertyFilter condition : new ArrayList<>(conditionViews.keySet())) {
                 if (condition.groupObject.equals(group)) {
@@ -307,10 +296,17 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
     }
 
+    // ... and the ones the form has just sent, which it tells what shows the user filters of each of the box's groups,
+    // of whichever kind it holds, before the server answers (GFormController.applyCurrentFilters): a view's part shows
+    // them then; this panel, the one that states a list where it exists, shows them already
+    @Override
+    public void changeFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
+    }
+
     private void removeConditionView(GPropertyFilter condition) {
-        GFormLayout layout = logicsSupplier.getForm().getFormLayout();
+        GFormLayout layout = form.getFormLayout();
         layout.removeBaseComponent(condition.filter);
-        getFiltersContainer().removeFromChildren(condition.filter);
+        filtersContainer.removeFromChildren(condition.filter);
     }
 
     @Override
@@ -346,7 +342,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     @Override
     public boolean isManualApplyMode() {
-        return MainFrame.userFiltersManualApplyMode && controlsVisible;
+        return MainFrame.userFiltersManualApplyMode && toggle.isVisible();
     }
 
     public void resetAllConditions(boolean focusFirstComponent) {
@@ -403,17 +399,19 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             changed.add(changedView);
         applyFilters(result, changed, focusFirstComponent);
 
-        controlsView.setApplyEnabled(false);
+        toggle.setApplyEnabled(false);
     }
 
     @Override
     public void enableApplyButton() {
-        controlsView.setApplyEnabled(true);
+        toggle.setApplyEnabled(true);
     }
 
+    // what draws the rows has changed, once per delta (GFilterInputController.update): the columns a condition can be
+    // on, read anew, and the design's conditions, added the first time
     public void update() {
         columns.clear();
-        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
+        for (Pair<Column, String> column : rows.getFilterColumns()) {
             columns.put(column.first, column.second);
         }
         
@@ -421,7 +419,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             for (GFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
                     filter.fixed = true;
-                    addCondition(filter, logicsSupplier.getSelectedColumnKey(), false);
+                    addCondition(filter, rows.getSelectedColumnKey(), false);
                 }
             }
             initialFilters = null;
@@ -436,10 +434,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return hasFiltersContainer;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         for(GFilterConditionView conditionView : conditionViews.values())
             GwtClientUtils.setGridVisible(conditionView, visible);
-        GwtClientUtils.setGridVisible(controlsView, visible && controlsVisible);
+        toggle.setTableVisible(visible);
     }
     
     public boolean hasConditions() {
@@ -455,6 +454,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return false;
     }
     
-    public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);
-    public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
+    // the conditions stated as the group's list, each changed one marked loading until the answer
+    private void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent) {
+        long requestIndex = rows.changeFilter(conditions);
+
+        for (GFilterConditionView filterView : changed)
+            form.setLoading(filterView, requestIndex);
+
+        if (focusFirstComponent)
+            Scheduler.get().scheduleDeferred(() -> rows.focusFirstWidget(FocusUtils.Reason.APPLYFILTER));
+    }
 }

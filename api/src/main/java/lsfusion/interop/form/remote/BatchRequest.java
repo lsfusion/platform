@@ -68,6 +68,8 @@ public abstract class BatchRequest implements Serializable {
         void setPropertyOrders(S stack, SetPropertyOrders request) throws Exception;
 
         void setUserFilters(S stack, SetUserFilters request) throws Exception;
+
+        void setRegularFilter(S stack, SetRegularFilter request) throws Exception;
     }
 
     public static final class ChangeGroupObject extends BatchRequest {
@@ -189,6 +191,20 @@ public abstract class BatchRequest implements Serializable {
 
         public <S> void make(Requests<S> requests, S stack) throws Exception {
             requests.setUserFilters(stack, this);
+        }
+    }
+
+    public static final class SetRegularFilter extends BatchRequest {
+        public final int groupID;
+        public final int filterID; // -1: none
+
+        public SetRegularFilter(int groupID, int filterID) {
+            this.groupID = groupID;
+            this.filterID = filterID;
+        }
+
+        public <S> void make(Requests<S> requests, S stack) throws Exception {
+            requests.setRegularFilter(stack, this);
         }
     }
 

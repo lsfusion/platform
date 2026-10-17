@@ -321,7 +321,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
     }
 
     private Boolean getPropertyState(GPropertyDraw property) {
-        if (groupController.isPropertyInGrid(property)) {
+        if (groupController.isPropertyShown(property)) {
             return true;
         } else if (formPanelController.containsProperty(property)) {
             return false;

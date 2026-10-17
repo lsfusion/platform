@@ -1,0 +1,21 @@
+MODULE ToolbarSumNameTwice;
+
+REQUIRE System;
+
+// two properties of a group under one integration name, where a view draws only the group's toolbar - the grid and
+// the filters are the platform's: the toolbar's sum names a column of the group by that name, which would name nothing
+CLASS ToolbarSumItem;
+toolbarSumTitle = DATA STRING[20] (ToolbarSumItem);
+toolbarSumName = DATA STRING[20] (ToolbarSumItem);
+
+FORM toolbarSumNameTwice
+    OBJECTS i = ToolbarSumItem
+    PROPERTIES(i) toolbarSumTitle EXTID 'title', toolbarSumName EXTID 'title'
+;
+
+DESIGN toolbarSumNameTwice {
+    NEW header FIRST {
+        custom = 'ItemHeader';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}

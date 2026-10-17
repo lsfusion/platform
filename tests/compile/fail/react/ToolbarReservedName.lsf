@@ -1,0 +1,17 @@
+MODULE ToolbarReservedName;
+
+REQUIRE System;
+
+// a property of a group named like a state of the group's toolbar, on the node where a React view draws it - a custom
+// on the group's box draws the rows and the toolbar on one node, its manual update shown: it would shadow `manual`
+CLASS ToolbarNameItem;
+toolbarNameText = DATA STRING[20] (ToolbarNameItem);
+
+FORM toolbarReservedName
+    OBJECTS i = ToolbarNameItem
+    PROPERTIES(i) toolbarNameText EXTID 'manual'
+;
+
+DESIGN toolbarReservedName {
+    BOX(i) { custom = 'ItemBoard'; }
+}

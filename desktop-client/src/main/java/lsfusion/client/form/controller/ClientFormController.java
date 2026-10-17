@@ -1669,7 +1669,7 @@ public class ClientFormController implements AsyncListener {
 
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());
+                    return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.SetRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID()));
                 }
             });
         } finally {

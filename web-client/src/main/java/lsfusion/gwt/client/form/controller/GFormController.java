@@ -4,12 +4,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
@@ -47,19 +43,32 @@ import lsfusion.gwt.client.form.design.view.*;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
+import lsfusion.gwt.client.form.filter.GFilterGroupController;
+import lsfusion.gwt.client.form.filter.GPlatformFilterGroupController;
 import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsController;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterControlsController;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsToggle;
 import lsfusion.gwt.client.form.object.*;
+import lsfusion.gwt.client.form.object.panel.controller.GPlatformPanelGroupController;
 import lsfusion.gwt.client.form.object.panel.controller.GPlatformFormPanelController;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
+import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTreeToolbarController;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
@@ -69,8 +78,11 @@ import lsfusion.gwt.client.form.object.panel.controller.GPlatformRowsPanelContro
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GPlatformTreeController;
+import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.*;
@@ -146,23 +158,37 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // the server reported them
     private final NativeSIDMap<GGroupObject, ArrayList<GPropertyFilterDTO>> currentFilters = new NativeSIDMap<>();
 
-    private final LinkedHashMap<GGroupObject, GPlatformGridController> gridControllers = new LinkedHashMap<>();
-    private final LinkedHashMap<GTreeGroup, GPlatformTreeController> treeControllers = new LinkedHashMap<>();
     // THE FORM'S CONTROLLER OF EACH GROUP, PROPERTY AND COMPONENT - where all it sends for one goes: a group's rows and
-    // current object, a property's values and drop, what every reader brings. Settled once by
-    // initializeOwnerControllers: who draws what is design data, so one asked for per delta re-derived what the
-    // controllers themselves were built from.
-    private final LinkedHashMap<GGroupObject, GGroupController> groupControllers = new LinkedHashMap<>();
-    // ... and what shows each group's user orders and its user filters, settled beside it
-    // (GReactFormData.createOrdersController, createFiltersController)
-    private final NativeSIDMap<GGroupObject, GUserOrdersController> ordersControllers = new NativeSIDMap<>();
-    private final NativeSIDMap<GGroupObject, GUserFiltersController> filtersControllers = new NativeSIDMap<>();
-    private final LinkedHashMap<GPropertyDraw, GPropertyController> propertyControllers = new LinkedHashMap<>();
-    private final LinkedHashMap<GComponent, GComponentController> componentControllers = new LinkedHashMap<>();
-    // groups with LSF properties
-    private final LinkedHashMap<GGroupObject, GPlatformRowsPanelController> platformRowsPanelControllers = new LinkedHashMap<>();
+    // current object, a property's values and drop, what every reader brings -, of whichever kind it is, React's or the
+    // platform's. Settled once by initializeControllers: who draws what is design data, so one asked for per delta
+    // re-derived what the controllers themselves were built from.
+    private final NativeSIDMap<GGroupObject, GGroupController> groupControllers = new NativeSIDMap<>();
+    // ... what shows each group's user orders and its user filters, settled beside it
+    // (GTableController.getUserOrdersController, GReactFormData.createFiltersControllers)
+    private final NativeSIDMap<GGroupObject, GUserOrdersController> userOrdersControllers = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, GUserFiltersController> userFiltersControllers = new NativeSIDMap<>();
+    private final NativeSIDMap<GPropertyDraw, GPropertyController> propertyControllers = new NativeSIDMap<>();
+    private final NativeSIDMap<GComponent, GComponentController> componentControllers = new NativeSIDMap<>();
+    // ... the controller of each filter group with filters - one with none has no view -, of the kind of whoever draws
+    // it (GReactFormData.createFilterGroupController): the platform's check box or list, or a view's part of the group
+    private final NativeSIDMap<GRegularFilterGroup, GFilterGroupController> filterGroupControllers = new NativeSIDMap<>();
+    // ... the toolbar controller of each list group not in a tree - the platform's, or a view's part (initializeGrid);
+    // a tree's groups have none, the tree has one for all of them -, told once per delta of the changes the server
+    // holds back for the group (update): only a list's manual update has them, a tree's toolbar none
+    private final NativeSIDMap<GGroupObject, GGridToolbarController> gridToolbarControllers = new NativeSIDMap<>();
+    // ... and the TABLES' rows, each by the table, of whichever kind - a table of the platform's, a grid's or a tree's,
+    // or the rows React draws (initializeTable) -: told of each delta (update), asked the user preferences of their
+    // views (getUserPreferences) and the platform's controller of a list property (getPlatformPropertyController), let
+    // go of when the form closes (destroyForm)
+    private final NativeSIDMap<GGridProperty, GTableController> tableControllers = new NativeSIDMap<>();
+
+    // THE PLATFORM'S OWN, which React's parts need nothing like: its panels, which the form redraws once per delta
+    // (update) and lets go of when it closes (destroyForm) - the per-row panels of each group whose rows React draws
+    // with LSF properties in each row, and its panel of the form -, and its controller of the components it draws, one
+    // for the form: the platform's kind of a component's controller (createComponentController), a component reader
+    // naming its component
+    private final NativeSIDMap<GGroupObject, GPlatformRowsPanelController> platformRowsPanelControllers = new NativeSIDMap<>();
     public GPlatformFormPanelController platformFormPanelController;
-    // the platform's controller of the components it draws, one for the form: a component reader names its component
     private final GPlatformComponentController platformComponentController = new GPlatformComponentController(this);
 
     private final NativeSIDMap<GGroupObject, ArrayList<Widget>> filterViews = new NativeSIDMap<>();
@@ -230,8 +256,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
         initializeControllers();
-
-        initializeRegularFilters();
 
         if (form.initialFormChanges != null) {
             applyRemoteChanges(form.initialFormChanges);
@@ -326,70 +350,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return form.canonicalName != null;
     }
 
-    private void initializeRegularFilters() {
-        for (final GRegularFilterGroup filterGroup : form.regularFilterGroups) {
-            if (filterGroup.filters.size() == 1) {
-                createSingleFilterComponent(filterGroup, filterGroup.filters.iterator().next());
-            } else if (filterGroup.filters.size() > 1) {
-                createMultipleFilterComponent(filterGroup);
-            }
-        }
-    }
-
-    private void createSingleFilterComponent(final GRegularFilterGroup filterGroup, final GRegularFilter filter) {
-        final CheckBox filterCheck = new FormCheckBox(filter.getFullCaption());
-        filterCheck.setValue(false);
-        filterCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-            @Override
-            public void onValueChange(ValueChangeEvent<Boolean> e) {
-                setRemoteRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
-            }
-        });
-        GwtClientUtils.addClassName(filterCheck, "filter-group-check");
-        addFilterView(filterGroup, filterCheck);
-
-        setBindingGroupObject(filterCheck, filterGroup.groupObject);
-        for (GInputBindingEvent bindingEvent : filter.bindingEvents) {
-            addRegularFilterBinding(bindingEvent, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
-        }
-    }
-
-    private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
-        final ListBox filterBox = new ListBox();
-        filterBox.setMultipleSelect(false);
-        if (!filterGroup.noNull)
-            filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
-
-        ArrayList<GRegularFilter> filters = filterGroup.filters;
-        for (int i = 0; i < filters.size(); i++) {
-            final GRegularFilter filter = filters.get(i);
-            filterBox.addItem(filter.getFullCaption(), "" + i);
-
-            final int filterIndex = i;
-            GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
-            for(GInputBindingEvent bindingEvent : filter.bindingEvents) {
-                addRegularFilterBinding(bindingEvent, (event) -> {
-                    setRegularFilter(filterGroup, filterBox, filterIndex);
-                }, filterBox, filterGroup.groupObject);
-            }
-        }
-
-        filterBox.addChangeHandler(event -> setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - (filterGroup.noNull ? 0 : 1)));
-
-        GwtClientUtils.addClassName(filterBox, "filter-group-select");
-        GwtClientUtils.addClassName(filterBox, "form-select");
-
-        addFilterView(filterGroup, filterBox);
-    }
-
-    // the list shows the filter at once, as when the user selects it there: the answer reports nothing if the server has
-    // it already
-    private void setRegularFilter(GRegularFilterGroup filterGroup, ListBox filterBox, int filterIndex) {
-        filterBox.setSelectedIndex(filterIndex + (filterGroup.noNull ? 0 : 1));
-        setRemoteRegularFilter(filterGroup, filterIndex);
-    }
-
-    private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
+    // the platform's view of a filter group - its check box or list (GPlatformFilterGroupController) -, placed where
+    // the design puts the filter group, and shown or hidden with its group (setFiltersVisible)
+    public void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
         formLayout.addBaseComponent(filterGroup, filterWidget, null);
 
         // need this to hide / show regular filters when group object is not visible
@@ -438,8 +401,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     //   controller.<group>.change(row)                                the group's current object
     //   controller.<group>.expand(row) / .collapse(row) / .toggle(row)   one node of a tree
     //   controller.<group>.expandAll() / .collapseAll()                  ... every node of its group and below it
-    //   controller.<group>.orders.change(...)                         its sortings
-    //   controller.<group>.filters.change(...)                        its user filters
+    //   controller.<tree>.expandCurrent()                                ... its current node and every node under it
+    //   controller.<group | tree>.orders.change(...)                  its sortings - a tree's, of all its groups
+    //   controller.<group | tree>.filters.change(...)                 its user filters - a tree's, of all its groups
+    //   controller.<group | tree>.<member>                            what a view's parts give - a toolbar, the filter
+    //                                                                 controls, a filter group (GReactFormData.Part)
     //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
     //   controller.batch(() => { ... })                               the members' changes, sent together
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
@@ -566,6 +532,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private static String getBatchRefusal(String surface) {
         return controllerPrefix(surface) + "a batch is running, which carries changes only: make this call before the batch or after it";
     }
+    // ... and a call of a view's toolbar that asks the server (GReactFormData.Verbs.getRefusal), as a server call on
+    // the controller
+    @Override
+    public String getRefusal(String surface) {
+        return gController.getRefusal(surface);
+    }
+    // ... and whether a batch runs (GPlatformFiltersController.addCondition)
+    public boolean isBatching() {
+        return dispatcher.isBatching();
+    }
 
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): a member holds the
     // state of what it changes and reads what a call names from it (GReactFormData), handing the edit over at once -
@@ -606,6 +582,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void collapseAll(GGroupObject group) {
         long requestIndex = expandGroupObjectRecursive(group, false, false);
         getGroupController(group).changeExpandedAll(false, requestIndex);
+        refreshReactOptimistic();
+    }
+    // ... and the tree's own "expand current", where React draws its rows (GReactFormData.TreeTablePart): the server
+    // opens the group's current node - the one the projection names - and every node under it
+    @Override
+    public void expandCurrent(GGroupObject group, GGroupObjectValue key) {
+        long requestIndex = expandGroupObjectRecursive(group, true, true);
+        getGroupController(group).changeExpandedUnder(key, requestIndex);
         refreshReactOptimistic();
     }
 
@@ -799,62 +783,46 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 GwtClientUtils.setGridVisible(filterView, visible);
     }
 
-    private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, int index) {
-        setRemoteRegularFilter(filterGroup, index == -1 ? null : filterGroup.filters.get(index));
-    }
-
+    // THE FORM'S CONTROLLERS, made once: who draws what is design data, so they live as long as the form. What draws
+    // each group's rows first, in the order of the groups: a TABLE whole - a list group's grid, or a tree, at its top
+    // group -: its toolbar and what draws its rows, of the table's kind, each decided once - the platform's or React's
+    // (initializeGrid, initializeTree) -, then what goes over them and its groups' own controllers (initializeTable);
+    // or a group in PANEL view's own - or TOOLBAR -, with no table; then the form's panel; then the controller of each
+    // property and component, from the questions the platform's controllers were made by: the platform's controller of
+    // it, or what React has of it, which the projection makes from the platform's
+    // (GReactFormData.createPropertyController / createComponentController) - a property's entry where React draws or
+    // labels it, a component's descriptor -; then each filter group's; and the projection sets out what it has
     private void initializeControllers() {
-        for (GTreeGroup treeGroup : form.treeGroups) {
-            if (reactData.componentScope(treeGroup) == null) // a tree React draws has no GWT tree controller
-                initializeTreeController(treeGroup);
-        }
-
-        for (GGroupObject group : form.groupObjects) {
-            if (reactData.rowsScope(group) == null && group.parent == null) // React draws the rows from its node
-                initializeGroupController(group);
-        }
+        for (GGroupObject group : form.groupObjects)
+            if (group.isInTree()) {
+                if (group.getUpTreeGroup() == null) // a TREE, whole, at its top group
+                    initializeTable(group.parent);
+            } else if (group.viewType.isList()) // a GRID, whole
+                initializeTable(group.grid);
+            else // in PANEL view - or TOOLBAR -: no table
+                initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE);
 
         // kept even for React: getPlatformPropertyController/update rely on it; it stays empty when only react-owned
         // property readers are skipped, so no panel views are built
         platformFormPanelController = new GPlatformFormPanelController(this);
 
-        // ... and now that every controller exists, where each thing's changes go is settled
-        initializeOwnerControllers();
-    }
-
-    // the form's controller of each group, property and component, taken once, from the questions the platform's
-    // controllers were made by: the platform's controller of it, or what React has of it, made here by the projection
-    // from the platform's (GReactFormData.createGroupController / createPropertyController / createComponentController)
-    // - a group's rows' part where React draws the rows, a property's entry where React draws or labels it, a
-    // component's descriptor. The groups first, whose rows' parts a list property's column goes with, then the grid
-    // panel controllers, which draw over those rows, then the properties, in the form's order, which is the order of
-    // the names a node carries, then the components; then the projection
-    // sets out what it has. A property is ONE owner: all that is sent for it goes to its controller, what labels it
-    // included; as a component only its class is sent, which is the platform's to apply (createComponentController).
-    // These controllers are design data, like the platform's: made once, they live as long as the form.
-    private void initializeOwnerControllers() {
-        for (GGroupObject group : form.groupObjects) {
-            GGroupController groupController = reactData.createGroupController(group, getTableController(group));
-            groupControllers.put(group, groupController);
-            ordersControllers.put(group, reactData.createOrdersController(group, groupController));
-            filtersControllers.put(group, reactData.createFiltersController(group, groupController));
-        }
-        // a group can have both: React draws its rows from the projection, and the platform draws its LSF properties
-        // into each of those rows - the only rows such a property is drawn in (FormView.checkLsfListView), so its
-        // controller is made over them, before the properties, whose controller it is (getPlatformPropertyController)
-        for (GGroupObject group : form.groupObjects)
-            for (GPropertyDraw draw : form.propertyDraws)
-                if (draw.groupObject == group && draw.isLsfViewPerRow()) {
-                    platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
-                    break;
-                }
+        // the properties, in the form's order, which is the order of the names a node carries - after the tables, whose
+        // controllers draw them (getPlatformPropertyController). A property is ONE owner: all that is sent for it goes
+        // to its controller, what labels it included; as a component only its class is sent, which is the platform's
+        // to apply (createComponentController)
         for (GPropertyDraw property : form.propertyDraws) {
             GPropertyController controller = reactData.createPropertyController(property, getPlatformPropertyController(property));
             if (controller != null) // none: React keeps nothing of it (getPropertyController)
                 propertyControllers.put(property, controller);
         }
-        initializeComponentControllers(form.mainContainer);
-        reactData.initialize();
+        initializeComponentControllers(form.mainContainer); // ... the components
+        // ... the filter groups with filters - one with none has no view -: one React draws is a part of its group
+        for (GRegularFilterGroup filterGroup : form.regularFilterGroups) {
+            GFilterGroupController controller = reactData.createFilterGroupController(filterGroup, () -> new GPlatformFilterGroupController(this, filterGroup));
+            if (controller != null)
+                filterGroupControllers.put(filterGroup, controller);
+        }
+        reactData.initialize(); // ... and the projection sets out what it has
     }
     // ... every component, down the design - a grid's record is inside its grid, and so is what it holds -, a property
     // too, as a component (createComponentController)
@@ -894,14 +862,68 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
     }
 
-    private void initializeGroupController(GGroupObject group) {
-        GPlatformGridController controller = new GPlatformGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null);
-        gridControllers.put(group, controller);
+    // A TABLE, whole: its toolbar and what draws its rows, of the table's kind (initializeGrid, initializeTree), then
+    // what goes over them and its groups' own controllers
+    private void initializeTable(GGridProperty table) {
+        Pair<GTableController, GToolbarController<?>> made = table.match(this::initializeGrid, this::initializeTree);
+        GTableController rows = made.first;
+        tableControllers.put(table, rows);
+        // its FILTER CONTROLS - the platform's where its toolbar shows the filters (showFilters, a flag of the
+        // platform's alone), else none, as the platform builds no filter input controller then to give their commands -
+        // and what shows them and the toolbar's button (GFilterControlsToggle)
+        GFilterControlsController filterControls = reactData.createFilterControlsController(table, () -> table.toolbar.showFilters ? new GPlatformFilterControlsController(this, table.filterControls) : GFilterControlsController.NONE);
+        GFilterControlsToggle toggle = new GFilterControlsToggle(() -> formLayout.update(-1), filterControls, made.second);
+        // ... the controllers of its FILTERS box, of the one owner of what the box holds - the commands taking the
+        // platform's input over the conditions, given to what draws the rows (GTableController.bindFilter), and what
+        // shows them - (GReactFormData.createFiltersControllers): a view's, or the platform's panel where its toolbar
+        // shows the filters, else neither; then what the rows give for its groups - each group's controller and what
+        // shows their user orders, one for all of them -, and each group's own
+        Pair<GFilterInputController, GUserFiltersController> filters = reactData.createFiltersControllers(table, rows, toggle,
+                () -> table.toolbar.showFilters ? new GPlatformFiltersController(this, rows, table.filtersContainer, table.filters, toggle) : null);
+        if (filters.first != null)
+            rows.bindFilter(filters.first);
+        GUserOrdersController userOrders = rows.getUserOrdersController();
+        for (GGroupObject group : table.getGroups())
+            initializeGroupControllers(group, rows.getGroupController(group), userOrders, filters.second);
+    }
+    // A TABLE of its KIND: its toolbar and what draws its rows, each of the kind the projection answers, the platform's
+    // made only then (GReactFormData's create* factories), given back - what draws the rows and the toolbar - for what
+    // is every table's (initializeTable): what is the kind's own are its classes, the rows its toolbar is over
+    // (GToolbarController<R>), and a grid's update mode. A GRID - a list group's not in a tree -: its update mode as
+    // the server starts it, which the platform's toolbar shows as it is made; its TOOLBAR - one the design hides too,
+    // told of the changes the server holds back all the same -; then what draws the rows, which gives itself to the
+    // toolbar as it is made, whoever draws them
+    private Pair<GTableController, GToolbarController<?>> initializeGrid(GGrid grid) {
+        GGroupObject group = grid.groupObject;
+        manualUpdates.put(group, group.enableManualUpdate);
+        GGridToolbarController toolbar = reactData.createGridToolbarController(grid, () -> new GPlatformGridToolbarController(this, grid));
+        gridToolbarControllers.put(group, toolbar);
+        GGridController rows = reactData.createGridController(grid, toolbar, () -> new GPlatformGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null, toolbar));
+        return new Pair<>(rows, toolbar);
+    }
+    // ... a TREE, one for all its groups, the same way
+    private Pair<GTableController, GToolbarController<?>> initializeTree(GTreeGroup tree) {
+        GToolbarController<GTreeController> toolbar = reactData.createTreeToolbarController(tree, () -> new GPlatformTreeToolbarController(this, tree));
+        GTreeController rows = reactData.createTreeController(tree, toolbar, () -> new GPlatformTreeController(tree, this, form, toolbar));
+        return new Pair<>(rows, toolbar);
     }
 
-    private void initializeTreeController(GTreeGroup treeGroup) {
-        GPlatformTreeController treeController = new GPlatformTreeController(treeGroup, this, form);
-        treeControllers.put(treeGroup, treeController);
+    // ... and a group's OWN controllers, once what draws its rows is made: the form's controller of it, what draws its
+    // rows gives it - its rows' part where React draws them, else the platform's table (GTableController
+    // .getGroupController) -, a panel group's in PANEL view; what shows its user orders and its user filters, settled
+    // by its table (userOrders, userFilters) - a list's group's, a tree's for all its groups -, none in PANEL view; and
+    // where React draws the rows and the platform its LSF properties into each of them - the only rows such a property
+    // is drawn in (FormView.checkLsfListView) -, the controller of those, made before the properties, whose controller
+    // it is (getPlatformPropertyController)
+    private void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController userOrders, GUserFiltersController userFilters) {
+        groupControllers.put(group, controller);
+        userOrdersControllers.put(group, userOrders);
+        userFiltersControllers.put(group, userFilters);
+        for (GPropertyDraw draw : form.propertyDraws)
+            if (draw.groupObject == group && draw.isLsfViewPerRow()) {
+                platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
+                break;
+            }
     }
 
     private GGridUserPreferences[] extractUserPreferences(GFormUserPreferences formPreferences, GGroupObject groupObject) {
@@ -1140,7 +1162,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         fc.userOrders.foreachEntry((group, orders) -> {
             if (!equalOrders(orders, currentOrders.get(group))) {
                 currentOrders.put(group, orders);
-                ordersControllers.get(group).updateOrders(group, orders);
+                userOrdersControllers.get(group).updateOrders(group, orders);
             }
         });
     }
@@ -1155,7 +1177,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         fc.userFilters.foreachEntry((group, filters) -> {
             if (!filters.equals(currentFilters.get(group))) {
                 currentFilters.put(group, filters);
-                filtersControllers.get(group).updateFilters(group, filters);
+                userFiltersControllers.get(group).updateFilters(group, filters);
             }
         });
     }
@@ -1183,14 +1205,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         });
     }
     public void update(GFormChanges fc, int requestIndex) {
-        for (GPlatformGridController controller : gridControllers.values())
-            controller.update(requestIndex, fc);
+        fc.updateStateObjects.foreachEntry((group, updateState) -> {
+            GGridToolbarController toolbar = gridToolbarControllers.get(group);
+            if (toolbar != null)
+                toolbar.updateState(updateState);
+        });
 
-        for (GPlatformTreeController treeController : treeControllers.values())
-            treeController.update();
+        tableControllers.foreachValue(table -> table.update(requestIndex, fc));
 
-        for (GPlatformRowsPanelController rowsPanelController : platformRowsPanelControllers.values())
-            rowsPanelController.update();
+        platformRowsPanelControllers.foreachValue(GPlatformRowsPanelController::update);
 
         platformFormPanelController.update();
     }
@@ -1226,18 +1249,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return needConfirm;
     }
 
-    // the filter the server reports selected in a filter group, which it has applied already, is shown: nothing is sent
+    // the filter the server reports selected in a filter group, which it has applied already, is shown by the filter
+    // group's controller: nothing is sent
     private void updateRegularFilters(GFormChanges fc) {
         for (Map.Entry<GRegularFilterGroup, GRegularFilter> entry : fc.regularFilters.entrySet()) {
-            GRegularFilterGroup filterGroup = entry.getKey();
-            ComponentViewWidget filterView = formLayout.getBaseComponentViews().get(filterGroup);
-            if (filterView != null) { // a filter group with no filters has no view
-                Widget widget = filterView.getSingleWidget().widget;
-                if (widget instanceof CheckBox)
-                    ((CheckBox) widget).setValue(entry.getValue() != null, false);
-                else
-                    ((ListBox) widget).setSelectedIndex(filterGroup.filters.indexOf(entry.getValue()) + (filterGroup.noNull ? 0 : 1));
-            }
+            GFilterGroupController controller = filterGroupControllers.get(entry.getKey());
+            if (controller != null) // a filter group with no filters has no controller
+                controller.showFilter(entry.getValue());
         }
     }
 
@@ -1292,12 +1310,18 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
     }
 
+    // an answer older than a pending choice of a group's current object reports nothing of it - and, in a tree,
+    // nothing of any group of the tree: a row chosen there is the tree's current node, the path above it set and the
+    // groups below it dropped with it (GroupObjectInstance.change), so a report of any of them older than the choice is
+    // stale. The choice itself was shown as it was made (changeGroupObject); its answer reports the node only where the
+    // server read the tree's rows anew for it
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
         pendingChangeCurrentObjectsRequests.foreachEntry((group, requestIndex) -> {
             if (requestIndex <= currentDispatchingRequestIndex)
                 pendingChangeCurrentObjectsRequests.remove(group);
-            else
-                fc.objects.remove(group);
+            else // ... of every group of its table: a tree's whole, a grid's one
+                for (GGroupObject tableGroup : group.getDrawComponent().getGroups())
+                    fc.objects.remove(tableGroup);
         });
     }
 
@@ -1410,15 +1434,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         });
     }
 
-    public GPlatformTableController getTableController(GGroupObject group) {
-        GPlatformGridController groupObjectController = gridControllers.get(group);
-        if (groupObjectController != null) {
-            return groupObjectController;
-        }
-
-        return treeControllers.get(group.parent);
-    }
-
     public GPlatformPropertyController getPlatformPropertyController(GPropertyDraw property) {
         // an LSF property is a grid property, so without this it would be routed to its group's controller - which
         // for a group React draws is a set of deliberate no-ops, and its values would be dropped on the way
@@ -1431,13 +1446,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             return rowsPanelController;
         }
 
-        if(property.isList) {
-            return getTableController(property.groupObject);
-        } else
+        if(property.isList) // its table's, where the platform draws the rows - none where React does
+            return tableControllers.get(property.groupObject.getDrawComponent()).getPlatformPropertyController();
+        else
             return platformFormPanelController;
     }
 
-    // the form's controller of an owner: where all it sends for the owner goes (initializeOwnerControllers). One React
+    // the form's controller of an owner: where all it sends for the owner goes (initializeControllers). One React
     // draws and keeps nothing of has none, and nothing is sent for it: a property React carries by no name - the
     // platform's own COUNT of a list group, the pivot's, whose SHOWIF a group React draws never meets -, and, as a
     // component, a property whose content React draws and a component the design does not name
@@ -2166,20 +2181,28 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         asyncResponseDispatch(new SetUserHidden(component.ID, hidden));
     }
 
-    private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
+    // the filter selected in the platform's view of a filter group (GPlatformFilterGroupController), sent at once
+    public void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
         long requestIndex = syncResponseDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID));
         pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
+    }
+    // ... as a view's filter group member selects one (GReactFormData.FilterGroupPart): sent as a React view's edit is
+    // - at once, or in its batch's one request -, and shown at once; the answer reports it, or the one the server holds
+    @Override
+    public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
+        long requestIndex = asyncResponseDispatch(new SetRegularFilter(filterGroup.ID, filter == null ? -1 : filter.ID));
+        pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
+        filterGroupControllers.get(filterGroup).showFilter(filter);
+        refreshReactOptimistic();
     }
 
     // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
     // for them, as the form keeps them: what shows them is told of other ones (changeOrders) and shows them as it shows
-    // reported ones, unlike the filter panel, which shows the filters it sends itself. The orders member of a view
-    // that draws the group's rows states them here too (GReactFormData.Verbs)
-    @Override
+    // reported ones, unlike the filter panel, which shows the filters it sends itself
     public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         if (!equalOrders(orders, currentOrders.get(group))) {
             currentOrders.put(group, orders);
-            ordersControllers.get(group).changeOrders(group, orders);
+            userOrdersControllers.get(group).changeOrders(group, orders);
         }
 
         List<Integer> propertyList = new ArrayList<>();
@@ -2197,33 +2220,45 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         refreshReactOptimistic();
     }
 
+    // ... and the user orders of a TABLE's groups as a client states them - a grid's group's, or a tree's, one list for
+    // all its groups -: each group's its own sortings, of its properties, sent as a group's are - its list stated
+    // again too: the server's may be another one than the form has, an action in the same batch sorting the group, or
+    // a request of the batch lost (GReactFormData.Verbs)
+    @Override
+    public void changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
+        for (GGroupObject group : groups) {
+            LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
+            for (Map.Entry<Column, Boolean> order : orders.entrySet())
+                if (order.getKey().property.groupObject == group)
+                    groupOrders.put(order.getKey(), order.getValue());
+            changeOrders(group, groupOrders);
+        }
+    }
+
+    @Override
     public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
         LinkedHashMap<Column, Boolean> orders = currentOrders.get(group);
         return orders != null ? orders : new LinkedHashMap<>();
     }
 
+    // the user filters of a FILTERS box's groups as a client states them - a group's, or a tree's, one box for all its
+    // groups -: each group's conditions its list (GPropertyFilter.getGroupConditions - a condition on a property of
+    // no group of the box is left out there, said on the console), the form's now, all sent in one request
+    // (applyCurrentFilters)
     @Override
-    public long changeFilters(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
-        currentFilters.put(groupObject, getFilterDTOs(conditions));
-        return applyCurrentFilters(Collections.singletonList(groupObject));
+    public long changeFilters(List<GGroupObject> groups, ArrayList<GPropertyFilter> conditions) {
+        NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> filters = GPropertyFilter.getGroupConditions(groups, conditions);
+        for (GGroupObject group : groups)
+            currentFilters.put(group, getFilterDTOs(filters.get(group)));
+        return applyCurrentFilters(groups);
     }
 
-    public long changeFilters(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
-        Map<GGroupObject, ArrayList<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
-            public GGroupObject group(GPropertyFilter key) {
-                return key.groupObject;
-            }
-        }, conditions);
-
-        for (GGroupObject group : treeGroup.groups) {
-            ArrayList<GPropertyFilter> groupFilters = filters.get(group);
-            if (groupFilters == null) {
-                groupFilters = new ArrayList<>();
-            }
-            currentFilters.put(group, getFilterDTOs(groupFilters));
-        }
-
-        return applyCurrentFilters(treeGroup.groups);
+    // a group's user filters as the form has them - as it sent them last, or as the server reported them -, the
+    // conditions they are: what a view's part shows and merges one condition into (GReactFormData.Verbs)
+    @Override
+    public ArrayList<GPropertyFilter> getFilters(GGroupObject group) {
+        ArrayList<GPropertyFilterDTO> filters = currentFilters.get(group);
+        return filters != null ? GPropertyFilter.getConditions(form, group, filters) : new ArrayList<>();
     }
 
     // the filters as a client sends them: an action is no filter
@@ -2246,7 +2281,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         for (GGroupObject group : groups) {
             pendingChangeFiltersRequests.put(group, requestIndex);
             // ... and what shows them told of them, before the answer (GUserFiltersController.changeFilters)
-            filtersControllers.get(group).changeFilters(group, currentFilters.get(group));
+            userFiltersControllers.get(group).changeFilters(group, currentFilters.get(group));
         }
         // what that wrote where React draws the filters, published once the request is queued, as changeOrders
         // publishes its orders
@@ -2256,14 +2291,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
         asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize));
-    }
-
-    public void quickFilter(Event event, int initialFilterPropertyID) {
-        GPropertyDraw propertyDraw = getProperty(initialFilterPropertyID);
-        if (propertyDraw != null && gridControllers.containsKey(propertyDraw.groupObject)) {
-            focusProperty(propertyDraw);
-            gridControllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, GGroupObjectValue.EMPTY);
-        }
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -2294,10 +2321,22 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // its editors now, not when the server confirms it
         updateRowRenderers();
     }
+    // ... and once the event is over, what of it the client alone changed - a view's toolbar showing the filter
+    // controls -, with whatever else that event changed: at once, a delta being applied would be published half-way
+    private boolean refreshReactScheduled;
+    @Override
+    public void refreshReactLater() {
+        if (refreshReactScheduled)
+            return;
+        refreshReactScheduled = true;
+        Scheduler.get().scheduleFinally(() -> {
+            refreshReactScheduled = false;
+            refreshReactOptimistic();
+        });
+    }
 
     private void updateRowRenderers() {
-        for (GPlatformRowsPanelController rowsPanelController : platformRowsPanelControllers.values())
-            rowsPanelController.updateRowRenderers();
+        platformRowsPanelControllers.foreachValue(GPlatformRowsPanelController::updateRowRenderers);
     }
 
     private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
@@ -2351,28 +2390,56 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
     }
 
-    public void countRecords(final GGroupObject groupObject) {
+    // the count of a group's rows and the sum of a column of them, asked of the server for whoever shows them - the
+    // platform's toolbar in a popup, a view's member as the Promise it returned (GReactFormData.GridToolbarPart): the
+    // answer given them, or the failure told, which is shown as any other
+    @Override
+    public void countRecords(final GGroupObject groupObject, Consumer<Number> answer, Consumer<Throwable> failed) {
         DeferredRunner.get().commitDelayedGroupObjectChange(groupObject); // flush the pending selection so the server aggregates the marked rows
-        asyncDispatch(new CountRecords(groupObject.ID), new SimpleRequestCallback<NumberResult>() {
-            @Override
-            public void onSuccess(NumberResult result) {
-                GPlatformGridController controller = gridControllers.get(groupObject);
-                if (controller != null)
-                    controller.showRecordQuantity((Long) result.value);
-            }
-        });
+        asyncDispatch(new CountRecords(groupObject.ID), new AnswerCallback(answer, failed));
     }
 
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+    @Override
+    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw property, GGroupObjectValue columnKey, Consumer<Number> answer, Consumer<Throwable> failed) {
         DeferredRunner.get().commitDelayedGroupObjectChange(groupObject); // flush the pending selection so the server aggregates the marked rows
-        asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new SimpleRequestCallback<NumberResult>() {
-            @Override
-            public void onSuccess(NumberResult result) {
-                GPlatformGridController controller = gridControllers.get(groupObject);
-                if (controller != null)
-                    controller.showSum(result.value, propertyDraw);
-            }
-        });
+        asyncDispatch(new CalculateSum(property.ID, columnKey), new AnswerCallback(answer, failed));
+    }
+    private class AnswerCallback extends SimpleRequestCallback<NumberResult> {
+        private final Consumer<Number> answer;
+        private final Consumer<Throwable> failed;
+
+        AnswerCallback(Consumer<Number> answer, Consumer<Throwable> failed) {
+            this.answer = answer;
+            this.failed = failed;
+        }
+        @Override
+        public void onSuccess(NumberResult result) {
+            answer.accept(result.value);
+        }
+        @Override
+        public void onFailure(ExceptionResult exceptionResult) {
+            super.onFailure(exceptionResult);
+            failed.accept(exceptionResult.throwable);
+        }
+    }
+
+    // the update mode a user chose for each list group - manual or not -, as the server starts it (enableManualUpdate)
+    // and a toolbar's manual update changes it (changeUpdateMode), whichever kind the toolbar is and whether the design
+    // shows its toggle or not: what the toolbars show, and what a pivot restores once it has filled its table
+    // (GPlatformGridController.changeGroups) - not the MANUAL a pivot asks for while it fills it, which goes by
+    // changeMode
+    private final NativeSIDMap<GGroupObject, Boolean> manualUpdates = new NativeSIDMap<>();
+    @Override
+    public boolean isManualUpdate(GGroupObject group) {
+        return manualUpdates.get(group);
+    }
+    // the update mode of a group, as its toolbar's manual update sets it: manual, automatic - which the form keeps -,
+    // or the changes the server holds back brought now
+    @Override
+    public void changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
+        if (updateMode != GUpdateMode.FORCE)
+            manualUpdates.put(groupObject, updateMode == GUpdateMode.MANUAL);
+        changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
     }
 
     // change group mode with force refresh
@@ -2397,26 +2464,17 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public GFormUserPreferences getUserPreferences() {
         List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
-        for (GPlatformGridController controller : gridControllers.values()) {
-            if (controller.isList()) {
-                groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
-                groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
-            }
-        }
+        tableControllers.foreachValue(table -> table.addUserPreferences(groupObjectUserPreferencesList, groupObjectGeneralPreferencesList));
         return new GFormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
-    public void runGroupReport(Integer groupObjectID) {
-        syncDispatch(new GroupReport(groupObjectID, getUserPreferences(), MainFrame.jasperReportsIgnorePageMargins), new SimpleRequestCallback<GroupReportResult>() {
-            @Override
-            public void onSuccess(GroupReportResult result) {
-                GwtClientUtils.openFile(result.filename, false, null);
-            }
-        });
-    }
-
-    public void runTreeGroupReport(int groupObjectID) {
-        syncDispatch(new TreeGroupReport(groupObjectID, getUserPreferences()), new SimpleRequestCallback<GroupReportResult>() {
+    // the server's report of a table's rows: a grid's group's, or a tree's, of all its groups
+    @Override
+    public void runTableReport(GGridProperty table) {
+        FormRequestCountingAction<GroupReportResult> report = table.match(
+                grid -> new GroupReport(grid.groupObject.ID, getUserPreferences(), MainFrame.jasperReportsIgnorePageMargins),
+                tree -> new TreeGroupReport(tree.groups.get(0).ID, getUserPreferences()));
+        syncDispatch(report, new SimpleRequestCallback<GroupReportResult>() {
             @Override
             public void onSuccess(GroupReportResult result) {
                 GwtClientUtils.openFile(result.filename, false, null);
@@ -2549,15 +2607,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // form unregisters it - each one would stay reachable for the life of the page: the form panel's, and the
         // per-row ones multiplied by the size of the key window
         platformFormPanelController.destroy();
-        for (GPlatformRowsPanelController rowsPanelController : platformRowsPanelControllers.values())
-            rowsPanelController.destroy();
+        platformRowsPanelControllers.foreachValue(GPlatformRowsPanelController::destroy);
 
         // the same for the table views (grid / pivot / calendar / custom / map and the tree table) - each of them
         // registers in that list too, and each of them holds this form controller
-        for (GPlatformGridController controller : gridControllers.values())
-            controller.destroy();
-        for (GPlatformTreeController treeController : treeControllers.values())
-            treeController.destroy();
+        tableControllers.foreachValue(GTableController::destroy);
 
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
@@ -2761,6 +2815,24 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event.inputEvent, event.env, pressed, component, groupObject);
+    }
+    // ... and of a filter group a view draws (GReactFormData.FilterGroupPart): shown while the react container the view
+    // draws it in is - the platform's widget is that container's view there - and the form shows the filter group,
+    // which the part says (shown): the platform's widget is hidden with the filter group, and its binding with it
+    @Override
+    public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, GContainer scope, Supplier<Boolean> shown, GGroupObject groupObject) {
+        Widget view = formLayout.getContainerView(scope).getView();
+        return addBinding(createBindingEvent(event.inputEvent, event.env, null, view), new Binding(groupObject) {
+            @Override
+            public boolean showing() {
+                return isShowing(view) && shown.get();
+            }
+
+            @Override
+            public void exec(Event e) {
+                pressed.exec(e);
+            }
+        });
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);

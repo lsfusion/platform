@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.classes.data.GLogicalType;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -21,13 +22,15 @@ import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEv
 
 public class GDataFilterValueView extends SizedFlexPanel {
     private final GDataFilterValue filterValue;
-    private final GTableController logicsSupplier;
+    private final GFormController form;
+    private final GTableController rows;
 
     public GDataFilterPropertyValue cell;
 
-    public GDataFilterValueView(GDataFilterValue filterValue, GTableController logicsSupplier) {
+    public GDataFilterValueView(GDataFilterValue filterValue, GFormController form, GTableController rows) {
         this.filterValue = filterValue != null ? filterValue : new GDataFilterValue();
-        this.logicsSupplier = logicsSupplier;
+        this.form = form;
+        this.rows = rows;
     }
 
     private SizedWidget sizedView; // needed only to remove previous widget when changing properties
@@ -37,7 +40,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
     // when the condition it belongs to is removed. Otherwise it keeps the form it was drawn for
     public void destroy() {
         if(cell != null) {
-            logicsSupplier.getForm().removeBindings(cell); // the enter binding this cell was given when it was built
+            form.removeBindings(cell); // the enter binding this cell was given when it was built
             cell.destroy();
         }
     }
@@ -48,7 +51,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
             destroy(); // the cell being replaced registered itself in a list that lives as long as the page
         }
 
-        cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
+        cell = new GDataFilterPropertyValue(condition, form, this::valueChanged, this::editingCancelled);
 
         sizedView = cell.getSizedWidget(true); // true is needed for correct calculation of input field width in filters
         GwtClientUtils.addClassName(sizedView.widget, "filter-data-property-value");
@@ -87,7 +90,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
     }
 
     private PValue readSelectedValue(GPropertyFilter condition) {
-        return PValue.escapeSeparator(logicsSupplier.getSelectedValue(condition.column.property, condition.column.columnKey), condition.compare);
+        return PValue.escapeSeparator(rows.getSelectedValue(condition.column.property, condition.column.columnKey), condition.compare);
     } 
     
     public void putSelectedValue(GPropertyFilter condition) {
@@ -101,7 +104,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
     }
     
     public void startEditing(Event keyEvent) {
-        if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
+        if (GwtClientUtils.isShowing(cell) && !form.isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             GPropertyDraw gPropertyDraw = cell.getProperty();
             if (!(gPropertyDraw.getRenderType(RendererType.FILTER) instanceof GLogicalType)) {
                 cell.onEditEvent(new EventHandler(keyEvent), isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent));

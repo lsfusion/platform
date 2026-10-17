@@ -51,7 +51,23 @@ The component is first drawn with the first projection of its container, once th
 
 A view reads and changes only its own container's parts. What containers share is the form itself — its current objects and its session — so a filter or a current object changed in one container shows in another, as it does in the standard client. A page built of such containers is in [A page of several containers](#several-containers).
 
-Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there. `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group is projected — its data, and the controller members that change it — in the React container where that part's component is: the rows and the current object where the group's grid (or its tree) is, each panel property where that PROPERTY is — an `lsf` one too, where the view places it, with the entry that labels it (an `lsf` action's entry only says whether the form shows it: its caption and image are its button's face). A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and an `lsf` container ends the walk, since the platform draws everything under it. The component's own `lsf` decides only which entry it has there — its content, or the [entry that labels it](#lsf-child) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them is `lsf`, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g`, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { lsf = TRUE; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#lsf-child) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An `lsf` action has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
+Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there. `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group, or of a [tree](#trees), is projected — its data, and the controller members that change it — in the React container where that part's component is, on the node of its group or tree there:
+
+| Component | Part | Node |
+| --- | --- | --- |
+| The group's grid, `GRID(<group>)`, or its tree, `GRID(TREE <tree>)` | The rows and the current object, and — of a group not in a tree — the [sortings](#orders) | `data.<group>` |
+| A panel property — an `lsf` one where the view places it | The property — an `lsf` one as the [entry that labels it](#lsf-child) (an `lsf` action's entry only says whether the form shows it: its caption and image are its button's face) | `data.<group>`, or `data` itself for the empty group |
+| What `FILTERS(<group>)` holds | The [user filters](#filters) | `data.<group>` |
+| `FILTERCONTROLS(<group>)` | The [filter controls](#filter-controls) | `data.<group>` |
+| `FILTERGROUP(<filterGroup>)` | A [filter group](#filter-groups) | `data.<group>` |
+| `TOOLBARSYSTEM(<group>)` | The [toolbar](#toolbar) | `data.<group>` |
+| The tree, `GRID(TREE <tree>)` | The [tree](#trees)'s current row, the opening of its current node, and its [sortings](#orders) | `data.<tree>` |
+| What `FILTERS(TREE <tree>)` holds, `FILTERCONTROLS(TREE <tree>)`, `TOOLBARSYSTEM(TREE <tree>)` | A [tree](#trees)'s user filters, its [filter controls and toolbar](#tree-toolbar) | `data.<tree>` |
+
+A group in `PANEL` view has only its panel properties and its filter groups: no rows, sortings, user filters,
+filter controls or toolbar — the platform shows none of them for it either.
+
+A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and an `lsf` container ends the walk, since the platform draws everything under it. The component's own `lsf` decides only which entry it has there — its content, or the [entry that labels it](#lsf-child) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them is `lsf`, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g` — a group of a tree has no `orders`: the [tree](#trees)'s sortings are its own node's —, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { lsf = TRUE; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#lsf-child) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An `lsf` action has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
 
 | Field | Meaning |
 | --- | --- |
@@ -65,11 +81,9 @@ So a `MOVE` of a panel property is what decides which engine draws it: inside a 
 
 A `CUSTOM REACT` container inside what another one draws is refused when the form is built: the outer component draws that subtree from `data`, so nothing would build the inner one. One marked `lsf` is allowed — it is an island of its own, drawn by its own component, and the outer one places it like any other [`lsf` child](#lsf-child).
 
-A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not carry one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property. Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](How-to_Custom_view_controller.md) carries what the projection carries, so what is not projected has no member. The same holds whenever a name does not single out one property — two properties of a projected group may share an integration name only when their entries land in different containers, and each view then means the one its own node carries. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws the group's rows or its [user filters](#filters), as a [sorting](#orders) or a condition names a property of the group, not of a node. Give one of them an explicit `EXTID`. Declare an ordinary property if the view has to read those values.
+A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not carry one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property. Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](How-to_Custom_view_controller.md) carries what the projection carries, so what is not projected has no member. The same holds whenever a name does not single out one property — two properties of a projected group may share an integration name only when their entries land in different containers, and each view then means the one its own node carries. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws a part that names a property of the group ([Reserved names](#reserved-names)). Give one of them an explicit `EXTID`. Declare an ordinary property if the view has to read those values.
 
 A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which lives there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](How-to_Custom_view_controller.md#row-identity-contract) says what each of the three means.
-
-`key`, `isCurrent`, `objects`, `background`, `foreground` and `selected` are reserved row field names, and on a row of a [tree](#trees) `parent`, `hasChildren`, `expanded` and `loading` too. On a group node the reservation follows what that node carries: `properties` and `change` are reserved on every one of them, while `list`, `byKey`, `keys`, `options` and `orders` are reserved only in the container that draws the group's rows (on a group of a tree, `expand`, `collapse`, `toggle`, `expandAll` and `collapseAll` there as well), and `filters` only in the container where `FILTERS(<group>)` is. A container carrying just a panel property of the group has none of them, so a property called `list` is refused there by nothing. At the top level, where the node of the empty group is the controller itself as well, a group or a property of the empty group may not take the name of one of the [controller](How-to_Custom_view_controller.md)'s own members: `exec`, `eval`, `evalAction`, `change`, `startEditing`, `stopEditing`, `isEditing` and `batch`. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws carries one name on two properties anywhere, one drawn by the platform included: a [sorting](#orders) or a [condition](#filters) names the group's property by that name. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Lsf>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
 
 A property's `value` is converted to a JS value depending on the property's class:
 
@@ -132,6 +146,23 @@ function Row(props) {
     );
 }
 ```
+
+#### Reserved names {#reserved-names}
+
+The reservation follows what a row or a node carries:
+
+| Where | Reserved |
+| --- | --- |
+| A row | `key`, `isCurrent`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
+| A group's node, wherever it is | `properties`, `change` |
+| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
+| The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
+| The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
+| The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
+| A group's node where `FILTERGROUP(<filterGroup>)` is | The [filter group](#filter-groups)'s own name, as a property's |
+| The top level, where the node of the empty group is the controller itself as well | The names of the [controller](How-to_Custom_view_controller.md)'s own members: `exec`, `eval`, `evalAction`, `change`, `startEditing`, `stopEditing`, `isEditing`, `batch` |
+
+A tree's own `current` and `expandCurrent` and its sortings, where its rows are drawn, and its user filters, filter controls and toolbar write their names on [its node](#trees). A container carrying just a panel property of the group has none of the names of the other parts, so a property called `list` is refused there by nothing. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, carries one name on two properties anywhere, one drawn by the platform included: a [sorting](#orders), a [condition](#filters) or the [toolbar](#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Lsf>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. An `lsf` property or action is named as any other, and all of this holds for it.
 
 ### Reading the projection {#reading}
 
@@ -478,7 +509,7 @@ const entryOf = (data, name) => {
 These rules bound the placement:
 
 - Each lsf child is placed by at most one host. A child no host places is not shown. A duplicate host reports itself in the page and in the console, and the first one keeps the child.
-- A component inside the container that has a view of its own but no `lsf` — a group's toolbar moved in — is shown by nobody, and the console says so once, with the fix. A group's filter box moved in is not such a component: the platform builds no panel for it, and the view gets the group's [user filters](#filters).
+- A component inside the container that has a view of its own but no `lsf` — a [filter group](#filter-groups) that filters by no object, moved in — is shown by nobody, and the console says so once, with the fix. A component whose [part](#the-component) a view draws — a group's or a tree's filter box, filter controls or toolbar, or a group's filter group — is not such a component: the view gets that part.
 - The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, an `<Lsf>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
 - The node `<Lsf>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
 - `lsf` may be set only on a component a `CUSTOM REACT` container places — inside it, and not inside an `lsf` container on the way. Anywhere else the form is rejected when it is built (a component removed from the design is not asked).
@@ -1007,6 +1038,11 @@ neither does opening one whose `hasChildren` is false; the field is absent but w
 Rows arrive as the tree is opened — past the roots, a group of a tree returns only the rows under nodes that are
 currently expanded, which is why, before anything is opened, its lower groups project an empty list.
 
+A row of a group below carries the path above it, so a row made current — through `change(row)`, or by the server —
+makes the rows on that path current in their groups as well: `isCurrent` follows the path up, as the platform's tree
+selects one node. The groups below it are left on no row — the server drops their current objects when a row above is
+chosen, and reports nothing for them —, so no row of theirs says `isCurrent` until a row is chosen there again.
+
 `controller.<g>.expand(row)` / `.collapse(row)` / `.toggle(row)` open and close one node: a node is a row of a group, so
 they are the group's. Each takes a row (the row, its `objects` handle, or its key) and returns nothing: the row's
 `expanded` changes at once, and its children arrive as rows. `toggle` asks for the opposite of what the row's `expanded`
@@ -1026,13 +1062,16 @@ FORM catalogue
 ```
 
 ```jsx
-// a row of the tree, the member of the group it belongs to, and what hangs under it
-function Node({row, member, rows}) {
+// a row of the tree, the member of the group it belongs to, and what hangs under it - the tree's current row in bold
+function Node({row, member, rows, current}) {
     return (
         <li>
             {row.hasChildren && <button onClick={() => member.toggle(row)}>{row.expanded ? '−' : '+'}</button>}
-            {row.name.value}
-            {row.expanded && <ul>{rows.filter(r => r.row.parent === row.key).map(r => <Node key={r.row.key} {...r} rows={rows}/>)}</ul>}
+            <span style={{fontWeight: row.key === current ? 'bold' : 'normal'}} onClick={() => member.change(row)}>
+                {row.name.value}
+            </span>
+            {row.expanded && <ul>{rows.filter(r => r.row.parent === row.key).map(r =>
+                <Node key={r.row.key} {...r} rows={rows} current={current}/>)}</ul>}
         </li>
     );
 }
@@ -1040,24 +1079,54 @@ function Node({row, member, rows}) {
 export function Tree({data, controller}) {
     const rows = [...data.c.list.map(row => ({row, member: controller.c})),
                   ...data.i.list.map(row => ({row, member: controller.i}))];
-    return <ul>{rows.filter(r => r.row.parent === null).map(r => <Node key={r.row.key} {...r} rows={rows}/>)}</ul>;
+    return <div>
+        <button onClick={() => controller.t.expandCurrent()}>Expand the current node</button>
+        <ul>{rows.filter(r => r.row.parent === null).map(r =>
+            <Node key={r.row.key} {...r} rows={rows} current={data.t.current}/>)}</ul>
+    </div>;
 }
 ```
 
 These verbs are members of the group's node, so a container has them exactly where it has that group's rows: the tree
 React draws. A tree the platform draws is opened by the platform's own expander, and no react container has node verbs
-for it.
+for it; a view that draws its [toolbar](#tree-toolbar) opens it through the toolbar's two buttons.
+
+What is a tree's, one for all its groups, is on a node of the tree's own, `data.<tree>` and `controller.<tree>`, where
+`<tree>` is the tree's name in the form, the `t` of `TREE t` (a tree with no name gets a generated one, so a tree a view
+draws a part of is named): at the top level, beside its groups' nodes. A container has it wherever it draws a part of
+the tree: the tree's rows — as a group's node is where its rows are — with its [sortings](#orders), its [user
+filters](#filters), its [toolbar and filter controls](#tree-toolbar). It carries no property, so a property of a group
+of the tree may take any name its parts take there. Where a view draws any part of the tree, the tree's name is taken at
+the top level there, so it may not be like a group the view carries, a container or a component it projects, a property
+of the empty group or a member of the controller.
+
+Where a view draws the tree's rows, the tree's node says which of them is current, and has the one verb that needs to
+know it — no group's rows know it alone:
+
+| on the node | member | what it is |
+| --- | --- | --- |
+| `current` | | the key of the tree's current row — the current row of the group whose current object was set last, by the view or by the server, as the platform's tree has its selected row —, `null` while there is none |
+| | `expandCurrent()` | the current node opened, and every node under it |
+
+`current` is written the way `key` is, so `row.key === data.t.current` holds, as `row.parent === parentRow.key` does.
+It is `null` while the tree has no current row loaded: before a row is chosen, while the current node's group is on no
+row, and while its row has not arrived or has gone — never the row above it in its stead. A row is made current through
+its group's `change(row)`; `current` only says which, and has no member of its own. `controller.<tree>.expandCurrent()`
+reads the current node when it is called, and does nothing while there is none or while it has no children; the nodes
+it opens are `expanded` at once, and `loading` until their rows arrive. Inside a
+[batch](How-to_Custom_view_controller.md#batch) it goes with the batch, so the row a `change(row)` made current earlier
+in the same batch is the node it opens.
 
 ### Sortings {#orders}
 
-A view that draws a group's rows carries `orders` — the group's sortings, in priority order — beside `list` and
-`keys`: a sorting is the order the rows are drawn in, so it is projected where they are, and a container holding
-only a panel property of the group has neither. Where it is there it is always there, and empty when the group is
-sorted by nothing. Each entry is an object:
+A view that draws the rows of a group not in a tree carries `orders` — the group's sortings, in priority order — beside
+`list` and `keys`: a sorting is the order the rows are drawn in, so it is projected where they are, and a container
+holding only a panel property of the group has neither. Where it is there it is always there, and empty when the group
+is sorted by nothing. Each entry is an object:
 
 | Field | Meaning |
 | --- | --- |
-| `property` | The sorted property's integration SID |
+| `property` | The sorted property's integration SID — on a [tree](#trees)'s node, with its group's name, as below |
 | `desc` | Whether it sorts descending |
 
 The same shape the [`ORDER ... FROM`](../language/FILTER_ORDER_operators.md) operator applies and
@@ -1079,6 +1148,13 @@ stops sorting the group.
 A change through the controller is sent at once, as the group's whole list — the same request a click on a standard
 header sends —, and `orders` shows it straight away, before the rows sorted by it come back; an answer to a request made
 before it does not take it back.
+
+A [tree](#trees)'s sortings are the tree's, as its [user filters](#filters) are: where a view draws the tree's rows,
+`data.<tree>.orders` lists the sortings of all its groups, group by group, top down — each group's in its own priority
+order, as no group's sortings outrank another's —, each property named by its group's name and its own, `c.name`; its
+groups' nodes have no `orders`. `controller.<tree>.orders.change(...)` changes them the same way: one order merges into
+its group's sortings, and an array states the tree's whole list — each group gets the entries on its own properties, and
+a group none of them names stops being sorted. Each group's list is sent as a group's is.
 
 ```jsx
 export function OrderBoard(props) {
@@ -1145,16 +1221,16 @@ group does not carry, and a property grouped in columns. Taking a `noSort` sorti
 
 ### Filters {#filters}
 
-`filters` is the user filter conditions the server is filtering the group by, in the order they are applied. They are
-a part of the group of their own, like its rows and its panel properties, and they are on the group's node where their
+`filters` is the user filter conditions the server is filtering the group by, in the order they are applied. They are a
+part of the group of their own, like its rows and its panel properties, and they are on the group's node where their
 component is — where `FILTERS(<group>)` is: inside the group's box, which is where a `custom` on `BOX(<group>)` draws
 the rows too, or `FILTERS(<group>)` itself when it has a `custom` of its own. There `filters` is always present, and
-empty when the group is unfiltered; the group's node in any other container does not have it. Each condition is an
-object:
+empty when the group is unfiltered; the group's node in any other container does not have it. A group in `PANEL` view
+has none anywhere: the platform shows it no user filters either. Each condition is an object:
 
 | Field | Meaning |
 | --- | --- |
-| `property` | The filtered property's integration SID — the group's one property of that name, wherever it is drawn |
+| `property` | The filtered property's integration SID — the group's one property of that name, wherever it is drawn; on a [tree](#trees)'s node, with its group's name, as below |
 | `compare` | The comparison operator: `=`, `>`, `<`, `>=`, `<=`, `!=`, `_` (contains), `@` (match) |
 | `value` | The value compared against, converted like any other property value |
 | `negation` | Whether the condition is negated |
@@ -1171,12 +1247,13 @@ container — would name no condition, and a form whose user filters a React vie
 until they have explicit `EXTID`s.
 
 `data.<g>.properties` lists the entries of the node it is on, so on a node that holds only the user filters it is
-empty: the properties a condition can name are the group's, not the node's.
+empty: the properties a condition can name are the group's, not the node's — `filterProperties` lists them.
 
 The controller takes a condition in the same shape, so a projected condition that has a value can be handed back to
-it as it is. A condition with no `compare` is read with the property's `defaultCompare`. One on a file property is the
-exception: its `value` is a link to the file, not the file a condition compares with, so the controller refuses one
-that has a value; one with none takes the conditions on that property off, as for any other.
+it as it is. A condition with no `compare` is read with the property's default comparison (its `defaultCompare` in
+`filterProperties`). One on a file property is the exception: its `value` is a link to the file, not the file a
+condition compares with, so the controller refuses one that has a value; one with none takes the conditions on that
+property off, as for any other.
 
 `controller.<group>.filters.change(condition)` — a member of the group where `filters` is — changes **one**
 condition and leaves the group's other conditions, and their order, alone: it takes the place of the FIRST condition
@@ -1231,14 +1308,132 @@ columns, as a condition here names a property, not one of its columns. The conso
 Handing `data.<group>.filters` back through the array form would therefore take those conditions off, and the ones
 listed with a `null` `value` with them, while changing ONE condition never touches the conditions on other properties.
 
-A group of a tree is filtered the same way, by its own name: a change states that group's conditions, and the tree's
-other groups keep theirs.
+A tree has one filter box for all its groups, `FILTERS(TREE <tree>)`, and its user filters are on [the tree's
+node](#trees). `filters` there lists the conditions of all its groups, those of the upper groups first, and names each
+property by its group's name and its own, `c.name`, as an [`<Lsf>`](#lsf-child) names a property of a group.
+`controller.<tree>.filters.change` takes a condition named the same way: the name is read up to its first dot, the
+group's — a group's name has none, and an `EXTID` with a dot, which a property the platform draws may carry, is taken
+back as `filters` gives it. A list it states is the tree's:
+`controller.t.filters.change([])` clears the conditions of all its groups in one request, as the platform's own panel
+does, and a single condition is merged into the conditions of all of them.
 
-A property of a group also says what it can be compared by, beside its `type`: `compares` is the set of comparisons
-the platform's own filter editor offers for it, spelled as `filters` spells them, and `defaultCompare` the one the
-editor starts with — the one the design named, which need not be one of `compares`. A list property carries them on
-its **column** entry (`data.<g>.<name>`), once, like everything else that is the same down a column; an action, which
-no condition can be on, carries neither.
+Beside `filters`, the user filters say what a condition can be on — `filterProperties`, design data, there from the
+start: the group's properties a condition can name, wherever they are drawn, in the form's order — on a tree's node,
+the properties of all its groups, those of the upper groups first. Each is an object:
+
+| Field | Meaning |
+| --- | --- |
+| `property` | The property, named as a condition names it |
+| `caption` | Its caption in the design, `null` where the design gives none |
+| `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
+| `compares` | The comparisons the platform's own filter editor offers for it, spelled as `filters` spells them |
+| `defaultCompare` | The one that editor starts with — the one the design named, which need not be one of `compares` |
+
+An action, a property grouped in columns and one with no integration SID are not listed: no condition can be on them.
+Nor is a file property: a condition on one is listed in `filters` all the same, and can only be taken off, as above.
+So a view that draws `FILTERS(<group>)` alone builds a condition editor from it, with no property of the group drawn
+there:
+
+```jsx
+function FilterPanel({data, controller}) {
+    const typed = data.i.filterProperties.filter(p => p.type === 'string' || p.type === 'number');
+    const [choice, setChoice] = React.useState(typed[0]);
+    const [text, setText] = React.useState('');
+    const value = choice.type === 'number' ? (text === '' ? null : Number(text)) : text;
+    return <div>
+        <select onChange={e => setChoice(typed[e.target.selectedIndex])}>
+            {typed.map(p => <option key={p.property}>{p.caption || p.property}</option>)}
+        </select>
+        <input type={choice.type === 'number' ? 'number' : 'text'} onChange={e => setText(e.target.value)}/>
+        <button onClick={() => controller.i.filters.change({property: choice.property, compare: choice.defaultCompare, value})}>
+            Add
+        </button>
+    </div>;
+}
+```
+
+`value` is of the type `type` names, converted as any other property value: this editor reads a string or a number,
+so it offers the `string` and `number` properties alone.
+
+### Filter controls {#filter-controls}
+
+The filter controls a view draws are the same whoever draws the conditions — the view, which gets `filters`, or the
+platform's panel, `FILTERS(o)` placed back with `lsf` —, and each does what the platform's button does there:
+
+| on the node | member | over [conditions the view draws](#custom-filter-panel) | over the platform's panel |
+| --- | --- | --- | --- |
+| | `addFilter()` | the condition F3 puts in, at once | a new condition on the same cell, its editor open, as the panel's add does |
+| `filtersPending`, `filtersManual` | `applyFilters()` | refused: nothing waits to be applied, each change is sent at once | the conditions typed in applied — only while `filtersPending` |
+| | `resetFilters()` | the list cleared | the panel's conditions reset |
+
+`filtersManual` is whether the platform shows the apply button: the setting that makes its panel apply changes by
+hand (`userFiltersManualApplyMode`) is on, and the controls are shown — the toolbar's filter button shows and hides
+them. `filtersPending` is whether that button is enabled: conditions typed in wait for it. The setting is off by
+default: a change is applied at once, both stay `false`, and a view may as well not draw `FILTERCONTROLS(o)` at all —
+the group is filtered the same. Where the view draws the conditions too, `resetFilters()` clears them as
+`filters.change([])` does: members of two components may do the same thing, each component's part repeating its
+component.
+
+```jsx
+function ItemFilterButtons({data, controller}) {
+    const items = data.i, buttons = controller.i;
+    return <div>
+        <button onClick={() => buttons.addFilter()}>+</button>
+        {items.filtersManual &&
+            <button disabled={!items.filtersPending} onClick={() => buttons.applyFilters()}>Apply</button>}
+        <button onClick={() => buttons.resetFilters()}>Reset</button>
+    </div>;
+}
+```
+
+The cell a condition is added on is the current cell of the standard grid where the platform draws the rows, and the
+first column a view carries that the form shows and a condition can be on — a view has no current column —, in its
+current row, where a view draws them. On a tree it is the current cell of the platform's tree, or the first column of
+the [current node](#trees)'s group that the form shows and a condition can be on, in that group's current row.
+With no `FILTERS(o)` in the design `addFilter` is refused, as the platform has no such button, and F3 does nothing.
+
+Inside a [batch](How-to_Custom_view_controller.md#batch) the commands go with it, as `filters.change` does.
+
+### Filter groups {#filter-groups}
+
+A filter group a view draws is on its group's node under its own name, shaped like a property's entry:
+
+```lsf
+FORM items
+    OBJECTS i = Item
+    FILTERGROUP stock
+        FILTER 'In stock' balance(i) > 0 'F10' DEFAULT
+        FILTER 'Out of stock' balance(i) <= 0
+;
+```
+
+```js
+// data.i.stock
+{value: 0, filters: ['In stock', 'Out of stock'], canClear: true}
+
+controller.i.stock.change(1);      // select 'Out of stock'
+controller.i.stock.change(null);   // none, as the platform's "(All)"
+```
+
+| Field | Meaning |
+| --- | --- |
+| `value` | The index of the filter selected in `filters`, `null` for none |
+| `filters` | The filters' captions, in the design's order |
+| `canClear` | Whether none may be selected, as the platform's widget offers it: a group of one filter is its check box, always clearable; a group of several is its list, with `(All)` unless `NONULL`. Where it is `false`, `change(null)` is refused |
+
+The server applies the filter selected and reports it, so `value` is what the server holds — the default filter when the
+form opens, a `FILTERGROUP` action's choice — and a filter a view selects shows at once. `change` takes the index of one
+of `filters`, or `null`, and anything else is refused. It is a part of a [batch](How-to_Custom_view_controller.md#batch)
+as `filters.change` is, and asks the server even for the filter shown — after a batch that failed, it is set again. A
+filter's key keeps working while the form shows the filter group — its descriptor's `hidden` — and the view's
+container, as the platform's widget takes it: it selects the filter, and in a group of one filter — the platform's
+check box —, pressed again, takes it off.
+
+A filter group is its group's — the last group for the objects its filters take, the one a
+[filter](../paradigm/Form_structure.md#filters) of the form is applied to —, a group of a [tree](#trees) included: it is
+on that group's node, `data.<group>.<filterGroup>`, never on the tree's, which carries what the platform has one of for
+the whole tree — its user filters, filter controls, toolbar and sortings —, though the platform's design puts a tree's
+filter groups in the tree's `FILTERGROUPS(TREE <tree>)`.
 
 ### Replacing only the filters {#custom-filter-panel}
 
@@ -1254,13 +1449,36 @@ DESIGN items {
 ```
 
 Such a component does not draw the group's rows — the platform still does — but the user filters are its part:
-`props.data.<g>` is the group's node there, carrying `filters` and nothing of the rows.
+`props.data.<g>` is the group's node there, carrying `filters`, what a condition can be on (`filterProperties`) and
+nothing of the rows.
 
-The platform builds no filter panel of its own for such a group: its toolbar has no filter button and there are no
-filter controls, the keys that add, replace or remove conditions and typing in a column to start one do nothing for it,
-and Escape in the grid leaves its conditions alone. The ones the design declares for the group are not built either,
-and the manual-apply setting holds nothing back. A pivot's drill-down still states its conditions as the group's list,
-as a `FILTER` action does, and the component is shown them.
+The platform draws no conditions of its own for such a group, but its commands over them stay, and each changes the
+group's list — the one the component is shown in `filters`:
+
+- the toolbar's filter button shows and hides the controls the platform draws in `FILTERCONTROLS(o)`. Their reset clears
+  the list, and their add does what F3 does. Where the component's box holds `FILTERCONTROLS(o)` too, the component
+  draws them: they are its [filter controls](#filter-controls), whose `resetFilters()` and `addFilter()` do the same,
+  and the toolbar has no filter button;
+- F3 in the grid puts in the condition of its [current cell](#filter-controls) — on that cell's property, compared the
+  property's default way with the cell's value — in the place of the first condition on that column, or at the end. It
+  applies at once, as F3 and Enter do on the platform's panel: there is no editor here to type a value in, the component
+  edits it. Alt+F3 makes it the only condition. None is started where no row is current — an empty grid, or a pivot, a
+  map, a calendar or a custom view, which have no cell —, or on a cell whose property `filterProperties` does not list
+  — a file property's cell excepted: F3 starts a condition on it, which a view can only take off —, or that shows
+  another value than it is filtered by;
+- Shift+F3 and Escape in the grid clear the list;
+- typing in a column starts no condition (a grid with a quick search searches, as it does anyway), and there is no
+  apply button: a change is sent at once, and the manual-apply setting holds nothing back.
+
+The conditions the design declares for the group are not built.
+
+These commands are there wherever a view draws the FILTERS box of a group in `LIST` view, whatever its
+`TOOLBARSYSTEM(o)` says: `showFilters`, like the toolbar's other `show…` flags, is the platform's alone, and turns off
+only what the platform draws of the filters — its panel, its controls in FILTERCONTROLS and the toolbar's filter button.
+With `showFilters = FALSE` and the conditions drawn by a view, the [filter controls](#filter-controls) a view draws and
+the keys of the grid work all the same; with the conditions the platform's, there are no commands, and the members of
+the filter controls a view draws refuse. A tree's commands are the same, over the conditions of all its groups, its
+[node's](#trees) `filters`, and so is its toolbar's `showFilters`.
 
 `props.controller.<g>.filters` changes them, so the panel both shows the current conditions and sets them: the
 search box of [`ItemBoard`](#filters), without its list, is such a panel.
@@ -1268,8 +1486,7 @@ search box of [`ItemBoard`](#filters), without its list, is such a panel.
 The conditions the component sets are the group's own: a `FILTER` action, a pivot's drill-down and this component all
 change one list, so they cannot disagree.
 
-`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)` and `FILTERGROUP(f)` are not containers and do not take `custom` — to
-replace what they draw, put the component on the container around them and leave them out of it.
+`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)` and `FILTERGROUP(f)` are not containers and do not take `custom`.
 
 Receiving a group's state does not make a component the only one drawing it. Which components are drawn is decided
 by the design and by `lsf` placement, not by what `data` contains — the state is the group's, whoever draws it. So
@@ -1281,3 +1498,156 @@ there are two recipes, and they read differently in the design rather than in th
 
 A component on a box beside `FILTERS(o)` — `TOOLBARLEFT(o)`, say — gets no part of the filters: the group's node
 there, if it has one, has no `filters`.
+
+### Toolbar {#toolbar}
+
+Where a view draws a group's toolbar, what its buttons show is on the group's node, `props.data.<g>`, and its buttons
+are members of the group, on `props.controller.<g>`. The platform draws no toolbar of its own for the group then, over
+its own grid as well. A view's header over the standard grid:
+
+```lsf
+DESIGN items {
+    NEW header FIRST {
+        custom = 'ItemHeader';
+        MOVE TOOLBARSYSTEM(i); // the grid stays the platform's; its toolbar is the view's
+    }
+}
+```
+
+```jsx
+function ItemHeader({data, controller}) {
+    const items = data.i, buttons = controller.i;
+    const [count, setCount] = React.useState(null);
+    return <div>
+        <button onClick={async () => setCount(await buttons.getCount())}>Count</button>
+        {count != null && <span>{count} records</span>}
+        <button onClick={() => buttons.export()}>Excel</button>
+        <label>
+            <input type="checkbox" checked={items.manual}
+                   onChange={e => buttons.manual.change(e.target.checked)}/> manual update
+        </label>
+        {items.manual && <button disabled={!items.updatePending} onClick={() => buttons.update()}>Update</button>}
+        <select value={items.listView} onChange={e => buttons.listView.change(e.target.value)}>
+            {items.listViews.map(view => <option key={view}>{view}</option>)}
+        </select>
+    </div>;
+}
+```
+
+Every member, and what its button shows, is there whatever the design's flags say — `showFilters`, `showViews`,
+`showCalculateSum`, … are the platform's alone, which draw its own toolbar; a view draws what it wants —, and so is the
+name each takes on the node: where a view draws the toolbar, no property of the group takes `getSum`, whatever
+`showCalculateSum` says. `visible` is not one of these flags: a toolbar the design hides (`visible = FALSE`) is no part
+of any view — nothing of it on the node, no members, no names taken.
+
+| on the node | member | what it does | the platform's button |
+| --- | --- | --- | --- |
+| `manual` | `manual.change(on)` | the manual update turned on or off | the manual update |
+| `updatePending` | `update()` | the changes the server holds back while the update is manual, brought | the update |
+| `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls are shown — the buttons of its FILTERCONTROLS and the condition editors of its FILTERS panel; shown on a panel with no conditions, with one to fill in | the filter button |
+| `listView`, `listViews` | `listView.change(name)` | the rows of the platform's table shown in another view type, one of `listViews`: `grid`, `pivot`, and `custom`, `map` or `calendar` where the group has one | the view type switch |
+| | `getCount()` | the number of the group's rows — of the marked ones only, where the user has marked any, as the platform counts them —, as a `Promise` of the server's answer, a request as `getValues` is | the count |
+| | `getSum(property)` | the sum of a column — over the marked rows only, where the user has marked any, as the platform sums it —, as a `Promise`: a number property of the group, named as a [sorting](#orders) names one, not one grouped in columns | the sum, of the current column — a view has none, so the call names it |
+| | `export()` | the group's rows exported to Excel, the server's report of them | the export — which on a pivot exports the pivot |
+
+What the buttons act on is the platform's: `filterControlsVisible` shows and hides the PLATFORM's filter controls — its
+FILTERCONTROLS buttons and its panel's editors, and where the platform has none for the group — the view draws the
+conditions and `FILTERCONTROLS(o)`, or the toolbar turns the platform's filters off (`showFilters = FALSE`) — it stays
+`false` and its change is refused, saying why. Controls a view draws itself are its own to show, its [filter
+controls](#filter-controls). The view type switch switches the platform's table: where a view draws the rows,
+`listViews` is empty, `listView` is `null`, and a change is refused.
+
+Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server are refused. The settings of
+the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with
+`lsf` keeps them.
+
+### A tree's toolbar and filter controls {#tree-toolbar}
+
+A [tree](#trees) has one toolbar and one set of filter controls for all its groups, `TOOLBARSYSTEM(TREE t)` and
+`FILTERCONTROLS(TREE t)`. Where a view draws them, they are on [the tree's node](#trees), `data.t`, whoever draws the
+tree's rows:
+
+```lsf
+DESIGN catalogue {
+    NEW header FIRST {
+        custom = 'CatalogueHeader';
+        MOVE TOOLBARSYSTEM(TREE t); // the tree stays the platform's; its toolbar is the view's
+    }
+}
+```
+
+```jsx
+function CatalogueHeader({data, controller}) {
+    const buttons = controller.t; // t, the tree's name
+    return <div>
+        <button onClick={() => buttons.expandCurrent()}>Expand the current node</button>
+        <button onClick={() => buttons.expandTree()}>Expand the tree</button>
+        <button onClick={() => buttons.export()}>Excel</button>
+        <label>
+            <input type="checkbox" checked={data.t.filterControlsVisible}
+                   onChange={e => buttons.filterControlsVisible.change(e.target.checked)}/> filters
+        </label>
+    </div>;
+}
+```
+
+The toolbar has the buttons of the platform's tree toolbar as members, whatever its `show…` flags say — they are the
+platform's alone, as a group's [toolbar](#toolbar)'s are —, and the two that open the tree only where the platform draws
+the tree's rows:
+
+| on the node | member | what it does | the platform's button |
+| --- | --- | --- | --- |
+| `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls of the tree are shown, as on a group's [toolbar](#toolbar) | the filter button |
+| | `export()` | the tree exported to Excel, the server's report of it | the export |
+| | `expandCurrent()` | over the platform's tree: its selected node opened, and every node under it — a node with children only | expand current object |
+| | `expandTree()` | over the platform's tree: every node of the selected node's group under the nodes open above it, and of the groups below — all of the tree when the selected node is the top group's | expand whole tree |
+
+Where a view draws the tree's rows, the toolbar has not the two that open it: the tree opens through members it has
+already — its current node through the tree's own [`expandCurrent()`](#trees), on the same node where the view draws
+both, the tree from a group down through that group's `expandAll()` — all of it through the top group's —, one member
+for each. So which members open a tree depends on who draws its rows, and a view that draws the tree's toolbar in
+another container than the tree's rows has none there: the view that draws the rows has them. They only open — the
+platform's tree closes nothing from its toolbar. Inside a [batch](How-to_Custom_view_controller.md#batch)
+`expandCurrent()` and `expandTree()` go with it, as `expandAll()` does, and `export()` is refused.
+
+The tree's filter controls are a part of the tree the same way, with the state and members of a group's
+[filter controls](#filter-controls), over the conditions of all its groups.
+
+### The platform's toolbar and filters over a view's rows {#platform-toolbar-and-filters}
+
+Where a view draws a group's rows, the platform still draws what the design leaves to it of the group's toolbar and
+filters — `TOOLBARSYSTEM(o)`, and what `FILTERS(o)` and `FILTERCONTROLS(o)` hold — when they are outside the view's
+containers, or placed back with `lsf`:
+
+```lsf
+DESIGN items {
+    NEW cards {
+        custom = 'ItemCards';
+        MOVE GRID(i); // the view draws the rows; BOX(i) keeps the toolbar and the filters
+    }
+}
+```
+
+They work over the view's rows as over the standard grid, with what those rows can tell them:
+
+- the toolbar has the buttons that need no table: the filter button, the count of the rows, the export and the manual
+  update — not the view type switch, the settings or the sum of a column;
+- the filter panel's conditions can be on the columns the view carries, by their captions, and a new one starts on [the
+  cell a condition is added on](#filter-controls). The panel states them as the group's list, the one a `FILTER` action
+  sets, and the view's rows follow it;
+- where the view draws the conditions too — it gets the group's `filters` —, the platform builds no panel: its controls
+  and the toolbar's filter button give the [commands over the view's conditions](#custom-filter-panel);
+- the keys of the platform's grid are not there, so the controls open from the toolbar's filter button — the
+  `filterControlsVisible` member of the view's [toolbar](#toolbar), where the view draws it —, and where the design hides the
+  toolbar, nothing opens them: they start hidden, as over the standard grid, and stay so.
+
+A [tree](#trees) a view draws (`MOVE GRID(TREE t)`) is given the same, one for all its groups, as the platform's own
+tree has it — `TOOLBARSYSTEM(TREE t)`, and what `FILTERS(TREE t)` and `FILTERCONTROLS(TREE t)` hold. The toolbar has the
+tree's buttons: over the view's rows the one that expands the current object opens what the tree's
+[`expandCurrent()`](#trees) opens, the one that expands the tree opens, as over the platform's tree, every node of the
+current node's group under the nodes open above it and of the groups below — nothing before a node is current; all of
+the tree is the top group's `expandAll()` —, and the export exports the tree. The panel's conditions can be on the
+columns of all the tree's groups, each condition of its column's group, and a new one starts on [the cell a condition is
+added on](#filter-controls).
+
+What the view draws itself the platform does not build: a `custom` on `BOX(o)` draws the whole group.

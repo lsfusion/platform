@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -86,7 +87,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.destroy();
     }
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
+    public GFilterConditionView(GPropertyFilter iCondition, GFormController form, GTableController rows, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
         this.columnsProvider = columnsProvider;
@@ -126,7 +127,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 startEditing(GKeyStroke.createAddUserFilterKeyEvent());
             }
         };
-        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
+        for (Pair<Column, String> column : rows.getFilterColumns()) {
             propertyView.add(column.first, column.second);
         }
         propertyView.setSelectedValue(currentColumn, currentCaption);
@@ -173,7 +174,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         compareView.setVisible(!isFixed() || controlsVisible);
         leftPanel.addCentered(compareView);
 
-        valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
+        valueView = new GDataFilterValueView(condition.value, form, rows) {
             @Override
             public void valueChanged(PValue value) {
                 super.valueChanged(value);

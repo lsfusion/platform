@@ -1877,13 +1877,16 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    // the grid makes no export button where the design hides it (showPrintGroupXls), nor where a view draws its toolbar
     public void startFillData() {
-        grid.exportToExcelButton.setEnabled(false);
+        if (grid.exportToExcelButton != null)
+            grid.exportToExcelButton.setEnabled(false);
     }
 
     private Element clusterizedRowsDiv;
     public void finishFillData(Element clusterizedRowsDiv) {
-        grid.exportToExcelButton.setEnabled(true);
+        if (grid.exportToExcelButton != null)
+            grid.exportToExcelButton.setEnabled(true);
         this.clusterizedRowsDiv = clusterizedRowsDiv;
     }
 

@@ -4,7 +4,6 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
-import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 
 import java.util.Collections;
@@ -34,12 +33,5 @@ public class GGrid extends GGridProperty {
     @Override
     protected GSize getExtraWidth() {
         return GSize.ZERO;
-    }
-
-    public boolean isBoxed(GTableView table) {
-        if(boxed != null)
-            return boxed;
-
-        return table.isDefaultBoxed();
     }
 }

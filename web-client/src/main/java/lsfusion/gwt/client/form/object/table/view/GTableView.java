@@ -1,50 +1,49 @@
-package lsfusion.gwt.client.form.object.table.grid.view;
+package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableComponent;
-import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
-import java.util.List;
 
+// THE VIEW the platform draws a TABLE's rows in (GPlatformTableController.getView): a grid's - the list view it shows
+// (GListView) -, or a tree (GTreeTable). What the form sends for the table's rows and properties goes to it, a
+// property's attribute with the property; what a view does not draw it leaves (the defaults)
 public interface GTableView extends TableComponent {
-    
-    // components
-    default Widget getThisWidget() { return (Widget)this; }
-    default Widget getWidget() {
-        return getThisWidget();
-    }
 
-    // SETTERS
     // keys
     void setCurrentKey(GGroupObjectValue currentKey);
-    void setKeys(ArrayList<GGroupObjectValue> keys);
+    GGroupObjectValue getSelectedKey(); // null for none
+    int getSelectedRow();
+    default void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
+    }
 
     // columns
     void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values); // add or update
     void removeProperty(GPropertyDraw property);
+    boolean containsProperty(GPropertyDraw property);
     void updateOrders(); // the orders the form has for the group changed - a view that shows them reads them there
+    void focusProperty(GPropertyDraw propertyDraw);
+    // a change of a cell sent, loading until the answer comes (GPropertyController.setLoadingValueAt): its key and its
+    // value before - null where the view has no cell for it
+    default Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
+        return null;
+    }
 
-    // EXTRA SETTERS
-    // keys
+    // rows
     void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
-    void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
     void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
-
+    default void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+    }
     default void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         //implemented only in GCustom
     }
 
-    // columns
+    // cells
     void updateCellGridElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
@@ -65,51 +64,15 @@ public interface GTableView extends TableComponent {
     void updateFooterElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateLoadings(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
-    void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
-    void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, PValue> values);
-
-    // event - FINISH SETTER
-    void update(Boolean updateState);
-
-    // GETTERS (editing / toolbar features)
-    // keys
-    GGroupObjectValue getSelectedKey(); // editing
-
-    // columns
-    GPropertyDraw getCurrentProperty(); // calculate sum / filtering default value
-    GGroupObjectValue getCurrentColumnKey(); // calculate sum / filtering default value
-
-    boolean isNoColumns(); // hide if there're no columns after update
-    long getSetRequestIndex(); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
-    void setSetRequestIndex(long index); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
+    default void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+    default void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
 
     // focus
-    void focusProperty(GPropertyDraw propertyDraw);
-    default void focus(FocusUtils.Reason reason) {
-        FocusUtils.focus(getTableDataFocusElement(), reason);
-    }
-    Element getTableDataFocusElement(); // protected
+    void focus(FocusUtils.Reason reason);
 
-    // add / delete
-    int getSelectedRow();
-    void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
-
-    // toolbar features
-    void runGroupReport();
-    List<Pair<Column, String>> getFilterColumns(); // for filter to get all columns with keys and captions
-    PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey); // for filter to set default value
-
-    boolean hasUserPreferences();
-    boolean containsProperty(GPropertyDraw property); // for user preferences
-    GGroupObjectUserPreferences getCurrentUserGridPreferences();
-    GGroupObjectUserPreferences getGeneralGridPreferences();
-
-    int getPageSize();
-
-    default void updateRecordLayout(long requestIndex) {}
-
-    default void onRender(Event editEvent){}
     default void onClear(){}
 
     // the view is dropped for good (the form is closing, or the table view is being switched); everything this view

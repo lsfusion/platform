@@ -309,6 +309,12 @@ public abstract class GPlatformPanelController extends GPlatformPropertyControll
     }
 
     @Override
+    public PValue getValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey) {
+        GPropertyPanelController panelController = propertyControllers.get(property);
+        return panelController != null ? panelController.getValueAt(fullCurrentKey) : null;
+    }
+
+    @Override
     public boolean isPropertyShown(GPropertyDraw property) {
         return containsProperty(property);
     }

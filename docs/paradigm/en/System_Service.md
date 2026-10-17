@@ -124,7 +124,7 @@ These per-`User` flags turn on extra logging and query diagnostics for a single 
 | `explainAppEnabled[User]`         | allocation (memory) explains                                               |
 | `volatileStatsEnabled[User]`      | use of volatile statistics for that user's queries                         |
 
-In `server-remote.log`, the requests a client makes to an open form — an [event](Form_events.md#property) of a property or an action, a change of a group's current object (other than a move to its first or last row), of its sortings or user filters, expanding or collapsing a tree's nodes — appear as the remote call `executeBatch`, which carries one such request or several sent together. Its line lists each request the call carries with its arguments, in the order they are made, and the `remoteLogTime` threshold applies to the call as a whole.
+In `server-remote.log`, the requests a client makes to an open form — an [event](Form_events.md#property) of a property or an action, a change of a group's current object (other than a move to its first or last row), of its sortings or user filters, the filter selected in a filter group, expanding or collapsing a tree's nodes — appear as the remote call `executeBatch`, which carries one such request or several sent together. Its line lists each request the call carries with its arguments, in the order they are made, and the `remoteLogTime` threshold applies to the call as a whole.
 
 ### Per-user runtime settings
 

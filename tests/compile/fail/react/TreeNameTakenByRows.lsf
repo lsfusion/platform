@@ -1,0 +1,23 @@
+MODULE TreeNameTakenByRows;
+
+REQUIRE System;
+
+// a tree whose rows alone a React view draws - its grid moved out of its box, which keeps the tree's toolbar and
+// filters for the platform - is named in the projection all the same, as a group whose rows a view draws is: the
+// tree's node, data.<tree>, is where its rows are, with the tree's current row and its own verb. A tree named like the
+// controller's own verb would take its place
+CLASS TreeRowsFolder;
+treeRowsParent = DATA TreeRowsFolder (TreeRowsFolder);
+treeRowsName = DATA STRING[50] (TreeRowsFolder);
+
+FORM treeNameTakenByRows
+    TREE change f = TreeRowsFolder PARENT treeRowsParent(f)
+    PROPERTIES(f) treeRowsName
+;
+
+DESIGN treeNameTakenByRows {
+    NEW rows {
+        custom = 'FolderRows';
+        MOVE GRID(TREE change);
+    }
+}

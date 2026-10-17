@@ -2,16 +2,18 @@ MODULE PanelGroupLayouts;
 
 REQUIRE System;
 
-// a group in PANEL view draws its rows nowhere - the server sends it none, only its current object -, so where a React
-// view draws its box no name is reserved for rows: a panel property of it may be called `list` or `keys`, as on the
-// node of a group whose rows are drawn elsewhere
+// a group in PANEL view draws its rows nowhere - the server sends it none, only its current object -, and shows no user
+// filters, as the platform shows none for it, so where a React view draws its box no name is reserved for rows or for
+// user filters: a panel property of it may be called `list`, `keys` or `filters`, as on the node of a group whose rows
+// and filters are drawn elsewhere
 CLASS PanelGroupItem;
 panelGroupName = DATA STRING[20] (PanelGroupItem);
 panelGroupNote = DATA STRING[20] (PanelGroupItem);
+panelGroupTag = DATA STRING[20] (PanelGroupItem);
 
 FORM panelGroupLayouts
     OBJECTS i = PanelGroupItem PANEL
-    PROPERTIES(i) panelGroupName EXTID 'list', panelGroupNote EXTID 'keys'
+    PROPERTIES(i) panelGroupName EXTID 'list', panelGroupNote EXTID 'keys', panelGroupTag EXTID 'filters'
 ;
 
 DESIGN panelGroupLayouts {

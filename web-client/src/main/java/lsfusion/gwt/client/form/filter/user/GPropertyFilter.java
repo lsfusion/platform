@@ -1,12 +1,15 @@
 package lsfusion.gwt.client.form.filter.user;
 
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GPropertyFilter {
     public GFilter filter;
@@ -59,7 +62,36 @@ public class GPropertyFilter {
                     GCompare.get(filter.compareByte), filter.junction));
         return conditions;
     }
-    
+    // a FILTERS box's list as a client states it, split into its groups' lists - a group's, or a tree's, one box for
+    // all its groups (GFormController.changeFilters) -: a condition is of its property's group (groupObject), and it is
+    // the box's where that group is one of the box's. One on a property of another group - or of no group - is no
+    // condition of the box's groups: left out, and said on the console. Given up with it: a quick filter on a property
+    // of another group (QUICKFILTER), which a grid's list carried under the grid's group - one rule for a group's box
+    // and a tree's, with no mode
+    public static NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> getGroupConditions(List<GGroupObject> groups,
+                                                                                          ArrayList<GPropertyFilter> conditions) {
+        NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> result = new NativeSIDMap<>();
+        for (GGroupObject group : groups)
+            result.put(group, new ArrayList<>());
+        for (GPropertyFilter condition : conditions) {
+            ArrayList<GPropertyFilter> groupConditions = condition.groupObject != null ? result.get(condition.groupObject) : null;
+            if (groupConditions != null)
+                groupConditions.add(condition);
+            else
+                GwtClientUtils.consoleError("the filters of " + getNames(groups) + ": the condition on '"
+                        + condition.column.property.sID + "' is on a property "
+                        + (condition.groupObject != null ? "of group '" + condition.groupObject.getSID() + "'" : "of no group")
+                        + ", which is none of theirs, so it is not sent");
+        }
+        return result;
+    }
+    private static String getNames(List<GGroupObject> groups) {
+        StringBuilder names = new StringBuilder();
+        for (GGroupObject group : groups)
+            names.append(names.length() > 0 ? ", " : "").append("'").append(group.getSID()).append("'");
+        return names.toString();
+    }
+
     public boolean nullValue() {
         return value.value == null;
     }

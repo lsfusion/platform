@@ -312,22 +312,6 @@ public class GwtSharedUtils {
         return result;
     }
 
-    public static <G, K> Map<G, ArrayList<K>> groupList(Group<G, K> getter, ArrayList<K> keys) {
-        Map<G, ArrayList<K>> result = new HashMap<>();
-        for (K key : keys) {
-            G group = getter.group(key);
-            if(group!=null) {
-                ArrayList<K> groupList = result.get(group);
-                if (groupList == null) {
-                    groupList = new ArrayList<>();
-                    result.put(group, groupList);
-                }
-                groupList.add(key);
-            }
-        }
-        return result;
-    }
-
     private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private final static Random random = new Random();
     public static String randomString(int len) {

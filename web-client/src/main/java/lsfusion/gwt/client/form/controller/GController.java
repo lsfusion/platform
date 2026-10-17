@@ -82,7 +82,7 @@ public abstract class GController {
     protected String getRefusal(String surface) {
         return isClosed() ? "Form is closed" : null;
     }
-    private native JavaScriptObject rejectedControllerPromise(String message) /*-{
+    public static native JavaScriptObject rejectedControllerPromise(String message) /*-{
         return $wnd.Promise.reject(new $wnd.Error(message));
     }-*/;
 

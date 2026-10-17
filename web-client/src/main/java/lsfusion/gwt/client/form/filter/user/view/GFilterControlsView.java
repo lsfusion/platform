@@ -10,12 +10,14 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 
 public class GFilterControlsView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private final GFiltersHandler handler;
+    // the platform's editors of the conditions, whose apply button this is - none where a view draws the conditions:
+    // the button is never shown then, the mode never being manual
+    private final GFilterEditors editors;
 
     private GToolbarButton applyButton;
 
-    public GFilterControlsView(GFiltersHandler handler) {
-        this.handler = handler;
+    public GFilterControlsView(GFiltersHandler handler, GFilterEditors editors) {
+        this.editors = editors;
        GwtClientUtils.addClassNames(this, "filter-controls", "btn-group", "btn-toolbar");
         
         if (handler.hasFiltersContainer()) {
@@ -32,7 +34,7 @@ public class GFilterControlsView extends FlexPanel {
         applyButton = new GToolbarButton(StaticImage.OK, messages.formFilterApply()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> handler.applyFilters();
+                return event -> editors.applyFilters();
             }
         };
         GwtClientUtils.addClassName(applyButton, "filter-button");
@@ -63,7 +65,7 @@ public class GFilterControlsView extends FlexPanel {
         super.setVisible(nVisible);
         
         if (nVisible) {
-            applyButton.setVisible(handler.isManualApplyMode());
+            applyButton.setVisible(editors != null && editors.isManualApplyMode());
         }
     }
 }

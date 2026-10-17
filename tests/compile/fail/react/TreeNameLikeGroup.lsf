@@ -1,0 +1,28 @@
+MODULE TreeNameLikeGroup;
+
+REQUIRE System;
+
+// a tree a React view draws any part of - its rows, its user filters, as here, its toolbar or its filter controls - is
+// named in the projection, data.<tree>, beside the groups: a tree named like a group whose node is in the same
+// container would take its place
+CLASS TreeGroupFolder;
+treeGroupParent = DATA TreeGroupFolder (TreeGroupFolder);
+treeGroupName = DATA STRING[50] (TreeGroupFolder);
+
+CLASS TreeGroupItem;
+treeGroupItemName = DATA STRING[50] (TreeGroupItem);
+
+FORM treeNameLikeGroup
+    TREE items f = TreeGroupFolder PARENT treeGroupParent(f)
+    PROPERTIES(f) treeGroupName
+    OBJECTS items = TreeGroupItem
+    PROPERTIES(items) treeGroupItemName
+;
+
+DESIGN treeNameLikeGroup {
+    NEW page {
+        custom = 'FolderPage';
+        MOVE FILTERS(TREE items);
+        MOVE BOX(items);
+    }
+}

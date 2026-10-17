@@ -20,6 +20,7 @@ import java.util.List;
 
 public class ClientTreeGroup extends ClientGridProperty{
 
+    public String name; // the tree's name in the form, TREE t's t
     public List<ClientGroupObject> groups = new ArrayList<>();
 
     public ClientContainer filtersContainer;
@@ -56,6 +57,7 @@ public class ClientTreeGroup extends ClientGridProperty{
 
         // Tree
 
+        name = pool.readString(inStream);
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);

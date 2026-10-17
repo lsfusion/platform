@@ -335,6 +335,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         return new Pair<>(panelRenderer.getRendererKey(), panelRenderer.setLoadingValue(value));
     }
 
+    // the value of the cell a full key is about - the server's, or the client's own a renderer put on top (setValue) -,
+    // null for none: kept for every key the property has, its renderer drawn or not
+    public PValue getValueAt(GGroupObjectValue fullCurrentKey) {
+        GGroupObjectValue rendererKey = panelController.getRendererKey(property, fullCurrentKey);
+        return rendererKey != null && values != null ? values.get(rendererKey) : null;
+    }
+
     @Override
     public void startEditing(GGroupObjectValue fullCurrentKey) {
         PanelRenderer panelRenderer = getRendererForFullKey(fullCurrentKey);

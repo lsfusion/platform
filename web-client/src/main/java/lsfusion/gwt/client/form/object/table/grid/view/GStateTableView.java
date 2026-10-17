@@ -31,7 +31,7 @@ import java.util.Objects;
 
 // view with state, without incremental updates
 // flexpanel, since we need to add pagesize widget + attach it to handle events
-public abstract class GStateTableView extends FlexPanel implements GTableView {
+public abstract class GStateTableView extends FlexPanel implements GListView {
 
     protected final GFormController form;
     protected final GPlatformGridController grid;
@@ -161,7 +161,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
-        setCurrentKey(currentKey, false); // server-driven (GPlatformGridController.updateCurrentKey): the component hasn't rendered it -> re-render
+        setCurrentKey(currentKey, false); // server-driven (GPlatformTableController.updateCurrentKey): the component hasn't rendered it -> re-render
     }
 
     private void setCurrentKey(GGroupObjectValue currentKey, boolean rendered) {

@@ -7,7 +7,6 @@ import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
-import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyDrawOrPivotColumn;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
@@ -31,8 +30,8 @@ public class GForm implements Serializable {
     public LinkedHashMap<GFormEvent, GAsyncEventExec> asyncExecMap = new LinkedHashMap<>();
 
     public GContainer mainContainer;
-    public HashSet<GTreeGroup> treeGroups = new HashSet<>();
     public ArrayList<GGroupObject> groupObjects = new ArrayList<>();
+
     public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<>();
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 

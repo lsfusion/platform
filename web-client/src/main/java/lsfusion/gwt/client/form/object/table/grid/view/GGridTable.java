@@ -49,7 +49,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.String.valueOf;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
-public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GTableView {
+public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GListView {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
@@ -558,11 +558,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    protected Boolean isResizeOverflow() {
-        return groupObject.grid.resizeOverflow;
-    }
-
-    @Override
     public GSize getUserHeaderHeight() {
         Integer headerHeight = currentGridPreferences.headerHeight;
         if (headerHeight != null && headerHeight >= 0)
@@ -1024,11 +1019,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void updateOrders() {
-        headersChanged();
-    }
-
-    @Override
     public GGroupObjectValue getColumnKey(Cell cell) {
         return getGridColumn(cell).columnKey;
     }
@@ -1266,7 +1256,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void focus(FocusUtils.Reason reason) {
-        GTableView.super.focus(reason);
+        GListView.super.focus(reason);
     }
 
     // editing set value (in EditContext), changes model and value itself

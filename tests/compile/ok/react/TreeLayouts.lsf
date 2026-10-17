@@ -4,8 +4,9 @@ REQUIRE System;
 
 // what a tree a React view draws accepts: its rows' names are reserved only where its rows are drawn, so a panel
 // property of one of its groups in another React container may be called `parent`, and a property of a group outside
-// any tree may be called `expand`. The tree itself takes no name in the projection: it may be called like a verb of
-// the controller, and a property of its group may be called `tree`
+// any tree may be called `expand`. Here the tree is named in the projection - data.<tree>, beside its groups -, as a
+// view draws its box, its rows in it, and a property of its group may be called `tree`; and `orders`, where its rows
+// are drawn: a tree's sortings are the tree's, on its node (data.<tree>.orders), not its groups'
 CLASS TreeLayoutFolder;
 treeLayoutParent = DATA TreeLayoutFolder (TreeLayoutFolder);
 treeLayoutName = DATA STRING[50] (TreeLayoutFolder);
@@ -17,6 +18,7 @@ treeLayoutItemName = DATA STRING[50] (TreeLayoutItem);
 CLASS TreeLayoutTag;
 treeLayoutTagParent = DATA TreeLayoutTag (TreeLayoutTag);
 treeLayoutTagName = DATA STRING[50] (TreeLayoutTag);
+treeLayoutTagNote = DATA STRING[50] (TreeLayoutTag);
 
 FORM treeLayouts
     TREE folders f = TreeLayoutFolder PARENT treeLayoutParent(f)
@@ -24,8 +26,8 @@ FORM treeLayouts
     PROPERTIES(f) PANEL treeLayoutNote EXTID 'parent'
     OBJECTS i = TreeLayoutItem
     PROPERTIES(i) treeLayoutItemName EXTID 'expand'
-    TREE change t = TreeLayoutTag PARENT treeLayoutTagParent(t)
-    PROPERTIES(t) treeLayoutTagName EXTID 'tree'
+    TREE tags t = TreeLayoutTag PARENT treeLayoutTagParent(t)
+    PROPERTIES(t) treeLayoutTagName EXTID 'tree', treeLayoutTagNote EXTID 'orders'
 ;
 
 DESIGN treeLayouts {
@@ -35,5 +37,5 @@ DESIGN treeLayouts {
         MOVE PROPERTY(treeLayoutNote(f));
     }
     BOX(i) { custom = 'ItemBoard'; }
-    BOX(TREE change) { custom = 'TagTree'; }
+    BOX(TREE tags) { custom = 'TagTree'; }
 }

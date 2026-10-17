@@ -1,0 +1,21 @@
+MODULE ToolbarHiddenButtonName;
+
+REQUIRE System;
+
+// a property of a group named like a button of the group's toolbar the design does not show, on the node where a
+// React view draws the toolbar: the toolbar's show... flags are the platform's alone - a view's toolbar has every
+// button, and draws what it wants -, so the name is taken all the same, and the property would shadow `getSum`
+CLASS ToolbarHiddenItem;
+toolbarHiddenText = DATA STRING[20] (ToolbarHiddenItem);
+
+FORM toolbarHiddenButtonName
+    OBJECTS i = ToolbarHiddenItem
+    PROPERTIES(i) toolbarHiddenText EXTID 'getSum'
+;
+
+DESIGN toolbarHiddenButtonName {
+    BOX(i) {
+        custom = 'ItemBoard';
+        TOOLBARSYSTEM(i) { showCalculateSum = FALSE; }
+    }
+}

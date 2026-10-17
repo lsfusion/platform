@@ -55,6 +55,12 @@ public abstract class GPlatformPropertyController implements GPropertyController
     public abstract void removeProperty(GPropertyDraw property);
 
     public abstract Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value);
+    // ... and the value it has for a cell - the server's, the client's own on top -, null for none: what React's rows
+    // answer of an lsf column's cell (GReactFormData.LsfPropertyEntry), whose controller is a panel's - a table's is
+    // asked nothing of it
+    public PValue getValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey) {
+        throw new UnsupportedOperationException();
+    }
 
     // ===== the platform's side of the form's controller of a property (GPropertyController): its values into its
     // view, for the columns the grids show now; any reader of it by that reader's own update of this controller; its

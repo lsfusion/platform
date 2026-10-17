@@ -17,6 +17,7 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -181,8 +182,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 removeFilters);
         addFilterBinding(nativeEvent -> {
                     if (GKeyStroke.isEscapeKeyEvent(nativeEvent) && GKeyStroke.isPlainKeyEvent(nativeEvent)) {
-                        GPlatformTableController goController = getGroupController();
-                        return goController.filter != null && goController.filter.hasConditionsToReset();
+                        GFilterInputController filter = getGroupController().getFilter();
+                        return filter != null && filter.hasConditionsToReset();
                     }
                     return false;
                 }, null, removeFilters);
@@ -452,8 +453,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GPlatformTableController getGroupController();
 
+    // the orders the form has for a group changed: the header draws them as it reads them
+    public void updateOrders() {
+        headersChanged();
+    }
+
     public void runGroupReport() {
-        form.runGroupReport(groupObject.ID);
+        form.runTableReport(getGrid());
     }
 
     public void selectNextCellInColumn(boolean forward, NativeEvent event) {
@@ -768,7 +774,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
-    protected abstract Boolean isResizeOverflow();
+    protected Boolean isResizeOverflow() {
+        return getGrid().resizeOverflow;
+    }
 
     public GSize getUserHeaderHeight() {
         return null;

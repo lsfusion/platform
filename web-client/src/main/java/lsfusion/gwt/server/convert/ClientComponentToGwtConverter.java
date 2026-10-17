@@ -180,6 +180,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GRegularFilterGroup convertRegularFilterGroup(ClientRegularFilterGroup clientFilterGroup) {
         GRegularFilterGroup filterGroup = initGwtComponent(clientFilterGroup, new GRegularFilterGroup());
 
+        filterGroup.name = clientFilterGroup.name;
         filterGroup.groupObject = convertOrCast(clientFilterGroup.groupObject);
         filterGroup.noNull = clientFilterGroup.noNull;
 
@@ -552,6 +553,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GTreeGroup convertTreeGroup(ClientTreeGroup clientTreeGroup) {
         GTreeGroup treeGroup = initGwtGridProperty(clientTreeGroup, new GTreeGroup());
 
+        treeGroup.name = clientTreeGroup.name;
         convertChrome(treeGroup, clientTreeGroup.toolbar, clientTreeGroup.filtersContainer, clientTreeGroup.filterControls, clientTreeGroup.filters);
 
         treeGroup.hierarchicalWidth = clientTreeGroup.hierarchicalWidth;
@@ -606,15 +608,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
             groupObject.objects.add(object);
         }
         
-        groupObject.filtersContainer = convertOrCast(clientGroupObject.filtersContainer);
-        groupObject.filtersControls = convertOrCast(clientGroupObject.filterControls);
-        if(clientGroupObject.filters != null)
-            for (ClientFilter filter : clientGroupObject.filters) {
-                groupObject.filters.add(convertOrCast(filter));
-            }
-        
         groupObject.grid = convertOrCast(clientGroupObject.grid);
-        groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         if (groupObject.grid != null) // a group in a tree has none: its tree has what goes over the rows
             convertChrome(groupObject.grid, clientGroupObject.toolbar, clientGroupObject.filtersContainer, clientGroupObject.filterControls, clientGroupObject.filters);
 
@@ -685,11 +679,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         GContainer mainContainer = convertOrCast(clientForm.mainContainer);
         mainContainer.main = true;
         form.mainContainer = mainContainer;
-
-        for (ClientTreeGroup clientTreeGroup : clientForm.treeGroups) {
-            GTreeGroup treeGroup = convertOrCast(clientTreeGroup);
-            form.treeGroups.add(treeGroup);
-        }
 
         for (ClientGroupObject clientGroup : clientForm.groupObjects) {
             GGroupObject group = convertOrCast(clientGroup);

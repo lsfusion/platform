@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class GTreeGroup extends GGridProperty {
+    // its name in the form - TREE t's t -, which a react view's node of the tree is named by (GReactFormData.TreeNode)
+    public String name;
     public ArrayList<GGroupObject> groups = new ArrayList<>();
 
     public int hierarchicalWidth;

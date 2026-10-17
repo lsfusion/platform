@@ -61,6 +61,7 @@ public class TreeGroupView extends GridPropertyView<TreeGroupView, TreeGroupEnti
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        pool.writeString(outStream, entity.getSID()); // its name: a react view's node of the tree (GReactFormData)
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbarSystem);
         pool.serializeObject(outStream, filtersContainer);

@@ -1,0 +1,20 @@
+MODULE FilterGroupNameTaken;
+
+REQUIRE System;
+
+// a filter group a React view draws is named on its group's node by its own name, as a property is by its integration
+// name - a custom on the group's box draws the rows and the filter group on one node: a property drawn there under
+// the same name collides with it
+CLASS FilterGroupNameItem;
+filterGroupNameQty = DATA INTEGER (FilterGroupNameItem);
+
+FORM filterGroupNameTaken
+    OBJECTS i = FilterGroupNameItem
+    PROPERTIES(i) filterGroupNameQty EXTID 'stock'
+    FILTERGROUP stock
+        FILTER 'Some' filterGroupNameQty(i) > 0
+;
+
+DESIGN filterGroupNameTaken {
+    BOX(i) { custom = 'ItemBoard'; }
+}

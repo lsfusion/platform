@@ -27,6 +27,11 @@ public class GToolbarView extends ResizableComplexPanel {
         isEmpty = false;
     }
     
+    public void insertComponent(Widget tool, int beforeIndex) {
+        insert(tool, beforeIndex);
+        isEmpty = false;
+    }
+
     public boolean isEmpty() {
         return isEmpty;
     }

@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.object.table.tree.controller.GPlatformTreeContro
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
+import lsfusion.gwt.client.form.object.table.view.GTableView;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
-public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
+public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> implements GTableView {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
     private boolean dataUpdated;
@@ -64,7 +65,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private GSize hierarchicalWidth;
 
     public GTreeTable(GFormController iformController, GForm iform, GPlatformTreeController treeGroupController, GTreeGroup treeGroup, TableContainer tableContainer) {
-        super(iformController, lastGroupObject(treeGroup), tableContainer, treeGroupController.getFont());
+        super(iformController, lastGroupObject(treeGroup), tableContainer, treeGroup.font);
 
         this.treeGroupController = treeGroupController;
         this.treeGroup = treeGroup;
@@ -134,7 +135,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         columnsUpdated = true;
     }
 
-    public boolean isPropertyShown(GPropertyDraw property) {
+    public boolean containsProperty(GPropertyDraw property) {
         return tree.getPropertyIndex(property) != -1;
     }
 
@@ -142,7 +143,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
        activateColumn(tree.getPropertyIndex(propertyDraw));
     }
 
-    public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
         dataUpdated = true;
 
         if(!updateKeys) {
@@ -794,11 +795,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected Boolean isResizeOverflow() {
-        return treeGroup.resizeOverflow;
-    }
-
-    @Override
     protected double getColumnFlex(int i) {
         if(i == 0)
             return 0;
@@ -958,31 +954,22 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    public void fireExpandNodeRecursive(boolean current, boolean open) {
+    public void fireExpandNodeRecursive(boolean current) {
         GTreeContainerTableNode node = getExpandSelectedNode();
         if (node != null && (!current || node.isExpandable())) {
-            long requestIndex = form.expandGroupObjectRecursive(node.getGroup(), current, open);
-            expandNodeRecursive(current ? node : tree.root, open, requestIndex);
+            long requestIndex = form.expandGroupObjectRecursive(node.getGroup(), current, true);
+            expandNodeRecursive(current ? node : tree.root, requestIndex);
 
             updateExpand();
         }
     }
 
-    public void expandNodeRecursive(GTreeContainerTableNode node, boolean open, long requestIndex) {
-        if(open) {
-            for(GTreeChildTableNode child : node.getChildren())
-                if(child instanceof GTreeObjectTableNode)
-                    expandNodeRecursive((GTreeObjectTableNode)child, true, requestIndex);
-            if(node.isExpandable() && !node.hasExpandableChildren())
-                expandNode(node, true, requestIndex); // because it is expandable
-        } else {
-            if(node == tree.root) { // in that case we should collapse all root elements
-                for (GTreeChildTableNode child : node.getChildren())
-                    if (child instanceof GTreeObjectTableNode)
-                        expandNode((GTreeObjectTableNode) child, false, requestIndex);
-            } else
-                expandNode(node, false, requestIndex);
-        }
+    private void expandNodeRecursive(GTreeContainerTableNode node, long requestIndex) {
+        for(GTreeChildTableNode child : node.getChildren())
+            if(child instanceof GTreeObjectTableNode)
+                expandNodeRecursive((GTreeObjectTableNode)child, requestIndex);
+        if(node.isExpandable() && !node.hasExpandableChildren())
+            expandNode(node, true, requestIndex); // because it is expandable
     }
     public void expandNode(GTreeContainerTableNode node, boolean open, long requestIndex) {
         node.setPendingExpanding(open, requestIndex);
@@ -1053,10 +1040,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeObjectTableNode getExpandSelectedNode() {
         return tree.getExpandNodeByRecord(getSelectedRowValue());
-    }
-    public boolean isCurrentPathExpanded() {
-        GTreeObjectTableNode node;
-        return (node = getExpandSelectedNode()) != null && node.isExpandable() && node.hasExpandableChildren();
     }
 
     public GGroupObject getGroupObject() {
@@ -1170,11 +1153,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             loadings.put(property, loadingMap);
         }
         loadingMap.put(getRowKey(cell), PValue.getPValue(true));
-    }
-
-    // the orders the form has for a group changed: the header draws them as it reads them
-    public void updateOrders() {
-        headersChanged();
     }
 
     public boolean keyboardNodeChangeState(boolean open) {

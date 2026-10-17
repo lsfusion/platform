@@ -47,6 +47,7 @@ public class RegularFilterGroupView extends BaseComponentView<RegularFilterGroup
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
+        pool.writeString(outStream, entity.getSID()); // its name: a react view's part of it (GReactFormData)
         pool.serializeCollection(outStream, filters.getList());
 
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));

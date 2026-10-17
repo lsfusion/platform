@@ -110,12 +110,12 @@ public class GFormChangesTest extends GWTTestCase {
     public void testTheSelectedFilterOfAFilterGroupNoneToo() {
         setUpForm();
         GRegularFilterGroup filterGroup = new GRegularFilterGroup();
-        filterGroup.ID = 40;
+        filterGroup.ID = 40; filterGroup.name = "stock";
         GRegularFilter first = new GRegularFilter(), second = new GRegularFilter();
         first.ID = 41; second.ID = 42;
         filterGroup.filters.addAll(Arrays.asList(first, second));
         GRegularFilterGroup otherGroup = new GRegularFilterGroup();
-        otherGroup.ID = 43;
+        otherGroup.ID = 43; otherGroup.name = "other";
         form.regularFilterGroups.addAll(Arrays.asList(filterGroup, otherGroup));
         GFormChangesDTO dto = noChanges();
         dto.regularFilterGroupIds = new int[] {40, 43};

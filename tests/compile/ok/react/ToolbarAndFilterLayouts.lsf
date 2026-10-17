@@ -1,0 +1,162 @@
+MODULE ToolbarAndFilterLayouts;
+
+REQUIRE System;
+
+// a group's and a tree's toolbar, filters and filter groups, each drawn by a view or by the platform, whoever draws
+// the rows: where a React view draws the rows, the filter box placed back with lsf inside the custom box, its
+// conditions alone placed back with the toolbar - the view draws the filter controls over the platform's panel -, its
+// controls alone placed back with the toolbar - the view draws the conditions -, and the grid alone moved into a react
+// container, which leaves the toolbar and the filters in the group's box; the toolbar alone a view draws, over the
+// platform's grid; and a property named as a button of the toolbar where the toolbar is not - its names go on the
+// group's node where it is drawn -, or as a member of filter controls the platform draws, free to take that name; a
+// filter group the view draws, under its own name; and a tree's grid alone moved into a react container, which leaves
+// the tree's toolbar and filters in its box - the tree's node is there all the same, its rows drawn there, as a group's
+// node is where its rows are; a tree's toolbar alone a view draws, over the platform's tree; and the names of a tree's
+// toolbar and filter controls free on its groups, theirs going on the tree's own node
+CLASS ToolbarLayoutItem;
+toolbarLayoutName = DATA STRING[50] (ToolbarLayoutItem);
+toolbarLayoutCode = DATA STRING[10] (ToolbarLayoutItem);
+
+FORM layoutFilterBoxPlaced
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName
+;
+
+DESIGN layoutFilterBoxPlaced {
+    BOX(i) {
+        custom = 'LayoutBoard';
+        FILTERBOX(i) { lsf = TRUE; }
+    }
+}
+
+FORM layoutFiltersPlaced
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName
+;
+
+DESIGN layoutFiltersPlaced {
+    BOX(i) {
+        custom = 'LayoutBoard';
+        FILTERS(i) { lsf = TRUE; }
+        TOOLBARSYSTEM(i) { lsf = TRUE; }
+    }
+}
+
+FORM layoutControlsPlaced
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName
+;
+
+DESIGN layoutControlsPlaced {
+    BOX(i) {
+        custom = 'LayoutBoard';
+        FILTERCONTROLS(i) { lsf = TRUE; }
+        TOOLBARSYSTEM(i) { lsf = TRUE; }
+    }
+}
+
+FORM layoutGridMoved
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName
+;
+
+DESIGN layoutGridMoved {
+    NEW cards {
+        custom = 'LayoutCards';
+        MOVE GRID(i);
+    }
+}
+
+FORM layoutToolbarHeader
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName
+;
+
+DESIGN layoutToolbarHeader {
+    NEW header FIRST {
+        custom = 'LayoutHeader';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}
+
+FORM layoutToolbarNamesFree
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName EXTID 'getSum', toolbarLayoutCode EXTID 'filterControlsVisible'
+;
+
+DESIGN layoutToolbarNamesFree {
+    BOX(i) { custom = 'LayoutBoard'; }
+    NEW header FIRST {
+        custom = 'LayoutHeader';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}
+
+FORM layoutFilterControlsNameFree
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName EXTID 'addFilter'
+;
+
+DESIGN layoutFilterControlsNameFree {
+    BOX(i) {
+        custom = 'LayoutBoard';
+        FILTERCONTROLS(i) { lsf = TRUE; }
+    }
+}
+
+FORM layoutFilterGroup
+    OBJECTS i = ToolbarLayoutItem
+    PROPERTIES(i) toolbarLayoutName
+    FILTERGROUP named
+        FILTER 'Named' toolbarLayoutName(i) DEFAULT
+        FILTER 'Unnamed' NOT toolbarLayoutName(i)
+;
+
+DESIGN layoutFilterGroup {
+    BOX(i) {
+        custom = 'LayoutBoard';
+    }
+}
+
+CLASS ToolbarLayoutFolder;
+toolbarLayoutFolderName = DATA STRING[50] (ToolbarLayoutFolder);
+toolbarLayoutFolder = DATA ToolbarLayoutFolder (ToolbarLayoutItem);
+
+FORM layoutTreeMoved
+    TREE moved f = ToolbarLayoutFolder, i = ToolbarLayoutItem
+    PROPERTIES(f) toolbarLayoutFolderName
+    PROPERTIES(i) toolbarLayoutName
+    FILTERS toolbarLayoutFolder(i) == f
+;
+
+DESIGN layoutTreeMoved {
+    NEW tree {
+        custom = 'LayoutTree';
+        MOVE GRID(TREE moved);
+    }
+}
+
+FORM layoutTreeToolbarHeader
+    TREE t f = ToolbarLayoutFolder, i = ToolbarLayoutItem
+    PROPERTIES(f) toolbarLayoutFolderName
+    PROPERTIES(i) toolbarLayoutName
+    FILTERS toolbarLayoutFolder(i) == f
+;
+
+DESIGN layoutTreeToolbarHeader {
+    NEW header FIRST {
+        custom = 'LayoutTreeHeader';
+        MOVE TOOLBARSYSTEM(TREE t);
+    }
+}
+
+FORM layoutTreeGroupNamesFree
+    TREE t f = ToolbarLayoutFolder, i = ToolbarLayoutItem
+    PROPERTIES(f) toolbarLayoutFolderName EXTID 'export'
+    PROPERTIES(i) toolbarLayoutName, toolbarLayoutCode EXTID 'addFilter'
+    FILTERS toolbarLayoutFolder(i) == f
+;
+
+DESIGN layoutTreeGroupNamesFree {
+    BOX(TREE t) { custom = 'LayoutTree'; }
+}

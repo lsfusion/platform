@@ -1,0 +1,19 @@
+MODULE TreeNameTaken;
+
+REQUIRE System;
+
+// a tree a React view draws any part of - its rows, its user filters, as here, its toolbar or its filter controls - is
+// named in the projection, data.<tree>, at the top level beside the groups: a tree named like the controller's own
+// verb would take its place
+CLASS TreeNameFolder;
+treeNameParent = DATA TreeNameFolder (TreeNameFolder);
+treeNameName = DATA STRING[50] (TreeNameFolder);
+
+FORM treeNameTaken
+    TREE change f = TreeNameFolder PARENT treeNameParent(f)
+    PROPERTIES(f) treeNameName
+;
+
+DESIGN treeNameTaken {
+    FILTERS(TREE change) { custom = 'FolderFilters'; }
+}

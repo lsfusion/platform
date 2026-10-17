@@ -1,0 +1,28 @@
+MODULE TreeFiltersDottedName;
+
+REQUIRE System;
+
+// a tree the platform draws, whose user filters a React view draws: a property of its groups is the platform's, which
+// nothing projects by name, so its integration name may carry a dot - a condition names it i.unit.price, and the name
+// is read up to its first dot, the group's, which has none
+CLASS TreeDottedFolder;
+treeDottedParent = DATA TreeDottedFolder (TreeDottedFolder);
+treeDottedName = DATA STRING[50] (TreeDottedFolder);
+
+CLASS TreeDottedItem;
+treeDottedFolder = DATA TreeDottedFolder (TreeDottedItem);
+treeDottedPrice = DATA NUMERIC[10,2] (TreeDottedItem);
+
+FORM treeFiltersDottedName
+    TREE t f = TreeDottedFolder PARENT treeDottedParent(f), i = TreeDottedItem
+    PROPERTIES(f) treeDottedName
+    PROPERTIES(i) treeDottedPrice EXTID 'unit.price'
+    FILTERS treeDottedFolder(i) == f
+;
+
+DESIGN treeFiltersDottedName {
+    NEW side {
+        custom = 'FolderFilters';
+        MOVE FILTERS(TREE t);
+    }
+}

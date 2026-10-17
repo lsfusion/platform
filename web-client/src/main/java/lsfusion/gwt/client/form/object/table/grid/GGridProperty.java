@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.object.table.view.GTableView;
 import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
@@ -44,6 +45,14 @@ public abstract class GGridProperty extends GComponent {
 
     public Boolean boxed;
     public Boolean resizeOverflow;
+
+    // whether its view is drawn boxed: as the design says, else as the view is by default
+    public boolean isBoxed(GTableView view) {
+        if(boxed != null)
+            return boxed;
+
+        return view.isDefaultBoxed();
+    }
 
     public GSize getCaptionHeight(boolean needNotNull) {
         return GPropertyDraw.getHeight(captionHeight, captionCharHeight, font, needNotNull);

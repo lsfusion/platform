@@ -714,17 +714,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         request.make(this, stack);
     }
 
-    public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-            // a user event is for what the user changes: the filter selected already fires none
-            if (form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID)))
-                form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
-                logger.debug(String.format("filter ID: %s", filterID));
-            }
-        });
+    @Override
+    public void setRegularFilter(ExecutionStack stack, BatchRequest.SetRegularFilter request) throws SQLException, SQLHandledException {
+        RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(request.groupID);
+        // a user event is for what the user changes: the filter selected already fires none
+        if (form.setRegularFilter(filterGroup, filterGroup.getFilter(request.filterID)))
+            form.fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("set regular filter: [GROUP: %1$s]", request.groupID));
+            logger.debug(String.format("filter ID: %s", request.filterID));
+        }
     }
 
     public ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters, int pageSize) throws RemoteException {

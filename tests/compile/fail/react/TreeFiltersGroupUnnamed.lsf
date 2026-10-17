@@ -1,0 +1,27 @@
+MODULE TreeFiltersGroupUnnamed;
+
+REQUIRE System;
+
+// the user filters of a tree a React view draws name each condition's property by its group's name, one word - as a
+// group whose own part a view draws is named -, whether or not a view draws a part of the group itself: a group of
+// several objects with no name of its own, whose SID is their names joined with dots, is refused where the tree's
+// FILTERS box is drawn by a view, as it is where its rows are
+CLASS TreeFiltersFolder;
+CLASS TreeFiltersTag;
+treeFiltersName = DATA STRING[50] (TreeFiltersFolder, TreeFiltersTag);
+
+CLASS TreeFiltersItem;
+treeFiltersItemName = DATA STRING[50] (TreeFiltersItem);
+
+FORM treeFiltersGroupUnnamed
+    TREE t (f = TreeFiltersFolder, g = TreeFiltersTag), i = TreeFiltersItem
+    PROPERTIES(f, g) treeFiltersName
+    PROPERTIES(i) treeFiltersItemName
+;
+
+DESIGN treeFiltersGroupUnnamed {
+    NEW side {
+        custom = 'FolderFilters';
+        MOVE FILTERS(TREE t);
+    }
+}

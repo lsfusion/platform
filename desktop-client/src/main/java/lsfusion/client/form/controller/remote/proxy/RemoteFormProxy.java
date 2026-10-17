@@ -144,13 +144,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException {
-        logRemoteMethodStartVoidCall("setRegularFilter");
-        ServerResponse result = target.setRegularFilter(requestIndex, lastReceivedRequestIndex, groupID, filterID);
-        logRemoteMethodEndCall("setRegularFilter", result);
-        return result;
-    }
-
     public ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException {
         logRemoteMethodStartVoidCall("executeBatch");
         ServerResponse result = target.executeBatch(requestIndex, lastReceivedRequestIndex, requests);

@@ -1,0 +1,19 @@
+MODULE FilterControlsReservedName;
+
+REQUIRE System;
+
+// a property of a group named like a member of the group's filter controls, on the node where a React view draws them -
+// a custom on the group's box draws the rows and FILTERCONTROLS on one node: it would shadow `addFilter`. The names are
+// the same whoever draws the conditions, the platform's filters off in the toolbar included
+CLASS FilterControlsNameItem;
+filterControlsNameText = DATA STRING[20] (FilterControlsNameItem);
+
+FORM filterControlsReservedName
+    OBJECTS i = FilterControlsNameItem
+    PROPERTIES(i) filterControlsNameText EXTID 'addFilter'
+;
+
+DESIGN filterControlsReservedName {
+    BOX(i) { custom = 'ItemBoard'; }
+    TOOLBARSYSTEM(i) { showFilters = FALSE; }
+}
