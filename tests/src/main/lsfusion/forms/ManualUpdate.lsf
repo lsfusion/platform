@@ -1,0 +1,78 @@
+MODULE ManualUpdate;
+
+REQUIRE TestUtils;
+
+// a group in manual update holds its changes back until it is updated: its client's update button is enabled and its
+// rows are dimmed while it does. What it holds back goes with the columns it shows - a column that is no longer shown
+// has nothing to hold back. Before the fix (#1886) such a column went on being held back after it was gone, and the
+// group stayed pending for good, however many times it was updated: the count a pivot adds to the group's columns,
+// which is shown in the pivot only, once the pivot was left before an update, and any column hidden by its SHOWIF
+// while its change was held back
+
+CLASS MuItem 'Item';
+muName 'Name' = DATA STRING[20] (MuItem);
+muPrice 'Price' = DATA INTEGER (MuItem);
+
+FORM muItems 'Items'
+    OBJECTS i = MuItem
+    PROPERTIES(i) READONLY muName
+;
+
+DESIGN muItems {
+    GRID(i) { enableManualUpdate = TRUE; }
+}
+
+testAPivotLeftHeldBackIsUpdatedInTheTable 'A manual group left in its pivot before an update there is not pending once updated in its table' () {
+    NEW i = MuItem { muName(i) <- 'one'; }
+    SHOW muItems NOWAIT {
+        readUpdatePending();
+        assertTrue(updatePendingInForm('i'), 'a manual group did not hold its rows back');
+        forceUpdate('i');
+        readUpdatePending();
+        assertFalse(updatePendingInForm('i'), 'a manual group stayed pending once updated');
+
+        changeListView('i', 'PIVOT');
+        readUpdatePending();
+        assertTrue(updatePendingInForm('i'), 'the pivot of a manual group did not hold its rows back');
+
+        changeListView('i', 'GRID');
+        readUpdatePending();
+        forceUpdate('i');
+        readUpdatePending();
+        assertFalse(updatePendingInForm('i'), 'a manual group left in its pivot before an update there stayed pending once updated in its table');
+    };
+}
+
+muShowPrice = DATA LOCAL BOOLEAN ();
+
+FORM muPrices 'Prices'
+    OBJECTS i = MuItem
+    PROPERTIES(i) READONLY muName, muPrice SHOWIF muShowPrice()
+;
+
+DESIGN muPrices {
+    GRID(i) { enableManualUpdate = TRUE; }
+}
+
+testAColumnHiddenHeldBackIsNotPending 'A column hidden by its SHOWIF while its change is held back leaves its manual group pending no more once updated' () {
+    NEW i = MuItem {
+        muName(i) <- 'one';
+        muShowPrice() <- TRUE;
+        SHOW muPrices NOWAIT {
+            readUpdatePending();
+            forceUpdate('i');
+            readUpdatePending();
+            assertFalse(updatePendingInForm('i'), 'a manual group stayed pending once updated');
+
+            muPrice(i) <- 5;
+            readUpdatePending();
+            assertTrue(updatePendingInForm('i'), 'a manual group did not hold a change of its column back');
+
+            muShowPrice() <- NULL;
+            readUpdatePending();
+            forceUpdate('i');
+            readUpdatePending();
+            assertFalse(updatePendingInForm('i'), 'a column hidden while its change was held back left its manual group pending once updated');
+        };
+    }
+}

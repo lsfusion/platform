@@ -634,6 +634,12 @@ public class FormChanges {
         return response;
     }
 
+    // whether the form holds a group's changes back (a manual update), for the groups this answer says it of - what a
+    // client's update button and the group's dimmed rows go on showing until an answer says otherwise
+    public Boolean getUpdateState(GroupObjectInstance group) {
+        return updateStateObjects.get(group);
+    }
+
     public ImMap<GroupObjectInstance, ImSet<PropertyDrawInstance>> getGroupProperties() {
         MExclMap<GroupObjectInstance, MExclSet<PropertyDrawInstance>> mGroupProperties = MapFact.mExclMap();
         for(GroupObjectInstance group : gridObjects.keys().merge(objects.keys()))

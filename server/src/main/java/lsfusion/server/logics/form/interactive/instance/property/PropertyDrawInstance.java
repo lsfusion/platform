@@ -391,6 +391,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
         public Object getProfiledObject() {
             return NullValueProperty.instance;
         }
+
+        @Override
+        public PropertyDrawInstance<P> getPropertyDraw() {
+            return PropertyDrawInstance.this;
+        }
     }
 
     public class ExtraReaderInstance implements PropertyReaderInstance {
@@ -430,6 +435,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
             return ThreadLocalContext.localize(type.getText()) + "(" + PropertyDrawInstance.this.toString() + ")";
         }
 
+        @Override
         public PropertyDrawInstance<P> getPropertyDraw() {
             return PropertyDrawInstance.this;
         }
@@ -443,6 +449,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
 
     @Override
     public PropertyDrawInstance getAggrProperty() {
+        return this;
+    }
+
+    @Override
+    public PropertyDrawInstance<P> getPropertyDraw() {
         return this;
     }
 
@@ -476,6 +487,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> implements AggrRe
         @Override
         public Object getProfiledObject() {
             return entity.getLastAggrColumns().get(index);
+        }
+
+        @Override
+        public PropertyDrawInstance<P> getPropertyDraw() {
+            return PropertyDrawInstance.this;
         }
     }
 }

@@ -46,3 +46,13 @@ readShown () {
 // they are `walks`
 assertWalked (STRING form, STRING component, STRING walks)
     INTERNAL 'lsfusion.tests.DesignWalksAction' (STRING, STRING, STRING);
+
+// whether the open form the action runs in holds the changes of a group, by its name, back - a group in manual update
+// until it is updated (forceUpdate) -, as of the last readUpdatePending() that read the form's answer to its client:
+// what the client's update button and the group's dimmed rows show, which an answer that says nothing of it leaves be
+updatePendingInForm = DATA LOCAL BOOLEAN (STRING);
+readUpdatePending INTERNAL 'lsfusion.tests.ReadUpdatePendingAction' ();
+
+// a list group of the open form the action runs in, by its name, switched to one of its views - GRID, PIVOT, ... -, as
+// the switch on a client's toolbar asks for it: a pivot holds the group's changes back until it is updated
+changeListView INTERNAL 'lsfusion.tests.ChangeListViewAction' (STRING, STRING);

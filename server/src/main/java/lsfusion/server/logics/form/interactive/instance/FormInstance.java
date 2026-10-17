@@ -2774,6 +2774,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
             } else if (oldPropIsShown) {
                 result.dropProperties.exclAdd(drawProperty);
+
+                // ... and nothing of it is held back any more: shown again, it is read whole (wasShown), while a reader
+                // of it left pending would keep its group pending for good - the pivot's count, which only the pivot
+                // shows, once the pivot is left before an update there, or a column hidden while its change is held back
+                GroupObjectInstance toDraw = drawProperty.toDraw;
+                if (toDraw != null)
+                    toDraw.checkPending(result, () -> toDraw.pendingUpdateProps.removeIf(reader -> reader.getPropertyDraw() == drawProperty));
             }
         }
 
