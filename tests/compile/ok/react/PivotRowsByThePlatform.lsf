@@ -1,0 +1,22 @@
+MODULE PivotRowsByThePlatform;
+
+REQUIRE System;
+
+// a group in PIVOT view inside a CUSTOM REACT container is fine where its grid is lsf: the platform draws the pivot,
+// and the view places it (PivotRowsInReact is the one refused)
+CLASS PivotPlatformItem;
+pivotPlatformName = DATA STRING[20] (PivotPlatformItem);
+pivotPlatformSum = DATA NUMERIC[14,2] (PivotPlatformItem);
+
+FORM pivotRowsByThePlatform
+    OBJECTS i = PivotPlatformItem PIVOT
+    PROPERTIES(i) pivotPlatformName, pivotPlatformSum
+;
+
+DESIGN pivotRowsByThePlatform {
+    NEW board {
+        custom = 'PivotPlatformBoard';
+        MOVE BOX(i);
+    }
+    GRID(i) { lsf = TRUE; }
+}

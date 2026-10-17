@@ -1555,7 +1555,10 @@ FILTERCONTROLS buttons and its panel's editors, and where the platform has none 
 conditions and `FILTERCONTROLS(o)`, or the toolbar turns the platform's filters off (`showFilters = FALSE`) — it stays
 `false` and its change is refused, saying why. Controls a view draws itself are its own to show, its [filter
 controls](#filter-controls). The view type switch switches the platform's table: where a view draws the rows,
-`listViews` is empty, `listView` is `null`, and a change is refused.
+`listViews` is empty, `listView` is `null`, and a change is refused. A group whose rows a view draws has the default
+`GRID` list view type: one the form gives another (`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is
+refused when the form is built, since the server starts such a group as the platform's view of that kind needs it —
+mark what draws the rows, the group's grid or its tree, `lsf` for the platform to draw them there.
 
 Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server are refused. The settings of
 the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.design.ReactProjectionNames;
 import lsfusion.interop.form.event.*;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.server.base.Custom;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -747,6 +748,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         checkCustomReactProperty();
         checkCustomReactSwallowed();
         checkCustomTemplatePlaces();
+        checkReactRowsListView();
 
         checkLsfViews();
         checkReactProjectionNames();
@@ -787,6 +789,24 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                     throw new IllegalStateException(formErrorPrefix() + "container '" + container.getSID() + "' is both tabbed"
                             + " and drawn by custom; a container is drawn one way, so only one of the two can be given");
             }
+    }
+
+    // a group whose rows a React view draws is a list of rows: the server starts a group in another list view - PIVOT,
+    // MAP, CALENDAR, CUSTOM - as the platform's view of that kind needs it (a pivot's group mode, or under asyncInit
+    // waiting for the pivot to ask for it; a calendar's or a map's page size), which a view drawing the rows never asks
+    // for nor undoes. Refused when the form is built, rather than the view getting rows it did not ask for - or none
+    private void checkReactRowsListView() {
+        for (GroupObjectView groupObject : getGroupObjectsIt()) {
+            GroupObjectEntity group = groupObject.entity;
+            ListViewType listViewType = group.getListViewTypeValue();
+            ContainerView rows = rowsScope(group);
+            if (listViewType != ListViewType.GRID && rows != null)
+                throw new IllegalStateException(formErrorPrefix() + "the rows of group '" + group.getSID() + "' are drawn by"
+                        + " the React component of container '" + rows.getSID() + "', but the group is in "
+                        + listViewType.name() + " view, which the platform draws; a React view draws the rows in the"
+                        + " default GRID view - drop the view type, or mark what draws the rows, the group's grid or its tree,"
+                        + " lsf for the platform to draw them");
+        }
     }
 
     // a literal `custom` beside a `custom` property is the pair the rest of the design uses (caption / propertyCaption):

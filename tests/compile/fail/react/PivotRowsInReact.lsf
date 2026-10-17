@@ -1,0 +1,22 @@
+MODULE PivotRowsInReact;
+
+REQUIRE System;
+
+// a group in PIVOT view whose rows a CUSTOM REACT container would draw: the server starts the group as the platform's
+// pivot needs it - under asyncInit, the default, waiting for the pivot to ask for its group mode -, which a view
+// drawing the rows never asks for
+CLASS PivotRowsItem;
+pivotRowsName = DATA STRING[20] (PivotRowsItem);
+pivotRowsSum = DATA NUMERIC[14,2] (PivotRowsItem);
+
+FORM pivotRowsInReact
+    OBJECTS i = PivotRowsItem PIVOT
+    PROPERTIES(i) pivotRowsName, pivotRowsSum
+;
+
+DESIGN pivotRowsInReact {
+    NEW board {
+        custom = 'PivotRowsBoard';
+        MOVE BOX(i);
+    }
+}
