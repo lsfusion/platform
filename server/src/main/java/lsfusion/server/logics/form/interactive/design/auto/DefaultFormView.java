@@ -38,9 +38,7 @@ public class DefaultFormView extends FormView<DefaultFormView> implements Proper
     private PropertyContainersView getPropertyGroupContainer(GroupObjectEntity groupObject) {
         if(groupObject == null)
             return this;
-        if (groupObject.isInTree())
-            return get(groupObject.treeGroup);
-        return get(groupObject).grid;
+        return getDrawComponent(groupObject);
     }
 
     public static class ContainerSet implements MappingInterface<ContainerSet> {

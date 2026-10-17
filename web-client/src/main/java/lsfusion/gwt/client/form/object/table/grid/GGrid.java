@@ -5,15 +5,15 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public class GGrid extends GGridProperty {
     public GGroupObject groupObject;
     public boolean quickSearch;
-
-    public Boolean resizeOverflow;
 
     public GContainer record;
 
@@ -22,11 +22,13 @@ public class GGrid extends GGridProperty {
         return record != null ? Collections.singletonList(record) : Collections.emptyList();
     }
 
-    public Boolean boxed;
-
     @Override
-    protected GGroupObject getLastGroup() {
-        return groupObject;
+    public List<GGroupObject> getGroups() {
+        return Collections.singletonList(groupObject);
+    }
+    @Override
+    public <R> R match(Function<GGrid, R> grid, Function<GTreeGroup, R> tree) {
+        return grid.apply(this);
     }
 
     @Override

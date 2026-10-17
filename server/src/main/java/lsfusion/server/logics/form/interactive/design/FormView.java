@@ -161,14 +161,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
         PropertyDrawView propertyDrawView = get(filterProperty);
-        if (propertyDrawView.filter == null) {
-            GroupObjectEntity groupObjectEntity = filterProperty.getNFToDraw(entity, version);
-            if (groupObjectEntity.isInTree()) {
-                get(groupObjectEntity.treeGroup).addFilter(genID(), propertyDrawView, version);
-            } else {
-                get(groupObjectEntity).grid.addFilter(genID(), propertyDrawView, version);
-            }
-        }
+        if (propertyDrawView.filter == null)
+            getDrawComponent(filterProperty.getNFToDraw(entity, version)).addFilter(genID(), propertyDrawView, version);
     }
 
     public void addPivotColumn(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
@@ -294,7 +288,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // draws all of the tree's groups, so groupObjectBox names none of them - and it answers for the box rather than for
     // what draws the group, which differ once a design MOVEs the grid out of its box or marks the grid lsf (mirrors
     // GGroupObject.getDrawComponent)
-    public ComponentView getDrawComponent(GroupObjectEntity group) {
+    public GridPropertyView<?, ?> getDrawComponent(GroupObjectEntity group) {
         // a group in a tree has no grid of its own (GroupObjectView builds one only outside a tree)
         if (group.isInTree())
             return get(group.treeGroup);
@@ -396,7 +390,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
     // the group's FILTERS box: its grid's, or its tree's - one box for all the tree's groups
     private ContainerView getFiltersContainer(GroupObjectEntity group) {
-        return ((GridPropertyView<?, ?>) getDrawComponent(group)).filtersContainer;
+        return getDrawComponent(group).filtersContainer;
     }
 
     // ... and what those producers WRITE on the node in this scope, which is what a projected name can collide with:

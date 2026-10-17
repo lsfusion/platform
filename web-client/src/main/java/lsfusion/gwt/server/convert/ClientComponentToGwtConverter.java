@@ -15,6 +15,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
+import lsfusion.client.form.object.table.grid.ClientGridProperty;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPivotColumn;
@@ -41,6 +42,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculations;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
@@ -242,21 +244,9 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     @Cached
     @Converter(from = ClientGrid.class)
     public GGrid convertGrid(ClientGrid clientGrid) {
-        GGrid grid = initGwtComponent(clientGrid, new GGrid());
+        GGrid grid = initGwtGridProperty(clientGrid, new GGrid());
         grid.groupObject = convertOrCast(clientGrid.groupObject);
         grid.quickSearch = clientGrid.quickSearch;
-
-        grid.valueClass = clientGrid.valueClass;
-
-        grid.resizeOverflow = clientGrid.resizeOverflow;
-
-        grid.captionHeight = clientGrid.captionHeight;
-        grid.captionCharHeight = clientGrid.captionCharHeight;
-
-        grid.boxed = clientGrid.boxed;
-
-        grid.lineWidth = clientGrid.lineWidth;
-        grid.lineHeight = clientGrid.lineHeight;
 
         grid.record = convertOrCast(clientGrid.record);
         if (grid.record != null)
@@ -560,36 +550,44 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     @Cached
     @Converter(from = ClientTreeGroup.class)
     public GTreeGroup convertTreeGroup(ClientTreeGroup clientTreeGroup) {
-        GTreeGroup treeGroup = initGwtComponent(clientTreeGroup, new GTreeGroup());
-        
-        treeGroup.filtersContainer = convertOrCast(clientTreeGroup.filtersContainer);
-        treeGroup.filterControls = convertOrCast(clientTreeGroup.filterControls);
-        for (ClientFilter filter : clientTreeGroup.filters) {
-            treeGroup.filters.add(convertOrCast(filter));
-        }
+        GTreeGroup treeGroup = initGwtGridProperty(clientTreeGroup, new GTreeGroup());
 
-        treeGroup.boxed = clientTreeGroup.boxed;
-
-        treeGroup.valueClass = clientTreeGroup.valueClass;
-
-        treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
+        convertChrome(treeGroup, clientTreeGroup.toolbar, clientTreeGroup.filtersContainer, clientTreeGroup.filterControls, clientTreeGroup.filters);
 
         treeGroup.hierarchicalWidth = clientTreeGroup.hierarchicalWidth;
         treeGroup.hierarchicalCaption = clientTreeGroup.hierarchicalCaption;
-
-        treeGroup.resizeOverflow = clientTreeGroup.resizeOverflow;
-
-        treeGroup.captionHeight = clientTreeGroup.captionHeight;
-        treeGroup.captionCharHeight = clientTreeGroup.captionCharHeight;
-
-        treeGroup.lineWidth = clientTreeGroup.lineWidth;
-        treeGroup.lineHeight = clientTreeGroup.lineHeight;
 
         for (ClientGroupObject clientGroup : clientTreeGroup.groups) {
             GGroupObject group = convertOrCast(clientGroup);
             treeGroup.groups.add(group);
         }
         return treeGroup;
+    }
+
+    // what every table has of its own, a grid and a tree alike (ClientGridProperty)
+    private <T extends GGridProperty> T initGwtGridProperty(ClientGridProperty clientTable, T table) {
+        initGwtComponent(clientTable, table);
+
+        table.boxed = clientTable.boxed;
+        table.valueClass = clientTable.valueClass;
+        table.resizeOverflow = clientTable.resizeOverflow;
+        table.captionHeight = clientTable.captionHeight;
+        table.captionCharHeight = clientTable.captionCharHeight;
+        table.lineWidth = clientTable.lineWidth;
+        table.lineHeight = clientTable.lineHeight;
+
+        return table;
+    }
+
+    // what goes over the rows of a table or a tree (GGridProperty): its toolbar, its FILTERS box with the filters it
+    // holds, and its filter controls
+    private void convertChrome(GGridProperty table, ClientToolbar toolbar, ClientContainer filtersContainer, ClientFilterControls filterControls, List<ClientFilter> filters) {
+        table.toolbar = convertOrCast(toolbar);
+        table.filtersContainer = convertOrCast(filtersContainer);
+        table.filterControls = convertOrCast(filterControls);
+        if (filters != null)
+            for (ClientFilter filter : filters)
+                table.filters.add(convertOrCast(filter));
     }
 
     @Cached
@@ -617,6 +615,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
+        if (groupObject.grid != null) // a group in a tree has none: its tree has what goes over the rows
+            convertChrome(groupObject.grid, clientGroupObject.toolbar, clientGroupObject.filtersContainer, clientGroupObject.filterControls, clientGroupObject.filters);
 
         groupObject.viewType = GClassViewType.valueOf(clientGroupObject.viewType.name());
         groupObject.listViewType = GListViewType.valueOf(clientGroupObject.listViewType.name());

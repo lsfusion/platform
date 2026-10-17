@@ -3,34 +3,23 @@ package lsfusion.gwt.client.form.object.table.tree;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.GToolbar;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 public class GTreeGroup extends GGridProperty {
     public ArrayList<GGroupObject> groups = new ArrayList<>();
 
-    public GContainer filtersContainer;
-    public GFilterControls filterControls;
-    public ArrayList<GFilter> filters = new ArrayList<>();
-
-    public Boolean boxed;
-
-    public GToolbar toolbar;
-
     public int hierarchicalWidth;
     public String hierarchicalCaption;
-
-    public Boolean resizeOverflow;
 
     public GSize getExpandWidth() {
         if(hierarchicalWidth > 0) {
@@ -47,8 +36,13 @@ public class GTreeGroup extends GGridProperty {
         return size;
     }
 
-    protected GGroupObject getLastGroup() {
-        return groups.get(groups.size() - 1);
+    @Override
+    public List<GGroupObject> getGroups() {
+        return groups;
+    }
+    @Override
+    public <R> R match(Function<GGrid, R> grid, Function<GTreeGroup, R> tree) {
+        return tree.apply(this);
     }
 
     @Override

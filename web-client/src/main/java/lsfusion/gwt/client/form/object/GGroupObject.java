@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 
 import java.io.Serializable;
 import java.util.*;
@@ -27,6 +28,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GFilterControls filtersControls;
     public List<GFilter> filters = new ArrayList<>();
     
+    // its grid - with what goes over its rows (GGridProperty) -, none of a group in a tree: its tree has them
     public GGrid grid;
     public GToolbar toolbar;
 
@@ -197,7 +199,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
     // the component that DRAWS this group's rows - the grid, or, in a tree, the tree component that draws them all.
     // Everything that asks where a group lives asks about this component and not about the group's box: a MOVE takes
     // the grid out of its box, and then the box is somewhere the rows are not (mirrors FormView.getDrawComponent)
-    public GComponent getDrawComponent() {
+    public GGridProperty getDrawComponent() {
         // a group in a tree has no grid of its own: the tree draws it
         return parent != null ? parent : grid;
     }

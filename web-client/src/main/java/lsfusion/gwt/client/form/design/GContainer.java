@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
-import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GComponentLabelReader;
 import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GAttributeConverter;
@@ -115,30 +114,6 @@ public class GContainer extends GComponent {
             if(child.isFlex())
                 count++;
         return count;
-    }
-
-    public List<GGrid> getAllGrids() {
-        List<GGrid> grids = new ArrayList<>();
-        for (GComponent child : children) {
-            if (child instanceof GGrid) {
-                grids.add((GGrid) child);
-            } else if (child instanceof GContainer) {
-                grids.addAll(((GContainer) child).getAllGrids());
-            }
-        }
-        return grids;
-    }
-
-    public List<GTreeGroup> getAllTreeGrids() {
-        List<GTreeGroup> grids = new ArrayList<>();
-        for (GComponent child : children) {
-            if (child instanceof GTreeGroup) {
-                grids.add((GTreeGroup) child);
-            } else if (child instanceof GContainer) {
-                grids.addAll(((GContainer) child).getAllTreeGrids());
-            }
-        }
-        return grids;
     }
 
     public List<GPropertyDraw> getAllPropertyDraws() {
