@@ -1,0 +1,19 @@
+MODULE PopupGroupLayouts;
+
+REQUIRE System;
+
+// a group in POPUP view, like one in PANEL or TOOLBAR view, is not in LIST view: the server sends it no rows, only its
+// current object, so where a React view draws its box no name is reserved for rows - a panel property of it may be
+// called `list` or `keys`, as one of a group in PANEL view may (PanelGroupLayouts)
+CLASS PopupGroupItem;
+popupGroupName = DATA STRING[20] (PopupGroupItem);
+popupGroupNote = DATA STRING[20] (PopupGroupItem);
+
+FORM popupGroupLayouts
+    OBJECTS i = PopupGroupItem POPUP
+    PROPERTIES(i) popupGroupName EXTID 'list', popupGroupNote EXTID 'keys'
+;
+
+DESIGN popupGroupLayouts {
+    BOX(i) { custom = 'PopupGroupBoard'; }
+}

@@ -297,11 +297,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // ... and WHERE ITS ROWS GO: the react container that draws them, null when the platform does - none for a group
-    // in PANEL view, which is sent no rows. Every rule about a group's node starts by asking this, so the pair is
+    // not in LIST view (PANEL, TOOLBAR, POPUP), which is sent no rows. Every rule about a group's node starts by asking this, so the pair is
     // asked as one question and composed by no caller (mirrors GReactFormData.rowsScope, which is where the client
     // asks it)
     private ContainerView rowsScope(GroupObjectEntity group) {
-        return group.isPanel() ? null : componentScope(getDrawComponent(group));
+        return !group.getViewType().isList() ? null : componentScope(getDrawComponent(group));
     }
 
     // WHAT REACT KEEPS NOTHING OF as a component: the client has no controller of it, so nothing is sent for it as
