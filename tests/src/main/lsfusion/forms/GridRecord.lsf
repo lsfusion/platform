@@ -1,0 +1,90 @@
+MODULE GridRecord;
+
+REQUIRE TestUtils;
+
+// what a DESIGN puts into GRID(g) goes into the grid's record, a container with no container of its own: it is where
+// its grid is. The server's walks of the design reach what the record holds as they reach what any container holds,
+// whatever draws the grid: a client names it by its id - a tab it activates, a container it collapses, a component a
+// react view places or shows -, its caption, SHOWIF and class are read, and its visibility is sent where a react view
+// has to be told it. Where the platform draws the grid, its record is what a map, a calendar or a custom view pops up
+// for the current object; where React draws it, what the view draws or places
+
+CLASS GrdItem 'Item';
+grdName 'Name' = DATA STRING[20] (GrdItem);
+grdNote 'Note' = DATA STRING[20] (GrdItem);
+grdShown 'Shown' = DATA LOCAL BOOLEAN ();
+grdCaption 'Caption' = DATA LOCAL STRING[20] ();
+
+FORM grdPlatform 'Platform grid record'
+    OBJECTS i = GrdItem
+    PROPERTIES(i) grdName
+;
+
+DESIGN grdPlatform {
+    GRID(i) {
+        NEW grdCard {
+            caption = grdCaption();
+            showIf = grdShown();
+            collapsible = FALSE;
+            NEW grdInner {
+                caption = grdCaption();
+                collapsible = FALSE;
+            }
+        }
+        NEW grdPages {
+            tabbed = TRUE;
+            NEW grdFirstPage;
+            NEW grdSecondPage;
+        }
+        NEW grdPane {
+            caption = 'Pane';
+            collapsible = TRUE;
+        }
+    }
+}
+
+FORM grdReact 'React grid record'
+    OBJECTS i = GrdItem
+    PROPERTIES(i) grdName
+    PROPERTIES(i) PANEL grdNote
+;
+
+DESIGN grdReact {
+    NEW grdBoard {
+        custom = 'GrdBoard';
+        MOVE BOX(i);
+    }
+    GRID(i) {
+        showIf = grdShown();
+        NEW grdPlaced {
+            custom = NULL;
+            caption = grdCaption();
+            showIf = grdShown();
+        }
+        NEW grdDrawn {
+            caption = grdCaption();
+            showIf = grdShown();
+        }
+        NEW grdNested {
+            custom = 'GrdNested';
+            showIf = grdShown();
+        }
+        NEW grdUnder;
+        MOVE PROPERTY(grdNote(i)) { custom = NULL; }
+    }
+}
+
+testRecordOfAGridThePlatformDraws 'What the record of a grid the platform draws holds is found and read' () {
+    assertWalked('GridRecord.grdPlatform', 'grdCard', 'found read');
+    assertWalked('GridRecord.grdPlatform', 'grdInner', 'found read');
+    assertWalked('GridRecord.grdPlatform', 'grdSecondPage', 'found hidable');
+    assertWalked('GridRecord.grdPlatform', 'grdPane', 'found hidable');
+}
+
+testRecordOfAGridReactDraws 'What the record of a grid React draws holds is found, read and sent' () {
+    assertWalked('GridRecord.grdReact', 'grdPlaced', 'found read sent hidable');
+    assertWalked('GridRecord.grdReact', 'grdDrawn', 'found read sent hidable');
+    assertWalked('GridRecord.grdReact', 'grdNested', 'found read sent hidable');
+    assertWalked('GridRecord.grdReact', 'grdUnder', 'found sent hidable');
+    assertWalked('GridRecord.grdReact', 'PROPERTY(grdNote(i))', 'found hidable');
+}

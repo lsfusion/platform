@@ -43,6 +43,10 @@ When defining the form design, the developer can use the following base componen
 
 -   *Property panel* (`PROPERTY`): a component that displays the title and current value of a property. The caption can be either to the left of the value cell or at the top. Not shown if the property is displayed in the table.
 
+#### Table record {#record}
+
+The components the design adds to the table of an object group — `MOVE` or `NEW` inside `GRID(<object group>) { ... }` — make up the table's *record*: the card of the current object, which the map and the calendar [view types](../language/Object_blocks.md#objects) show over the marker or the event the user clicks, and a custom view next to the element it passes to [`changeObject`](../how-to/How-to_Custom_components_objects.md#controller-methods), if anything in it is shown. The table and the pivot table do not show the record. A tree has no record.
+
 ### Value cell rendering {#cellrender}
 
 In the web client, a property value cell is normally an ordinary block that turns into an editor when the user starts editing. A property of a text-based class shown in a panel can instead be drawn as a real input field right away, which is what the [working parameter](Working_parameters.md) `useInputTagForTextBasedInPanel` (`1` by default) decides: `0` draws it as an input field in every theme, `1` only in a bootstrap theme, `2` never. The property still has to be editable and its class has to have a matching input type. HTML, rich text and links are never drawn this way, while a `BOOLEAN` always is, regardless of this parameter.

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
@@ -7,6 +8,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.form.ObjectMapping;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerFactory;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.IdentityView;
@@ -14,6 +16,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -64,6 +67,31 @@ public class GridView extends GridPropertyView<GridView, GroupObjectView>{
             record.setAddParent(this, pc -> pc.record.get());
             return record;
         });
+    }
+
+    // ITS RECORD - what a DESIGN puts into GRID(g) - has no container: it is in the grid (ContainerView.getHiddenContainer),
+    // so every walk down the design goes into it as into a container's children, as the client's do (GGrid.getChildren):
+    // what it holds is found by its id - a tab a client activates, a container it collapses, a component a react view
+    // places or shows -, its readers are read and its visibility is sent. Whatever draws the grid: the platform's map,
+    // calendar or custom view pops the record up for the current object, a react view draws or places what it holds
+    @Override
+    public ComponentView findById(int id) {
+        ComponentView result = super.findById(id);
+        ContainerView record = getRecord();
+        return result == null && record != null ? record.findById(id) : result;
+    }
+    @Override
+    public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
+        super.fillPropertyComponents(mComponents);
+        ContainerView record = getRecord();
+        if (record != null)
+            record.fillPropertyComponents(mComponents);
+    }
+    @Override
+    public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean showIf, Predicate<ContainerView> reactShown) {
+        ContainerView record = getRecord();
+        if (record != null)
+            record.fillBaseComponents(mComponents, showIf, reactShown);
     }
 
     @Override

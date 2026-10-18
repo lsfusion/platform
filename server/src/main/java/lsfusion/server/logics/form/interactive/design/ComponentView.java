@@ -25,6 +25,7 @@ import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.function.Predicate;
 
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.nvl;
@@ -466,6 +467,10 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
         if(hasPropertyComponent())
             mComponents.exclAdd(this);
+    }
+    // the components INSIDE this one whose visibility the client is sent (ContainerView.fillBaseComponents): none, but
+    // in a container and in a grid's record
+    public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean showIf, Predicate<ContainerView> reactShown) {
     }
 
     public boolean isAncestorOf(ComponentView container) {

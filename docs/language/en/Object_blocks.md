@@ -175,7 +175,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
  
     - `MAP [tileProvider]`
 
-        When the `MAP` keyword is specified, the *map* view type is selected. By default, this view uses OpenStreetMap maps. It is possible to use Google, Yandex or 2GIS maps. To do this you need to include the `Geo.lsf` module in the project, then obtain an API key for the corresponding map source and specify it in `Administration > Application > Settings > Navigation`.
+        When the `MAP` keyword is specified, the *map* view type is selected. A click on a marker makes its object the current one and shows the table's [record](../paradigm/Form_design.md#record) over the marker. By default, this view uses OpenStreetMap maps. It is possible to use Google, Yandex or 2GIS maps. To do this you need to include the `Geo.lsf` module in the project, then obtain an API key for the corresponding map source and specify it in `Administration > Application > Settings > Navigation`.
 
         - `tileProvider`
       
@@ -195,6 +195,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
         - For a property of the `DATE` class the event takes the whole day, and the calendar shows the month and week views. For `DATETIME` / `ZDATETIME` the day view with a time scale is additionally available.
         - The event title is taken from the value of the property with the integration SID `name`; if there is none, and there are at least two properties with the `STICKY` option — from their first values (up to three); otherwise — from the value of the first property of an integer or string class.
         - Dragging an event writes the new date into the selected property, resizing — into the period end property. The write is performed only if the corresponding property is changeable.
+        - A click on an event makes its object the current one and shows the table's [record](../paradigm/Form_design.md#record) over the event.
         - The event color is given by the `BACKGROUND` / `FOREGROUND` options of the object group.
         - The calendar reads the object collections of the visible date range only (up to `1000` by default), automatically applying a filter on the selected property.
 

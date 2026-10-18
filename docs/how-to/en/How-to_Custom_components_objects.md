@@ -205,7 +205,7 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | method | what it does |
 | --- | --- |
 | `isCurrent(object)` | whether the object is the group's current one |
-| `changeObject(object[, rendered])` | set the group's current object (see above) |
+| `changeObject(object[, rendered[, element]])` | set the group's current object (see above); given an `element`, show the table's [record](../paradigm/Form_design.md#record) next to it |
 | `changeProperty(property[, object][, value])` | set a property value, or exec an action — on the current object or a given one (see above) |
 | `batch(fn)` | run `fn`, the `changeProperty` calls made in it sent together, in one request |
 | `changeProperties(properties, objects, values)` | deprecated: `changeProperty` calls from parallel arrays, in a `batch` |
