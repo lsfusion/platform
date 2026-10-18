@@ -252,6 +252,60 @@
                 return function () { view.show(named, true); };
             }, [view, named, showing]);
         };
+        // useVisible(): whether the view is on screen - the element its root is mounted in is displayed: in the page,
+        // with nothing above it under a display:none, which is how the platform hides a view without taking it down -
+        // in a tab that is not selected, in a collapsed container or a popup one that is closed, under a SHOWIF, in a
+        // form in a background tab or one the forms window does not place. The component stays mounted all the while,
+        // and what it does on its own - a timer, a request, an animation - goes on while nobody sees what it draws:
+        // that is what this is for, and the component is drawn again when it changes. Not whether the view is scrolled
+        // into sight. Two observers for a root, however many of its components ask, and only while one does: an
+        // element that stops being displayed is resized to nothing and leaves the sight, one displayed again is resized
+        // to its own size and comes into it - the second is all a root of no size of its own gives -, so either is
+        // when to look again: a root of no size out of sight gives neither, and is looked at again when it comes into
+        // sight. While none asks nothing watches the root, so it is looked at whenever it is asked about
+        var displays = new WeakMap(); // the element a root is mounted in -> { visible, listeners, observers }
+        var isDisplayed = function (element) { return element.getClientRects().length > 0; };
+        var displayOf = function (element) {
+            var display = displays.get(element);
+            if (!display)
+                displays.set(element, display = { visible: true, listeners: new Set(), observers: null });
+            if (!display.observers)
+                display.visible = isDisplayed(element);
+            return display;
+        };
+        ns.useVisible = function () {
+            var context = React.useContext(Ctx);
+            var element = context ? context.element : null;
+            var subscribe = React.useCallback(function (listener) {
+                if (!element)
+                    return function () {};
+                var display = displayOf(element);
+                display.listeners.add(listener);
+                if (!display.observers) {
+                    var look = function () {
+                        var visible = isDisplayed(element);
+                        if (visible !== display.visible) {
+                            display.visible = visible;
+                            display.listeners.forEach(function (told) { told(); });
+                        }
+                    };
+                    display.observers = [new window.ResizeObserver(look), new window.IntersectionObserver(look)];
+                    display.observers.forEach(function (observer) { observer.observe(element); });
+                }
+                return function () {
+                    display.listeners['delete'](listener);
+                    if (!display.listeners.size) {
+                        display.observers.forEach(function (observer) { observer.disconnect(); });
+                        display.observers = null;
+                    }
+                };
+            }, [element]);
+            React.useEffect(function () {
+                if (!element)
+                    window.console.error("lsFusion custom view: useVisible is outside the view the platform draws, so it has no view to say anything of");
+            }, [element]);
+            return React.useSyncExternalStore(subscribe, function () { return element ? displayOf(element).visible : true; });
+        };
         // A platform-drawn child's caption / image is NOT the platform's to draw - it is handed to React in its own entry, under the
         // name the child is placed by: a container's or any other component's is data[componentSID], a property's -
         // panel or table - is data.<group>[integrationSID] (data[integrationSID] for the empty group), where its value

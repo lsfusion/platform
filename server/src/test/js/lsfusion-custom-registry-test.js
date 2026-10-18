@@ -484,6 +484,63 @@ console.log('useShown');
         && w.__errors.some(e => e.indexOf('useShown is outside') >= 0), JSON.stringify(w.__errors));
 }
 
+console.log('useVisible');
+{
+    const w = load();
+    // the browser around the hook: the observers it watches the root's element with - a resize, and a change of what
+    // is in sight -, and the element's boxes - none under a display:none or out of the page
+    const observers = [];
+    const observer = (kind) => {
+        const Observer = function (callback) { this.kind = kind; this.callback = callback; this.observed = []; this.disconnected = false; observers.push(this); };
+        Observer.prototype.observe = function (element) { this.observed.push(element); };
+        Observer.prototype.disconnect = function () { this.disconnected = true; };
+        return Observer;
+    };
+    w.ResizeObserver = observer('resize');
+    w.IntersectionObserver = observer('sight');
+    const element = { boxes: 1, getClientRects() { return { length: this.boxes }; } };
+    // React's order: the component reads while it renders, subscribes once the commit is over, and reads again
+    const subscriptions = [];
+    w.React.useSyncExternalStore = (subscribe, getSnapshot) => {
+        const subscription = { told: 0, getSnapshot, rendered: getSnapshot() };
+        subscription.unsubscribe = subscribe(() => subscription.told++);
+        subscriptions.push(subscription);
+        return subscription.rendered;
+    };
+    makeReact.__ctxValue = { element };
+    const watching = () => observers.filter(o => !o.disconnected);
+
+    check('a view on screen is visible', render(instance(), () => w.lsfusion.useVisible()) === true);
+    render(instance(), () => w.lsfusion.useVisible());
+    check('one pair of observers for a root, however many of its components ask, both on its element',
+        observers.map(o => o.kind).join() === 'resize,sight' && observers.every(o => o.observed.length === 1 && o.observed[0] === element),
+        observers.map(o => o.kind).join());
+    element.boxes = 0;
+    observers[0].callback();
+    check('hidden, a resize says so: every component asking is told, and is not visible',
+        subscriptions.every(s => s.told === 1 && s.getSnapshot() === false), JSON.stringify(subscriptions));
+    observers[0].callback();
+    observers[1].callback();
+    check('a resize or a change of sight that changes nothing tells nothing', subscriptions.every(s => s.told === 1));
+    element.boxes = 2;
+    observers[1].callback();
+    check('shown again, a change of sight says so too - a root of no size of its own is not resized',
+        subscriptions.every(s => s.told === 2 && s.getSnapshot() === true));
+    subscriptions.forEach(s => s.unsubscribe());
+    check('the last component gone, nothing watches the root', watching().length === 0);
+    element.boxes = 0;
+    const again = render(instance(), () => w.lsfusion.useVisible());
+    check('a component asking again, while nothing watches, is drawn by the element as it is now',
+        again === false && subscriptions[subscriptions.length - 1].rendered === false && watching().length === 2,
+        JSON.stringify({ again, watching: watching().length }));
+
+    makeReact.__ctxValue = null;
+    const outside = render(instance(), () => w.lsfusion.useVisible());
+    flushEffects();
+    check("one outside the platform's view is visible, and says why", outside === true
+        && w.__errors.some(e => e.indexOf('useVisible is outside') >= 0), JSON.stringify(w.__errors));
+}
+
 console.log('useSeekOnScroll');
 {
     // a DOM double: what the hook reads of an element - its place in the tree and in the document, its overflow and

@@ -623,7 +623,58 @@ The scheduled run differs from a request the component would make itself. A time
 
 - **It does not block the user.** The web client sends it as an asynchronous request, without blocking input and without the [busy indicator](../paradigm/Interactive_view.md#busy) a synchronous request gets, so the user keeps working while the form is re-read.
 - **It runs only while the form is on screen.** For a form in a background tab, a form the [forms window](#forms-window) component places nowhere, or a form under a modal dialog, the run is skipped. The timer keeps counting, and the next run comes once the form is shown again.
-- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden.
+- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden: what stops it while the view is hidden is [`useVisible()`](#hidden-view).
+
+### A hidden view {#hidden-view}
+
+The platform hides a view without taking it down: in a tab of a `tabbed` container that is not selected, in a collapsed container, in a `popup` container that is not open, under a `SHOWIF` — of the view's container or of a container above it —, and in a form that is not on screen: in a background tab, or one the [forms window](#forms-window) component does not place. The component stays mounted and keeps its state, and what it draws is not seen.
+
+While the form hides the view's container, the server does not read what the view draws, as it does not read a hidden part of any form: the rows of a group stay as they were last sent, and a property whose value changes meanwhile reads as `null` — unless a part of the form that is shown reads the same. The first answer after the container is shown brings the current values. A form that is not on screen is read as usual.
+
+What the component does on its own goes on all the while: a timer, a request, an animation. `useVisible()` says whether the view is on screen now — whether the element its root is mounted in is displayed: in the page, with no element above it under `display: none`, which is how the platform hides one — and draws the component again when that changes, so work of the component's own is done while it is `true`:
+
+```jsx
+const { useVisible } = window.lsfusion;
+
+export function Clock() {
+    const visible = useVisible();
+    const [now, setNow] = React.useState(() => new Date());
+    React.useEffect(() => {
+        if (!visible)
+            return undefined;
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, [visible]);
+    return <span>{now.toLocaleTimeString()}</span>;
+}
+```
+
+It does not say whether the view is scrolled into sight. What the component draws from its data needs no such check: a hidden view is drawn again with the current data once it is shown, as the platform's own views are. What it measures does: an element under a hidden container has no size, so a view that sizes what it draws by its own box — a chart, a map — measures it again once it is visible.
+
+The tabs and the collapsible containers around a view are a part of the form, and the view reads and changes them as it does the rest of the form — through the properties and actions the design gives it: [`ACTIVE TAB`](../language/ACTIVE_operator.md) says whether a tab is selected, [`ACTIVATE TAB`](../language/ACTIVATE_operator.md) selects it, [`COLLAPSE CONTAINER`](../language/COLLAPSE_operator.md) and [`EXPAND CONTAINER`](../language/EXPAND_operator.md) collapse and expand a container. Here `lines` is a page of a `tabbed` container of the form `order`, and `details` a collapsible container of the same form:
+
+```lsf
+linesSelected = ACTIVE TAB order.lines;
+selectLines() { ACTIVATE TAB order.lines; }
+collapseDetails() { COLLAPSE CONTAINER order.details; }
+
+EXTEND FORM order PROPERTIES() linesSelected, selectLines, collapseDetails;
+
+DESIGN order {
+    NEW steps FIRST {
+        custom = 'Steps';
+        MOVE PROPERTY(linesSelected());
+        MOVE PROPERTY(selectLines());
+        MOVE PROPERTY(collapseDetails());
+    }
+}
+```
+
+```jsx
+<button aria-pressed={data.linesSelected.value === true} onClick={() => controller.selectLines.exec()}>Lines</button>
+```
+
+The actions run on the server, so the tab is selected when the answer comes, not on the click. Whether a container is collapsed is no property: the form's [`ON COLLAPSE` and `ON EXPAND`](../language/Event_block.md) events run when the user collapses or expands it. A container the view draws itself has no tab and no collapse of the platform's — the view shows it or not —, so `ACTIVATE TAB`, `COLLAPSE CONTAINER` and `EXPAND CONTAINER` on it are an error ([above](#placing)).
 
 ### A navigator window {#navigator-window}
 
